@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "visualprop",
+  "version": "${version}",
+  "name": "Visual Properties",
+  "description": "Fixes those annoying gaps that appear in item and block models",
+  "authors": [
+    "Mehvahdjukaar"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/model-gap-fix"
+  },
+  "license": "GPL-3",
+  "icon": "icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "net.mehvahdjukaar.visualprop.fabric.VisualPropertiesFabric"
+    ],
+    "modmenu": [
+      "net.mehvahdjukaar.visualprop.fabric.ModMenuCompat"
+    ]
+  },
+  "mixins": [
+    "${mod_id}.mixins.json"
+  ],
+  "depends": {
+    "fabric": "*",
+    "minecraft": ">=1.17"
+  }
+}
