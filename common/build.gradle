@@ -3,7 +3,7 @@ architectury {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/visual_properties.accesswidener")
+    accessWidenerPath = file("src/main/resources/polytone.accesswidener")
 }
 
 dependencies {

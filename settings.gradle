@@ -11,5 +11,5 @@ include("common")
 include("fabric")
 include("forge")
 
-rootProject.name = "visual_properties"
+rootProject.name = "polytone"
 
