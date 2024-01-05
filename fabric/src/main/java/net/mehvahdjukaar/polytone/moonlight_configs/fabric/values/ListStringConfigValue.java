@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.moonlight_configs.fabric.values;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.mehvahdjukaar.polytone.VisualProperties;
+import net.mehvahdjukaar.polytone.Polytone;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,9 +39,9 @@ public class ListStringConfigValue<T extends String> extends ConfigValue<List<St
                 this.value = defaultValue;
             } catch (Exception ignored) {
             }
-            VisualProperties.LOGGER.warn("Config file had incorrect entry {}, correcting", this.name);
+            Polytone.LOGGER.warn("Config file had incorrect entry {}, correcting", this.name);
         } else {
-            VisualProperties.LOGGER.warn("Config file had missing entry {}", this.name);
+            Polytone.LOGGER.warn("Config file had missing entry {}", this.name);
         }
     }
 

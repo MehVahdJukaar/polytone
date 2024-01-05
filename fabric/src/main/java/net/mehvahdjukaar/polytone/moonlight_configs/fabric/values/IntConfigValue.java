@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.moonlight_configs.fabric.values;
 
 import com.google.gson.JsonObject;
-import net.mehvahdjukaar.polytone.VisualProperties;
+import net.mehvahdjukaar.polytone.Polytone;
 
 public class IntConfigValue extends ConfigValue<Integer> {
 
@@ -29,9 +29,9 @@ public class IntConfigValue extends ConfigValue<Integer> {
                 this.value = defaultValue;
             } catch (Exception ignored) {
             }
-            VisualProperties.LOGGER.warn("Config file had incorrect entry {}, correcting", this.name);
+            Polytone.LOGGER.warn("Config file had incorrect entry {}, correcting", this.name);
         } else {
-            VisualProperties.LOGGER.warn("Config file had missing entry {}", this.name);
+            Polytone.LOGGER.warn("Config file had missing entry {}", this.name);
         }
     }
 

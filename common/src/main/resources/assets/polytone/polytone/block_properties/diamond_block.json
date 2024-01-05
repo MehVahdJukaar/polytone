@@ -1,0 +1,19 @@
+{
+  "sound_event": "sculk",
+  "x_axis": {
+    "type": "add",
+    "first": {
+      "type": "sin",
+      "amplitude": 2,
+      "period": 0.4,
+      "phase": 0.1,
+      "value": {
+        "type": "temperature"
+      }
+    },
+    "second": {
+      "type": "const",
+      "value": 6
+    }
+  }
+}

@@ -1,11 +1,13 @@
-package net.mehvahdjukaar.polytone;
+package net.mehvahdjukaar.polytone.properties;
 
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.mehvahdjukaar.polytone.tint.JsonBlockColor;
+import net.mehvahdjukaar.polytone.tint.JsonBlockColorManager;
+import net.mehvahdjukaar.polytone.map.MapColorHelper;
+import net.mehvahdjukaar.polytone.sound.SoundTypeHelper;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,7 +19,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public record ClientBlockProperties(
-        Block target,
+        JsonBlockColor tintGetter,
         Optional<SoundType> soundType,
         Optional<Function<BlockState, MapColor>> mapColor,
         //Optional<Boolean> canOcclude,
@@ -28,7 +30,7 @@ public record ClientBlockProperties(
 
     public ClientBlockProperties merge(ClientBlockProperties other) {
         return new ClientBlockProperties(
-                this.target,
+                this.tintGetter,
                 other.soundType().isPresent() ? other.soundType() : this.soundType(),
                 other.mapColor.isPresent() ? other.mapColor() : this.mapColor(),
                 //other.canOcclude().isPresent() ? other.canOcclude() : this.canOcclude(),
@@ -40,7 +42,7 @@ public record ClientBlockProperties(
     }
 
     // returns the old ones
-    public ClientBlockProperties apply() {
+    public ClientBlockProperties apply(Block target) {
         SoundType oldSound = null;
         if (soundType.isPresent()) {
             oldSound = target.soundType;
@@ -66,7 +68,7 @@ public record ClientBlockProperties(
 
     public static final Decoder<ClientBlockProperties> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    BuiltInRegistries.BLOCK.byNameCodec().fieldOf("target").forGetter(ClientBlockProperties::block),
+                    JsonBlockColorManager.CODEC.fieldOf("tint_getter").forGetter(ClientBlockProperties::tintGetter),
                     SoundTypeHelper.CODEC.optionalFieldOf("sound_event").forGetter(ClientBlockProperties::soundType),
                     MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE)
                             .optionalFieldOf("map_color").forGetter(ClientBlockProperties::mapColor),
@@ -81,10 +83,6 @@ public record ClientBlockProperties(
 
     public Block block() {
         return null;
-    }
-
-    public boolean hasBlock() {
-        return target != Blocks.AIR;
     }
 
 

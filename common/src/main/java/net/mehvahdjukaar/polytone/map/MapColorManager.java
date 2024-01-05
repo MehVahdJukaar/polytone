@@ -1,6 +1,8 @@
-package net.mehvahdjukaar.polytone;
+package net.mehvahdjukaar.polytone.map;
 
 import com.google.common.collect.Lists;
+import net.mehvahdjukaar.polytone.SinglePropertiesReloadListener;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.material.MapColor;
@@ -16,7 +18,7 @@ public class MapColorManager extends SinglePropertiesReloadListener {
 
     public MapColorManager() {
         super("optifine/color.properties",
-                VisualProperties.MOD_ID + "/map_colors.properties");
+                Polytone.MOD_ID + "/map_colors.properties");
     }
 
     @Override
@@ -50,7 +52,7 @@ public class MapColorManager extends SinglePropertiesReloadListener {
                 }
             }
         } catch (Exception ex) {
-            VisualProperties.LOGGER.error("Visual Properties failed to apply custom MapColors. Rolling back to vanilla state", ex);
+            Polytone.LOGGER.error("Visual Properties failed to apply custom MapColors. Rolling back to vanilla state", ex);
             resetValues();
         }
     }

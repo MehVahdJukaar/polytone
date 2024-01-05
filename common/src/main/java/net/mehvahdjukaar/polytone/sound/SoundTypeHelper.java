@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone;
+package net.mehvahdjukaar.polytone.sound;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;

@@ -6,24 +6,24 @@ loaderVersion="[38,)" #mandatory This is typically bumped every Minecraft versio
 license="ARR"
 [[mods]] #mandatory
 # The modid of the mod
-modId="visualprop" #mandatory
+modId="polytone" #mandatory
 version = "${version}"
-displayName="Visual Properties" #mandatory
+displayName="Polytone" #mandatory
 logoFile="icon.png" #optional
 credits="MehVahdJukaar" #optional
 authors="MehVahdJukaar" #optional
 
 description='''
-Fixes those annoying gaps that appear in item and block models
+
 '''
-displayURL="https://www.curseforge.com/minecraft/mc-mods/model-gap-fix" #optional
-issueTrackerURL="https://www.curseforge.com/minecraft/mc-mods/model-gap-fix/issues" #optional
-itemIcon="minecraft:fishing_hook" #catalogue icon
+displayURL="https://www.curseforge.com/minecraft/mc-mods/polytone" #optional
+issueTrackerURL="https://www.curseforge.com/minecraft/mc-mods/polytone/issues" #optional
+itemIcon="minecraft:amethyst_block" #catalogue icon
 
 displayTest="IGNORE_ALL_VERSION"
 
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
-[[dependencies.visualprop]] #optional
+[[dependencies.polytone]] #optional
     # the modid of the dependency
     modId="forge" #mandatory
     # Does this dependency have to exist - if not, ordering below must be specified
@@ -35,7 +35,7 @@ displayTest="IGNORE_ALL_VERSION"
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
     side="CLIENT"
 # Here's another dependency
-[[dependencies.visualprop]]
+[[dependencies.polytone]]
     modId="minecraft"
     mandatory=true
 # This version range declares a minimum of the current minecraft version up to but not including the next major version

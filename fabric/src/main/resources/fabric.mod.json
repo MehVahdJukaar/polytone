@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
-  "id": "visualprop",
+  "id": "polytone",
   "version": "${version}",
-  "name": "Visual Properties",
-  "description": "Fixes those annoying gaps that appear in item and block models",
+  "name": "Polytone",
+  "description": "",
   "authors": [
     "Mehvahdjukaar"
   ],
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/model-gap-fix"
   },
-  "license": "GPL-3",
+  "license": "ARR",
   "icon": "icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [
-      "net.mehvahdjukaar.visualprop.fabric.VisualPropertiesFabric"
+      "net.mehvahdjukaar.polytone.fabric.VisualPropertiesFabric"
     ],
     "modmenu": [
-      "net.mehvahdjukaar.visualprop.fabric.ModMenuCompat"
+      "net.mehvahdjukaar.polytone.fabric.ModMenuCompat"
     ]
   },
   "mixins": [

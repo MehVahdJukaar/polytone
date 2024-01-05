@@ -1,8 +1,9 @@
-package net.mehvahdjukaar.polytone;
+package net.mehvahdjukaar.polytone.properties;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -19,7 +20,7 @@ public class ClientBlockPropertiesManager extends SimpleJsonResourceReloadListen
     private final Map<Block, ClientBlockProperties> vanillaValues = new HashMap<>();
 
     public ClientBlockPropertiesManager() {
-        super(new Gson(), VisualProperties.MOD_ID+"/blocks");
+        super(new Gson(), Polytone.MOD_ID+"/blocks");
     }
 
     @Override
@@ -33,7 +34,7 @@ public class ClientBlockPropertiesManager extends SimpleJsonResourceReloadListen
 
             ClientBlockProperties.CODEC.decode(JsonOps.INSTANCE, json)
                     // log error if parse fails
-                    .resultOrPartial(errorMsg -> VisualProperties.LOGGER.warn("Could not decode Client Block Property with json id {} - error: {}", id, errorMsg))
+                    .resultOrPartial(errorMsg -> Polytone.LOGGER.warn("Could not decode Client Block Property with json id {} - error: {}", id, errorMsg))
                     // add loot modifier if parse succeeds
                     .ifPresent(modifier -> propertiesList.add(modifier.getFirst()));
         }

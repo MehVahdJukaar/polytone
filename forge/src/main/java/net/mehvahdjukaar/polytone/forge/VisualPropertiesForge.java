@@ -1,16 +1,16 @@
 package net.mehvahdjukaar.polytone.forge;
 
-import net.mehvahdjukaar.polytone.VisualProperties;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraftforge.fml.common.Mod;
 
 /**
  * Author: MehVahdJukaar
  */
-@Mod(VisualProperties.MOD_ID)
+@Mod(Polytone.MOD_ID)
 public class VisualPropertiesForge {
 
     public VisualPropertiesForge() {
-        VisualProperties.init(false);
+        Polytone.init(false);
     }
 
 

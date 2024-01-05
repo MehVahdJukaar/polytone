@@ -1,0 +1,10 @@
+{
+  "1": {
+    "colormap": "my_map",
+    "default_color": 23433,
+    "x_axis": {
+      "type": "expression"
+
+    }
+  }
+}

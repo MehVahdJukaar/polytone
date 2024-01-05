@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.moonlight_configs.fabric;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.mehvahdjukaar.polytone.VisualProperties;
+import net.mehvahdjukaar.polytone.Polytone;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class ConfigSubCategory extends ConfigEntry {
             }
             return;
         }
-        VisualProperties.LOGGER.warn("Config file had missing category {}", this.name);
+        Polytone.LOGGER.warn("Config file had missing category {}", this.name);
     }
 
     @Override
