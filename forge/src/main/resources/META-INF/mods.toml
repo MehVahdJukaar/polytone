@@ -3,7 +3,7 @@ modLoader="javafml" #mandatory
 
 loaderVersion="[38,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 
-license="ARR"
+license="GPL 3.0"
 [[mods]] #mandatory
 # The modid of the mod
 modId="polytone" #mandatory

@@ -104,6 +104,7 @@ allprojects {
             allowInsecureProtocol = true
         }
 
+
         maven {
             url "https://maven.firstdarkdev.xyz/snapshots"
         }

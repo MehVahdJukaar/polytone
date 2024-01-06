@@ -143,6 +143,9 @@ dependencies {
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
 
+    implementation 'net.objecthunter:exp4j:0.4.8'
+
+
     // Deobfuscate each dev mod for runtime
     dev_mods.each {
         modImplementation(include(it))

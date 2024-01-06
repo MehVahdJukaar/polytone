@@ -60,9 +60,7 @@ public record ClientBlockProperties(
             oldMapColor = target.properties.mapColor;
             target.properties.mapColor = mapColor.get();
         }
-
-
-        return new ClientBlockProperties(this.target, Optional.ofNullable(oldSound), Optional.ofNullable(oldMapColor), oldOffsetType);
+        return new ClientBlockProperties(this.tintGetter, Optional.ofNullable(oldSound), Optional.ofNullable(oldMapColor), oldOffsetType);
     }
 
 

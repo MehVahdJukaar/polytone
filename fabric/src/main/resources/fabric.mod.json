@@ -10,7 +10,7 @@
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/model-gap-fix"
   },
-  "license": "ARR",
+  "license": "GPL 3.0",
   "icon": "icon.png",
   "environment": "client",
   "entrypoints": {
