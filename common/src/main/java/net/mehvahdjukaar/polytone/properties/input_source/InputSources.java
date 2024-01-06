@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.tint.input_source;
+package net.mehvahdjukaar.polytone.properties.input_source;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -10,7 +10,6 @@ import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.function.TriFunction;
 
-import javax.script.*;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -25,7 +24,7 @@ public class InputSources {
                     .orElse(DataResult.error(() -> "Unknown Input Source: " + object)));
 
     public static final Codec<InputSource> CODEC = TYPE_CODEC
-            .dispatch("type", i->(Codec<InputSource>)i.getCodec(), Function.identity());
+            .dispatch("type", i -> (Codec<InputSource>) i.getCodec(), Function.identity());
 
 
     public static Codec<InputSource> registerUnit(String id, TriFunction<BlockState, BlockAndTintGetter, BlockPos, Float> call) {
@@ -46,7 +45,7 @@ public class InputSources {
         return register(id, codec);
     }
 
-    public static<T extends InputSource> Codec<T> register(String id, Codec<T> codec) {
+    public static <T extends InputSource> Codec<T> register(String id, Codec<T> codec) {
         TYPES.put(id, (Codec<InputSource>) codec);
         return codec;
     }
@@ -69,7 +68,6 @@ public class InputSources {
     private static final Codec<InputSource> POS_Z = registerUnit("pos_z", (state, level, pos) -> (float) pos.getZ());
 
 
-
-    private static final Codec<JavaxExpression> JAVAX_EXPRESSION = register("expression", JavaxExpression.CODEC);
+    private static final Codec<ExpressionSource> JAVAX_EXPRESSION = register("expression", ExpressionSource.CODEC);
     //private static final InputSource SIN = registerUnit("sin", )
 }

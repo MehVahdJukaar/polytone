@@ -2,10 +2,12 @@ package net.mehvahdjukaar.polytone.properties;
 
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.tint.JsonBlockColor;
-import net.mehvahdjukaar.polytone.tint.JsonBlockColorManager;
 import net.mehvahdjukaar.polytone.map.MapColorHelper;
-import net.mehvahdjukaar.polytone.sound.SoundTypeHelper;
+import net.mehvahdjukaar.polytone.utils.SoundTypeHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -18,8 +20,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Function;
 
-public record ClientBlockProperties(
-        JsonBlockColor tintGetter,
+public record BlockPropertyModifier(
+        Optional<? extends BlockColor> tintGetter,
         Optional<SoundType> soundType,
         Optional<Function<BlockState, MapColor>> mapColor,
         //Optional<Boolean> canOcclude,
@@ -28,8 +30,8 @@ public record ClientBlockProperties(
         //Optional<Object> emissiveRendering,
         Optional<BlockBehaviour.OffsetFunction> offsetType) {
 
-    public ClientBlockProperties merge(ClientBlockProperties other) {
-        return new ClientBlockProperties(
+    public BlockPropertyModifier merge(BlockPropertyModifier other) {
+        return new BlockPropertyModifier(
                 this.tintGetter,
                 other.soundType().isPresent() ? other.soundType() : this.soundType(),
                 other.mapColor.isPresent() ? other.mapColor() : this.mapColor(),
@@ -42,46 +44,50 @@ public record ClientBlockProperties(
     }
 
     // returns the old ones
-    public ClientBlockProperties apply(Block target) {
+    public BlockPropertyModifier apply(Block block) {
         SoundType oldSound = null;
         if (soundType.isPresent()) {
-            oldSound = target.soundType;
-            target.soundType = soundType.get();
+            oldSound = block.soundType;
+            block.soundType = soundType.get();
         }
         Optional<BlockBehaviour.OffsetFunction> oldOffsetType = Optional.empty();
         if (offsetType.isPresent()) {
-            oldOffsetType = target.defaultBlockState().offsetFunction;
-            for (var s : target.getStateDefinition().getPossibleStates()) {
+            oldOffsetType = block.defaultBlockState().offsetFunction;
+            for (var s : block.getStateDefinition().getPossibleStates()) {
                 s.offsetFunction = offsetType;
             }
         }
         Function<BlockState, MapColor> oldMapColor = null;
         if (mapColor.isPresent()) {
-            oldMapColor = target.properties.mapColor;
-            target.properties.mapColor = mapColor.get();
+            oldMapColor = block.properties.mapColor;
+            block.properties.mapColor = mapColor.get();
         }
-        return new ClientBlockProperties(this.tintGetter, Optional.ofNullable(oldSound), Optional.ofNullable(oldMapColor), oldOffsetType);
+        BlockColor color = null;
+        if (tintGetter.isPresent()) {
+            BlockColors blockColors = Minecraft.getInstance().getBlockColors();
+            color = blockColors.blockColors.byId(BuiltInRegistries.BLOCK.getId(block));
+            blockColors.register(tintGetter.get(), block);
+        }
+        // returns old properties
+        return new BlockPropertyModifier(Optional.ofNullable(color), Optional.ofNullable(oldSound),
+                Optional.ofNullable(oldMapColor), oldOffsetType);
     }
 
 
-    public static final Decoder<ClientBlockProperties> CODEC = RecordCodecBuilder.create(instance ->
+    public static final Decoder<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    JsonBlockColorManager.CODEC.fieldOf("tint_getter").forGetter(ClientBlockProperties::tintGetter),
-                    SoundTypeHelper.CODEC.optionalFieldOf("sound_event").forGetter(ClientBlockProperties::soundType),
+                    BlockPropertiesManager.COLORMAP_CODEC.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof Colormap c ? c : null))),
+                    SoundTypeHelper.CODEC.optionalFieldOf("sound_event").forGetter(BlockPropertyModifier::soundType),
                     MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE)
-                            .optionalFieldOf("map_color").forGetter(ClientBlockProperties::mapColor),
+                            .optionalFieldOf("map_color").forGetter(BlockPropertyModifier::mapColor),
                     // Codec.BOOL.optionalFieldOf("can_occlude").forGetter(ClientBlockProperties::canOcclude),
                     //Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(c -> c.spawnParticlesOnBreak.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
                     // Codec.BOOL.optionalFieldOf("view_blocking").forGetter(ClientBlockProperties::viewBlocking),
                     //Codec.BOOL.optionalFieldOf("emissive_rendering").forGetter(c -> c.emissiveRendering.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
-                    StringRepresentable.fromEnum(ClientBlockProperties.OffsetTypeR::values)
+                    StringRepresentable.fromEnum(BlockPropertyModifier.OffsetTypeR::values)
                             .xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
-                            .optionalFieldOf("offset_type").forGetter(ClientBlockProperties::offsetType)
-            ).apply(instance, ClientBlockProperties::new));
-
-    public Block block() {
-        return null;
-    }
+                            .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType)
+            ).apply(instance, BlockPropertyModifier::new));
 
 
     public enum OffsetTypeR implements StringRepresentable {

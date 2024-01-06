@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.tint.input_source;
+package net.mehvahdjukaar.polytone.properties.input_source;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;

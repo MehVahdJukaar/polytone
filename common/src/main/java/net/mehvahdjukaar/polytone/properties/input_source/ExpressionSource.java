@@ -1,16 +1,22 @@
-package net.mehvahdjukaar.polytone.tint.input_source;
+package net.mehvahdjukaar.polytone.properties.input_source;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.function.Function;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
-public final class JavaxExpression implements InputSource {
+public final class ExpressionSource implements InputSource {
 
     //Keywords
     private static final String TEMPERATURE = "TEMPERATURE";
@@ -19,12 +25,27 @@ public final class JavaxExpression implements InputSource {
     private static final String POS_Y = "POS_Y";
     private static final String POS_Z = "POS_Z";
 
-    public static final Codec<JavaxExpression> CODEC = Codec.STRING.flatXmap(s -> {
+    private static final Function PROP_VALUE = new Function("prop_value", 1) {
+        @Override
+        public double apply(double... args) {
+            List<Property<?>> properties = new ArrayList<>(stateHack.getProperties());
+            int index = (int) args[0];
+            Property<?> p = properties.get(Mth.clamp(index, 0, properties.size() - 1));
+            List<?> values = new ArrayList<>(p.getPossibleValues());
+            return values.indexOf(stateHack.getValue(p));
+        }
+    };
+
+    private static BlockState stateHack = null;
+
+
+    public static final Codec<ExpressionSource> CODEC = Codec.STRING.flatXmap(s -> {
         try {
-            Expression compiled =  new ExpressionBuilder(s)
+            Expression compiled = new ExpressionBuilder(s)
+                    .functions(PROP_VALUE)
                     .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z)
                     .build();
-            return DataResult.success(new JavaxExpression(compiled, s));
+            return DataResult.success(new ExpressionSource(compiled, s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
@@ -33,13 +54,13 @@ public final class JavaxExpression implements InputSource {
     private final String unparsed;
     private final Expression expression;
 
-    private JavaxExpression(Expression expression, String unparsed) {
+    private ExpressionSource(Expression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
     }
 
     @Override
-    public Codec<JavaxExpression> getCodec() {
+    public Codec<ExpressionSource> getCodec() {
         return CODEC;
     }
 
@@ -63,8 +84,10 @@ public final class JavaxExpression implements InputSource {
                 expression.setVariable(POS_Z, pos.getZ());
             }
             // Evaluate the expression
-            double result =  expression.evaluate();
-            return (float)result;
+            stateHack = state;
+            double result = expression.evaluate();
+            stateHack = null;
+            return (float) result;
         } catch (Exception e) {
             Polytone.LOGGER.error("Failed to evaluate expression with value: {}", unparsed, e);
         }

@@ -1,6 +1,5 @@
 {
-  "1" : {
-    "colormap": "my_map",
+  "0" : {
     "default_color": 23433,
     "x_axis": "0.1+2",
     "y_axis": "2+2"
