@@ -1,7 +1,7 @@
 {
   "0" : {
     "default_color": 23433,
-    "x_axis": "0.1+2",
-    "y_axis": "2+2"
+    "x_axis": "0.5+cos(POS_X*0.2)*0.5",
+    "y_axis": "0.5+sin(POS_Z*0.1)*0.5"
   }
 }

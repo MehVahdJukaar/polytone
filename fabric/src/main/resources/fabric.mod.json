@@ -15,14 +15,15 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "net.mehvahdjukaar.polytone.fabric.VisualPropertiesFabric"
+      "net.mehvahdjukaar.polytone.fabric.PolytoneFabric"
     ],
     "modmenu": [
       "net.mehvahdjukaar.polytone.fabric.ModMenuCompat"
     ]
   },
   "mixins": [
-    "${mod_id}.mixins.json"
+    "${mod_id}.mixins.json",
+    "${mod_id}-fabric.mixins.json"
   ],
   "depends": {
     "fabric": "*",

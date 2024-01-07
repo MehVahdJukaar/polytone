@@ -6,10 +6,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.properties.input_source.ExpressionSource;
+import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,7 +61,7 @@ public class Colormap implements BlockColor {
         private final ExpressionSource xGetter;
         private final ExpressionSource yGetter;
 
-        int[] pixels;
+        ArrayImage image;
 
         private static final Codec<ColormapTintGetter> SINGLE = RecordCodecBuilder.create(i -> i.group(
                 Codec.INT.optionalFieldOf("default_color", -1).forGetter(c -> c.defaultColor),
@@ -74,18 +76,24 @@ public class Colormap implements BlockColor {
         }
 
         public int getColor(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-            if (pixels.length == 0) {
-                return -1;
-            }
             float humidity = Mth.clamp(xGetter.getValue(state, level, pos), 0, 1);
             float temperature = Mth.clamp(yGetter.getValue(state, level, pos), 0, 1);
             humidity *= temperature;
-            int i = (int) ((1.0 - temperature) * 255.0);
-            int j = (int) ((1.0 - humidity) * 255.0);
+            int i = (int) ((1.0 - temperature) * image.width());
+            int j = (int) ((1.0 - humidity) * image.height());
             int k = j << 8 | i;
+            int[] pixels = image.pixels();
             return k >= pixels.length ? defaultColor : pixels[k];
         }
     }
+
+
+
+    public static final ColorResolver TEMPERATURE_RESOLVER = (biome, x, z) ->
+            Float.floatToIntBits(biome.climateSettings.temperature);
+
+    public static final ColorResolver DOWNFALL_RESOLVER = (biome, x, z) ->
+            Float.floatToIntBits(biome.climateSettings.downfall);
 
 
 }

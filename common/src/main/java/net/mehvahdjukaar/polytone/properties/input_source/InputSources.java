@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.polytone.properties.Colormap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
@@ -51,17 +52,12 @@ public class InputSources {
     }
 
 
-    public static final ColorResolver TEMPERATURE_RESOLVER = (biome, x, z) ->
-            Float.floatToIntBits(biome.climateSettings.temperature);
-
-    public static final ColorResolver DOWNFALL_RESOLVER = (biome, x, z) ->
-            Float.floatToIntBits(biome.climateSettings.downfall);
 
     private static final Codec<InputSource> TEMPERATURE = registerUnit("temperature",
-            (state, level, pos) -> Float.intBitsToFloat(level.getBlockTint(pos, TEMPERATURE_RESOLVER)));
+            (state, level, pos) -> Float.intBitsToFloat(level.getBlockTint(pos, Colormap. TEMPERATURE_RESOLVER)));
 
     private static final Codec<InputSource> DOWNFALL = registerUnit("downfall",
-            (state, level, pos) -> Float.intBitsToFloat(level.getBlockTint(pos, DOWNFALL_RESOLVER)));
+            (state, level, pos) -> Float.intBitsToFloat(level.getBlockTint(pos, Colormap.DOWNFALL_RESOLVER)));
 
     private static final Codec<InputSource> POS_X = registerUnit("pos_x", (state, level, pos) -> (float) pos.getX());
     private static final Codec<InputSource> POS_Y = registerUnit("pos_y", (state, level, pos) -> (float) pos.getY());

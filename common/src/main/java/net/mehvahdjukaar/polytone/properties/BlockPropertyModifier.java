@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.properties;
 
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.map.MapColorHelper;
 import net.mehvahdjukaar.polytone.utils.SoundTypeHelper;
 import net.minecraft.client.Minecraft;
@@ -65,7 +66,7 @@ public record BlockPropertyModifier(
         BlockColor color = null;
         if (tintGetter.isPresent()) {
             BlockColors blockColors = Minecraft.getInstance().getBlockColors();
-            color = blockColors.blockColors.byId(BuiltInRegistries.BLOCK.getId(block));
+            color = PlatStuff.getBlockColor(blockColors, block);
             blockColors.register(tintGetter.get(), block);
         }
         // returns old properties

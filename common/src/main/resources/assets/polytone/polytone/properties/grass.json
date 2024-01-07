@@ -1,0 +1,17 @@
+{
+  "sound_event": {
+    "pitch": 1,
+    "volume": 1,
+    "break_sound": "block.wet_grass.break",
+    "place_sound": "entity.witch.death",
+    "hit_sound": "block.wet_grass.break",
+    "step_sound": "block.wet_grass.break"
+  },
+  "colormap": {
+    "0" : {
+      "default_color": 23433,
+      "x_axis": "0.5+cos(POS_Z*0.1)*0.5",
+      "y_axis": "0.5+sin(POS_X*0.02)*0.5"
+    }
+  }
+}

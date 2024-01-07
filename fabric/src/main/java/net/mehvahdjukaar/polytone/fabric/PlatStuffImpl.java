@@ -3,11 +3,15 @@ package net.mehvahdjukaar.polytone.fabric;
 import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.block.Block;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -30,5 +34,9 @@ public class PlatStuffImpl {
                 return this.inner.get().reload(preparationBarrier, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor);
             }
         });
+    }
+
+    public static BlockColor getBlockColor(BlockColors colors, Block block) {
+        return null;// colors.blockColors.byId(BuiltInRegistries.BLOCK.getId(block));
     }
 }

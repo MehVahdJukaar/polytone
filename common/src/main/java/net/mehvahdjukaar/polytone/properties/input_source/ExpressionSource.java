@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.properties.input_source;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.properties.Colormap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -69,10 +70,12 @@ public final class ExpressionSource implements InputSource {
 
         try {
             if (unparsed.contains(TEMPERATURE)) {
-                expression.setVariable(TEMPERATURE, level.getBlockTint(pos, InputSources.TEMPERATURE_RESOLVER));
+                int blockTint = level.getBlockTint(pos, Colormap.TEMPERATURE_RESOLVER);
+                expression.setVariable(TEMPERATURE, blockTint);
             }
             if (unparsed.contains(DOWNFALL)) {
-                expression.setVariable(DOWNFALL, level.getBlockTint(pos, InputSources.DOWNFALL_RESOLVER));
+                int blockTint = level.getBlockTint(pos, Colormap.DOWNFALL_RESOLVER);
+                expression.setVariable(DOWNFALL, blockTint);
             }
             if (unparsed.contains(POS_X)) {
                 expression.setVariable(POS_X, pos.getX());
@@ -91,6 +94,6 @@ public final class ExpressionSource implements InputSource {
         } catch (Exception e) {
             Polytone.LOGGER.error("Failed to evaluate expression with value: {}", unparsed, e);
         }
-        return -1;
+        return 0;
     }
 }

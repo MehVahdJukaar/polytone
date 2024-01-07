@@ -129,8 +129,8 @@ public class SoundTypeHelper {
 
     private static final Codec<SoundType> SOUND_TYPE_DIRECT = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Codec.FLOAT.fieldOf("volume").forGetter(SoundType::getVolume),
-                    Codec.FLOAT.fieldOf("pitch").forGetter(SoundType::getPitch),
+                    Codec.FLOAT.optionalFieldOf("volume",1f).forGetter(SoundType::getVolume),
+                    Codec.FLOAT.optionalFieldOf("pitch", 1f).forGetter(SoundType::getPitch),
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("break_sound").forGetter(SoundType::getBreakSound),
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("step_sound").forGetter(SoundType::getStepSound),
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("place_sound").forGetter(SoundType::getPlaceSound),
