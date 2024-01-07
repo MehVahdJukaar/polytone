@@ -17,9 +17,6 @@
     "client": [
       "net.mehvahdjukaar.polytone.fabric.PolytoneFabric"
     ],
-    "modmenu": [
-      "net.mehvahdjukaar.polytone.fabric.ModMenuCompat"
-    ]
   },
   "mixins": [
     "${mod_id}.mixins.json",

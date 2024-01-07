@@ -44,12 +44,13 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
                     j -> j.getters.size() == 0 ? DataResult.error(() -> "Must have at least 1 tint getter") :
                             DataResult.success(j));
 
+    private static final String ROOT = Polytone.MOD_ID;
+    private static final String COLORMAPS_PATH = "colormaps";
+    private static final String PROPERTIES_PATH = "properties";
 
     private final Gson gson = new Gson();
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();
-    private final String root = Polytone.MOD_ID;
-    private final String colormapsPath = "colormaps";
-    private final String propertiesPath = "properties";
+
 
     protected record Resources(Map<ResourceLocation, JsonElement> modifiers,
                                Map<ResourceLocation, JsonElement> colormaps,
@@ -65,13 +66,13 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
     protected Resources prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
 
         Map<ResourceLocation, JsonElement> colormaps = new HashMap<>();
-        scanDirectory(resourceManager, root + "/" + colormapsPath, this.gson, colormaps);
+        scanDirectory(resourceManager, ROOT + "/" + COLORMAPS_PATH, this.gson, colormaps);
 
         Map<ResourceLocation, JsonElement> properties = new HashMap<>();
-        scanDirectory(resourceManager, root + "/" + propertiesPath, this.gson, properties);
+        scanDirectory(resourceManager, ROOT + "/" + PROPERTIES_PATH, this.gson, properties);
 
         Map<String, ArrayImage> images = new HashMap<>();
-        gatherImages(resourceManager, root, images);
+        gatherImages(resourceManager, ROOT, images);
 
         return new Resources(properties, colormaps, images);
     }
@@ -136,6 +137,8 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
     @Override
     protected void apply(Resources resources, ResourceManager resourceManager, ProfilerFiller profiler) {
 
+        resetProperties();
+
         Map<ResourceLocation, BlockPropertyModifier> propertiesMap = new HashMap<>();
 
         Map<ResourceLocation, JsonElement> colormapJsons = resources.colormaps;
@@ -151,7 +154,7 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
             Colormap colormap = Colormap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Client Block Property with json id {} - error: {}",
                             id, errorMsg)).getFirst();
-            fillColormapPalette(textures, colormapsPath, id, colormap);
+            fillColormapPalette(textures, COLORMAPS_PATH, id, colormap);
             // we need to fill these before we parse the properties as they will be referenced below
             COLORMAPS_IDS.put(id, colormap);
         }
@@ -169,17 +172,14 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
             //fill inline colormaps textures
             var colormap = prop.tintGetter();
             if (colormap.isPresent() && colormap.get() instanceof Colormap c && !c.isReference) {
-                fillColormapPalette(textures, propertiesPath, id, c);
+                fillColormapPalette(textures, PROPERTIES_PATH, id, c);
             }
 
             propertiesMap.put(id, prop);
         }
 
 
-        resetProperties();
-
         applyAllModifiers(propertiesMap);
-
     }
 
     private void applyAllModifiers(Map<ResourceLocation, BlockPropertyModifier> propertiesMap) {

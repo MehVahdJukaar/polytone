@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.map;
+package net.mehvahdjukaar.polytone.colors;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.Util;

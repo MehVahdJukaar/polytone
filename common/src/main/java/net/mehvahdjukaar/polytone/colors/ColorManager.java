@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.map;
+package net.mehvahdjukaar.polytone.colors;
 
 import com.google.common.collect.Lists;
 import net.mehvahdjukaar.polytone.SinglePropertiesReloadListener;
@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-public class MapColorManager extends SinglePropertiesReloadListener {
+public class ColorManager extends SinglePropertiesReloadListener {
 
     private final Map<MapColor, Integer> vanillaValues = new HashMap<>();
 
-    public MapColorManager() {
+    public ColorManager() {
         super("optifine/color.properties",
                 Polytone.MOD_ID + "/map_colors.properties");
     }
