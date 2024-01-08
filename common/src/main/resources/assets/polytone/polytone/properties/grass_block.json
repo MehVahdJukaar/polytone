@@ -1,4 +1,4 @@
 {
-  "sound_event": "sculk",
+  "sound_type": "copy(skulk)",
   "colormap": "polytone:my_colormap"
 }

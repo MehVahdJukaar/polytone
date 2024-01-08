@@ -18,6 +18,9 @@ public final class ReferenceOrDirectCodec<E> implements Codec<E> {
         this.direct = direct;
         this.onReference = onReference;
     }
+    public ReferenceOrDirectCodec(final Codec<E> reference, final Codec<E> direct) {
+        this(reference, direct, e -> {});
+    }
 
     @Override
     public <T> DataResult<Pair<E, T>> decode(final DynamicOps<T> ops, final T input) {

@@ -5,47 +5,38 @@ import com.google.common.collect.HashBiMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
-import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 // Ugly ass god class
 public class BlockPropertiesManager extends SimplePreparableReloadListener<BlockPropertiesManager.Resources> {
 
-    private static final BiMap<ResourceLocation, Colormap> COLORMAPS_IDS = HashBiMap.create();
+    // custom defined colormaps
+    public static final BiMap<ResourceLocation, Colormap> COLORMAPS_IDS = HashBiMap.create();
+    // custom defined sound types
+    public static final BiMap<ResourceLocation, SoundType> SOUND_TYPES_IDS = HashBiMap.create();
 
-    private static final Codec<Colormap> COLORMAP_REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
-            id -> Optional.ofNullable(COLORMAPS_IDS.get(id)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Unknown Color Property with id " + id)),
-            object -> Optional.ofNullable(COLORMAPS_IDS.inverse().get(object)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
-
-    public static final Codec<Colormap> COLORMAP_CODEC =
-            ExtraCodecs.validate(new ReferenceOrDirectCodec<>(COLORMAP_REFERENCE_CODEC, Colormap.DIRECT_CODEC,
-                            i -> i.isReference = true),
-                    j -> j.getters.size() == 0 ? DataResult.error(() -> "Must have at least 1 tint getter") :
-                            DataResult.success(j));
 
     private static final String ROOT = Polytone.MOD_ID;
     private static final String COLORMAPS_PATH = "colormaps";
+    private static final String SOUND_TYPE_PATH = "sound_types";
     private static final String PROPERTIES_PATH = "properties";
 
     private final Gson gson = new Gson();
@@ -54,6 +45,7 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
 
     protected record Resources(Map<ResourceLocation, JsonElement> modifiers,
                                Map<ResourceLocation, JsonElement> colormaps,
+                               Map<ResourceLocation, JsonElement> soundTypes,
                                Map<String, ArrayImage> textures) {
     }
 
@@ -68,13 +60,16 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
         Map<ResourceLocation, JsonElement> colormaps = new HashMap<>();
         scanDirectory(resourceManager, ROOT + "/" + COLORMAPS_PATH, this.gson, colormaps);
 
+        Map<ResourceLocation, JsonElement> soundTypes = new HashMap<>();
+        scanDirectory(resourceManager, ROOT + "/" + COLORMAPS_PATH, this.gson, colormaps);
+
         Map<ResourceLocation, JsonElement> properties = new HashMap<>();
         scanDirectory(resourceManager, ROOT + "/" + PROPERTIES_PATH, this.gson, properties);
 
         Map<String, ArrayImage> images = new HashMap<>();
         gatherImages(resourceManager, ROOT, images);
 
-        return new Resources(properties, colormaps, images);
+        return new Resources(properties, colormaps, soundTypes, images);
     }
 
     private static void gatherImages(ResourceManager manager, String string, Map<String, ArrayImage> map) {
@@ -142,9 +137,20 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
         Map<ResourceLocation, BlockPropertyModifier> propertiesMap = new HashMap<>();
 
         Map<ResourceLocation, JsonElement> colormapJsons = resources.colormaps;
+        Map<ResourceLocation, JsonElement> soundJsons = resources.soundTypes;
         Map<ResourceLocation, JsonElement> propertiesJsons = resources.modifiers;
         Map<String, ArrayImage> textures = resources.textures;
 
+        SOUND_TYPES_IDS.clear();
+
+        for (var j : soundJsons.entrySet()) {
+            var json = j.getValue();
+            var id = j.getKey();
+            SoundType soundType = SoundTypeHelper.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
+                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Sound Type with json id {} - error: {}",
+                            id, errorMsg)).getFirst();
+            SOUND_TYPES_IDS.put(id, soundType);
+        }
 
         COLORMAPS_IDS.clear();
 
@@ -152,7 +158,7 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
             var json = j.getValue();
             var id = j.getKey();
             Colormap colormap = Colormap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Client Block Property with json id {} - error: {}",
+                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Colormap with json id {} - error: {}",
                             id, errorMsg)).getFirst();
             fillColormapPalette(textures, COLORMAPS_PATH, id, colormap);
             // we need to fill these before we parse the properties as they will be referenced below

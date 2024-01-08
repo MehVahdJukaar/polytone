@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.properties.input_source;
+package net.mehvahdjukaar.polytone.utils.input_source;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.properties.Colormap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -18,6 +19,8 @@ import java.util.List;
 
 
 public final class ExpressionSource implements InputSource {
+
+    private static final RandomSource RANDOM_SOURCE = RandomSource.create();
 
     //Keywords
     private static final String TEMPERATURE = "TEMPERATURE";
@@ -37,13 +40,21 @@ public final class ExpressionSource implements InputSource {
         }
     };
 
+
+    private static final Function RAND = new Function("rand", 0) {
+        @Override
+        public double apply(double... args) {
+            return RANDOM_SOURCE.nextFloat();
+        }
+    };
+
     private static BlockState stateHack = null;
 
 
     public static final Codec<ExpressionSource> CODEC = Codec.STRING.flatXmap(s -> {
         try {
             Expression compiled = new ExpressionBuilder(s)
-                    .functions(PROP_VALUE)
+                    .functions(PROP_VALUE, RAND)
                     .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z)
                     .build();
             return DataResult.success(new ExpressionSource(compiled, s));

@@ -4,7 +4,6 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colors.MapColorHelper;
-import net.mehvahdjukaar.polytone.utils.SoundTypeHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -76,8 +75,8 @@ public record BlockPropertyModifier(
 
     public static final Decoder<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    BlockPropertiesManager.COLORMAP_CODEC.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof Colormap c ? c : null))),
-                    SoundTypeHelper.CODEC.optionalFieldOf("sound_event").forGetter(BlockPropertyModifier::soundType),
+                    Colormap.CODEC.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof Colormap c ? c : null))),
+                    SoundTypeHelper.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
                     MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE)
                             .optionalFieldOf("map_color").forGetter(BlockPropertyModifier::mapColor),
                     // Codec.BOOL.optionalFieldOf("can_occlude").forGetter(ClientBlockProperties::canOcclude),

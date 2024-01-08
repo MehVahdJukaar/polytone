@@ -8,7 +8,7 @@
     "Mehvahdjukaar"
   ],
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/model-gap-fix"
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/polytone"
   },
   "license": "GPL 3.0",
   "icon": "icon.png",
@@ -16,7 +16,7 @@
   "entrypoints": {
     "client": [
       "net.mehvahdjukaar.polytone.fabric.PolytoneFabric"
-    ],
+    ]
   },
   "mixins": [
     "${mod_id}.mixins.json",

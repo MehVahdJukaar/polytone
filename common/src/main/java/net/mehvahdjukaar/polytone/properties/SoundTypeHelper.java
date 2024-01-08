@@ -1,17 +1,18 @@
-package net.mehvahdjukaar.polytone.utils;
+package net.mehvahdjukaar.polytone.properties;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 public class SoundTypeHelper {
 
@@ -125,11 +126,30 @@ public class SoundTypeHelper {
     private static final Codec<SoundType> SOUND_TYPE_BLOCK_COPY = BuiltInRegistries.BLOCK.byNameCodec()
             .xmap(block -> block.getSoundType(block.defaultBlockState()), soundType1 -> Blocks.AIR);
 
-    private static final Codec<SoundType> SOUND_TYPE_REFERENCE = ExtraCodecs.stringResolverCodec(soundType1 -> null, SOUND_NAMES::get);
+    //reference or copy. hacky stuff only decodes
+    public static final Codec<SoundType> REFERENCE_OR_COPY_CODEC = Codec.STRING.flatXmap(s -> {
+                if (s.startsWith("copy(")) {
+                    String target = s.replace("copy(", "").replace(")", "");
+                    ResourceLocation r = ResourceLocation.tryParse(target);
+                    if (r == null) {
+                        return DataResult.error(() -> "Invalid string for Sound Type Copy function: " + s + ". Expected 'copy([some_mod]:[some_block])'");
+                    }
+                    var block = BuiltInRegistries.BLOCK.getOptional(r);
+                    if (block.isEmpty()) return DataResult.error(() -> "No block with id '" + r + "' found", SoundType.EMPTY);
+                    Block b = block.get();
+                    return DataResult.success(b.getSoundType(b.defaultBlockState()));
+                }
+                var vanilla = SOUND_NAMES.get(s);
+                if (vanilla != null) return DataResult.success(vanilla);
+                ResourceLocation r = ResourceLocation.tryParse(s);
+                if (r != null) BlockPropertiesManager.SOUND_TYPES_IDS.get(new ResourceLocation(s));
+                return DataResult.error(() -> "Could not find any custom Sound Type with id" + r);
+            },
+            t -> DataResult.error(() -> "Encoding SoundTypes not supported"));
 
-    private static final Codec<SoundType> SOUND_TYPE_DIRECT = RecordCodecBuilder.create(instance ->
+    public static final Codec<SoundType> DIRECT_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Codec.FLOAT.optionalFieldOf("volume",1f).forGetter(SoundType::getVolume),
+                    Codec.FLOAT.optionalFieldOf("volume", 1f).forGetter(SoundType::getVolume),
                     Codec.FLOAT.optionalFieldOf("pitch", 1f).forGetter(SoundType::getPitch),
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("break_sound").forGetter(SoundType::getBreakSound),
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("step_sound").forGetter(SoundType::getStepSound),
@@ -138,14 +158,7 @@ public class SoundTypeHelper {
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("fall_sound").forGetter(SoundType::getFallSound)
             ).apply(instance, SoundType::new));
 
-    public static final Codec<SoundType> CODEC = or(SOUND_TYPE_DIRECT, or(SOUND_TYPE_BLOCK_COPY, SOUND_TYPE_REFERENCE));
-
-
-
-    private static <T> Codec<T> or(Codec<T> first, Codec<T> second) {
-        return Codec.either(first, second)
-                .xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
-    }
+    public static final Codec<SoundType> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_OR_COPY_CODEC, DIRECT_CODEC);
 
 
 }

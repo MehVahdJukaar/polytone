@@ -47,8 +47,9 @@ public class MapColorHelper {
         map.put("color_light_green", MapColor.COLOR_LIGHT_GREEN);
         map.put("light_green", MapColor.COLOR_LIGHT_GREEN); //OF
         map.put("color_pink", MapColor.COLOR_PINK);
-        map.put("pink", MapColor.COLOR_PINK);
+        map.put("pink", MapColor.COLOR_PINK); //OF
         map.put("color_gray", MapColor.COLOR_GRAY);
+        map.put("gray", MapColor.COLOR_GRAY); //OF
         map.put("color_light_gray", MapColor.COLOR_LIGHT_GRAY);
         map.put("light_gray", MapColor.COLOR_LIGHT_GRAY); //OF
         map.put("color_cyan", MapColor.COLOR_CYAN);

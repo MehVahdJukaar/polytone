@@ -1,12 +1,5 @@
 {
-  "sound_event": {
-    "pitch": 1,
-    "volume": 1,
-    "break_sound": "block.wet_grass.break",
-    "place_sound": "entity.witch.death",
-    "hit_sound": "block.wet_grass.break",
-    "step_sound": "block.wet_grass.break"
-  },
+  "sound_type": "polytone:test_sound",
   "colormap": {
     "0" : {
       "default_color": 23433,

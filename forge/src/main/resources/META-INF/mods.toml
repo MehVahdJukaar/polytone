@@ -14,11 +14,11 @@ credits="MehVahdJukaar" #optional
 authors="MehVahdJukaar" #optional
 
 description='''
-
+Customize Colormaps, Map Colors and Sound Types via Resource Packs!
 '''
 displayURL="https://www.curseforge.com/minecraft/mc-mods/polytone" #optional
 issueTrackerURL="https://www.curseforge.com/minecraft/mc-mods/polytone/issues" #optional
-itemIcon="minecraft:amethyst_block" #catalogue icon
+itemIcon="minecraft:brush" #catalogue icon
 
 displayTest="IGNORE_ALL_VERSION"
 
