@@ -4,7 +4,6 @@ mutable field net/minecraft/world/level/material/MaterialColor col I
 mutable field net/minecraft/world/level/block/state/BlockBehaviour soundType Lnet/minecraft/world/level/block/SoundType;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour soundType Lnet/minecraft/world/level/block/SoundType;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties canOcclude Z
-accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties offsetFunction Ljava/util/Optional;
 
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetType Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetType;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetType Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetType;

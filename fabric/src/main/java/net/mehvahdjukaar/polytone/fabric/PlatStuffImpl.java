@@ -3,9 +3,10 @@ package net.mehvahdjukaar.polytone.fabric;
 import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.mehvahdjukaar.polytone.mixins.fabric.BlockColorsAccessor;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -37,6 +38,6 @@ public class PlatStuffImpl {
     }
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
-        return null;// colors.blockColors.byId(BuiltInRegistries.BLOCK.getId(block));
+        return ((BlockColorsAccessor)colors).getBlockColors().byId(Registry.BLOCK.getId(block));
     }
 }
