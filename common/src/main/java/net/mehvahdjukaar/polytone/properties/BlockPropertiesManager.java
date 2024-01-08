@@ -6,16 +6,17 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.polytone.NewStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.Block;
@@ -26,7 +27,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
+import static net.mehvahdjukaar.polytone.NewStuff.scanDirectory;
 
 // Ugly ass god class
 public class BlockPropertiesManager extends SimplePreparableReloadListener<BlockPropertiesManager.Resources> {
@@ -76,7 +77,7 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
     }
 
     private static void gatherImages(ResourceManager manager, String string, Map<String, ArrayImage> map) {
-        FileToIdConverter helper = new FileToIdConverter(string, ".png");
+        NewStuff.FileToIdConverter helper = new NewStuff. FileToIdConverter(string, ".png");
 
         for (Map.Entry<ResourceLocation, Resource> entry : helper.listMatchingResources(manager).entrySet()) {
             ResourceLocation fileId = entry.getKey();
@@ -198,7 +199,7 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
     private void applyAllModifiers(Map<ResourceLocation, BlockPropertyModifier> propertiesMap) {
         for (var p : propertiesMap.entrySet()) {
             ResourceLocation id = new ResourceLocation(p.getKey().getPath().replaceFirst("/", ":"));
-            var block = BuiltInRegistries.BLOCK.getOptional(id);
+            var block = Registry.BLOCK.getOptional(id);
             if (block.isPresent()) {
                 Block b = block.get();
                 BlockPropertyModifier value = p.getValue();

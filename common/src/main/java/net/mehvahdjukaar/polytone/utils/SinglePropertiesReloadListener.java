@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone;
+package net.mehvahdjukaar.polytone.utils;
 
 import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;

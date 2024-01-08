@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.Util;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -19,7 +19,6 @@ public class SoundTypeHelper {
 
     private static final Map<String, SoundType> SOUND_NAMES = Util.make(() -> {
         Map<String, SoundType> map = new HashMap<>();
-        map.put("empty", SoundType.EMPTY);
         map.put("wood", SoundType.WOOD);
         map.put("gravel", SoundType.GRAVEL);
         map.put("grass", SoundType.GRASS);
@@ -84,7 +83,6 @@ public class SoundTypeHelper {
         map.put("azalea", SoundType.AZALEA);
         map.put("flowering_azalea", SoundType.FLOWERING_AZALEA);
         map.put("moss_carpet", SoundType.MOSS_CARPET);
-        map.put("pink_petals", SoundType.PINK_PETALS);
         map.put("moss", SoundType.MOSS);
         map.put("big_dripleaf", SoundType.BIG_DRIPLEAF);
         map.put("small_dripleaf", SoundType.SMALL_DRIPLEAF);
@@ -107,24 +105,10 @@ public class SoundTypeHelper {
         map.put("mud", SoundType.MUD);
         map.put("mud_bricks", SoundType.MUD_BRICKS);
         map.put("packed_mud", SoundType.PACKED_MUD);
-        map.put("hanging_sign", SoundType.HANGING_SIGN);
-        map.put("nether_wood_hanging_sign", SoundType.NETHER_WOOD_HANGING_SIGN);
-        map.put("bamboo_wood_hanging_sign", SoundType.BAMBOO_WOOD_HANGING_SIGN);
-        map.put("bamboo_wood", SoundType.BAMBOO_WOOD);
-        map.put("nether_wood", SoundType.NETHER_WOOD);
-        map.put("cherry_wood", SoundType.CHERRY_WOOD);
-        map.put("cherry_sapling", SoundType.CHERRY_SAPLING);
-        map.put("cherry_leaves", SoundType.CHERRY_LEAVES);
-        map.put("cherry_wood_hanging_sign", SoundType.CHERRY_WOOD_HANGING_SIGN);
-        map.put("chiseled_bookshelf", SoundType.CHISELED_BOOKSHELF);
-        map.put("suspicious_sand", SoundType.SUSPICIOUS_SAND);
-        map.put("suspicious_gravel", SoundType.SUSPICIOUS_GRAVEL);
-        map.put("decorated_pot", SoundType.DECORATED_POT);
-        map.put("decorated_pot_cracked", SoundType.DECORATED_POT_CRACKED);
         return map;
     });
 
-    private static final Codec<SoundType> SOUND_TYPE_BLOCK_COPY = BuiltInRegistries.BLOCK.byNameCodec()
+    private static final Codec<SoundType> SOUND_TYPE_BLOCK_COPY = Registry.BLOCK.byNameCodec()
             .xmap(block -> block.getSoundType(block.defaultBlockState()), soundType1 -> Blocks.AIR);
 
     //reference or copy. hacky stuff only decodes
@@ -133,10 +117,10 @@ public class SoundTypeHelper {
                     String target = s.replace("copy(", "").replace(")", "");
                     ResourceLocation r = ResourceLocation.tryParse(target);
                     if (r == null) {
-                        return DataResult.error(() -> "Invalid string for Sound Type Copy function: " + s + ". Expected 'copy([some_mod]:[some_block])'");
+                        return DataResult.error("Invalid string for Sound Type Copy function: " + s + ". Expected 'copy([some_mod]:[some_block])'");
                     }
-                    var block = BuiltInRegistries.BLOCK.getOptional(r);
-                    if (block.isEmpty()) return DataResult.error(() -> "No block with id '" + r + "' found", SoundType.EMPTY);
+                    var block = Registry.BLOCK.getOptional(r);
+                    if (block.isEmpty()) return DataResult.error( "No block with id '" + r + "' found", SoundType.STONE);
                     Block b = block.get();
                     return DataResult.success(b.getSoundType(b.defaultBlockState()));
                 }
@@ -147,20 +131,20 @@ public class SoundTypeHelper {
                     var custom = BlockPropertiesManager.SOUND_TYPES_IDS.get(new ResourceLocation(s));
                     if (custom != null) return DataResult.success(custom);
                 }
-                return DataResult.error(() -> "Could not find any custom Sound Type with id " + r +
+                return DataResult.error( "Could not find any custom Sound Type with id " + r +
                         " Did you place it in '[your pack]/polytone/sound_types/' ?");
             },
-            t -> DataResult.error(() -> "Encoding SoundTypes not supported"));
+            t -> DataResult.error( "Encoding SoundTypes not supported"));
 
     public static final Codec<SoundType> DIRECT_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     StrOpt.of(Codec.FLOAT, "volume", 1f).forGetter(SoundType::getVolume),
                     StrOpt.of(Codec.FLOAT, "pitch", 1f).forGetter(SoundType::getPitch),
-                    BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("break_sound").forGetter(SoundType::getBreakSound),
-                    BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("step_sound").forGetter(SoundType::getStepSound),
-                    BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("place_sound").forGetter(SoundType::getPlaceSound),
-                    BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("hit_sound").forGetter(SoundType::getHitSound),
-                    BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("fall_sound").forGetter(SoundType::getFallSound)
+                    Registry.SOUND_EVENT.byNameCodec().fieldOf("break_sound").forGetter(SoundType::getBreakSound),
+                    Registry.SOUND_EVENT.byNameCodec().fieldOf("step_sound").forGetter(SoundType::getStepSound),
+                    Registry.SOUND_EVENT.byNameCodec().fieldOf("place_sound").forGetter(SoundType::getPlaceSound),
+                    Registry.SOUND_EVENT.byNameCodec().fieldOf("hit_sound").forGetter(SoundType::getHitSound),
+                    Registry.SOUND_EVENT.byNameCodec().fieldOf("fall_sound").forGetter(SoundType::getFallSound)
             ).apply(instance, SoundType::new));
 
     public static final Codec<SoundType> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_OR_COPY_CODEC, DIRECT_CODEC);

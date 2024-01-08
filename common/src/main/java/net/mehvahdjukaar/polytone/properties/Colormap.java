@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,7 +35,7 @@ import static net.mehvahdjukaar.polytone.properties.BlockPropertiesManager.COLOR
 public class Colormap implements BlockColor {
 
     public static final BlockColor  GRASS_COLOR = (s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor();
+            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : -65281;
 
     public static final BlockColor  FOLIAGE_COLOR = (s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor();
@@ -56,13 +57,15 @@ public class Colormap implements BlockColor {
 
     protected static final Codec<BlockColor> COLORMAP_REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
             id -> Optional.ofNullable(COLORMAPS_IDS.get(id)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
+                    .orElse(DataResult.error("Could not find a custom Colormap with id " + id +
                             " Did you place it in '[your pack]/polytone/colormaps/' ?")),
             object -> Optional.ofNullable(COLORMAPS_IDS.inverse().get(object)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
-
+                    .orElse(DataResult.error( "Unknown Color Property: " + object)));
+    public static <T> Codec<T> validate(Codec<T> codec, Function<T, DataResult<T>> validator) {
+        return codec.flatXmap(validator, validator);
+    }
     public static final Codec<BlockColor> CODEC =
-            ExtraCodecs.validate(new ReferenceOrDirectCodec<>(
+            validate(new ReferenceOrDirectCodec<>(
                             COLORMAP_REFERENCE_CODEC, (Codec<BlockColor>) (Object) Colormap.DIRECT_CODEC, i ->
                     {
                         if (i instanceof Colormap c) {
@@ -71,7 +74,7 @@ public class Colormap implements BlockColor {
                     }),
                     j -> {
                         if (j instanceof Colormap c && c.getters.size() == 0) {
-                            return DataResult.error(() -> "Must have at least 1 tint getter");
+                            return DataResult.error("Must have at least 1 tint getter");
                         }
                         return DataResult.success(j);
                     });

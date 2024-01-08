@@ -1,15 +1,15 @@
 accessWidener   v2  named
 
-mutable field net/minecraft/world/level/material/MapColor col I
+mutable field net/minecraft/world/level/material/MaterialColor col I
 mutable field net/minecraft/world/level/block/state/BlockBehaviour soundType Lnet/minecraft/world/level/block/SoundType;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour soundType Lnet/minecraft/world/level/block/SoundType;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties canOcclude Z
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties offsetFunction Ljava/util/Optional;
 
-accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Ljava/util/Optional;
-mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Ljava/util/Optional;
+accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetType Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetType;
+mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetType Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetType;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour properties Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;
-accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties mapColor Ljava/util/function/Function;
+accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties materialColor Ljava/util/function/Function;
 
 accessible field net/minecraft/world/level/biome/Biome climateSettings Lnet/minecraft/world/level/biome/Biome$ClimateSettings;
 accessible field net/minecraft/world/level/biome/Biome$ClimateSettings temperature F

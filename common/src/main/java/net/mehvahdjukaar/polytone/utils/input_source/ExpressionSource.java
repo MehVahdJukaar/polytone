@@ -71,7 +71,7 @@ public final class ExpressionSource implements InputSource {
             Expression compiled = createExpression(s);
             return DataResult.success(new ExpressionSource(compiled, s));
         } catch (Exception e) {
-            return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
+            return DataResult.error( "Failed to parse expression:" + e.getMessage());
         }
     }, javaxExpression -> DataResult.success(javaxExpression.unparsed));
 

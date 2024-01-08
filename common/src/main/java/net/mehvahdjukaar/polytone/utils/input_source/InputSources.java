@@ -19,9 +19,9 @@ public class InputSources {
 
     public static final Codec<Codec<InputSource>> TYPE_CODEC = Codec.STRING.flatXmap(
             id -> Optional.ofNullable(TYPES.get(id)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Unknown Input Source with id " + id)),
+                    .orElse(DataResult.error( "Unknown Input Source with id " + id)),
             object -> Optional.ofNullable(TYPES.inverse().get(object)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Unknown Input Source: " + object)));
+                    .orElse(DataResult.error( "Unknown Input Source: " + object)));
 
     public static final Codec<InputSource> CODEC = TYPE_CODEC
             .dispatch("type", i -> (Codec<InputSource>) i.getCodec(), Function.identity());

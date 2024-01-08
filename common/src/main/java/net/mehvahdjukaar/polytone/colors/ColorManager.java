@@ -1,11 +1,11 @@
 package net.mehvahdjukaar.polytone.colors;
 
 import com.google.common.collect.Lists;
-import net.mehvahdjukaar.polytone.SinglePropertiesReloadListener;
+import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.MaterialColor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.Properties;
 
 public class ColorManager extends SinglePropertiesReloadListener {
 
-    private final Map<MapColor, Integer> vanillaValues = new HashMap<>();
+    private final Map<MaterialColor, Integer> vanillaValues = new HashMap<>();
 
     public ColorManager() {
         super("optifine/color.properties",
@@ -32,7 +32,7 @@ public class ColorManager extends SinglePropertiesReloadListener {
                 for (var e : v.entrySet()) {
                     if (e.getKey() instanceof String colorName) {
                         colorName = colorName.replace("map.", "");
-                        MapColor c = MapColorHelper.byName(colorName);
+                        MaterialColor c = MaterialColorHelper.byName(colorName);
                         if(c != null) {
                             var i = e.getValue();
                             if (i instanceof String value) {
@@ -59,7 +59,7 @@ public class ColorManager extends SinglePropertiesReloadListener {
 
     private void resetValues() {
         for (var e : vanillaValues.entrySet()) {
-            MapColor color = e.getKey();
+            MaterialColor color = e.getKey();
             color.col = e.getValue();
         }
         vanillaValues.clear();
