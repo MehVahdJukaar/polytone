@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.utils.input_source;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.properties.Colormap;
+import net.mehvahdjukaar.polytone.properties.colormap.Colormap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;

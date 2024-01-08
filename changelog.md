@@ -1,1 +1,2 @@
-cleanups
+adding a single texture file in /colormaps will automatically create a colormap with vanilla sampler
+adding a single texture file in /properties will do the same & also assing the colormap to the respective block depending on the file name

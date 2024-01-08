@@ -1,10 +1,9 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import net.mehvahdjukaar.polytone.properties.Colormap;
+import net.mehvahdjukaar.polytone.properties.colormap.Colormap;
 import net.minecraft.client.color.block.BlockTintCache;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ColorResolver;
 import org.spongepowered.asm.mixin.Mixin;

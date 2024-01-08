@@ -1,7 +1,9 @@
 package net.mehvahdjukaar.polytone;
 
 import net.mehvahdjukaar.polytone.colors.ColorManager;
-import net.mehvahdjukaar.polytone.properties.BlockPropertiesManager;
+import net.mehvahdjukaar.polytone.properties.biome.BiomeEffectsManager;
+import net.mehvahdjukaar.polytone.properties.PolytonePropertiesReloadListener;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +16,7 @@ public class Polytone {
     public static void init(boolean fabric) {
 
         PlatStuff.addClientReloadListener(ColorManager::new, res("color_manager"));
-        PlatStuff.addClientReloadListener(BlockPropertiesManager::new, res("block_properties_manager"));
+        PlatStuff.addClientReloadListener(PolytonePropertiesReloadListener::new, res("block_properties_manager"));
 
     }
 
@@ -23,4 +25,8 @@ public class Polytone {
     }
 
 
+    public static void onTagsReceived(RegistryAccess registryAccess){
+        BiomeEffectsManager.doApply(registryAccess);
+
+    }
 }

@@ -1,8 +1,13 @@
-package net.mehvahdjukaar.polytone.properties;
+package net.mehvahdjukaar.polytone.properties.sounds;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.Util;
@@ -11,11 +16,38 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class SoundTypeHelper {
+public class SoundTypesManager {
+
+    // custom defined sound types
+    private static final BiMap<ResourceLocation, SoundType> SOUND_TYPES_IDS = HashBiMap.create();
+
+    @Nullable
+    public static SoundType getCustom(ResourceLocation id) {
+        return SOUND_TYPES_IDS.get(id);
+    }
+
+    @Nullable
+    public static ResourceLocation getCustomKey(SoundType object) {
+        return SOUND_TYPES_IDS.inverse().get(object);
+    }
+
+    public static void process(Map<ResourceLocation, JsonElement> soundJsons) {
+        SOUND_TYPES_IDS.clear();
+
+        for (var j : soundJsons.entrySet()) {
+            var json = j.getValue();
+            var id = j.getKey();
+            SoundType soundType = SoundTypesManager.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
+                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Sound Type with json id {} - error: {}",
+                            id, errorMsg)).getFirst();
+            SOUND_TYPES_IDS.put(id, soundType);
+        }
+    }
 
     private static final Map<String, SoundType> SOUND_NAMES = Util.make(() -> {
         Map<String, SoundType> map = new HashMap<>();
@@ -144,7 +176,7 @@ public class SoundTypeHelper {
                 if (vanilla != null) return DataResult.success(vanilla);
                 ResourceLocation r = ResourceLocation.tryParse(s);
                 if (r != null) {
-                    var custom = BlockPropertiesManager.SOUND_TYPES_IDS.get(new ResourceLocation(s));
+                    var custom = getCustom(new ResourceLocation(s));
                     if (custom != null) return DataResult.success(custom);
                 }
                 return DataResult.error(() -> "Could not find any custom Sound Type with id " + r +

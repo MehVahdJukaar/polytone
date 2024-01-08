@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.properties;
+package net.mehvahdjukaar.polytone.properties.colormap;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static net.mehvahdjukaar.polytone.properties.BlockPropertiesManager.COLORMAPS_IDS;
-
 public class Colormap implements BlockColor {
 
     public static final BlockColor GRASS_COLOR = (s, l, p, i) ->
@@ -56,10 +54,10 @@ public class Colormap implements BlockColor {
 
 
     protected static final Codec<BlockColor> COLORMAP_REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
-            id -> Optional.ofNullable(COLORMAPS_IDS.get(id)).map(DataResult::success)
+            id -> Optional.ofNullable( ColormapsManager.get(id)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
                             " Did you place it in 'assets/[your pack]/polytone/colormaps/' ?")),
-            object -> Optional.ofNullable(COLORMAPS_IDS.inverse().get(object)).map(DataResult::success)
+            object -> Optional.ofNullable(ColormapsManager.getKey(object)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
 
     public static final Codec<BlockColor> CODEC =

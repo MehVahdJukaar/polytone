@@ -3,6 +3,8 @@ package net.mehvahdjukaar.polytone.colors;
 import com.google.common.collect.Lists;
 import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.block.LiquidBlockRenderer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.material.MapColor;
