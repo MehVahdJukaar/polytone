@@ -80,7 +80,7 @@ public class ColormapsManager {
         COLORMAPS_IDS.put(id, colormap);
     }
 
-    static void gatherImages(ResourceManager manager, String string, Map<ResourceLocation, ArrayImage> map) {
+    public static void gatherImages(ResourceManager manager, String string, Map<ResourceLocation, ArrayImage> map) {
         FileToIdConverter helper = new FileToIdConverter(string, ".png");
 
         for (Map.Entry<ResourceLocation, Resource> entry : helper.listMatchingResources(manager).entrySet()) {
@@ -103,7 +103,7 @@ public class ColormapsManager {
     }
 
 
-    static Map<ResourceLocation, Map<Integer, ArrayImage>> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
+   public static Map<ResourceLocation, Map<Integer, ArrayImage>> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
         Map<ResourceLocation, Map<Integer, ArrayImage>> groupedMap = new HashMap<>();
 
         Pattern pattern = Pattern.compile("(\\D+)(_\\d+)?");
@@ -130,7 +130,7 @@ public class ColormapsManager {
 
 
 
-   static void fillColormapPalette(Map<ResourceLocation, Map<Integer, ArrayImage>> textures,
+   public static void fillColormapPalette(Map<ResourceLocation, Map<Integer, ArrayImage>> textures,
                                      ResourceLocation id, Colormap colormap, Set<ResourceLocation> usedTextures) {
         var getters = colormap.getGetters();
 

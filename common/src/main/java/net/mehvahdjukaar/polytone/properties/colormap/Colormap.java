@@ -116,6 +116,10 @@ public class Colormap implements BlockColor {
         return -1;
     }
 
+    public boolean isReference() {
+        return isReference;
+    }
+
 
     public static class ColormapTintGetter {
 

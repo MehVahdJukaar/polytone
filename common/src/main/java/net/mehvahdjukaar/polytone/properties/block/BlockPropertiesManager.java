@@ -35,7 +35,7 @@ public class BlockPropertiesManager {
 
             //fill inline colormaps textures
             var colormap = prop.tintGetter();
-            if (colormap.isPresent() && colormap.get() instanceof Colormap c && !c.isReference) {
+            if (colormap.isPresent() && colormap.get() instanceof Colormap c && !c.isReference()) {
                 ColormapsManager.fillColormapPalette(texturesProperties, id, c, usedTextures);
             }
 

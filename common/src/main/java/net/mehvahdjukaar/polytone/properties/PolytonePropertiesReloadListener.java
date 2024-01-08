@@ -27,13 +27,13 @@ public class PolytonePropertiesReloadListener extends SimplePreparableReloadList
     private static final String COLORMAPS_PATH = "colormaps";
     private static final String SOUND_TYPE_PATH = "sound_types";
     private static final String BLOCK_PROPERTIES_PATH = "block_properties";
-    private static final String BIOME_EFFECTS_PATH = "biomes_effects";
+    private static final String BIOME_EFFECTS_PATH = "biome_effects";
     private static final String LIQUID_PATH = "liquids_properties";
 
     private final Gson gson = new Gson();
 
 
-    protected record Resources(Map<ResourceLocation, JsonElement> modifiers,
+    protected record Resources(Map<ResourceLocation, JsonElement> blockModifiers,
                                Map<ResourceLocation, JsonElement> colormaps,
                                Map<ResourceLocation, JsonElement> soundTypes,
                                Map<ResourceLocation, JsonElement> biomeEffects,
@@ -49,39 +49,41 @@ public class PolytonePropertiesReloadListener extends SimplePreparableReloadList
     @Override
     protected Resources prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
 
+        Map<ResourceLocation, JsonElement> blockProperties = new HashMap<>();
+        scanDirectory(resourceManager, ROOT + "/" + BLOCK_PROPERTIES_PATH, this.gson, blockProperties);
+
         Map<ResourceLocation, JsonElement> colormaps = new HashMap<>();
         scanDirectory(resourceManager, ROOT + "/" + COLORMAPS_PATH, this.gson, colormaps);
 
         Map<ResourceLocation, JsonElement> soundTypes = new HashMap<>();
         scanDirectory(resourceManager, ROOT + "/" + SOUND_TYPE_PATH, this.gson, soundTypes);
 
-        Map<ResourceLocation, JsonElement> blockProperties = new HashMap<>();
-        scanDirectory(resourceManager, ROOT + "/" + BLOCK_PROPERTIES_PATH, this.gson, blockProperties);
-
         Map<ResourceLocation, JsonElement> biomeEffects = new HashMap<>();
         scanDirectory(resourceManager, ROOT + "/" + BIOME_EFFECTS_PATH, this.gson, biomeEffects);
 
         Map<ResourceLocation, JsonElement> liquids = new HashMap<>();
-        scanDirectory(resourceManager, ROOT + "/" + LIQUID_PATH, this.gson, biomeEffects);
+        scanDirectory(resourceManager, ROOT + "/" + LIQUID_PATH, this.gson, liquids);
 
 
         Map<ResourceLocation, ArrayImage> images = new HashMap<>();
         ColormapsManager.gatherImages(resourceManager, ROOT, images);
 
-        return new Resources(blockProperties, colormaps, biomeEffects, liquids, soundTypes, images);
+        return new Resources(blockProperties, colormaps, soundTypes, biomeEffects, liquids, images);
     }
 
 
     @Override
     protected void apply(Resources resources, ResourceManager resourceManager, ProfilerFiller profiler) {
 
+        // reset all
         BlockPropertiesManager.reset();
+        BiomeEffectsManager.reset();
 
 
         Map<ResourceLocation, JsonElement> colormapJsons = resources.colormaps;
         Map<ResourceLocation, JsonElement> soundJsons = resources.soundTypes;
-        Map<ResourceLocation, JsonElement> blockPropertiesJsons = resources.modifiers;
-        Map<ResourceLocation, JsonElement> biomesJsons = resources.modifiers;
+        Map<ResourceLocation, JsonElement> blockPropertiesJsons = resources.blockModifiers;
+        Map<ResourceLocation, JsonElement> biomesJsons = resources.biomeEffects;
 
         Map<ResourceLocation, Map<Integer, ArrayImage>> groupedTextures = ColormapsManager.groupTextures(resources.textures);
 
@@ -105,17 +107,17 @@ public class PolytonePropertiesReloadListener extends SimplePreparableReloadList
         // Creates defined colormaps
         ColormapsManager.process(colormapJsons, texturesColormap, usedTextures);
 
-        // Creates block properties modifiers
+        // Creates block properties blockModifiers
         BlockPropertiesManager.process(blockPropertiesJsons, texturesProperties, usedTextures);
 
-        // Create biomes modifiers
+        // Create biomes blockModifiers
         BiomeEffectsManager.process(biomesJsons);
 
 
-        // Apply block properties modifiers
+        // Apply block properties blockModifiers
         BlockPropertiesManager.apply();
 
-        // Apply biomes modifiers if we have a level
+        // Apply biome blockModifiers if we have a level
         BiomeEffectsManager.tryApply();
     }
 
