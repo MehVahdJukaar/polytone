@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ public final class ExpressionSource implements InputSource {
     private static final String POS_Y = "POS_Y";
     private static final String POS_Z = "POS_Z";
 
-    private static final Function PROP_VALUE = new Function("prop_value", 1) {
+    private static final Function STATE_PROP = new Function("state_prop", 1) {
         @Override
         public double apply(double... args) {
             List<Property<?>> properties = new ArrayList<>(stateHack.getProperties());
@@ -48,27 +49,60 @@ public final class ExpressionSource implements InputSource {
         }
     };
 
+    private static final Function COS = new Function("cos", 1) {
+        @Override
+        public double apply(double... args) {
+            return Mth.cos((float) args[0]);
+        }
+    };
+
+    private static final Function SIN = new Function("sin", 1) {
+        @Override
+        public double apply(double... args) {
+            return Mth.sin((float) args[0]);
+        }
+    };
+
     private static BlockState stateHack = null;
 
 
     public static final Codec<ExpressionSource> CODEC = Codec.STRING.flatXmap(s -> {
         try {
-            Expression compiled = new ExpressionBuilder(s)
-                    .functions(PROP_VALUE, RAND)
-                    .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z)
-                    .build();
+            Expression compiled = createExpression(s);
             return DataResult.success(new ExpressionSource(compiled, s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
     }, javaxExpression -> DataResult.success(javaxExpression.unparsed));
 
+    private static Expression createExpression(String s) {
+        return new ExpressionBuilder(s)
+                .functions(STATE_PROP, RAND, SIN, COS)
+                .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z)
+                .build();
+    }
+
     private final String unparsed;
     private final Expression expression;
+    private final boolean hasX;
+    private final boolean hasY;
+    private final boolean hasZ;
+    private final boolean hasT;
+    private final boolean hasD;
 
     private ExpressionSource(Expression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
+        this.hasX = unparsed.contains(POS_X);
+        this.hasY = unparsed.contains(POS_Y);
+        this.hasZ = unparsed.contains(POS_Z);
+        this.hasT = unparsed.contains(TEMPERATURE);
+        this.hasD = unparsed.contains(DOWNFALL);
+    }
+
+    //Unckecked
+    public static ExpressionSource make(String s) {
+        return new ExpressionSource(createExpression(s), s);
     }
 
     @Override
@@ -77,26 +111,21 @@ public final class ExpressionSource implements InputSource {
     }
 
     @Override
-    public float getValue(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+    public float getValue(BlockState state, @NotNull BlockAndTintGetter level, @NotNull BlockPos pos) {
 
         try {
-            if (unparsed.contains(TEMPERATURE)) {
+            if (hasT) {
                 int blockTint = level.getBlockTint(pos, Colormap.TEMPERATURE_RESOLVER);
                 expression.setVariable(TEMPERATURE, blockTint);
             }
-            if (unparsed.contains(DOWNFALL)) {
+            if (hasD) {
                 int blockTint = level.getBlockTint(pos, Colormap.DOWNFALL_RESOLVER);
                 expression.setVariable(DOWNFALL, blockTint);
             }
-            if (unparsed.contains(POS_X)) {
-                expression.setVariable(POS_X, pos.getX());
-            }
-            if (unparsed.contains(POS_Y)) {
-                expression.setVariable(POS_Y, pos.getY());
-            }
-            if (unparsed.contains(POS_Z)) {
-                expression.setVariable(POS_Z, pos.getZ());
-            }
+            if (hasX) expression.setVariable(POS_X, pos.getX());
+            if (hasY) expression.setVariable(POS_Y, pos.getY());
+            if (hasZ) expression.setVariable(POS_Z, pos.getZ());
+
             // Evaluate the expression
             stateHack = state;
             double result = expression.evaluate();

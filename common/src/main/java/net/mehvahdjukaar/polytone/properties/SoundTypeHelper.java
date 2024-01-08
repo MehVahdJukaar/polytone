@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -142,15 +143,19 @@ public class SoundTypeHelper {
                 var vanilla = SOUND_NAMES.get(s);
                 if (vanilla != null) return DataResult.success(vanilla);
                 ResourceLocation r = ResourceLocation.tryParse(s);
-                if (r != null) BlockPropertiesManager.SOUND_TYPES_IDS.get(new ResourceLocation(s));
-                return DataResult.error(() -> "Could not find any custom Sound Type with id" + r);
+                if (r != null) {
+                    var custom = BlockPropertiesManager.SOUND_TYPES_IDS.get(new ResourceLocation(s));
+                    if (custom != null) return DataResult.success(custom);
+                }
+                return DataResult.error(() -> "Could not find any custom Sound Type with id " + r +
+                        " Did you place it in '[your pack]/polytone/sound_types/' ?");
             },
             t -> DataResult.error(() -> "Encoding SoundTypes not supported"));
 
     public static final Codec<SoundType> DIRECT_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Codec.FLOAT.optionalFieldOf("volume", 1f).forGetter(SoundType::getVolume),
-                    Codec.FLOAT.optionalFieldOf("pitch", 1f).forGetter(SoundType::getPitch),
+                    StrOpt.of(Codec.FLOAT, "volume", 1f).forGetter(SoundType::getVolume),
+                    StrOpt.of(Codec.FLOAT, "pitch", 1f).forGetter(SoundType::getPitch),
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("break_sound").forGetter(SoundType::getBreakSound),
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("step_sound").forGetter(SoundType::getStepSound),
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("place_sound").forGetter(SoundType::getPlaceSound),

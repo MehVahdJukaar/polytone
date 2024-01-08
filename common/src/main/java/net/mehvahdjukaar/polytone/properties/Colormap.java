@@ -6,16 +6,21 @@ import com.mojang.serialization.Keyable;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.mehvahdjukaar.polytone.utils.input_source.ExpressionSource;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.utils.input_source.ExpressionSource;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.FoliageColor;
+import net.minecraft.world.level.GrassColor;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,6 +33,19 @@ import static net.mehvahdjukaar.polytone.properties.BlockPropertiesManager.COLOR
 
 public class Colormap implements BlockColor {
 
+    public static final BlockColor  GRASS_COLOR = (s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor();
+
+    public static final BlockColor  FOLIAGE_COLOR = (s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor();
+
+    public static final BlockColor  WATER_COLOR = (s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : -1;
+
+    public static final Colormap BIOME_SAMPLE = new Colormap(Map.of("-1",
+            new ColormapTintGetter(-1, ExpressionSource.make("TEMPERATURE"), ExpressionSource.make("DOWNFALL"))));
+
+
     final Int2ObjectMap<ColormapTintGetter> getters = new Int2ObjectArrayMap<>();
     boolean isReference = false;
 
@@ -36,17 +54,27 @@ public class Colormap implements BlockColor {
             .xmap(Colormap::new, Colormap::toStringMap).codec();
 
 
-    protected static final Codec<Colormap> COLORMAP_REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
+    protected static final Codec<BlockColor> COLORMAP_REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
             id -> Optional.ofNullable(COLORMAPS_IDS.get(id)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Unknown Color Property with id " + id)),
+                    .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
+                            " Did you place it in '[your pack]/polytone/colormaps/' ?")),
             object -> Optional.ofNullable(COLORMAPS_IDS.inverse().get(object)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
 
-    public static final Codec<Colormap> CODEC =
-            ExtraCodecs.validate(new ReferenceOrDirectCodec<>(COLORMAP_REFERENCE_CODEC, Colormap.DIRECT_CODEC,
-                            i -> i.isReference = true),
-                    j -> j.getters.size() == 0 ? DataResult.error(() -> "Must have at least 1 tint getter") :
-                            DataResult.success(j));
+    public static final Codec<BlockColor> CODEC =
+            ExtraCodecs.validate(new ReferenceOrDirectCodec<>(
+                            COLORMAP_REFERENCE_CODEC, (Codec<BlockColor>) (Object) Colormap.DIRECT_CODEC, i ->
+                    {
+                        if (i instanceof Colormap c) {
+                            c.isReference = true;
+                        }
+                    }),
+                    j -> {
+                        if (j instanceof Colormap c && c.getters.size() == 0) {
+                            return DataResult.error(() -> "Must have at least 1 tint getter");
+                        }
+                        return DataResult.success(j);
+                    });
 
     private Colormap(Map<String, ColormapTintGetter> map) {
         for (var e : map.entrySet()) {
@@ -84,7 +112,7 @@ public class Colormap implements BlockColor {
         ArrayImage image;
 
         private static final Codec<ColormapTintGetter> SINGLE = RecordCodecBuilder.create(i -> i.group(
-                Codec.INT.optionalFieldOf("default_color", -1).forGetter(c -> c.defaultColor),
+                StrOpt.of(Codec.INT, "default_color", -1).forGetter(c -> c.defaultColor),
                 ExpressionSource.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
                 ExpressionSource.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter)
         ).apply(i, ColormapTintGetter::new));
@@ -95,7 +123,9 @@ public class Colormap implements BlockColor {
             this.yGetter = yGetter;
         }
 
-        public int getColor(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+        public int getColor(BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
+            if (pos == null || level == null) return defaultColor;
+
             float humidity = Mth.clamp(xGetter.getValue(state, level, pos), 0, 1);
             float temperature = Mth.clamp(yGetter.getValue(state, level, pos), 0, 1);
             humidity *= temperature;
@@ -106,7 +136,6 @@ public class Colormap implements BlockColor {
             return k >= pixels.length ? defaultColor : pixels[k];
         }
     }
-
 
 
     public static final ColorResolver TEMPERATURE_RESOLVER = (biome, x, z) ->

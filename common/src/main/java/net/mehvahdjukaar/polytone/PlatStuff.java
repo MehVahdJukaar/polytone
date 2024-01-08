@@ -7,6 +7,7 @@ import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.level.block.Block;
+import org.jetbrains.annotations.Contract;
 
 import java.util.function.Supplier;
 
@@ -21,6 +22,7 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @Contract
     @ExpectPlatform
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         throw new AssertionError();

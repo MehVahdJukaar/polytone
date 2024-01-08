@@ -8,6 +8,9 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
+import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +32,7 @@ import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListe
 public class BlockPropertiesManager extends SimplePreparableReloadListener<BlockPropertiesManager.Resources> {
 
     // custom defined colormaps
-    public static final BiMap<ResourceLocation, Colormap> COLORMAPS_IDS = HashBiMap.create();
+    public static final BiMap<ResourceLocation, BlockColor> COLORMAPS_IDS = HashBiMap.create();
     // custom defined sound types
     public static final BiMap<ResourceLocation, SoundType> SOUND_TYPES_IDS = HashBiMap.create();
 
@@ -61,7 +64,7 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
         scanDirectory(resourceManager, ROOT + "/" + COLORMAPS_PATH, this.gson, colormaps);
 
         Map<ResourceLocation, JsonElement> soundTypes = new HashMap<>();
-        scanDirectory(resourceManager, ROOT + "/" + COLORMAPS_PATH, this.gson, colormaps);
+        scanDirectory(resourceManager, ROOT + "/" + SOUND_TYPE_PATH, this.gson, soundTypes);
 
         Map<ResourceLocation, JsonElement> properties = new HashMap<>();
         scanDirectory(resourceManager, ROOT + "/" + PROPERTIES_PATH, this.gson, properties);
@@ -153,6 +156,10 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
         }
 
         COLORMAPS_IDS.clear();
+        COLORMAPS_IDS.put(new ResourceLocation("grass_color"), Colormap.GRASS_COLOR);
+        COLORMAPS_IDS.put(new ResourceLocation("foliage_color"), Colormap.FOLIAGE_COLOR);
+        COLORMAPS_IDS.put(new ResourceLocation("water_color"), Colormap.WATER_COLOR);
+        COLORMAPS_IDS.put(new ResourceLocation("biome_sample"), Colormap.BIOME_SAMPLE);
 
         for (var j : colormapJsons.entrySet()) {
             var json = j.getValue();
