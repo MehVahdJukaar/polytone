@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.colors;
 
 import com.google.common.collect.Lists;
-import net.mehvahdjukaar.polytone.SinglePropertiesReloadListener;
+import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -18,7 +18,9 @@ public class ColorManager extends SinglePropertiesReloadListener {
 
     public ColorManager() {
         super("optifine/color.properties",
-                Polytone.MOD_ID + "/map_colors.properties");
+                "vanadium/color.properties",
+                "colormatic/color.properties",
+                Polytone.MOD_ID + "/color.properties");
     }
 
     @Override

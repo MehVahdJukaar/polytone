@@ -20,12 +20,13 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -33,17 +34,17 @@ import static net.mehvahdjukaar.polytone.properties.BlockPropertiesManager.COLOR
 
 public class Colormap implements BlockColor {
 
-    public static final BlockColor  GRASS_COLOR = (s, l, p, i) ->
+    public static final BlockColor GRASS_COLOR = (s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor();
 
-    public static final BlockColor  FOLIAGE_COLOR = (s, l, p, i) ->
+    public static final BlockColor FOLIAGE_COLOR = (s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor();
 
-    public static final BlockColor  WATER_COLOR = (s, l, p, i) ->
+    public static final BlockColor WATER_COLOR = (s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : -1;
 
     public static final Colormap BIOME_SAMPLE = new Colormap(Map.of("-1",
-            new ColormapTintGetter(-1, ExpressionSource.make("TEMPERATURE"), ExpressionSource.make("DOWNFALL"))));
+            new ColormapTintGetter(Optional.of(-1), ExpressionSource.make("TEMPERATURE"), ExpressionSource.make("DOWNFALL"), Optional.empty())));
 
 
     final Int2ObjectMap<ColormapTintGetter> getters = new Int2ObjectArrayMap<>();
@@ -57,7 +58,7 @@ public class Colormap implements BlockColor {
     protected static final Codec<BlockColor> COLORMAP_REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
             id -> Optional.ofNullable(COLORMAPS_IDS.get(id)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
-                            " Did you place it in '[your pack]/polytone/colormaps/' ?")),
+                            " Did you place it in 'assets/[your pack]/polytone/colormaps/' ?")),
             object -> Optional.ofNullable(COLORMAPS_IDS.inverse().get(object)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
 
@@ -82,6 +83,21 @@ public class Colormap implements BlockColor {
         }
     }
 
+    private Colormap() {
+    }
+
+    // default biome sample vanilla implementation
+    public static Colormap createDefault(Set<Integer> tintIndexes) {
+        var c = new Colormap();
+        for (var i : tintIndexes) {
+            c.getters.put(i.intValue(), new ColormapTintGetter(Optional.empty(),
+                    ExpressionSource.make("TEMPERATURE"),
+                    ExpressionSource.make("DOWNFALL"), Optional.empty()));
+        }
+        return c;
+    }
+
+
     public Int2ObjectMap<ColormapTintGetter> getGetters() {
         return getters;
     }
@@ -105,35 +121,49 @@ public class Colormap implements BlockColor {
 
     public static class ColormapTintGetter {
 
-        private final int defaultColor;
         private final ExpressionSource xGetter;
         private final ExpressionSource yGetter;
+        private final Optional<RuleTest> ruleTest;
 
-        ArrayImage image;
+        private Integer defaultColor = null;
+        private ArrayImage image = null;
 
         private static final Codec<ColormapTintGetter> SINGLE = RecordCodecBuilder.create(i -> i.group(
-                StrOpt.of(Codec.INT, "default_color", -1).forGetter(c -> c.defaultColor),
+                StrOpt.of(Codec.INT, "default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
                 ExpressionSource.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
-                ExpressionSource.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter)
+                ExpressionSource.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
+                StrOpt.of(RuleTest.CODEC, "block_test").forGetter(c -> c.ruleTest)
         ).apply(i, ColormapTintGetter::new));
 
-        private ColormapTintGetter(int defaultColor, ExpressionSource xGetter, ExpressionSource yGetter) {
-            this.defaultColor = defaultColor;
+        private ColormapTintGetter(Optional<Integer> defaultColor, ExpressionSource xGetter, ExpressionSource yGetter, Optional<RuleTest> ruleTest) {
+            this.defaultColor = defaultColor.orElse(null);
             this.xGetter = xGetter;
             this.yGetter = yGetter;
+            this.ruleTest = ruleTest;
+        }
+
+        public void acceptTexture(ArrayImage image) {
+            this.image = image;
+            if (defaultColor == null) {
+                this.defaultColor = sample(0.5f, 0.5f, -1);
+            }
         }
 
         public int getColor(BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
-            if (pos == null || level == null) return defaultColor;
+            if (pos == null || level == null || image == null) return defaultColor;
 
             float humidity = Mth.clamp(xGetter.getValue(state, level, pos), 0, 1);
             float temperature = Mth.clamp(yGetter.getValue(state, level, pos), 0, 1);
-            humidity *= temperature;
-            int i = (int) ((1.0 - temperature) * image.width());
-            int j = (int) ((1.0 - humidity) * image.height());
+            return sample(humidity, temperature, defaultColor);
+        }
+
+        private int sample(float x, float y, int defValue) {
+            x *= y;
+            int i = (int) ((1.0 - y) * image.width());
+            int j = (int) ((1.0 - x) * image.height());
             int k = j << 8 | i;
             int[] pixels = image.pixels();
-            return k >= pixels.length ? defaultColor : pixels[k];
+            return k >= pixels.length ? defValue : pixels[k];
         }
     }
 

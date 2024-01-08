@@ -148,7 +148,7 @@ public class SoundTypeHelper {
                     if (custom != null) return DataResult.success(custom);
                 }
                 return DataResult.error(() -> "Could not find any custom Sound Type with id " + r +
-                        " Did you place it in '[your pack]/polytone/sound_types/' ?");
+                        " Did you place it in 'assets/[your pack]/polytone/sound_types/' ?");
             },
             t -> DataResult.error(() -> "Encoding SoundTypes not supported"));
 

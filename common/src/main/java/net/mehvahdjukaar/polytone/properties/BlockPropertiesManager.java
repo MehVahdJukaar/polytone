@@ -9,8 +9,6 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
@@ -20,11 +18,13 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
@@ -49,7 +49,7 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
     protected record Resources(Map<ResourceLocation, JsonElement> modifiers,
                                Map<ResourceLocation, JsonElement> colormaps,
                                Map<ResourceLocation, JsonElement> soundTypes,
-                               Map<String, ArrayImage> textures) {
+                               Map<ResourceLocation, ArrayImage> textures) {
     }
 
 
@@ -69,13 +69,13 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
         Map<ResourceLocation, JsonElement> properties = new HashMap<>();
         scanDirectory(resourceManager, ROOT + "/" + PROPERTIES_PATH, this.gson, properties);
 
-        Map<String, ArrayImage> images = new HashMap<>();
+        Map<ResourceLocation, ArrayImage> images = new HashMap<>();
         gatherImages(resourceManager, ROOT, images);
 
         return new Resources(properties, colormaps, soundTypes, images);
     }
 
-    private static void gatherImages(ResourceManager manager, String string, Map<String, ArrayImage> map) {
+    private static void gatherImages(ResourceManager manager, String string, Map<ResourceLocation, ArrayImage> map) {
         FileToIdConverter helper = new FileToIdConverter(string, ".png");
 
         for (Map.Entry<ResourceLocation, Resource> entry : helper.listMatchingResources(manager).entrySet()) {
@@ -87,7 +87,7 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
                 int[] pixels = nativeImage.makePixelArray();
 
                 ArrayImage image = new ArrayImage(pixels, nativeImage.getWidth(), nativeImage.getHeight());
-                ArrayImage oldImage = map.put(id.getPath(), image);
+                ArrayImage oldImage = map.put(id, image);
                 if (oldImage != null) {
                     throw new IllegalStateException("Duplicate data file ignored with ID " + id);
                 }
@@ -97,32 +97,40 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
         }
     }
 
-    private void fillColormapPalette(Map<String, ArrayImage> textures, String folder, ResourceLocation id, Colormap colormap) {
+    private void fillColormapPalette(Map<ResourceLocation, Map<Integer, ArrayImage>> textures,
+                                     ResourceLocation id, Colormap colormap, Set<ResourceLocation> usedTextures) {
         var getters = colormap.getGetters();
 
-        for (var g : getters.int2ObjectEntrySet()) {
-            boolean success = false;
-            int index = g.getIntKey();
-            Colormap.ColormapTintGetter tint = g.getValue();
-            if (getters.size() == 1 || index == 0) {
-                String path = folder + "/" + id.getPath();
-                success = tryPopulatingColormap(textures, path, tint);
+        var textureMap = textures.get(id);
+
+        if (textureMap != null) {
+            for (var g : getters.int2ObjectEntrySet()) {
+                int index = g.getIntKey();
+                Colormap.ColormapTintGetter tint = g.getValue();
+                boolean success = false;
+                if (getters.size() == 1 || index == 0) {
+                    success = tryPopulatingColormap(textureMap, id, -1, tint, usedTextures);
+                }
+                if (!success) {
+                    success = tryPopulatingColormap(textureMap, id, index, tint, usedTextures);
+                }
+                if (!success){
+                    throw new IllegalStateException("Could not find any colormap associated with " + id + " for tint index " + index + ". " +
+                            "Expected: " + id);
+                }
             }
-            String path = folder + "/" + id.getPath() + "_" + index;
-            if (!success) {
-                success = tryPopulatingColormap(textures, path, tint);
-            }
-            if (!success) {
-                throw new IllegalStateException("Could not find any colormap associated with " + id + " for tint index " + index + ". " +
-                        "Expected: " + path);
-            }
+        } else {
+            throw new IllegalStateException("Could not find any colormap associated with " + id + ". " +
+                    "Expected: " + id);
         }
     }
 
-    private static boolean tryPopulatingColormap(Map<String, ArrayImage> textures, String path, Colormap.ColormapTintGetter g) {
-        ArrayImage texture = textures.get(path);
+    private static boolean tryPopulatingColormap(Map<Integer, ArrayImage> textures, ResourceLocation path, int index,
+                                                 Colormap.ColormapTintGetter g, Set<ResourceLocation> usedTexture) {
+        ArrayImage texture = textures.get(index);
         if (texture != null) {
-            g.image = texture;
+            usedTexture.add(path);
+            g.acceptTexture(texture);
             if (texture.pixels().length == 0) {
                 throw new IllegalStateException("Colormap at location " + path + " had invalid 0 dimension");
             }
@@ -142,7 +150,22 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
         Map<ResourceLocation, JsonElement> colormapJsons = resources.colormaps;
         Map<ResourceLocation, JsonElement> soundJsons = resources.soundTypes;
         Map<ResourceLocation, JsonElement> propertiesJsons = resources.modifiers;
-        Map<String, ArrayImage> textures = resources.textures;
+
+        Map<ResourceLocation, Map<Integer, ArrayImage>> groupedTextures = groupTextures(resources.textures);
+
+        Map<ResourceLocation, Map<Integer, ArrayImage>> texturesColormap = new HashMap<>();
+        Map<ResourceLocation, Map<Integer, ArrayImage>> texturesProperties = new HashMap<>();
+
+        for (var entry : groupedTextures.entrySet()) {
+            ResourceLocation id = entry.getKey();
+            String path = id.getPath();
+            if (path.startsWith(COLORMAPS_PATH)) {
+                texturesColormap.put(id.withPath(path.replace(COLORMAPS_PATH + "/", "")), entry.getValue());
+            } else {
+                texturesProperties.put(id.withPath(path.replace(PROPERTIES_PATH + "/", "")), entry.getValue());
+            }
+        }
+
 
         SOUND_TYPES_IDS.clear();
 
@@ -161,16 +184,31 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
         COLORMAPS_IDS.put(new ResourceLocation("water_color"), Colormap.WATER_COLOR);
         COLORMAPS_IDS.put(new ResourceLocation("biome_sample"), Colormap.BIOME_SAMPLE);
 
+        Set<ResourceLocation> usedTextures = new HashSet<>();
+
         for (var j : colormapJsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
             Colormap colormap = Colormap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Colormap with json id {} - error: {}",
                             id, errorMsg)).getFirst();
-            fillColormapPalette(textures, COLORMAPS_PATH, id, colormap);
+            fillColormapPalette(texturesColormap, id, colormap, usedTextures);
             // we need to fill these before we parse the properties as they will be referenced below
             COLORMAPS_IDS.put(id, colormap);
         }
+
+
+        // creates orphaned texture colormaps
+        texturesColormap.keySet().removeAll(usedTextures);
+
+        for (var t : texturesColormap.entrySet()) {
+            ResourceLocation id = t.getKey();
+            Colormap defaultColormap = Colormap.createDefault(t.getValue().keySet());
+            fillColormapPalette(texturesColormap, id, defaultColormap, usedTextures);
+            // we need to fill these before we parse the properties as they will be referenced below
+            COLORMAPS_IDS.put(id, defaultColormap);
+        }
+
 
         for (var j : propertiesJsons.entrySet()) {
             var json = j.getValue();
@@ -185,14 +223,56 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
             //fill inline colormaps textures
             var colormap = prop.tintGetter();
             if (colormap.isPresent() && colormap.get() instanceof Colormap c && !c.isReference) {
-                fillColormapPalette(textures, PROPERTIES_PATH, id, c);
+                fillColormapPalette(texturesProperties, id, c, usedTextures);
             }
 
             propertiesMap.put(id, prop);
         }
 
+        // creates orphaned texture colormaps & properties
+        texturesProperties.keySet().removeAll(usedTextures);
+
+        for (var t : texturesProperties.entrySet()) {
+            ResourceLocation id = t.getKey();
+            Colormap defaultColormap = Colormap.createDefault(t.getValue().keySet());
+            fillColormapPalette(texturesProperties, id, defaultColormap, usedTextures);
+
+            BlockPropertyModifier defaultProp = new BlockPropertyModifier(Optional.of(defaultColormap),
+                    Optional.empty(), Optional.empty(), Optional.empty());
+
+            propertiesMap.put(id, defaultProp);
+        }
+
+
 
         applyAllModifiers(propertiesMap);
+        if (!vanillaProperties.isEmpty()) Polytone.LOGGER.info("Applied {} Custom Block Properties", vanillaProperties.size());
+    }
+
+    @NotNull
+    private static Map<ResourceLocation, Map<Integer, ArrayImage>> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
+        Map<ResourceLocation, Map<Integer, ArrayImage>> groupedMap = new HashMap<>();
+
+        Pattern pattern = Pattern.compile("(\\D+)(_\\d+)?");
+        for (var e : texturesColormap.entrySet()) {
+            ResourceLocation id = e.getKey();
+            String str = id.getPath();
+            Matcher matcher = pattern.matcher(str);
+            if (matcher.matches()) {
+                String key = matcher.group(1); // Group 1: the word before underscore (if any)
+                String indexMatch = matcher.group(2); // Group 2: the underscore and digits (if any)
+
+                int index = -1; // Default index if there's no underscore and digits
+                if (indexMatch != null) {
+                    // Extracting the index from the matched group (removing the underscore)
+                    index = Integer.parseInt(indexMatch.substring(1));
+                }
+
+                // Creating or retrieving the Int2Object map for the key
+                groupedMap.computeIfAbsent(id.withPath(key), a -> new HashMap<>()).put(index, e.getValue());
+            }
+        }
+        return groupedMap;
     }
 
     private void applyAllModifiers(Map<ResourceLocation, BlockPropertyModifier> propertiesMap) {
