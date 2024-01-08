@@ -15,5 +15,12 @@ accessible field net/minecraft/world/level/biome/Biome climateSettings Lnet/mine
 accessible field net/minecraft/world/level/biome/Biome$ClimateSettings temperature F
 accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall F
 
+mutable field net/minecraft/world/item/DyeColor textureDiffuseColors [F
+accessible field net/minecraft/world/item/DyeColor textureDiffuseColors [F
+accessible field net/minecraft/world/item/DyeColor fireworkColor I
+mutable field net/minecraft/world/item/DyeColor fireworkColor I
+mutable field net/minecraft/world/item/DyeColor textColor I
+accessible field net/minecraft/world/item/DyeColor textColor I
+
 accessible field net/minecraft/world/level/biome/Biome specialEffects Lnet/minecraft/world/level/biome/BiomeSpecialEffects;
 mutable field net/minecraft/world/level/biome/Biome specialEffects Lnet/minecraft/world/level/biome/BiomeSpecialEffects;

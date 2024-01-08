@@ -1,22 +1,24 @@
 package net.mehvahdjukaar.polytone.colors;
 
 import com.google.common.collect.Lists;
-import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
+import com.google.gson.JsonParseException;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.client.renderer.block.LiquidBlockRenderer;
+import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.material.MapColor;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.function.Function;
 
 public class ColorManager extends SinglePropertiesReloadListener {
 
-    private final Map<MapColor, Integer> vanillaValues = new HashMap<>();
+    private final Map<MapColor, Integer> vanillaMapColors = new HashMap<>();
+    private final Map<DyeColor, Integer> vanillaFireworkColors = new EnumMap<>(DyeColor.class);
+    private final Map<DyeColor, Integer> vanillaDiffuseColors = new EnumMap<>(DyeColor.class);
+    private final Map<DyeColor, Integer> vanillaTextColors = new EnumMap<>(DyeColor.class);
 
     public ColorManager() {
         super("optifine/color.properties",
@@ -34,24 +36,9 @@ public class ColorManager extends SinglePropertiesReloadListener {
         try {
             for (var v : list) {
                 for (var e : v.entrySet()) {
-                    if (e.getKey() instanceof String colorName) {
-                        colorName = colorName.replace("map.", "");
-                        MapColor c = MapColorHelper.byName(colorName);
-                        if(c != null) {
-                            var i = e.getValue();
-                            if (i instanceof String value) {
-                                value = value.replace("#", "").replace("0x", "");
-                                int col = Integer.parseInt(value, 16);
-                                // save vanilla value
-                                if(!vanillaValues.containsKey(c)){
-                                    vanillaValues.put(c, c.col);
-                                }
-                                c.col = col;
-                            }
-                        }else{
-                            //error
-                            int err0r = 1;
-                        }
+                    if (e.getKey() instanceof String key) {
+                        String[] split = key.split("/.");
+                        parseAllColors(split, e.getValue());
                     }
                 }
             }
@@ -61,15 +48,122 @@ public class ColorManager extends SinglePropertiesReloadListener {
         }
     }
 
-    private void resetValues() {
-        for (var e : vanillaValues.entrySet()) {
-            MapColor color = e.getKey();
-            color.col = e.getValue();
+
+    private void parseAllColors(String[] prop, Object obj) {
+        if (is(prop, 0, "map")) {
+            String name = get(prop, 1);
+            MapColor color = MapColorHelper.byName(name);
+            if (color != null) {
+                int col = parseHex(obj);
+                // save vanilla value
+                if (!vanillaMapColors.containsKey(color)) {
+                    vanillaMapColors.put(color, color.col);
+                }
+                color.col = col;
+
+            } else Polytone.LOGGER.error("Unknown MapColor with name {}", name);
+        } else if (is(prop, 0, "dye")) {
+            String name = get(prop, 1);
+            DyeColor color = DyeColor.byName(name, null);
+            if (color != null) {
+                String param = get(prop, 2);
+                if (param == null || param.equals("diffuse")) {
+                    //apply diffuse
+                    int col = parseHex(obj);
+                    // save vanilla value
+                    if (!vanillaDiffuseColors.containsKey(color)) {
+                        vanillaDiffuseColors.put(color, pack(color.textureDiffuseColors));
+                    }
+                    color.textureDiffuseColors = unpack(col);
+                } else if (param.equals("firework")) {
+                    //apply diffuse
+                    int col = parseHex(obj);
+                    // save vanilla value
+                    if (!vanillaFireworkColors.containsKey(color)) {
+                        vanillaFireworkColors.put(color, color.fireworkColor);
+                    }
+                    color.fireworkColor = col;
+                } else if (param.equals("text")) {
+                    //apply diffuse
+                    int col = parseHex(obj);
+                    // save vanilla value
+                    if (!vanillaTextColors.containsKey(color)) {
+                        vanillaTextColors.put(color, color.textColor);
+                    }
+                    color.textColor = col;
+                }
+            } else Polytone.LOGGER.error("Unknown DyeColor with name {}", name);
         }
-        vanillaValues.clear();
+
+    }
+
+    public static int pack(float[] components) {
+        int n = (int) (components[0] * 255.0F) << 16;
+        int o = (int) (components[1] * 255.0F) << 8;
+        int p = (int) (components[2] * 255.0F);
+        return (n & 0xFF0000) | (o & 0xFF00) | (p & 0xFF);
+    }
+
+    public static float[] unpack(int value) {
+        int n = (value & 16711680) >> 16;
+        int o = (value & '\uff00') >> 8;
+        int p = (value & 255);
+        return new float[]{n / 255.0F, o / 255.0F, p / 255.0F};
+    }
+
+    private boolean is(String[] array, int index, String value) {
+        if (array.length < index) return false;
+        return array[index].equals(value);
+    }
+
+    @Nullable
+    private String get(String[] array, int index) {
+        if (array.length < index) return null;
+        return array[index];
+    }
+
+    @Nullable
+    private <T> T get(String[] array, int index, Function<String, T> fun) {
+        if (array.length < index) return null;
+        return fun.apply(array[index]);
     }
 
 
+    private static int parseHex(Object obj) {
+        if (obj instanceof String value) {
+            value = value.replace("#", "").replace("0x", "");
+            return Integer.parseInt(value, 16);
+        }
+        throw new JsonParseException("Failed to parse object " + obj + ". Expected a String");
+    }
+
+    private void resetValues() {
+        // map colors
+        for (var e : vanillaMapColors.entrySet()) {
+            MapColor color = e.getKey();
+            color.col = e.getValue();
+        }
+        vanillaMapColors.clear();
+
+        // dye colors
+        for (var e : vanillaDiffuseColors.entrySet()) {
+            DyeColor color = e.getKey();
+            color.textureDiffuseColors = unpack(e.getValue());
+        }
+        vanillaDiffuseColors.clear();
+
+        for (var e : vanillaFireworkColors.entrySet()) {
+            DyeColor color = e.getKey();
+            color.fireworkColor = e.getValue();
+        }
+        vanillaFireworkColors.clear();
+
+        for (var e : vanillaTextColors.entrySet()) {
+            DyeColor color = e.getKey();
+            color.textColor = e.getValue();
+        }
+        vanillaTextColors.clear();
+    }
 
 
 }
