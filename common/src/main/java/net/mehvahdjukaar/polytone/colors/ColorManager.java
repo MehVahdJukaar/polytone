@@ -3,7 +3,9 @@ package net.mehvahdjukaar.polytone.colors;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonParseException;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.particles.ParticleModifier;
 import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.DyeColor;
@@ -12,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ColorManager extends SinglePropertiesReloadListener {
 
@@ -19,6 +22,7 @@ public class ColorManager extends SinglePropertiesReloadListener {
     private final Map<DyeColor, Integer> vanillaFireworkColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaDiffuseColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaTextColors = new EnumMap<>(DyeColor.class);
+
 
     public ColorManager() {
         super("optifine/color.properties",
@@ -93,6 +97,10 @@ public class ColorManager extends SinglePropertiesReloadListener {
                     color.textColor = col;
                 }
             } else Polytone.LOGGER.error("Unknown DyeColor with name {}", name);
+        } else if (is(prop, 0, "particle")) {
+            if (is(prop, 1, "portal")) {
+
+            } else Polytone.LOGGER.error("Unknown Particle Color with name {}", get(prop, 1));
         }
 
     }
@@ -135,6 +143,13 @@ public class ColorManager extends SinglePropertiesReloadListener {
             return Integer.parseInt(value, 16);
         }
         throw new JsonParseException("Failed to parse object " + obj + ". Expected a String");
+    }
+
+    private static Supplier<Integer> parseParticleColor(Object obj){
+        if (obj instanceof String value) {
+
+        }
+        return null;
     }
 
     private void resetValues() {

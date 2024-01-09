@@ -1,9 +1,8 @@
-package net.mehvahdjukaar.polytone.utils.input_source;
+package net.mehvahdjukaar.polytone.properties.colormap;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.properties.colormap.Colormap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -19,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public final class ExpressionSource implements InputSource {
+public final class ExpressionSource {
 
     private static final RandomSource RANDOM_SOURCE = RandomSource.create();
 
@@ -42,21 +41,21 @@ public final class ExpressionSource implements InputSource {
     };
 
 
-    private static final Function RAND = new Function("rand", 0) {
+    public static final Function RAND = new Function("rand", 0) {
         @Override
         public double apply(double... args) {
             return RANDOM_SOURCE.nextFloat();
         }
     };
 
-    private static final Function COS = new Function("cos", 1) {
+    public static final Function COS = new Function("cos", 1) {
         @Override
         public double apply(double... args) {
             return Mth.cos((float) args[0]);
         }
     };
 
-    private static final Function SIN = new Function("sin", 1) {
+    public static final Function SIN = new Function("sin", 1) {
         @Override
         public double apply(double... args) {
             return Mth.sin((float) args[0]);
@@ -105,26 +104,15 @@ public final class ExpressionSource implements InputSource {
         return new ExpressionSource(createExpression(s), s);
     }
 
-    @Override
-    public Codec<ExpressionSource> getCodec() {
-        return CODEC;
-    }
 
-    @Override
     public float getValue(BlockState state, @NotNull BlockAndTintGetter level, @NotNull BlockPos pos) {
 
         try {
-            if (hasT) {
-                int blockTint = level.getBlockTint(pos, Colormap.TEMPERATURE_RESOLVER);
-                expression.setVariable(TEMPERATURE, blockTint);
-            }
-            if (hasD) {
-                int blockTint = level.getBlockTint(pos, Colormap.DOWNFALL_RESOLVER);
-                expression.setVariable(DOWNFALL, blockTint);
-            }
-            if (hasX) expression.setVariable(POS_X, pos.getX());
-            if (hasY) expression.setVariable(POS_Y, pos.getY());
-            if (hasZ) expression.setVariable(POS_Z, pos.getZ());
+            expression.setVariable(TEMPERATURE, hasT ? level.getBlockTint(pos, Colormap.TEMPERATURE_RESOLVER) : 0);
+            expression.setVariable(DOWNFALL, hasD ? level.getBlockTint(pos, Colormap.DOWNFALL_RESOLVER) : 0);
+            expression.setVariable(POS_X, hasX ? pos.getX() : 0);
+            expression.setVariable(POS_Y, hasY ? pos.getY() : 0);
+            expression.setVariable(POS_Z, hasZ ? pos.getZ() : 0);
 
             // Evaluate the expression
             stateHack = state;
