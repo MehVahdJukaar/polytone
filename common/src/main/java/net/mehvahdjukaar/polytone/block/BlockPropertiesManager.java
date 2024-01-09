@@ -60,10 +60,9 @@ public class BlockPropertiesManager {
 
     public static void apply() {
         for (var p : MODIFIERS.entrySet()) {
-            ResourceLocation id = new ResourceLocation(p.getKey().getPath().replaceFirst("/", ":"));
-            var block = BuiltInRegistries.BLOCK.getOptional(id);
-            if (block.isPresent()) {
-                Block b = block.get();
+            var block = Polytone.getTarget(p.getKey(), BuiltInRegistries.BLOCK);
+            if (block != null) {
+                Block b = block.getFirst();
                 BlockPropertyModifier value = p.getValue();
                 VANILLA_PROPERTIES.put(b, value.apply(b));
             }

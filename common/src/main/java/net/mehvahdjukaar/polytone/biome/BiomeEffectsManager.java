@@ -46,14 +46,12 @@ public class BiomeEffectsManager {
     public static void doApply(RegistryAccess registryAccess) {
         Registry<Biome> biomeReg = registryAccess.registry(Registries.BIOME).get();
         for (var v : EFFECTS_TO_APPLY.entrySet()) {
-            //TODO: this is unconventional and bad
-            ResourceLocation id = new ResourceLocation(v.getKey().getPath().replaceFirst("/", ":"));
 
-            var biome =  biomeReg.getOptional(id);
-            if (biome.isPresent()) {
-                var old = v.getValue().apply(biome.get());
+            var biome = Polytone.getTarget(v.getKey(), biomeReg);
+             if (biome != null) {
+                var old = v.getValue().apply(biome.getFirst());
 
-                VANILLA_EFFECTS.put(id, old);
+                VANILLA_EFFECTS.put(biome.getSecond(), old);
             }
         }
         if (!VANILLA_EFFECTS.isEmpty())

@@ -3,25 +3,34 @@ package net.mehvahdjukaar.polytone.sounds;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SoundTypesManager {
+
+    private static boolean firstBoot = false;
 
     // custom defined sound types
     private static final BiMap<ResourceLocation, SoundType> SOUND_TYPES_IDS = HashBiMap.create();
@@ -45,9 +54,49 @@ public class SoundTypesManager {
             SoundType soundType = SoundTypesManager.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Sound Type with json id {} - error: {}",
                             id, errorMsg)).getFirst();
+
             SOUND_TYPES_IDS.put(id, soundType);
         }
     }
+
+    public static void processCustomSounds(Map<ResourceLocation, List<String>> customSoundEvents) {
+        if (!firstBoot) {
+            firstBoot = true;
+            List<ResourceLocation> ids = new ArrayList<>();
+            for (var e : customSoundEvents.entrySet()) {
+                for (var s : e.getValue()) {
+                    ResourceLocation id = e.getKey().withPath(s);
+                    PlatStuff.registerSoundEvent(id);
+                    ids.add(id);
+                }
+            }
+            Polytone.LOGGER.info("Registered {} custom Sound Events from Resource Packs: {}", ids.size(), ids+". Remember to add them to sounds.json!");
+
+        }
+    }
+
+    public static Map<ResourceLocation, List<String>> gatherSoundEvents(ResourceManager resourceManager, String path) {
+        Map<ResourceLocation, List<String>> idList = new HashMap<>();
+        Map<ResourceLocation, List<Resource>> res = resourceManager.listResourceStacks(path + "/sound_events.csv", resourceLocation -> true);
+        for (var e : res.entrySet()) {
+            for (var r : e.getValue()) {
+                try (Reader reader = r.openAsReader()) {
+                    BufferedReader bufferedReader = new BufferedReader(reader);
+                    List<String> lines = bufferedReader.lines()
+                            .map(line -> line.split(",")) // Splitting by comma
+                            .flatMap(Arrays::stream)
+                            .map(String::trim)
+                            .filter(v->ResourceLocation.tryParse(v) != null && !v.isEmpty())// Removing extra spaces
+                            .toList();
+                    if(!lines.isEmpty()) idList.put(e.getKey(), lines);
+                } catch (IllegalArgumentException | IOException | JsonParseException ex) {
+                    Polytone.LOGGER.error("Couldn't parse Custom Sound Events file {}:", e.getKey(), ex);
+                }
+            }
+        }
+        return idList;
+    }
+
 
     private static final Map<String, SoundType> SOUND_NAMES = Util.make(() -> {
         Map<String, SoundType> map = new HashMap<>();

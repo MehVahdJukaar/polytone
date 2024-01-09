@@ -5,12 +5,13 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistry;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -30,7 +31,7 @@ public class PlatStuffImpl {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(eventConsumer);
     }
 
-    private static   Field f;
+    private static Field f;
 
     static {
         try {
@@ -43,9 +44,19 @@ public class PlatStuffImpl {
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         try {
-            return ((Map<Holder.Reference<Block>, BlockColor>)f.get(colors)).get (ForgeRegistries.BLOCKS.getDelegateOrThrow(block));
+            return ((Map<Holder.Reference<Block>, BlockColor>) f.get(colors)).get(ForgeRegistries.BLOCKS.getDelegateOrThrow(block));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static SoundEvent registerSoundEvent(ResourceLocation id) {
+        SoundEvent variableRangeEvent = SoundEvent.createVariableRangeEvent(id);
+        ForgeRegistry<SoundEvent> reg = (ForgeRegistry<SoundEvent>) ForgeRegistries.SOUND_EVENTS;
+        boolean wasLocked = reg.isLocked();
+        if (wasLocked) reg.unfreeze();
+        ForgeRegistries.SOUND_EVENTS.register(id, variableRangeEvent);
+        if (wasLocked) reg.freeze();
+        return variableRangeEvent;
     }
 }

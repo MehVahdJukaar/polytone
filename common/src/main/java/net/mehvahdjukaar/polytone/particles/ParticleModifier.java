@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.particles;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.client.particle.Particle;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -10,6 +11,7 @@ public class ParticleModifier {
 
     public static final Codec<ParticleModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             ParticleExpression.CODEC.optionalFieldOf("color" ).forGetter(p -> Optional.ofNullable( p.colorGetter)),
+            ParticleExpression.CODEC.optionalFieldOf("life" ).forGetter(p -> Optional.ofNullable( p.lifeGetter)),
             ParticleExpression.CODEC.optionalFieldOf("size" ).forGetter(p -> Optional.ofNullable(p.colorGetter)),
             ParticleExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             ParticleExpression.CODEC.optionalFieldOf("green" ).forGetter(p -> Optional.ofNullable(p.colorGetter)),
@@ -19,10 +21,12 @@ public class ParticleModifier {
 
     ).apply(instance, ParticleModifier::new));
 
-    private ParticleModifier(Optional<ParticleExpression> color, Optional<ParticleExpression> size, Optional<ParticleExpression> red,
+    private ParticleModifier(Optional<ParticleExpression> color, Optional<ParticleExpression> life,
+                             Optional<ParticleExpression> size, Optional<ParticleExpression> red,
                             Optional<ParticleExpression> green, Optional<ParticleExpression> blue,
                             Optional<ParticleExpression> alpha, Optional<ParticleExpression> speed) {
         this.colorGetter = color.orElse(null);
+        this.lifeGetter = life.orElse(null);
         this.sizeGetter = size.orElse(null);
         this.speedGetter = speed.orElse(null);
         this.redGetter = red.orElse(null);
@@ -35,6 +39,8 @@ public class ParticleModifier {
     @Nullable
     public ParticleExpression colorGetter;
     @Nullable
+    public ParticleExpression lifeGetter;
+    @Nullable
     public ParticleExpression sizeGetter;
     @Nullable
     public ParticleExpression speedGetter;
@@ -46,4 +52,10 @@ public class ParticleModifier {
     public ParticleExpression greenGetter;
     @Nullable
     public ParticleExpression alphaGetter;
+
+    public void modify(Particle particle) {
+        if(colorGetter != null){
+
+        }
+    }
 }

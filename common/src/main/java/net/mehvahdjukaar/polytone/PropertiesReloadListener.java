@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.particles.ParticleManager;
 import net.mehvahdjukaar.polytone.sounds.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.minecraft.resources.ResourceLocation;
@@ -12,10 +13,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
@@ -28,6 +26,7 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
     private static final String BLOCK_PROPERTIES_PATH = "block_properties";
     private static final String BIOME_EFFECTS_PATH = "biome_effects";
     private static final String LIQUID_PATH = "liquids_properties";
+    private static final String PARTICLE_PATH = "particle_modifiers";
 
     private final Gson gson = new Gson();
 
@@ -37,6 +36,8 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
                                Map<ResourceLocation, JsonElement> soundTypes,
                                Map<ResourceLocation, JsonElement> biomeEffects,
                                Map<ResourceLocation, JsonElement> liquids,
+                               Map<ResourceLocation, JsonElement> particles,
+                               Map<ResourceLocation, List<String>> soundEvents,
                                Map<ResourceLocation, ArrayImage> textures) {
     }
 
@@ -63,11 +64,15 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
         Map<ResourceLocation, JsonElement> liquids = new HashMap<>();
         scanDirectory(resourceManager, ROOT + "/" + LIQUID_PATH, this.gson, liquids);
 
+        Map<ResourceLocation, JsonElement> particles = new HashMap<>();
+        scanDirectory(resourceManager, ROOT + "/" + PARTICLE_PATH, this.gson, particles);
+
+       var soundEvents = SoundTypesManager.gatherSoundEvents(resourceManager, ROOT);
 
         Map<ResourceLocation, ArrayImage> images = new HashMap<>();
         ColormapsManager.gatherImages(resourceManager, ROOT, images);
 
-        return new Resources(blockProperties, colormaps, soundTypes, biomeEffects, liquids, images);
+        return new Resources(blockProperties, colormaps, soundTypes, biomeEffects, liquids, particles, soundEvents, images);
     }
 
 
@@ -83,6 +88,8 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
         Map<ResourceLocation, JsonElement> soundJsons = resources.soundTypes;
         Map<ResourceLocation, JsonElement> blockPropertiesJsons = resources.blockModifiers;
         Map<ResourceLocation, JsonElement> biomesJsons = resources.biomeEffects;
+        Map<ResourceLocation, JsonElement> particleJsons = resources.particles;
+        Map<ResourceLocation, List<String>> soundEvents = resources.soundEvents;
 
         Map<ResourceLocation, Map<Integer, ArrayImage>> groupedTextures = ColormapsManager.groupTextures(resources.textures);
 
@@ -99,6 +106,9 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
             }
         }
 
+        // Registers client only sounds if needed
+        SoundTypesManager.processCustomSounds(soundEvents);
+
         // Create defined sound types
         SoundTypesManager.process(soundJsons);
 
@@ -111,6 +121,9 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
 
         // Create biomes blockModifiers
         BiomeEffectsManager.process(biomesJsons);
+
+        // Create particle modifiers
+        ParticleManager.process(particleJsons);
 
 
         // Apply block properties blockModifiers
