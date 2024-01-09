@@ -41,7 +41,7 @@ public class BlockPropertiesManager extends SimplePreparableReloadListener<Block
     private static final String ROOT = Polytone.MOD_ID;
     private static final String COLORMAPS_PATH = "colormaps";
     private static final String SOUND_TYPE_PATH = "sound_types";
-    private static final String PROPERTIES_PATH = "properties";
+    private static final String PROPERTIES_PATH = "block_properties";
 
     private final Gson gson = new Gson();
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();

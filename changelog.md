@@ -1,2 +1,1 @@
-Backported to 1.19.
-Only feature missig is changing blocks MapColors (you can still edit the map color values themselves tho)
+changed "properties" folder to "block_properties" to match whats on the newest version and wiki
