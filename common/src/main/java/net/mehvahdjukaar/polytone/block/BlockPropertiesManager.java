@@ -1,10 +1,10 @@
-package net.mehvahdjukaar.polytone.properties.block;
+package net.mehvahdjukaar.polytone.block;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.properties.colormap.Colormap;
-import net.mehvahdjukaar.polytone.properties.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;

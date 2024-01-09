@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import net.mehvahdjukaar.polytone.properties.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.minecraft.client.color.block.BlockTintCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;

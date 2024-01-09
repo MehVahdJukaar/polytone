@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.properties.colormap;
+package net.mehvahdjukaar.polytone.colormap;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;

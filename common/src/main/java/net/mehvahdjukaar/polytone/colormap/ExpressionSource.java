@@ -1,12 +1,14 @@
-package net.mehvahdjukaar.polytone.properties.colormap;
+package net.mehvahdjukaar.polytone.colormap;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.objecthunter.exp4j.Expression;
@@ -19,8 +21,6 @@ import java.util.List;
 
 
 public final class ExpressionSource {
-
-    private static final RandomSource RANDOM_SOURCE = RandomSource.create();
 
     //Keywords
     private static final String TEMPERATURE = "TEMPERATURE";
@@ -41,26 +41,6 @@ public final class ExpressionSource {
     };
 
 
-    public static final Function RAND = new Function("rand", 0) {
-        @Override
-        public double apply(double... args) {
-            return RANDOM_SOURCE.nextFloat();
-        }
-    };
-
-    public static final Function COS = new Function("cos", 1) {
-        @Override
-        public double apply(double... args) {
-            return Mth.cos((float) args[0]);
-        }
-    };
-
-    public static final Function SIN = new Function("sin", 1) {
-        @Override
-        public double apply(double... args) {
-            return Mth.sin((float) args[0]);
-        }
-    };
 
     private static BlockState stateHack = null;
 
@@ -76,8 +56,9 @@ public final class ExpressionSource {
 
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(s)
-                .functions(STATE_PROP, RAND, SIN, COS)
+                .functions(ExpressionUtils.defFunc(STATE_PROP))
                 .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z)
+                .operator(ExpressionUtils.defOp())
                 .build();
     }
 

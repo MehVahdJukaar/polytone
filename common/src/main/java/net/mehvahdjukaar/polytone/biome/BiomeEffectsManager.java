@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.properties.biome;
+package net.mehvahdjukaar.polytone.biome;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;

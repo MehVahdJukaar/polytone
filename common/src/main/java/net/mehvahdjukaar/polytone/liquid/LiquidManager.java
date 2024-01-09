@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.properties.liquid;
+package net.mehvahdjukaar.polytone.liquid;
 
 import com.google.gson.JsonElement;
 import dev.architectury.injectables.annotations.ExpectPlatform;

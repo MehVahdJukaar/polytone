@@ -2,11 +2,12 @@ package net.mehvahdjukaar.polytone.particles;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.client.particle.Particle;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
-import static net.mehvahdjukaar.polytone.properties.colormap.ExpressionSource.*;
+import static net.mehvahdjukaar.polytone.colormap.ExpressionSource.*;
 
 public class ParticleExpression {
     private final Expression expression;
@@ -43,8 +44,9 @@ public class ParticleExpression {
 
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(s)
-                .functions(RAND, SIN, COS)
+                .functions(ExpressionUtils.defFunc())
                 .variables(ORIGINAL, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE)
+                .operator(ExpressionUtils.defOp())
                 .build();
     }
 

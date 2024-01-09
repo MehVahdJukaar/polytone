@@ -1,11 +1,11 @@
-package net.mehvahdjukaar.polytone.properties.block;
+package net.mehvahdjukaar.polytone.block;
 
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colors.MapColorHelper;
-import net.mehvahdjukaar.polytone.properties.sounds.SoundTypesManager;
-import net.mehvahdjukaar.polytone.properties.colormap.Colormap;
+import net.mehvahdjukaar.polytone.sounds.SoundTypesManager;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;

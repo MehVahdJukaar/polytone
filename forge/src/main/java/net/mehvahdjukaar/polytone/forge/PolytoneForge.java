@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.forge;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.properties.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TagsUpdatedEvent;

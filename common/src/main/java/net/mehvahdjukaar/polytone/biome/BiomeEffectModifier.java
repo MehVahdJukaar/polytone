@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.properties.biome;
+package net.mehvahdjukaar.polytone.biome;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

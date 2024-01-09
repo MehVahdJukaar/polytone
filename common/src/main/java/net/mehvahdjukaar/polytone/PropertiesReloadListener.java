@@ -1,12 +1,11 @@
-package net.mehvahdjukaar.polytone.properties;
+package net.mehvahdjukaar.polytone;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.properties.biome.BiomeEffectsManager;
-import net.mehvahdjukaar.polytone.properties.block.BlockPropertiesManager;
-import net.mehvahdjukaar.polytone.properties.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.properties.sounds.SoundTypesManager;
+import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
+import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
+import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.sounds.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -21,7 +20,7 @@ import java.util.Set;
 import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 // Ugly ass god class
-public class PolytonePropertiesReloadListener extends SimplePreparableReloadListener<PolytonePropertiesReloadListener.Resources> {
+public class PropertiesReloadListener extends SimplePreparableReloadListener<PropertiesReloadListener.Resources> {
 
     private static final String ROOT = Polytone.MOD_ID;
     private static final String COLORMAPS_PATH = "colormaps";

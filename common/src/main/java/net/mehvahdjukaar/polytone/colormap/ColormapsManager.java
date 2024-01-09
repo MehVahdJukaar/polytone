@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.properties.colormap;
+package net.mehvahdjukaar.polytone.colormap;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;

@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.properties.sounds;
+package net.mehvahdjukaar.polytone.sounds;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
