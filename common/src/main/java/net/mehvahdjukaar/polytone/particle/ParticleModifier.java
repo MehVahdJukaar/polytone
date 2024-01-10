@@ -1,8 +1,8 @@
-package net.mehvahdjukaar.polytone.particles;
+package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.colors.ColorManager;
+import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.minecraft.client.particle.Particle;
 import org.jetbrains.annotations.Nullable;
 
@@ -100,7 +100,7 @@ public class ParticleModifier {
             particle.zd *= speed;
         }
         if(alphaGetter != null){
-            particle.alpha = alphaGetter.get(particle);
+            particle.alpha = (float) alphaGetter.get(particle);
         }
     }
 }

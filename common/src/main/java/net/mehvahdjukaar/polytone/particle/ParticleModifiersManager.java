@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.particles;
+package net.mehvahdjukaar.polytone.particle;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
@@ -11,9 +11,10 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ParticleManager {
+public class ParticleModifiersManager {
 
     private static final Map<ParticleType<?>, ParticleModifier> PARTICLE_MODIFIERS = new HashMap<>();
+    private static final Map<ParticleType<?>, ParticleModifier> SIMPLE_MODIFIERS = new HashMap<>();
 
     public static void modify(ParticleType<?> type, Particle particle) {
         var mod = PARTICLE_MODIFIERS.get(type);
@@ -23,6 +24,9 @@ public class ParticleManager {
     public static void process(Map<ResourceLocation, JsonElement> particleJsons) {
 
         PARTICLE_MODIFIERS.clear();
+        //hack
+        PARTICLE_MODIFIERS.putAll(SIMPLE_MODIFIERS);
+        SIMPLE_MODIFIERS.clear();
 
         for (var j : particleJsons.entrySet()) {
             var json = j.getValue();
@@ -40,6 +44,8 @@ public class ParticleManager {
 
     public static void addCustomParticleColor(ResourceLocation id, String color) {
         var opt = BuiltInRegistries.PARTICLE_TYPE.getOptional(id);
-        opt.ifPresent(t -> PARTICLE_MODIFIERS.put(t, ParticleModifier.ofColor(color)));
+        opt.ifPresent(t -> SIMPLE_MODIFIERS.put(t, ParticleModifier.ofColor(color)));
+        //hack
+        PARTICLE_MODIFIERS.putAll(SIMPLE_MODIFIERS);
     }
 }

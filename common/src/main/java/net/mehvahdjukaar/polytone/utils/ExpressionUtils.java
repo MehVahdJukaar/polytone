@@ -47,6 +47,27 @@ public class ExpressionUtils {
         }
     };
 
+    private static final Function MAX = new Function("max", 2) {
+        @Override
+        public double apply(double... args) {
+            return Math.max(args[0], args[1]);
+        }
+    };
+
+    private static final Function MIN = new Function("min", 2) {
+        @Override
+        public double apply(double... args) {
+            return Math.min(args[0], args[1]);
+        }
+    };
+
+    private static final Function LERP = new Function("min", 3) {
+        @Override
+        public double apply(double... args) {
+            return Mth.lerp(args[0], args[1], args[2]);
+        }
+    };
+
     public static final Function SMOOTHSTEP = new Function("smoothstep", 3) {
         @Override
         public double apply(double... args) {
@@ -122,7 +143,7 @@ public class ExpressionUtils {
 
     public static Function[] defFunc(Function... others) {
         return Stream.concat(
-                Stream.of(SIN, COS, ATAN2, RAND, STEP),
+                Stream.of(SIN, COS, ATAN2, RAND, STEP, SMOOTHSTEP, MAX, MIN, LERP),
                 Stream.of(others)
         ).toArray(Function[]::new);
     }

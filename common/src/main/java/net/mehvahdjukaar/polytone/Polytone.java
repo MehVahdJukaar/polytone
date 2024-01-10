@@ -2,12 +2,10 @@ package net.mehvahdjukaar.polytone;
 
 import com.mojang.datafixers.util.Pair;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
-import net.mehvahdjukaar.polytone.colors.ColorManager;
+import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;

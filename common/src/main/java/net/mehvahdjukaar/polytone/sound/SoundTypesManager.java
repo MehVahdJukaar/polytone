@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.sounds;
+package net.mehvahdjukaar.polytone.sound;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -26,7 +26,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SoundTypesManager {
 

@@ -1,8 +1,8 @@
-package net.mehvahdjukaar.polytone.particles;
+package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.colors.ColorManager;
+import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.util.Mth;
@@ -100,6 +100,12 @@ public class ParticleExpression {
         if (hasSpeed) expression.setVariable(SPEED, Mth.length(particle.xd, particle.yd, particle.zd));
         if (hasAlpha) expression.setVariable(ALPHA, particle.alpha);
         if (hasSize) expression.setVariable(SIZE, particle.getBoundingBox().getSize());
+        if (hasDx) expression.setVariable(DX, particle.xd);
+        if (hasDy) expression.setVariable(DX, particle.yd);
+        if (hasDz) expression.setVariable(DX, particle.zd);
+        if (hasX) expression.setVariable(DX, particle.x);
+        if (hasY) expression.setVariable(DX, particle.y);
+        if (hasZ) expression.setVariable(DX, particle.z);
 
         return expression.evaluate();
     }

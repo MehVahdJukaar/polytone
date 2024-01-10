@@ -5,8 +5,9 @@ import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.particles.ParticleManager;
-import net.mehvahdjukaar.polytone.sounds.SoundTypesManager;
+import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
+import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
+import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -27,6 +28,7 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
     private static final String BIOME_EFFECTS_PATH = "biome_effects";
     private static final String LIQUID_PATH = "liquid_properties";
     private static final String PARTICLE_PATH = "particle_modifiers";
+    private static final String VARIANT_TEXTURES_PATH = "variant_textures";
 
     private final Gson gson = new Gson();
 
@@ -37,6 +39,7 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
                                Map<ResourceLocation, JsonElement> biomeEffects,
                                Map<ResourceLocation, JsonElement> liquids,
                                Map<ResourceLocation, JsonElement> particles,
+                               Map<ResourceLocation, JsonElement> variantTextures,
                                Map<ResourceLocation, List<String>> soundEvents,
                                Map<ResourceLocation, ArrayImage> textures) {
     }
@@ -67,12 +70,15 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
         Map<ResourceLocation, JsonElement> particles = new HashMap<>();
         scanDirectory(resourceManager, ROOT + "/" + PARTICLE_PATH, this.gson, particles);
 
-       var soundEvents = SoundTypesManager.gatherSoundEvents(resourceManager, ROOT);
+        Map<ResourceLocation, JsonElement> variantTextures = new HashMap<>();
+        scanDirectory(resourceManager, ROOT + "/" + VARIANT_TEXTURES_PATH, this.gson, variantTextures);
+
+        var soundEvents = SoundTypesManager.gatherSoundEvents(resourceManager, ROOT);
 
         Map<ResourceLocation, ArrayImage> images = new HashMap<>();
         ColormapsManager.gatherImages(resourceManager, ROOT, images);
 
-        return new Resources(blockProperties, colormaps, soundTypes, biomeEffects, liquids, particles, soundEvents, images);
+        return new Resources(blockProperties, colormaps, soundTypes, biomeEffects, liquids, particles,variantTextures, soundEvents, images);
     }
 
 
@@ -89,6 +95,7 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
         Map<ResourceLocation, JsonElement> blockPropertiesJsons = resources.blockModifiers;
         Map<ResourceLocation, JsonElement> biomesJsons = resources.biomeEffects;
         Map<ResourceLocation, JsonElement> particleJsons = resources.particles;
+        Map<ResourceLocation, JsonElement> variantTextures = resources.variantTextures;
         Map<ResourceLocation, List<String>> soundEvents = resources.soundEvents;
 
         Map<ResourceLocation, Map<Integer, ArrayImage>> groupedTextures = ColormapsManager.groupTextures(resources.textures);
@@ -122,8 +129,11 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
         // Create biomes blockModifiers
         BiomeEffectsManager.process(biomesJsons);
 
+        // Create variant textures
+        VariantTextureManager.process(variantTextures);
+
         // Create particle modifiers
-        ParticleManager.process(particleJsons);
+        ParticleModifiersManager.process(particleJsons);
 
 
         // Apply block properties blockModifiers

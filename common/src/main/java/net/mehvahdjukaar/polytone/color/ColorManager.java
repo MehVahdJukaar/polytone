@@ -1,16 +1,18 @@
-package net.mehvahdjukaar.polytone.colors;
+package net.mehvahdjukaar.polytone.color;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonParseException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.particles.ParticleManager;
+import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
@@ -31,6 +33,7 @@ public class ColorManager extends SinglePropertiesReloadListener {
     private final Map<DyeColor, Integer> vanillaTextColors = new EnumMap<>(DyeColor.class);
     private final Object2IntMap<SpawnEggItem> vanillaEggsBackgrounds = new Object2IntOpenHashMap<>();
     private final Object2IntMap<SpawnEggItem> vanillaEggsHighlight = new Object2IntOpenHashMap<>();
+    private final Object2IntMap<MobEffect> vanillaEffectColors = new Object2IntOpenHashMap<>();
 
 
     public ColorManager() {
@@ -55,6 +58,7 @@ public class ColorManager extends SinglePropertiesReloadListener {
         } catch (Exception ex) {
             Polytone.LOGGER.error("Visual Properties failed to apply custom MapColors. Rolling back to vanilla state", ex);
             resetValues();
+            BakedQuad
         }
     }
 
@@ -71,7 +75,7 @@ public class ColorManager extends SinglePropertiesReloadListener {
                 }
                 color.col = col;
 
-            } else Polytone.LOGGER.error("Unknown MapColor with name {}", name);
+            } else Polytone.LOGGER.warn("Unknown MapColor with name {}", name);
         } else if (is(prop, 0, "dye")) {
             String name = get(prop, 1);
             DyeColor color = DyeColor.byName(name, null);
@@ -97,42 +101,51 @@ public class ColorManager extends SinglePropertiesReloadListener {
                     }
                     color.textColor = col;
                 }
-            } else Polytone.LOGGER.error("Unknown DyeColor with name {}", name);
+            } else Polytone.LOGGER.warn("Unknown DyeColor with name {}", name);
         } else if (is(prop, 0, "particle")) {
             if (prop.length > 1) {
                 ResourceLocation id = new ResourceLocation(prop[1].replace("\\", ""));
                 if (obj instanceof String s) {
-                    try{
+                    try {
                         // turn from hex to decimal if it is a single number
                         int hex = parseHex(s);
-                        ParticleManager.addCustomParticleColor(id, String.valueOf(hex));
-                    }catch (Exception e){
-                        ParticleManager.addCustomParticleColor(id, s);
+                        ParticleModifiersManager.addCustomParticleColor(id, String.valueOf(hex));
+                    } catch (Exception e) {
+                        ParticleModifiersManager.addCustomParticleColor(id, s);
                     }
                 }
             }
 
         } else if (is(prop, 0, "egg")) {
-            if(prop.length>2) {
+            if (prop.length > 2) {
                 ResourceLocation id = new ResourceLocation(prop[2].replace("\\", ""));
-               Item item = BuiltInRegistries.ITEM.getOptional(id).orElse(null);
+                Item item = BuiltInRegistries.ITEM.getOptional(id).orElse(null);
                 if (item instanceof SpawnEggItem spawnEggItem) {
                     int col = parseHex(obj);
 
                     if (is(prop, 1, "shell")) {
-                        if (!vanillaEggsBackgrounds.containsKey(item)) {
-                            vanillaEggsBackgrounds.put(item, spawnEggItem.backgroundColor);
+                        if (!vanillaEggsBackgrounds.containsKey(spawnEggItem)) {
+                            vanillaEggsBackgrounds.put(spawnEggItem, spawnEggItem.backgroundColor);
                         }
                         spawnEggItem.backgroundColor = col;
                     } else if (is(prop, 1, "spots")) {
-                        if (!vanillaEggsHighlight.containsKey(item)) {
-                            vanillaEggsHighlight.put(item, spawnEggItem.highlightColor);
+                        if (!vanillaEggsHighlight.containsKey(spawnEggItem)) {
+                            vanillaEggsHighlight.put(spawnEggItem, spawnEggItem.highlightColor);
                         }
                         spawnEggItem.highlightColor = col;
                     }
-                }
-                else Polytone.LOGGER.error("Unknown or invalid Spawn Egg Item with name {}", id);
+                } else Polytone.LOGGER.warn("Unknown or invalid Spawn Egg Item with name {}", id);
             }
+        } else if (is(prop, 0, "potion") || is(prop, 0, "effect")) {
+            ResourceLocation id = new ResourceLocation(prop[2].replace("\\", ""));
+            MobEffect effect = BuiltInRegistries.MOB_EFFECT.getOptional(id).orElse(null);
+            if (effect != null) {
+                int col = parseHex(obj);
+                if (!vanillaEffectColors.containsKey(effect)) {
+                    vanillaEffectColors.put(effect, effect.getColor());
+                }
+                effect.color = col;
+            } else Polytone.LOGGER.warn("Unknown Mob Effect with name {}", id);
         }
     }
 
