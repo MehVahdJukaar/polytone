@@ -25,7 +25,7 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
     private static final String SOUND_TYPE_PATH = "sound_types";
     private static final String BLOCK_PROPERTIES_PATH = "block_properties";
     private static final String BIOME_EFFECTS_PATH = "biome_effects";
-    private static final String LIQUID_PATH = "liquids_properties";
+    private static final String LIQUID_PATH = "liquid_properties";
     private static final String PARTICLE_PATH = "particle_modifiers";
 
     private final Gson gson = new Gson();

@@ -100,7 +100,6 @@ public class ExpressionUtils {
         }
     };
 
-
     private static final Operator FACTORIAL = new Operator("!", 1, true, Operator.PRECEDENCE_POWER + 1) {
 
         @Override

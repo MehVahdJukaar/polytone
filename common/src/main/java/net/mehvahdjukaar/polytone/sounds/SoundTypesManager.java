@@ -77,7 +77,8 @@ public class SoundTypesManager {
 
     public static Map<ResourceLocation, List<String>> gatherSoundEvents(ResourceManager resourceManager, String path) {
         Map<ResourceLocation, List<String>> idList = new HashMap<>();
-        Map<ResourceLocation, List<Resource>> res = resourceManager.listResourceStacks(path + "/sound_events.csv", resourceLocation -> true);
+        Map<ResourceLocation, List<Resource>> res = resourceManager.listResourceStacks(path, resourceLocation ->
+                resourceLocation.getPath().endsWith("sound_events.csv"));
         for (var e : res.entrySet()) {
             for (var r : e.getValue()) {
                 try (Reader reader = r.openAsReader()) {

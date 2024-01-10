@@ -2,33 +2,39 @@ package net.mehvahdjukaar.polytone.colors;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonParseException;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.particles.ParticleModifier;
+import net.mehvahdjukaar.polytone.particles.ParticleManager;
 import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
-import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class ColorManager extends SinglePropertiesReloadListener {
 
-    private final Map<MapColor, Integer> vanillaMapColors = new HashMap<>();
+    private final Object2IntMap<MapColor> vanillaMapColors = new Object2IntOpenHashMap<>();
     private final Map<DyeColor, Integer> vanillaFireworkColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaDiffuseColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaTextColors = new EnumMap<>(DyeColor.class);
+    private final Object2IntMap<SpawnEggItem> vanillaEggsBackgrounds = new Object2IntOpenHashMap<>();
+    private final Object2IntMap<SpawnEggItem> vanillaEggsHighlight = new Object2IntOpenHashMap<>();
 
 
     public ColorManager() {
-        super("optifine/color.properties",
-                "vanadium/color.properties",
-                "colormatic/color.properties",
-                Polytone.MOD_ID + "/color.properties");
+        super("color.properties", "optifine", "vanadium", "colormatic", Polytone.MOD_ID);
     }
 
     @Override
@@ -41,7 +47,7 @@ public class ColorManager extends SinglePropertiesReloadListener {
             for (var v : list) {
                 for (var e : v.entrySet()) {
                     if (e.getKey() instanceof String key) {
-                        String[] split = key.split("/.");
+                        String[] split = key.split("\\.");
                         parseAllColors(split, e.getValue());
                     }
                 }
@@ -71,25 +77,20 @@ public class ColorManager extends SinglePropertiesReloadListener {
             DyeColor color = DyeColor.byName(name, null);
             if (color != null) {
                 String param = get(prop, 2);
+                int col = parseHex(obj);
                 if (param == null || param.equals("diffuse")) {
-                    //apply diffuse
-                    int col = parseHex(obj);
                     // save vanilla value
                     if (!vanillaDiffuseColors.containsKey(color)) {
                         vanillaDiffuseColors.put(color, pack(color.textureDiffuseColors));
                     }
                     color.textureDiffuseColors = unpack(col);
                 } else if (param.equals("firework")) {
-                    //apply diffuse
-                    int col = parseHex(obj);
                     // save vanilla value
                     if (!vanillaFireworkColors.containsKey(color)) {
                         vanillaFireworkColors.put(color, color.fireworkColor);
                     }
                     color.fireworkColor = col;
                 } else if (param.equals("text")) {
-                    //apply diffuse
-                    int col = parseHex(obj);
                     // save vanilla value
                     if (!vanillaTextColors.containsKey(color)) {
                         vanillaTextColors.put(color, color.textColor);
@@ -98,14 +99,45 @@ public class ColorManager extends SinglePropertiesReloadListener {
                 }
             } else Polytone.LOGGER.error("Unknown DyeColor with name {}", name);
         } else if (is(prop, 0, "particle")) {
-            if (is(prop, 1, "portal")) {
+            if (prop.length > 1) {
+                ResourceLocation id = new ResourceLocation(prop[1].replace("\\", ""));
+                if (obj instanceof String s) {
+                    try{
+                        // turn from hex to decimal if it is a single number
+                        int hex = parseHex(s);
+                        ParticleManager.addCustomParticleColor(id, String.valueOf(hex));
+                    }catch (Exception e){
+                        ParticleManager.addCustomParticleColor(id, s);
+                    }
+                }
+            }
 
-            } else Polytone.LOGGER.error("Unknown Particle Color with name {}", get(prop, 1));
+        } else if (is(prop, 0, "egg")) {
+            if(prop.length>2) {
+                ResourceLocation id = new ResourceLocation(prop[2].replace("\\", ""));
+               Item item = BuiltInRegistries.ITEM.getOptional(id).orElse(null);
+                if (item instanceof SpawnEggItem spawnEggItem) {
+                    int col = parseHex(obj);
+
+                    if (is(prop, 1, "shell")) {
+                        if (!vanillaEggsBackgrounds.containsKey(item)) {
+                            vanillaEggsBackgrounds.put(item, spawnEggItem.backgroundColor);
+                        }
+                        spawnEggItem.backgroundColor = col;
+                    } else if (is(prop, 1, "spots")) {
+                        if (!vanillaEggsHighlight.containsKey(item)) {
+                            vanillaEggsHighlight.put(item, spawnEggItem.highlightColor);
+                        }
+                        spawnEggItem.highlightColor = col;
+                    }
+                }
+                else Polytone.LOGGER.error("Unknown or invalid Spawn Egg Item with name {}", id);
+            }
         }
-
     }
 
-    public static int pack(float[] components) {
+
+    public static int pack(float... components) {
         int n = (int) (components[0] * 255.0F) << 16;
         int o = (int) (components[1] * 255.0F) << 8;
         int p = (int) (components[2] * 255.0F);
@@ -145,13 +177,6 @@ public class ColorManager extends SinglePropertiesReloadListener {
         throw new JsonParseException("Failed to parse object " + obj + ". Expected a String");
     }
 
-    private static Supplier<Integer> parseParticleColor(Object obj){
-        if (obj instanceof String value) {
-
-        }
-        return null;
-    }
-
     private void resetValues() {
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
@@ -178,6 +203,20 @@ public class ColorManager extends SinglePropertiesReloadListener {
             color.textColor = e.getValue();
         }
         vanillaTextColors.clear();
+
+        //spawn eggs
+
+        for (var e : vanillaEggsBackgrounds.entrySet()) {
+            SpawnEggItem item = e.getKey();
+            item.backgroundColor = e.getValue();
+        }
+        vanillaEggsBackgrounds.clear();
+
+        for (var e : vanillaEggsHighlight.entrySet()) {
+            SpawnEggItem item = e.getKey();
+            item.highlightColor = e.getValue();
+        }
+        vanillaEggsHighlight.clear();
     }
 
 

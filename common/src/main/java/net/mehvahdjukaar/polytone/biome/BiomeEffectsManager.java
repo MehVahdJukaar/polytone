@@ -75,6 +75,10 @@ public class BiomeEffectsManager {
         //if we don't have a level, biomes don't exist anymore, so we don't care
 
         VANILLA_EFFECTS.clear();
+
+        //whatever happens we always clear stuff to apply
+        EFFECTS_TO_APPLY.clear();
+
     }
 
 }

@@ -37,4 +37,9 @@ public class ParticleManager {
         }
 
     }
+
+    public static void addCustomParticleColor(ResourceLocation id, String color) {
+        var opt = BuiltInRegistries.PARTICLE_TYPE.getOptional(id);
+        opt.ifPresent(t -> PARTICLE_MODIFIERS.put(t, ParticleModifier.ofColor(color)));
+    }
 }

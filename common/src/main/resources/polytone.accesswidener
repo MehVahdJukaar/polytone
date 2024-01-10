@@ -24,3 +24,17 @@ accessible field net/minecraft/world/item/DyeColor textColor I
 
 accessible field net/minecraft/world/level/biome/Biome specialEffects Lnet/minecraft/world/level/biome/BiomeSpecialEffects;
 mutable field net/minecraft/world/level/biome/Biome specialEffects Lnet/minecraft/world/level/biome/BiomeSpecialEffects;
+
+accessible field net/minecraft/client/particle/Particle xd D
+accessible field net/minecraft/client/particle/Particle yd D
+accessible field net/minecraft/client/particle/Particle zd D
+
+accessible field net/minecraft/client/particle/Particle rCol F
+accessible field net/minecraft/client/particle/Particle gCol F
+accessible field net/minecraft/client/particle/Particle bCol F
+accessible field net/minecraft/client/particle/Particle alpha F
+
+accessible field net/minecraft/world/item/SpawnEggItem backgroundColor I
+mutable field net/minecraft/world/item/SpawnEggItem backgroundColor I
+accessible field net/minecraft/world/item/SpawnEggItem highlightColor I
+mutable field net/minecraft/world/item/SpawnEggItem highlightColor I

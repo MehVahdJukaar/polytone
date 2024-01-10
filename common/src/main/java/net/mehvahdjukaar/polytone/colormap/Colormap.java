@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.FoliageColor;
@@ -53,7 +54,7 @@ public class Colormap implements BlockColor {
 
 
     protected static final Codec<BlockColor> COLORMAP_REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
-            id -> Optional.ofNullable( ColormapsManager.get(id)).map(DataResult::success)
+            id -> Optional.ofNullable(ColormapsManager.get(id)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
                             " Did you place it in 'assets/[your pack]/polytone/colormaps/' ?")),
             object -> Optional.ofNullable(ColormapsManager.getKey(object)).map(DataResult::success)
@@ -106,12 +107,14 @@ public class Colormap implements BlockColor {
 
     @Override
     public int getColor(BlockState blockState, @Nullable BlockAndTintGetter level, @Nullable BlockPos blockPos, int tintIndex) {
-        var getter = getters.get(tintIndex);
-        if (getter != null) return getter.getColor(blockState, level, blockPos);
-        else {
+        ColormapTintGetter getter = getters.get(tintIndex);
+        if (getter == null) {
             getter = getters.get(-1);
-            if (getter != null) return getter.getColor(blockState, level, blockPos);
         }
+        if (getter != null) {
+            return getter.getColor(blockState, level, blockPos);
+        }
+
         return -1;
     }
 
@@ -152,6 +155,9 @@ public class Colormap implements BlockColor {
 
         public int getColor(BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
             if (pos == null || level == null || image == null) return defaultColor;
+            if (ruleTest.isPresent() && !ruleTest.get().test(state, RandomSource.create(pos.asLong()))) {
+                return -1;
+            }
 
             float humidity = Mth.clamp(xGetter.getValue(state, level, pos), 0, 1);
             float temperature = Mth.clamp(yGetter.getValue(state, level, pos), 0, 1);
