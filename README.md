@@ -1,5 +1,7 @@
 ## Polytone
-Polytone is a client-side customization mod which allows tweaking various aspect with the game via Resource Packs
+![polytone5](https://github.com/MehVahdJukaar/polytone/assets/24719182/cda24fca-afee-459f-8575-93060fd9e31b)
+
+Polytone is a powerful client-side customization mod which allows tweaking various aspect with the game via Resource Packs
 
 These include:
 
