@@ -15,7 +15,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.FoliageColor;
@@ -42,13 +41,18 @@ public class Colormap implements BlockColor {
             l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : -1;
 
     public static final Colormap BIOME_SAMPLE = new Colormap(Map.of("-1",
-            new ColormapTintGetter(Optional.of(-1), ExpressionSource.make("TEMPERATURE"), ExpressionSource.make("DOWNFALL"), Optional.empty())));
+            new Sampler(Optional.of(-1), ExpressionSource.make("TEMPERATURE"),
+                    ExpressionSource.make("DOWNFALL"), false)));
+
+    public static final Colormap TR_BIOME_SAMPLE = new Colormap(Map.of("-1",
+            new Sampler(Optional.of(-1), ExpressionSource.make("TEMPERATURE"),
+                    ExpressionSource.make("DOWNFALL"), true)));
 
 
-    final Int2ObjectMap<ColormapTintGetter> getters = new Int2ObjectArrayMap<>();
+    final Int2ObjectMap<Sampler> getters = new Int2ObjectArrayMap<>();
     boolean isReference = false;
 
-    protected static final Codec<Colormap> DIRECT_CODEC = Codec.simpleMap(Codec.STRING, ColormapTintGetter.SINGLE,
+    protected static final Codec<Colormap> DIRECT_CODEC = Codec.simpleMap(Codec.STRING, Sampler.SINGLE,
                     Keyable.forStrings(() -> IntStream.rangeClosed(-1, 16).mapToObj(String::valueOf)))
             .xmap(Colormap::new, Colormap::toStringMap).codec();
 
@@ -75,7 +79,7 @@ public class Colormap implements BlockColor {
                         return DataResult.success(j);
                     });
 
-    private Colormap(Map<String, ColormapTintGetter> map) {
+    private Colormap(Map<String, Sampler> map) {
         for (var e : map.entrySet()) {
             getters.put(Integer.parseInt(e.getKey()), e.getValue());
         }
@@ -88,26 +92,26 @@ public class Colormap implements BlockColor {
     public static Colormap createDefault(Set<Integer> tintIndexes) {
         var c = new Colormap();
         for (var i : tintIndexes) {
-            c.getters.put(i.intValue(), new ColormapTintGetter(Optional.empty(),
+            c.getters.put(i.intValue(), new Sampler(Optional.empty(),
                     ExpressionSource.make("TEMPERATURE"),
-                    ExpressionSource.make("DOWNFALL"), Optional.empty()));
+                    ExpressionSource.make("DOWNFALL"), false));
         }
         return c;
     }
 
 
-    public Int2ObjectMap<ColormapTintGetter> getGetters() {
+    public Int2ObjectMap<Sampler> getGetters() {
         return getters;
     }
 
-    public Map<String, ColormapTintGetter> toStringMap() {
+    public Map<String, Sampler> toStringMap() {
         return getters.int2ObjectEntrySet().stream()
                 .collect(Collectors.toMap(entry -> String.valueOf(entry.getIntKey()), Map.Entry::getValue));
     }
 
     @Override
     public int getColor(BlockState blockState, @Nullable BlockAndTintGetter level, @Nullable BlockPos blockPos, int tintIndex) {
-        ColormapTintGetter getter = getters.get(tintIndex);
+        Sampler getter = getters.get(tintIndex);
         if (getter == null) {
             getter = getters.get(-1);
         }
@@ -123,27 +127,27 @@ public class Colormap implements BlockColor {
     }
 
 
-    public static class ColormapTintGetter {
+    public static class Sampler {
 
         private final ExpressionSource xGetter;
         private final ExpressionSource yGetter;
-        private final Optional<RuleTest> ruleTest;
+        private final boolean triangular;
 
         private Integer defaultColor = null;
         private ArrayImage image = null;
 
-        private static final Codec<ColormapTintGetter> SINGLE = RecordCodecBuilder.create(i -> i.group(
+        private static final Codec<Sampler> SINGLE = RecordCodecBuilder.create(i -> i.group(
                 StrOpt.of(Codec.INT, "default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
                 ExpressionSource.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
                 ExpressionSource.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
-                StrOpt.of(RuleTest.CODEC, "block_test").forGetter(c -> c.ruleTest)
-        ).apply(i, ColormapTintGetter::new));
+                StrOpt.of(Codec.BOOL, "triangular", false).forGetter(c -> c.triangular)
+        ).apply(i, Sampler::new));
 
-        private ColormapTintGetter(Optional<Integer> defaultColor, ExpressionSource xGetter, ExpressionSource yGetter, Optional<RuleTest> ruleTest) {
+        private Sampler(Optional<Integer> defaultColor, ExpressionSource xGetter, ExpressionSource yGetter, boolean triangular) {
             this.defaultColor = defaultColor.orElse(null);
             this.xGetter = xGetter;
             this.yGetter = yGetter;
-            this.ruleTest = ruleTest;
+            this.triangular = triangular;
         }
 
         public void acceptTexture(ArrayImage image) {
@@ -155,9 +159,6 @@ public class Colormap implements BlockColor {
 
         public int getColor(BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
             if (pos == null || level == null || image == null) return defaultColor;
-            if (ruleTest.isPresent() && !ruleTest.get().test(state, RandomSource.create(pos.asLong()))) {
-                return -1;
-            }
 
             float humidity = Mth.clamp(xGetter.getValue(state, level, pos), 0, 1);
             float temperature = Mth.clamp(yGetter.getValue(state, level, pos), 0, 1);
@@ -165,12 +166,14 @@ public class Colormap implements BlockColor {
         }
 
         private int sample(float x, float y, int defValue) {
-            x *= y;
-            int i = (int) ((1.0 - y) * image.width());
-            int j = (int) ((1.0 - x) * image.height());
-            int k = j << 8 | i;
-            int[] pixels = image.pixels();
-            return k >= pixels.length ? defValue : pixels[k];
+            if (triangular) x *= y;
+            int width = image.width();
+            int height = image.height();
+
+            int w = (int) ((1.0 - y) * (width-1));
+            int h = (int) ((1.0 - x) * (height-1));
+
+            return w >= width || h >= height ? defValue : image.pixels()[h][w];
         }
     }
 

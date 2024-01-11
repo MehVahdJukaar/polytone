@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.mixins;
+package net.mehvahdjukaar.polytone.mixins.forge;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;

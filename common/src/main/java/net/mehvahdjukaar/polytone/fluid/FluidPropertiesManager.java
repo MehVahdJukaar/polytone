@@ -65,6 +65,7 @@ public class FluidPropertiesManager {
 
     public static int modifyColor(int original, BlockAndTintGetter level, BlockPos pos, BlockState state, FluidState fluidState) {
         var modifier = FLUID_COLORMAPS.get(fluidState.getType());
+        //if(true)return 0;
         if (modifier != null) {
             Optional<BlockColor> col = modifier.colormap();
             if (col.isPresent()) return col.get().getColor(state, level, pos, -1) | 0xff000000;

@@ -51,4 +51,7 @@ accessible method net/minecraft/world/entity/animal/Sheep createSheepColor (Lnet
 accessible field net/minecraft/world/entity/animal/Sheep COLORARRAY_BY_COLOR Ljava/util/Map;
 mutable field net/minecraft/world/entity/animal/Sheep COLORARRAY_BY_COLOR Ljava/util/Map;
 
+accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase mapColor Lnet/minecraft/world/level/material/MapColor;
+mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase mapColor Lnet/minecraft/world/level/material/MapColor;
+
 accessible field net/minecraft/client/renderer/chunk/RenderChunkRegion level Lnet/minecraft/world/level/Level;

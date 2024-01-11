@@ -63,6 +63,10 @@ public record BlockPropertyModifier(
         if (mapColor.isPresent()) {
             oldMapColor = block.properties.mapColor;
             block.properties.mapColor = mapColor.get();
+            for (var s : block.getStateDefinition().getPossibleStates()) {
+                s.mapColor = block.properties.mapColor.apply(s);
+            }
+
         }
         BlockColor color = null;
         if (tintGetter.isPresent()) {

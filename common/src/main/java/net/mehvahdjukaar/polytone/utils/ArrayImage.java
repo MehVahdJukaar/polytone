@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
 @SuppressWarnings("all")
-public record ArrayImage(int[] pixels, int width, int height) {
+public record ArrayImage(int[][] pixels, int width, int height) {
+    //TODO: remove this isnt needed
 }

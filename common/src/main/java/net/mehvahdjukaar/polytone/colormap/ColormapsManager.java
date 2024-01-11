@@ -12,6 +12,7 @@ import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.FastColor;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -57,12 +58,13 @@ public class ColormapsManager {
         }
     }
 
-    public static void clear(){
+    public static void clear() {
         COLORMAPS_IDS.clear();
         COLORMAPS_IDS.put(new ResourceLocation("grass_color"), Colormap.GRASS_COLOR);
         COLORMAPS_IDS.put(new ResourceLocation("foliage_color"), Colormap.FOLIAGE_COLOR);
         COLORMAPS_IDS.put(new ResourceLocation("water_color"), Colormap.WATER_COLOR);
         COLORMAPS_IDS.put(new ResourceLocation("biome_sample"), Colormap.BIOME_SAMPLE);
+        COLORMAPS_IDS.put(new ResourceLocation("triangular_biome_sample"), Colormap.TR_BIOME_SAMPLE);
     }
 
     @Nullable
@@ -89,7 +91,7 @@ public class ColormapsManager {
 
             try (InputStream inputStream = entry.getValue().open();
                  NativeImage nativeImage = NativeImage.read(inputStream)) {
-                int[] pixels = nativeImage.makePixelArray();
+                int[][] pixels = makePixelMatrix(nativeImage);
 
                 ArrayImage image = new ArrayImage(pixels, nativeImage.getWidth(), nativeImage.getHeight());
                 ArrayImage oldImage = map.put(id, image);
@@ -102,8 +104,32 @@ public class ColormapsManager {
         }
     }
 
+    //basically just swaps the color format
+    private static int[][] makePixelMatrix(NativeImage nativeImage) {
+        if (nativeImage.format() != NativeImage.Format.RGBA) {
+            throw new UnsupportedOperationException("Can only call makePixelMatrix for RGBA images.");
+        } else {
+            int width = nativeImage.getWidth();
+            int height = nativeImage.getHeight();
+            int[][] pixelMatrix = new int[height][width];
 
-   public static Map<ResourceLocation, Map<Integer, ArrayImage>> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
+            for (int i = 0; i < height; ++i) {
+                for (int j = 0; j < width; ++j) {
+                    int pixel = nativeImage.getPixelRGBA(j, i);
+                    pixelMatrix[i][j] = FastColor.ARGB32.color(
+                            FastColor.ABGR32.alpha(pixel),
+                            FastColor.ABGR32.red(pixel),
+                            FastColor.ABGR32.green(pixel),
+                            FastColor.ABGR32.blue(pixel)
+                    );
+                }
+            }
+            return pixelMatrix;
+        }
+    }
+
+
+    public static Map<ResourceLocation, Map<Integer, ArrayImage>> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
         Map<ResourceLocation, Map<Integer, ArrayImage>> groupedMap = new HashMap<>();
 
         Pattern pattern = Pattern.compile("(\\D+)(_\\d+)?");
@@ -129,9 +155,8 @@ public class ColormapsManager {
     }
 
 
-
-   public static void fillColormapPalette(Map<ResourceLocation, Map<Integer, ArrayImage>> textures,
-                                     ResourceLocation id, Colormap colormap, Set<ResourceLocation> usedTextures) {
+    public static void fillColormapPalette(Map<ResourceLocation, Map<Integer, ArrayImage>> textures,
+                                           ResourceLocation id, Colormap colormap, Set<ResourceLocation> usedTextures) {
         var getters = colormap.getGetters();
 
         var textureMap = textures.get(id);
@@ -139,7 +164,7 @@ public class ColormapsManager {
         if (textureMap != null) {
             for (var g : getters.int2ObjectEntrySet()) {
                 int index = g.getIntKey();
-                Colormap.ColormapTintGetter tint = g.getValue();
+                Colormap.Sampler tint = g.getValue();
                 boolean success = false;
                 if (getters.size() == 1 || index == 0) {
                     success = tryPopulatingColormap(textureMap, id, -1, tint, usedTextures);
@@ -159,7 +184,7 @@ public class ColormapsManager {
     }
 
     private static boolean tryPopulatingColormap(Map<Integer, ArrayImage> textures, ResourceLocation path, int index,
-                                                 Colormap.ColormapTintGetter g, Set<ResourceLocation> usedTexture) {
+                                                 Colormap.Sampler g, Set<ResourceLocation> usedTexture) {
         ArrayImage texture = textures.get(index);
         if (texture != null) {
             usedTexture.add(path);
