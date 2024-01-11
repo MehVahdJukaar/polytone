@@ -1,5 +1,5 @@
 ## Polytone
-![polytone5](https://github.com/MehVahdJukaar/polytone/assets/24719182/cda24fca-afee-459f-8575-93060fd9e31b)
+[![polytone_banner](https://github.com/MehVahdJukaar/polytone/assets/24719182/7c5bb84a-5aa8-4883-9e23-c27e8ce60c22)](https://legacy.curseforge.com/minecraft/mc-mods/polytone)
 
 Polytone is a powerful client-side customization mod which allows tweaking various aspect with the game via Resource Packs
 
