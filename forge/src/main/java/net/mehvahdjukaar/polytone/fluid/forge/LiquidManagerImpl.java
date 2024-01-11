@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.liquid.forge;
+package net.mehvahdjukaar.polytone.fluid.forge;
 
 import com.google.gson.JsonElement;
 import net.minecraft.resources.ResourceLocation;

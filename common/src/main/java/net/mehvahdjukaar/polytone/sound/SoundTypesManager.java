@@ -13,10 +13,12 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
@@ -28,6 +30,8 @@ import java.io.Reader;
 import java.util.*;
 
 public class SoundTypesManager {
+
+    private static Map<ResourceLocation, SoundEvent> CUSTOM_SOUND_EVENTS = new HashMap<>();
 
     private static boolean firstBoot = false;
 
@@ -58,20 +62,26 @@ public class SoundTypesManager {
         }
     }
 
-    public static void processCustomSounds(Map<ResourceLocation, List<String>> customSoundEvents) {
-        if (!firstBoot) {
-            firstBoot = true;
-            List<ResourceLocation> ids = new ArrayList<>();
-            for (var e : customSoundEvents.entrySet()) {
-                for (var s : e.getValue()) {
-                    ResourceLocation id = e.getKey().withPath(s);
-                    PlatStuff.registerSoundEvent(id);
+    public static void processCustomSoundEvents(Map<ResourceLocation, List<String>> customSoundEvents) {
+        CUSTOM_SOUND_EVENTS.clear();
+        List<ResourceLocation> ids = new ArrayList<>();
+        for (var e : customSoundEvents.entrySet()) {
+            for (var s : e.getValue()) {
+                ResourceLocation id = e.getKey().withPath(s);
+                if (!CUSTOM_SOUND_EVENTS.containsKey(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
+                    var event = PlatStuff.registerSoundEvent(id);
                     ids.add(id);
+                    CUSTOM_SOUND_EVENTS.put(id, event);
                 }
             }
-            Polytone.LOGGER.info("Registered {} custom Sound Events from Resource Packs: {}", ids.size(), ids+". Remember to add them to sounds.json!");
-
         }
+        if (!ids.isEmpty()) {
+            Polytone.LOGGER.info("Registered {} custom Sound Events from Resource Packs: {}", ids.size(), ids + ". Remember to add them to sounds.json!");
+            //this is bad
+            Minecraft.getInstance().getSoundManager().reload();
+            //this entire thing is a bad idea
+        }
+
     }
 
     public static Map<ResourceLocation, List<String>> gatherSoundEvents(ResourceManager resourceManager, String path) {
@@ -86,9 +96,9 @@ public class SoundTypesManager {
                             .map(line -> line.split(",")) // Splitting by comma
                             .flatMap(Arrays::stream)
                             .map(String::trim)
-                            .filter(v->ResourceLocation.tryParse(v) != null && !v.isEmpty())// Removing extra spaces
+                            .filter(v -> ResourceLocation.tryParse(v) != null && !v.isEmpty())// Removing extra spaces
                             .toList();
-                    if(!lines.isEmpty()) idList.put(e.getKey(), lines);
+                    if (!lines.isEmpty()) idList.put(e.getKey(), lines);
                 } catch (IllegalArgumentException | IOException | JsonParseException ex) {
                     Polytone.LOGGER.error("Couldn't parse Custom Sound Events file {}:", e.getKey(), ex);
                 }

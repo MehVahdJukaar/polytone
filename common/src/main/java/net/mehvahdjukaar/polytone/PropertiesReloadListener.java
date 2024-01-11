@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
 import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
@@ -26,7 +27,7 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
     private static final String SOUND_TYPE_PATH = "sound_types";
     private static final String BLOCK_PROPERTIES_PATH = "block_properties";
     private static final String BIOME_EFFECTS_PATH = "biome_effects";
-    private static final String LIQUID_PATH = "liquid_properties";
+    private static final String FLUID_PROPERTIES = "fluid_properties";
     private static final String PARTICLE_PATH = "particle_modifiers";
     private static final String VARIANT_TEXTURES_PATH = "variant_textures";
 
@@ -65,7 +66,7 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
         scanDirectory(resourceManager, ROOT + "/" + BIOME_EFFECTS_PATH, this.gson, biomeEffects);
 
         Map<ResourceLocation, JsonElement> liquids = new HashMap<>();
-        scanDirectory(resourceManager, ROOT + "/" + LIQUID_PATH, this.gson, liquids);
+        scanDirectory(resourceManager, ROOT + "/" + FLUID_PROPERTIES, this.gson, liquids);
 
         Map<ResourceLocation, JsonElement> particles = new HashMap<>();
         scanDirectory(resourceManager, ROOT + "/" + PARTICLE_PATH, this.gson, particles);
@@ -96,6 +97,7 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
         Map<ResourceLocation, JsonElement> biomesJsons = resources.biomeEffects;
         Map<ResourceLocation, JsonElement> particleJsons = resources.particles;
         Map<ResourceLocation, JsonElement> variantTextures = resources.variantTextures;
+        Map<ResourceLocation, JsonElement> fluidsPropertiesJsons = resources.liquids;
         Map<ResourceLocation, List<String>> soundEvents = resources.soundEvents;
 
         Map<ResourceLocation, Map<Integer, ArrayImage>> groupedTextures = ColormapsManager.groupTextures(resources.textures);
@@ -114,7 +116,7 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
         }
 
         // Registers client only sounds if needed
-        SoundTypesManager.processCustomSounds(soundEvents);
+        SoundTypesManager.processCustomSoundEvents(soundEvents);
 
         // Create defined sound types
         SoundTypesManager.process(soundJsons);
@@ -123,8 +125,11 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
         // Creates defined colormaps
         ColormapsManager.process(colormapJsons, texturesColormap, usedTextures);
 
-        // Creates block properties blockModifiers
+        // Creates block Modifiers
         BlockPropertiesManager.process(blockPropertiesJsons, texturesProperties, usedTextures);
+
+        // Creates fluid modifiers
+        FluidPropertiesManager.process(fluidsPropertiesJsons, texturesProperties, usedTextures);
 
         // Create biomes blockModifiers
         BiomeEffectsManager.process(biomesJsons);

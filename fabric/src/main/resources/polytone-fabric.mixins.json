@@ -7,7 +7,7 @@
   ],
   "client": [
     "BlockColorsAccessor",
-    "ColorResolverMixin"
+    "ColorResolverMixin",
   ],
   "injectors": {
     "defaultRequire": 1

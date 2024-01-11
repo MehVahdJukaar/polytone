@@ -7,12 +7,12 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
@@ -35,6 +35,7 @@ public class ColorManager extends SinglePropertiesReloadListener {
     private final Object2IntMap<SpawnEggItem> vanillaEggsHighlight = new Object2IntOpenHashMap<>();
     private final Object2IntMap<MobEffect> vanillaEffectColors = new Object2IntOpenHashMap<>();
 
+    private final Map<DyeColor, Integer> customSheepColors = new EnumMap<>(DyeColor.class);
 
     public ColorManager() {
         super("color.properties", "optifine", "vanadium", "colormatic", Polytone.MOD_ID);
@@ -51,19 +52,20 @@ public class ColorManager extends SinglePropertiesReloadListener {
                 for (var e : v.entrySet()) {
                     if (e.getKey() instanceof String key) {
                         String[] split = key.split("\\.");
-                        parseAllColors(split, e.getValue());
+                        parseColor(split, e.getValue());
                     }
                 }
             }
         } catch (Exception ex) {
             Polytone.LOGGER.error("Visual Properties failed to apply custom MapColors. Rolling back to vanilla state", ex);
             resetValues();
-            BakedQuad
         }
+
+        regenSheepColors();
     }
 
 
-    private void parseAllColors(String[] prop, Object obj) {
+    private void parseColor(String[] prop, Object obj) {
         if (is(prop, 0, "map")) {
             String name = get(prop, 1);
             MapColor color = MapColorHelper.byName(name);
@@ -146,6 +148,13 @@ public class ColorManager extends SinglePropertiesReloadListener {
                 }
                 effect.color = col;
             } else Polytone.LOGGER.warn("Unknown Mob Effect with name {}", id);
+        } else if (is(prop, 0, "sheep")) {
+            String name = get(prop, 1);
+            DyeColor color = DyeColor.byName(name, null);
+            if (color != null) {
+                int col = parseHex(obj);
+                customSheepColors.put(color, col);
+            } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
         }
     }
 
@@ -165,19 +174,19 @@ public class ColorManager extends SinglePropertiesReloadListener {
     }
 
     private boolean is(String[] array, int index, String value) {
-        if (array.length < index) return false;
+        if (array.length <= index) return false;
         return array[index].equals(value);
     }
 
     @Nullable
     private String get(String[] array, int index) {
-        if (array.length < index) return null;
+        if (array.length <= index) return null;
         return array[index];
     }
 
     @Nullable
     private <T> T get(String[] array, int index, Function<String, T> fun) {
-        if (array.length < index) return null;
+        if (array.length <= index) return null;
         return fun.apply(array[index]);
     }
 
@@ -232,5 +241,15 @@ public class ColorManager extends SinglePropertiesReloadListener {
         vanillaEggsHighlight.clear();
     }
 
+    public void regenSheepColors() {
+        Sheep.COLORARRAY_BY_COLOR = new EnumMap<>(DyeColor.class);
+        for (var d : DyeColor.values()) {
+            Sheep.COLORARRAY_BY_COLOR.put(d, Sheep.createSheepColor(d));
+        }
+        for (var e : customSheepColors.entrySet()) {
+            Sheep.COLORARRAY_BY_COLOR.put(e.getKey(), unpack(e.getValue()));
+        }
+        customSheepColors.clear();
+    }
 
 }

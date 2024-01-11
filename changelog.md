@@ -1,1 +1,1 @@
-fixed some issues with color.properties parsing
+you can use fluid properties

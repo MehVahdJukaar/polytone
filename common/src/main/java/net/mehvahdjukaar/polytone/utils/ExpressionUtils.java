@@ -26,6 +26,13 @@ public class ExpressionUtils {
         }
     };
 
+    private static final Function SIN = new Function("sin", 1) {
+        @Override
+        public double apply(double... args) {
+            return Mth.sin((float) args[0]);
+        }
+    };
+
     private static final Function ATAN2 = new Function("atan2", 2) {
         @Override
         public double apply(double... args) {
@@ -33,12 +40,6 @@ public class ExpressionUtils {
         }
     };
 
-    private static final Function SIN = new Function("sin", 1) {
-        @Override
-        public double apply(double... args) {
-            return Mth.sin((float) args[0]);
-        }
-    };
 
     private static final Function STEP = new Function("step", 2) {
         @Override
@@ -143,7 +144,7 @@ public class ExpressionUtils {
 
     public static Function[] defFunc(Function... others) {
         return Stream.concat(
-                Stream.of(SIN, COS, ATAN2, RAND, STEP, SMOOTHSTEP, MAX, MIN, LERP),
+                Stream.of( ATAN2, RAND, STEP, SMOOTHSTEP, MAX, MIN, LERP),
                 Stream.of(others)
         ).toArray(Function[]::new);
     }
