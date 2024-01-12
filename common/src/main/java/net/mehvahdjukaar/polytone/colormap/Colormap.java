@@ -11,6 +11,7 @@ import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
@@ -31,6 +32,7 @@ import java.util.stream.IntStream;
 
 public class Colormap implements BlockColor {
 
+    //TODO: delegate to grass so we have quark compat
     public static final BlockColor GRASS_COLOR = (s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor();
 

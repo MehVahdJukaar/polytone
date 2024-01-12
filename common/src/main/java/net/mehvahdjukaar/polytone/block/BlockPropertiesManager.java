@@ -34,7 +34,7 @@ public class BlockPropertiesManager {
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Client Block Property with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 
-            //fill inline colormaps textures
+            //fill inline colormaps colormapTextures
             var colormap = prop.tintGetter();
             if (colormap.isPresent() && colormap.get() instanceof Colormap c && !c.isReference()) {
                 ColormapsManager.fillColormapPalette(texturesProperties, id, c, usedTextures);

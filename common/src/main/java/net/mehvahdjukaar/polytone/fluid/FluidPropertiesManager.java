@@ -36,7 +36,7 @@ public class FluidPropertiesManager {
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Fluid Color Modifier with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 
-            //fill inline colormaps textures
+            //fill inline colormaps colormapTextures
             BlockColor colormap = modifier.colormap().orElse(null);
             if (colormap instanceof Colormap c && !c.isReference()) {
                 ColormapsManager.fillColormapPalette(texturesProperties, id, c, usedTextures);
@@ -65,7 +65,6 @@ public class FluidPropertiesManager {
 
     public static int modifyColor(int original, BlockAndTintGetter level, BlockPos pos, BlockState state, FluidState fluidState) {
         var modifier = FLUID_COLORMAPS.get(fluidState.getType());
-        //if(true)return 0;
         if (modifier != null) {
             Optional<BlockColor> col = modifier.colormap();
             if (col.isPresent()) return col.get().getColor(state, level, pos, -1) | 0xff000000;
