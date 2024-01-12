@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.objecthunter.exp4j.function.Function;
@@ -30,6 +31,41 @@ public class ExpressionUtils {
         @Override
         public double apply(double... args) {
             return Mth.sin((float) args[0]);
+        }
+    };
+
+    private static final Function RED = new Function("red", 1) {
+        @Override
+        public double apply(double... args) {
+            return FastColor.ARGB32.red((int) args[0]) / 255f;
+        }
+    };
+
+    private static final Function GREEN = new Function("green", 1) {
+        @Override
+        public double apply(double... args) {
+            return FastColor.ARGB32.green((int) args[0]) / 255f;
+        }
+    };
+
+    private static final Function BLUE = new Function("blue", 1) {
+        @Override
+        public double apply(double... args) {
+            return FastColor.ARGB32.blue((int) args[0]) / 255f;
+        }
+    };
+
+    private static final Function ALPHA = new Function("alpha", 1) {
+        @Override
+        public double apply(double... args) {
+            return FastColor.ARGB32.alpha((int) args[0]) / 255f;
+        }
+    };
+
+    private static final Function COLOR = new Function("color", 4) {
+        @Override
+        public double apply(double... args) {
+            return FastColor.ARGB32.color((int) (args[0] * 255f), (int) (args[1] * 255f), (int) (args[2] * 255f), (int) (args[3] * 255f));
         }
     };
 
@@ -144,7 +180,7 @@ public class ExpressionUtils {
 
     public static Function[] defFunc(Function... others) {
         return Stream.concat(
-                Stream.of( ATAN2, RAND, STEP, SMOOTHSTEP, MAX, MIN, LERP),
+                Stream.of(ATAN2, RAND, STEP, SMOOTHSTEP, MAX, MIN, LERP, RED, GREEN, BLUE, ALPHA, COLOR),
                 Stream.of(others)
         ).toArray(Function[]::new);
     }

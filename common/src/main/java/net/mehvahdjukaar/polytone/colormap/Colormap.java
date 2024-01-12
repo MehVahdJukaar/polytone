@@ -159,8 +159,8 @@ public class Colormap implements BlockColor {
             }
         }
 
-        public int getColor(BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
-            if (pos == null || level == null || image == null) return defaultColor;
+        public int getColor(@Nullable BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
+            if (pos == null || level == null || state == null || image == null) return defaultColor;
 
             float humidity = Mth.clamp(xGetter.getValue(state, level, pos), 0, 1);
             float temperature = Mth.clamp(yGetter.getValue(state, level, pos), 0, 1);

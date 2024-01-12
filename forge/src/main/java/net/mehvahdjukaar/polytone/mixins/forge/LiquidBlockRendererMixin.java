@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(LiquidBlockRenderer.class)
 public class LiquidBlockRendererMixin {
 
+    //TODO: replace when that fucking interface static inject works. Neo switch to fabric mixins already...
     @ModifyVariable(method = "tesselate",
             at = @At(value = "STORE"), ordinal = 0)
     public int polytone$modifyTint(int original, BlockAndTintGetter level, BlockPos pos, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState) {

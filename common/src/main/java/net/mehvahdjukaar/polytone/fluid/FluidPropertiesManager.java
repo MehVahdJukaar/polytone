@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.fluid;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
@@ -16,6 +17,7 @@ import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +29,9 @@ public class FluidPropertiesManager {
     private static final Map<Fluid, FluidPropertyModifier> FLUID_COLORMAPS = new HashMap<>();
 
     public static void process(Map<ResourceLocation, JsonElement> elements, Map<ResourceLocation, Map<Integer, ArrayImage>> texturesProperties, Set<ResourceLocation> usedTextures) {
-
+        FLUID_COLORMAPS.clear();
+        clearSpecial();
+        
         for (var j : elements.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
@@ -56,18 +60,34 @@ public class FluidPropertiesManager {
         }
     }
 
+
     private static void tryAdd(ResourceLocation id, FluidPropertyModifier colormap) {
         var fluid = Polytone.getTarget(id, BuiltInRegistries.FLUID);
         if (fluid != null) {
             FLUID_COLORMAPS.put(fluid.getFirst(), colormap);
         }
+        tryAddSpecial(id, colormap);
     }
 
-    public static int modifyColor(int original, BlockAndTintGetter level, BlockPos pos, BlockState state, FluidState fluidState) {
+    @ExpectPlatform
+    private static void tryAddSpecial(ResourceLocation id, FluidPropertyModifier colormap) {
+        throw new AssertionError();
+    }
+    @ExpectPlatform
+    private static void clearSpecial() {
+        throw new AssertionError();
+    }
+
+
+    public static int modifyColor(int original, @Nullable BlockAndTintGetter level,
+                                  @Nullable BlockPos pos , @Nullable BlockState state,
+                                  FluidState fluidState) {
         var modifier = FLUID_COLORMAPS.get(fluidState.getType());
         if (modifier != null) {
-            Optional<BlockColor> col = modifier.colormap();
-            if (col.isPresent()) return col.get().getColor(state, level, pos, -1) | 0xff000000;
+            var col = modifier.getColormap();
+            if (col!= null){
+                return col.getColor(state, level, pos, -1) | 0xff000000;
+            }
         }
         return original;
     }

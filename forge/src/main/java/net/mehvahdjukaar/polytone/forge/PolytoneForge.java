@@ -3,12 +3,15 @@ package net.mehvahdjukaar.polytone.forge;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.minecraft.client.renderer.block.LiquidBlockRenderer;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.RuntimeDistCleaner;
 
 /**
  * Author: MehVahdJukaar
@@ -17,9 +20,12 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class PolytoneForge {
 
     public PolytoneForge() {
-        Polytone.init(false);
-        FMLJavaModLoadingContext.get().getModEventBus().register(this);
-        MinecraftForge.EVENT_BUS.addListener(PolytoneForge::onTagSync);
+        if(FMLEnvironment.dist == Dist.CLIENT) {
+            Polytone.init(false);
+
+            FMLJavaModLoadingContext.get().getModEventBus().register(this);
+            MinecraftForge.EVENT_BUS.addListener(PolytoneForge::onTagSync);
+        }
     }
 
     @SubscribeEvent

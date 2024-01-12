@@ -89,12 +89,14 @@ public final class ExpressionSource {
     private final AtomicBoolean nonBlockingLock = new AtomicBoolean();
 
     public float getValue(BlockState state, @NotNull BlockAndTintGetter level, @NotNull BlockPos pos) {
-
+        float result = 0;
+        boolean needsToUnlock = false;
         try {
             Expression exp;
             // no other code has acquired this yet so we can use our instance
-            if (nonBlockingLock.compareAndSet(false, true)) {
+            if (false && nonBlockingLock.compareAndSet(false, true)) {
                 exp = expression;
+                needsToUnlock = true;
             } else {
                 // if not, we have to create a new one because this has to work concurrently.
                 exp = new Expression(this.expression);
@@ -109,12 +111,14 @@ public final class ExpressionSource {
             // Evaluate the expression
             //this state hack wont even work as its multithreaded lmao
             STATE_HACK.set(state);
-            double result = exp.evaluate();
+            result = (float) exp.evaluate();
             STATE_HACK.remove();
-            return (float) result;
+
         } catch (Exception e) {
             Polytone.LOGGER.error("Failed to evaluate expression with value: {}", unparsed, e);
+        } finally {
+            if (needsToUnlock) nonBlockingLock.set(false);
         }
-        return 0;
+        return result;
     }
 }

@@ -8,8 +8,7 @@
   "client": [
     "BlockColorsAccessor",
     "ColorResolverMixin",
-    ,
-    "LiquidBlockRendererMixin"
+    "FluidRendererHandlerRegistryMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -83,7 +83,7 @@ public class PropertiesReloadListener extends SimplePreparableReloadListener<Pro
         ArrayImage.gatherImages(resourceManager, ROOT, colormapTextures);
 
         Map<ResourceLocation, ArrayImage> lightmaps = new HashMap<>();
-        ArrayImage.gatherImages(resourceManager, ROOT + "/" + LIGHTMAPS_PATH, colormapTextures);
+        ArrayImage.gatherImages(resourceManager, ROOT + "/" + LIGHTMAPS_PATH, lightmaps);
 
         return new Resources(blockProperties, colormaps, soundTypes, biomeEffects, liquids, particles,
                 variantTextures, soundEvents, lightmaps, colormapTextures);

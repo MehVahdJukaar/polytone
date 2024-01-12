@@ -31,7 +31,7 @@ public class PlatStuffImpl {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(eventConsumer);
     }
 
-    private static Field f;
+    private static final Field f;
 
     static {
         try {
