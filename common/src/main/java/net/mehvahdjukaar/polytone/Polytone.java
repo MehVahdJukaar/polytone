@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone;
 import com.mojang.datafixers.util.Pair;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.color.ColorManager;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
@@ -19,8 +20,6 @@ public class Polytone {
 
         PlatStuff.addClientReloadListener(ColorManager::new, res("color_manager"));
         PlatStuff.addClientReloadListener(PropertiesReloadListener::new, res("block_properties_manager"));
-
-
     }
 
     public static ResourceLocation res(String name) {
@@ -29,7 +28,7 @@ public class Polytone {
 
 
     public static void onTagsReceived(RegistryAccess registryAccess) {
-        BiomeEffectsManager.doApply(registryAccess);
+        BiomeEffectsManager.doApply(registryAccess, true);
 
     }
 
@@ -47,4 +46,6 @@ public class Polytone {
         opt = registry.getOptional(resourcePath);
         return opt.map(t -> Pair.of(t, resourcePath)).orElse(null);
     }
+
+
 }

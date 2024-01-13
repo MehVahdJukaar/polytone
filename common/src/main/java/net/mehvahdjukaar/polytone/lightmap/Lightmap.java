@@ -20,11 +20,13 @@ import org.joml.Vector3f;
 
 public class Lightmap {
     private final ArrayImage image;
-    private final boolean hasNightVision;
+    private final ArrayImage rain;
+    private final ArrayImage thunder;
 
-    public Lightmap(ArrayImage image) {
+    public Lightmap(ArrayImage image, ArrayImage rain, ArrayImage thunder) {
         this.image = image;
-        hasNightVision = image.height() > 32;
+        this.rain = rain;
+        this.thunder = thunder;
     }
 
 
@@ -95,37 +97,43 @@ public class Lightmap {
 
             for (int torchX = 0; torchX < 16; ++torchX) {
                 Vector3f addition = new Vector3f();
-                Vector3f torchBuffer = new Vector3f(torchLine[torchX]);
+                Vector3f torchBuffer = new Vector3f(torchLine[torchX]).mul(blockLightFlicker);
 
 
-                torchBuffer.mul(1 - lightGrayAmount);
+              //  torchBuffer.mul(1 - lightGrayAmount);
                 addition.add(new Vector3f(lightGray).mul(lightGrayAmount));
 
+                float q = LightTexture.getBrightness(dimensionType, torchX) * blockLightFlicker;
+                float s = q * ((q * 0.6F + 0.4F) * 0.6F + 0.4F);
+                float t = q * (q * q * 0.6F + 0.4F);
+               // torchBuffer.set(q, s, t);
 
-                //TODO:
-                if (darkenWorldAmount > 0.0F) {
-                    Vector3f discolored = (new Vector3f(torchBuffer)).mul(0.7F, 0.6F, 0.6F);
-                    torchBuffer.lerp(discolored, darkenWorldAmount);
-                }
-
-                if (nightVisionScale > 0.0F) {
-                    float maxVal = Math.max(torchBuffer.x(), Math.max(torchBuffer.y(), torchBuffer.z()));
-                    if (maxVal < 1.0F) {
-                        float percentage = 1.0F / maxVal;
-                        Vector3f discolored = (new Vector3f(torchBuffer)).mul(percentage);
-                        torchBuffer.lerp(discolored, nightVisionScale);
-                    }
-                }
-
-                //we make botht hse happen in end too
-                if (darknessSubtract > 0.0F) {
-                    torchBuffer.add(-darknessSubtract, -darknessSubtract, -darknessSubtract);
-                }
 
 
                 Vector3f combined = new Vector3f();
 
                 combined.add(torchBuffer).add(skyBuffer).add(addition);
+
+
+                //TODO:
+                if (darkenWorldAmount > 0.0F) {
+                    Vector3f discolored = (new Vector3f(combined)).mul(0.7F, 0.6F, 0.6F);
+                    combined.lerp(discolored, darkenWorldAmount);
+                }
+
+                if (nightVisionScale > 0.0F) {
+                    float maxVal = Math.max(combined.x(), Math.max(combined.y(), combined.z()));
+                    if (maxVal < 1.0F) {
+                        float percentage = 1.0F / maxVal;
+                        Vector3f discolored = (new Vector3f(combined)).mul(percentage);
+                        combined.lerp(discolored, nightVisionScale);
+                    }
+                }
+
+                //we make botht hse happen in end too
+                if (darknessSubtract > 0.0F) {
+                    combined.add(-darknessSubtract, -darknessSubtract, -darknessSubtract);
+                }
 
                 clampColor(combined);
 

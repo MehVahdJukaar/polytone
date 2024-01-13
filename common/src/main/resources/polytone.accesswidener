@@ -58,4 +58,6 @@ accessible method net/minecraft/client/renderer/LightTexture getDarknessGamma (F
 accessible method net/minecraft/client/renderer/LightTexture calculateDarknessScale (Lnet/minecraft/world/entity/LivingEntity;FF)F
 accessible method net/minecraft/client/renderer/LightTexture notGamma (F)F
 
+accessible field net/minecraft/client/renderer/LightTexture updateLightTexture Z
+
 accessible field net/minecraft/client/renderer/chunk/RenderChunkRegion level Lnet/minecraft/world/level/Level;
