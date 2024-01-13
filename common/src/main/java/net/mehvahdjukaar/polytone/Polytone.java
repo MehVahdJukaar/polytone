@@ -2,8 +2,15 @@ package net.mehvahdjukaar.polytone;
 
 import com.mojang.datafixers.util.Pair;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
+import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.color.ColorManager;
-import net.minecraft.client.renderer.LightTexture;
+import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
+import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
+import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
+import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
+import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
+import net.mehvahdjukaar.polytone.utils.CompoundReloader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
@@ -16,10 +23,22 @@ public class Polytone {
 
     public static final Logger LOGGER = LogManager.getLogger("Polytone");
 
-    public static void init(boolean fabric) {
+    public static final BlockPropertiesManager BLOCK_PROPERTIES = new BlockPropertiesManager();
+    public static final FluidPropertiesManager FLUID_PROPERTIES = new FluidPropertiesManager();
+    public static final BiomeEffectsManager BIOME_EFFECTS = new BiomeEffectsManager();
+    public static final ColormapsManager COLORMAPS = new ColormapsManager();
+    public static final LightmapsManager LIGHTMAPS = new LightmapsManager();
+    public static final ParticleModifiersManager PARTICLE_MODIFIERS = new ParticleModifiersManager();
+    public static final SoundTypesManager SOUND_TYPES = new SoundTypesManager();
+    public static final VariantTextureManager VARIANT_TEXTURES = new VariantTextureManager();
 
+    public static void init() {
         PlatStuff.addClientReloadListener(ColorManager::new, res("color_manager"));
-        PlatStuff.addClientReloadListener(PropertiesReloadListener::new, res("block_properties_manager"));
+        PlatStuff.addClientReloadListener(() -> new CompoundReloader(
+                        SOUND_TYPES, COLORMAPS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
+                        BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS),
+                res("block_properties_manager"));
+        //TODO: colormap for particles
     }
 
     public static ResourceLocation res(String name) {
@@ -28,8 +47,7 @@ public class Polytone {
 
 
     public static void onTagsReceived(RegistryAccess registryAccess) {
-        BiomeEffectsManager.doApply(registryAccess, true);
-
+        BIOME_EFFECTS.doApply(registryAccess, true);
     }
 
     public static ResourceLocation getLocalId(ResourceLocation path) {

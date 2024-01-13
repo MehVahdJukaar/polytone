@@ -10,6 +10,8 @@ import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.Util;
@@ -29,49 +31,55 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 
-public class SoundTypesManager {
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
-    private static Map<ResourceLocation, SoundEvent> CUSTOM_SOUND_EVENTS = new HashMap<>();
+public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resources> {
 
-    private static boolean firstBoot = false;
+    private final Map<ResourceLocation, SoundEvent> customSoundEvents = new HashMap<>();
 
     // custom defined sound types
-    private static final BiMap<ResourceLocation, SoundType> SOUND_TYPES_IDS = HashBiMap.create();
+    private final BiMap<ResourceLocation, SoundType> soundTypesIds = HashBiMap.create();
 
-    @Nullable
-    public static SoundType getCustom(ResourceLocation id) {
-        return SOUND_TYPES_IDS.get(id);
+    public SoundTypesManager(){
+        super("sound_types");
     }
 
     @Nullable
-    public static ResourceLocation getCustomKey(SoundType object) {
-        return SOUND_TYPES_IDS.inverse().get(object);
+    public SoundType getCustom(ResourceLocation id) {
+        return soundTypesIds.get(id);
     }
 
-    public static void process(Map<ResourceLocation, JsonElement> soundJsons) {
-        SOUND_TYPES_IDS.clear();
-
-        for (var j : soundJsons.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
-            SoundType soundType = SoundTypesManager.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Sound Type with json id {} - error: {}",
-                            id, errorMsg)).getFirst();
-
-            SOUND_TYPES_IDS.put(id, soundType);
-        }
+    @Nullable
+    public ResourceLocation getCustomKey(SoundType object) {
+        return soundTypesIds.inverse().get(object);
     }
 
-    public static void processCustomSoundEvents(Map<ResourceLocation, List<String>> customSoundEvents) {
-        CUSTOM_SOUND_EVENTS.clear();
+    @Override
+    protected Resources prepare(ResourceManager resourceManager) {
+        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
+        scanDirectory(resourceManager, path(), GSON, jsons);
+
+        var types = gatherSoundEvents(resourceManager, Polytone.MOD_ID);
+
+        return new Resources(jsons, types);
+    }
+
+    @Override
+    public void process(Resources resources) {
+
+        var soundJsons = resources.soundTypes;
+        var soundEvents = resources.soundEvents;
+
+        //custom sound events
+
         List<ResourceLocation> ids = new ArrayList<>();
-        for (var e : customSoundEvents.entrySet()) {
+        for (var e : soundEvents.entrySet()) {
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
-                if (!CUSTOM_SOUND_EVENTS.containsKey(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
+                if (!customSoundEvents.containsKey(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
                     var event = PlatStuff.registerSoundEvent(id);
                     ids.add(id);
-                    CUSTOM_SOUND_EVENTS.put(id, event);
+                    customSoundEvents.put(id, event);
                 }
             }
         }
@@ -82,6 +90,23 @@ public class SoundTypesManager {
             //this entire thing is a bad idea
         }
 
+        // sound types
+
+        for (var j : soundJsons.entrySet()) {
+            var json = j.getValue();
+            var id = j.getKey();
+            SoundType soundType = SoundTypesManager.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
+                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Sound Type with json id {} - error: {}",
+                            id, errorMsg)).getFirst();
+
+            soundTypesIds.put(id, soundType);
+        }
+    }
+
+    @Override
+    protected void reset() {
+        soundTypesIds.clear();
+        customSoundEvents.clear();
     }
 
     public static Map<ResourceLocation, List<String>> gatherSoundEvents(ResourceManager resourceManager, String path) {
@@ -235,7 +260,7 @@ public class SoundTypesManager {
                 if (vanilla != null) return DataResult.success(vanilla);
                 ResourceLocation r = ResourceLocation.tryParse(s);
                 if (r != null) {
-                    var custom = getCustom(new ResourceLocation(s));
+                    var custom = Polytone.SOUND_TYPES. getCustom(new ResourceLocation(s));
                     if (custom != null) return DataResult.success(custom);
                 }
                 return DataResult.error(() -> "Could not find any custom Sound Type with id " + r +
@@ -256,5 +281,8 @@ public class SoundTypesManager {
 
     public static final Codec<SoundType> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_OR_COPY_CODEC, DIRECT_CODEC);
 
+
+    public record Resources(Map<ResourceLocation,JsonElement> soundTypes,
+                                   Map<ResourceLocation, List<String>> soundEvents){};
 
 }

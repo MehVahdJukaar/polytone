@@ -3,11 +3,14 @@ package net.mehvahdjukaar.polytone.biome;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -15,15 +18,20 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BiomeEffectsManager {
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
+public class BiomeEffectsManager extends JsonPartialReloader {
 
-    private static final Map<ResourceLocation, BiomeSpecialEffects> VANILLA_EFFECTS = new HashMap<>();
+    private final Map<ResourceLocation, BiomeSpecialEffects> vanillaEffects = new HashMap<>();
 
-    private static final Map<ResourceLocation, BiomeEffectModifier> EFFECTS_TO_APPLY = new HashMap<>();
+    private final Map<ResourceLocation, BiomeEffectModifier> effectsToApply = new HashMap<>();
 
+    public BiomeEffectsManager(){
+        super("biome_effects");
+    }
 
-    public static void process(Map<ResourceLocation, JsonElement> biomesJsons) {
+    @Override
+    public void process(Map<ResourceLocation, JsonElement> biomesJsons) {
         for (var j : biomesJsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
@@ -32,11 +40,12 @@ public class BiomeEffectsManager {
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Biome Special Effect with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 
-            EFFECTS_TO_APPLY.put(id, effect);
+            effectsToApply.put(id, effect);
         }
     }
 
-    public static void tryApply() {
+    @Override
+    public void apply() {
         Level level = Minecraft.getInstance().level;
         if (level != null) {
             doApply(level.registryAccess(), false);
@@ -44,29 +53,30 @@ public class BiomeEffectsManager {
         //else apply as soon as we load a level
     }
 
-    public static void doApply(RegistryAccess registryAccess, boolean firstLogin) {
-        if (firstLogin) VANILLA_EFFECTS.clear();
+    public void doApply(RegistryAccess registryAccess, boolean firstLogin) {
+        if (firstLogin) vanillaEffects.clear();
 
         Registry<Biome> biomeReg = registryAccess.registry(Registries.BIOME).get();
-        for (var v : EFFECTS_TO_APPLY.entrySet()) {
+        for (var v : effectsToApply.entrySet()) {
 
             var biome = Polytone.getTarget(v.getKey(), biomeReg);
             if (biome != null) {
                 var old = v.getValue().apply(biome.getFirst());
 
-                VANILLA_EFFECTS.put(biome.getSecond(), old);
+                vanillaEffects.put(biome.getSecond(), old);
             }
         }
-        if (!VANILLA_EFFECTS.isEmpty())
-            Polytone.LOGGER.info("Applied {} Custom Biome Effects Properties", VANILLA_EFFECTS.size());
+        if (!vanillaEffects.isEmpty())
+            Polytone.LOGGER.info("Applied {} Custom Biome Effects Properties", vanillaEffects.size());
         //we dont clear effects to apply because we need to re apply on world reload
     }
 
-    public static void reset() {
+    @Override
+    public void reset() {
         Level level = Minecraft.getInstance().level;
         if (level != null) {
             Registry<Biome> biomeReg = level.registryAccess().registry(Registries.BIOME).get();
-            for (var v : VANILLA_EFFECTS.entrySet()) {
+            for (var v : vanillaEffects.entrySet()) {
                 var biome = biomeReg.getOptional(v.getKey());
                 biome.ifPresent(value -> value.specialEffects = v.getValue());
             }
@@ -74,14 +84,11 @@ public class BiomeEffectsManager {
         }
         //if we don't have a level, biomes don't exist anymore, so we don't care
 
-        VANILLA_EFFECTS.clear();
+        vanillaEffects.clear();
 
         //whatever happens we always clear stuff to apply
-        EFFECTS_TO_APPLY.clear();
+        effectsToApply.clear();
     }
 
-    private static void resetToVanilla() {
-
-    }
 
 }

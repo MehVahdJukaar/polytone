@@ -5,7 +5,6 @@ import com.google.gson.JsonParseException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -111,9 +110,9 @@ public class ColorManager extends SinglePropertiesReloadListener {
                     try {
                         // turn from hex to decimal if it is a single number
                         int hex = parseHex(s);
-                        ParticleModifiersManager.addCustomParticleColor(id, String.valueOf(hex));
+                        Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, String.valueOf(hex));
                     } catch (Exception e) {
-                        ParticleModifiersManager.addCustomParticleColor(id, s);
+                        Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, s);
                     }
                 }
             }

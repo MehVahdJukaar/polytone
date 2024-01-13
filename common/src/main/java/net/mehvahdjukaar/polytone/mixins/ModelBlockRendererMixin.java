@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -26,7 +27,7 @@ public class ModelBlockRendererMixin {
                                              int lightmap0, int lightmap1, int lightmap2, int lightmap3,
                                              int packedOverlay, CallbackInfo ci,
                                              @Local LocalRef<BakedQuad> mutableQuad) {
-        BakedQuad newQuad = VariantTextureManager.maybeModify(quad, level, state, pos);
+        BakedQuad newQuad = Polytone.VARIANT_TEXTURES.maybeModify(quad, level, state, pos);
 
         if (newQuad != null){
             mutableQuad.set(newQuad);

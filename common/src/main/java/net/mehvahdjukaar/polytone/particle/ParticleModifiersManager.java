@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -11,24 +12,24 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ParticleModifiersManager {
+public class ParticleModifiersManager extends JsonPartialReloader {
 
-    private static final Map<ParticleType<?>, ParticleModifier> PARTICLE_MODIFIERS = new HashMap<>();
-    private static final Map<ParticleType<?>, ParticleModifier> SIMPLE_MODIFIERS = new HashMap<>();
+    private final Map<ParticleType<?>, ParticleModifier> particleModifiers = new HashMap<>();
+    private final Map<ParticleType<?>, ParticleModifier> simpleModifiers = new HashMap<>();
 
-    public static void modify(ParticleType<?> type, Particle particle) {
-        var mod = PARTICLE_MODIFIERS.get(type);
+    public ParticleModifiersManager() {
+        super("particle_modifiers");
+    }
+
+    public void maybeModify(ParticleType<?> type, Particle particle) {
+        var mod = particleModifiers.get(type);
         if (mod != null) mod.modify(particle);
     }
 
-    public static void process(Map<ResourceLocation, JsonElement> particleJsons) {
+    @Override
+    public void process(Map<ResourceLocation, JsonElement> jsons) {
 
-        PARTICLE_MODIFIERS.clear();
-        //hack
-        PARTICLE_MODIFIERS.putAll(SIMPLE_MODIFIERS);
-        SIMPLE_MODIFIERS.clear();
-
-        for (var j : particleJsons.entrySet()) {
+        for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var res = j.getKey();
             ParticleModifier modifier = ParticleModifier.CODEC.decode(JsonOps.INSTANCE, json)
@@ -36,16 +37,24 @@ public class ParticleModifiersManager {
                             res, errorMsg)).getFirst();
             var particle = Polytone.getTarget(res, BuiltInRegistries.PARTICLE_TYPE);
             if (particle != null) {
-                PARTICLE_MODIFIERS.put(particle.getFirst(), modifier);
+                particleModifiers.put(particle.getFirst(), modifier);
             }
         }
 
     }
 
-    public static void addCustomParticleColor(ResourceLocation id, String color) {
-        var opt = BuiltInRegistries.PARTICLE_TYPE.getOptional(id);
-        opt.ifPresent(t -> SIMPLE_MODIFIERS.put(t, ParticleModifier.ofColor(color)));
+    @Override
+    protected void reset() {
+        particleModifiers.clear();
         //hack
-        PARTICLE_MODIFIERS.putAll(SIMPLE_MODIFIERS);
+        particleModifiers.putAll(simpleModifiers);
+        simpleModifiers.clear();
+    }
+
+    public void addCustomParticleColor(ResourceLocation id, String color) {
+        var opt = BuiltInRegistries.PARTICLE_TYPE.getOptional(id);
+        opt.ifPresent(t -> simpleModifiers.put(t, ParticleModifier.ofColor(color)));
+        //hack
+        particleModifiers.putAll(simpleModifiers);
     }
 }

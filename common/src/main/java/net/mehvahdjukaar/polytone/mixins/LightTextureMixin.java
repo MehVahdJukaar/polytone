@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -36,7 +37,7 @@ public class LightTextureMixin {
             shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILHARD,
             cancellable = true)
     public void polytone$modifyLightTexture(float partialTicks, CallbackInfo ci, ClientLevel clientLevel) {
-        if (LightmapsManager.maybeModifyLightTexture((LightTexture) (Object) this, lightPixels, lightTexture,
+        if (Polytone.LIGHTMAPS.maybeModifyLightTexture((LightTexture) (Object) this, lightPixels, lightTexture,
                 minecraft, clientLevel, blockLightRedFlicker, partialTicks)) {
             ci.cancel();
         }

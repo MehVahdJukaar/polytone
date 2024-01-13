@@ -12,7 +12,7 @@ public class PolytoneFabric implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        Polytone.init(true);
+        Polytone.init();
 
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
             if(client) Polytone.onTagsReceived(registries);

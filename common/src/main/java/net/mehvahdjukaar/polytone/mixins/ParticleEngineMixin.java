@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.particles.ParticleOptions;
@@ -15,7 +15,7 @@ public class ParticleEngineMixin {
 
     @ModifyReturnValue(method = "makeParticle", at = @At("RETURN"))
     public @Nullable <T extends ParticleOptions> Particle polytone$applyModifiers(@Nullable Particle original, @Local T particleData){
-        ParticleModifiersManager.modify(particleData.getType(), original);
+        Polytone.PARTICLE_MODIFIERS.maybeModify(particleData.getType(), original);
         return original;
     }
 }

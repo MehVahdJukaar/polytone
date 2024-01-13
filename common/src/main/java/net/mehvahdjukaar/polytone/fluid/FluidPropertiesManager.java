@@ -3,36 +3,53 @@ package net.mehvahdjukaar.polytone.fluid;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
+import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
-public class FluidPropertiesManager {
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
-    private static final Map<Fluid, FluidPropertyModifier> FLUID_COLORMAPS = new HashMap<>();
+public class FluidPropertiesManager extends PartialReloader<FluidPropertiesManager.Resources> {
 
-    public static void process(Map<ResourceLocation, JsonElement> elements, Map<ResourceLocation, Map<Integer, ArrayImage>> texturesProperties, Set<ResourceLocation> usedTextures) {
-        FLUID_COLORMAPS.clear();
-        clearSpecial();
-        
-        for (var j : elements.entrySet()) {
+    private final Map<Fluid, FluidPropertyModifier> fluidColormaps = new HashMap<>();
+
+    public FluidPropertiesManager() {
+        super("fluid_properties");
+    }
+
+    @Override
+    protected Resources prepare(ResourceManager resourceManager) {
+        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
+        scanDirectory(resourceManager, path(), GSON, jsons);
+        var textures = ArrayImage.gatherGroupedImages(resourceManager, path());
+
+        return new Resources(jsons, textures);
+    }
+
+
+    @Override
+    public void process(Resources resources) {
+        var jsons = resources.jsons;
+        var textures = resources.textures;
+
+        Set<ResourceLocation > usedTextures = new HashSet<>();
+
+        for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
 
@@ -43,28 +60,33 @@ public class FluidPropertiesManager {
             //fill inline colormaps colormapTextures
             BlockColor colormap = modifier.colormap().orElse(null);
             if (colormap instanceof Colormap c && !c.isReference()) {
-                ColormapsManager.fillColormapPalette(texturesProperties, id, c, usedTextures);
+                ColormapsManager.fillColormapPalette(textures, id, c, usedTextures);
             }
             tryAdd(id, modifier);
         }
 
         // creates orphaned texture colormaps & properties
-        texturesProperties.keySet().removeAll(usedTextures);
+        textures.keySet().removeAll(usedTextures);
 
-        for (var t : texturesProperties.entrySet()) {
+        for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
             Colormap defaultColormap = Colormap.createDefault(t.getValue().keySet());
-            ColormapsManager.fillColormapPalette(texturesProperties, id, defaultColormap, usedTextures);
+            ColormapsManager.fillColormapPalette(textures, id, defaultColormap, usedTextures);
 
             tryAdd(id, new FluidPropertyModifier(Optional.of(defaultColormap)));
         }
     }
 
+    @Override
+    protected void reset() {
+        fluidColormaps.clear();
+        clearSpecial();
+    }
 
-    private static void tryAdd(ResourceLocation id, FluidPropertyModifier colormap) {
+    private void tryAdd(ResourceLocation id, FluidPropertyModifier colormap) {
         var fluid = Polytone.getTarget(id, BuiltInRegistries.FLUID);
         if (fluid != null) {
-            FLUID_COLORMAPS.put(fluid.getFirst(), colormap);
+            fluidColormaps.put(fluid.getFirst(), colormap);
         }
         tryAddSpecial(id, colormap);
     }
@@ -79,10 +101,10 @@ public class FluidPropertiesManager {
     }
 
 
-    public static int modifyColor(int original, @Nullable BlockAndTintGetter level,
+    public int modifyColor(int original, @Nullable BlockAndTintGetter level,
                                   @Nullable BlockPos pos , @Nullable BlockState state,
                                   FluidState fluidState) {
-        var modifier = FLUID_COLORMAPS.get(fluidState.getType());
+        var modifier = fluidColormaps.get(fluidState.getType());
         if (modifier != null) {
             var col = modifier.getColormap();
             if (col!= null){
@@ -93,4 +115,7 @@ public class FluidPropertiesManager {
     }
 
 
+    public record Resources(Map<ResourceLocation, JsonElement> jsons,
+                            Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures) {
+    }
 }

@@ -2,31 +2,49 @@ package net.mehvahdjukaar.polytone.block;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
+import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.material.MapColor;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
-public class BlockPropertiesManager {
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
-    private static final Map<Block, BlockPropertyModifier> VANILLA_PROPERTIES = new HashMap<>();
+public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
 
-    private static final Map<ResourceLocation, BlockPropertyModifier> MODIFIERS = new HashMap<>();
+    private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();
 
+    private final Map<ResourceLocation, BlockPropertyModifier> modifiers = new HashMap<>();
 
-    public static void process(Map<ResourceLocation, JsonElement> blockPropertiesJsons, Map<ResourceLocation, Map<Integer, ArrayImage>> texturesProperties, Set<ResourceLocation> usedTextures) {
+    public BlockPropertiesManager() {
+        super("block_properties");
+    }
 
+    @Override
+    protected Resources prepare(ResourceManager resourceManager) {
+        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
+        scanDirectory(resourceManager, path(), GSON, jsons);
+        var textures = ArrayImage.gatherGroupedImages(resourceManager, path());
 
-        for (var j : blockPropertiesJsons.entrySet()) {
+        return new Resources(jsons, textures);
+    }
+
+    @Override
+    public void process(Resources resources) {
+
+        var jsons = resources.jsons;
+        var textures = resources.textures;
+
+        Set<ResourceLocation> usedTextures = new HashSet<>();
+
+        for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
 
@@ -37,48 +55,52 @@ public class BlockPropertiesManager {
             //fill inline colormaps colormapTextures
             var colormap = prop.tintGetter();
             if (colormap.isPresent() && colormap.get() instanceof Colormap c && !c.isReference()) {
-                ColormapsManager.fillColormapPalette(texturesProperties, id, c, usedTextures);
+                ColormapsManager.fillColormapPalette(textures, id, c, usedTextures);
             }
 
-            MODIFIERS.put(id, prop);
+            modifiers.put(id, prop);
         }
 
         // creates orphaned texture colormaps & properties
-        texturesProperties.keySet().removeAll(usedTextures);
+        textures.keySet().removeAll(usedTextures);
 
-        for (var t : texturesProperties.entrySet()) {
+        for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
             Colormap defaultColormap = Colormap.createDefault(t.getValue().keySet());
-            ColormapsManager.fillColormapPalette(texturesProperties, id, defaultColormap, usedTextures);
+            ColormapsManager.fillColormapPalette(textures, id, defaultColormap, usedTextures);
 
             BlockPropertyModifier defaultProp = new BlockPropertyModifier(Optional.of(defaultColormap),
                     Optional.empty(), Optional.empty(), Optional.empty());
 
-            MODIFIERS.put(id, defaultProp);
+            modifiers.put(id, defaultProp);
         }
     }
 
-
-    public static void apply() {
-        for (var p : MODIFIERS.entrySet()) {
+    @Override
+    public void apply() {
+        for (var p : modifiers.entrySet()) {
             var block = Polytone.getTarget(p.getKey(), BuiltInRegistries.BLOCK);
             if (block != null) {
                 Block b = block.getFirst();
                 BlockPropertyModifier value = p.getValue();
-                VANILLA_PROPERTIES.put(b, value.apply(b));
+                vanillaProperties.put(b, value.apply(b));
             }
         }
-        if (!VANILLA_PROPERTIES.isEmpty())
-            Polytone.LOGGER.info("Applied {} Custom Block Properties", VANILLA_PROPERTIES.size());
+        if (!vanillaProperties.isEmpty())
+            Polytone.LOGGER.info("Applied {} Custom Block Properties", vanillaProperties.size());
 
-        MODIFIERS.clear();
+        modifiers.clear();
     }
 
-
-    public static void reset() {
-        for (var e : VANILLA_PROPERTIES.entrySet()) {
+    @Override
+    public void reset() {
+        for (var e : vanillaProperties.entrySet()) {
             e.getValue().apply(e.getKey());
         }
-        VANILLA_PROPERTIES.clear();
+        vanillaProperties.clear();
+    }
+
+    public record Resources(Map<ResourceLocation, JsonElement> jsons,
+                            Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures) {
     }
 }

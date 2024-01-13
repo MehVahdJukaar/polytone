@@ -3,114 +3,98 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.JsonOps;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
+import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.FastColor;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class ColormapsManager {
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
+public class ColormapsManager extends PartialReloader<ColormapsManager.Resources> {
 
     // custom defined colormaps
-    private static final BiMap<ResourceLocation, BlockColor> COLORMAPS_IDS = HashBiMap.create();
+    private final BiMap<ResourceLocation, BlockColor> colormapsIds = HashBiMap.create();
 
-    public static void process(Map<ResourceLocation, JsonElement> colormapJsons,
-                               Map<ResourceLocation, Map<Integer, ArrayImage>> texturesColormap,
-                               Set<ResourceLocation> usedTextures) {
-        clear();
+    public ColormapsManager() {
+        super("colormaps");
+    }
+    @Override
+    protected Resources prepare(ResourceManager resourceManager) {
+        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
+        scanDirectory(resourceManager, path(), GSON, jsons);
+        var textures = ArrayImage.gatherGroupedImages(resourceManager, path());
 
-        for (var j : colormapJsons.entrySet()) {
+        return new Resources(jsons, textures);
+    }
+
+    @Override
+    public void process(Resources resources) {
+        var jsons = resources.jsons;
+        var textures = resources.textures;
+
+        Set<ResourceLocation> usedTextures = new HashSet<>();
+
+        for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
             Colormap colormap = Colormap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Colormap with json id {} - error: {}",
                             id, errorMsg)).getFirst();
-            fillColormapPalette(texturesColormap, id, colormap, usedTextures);
+            fillColormapPalette(textures, id, colormap, usedTextures);
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, colormap);
         }
 
 
         // creates orphaned texture colormaps
-        texturesColormap.keySet().removeAll(usedTextures);
+        textures.keySet().removeAll(usedTextures);
 
-        for (var t : texturesColormap.entrySet()) {
+        for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
             Colormap defaultColormap = Colormap.createDefault(t.getValue().keySet());
-            fillColormapPalette(texturesColormap, id, defaultColormap, usedTextures);
+            fillColormapPalette(textures, id, defaultColormap, usedTextures);
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, defaultColormap);
         }
     }
 
-    public static void clear() {
-        COLORMAPS_IDS.clear();
-        COLORMAPS_IDS.put(new ResourceLocation("grass_color"), Colormap.GRASS_COLOR);
-        COLORMAPS_IDS.put(new ResourceLocation("foliage_color"), Colormap.FOLIAGE_COLOR);
-        COLORMAPS_IDS.put(new ResourceLocation("water_color"), Colormap.WATER_COLOR);
-        COLORMAPS_IDS.put(new ResourceLocation("biome_sample"), Colormap.BIOME_SAMPLE);
-        COLORMAPS_IDS.put(new ResourceLocation("triangular_biome_sample"), Colormap.TR_BIOME_SAMPLE);
+    @Override
+    public void reset() {
+        colormapsIds.clear();
+        colormapsIds.put(new ResourceLocation("grass_color"), Colormap.GRASS_COLOR);
+        colormapsIds.put(new ResourceLocation("foliage_color"), Colormap.FOLIAGE_COLOR);
+        colormapsIds.put(new ResourceLocation("water_color"), Colormap.WATER_COLOR);
+        colormapsIds.put(new ResourceLocation("biome_sample"), Colormap.BIOME_SAMPLE);
+        colormapsIds.put(new ResourceLocation("triangular_biome_sample"), Colormap.TR_BIOME_SAMPLE);
     }
 
     @Nullable
-    public static BlockColor get(ResourceLocation id) {
-        return COLORMAPS_IDS.get(id);
+    public BlockColor get(ResourceLocation id) {
+        return colormapsIds.get(id);
     }
 
     @Nullable
-    public static ResourceLocation getKey(BlockColor object) {
-        return COLORMAPS_IDS.inverse().get(object);
+    public ResourceLocation getKey(BlockColor object) {
+        return colormapsIds.inverse().get(object);
     }
 
 
-    public static void add(ResourceLocation id, Colormap colormap) {
-        COLORMAPS_IDS.put(id, colormap);
+    public void add(ResourceLocation id, Colormap colormap) {
+        colormapsIds.put(id, colormap);
     }
 
 
-
-    public static Map<ResourceLocation, Map<Integer, ArrayImage>> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
-        Map<ResourceLocation, Map<Integer, ArrayImage>> groupedMap = new HashMap<>();
-
-        Pattern pattern = Pattern.compile("(\\D+)(_\\d+)?");
-        for (var e : texturesColormap.entrySet()) {
-            ResourceLocation id = e.getKey();
-            String str = id.getPath();
-            Matcher matcher = pattern.matcher(str);
-            if (matcher.matches()) {
-                String key = matcher.group(1); // Group 1: the word before underscore (if any)
-                String indexMatch = matcher.group(2); // Group 2: the underscore and digits (if any)
-
-                int index = -1; // Default index if there's no underscore and digits
-                if (indexMatch != null) {
-                    // Extracting the index from the matched group (removing the underscore)
-                    index = Integer.parseInt(indexMatch.substring(1));
-                }
-
-                // Creating or retrieving the Int2Object map for the key
-                groupedMap.computeIfAbsent(id.withPath(key), a -> new HashMap<>()).put(index, e.getValue());
-            }
-        }
-        return groupedMap;
-    }
-
-
-    public static void fillColormapPalette(Map<ResourceLocation, Map<Integer, ArrayImage>> textures,
+    public static void fillColormapPalette(Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures,
                                            ResourceLocation id, Colormap colormap, Set<ResourceLocation> usedTextures) {
         var getters = colormap.getGetters();
 
@@ -152,5 +136,8 @@ public class ColormapsManager {
         return false;
     }
 
+    public record Resources(Map<ResourceLocation, JsonElement> jsons,
+                            Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures) {
+    }
 
 }

@@ -22,7 +22,7 @@ public class PolytoneForge {
 
     public PolytoneForge() {
         if(FMLEnvironment.dist == Dist.CLIENT) {
-            Polytone.init(false);
+            Polytone.init();
 
             FMLJavaModLoadingContext.get().getModEventBus().register(this);
             MinecraftForge.EVENT_BUS.addListener(PolytoneForge::onTagSync);

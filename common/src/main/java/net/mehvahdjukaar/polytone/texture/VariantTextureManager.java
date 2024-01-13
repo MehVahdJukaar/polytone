@@ -5,6 +5,7 @@ import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.BakedQuadsTransformer;
+import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.chunk.RenderChunkRegion;
@@ -22,15 +23,18 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public class VariantTextureManager {
+public class VariantTextureManager extends JsonPartialReloader {
 
-    private static final WeakHashMap<BakedQuad, Map<ResourceLocation, BakedQuad>> VARIANT_QUADS_CACHE = new WeakHashMap();
+    private final WeakHashMap<BakedQuad, Map<ResourceLocation, BakedQuad>> variantQuadsCache = new WeakHashMap();
 
-    private static final Map<Block, VariantTexture> BLOCKS_WITH_VARIANTS = new Object2ObjectOpenHashMap<>();
+    private final Map<Block, VariantTexture> blocksWithVariants = new Object2ObjectOpenHashMap<>();
 
-    public static void process(Map<ResourceLocation, JsonElement> jsonElementMap) {
-        BLOCKS_WITH_VARIANTS.clear();
-        VARIANT_QUADS_CACHE.clear(); //we might need a lock here
+    public VariantTextureManager(){
+        super("variant_textures");
+    }
+
+    @Override
+    public void process(Map<ResourceLocation, JsonElement> jsonElementMap) {
 
         for (var j : jsonElementMap.entrySet()) {
             var json = j.getValue();
@@ -40,14 +44,20 @@ public class VariantTextureManager {
                             res, errorMsg)).getFirst();
             var target = Polytone.getTarget(res, BuiltInRegistries.BLOCK);
             if (target != null) {
-                BLOCKS_WITH_VARIANTS.put(target.getFirst(), variant);
+                blocksWithVariants.put(target.getFirst(), variant);
             }
         }
     }
 
-    public static BakedQuad maybeModify(BakedQuad quad, BlockAndTintGetter level, BlockState state, BlockPos pos) {
-        if (BLOCKS_WITH_VARIANTS.isEmpty()) return null;
-        var variant = BLOCKS_WITH_VARIANTS.get(state.getBlock());
+    @Override
+    protected void reset() {
+        blocksWithVariants.clear();
+        variantQuadsCache.clear(); //we might need a lock here
+    }
+
+    public BakedQuad maybeModify(BakedQuad quad, BlockAndTintGetter level, BlockState state, BlockPos pos) {
+        if (blocksWithVariants.isEmpty()) return null;
+        var variant = blocksWithVariants.get(state.getBlock());
         if (variant != null) {
             var biomeToTexture = variant.getBiomeMap(quad.getSprite());
             if (biomeToTexture != null && level instanceof RenderChunkRegion region) {
@@ -63,8 +73,8 @@ public class VariantTextureManager {
     }
 
     @NotNull
-    private static BakedQuad getOrCreateQuad(BakedQuad quad, ResourceLocation biome, ResourceLocation newTexture) {
-        return VARIANT_QUADS_CACHE.computeIfAbsent(quad, q -> new WeakHashMap<>())
+    private BakedQuad getOrCreateQuad(BakedQuad quad, ResourceLocation biome, ResourceLocation newTexture) {
+        return variantQuadsCache.computeIfAbsent(quad, q -> new WeakHashMap<>())
                 .computeIfAbsent(biome,
                         b -> {
                             var s = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(newTexture);

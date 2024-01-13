@@ -6,12 +6,12 @@ import com.mojang.serialization.Keyable;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
@@ -21,7 +21,6 @@ import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -60,10 +59,10 @@ public class Colormap implements BlockColor {
 
 
     protected static final Codec<BlockColor> COLORMAP_REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
-            id -> Optional.ofNullable(ColormapsManager.get(id)).map(DataResult::success)
+            id -> Optional.ofNullable(Polytone.COLORMAPS.get(id)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
                             " Did you place it in 'assets/[your pack]/polytone/colormaps/' ?")),
-            object -> Optional.ofNullable(ColormapsManager.getKey(object)).map(DataResult::success)
+            object -> Optional.ofNullable(Polytone.COLORMAPS.getKey(object)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
 
     public static final Codec<BlockColor> CODEC =
@@ -172,8 +171,8 @@ public class Colormap implements BlockColor {
             int width = image.width();
             int height = image.height();
 
-            int w = (int) ((1.0 - y) * (width-1));
-            int h = (int) ((1.0 - x) * (height-1));
+            int w = (int) ((1.0 - y) * (width - 1));
+            int h = (int) ((1.0 - x) * (height - 1));
 
             return w >= width || h >= height ? defValue : image.pixels()[h][w];
         }
