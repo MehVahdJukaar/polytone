@@ -15,8 +15,7 @@ function initializeCoreMod() {
                 "methodDesc": "(Lnet/minecraftforge/fluids/FluidType;)Lnet/minecraftforge/client/extensions/common/IClientFluidTypeExtensions"
             },
             "transformer": function(methodNode) {
-                methodNode.instructions
-
+                var Opcodes = Java.type('org.objectweb.asm.Opcodes');
                 var toInject = new InsnList();
 
                 // Make list of instructions to inject
@@ -31,7 +30,7 @@ function initializeCoreMod() {
                     //String descriptor
                     "(Lnet/minecraftforge/fluids/FluidType;)Lnet/minecraftforge/client/extensions/common/IClientFluidTypeExtensions",
                     //boolean isInterface
-                    true
+                    false
                 ));
                 // Check if the return value is null
                 var notNullLabel = new LabelNode();
@@ -41,9 +40,8 @@ function initializeCoreMod() {
 
                 // Label for the case when the value is null
                 toInject.add(notNullLabel);
-
                 // Inject instructions
-                instructions.insert(instructions[0], toInject);
+                methodNode.instructions.insert(instructions.get(0), toInject);
 
                 return methodNode;
             }
