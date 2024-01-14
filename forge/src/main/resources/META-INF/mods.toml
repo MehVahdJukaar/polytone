@@ -42,3 +42,6 @@ displayTest="IGNORE_ALL_VERSION"
     versionRange="[1.17,)"
     ordering="NONE"
     side="CLIENT"
+
+[incompatible_mods]
+    slotify = "*"

@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
 import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
+import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
@@ -38,6 +39,7 @@ public class Polytone {
                         SOUND_TYPES, COLORMAPS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
                         BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS),
                 res("block_properties_manager"));
+        PlatStuff.addClientReloadListener(GuiModifierManager::new, res("gui_modifiers"));
         //TODO: colormap for particles
     }
 

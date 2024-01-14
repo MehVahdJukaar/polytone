@@ -14,6 +14,11 @@ import java.util.function.Supplier;
 
 public class PlatStuff {
     @ExpectPlatform
+    public static String maybeRemapName(String s) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
     public static boolean isModStateValid() {
         throw new AssertionError();
     }

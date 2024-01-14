@@ -6,9 +6,11 @@
   "mixins": [
   ],
   "client": [
+    "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "ColorResolverMixin",
-    "FluidRendererHandlerRegistryMixin"
+    "FluidRendererHandlerRegistryMixin",
+    "InventoryScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

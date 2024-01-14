@@ -57,11 +57,11 @@ public interface LightmapNumberProvider {
 
     // Sine
     LightmapNumberProvider SMOOTH = register("smooth",
-            (time, rain, thunder) -> 0.5f - (Mth.cos(time * Mth.TWO_PI) * 0.5f));
+            (time, rain, thunder) -> 0.5f + (Mth.cos(time * Mth.TWO_PI) * 0.5f));
 
     // Triangle func
     LightmapNumberProvider LINEAR = register("linear",
-            (time, rain, thunder) -> Mth.abs(1 - 2 * time) + 1);
+            (time, rain, thunder) -> Mth.abs(1 - 2 * time));
 
     LightmapNumberProvider DEFAULT_2 = register("default",
             (time, rain, thunder) -> {
@@ -69,7 +69,7 @@ public interface LightmapNumberProvider {
                 g = Mth.clamp(g, 0.0F, 1.0F);
                 g = 1.0F - g;
                 g *= 0.5;
-                if (time < 0.5) {
+                if (time > 0.5) {
                     return g;
                 } else {
                     return 1 - g;
@@ -79,7 +79,7 @@ public interface LightmapNumberProvider {
     // Sine Saw Tooth
     LightmapNumberProvider SMOOTH_2 = register("smooth_2",
             (time, rain, thunder) -> {
-                if (time < 0.5) {
+                if (time > 0.5) {
                     return 0.25f - (Mth.cos(time * Mth.TWO_PI) * 0.25f);
                 } else {
                     return 0.75f + (Mth.cos(time * Mth.TWO_PI) * 0.25f);
@@ -88,7 +88,14 @@ public interface LightmapNumberProvider {
 
     // Line (Saw Tooth)
     LightmapNumberProvider LINEAR_2 = register("linear_2",
-            (time, rain, thunder) -> time);
+            (time, rain, thunder) -> {
+                float linear = Mth.abs(1 - 2 * time);
+                if (time > 0.5) {
+                    return linear * 0.5f;
+                } else {
+                    return 1 - linear * 0.5f;
+                }
+            });
 
 
     record ExpressionNumberProvider(Expression expression) implements LightmapNumberProvider {

@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 
+import static net.mehvahdjukaar.polytone.utils.ColorUtils.pack;
+import static net.mehvahdjukaar.polytone.utils.ColorUtils.unpack;
+
 public class ColorManager extends SinglePropertiesReloadListener {
 
     private final Object2IntMap<MapColor> vanillaMapColors = new Object2IntOpenHashMap<>();
@@ -155,21 +158,6 @@ public class ColorManager extends SinglePropertiesReloadListener {
                 customSheepColors.put(color, col);
             } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
         }
-    }
-
-
-    public static int pack(float... components) {
-        int n = (int) (components[0] * 255.0F) << 16;
-        int o = (int) (components[1] * 255.0F) << 8;
-        int p = (int) (components[2] * 255.0F);
-        return (n & 0xFF0000) | (o & 0xFF00) | (p & 0xFF);
-    }
-
-    public static float[] unpack(int value) {
-        int n = (value & 16711680) >> 16;
-        int o = (value & '\uff00') >> 8;
-        int p = (value & 255);
-        return new float[]{n / 255.0F, o / 255.0F, p / 255.0F};
     }
 
     private boolean is(String[] array, int index, String value) {

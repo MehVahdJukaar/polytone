@@ -25,5 +25,8 @@
   "depends": {
     "fabric": "*",
     "minecraft": ">=1.17"
+  },
+  "breaks": {
+    "slotify": "*"
   }
 }

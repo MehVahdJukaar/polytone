@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.forge;
 
+import cpw.mods.modlauncher.api.INameMappingService;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.core.Holder;
@@ -10,6 +11,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
 
@@ -58,5 +60,9 @@ public class PlatStuffImpl {
         ForgeRegistries.SOUND_EVENTS.register(id, variableRangeEvent);
         if (wasLocked) reg.freeze();
         return variableRangeEvent;
+    }
+
+    public static String maybeRemapName(String s) {
+        return ObfuscationReflectionHelper.remapName(INameMappingService.Domain.CLASS, s);
     }
 }

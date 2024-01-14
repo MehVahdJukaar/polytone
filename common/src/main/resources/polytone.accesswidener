@@ -32,6 +32,8 @@ accessible field net/minecraft/client/particle/Particle x D
 accessible field net/minecraft/client/particle/Particle y D
 accessible field net/minecraft/client/particle/Particle z D
 
+mutable field net/minecraft/world/inventory/Slot x I
+mutable field net/minecraft/world/inventory/Slot y I
 
 accessible field net/minecraft/client/particle/Particle rCol F
 accessible field net/minecraft/client/particle/Particle gCol F

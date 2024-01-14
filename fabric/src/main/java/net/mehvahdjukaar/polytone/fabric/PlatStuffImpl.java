@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.fabric;
 import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.mixins.fabric.BlockColorsAccessor;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -49,5 +50,10 @@ public class PlatStuffImpl {
         SoundEvent event = SoundEvent.createVariableRangeEvent(id);
         Registry.register(BuiltInRegistries.SOUND_EVENT, id, event);
         return event;
+    }
+
+    public static String maybeRemapName(String s) {
+        return FabricLoader.getInstance().getMappingResolver().mapClassName("official", s);
+
     }
 }

@@ -55,53 +55,6 @@ function initializeCoreMod() {
     };
 
 
-
 }
 
-/**
- * Utility function to wrap all transformers in transformers that have logging
- *
- * @param {object} transformersObj All the transformers of this coremod.
- * @return {object} The transformersObj with all transformers wrapped.
- */
-function wrapWithLogging(transformersObj) {
 
-    var oldPrint = print;
-    // Global variable because makeLoggingTransformerFunction is a separate function (thanks to scoping issues)
-    currentPrintTransformer = null;
-    print = function(msg) {
-        if (currentPrintTransformer)
-            msg = "[" + currentPrintTransformer + "]: " + msg;
-        oldPrint(msg);
-    };
-
-    for (var transformerObjName in transformersObj) {
-        var transformerObj = transformersObj[transformerObjName];
-
-        var transformer = transformerObj["transformer"];
-        if (!transformer)
-            continue;
-
-        transformerObj["transformer"] = makeLoggingTransformerFunction(transformerObjName, transformer);
-    }
-    return transformersObj;
-}
-
-/**
- * Utility function for making the wrapper transformer function with logging
- * Not part of {@link #wrapWithLogging) because of scoping issues (Nashhorn
- * doesn't support "let" which would fix the issues)
- *
- * @param {string} transformerObjName The name of the transformer
- * @param {transformer} transformer The transformer function
- * @return {function} A transformer that wraps the old transformer
- */
-function makeLoggingTransformerFunction(transformerObjName, transformer) {
-    return function(obj) {
-        currentPrintTransformer = transformerObjName;
-        print("Starting Transform.");
-        obj = transformer(obj);
-        currentPrintTransformer = null;
-        return obj;
-    }
-}

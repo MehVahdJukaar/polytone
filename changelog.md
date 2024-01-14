@@ -1,4 +1,4 @@
-added custom lightmaps
-fluid tints now support both fabric and forge API making them work in modded tanks and such
-big internal refactor of the mod
-fixed biome effects not clearing properly when removing a pack
+added backwards compat with optifine ligthmap location and naming scheme
+same for colormatic
+added more parameters to lightmap jsons like thunder column and lerp amount
+added lightmap lerping
