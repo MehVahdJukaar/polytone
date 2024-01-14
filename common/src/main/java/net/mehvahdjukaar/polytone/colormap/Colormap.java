@@ -42,12 +42,12 @@ public class Colormap implements BlockColor {
             l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : -1;
 
     public static final Colormap BIOME_SAMPLE = new Colormap(Map.of("-1",
-            new Sampler(Optional.of(-1), ExpressionSource.make("TEMPERATURE"),
-                    ExpressionSource.make("DOWNFALL"), false)));
+            new Sampler(Optional.of(-1), NumberProvider.make("TEMPERATURE"),
+                    NumberProvider.make("DOWNFALL"), false)));
 
     public static final Colormap TR_BIOME_SAMPLE = new Colormap(Map.of("-1",
-            new Sampler(Optional.of(-1), ExpressionSource.make("TEMPERATURE"),
-                    ExpressionSource.make("DOWNFALL"), true)));
+            new Sampler(Optional.of(-1), NumberProvider.make("TEMPERATURE"),
+                    NumberProvider.make("DOWNFALL"), true)));
 
 
     final Int2ObjectMap<Sampler> getters = new Int2ObjectArrayMap<>();
@@ -94,8 +94,8 @@ public class Colormap implements BlockColor {
         var c = new Colormap();
         for (var i : tintIndexes) {
             c.getters.put(i.intValue(), new Sampler(Optional.empty(),
-                    ExpressionSource.make("TEMPERATURE"),
-                    ExpressionSource.make("DOWNFALL"), false));
+                    NumberProvider.make("TEMPERATURE"),
+                    NumberProvider.make("DOWNFALL"), false));
         }
         return c;
     }
@@ -130,8 +130,8 @@ public class Colormap implements BlockColor {
 
     public static class Sampler {
 
-        private final ExpressionSource xGetter;
-        private final ExpressionSource yGetter;
+        private final NumberProvider xGetter;
+        private final NumberProvider yGetter;
         private final boolean triangular;
 
         private Integer defaultColor = null;
@@ -139,12 +139,12 @@ public class Colormap implements BlockColor {
 
         private static final Codec<Sampler> SINGLE = RecordCodecBuilder.create(i -> i.group(
                 StrOpt.of(Codec.INT, "default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
-                ExpressionSource.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
-                ExpressionSource.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
+                NumberProvider.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
+                NumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
                 StrOpt.of(Codec.BOOL, "triangular", false).forGetter(c -> c.triangular)
         ).apply(i, Sampler::new));
 
-        private Sampler(Optional<Integer> defaultColor, ExpressionSource xGetter, ExpressionSource yGetter, boolean triangular) {
+        private Sampler(Optional<Integer> defaultColor, NumberProvider xGetter, NumberProvider yGetter, boolean triangular) {
             this.defaultColor = defaultColor.orElse(null);
             this.xGetter = xGetter;
             this.yGetter = yGetter;

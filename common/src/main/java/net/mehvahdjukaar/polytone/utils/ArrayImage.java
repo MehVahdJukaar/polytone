@@ -75,7 +75,7 @@ public record ArrayImage(int[][] pixels, int width, int height) {
         }
     }
 
-    private static Map<ResourceLocation, Int2ObjectMap<ArrayImage>> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
+    public static Map<ResourceLocation, Int2ObjectMap<ArrayImage>> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
         Map<ResourceLocation, Int2ObjectMap<ArrayImage>> groupedMap = new HashMap<>();
 
         Pattern pattern = Pattern.compile("(\\D+)(_\\d+)?");

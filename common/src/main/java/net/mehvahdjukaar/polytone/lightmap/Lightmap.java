@@ -1,10 +1,11 @@
 package net.mehvahdjukaar.polytone.lightmap;
 
-import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.serialization.Decoder;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -15,35 +16,72 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 import org.joml.Vector3f;
 
 public class Lightmap {
-    private final ArrayImage image;
-    private final ArrayImage rain;
-    private final ArrayImage thunder;
 
-    public Lightmap(ArrayImage image, ArrayImage rain, ArrayImage thunder) {
-        this.image = image;
-        this.rain = rain;
-        this.thunder = thunder;
+    public static final Decoder<Lightmap> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    StrOpt.of(LightmapNumberProvider.CODEC, "sky_getter", LightmapNumberProvider.DEFAULT)
+                            .forGetter(l -> l.skyGetter),
+                    StrOpt.of(LightmapNumberProvider.CODEC, "torch_getter", LightmapNumberProvider.DEFAULT)
+                            .forGetter(l -> l.torchGetter)
+            ).apply(instance, Lightmap::new));
+
+
+    private final LightmapNumberProvider skyGetter;
+    private final LightmapNumberProvider torchGetter;
+    private final ArrayImage[] textures = new ArrayImage[3];
+
+
+    public Lightmap(LightmapNumberProvider skyGetter, LightmapNumberProvider torchGetter) {
+        this.skyGetter = skyGetter;
+        this.torchGetter = torchGetter;
+    }
+
+    //default impl
+    public Lightmap() {
+        this(LightmapNumberProvider.DEFAULT, LightmapNumberProvider.RANDOM);
+    }
+
+    public void acceptImages(ArrayImage normal, ArrayImage rain, ArrayImage thunder) {
+        this.textures[0] = normal;
+        this.textures[1] = rain;
+        this.textures[2] = thunder;
     }
 
 
-    public void applyToLightTexture(LightTexture instance,
-                                    NativeImage lightPixels,
-                                    DynamicTexture lightTexture,
-                                    Minecraft minecraft, ClientLevel level,
-                                    float flicker, float partialTicks) {
+    public float getSkyDarken(Level level, float partialTick) {
+        float f = level.getTimeOfDay(partialTick);
+        float g = 1.0F - (Mth.cos(f * Mth.TWO_PI) * 2.0F + 0.2F);
+        g = Mth.clamp(g, 0.0F, 1.0F);
+        g = 1.0F - g;
+        g *= 1.0F - level.getRainLevel(partialTick) * 5.0F / 16.0F;
+        g *= 1.0F - level.getThunderLevel(partialTick) * 5.0F / 16.0F;
+        return g * 0.8F + 0.2F;
+    }
 
-        Lighting.setupForFlatItems();
+    public boolean applyToLightTexture(LightTexture instance,
+                                       NativeImage lightPixels,
+                                       DynamicTexture lightTexture,
+                                       Minecraft minecraft, ClientLevel level,
+                                       float flicker, float partialTicks) {
+
+        //this wasn't using partial ticks for some reasons
+        float skyDarken = level.getSkyDarken(partialTicks);
+        float rainLevel = level.getRainLevel(partialTicks);
+        float thunderLevel = level.getThunderLevel(partialTicks);
+
+
+        ArrayImage targetTexture = textures;
+
         RandomSource randomSource = RandomSource.create(Float.floatToIntBits(flicker));
 
         LocalPlayer player = minecraft.player;
         Options options = minecraft.options;
 
-        //this wasn't using partial ticks for some reasons
-        float skyDarken = level.getSkyDarken(partialTicks);
         float skyFlashTime;
         if (level.getSkyFlashTime() > 0) {
             skyFlashTime = 1.0F;
@@ -53,8 +91,6 @@ public class Lightmap {
 
         float darknessEffect = options.darknessEffectScale().get().floatValue();
         float darknessGamma = instance.getDarknessGamma(partialTicks) * darknessEffect;
-
-
         float darknessSubtract = instance.calculateDarknessScale(player, darknessGamma, partialTicks) * darknessEffect;
 
         float gamma = (options.gamma().get()).floatValue();
@@ -82,7 +118,9 @@ public class Lightmap {
         Vector3f lightGray = new Vector3f(0.75F, 0.75F, 0.75F);
         float lightGrayAmount = 0.04F;
 
-        float[][] torchLine = selectTorch(randomSource);
+        float[][] torchLine = selectTorch(targetTexture, randomSource);
+
+        float[][] skyLine = selectSky(targetTexture, level);
 
 
         for (int skyY = 0; skyY < 16; ++skyY) {
@@ -91,23 +129,26 @@ public class Lightmap {
             Vector3f skyBuffer = new Vector3f(skyColor)
                     .mul(skyLightIntensity);
 
-
-            //torchBuffer.lerp(lightGray, lightGrayAmount);
             skyBuffer.mul(1 - lightGrayAmount);
 
             for (int torchX = 0; torchX < 16; ++torchX) {
                 Vector3f addition = new Vector3f();
-                Vector3f torchBuffer = new Vector3f(torchLine[torchX]).mul(blockLightFlicker);
+                Vector3f torchBuffer = new Vector3f();
 
+                if (torchBuffer.length() != 0) {
+                    new Vector3f(torchLine[torchX]).mul(blockLightFlicker);
+                } else {
+                    float torchR = LightTexture.getBrightness(dimensionType, torchX) * blockLightFlicker;
+                    float torchG = torchR * ((torchR * 0.6F + 0.4F) * 0.6F + 0.4F);
+                    float torchB = torchR * (torchR * torchR * 0.6F + 0.4F);
+                    torchBuffer.set(torchR, torchG, torchB);
+                }
 
-              //  torchBuffer.mul(1 - lightGrayAmount);
+                //vanilla logic
                 addition.add(new Vector3f(lightGray).mul(lightGrayAmount));
 
-                float q = LightTexture.getBrightness(dimensionType, torchX) * blockLightFlicker;
-                float s = q * ((q * 0.6F + 0.4F) * 0.6F + 0.4F);
-                float t = q * (q * q * 0.6F + 0.4F);
-               // torchBuffer.set(q, s, t);
-
+                //torchBuffer.lerp(lightGray, lightGrayAmount);
+                torchBuffer.mul(1 - lightGrayAmount);
 
 
                 Vector3f combined = new Vector3f();
@@ -159,11 +200,33 @@ public class Lightmap {
         }
     }
 
-    private float[][] selectTorch(RandomSource randomSource) {
+    private float[][] selectSky(boolean nightVision, float time, float rain, float thunder,
+                                boolean thunderFlash) {
+
+        ArrayImage image = textures[0];
+
+        float xVal = skyGetter.getValue(time, rain, thunder);
+
+        float[][] skyLine = new float[16][];
+        int h = ((nightVision && image.height() == 64) ? 32 : 0);
+        for (int i = 0; i < 16; i++) {
+            skyLine[i] = ColorManager.unpack(image.pixels()[h + i][(int) (xVal * image.width())]);
+        }
+        return skyLine;
+    }
+
+    private float[][] selectTorch(boolean nightVision, float time, float rain, float thunder) {
+        ArrayImage image = textures[0];
+
+        if (image.height() < 32) {
+            return new float[][]{};
+        }
+        float xVal = torchGetter.getValue(time, rain, thunder);
         //simulate torch flicker
         float[][] torchLine = new float[16][];
+        int h = 16 + ((nightVision && image.height() == 64) ? 32 : 0);
         for (int i = 0; i < 16; i++) {
-            torchLine[i] = ColorManager.unpack(image.pixels()[16 + i][0]);
+            torchLine[i] = ColorManager.unpack(image.pixels()[h + i][(int) (xVal * image.width())]);
         }
         return torchLine;
     }
@@ -173,4 +236,6 @@ public class Lightmap {
                 Mth.clamp(color.y, 0.0F, 1.0F),
                 Mth.clamp(color.z, 0.0F, 1.0F));
     }
+
+
 }

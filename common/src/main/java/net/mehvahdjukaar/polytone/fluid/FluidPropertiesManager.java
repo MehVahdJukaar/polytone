@@ -1,19 +1,16 @@
 package net.mehvahdjukaar.polytone.fluid;
 
-import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
-import net.mehvahdjukaar.polytone.utils.PartialReloader;
+import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
@@ -22,9 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
-
-public class FluidPropertiesManager extends PartialReloader<FluidPropertiesManager.Resources> {
+public class FluidPropertiesManager extends JsonImgPartialReloader {
 
     private final Map<Fluid, FluidPropertyModifier> fluidColormaps = new HashMap<>();
 
@@ -33,21 +28,11 @@ public class FluidPropertiesManager extends PartialReloader<FluidPropertiesManag
     }
 
     @Override
-    protected Resources prepare(ResourceManager resourceManager) {
-        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
-        scanDirectory(resourceManager, path(), GSON, jsons);
-        var textures = ArrayImage.gatherGroupedImages(resourceManager, path());
-
-        return new Resources(jsons, textures);
-    }
-
-
-    @Override
     public void process(Resources resources) {
-        var jsons = resources.jsons;
-        var textures = resources.textures;
+        var jsons = resources.jsons();
+        var textures = ArrayImage.groupTextures(resources.textures());
 
-        Set<ResourceLocation > usedTextures = new HashSet<>();
+        Set<ResourceLocation> usedTextures = new HashSet<>();
 
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
@@ -95,6 +80,7 @@ public class FluidPropertiesManager extends PartialReloader<FluidPropertiesManag
     private static void tryAddSpecial(ResourceLocation id, FluidPropertyModifier colormap) {
         throw new AssertionError();
     }
+
     @ExpectPlatform
     private static void clearSpecial() {
         throw new AssertionError();
@@ -102,20 +88,15 @@ public class FluidPropertiesManager extends PartialReloader<FluidPropertiesManag
 
 
     public int modifyColor(int original, @Nullable BlockAndTintGetter level,
-                                  @Nullable BlockPos pos , @Nullable BlockState state,
-                                  FluidState fluidState) {
+                           @Nullable BlockPos pos, @Nullable BlockState state,
+                           FluidState fluidState) {
         var modifier = fluidColormaps.get(fluidState.getType());
         if (modifier != null) {
             var col = modifier.getColormap();
-            if (col!= null){
+            if (col != null) {
                 return col.getColor(state, level, pos, -1) | 0xff000000;
             }
         }
         return original;
-    }
-
-
-    public record Resources(Map<ResourceLocation, JsonElement> jsons,
-                            Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures) {
     }
 }

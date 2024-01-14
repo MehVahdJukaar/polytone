@@ -1,22 +1,23 @@
 package net.mehvahdjukaar.polytone.lightmap;
 
+import com.google.gson.JsonElement;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
-import net.mehvahdjukaar.polytone.utils.PartialReloader;
+import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class LightmapsManager extends PartialReloader<Map<ResourceLocation, ArrayImage>> {
+public class LightmapsManager extends JsonImgPartialReloader {
 
     public static final ResourceLocation GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
 
@@ -28,13 +29,11 @@ public class LightmapsManager extends PartialReloader<Map<ResourceLocation, Arra
         super("lightmaps");
     }
 
-    @Override
-    protected Map<ResourceLocation, ArrayImage> prepare(ResourceManager resourceManager) {
-        return ArrayImage.gatherImages(resourceManager, path());
-    }
 
     @Override
-    public void process(Map<ResourceLocation, ArrayImage> images) {
+    public void process(Resources resources) {
+        var images = resources.textures();
+        var jsons = resources.jsons();
         lastDimension = null;
         currentLightmap = null;
 
@@ -61,12 +60,28 @@ public class LightmapsManager extends PartialReloader<Map<ResourceLocation, Arra
 
         for (var e : grouped.entrySet()) {
             ResourceLocation location = e.getKey();
+
+            JsonElement j = jsons.remove(location);
+            Lightmap lightmap;
+            if(j != null){
+                lightmap = Lightmap.CODEC.decode(JsonOps.INSTANCE, j)
+                        .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Lightmap with json id {} - error: {}", location, errorMsg))
+                        .getFirst();
+            }else{
+                //default samplers
+                lightmap = new Lightmap();
+            }
+
             var map = e.getValue();
-            Lightmap lightmap = new Lightmap(map.get("normal"), map.get("rain"), map.get("thunder"));
+            lightmap.acceptImages(map.get("normal"), map.get("rain"), map.get("thunder"));
 
             ResourceLocation localId = Polytone.getLocalId(location);
             lightmaps.put(localId, lightmap);
             lightmaps.put(location, lightmap);
+        }
+
+        if(!jsons.isEmpty()){
+            throw new IllegalStateException("Found some lightmaps .jsons with no associated textures at"+ jsons);
         }
     }
 
@@ -76,25 +91,31 @@ public class LightmapsManager extends PartialReloader<Map<ResourceLocation, Arra
     }
 
     public boolean maybeModifyLightTexture(LightTexture instance,
-                                                  NativeImage lightPixels,
-                                                  DynamicTexture lightTexture,
-                                                  Minecraft minecraft, ClientLevel level,
-                                                  float flicker, float partialTicks) {
+                                           NativeImage lightPixels,
+                                           DynamicTexture lightTexture,
+                                           Minecraft minecraft, ClientLevel level,
+                                           float flicker, float partialTicks) {
         if (lastDimension != level.dimension()) {
             lastDimension = level.dimension();
             currentLightmap = lightmaps.get(lastDimension.location());
         }
-        if (currentLightmap != null && !hack) {
-            currentLightmap.applyToLightTexture(instance, lightPixels, lightTexture, minecraft,
+        if(USING_GUI_LIGHTMAP){
+            int aa =1;//error
+        }
+        if (currentLightmap != null) {
+            return currentLightmap.applyToLightTexture(instance, lightPixels, lightTexture, minecraft,
                     level, flicker, partialTicks);
-            return true;
         }
         return false;
     }
 
-    private static boolean hack = false;
+    private static boolean USING_GUI_LIGHTMAP = false;
 
     public static void setupForGUI(boolean gui) {
-        hack = gui;
+        USING_GUI_LIGHTMAP = gui;
+    }
+
+    public static boolean isGui() {
+        return USING_GUI_LIGHTMAP;
     }
 }

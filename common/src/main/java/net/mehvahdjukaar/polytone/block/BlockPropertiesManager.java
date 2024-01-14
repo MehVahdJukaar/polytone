@@ -1,23 +1,18 @@
 package net.mehvahdjukaar.polytone.block;
 
-import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
-import net.mehvahdjukaar.polytone.utils.PartialReloader;
+import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
 
 import java.util.*;
 
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
-
-public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
+public class BlockPropertiesManager extends JsonImgPartialReloader {
 
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();
 
@@ -28,19 +23,10 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
     @Override
-    protected Resources prepare(ResourceManager resourceManager) {
-        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
-        scanDirectory(resourceManager, path(), GSON, jsons);
-        var textures = ArrayImage.gatherGroupedImages(resourceManager, path());
-
-        return new Resources(jsons, textures);
-    }
-
-    @Override
     public void process(Resources resources) {
 
-        var jsons = resources.jsons;
-        var textures = resources.textures;
+        var jsons = resources.jsons();
+        var textures = ArrayImage.groupTextures(resources.textures());
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
@@ -98,9 +84,5 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             e.getValue().apply(e.getKey());
         }
         vanillaProperties.clear();
-    }
-
-    public record Resources(Map<ResourceLocation, JsonElement> jsons,
-                            Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures) {
     }
 }

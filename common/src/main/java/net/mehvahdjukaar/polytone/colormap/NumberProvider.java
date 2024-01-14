@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-public final class ExpressionSource {
+public final class NumberProvider {
 
     //Keywords
     private static final String TEMPERATURE = "TEMPERATURE";
@@ -44,10 +44,10 @@ public final class ExpressionSource {
     private static final ThreadLocal<BlockState> STATE_HACK = new ThreadLocal<>();
 
 
-    public static final Codec<ExpressionSource> CODEC = Codec.STRING.flatXmap(s -> {
+    public static final Codec<NumberProvider> CODEC = Codec.STRING.flatXmap(s -> {
         try {
             Expression compiled = createExpression(s);
-            return DataResult.success(new ExpressionSource(compiled, s));
+            return DataResult.success(new NumberProvider(compiled, s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
@@ -69,7 +69,7 @@ public final class ExpressionSource {
     private final boolean hasT;
     private final boolean hasD;
 
-    private ExpressionSource(Expression expression, String unparsed) {
+    private NumberProvider(Expression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
         this.hasX = unparsed.contains(POS_X);
@@ -80,8 +80,8 @@ public final class ExpressionSource {
     }
 
     //Unckecked
-    public static ExpressionSource make(String s) {
-        return new ExpressionSource(createExpression(s), s);
+    public static NumberProvider make(String s) {
+        return new NumberProvider(createExpression(s), s);
     }
 
     // we use this optimistic approach instead of a lock because it's faster,

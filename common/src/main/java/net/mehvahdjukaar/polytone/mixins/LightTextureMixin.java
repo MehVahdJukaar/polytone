@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
 import net.minecraft.client.Minecraft;
@@ -30,7 +31,8 @@ public class LightTextureMixin {
     @Final
     private Minecraft minecraft;
 
-    @Shadow private float blockLightRedFlicker;
+    @Shadow
+    private float blockLightRedFlicker;
 
     @Inject(method = "updateLightTexture", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/multiplayer/ClientLevel;getSkyDarken(F)F",
@@ -41,5 +43,17 @@ public class LightTextureMixin {
                 minecraft, clientLevel, blockLightRedFlicker, partialTicks)) {
             ci.cancel();
         }
+    }
+
+    @Inject(method = "turnOnLightLayer", at = @At(value = "HEAD"), cancellable = true)
+    public void polytone$useGuiLightmap(CallbackInfo ci) {
+        if (LightmapsManager.isGui()) {
+            RenderSystem.setShaderTexture(2, LightmapsManager.GUI_LIGHTMAP);
+            this.minecraft.getTextureManager().bindForSetup(LightmapsManager.GUI_LIGHTMAP);
+            RenderSystem.texParameter(3553, 10241, 9729);
+            RenderSystem.texParameter(3553, 10240, 9729);
+            ci.cancel();
+        }
+
     }
 }

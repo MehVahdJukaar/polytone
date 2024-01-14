@@ -7,6 +7,7 @@ import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
+import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.resources.ResourceLocation;
@@ -20,7 +21,7 @@ import java.util.Set;
 
 import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
-public class ColormapsManager extends PartialReloader<ColormapsManager.Resources> {
+public class ColormapsManager extends JsonImgPartialReloader {
 
     // custom defined colormaps
     private final BiMap<ResourceLocation, BlockColor> colormapsIds = HashBiMap.create();
@@ -28,19 +29,12 @@ public class ColormapsManager extends PartialReloader<ColormapsManager.Resources
     public ColormapsManager() {
         super("colormaps");
     }
-    @Override
-    protected Resources prepare(ResourceManager resourceManager) {
-        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
-        scanDirectory(resourceManager, path(), GSON, jsons);
-        var textures = ArrayImage.gatherGroupedImages(resourceManager, path());
 
-        return new Resources(jsons, textures);
-    }
 
     @Override
     public void process(Resources resources) {
-        var jsons = resources.jsons;
-        var textures = resources.textures;
+        var jsons = resources.jsons();
+        var textures = ArrayImage.groupTextures(resources.textures());
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
@@ -136,8 +130,6 @@ public class ColormapsManager extends PartialReloader<ColormapsManager.Resources
         return false;
     }
 
-    public record Resources(Map<ResourceLocation, JsonElement> jsons,
-                            Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures) {
-    }
+
 
 }

@@ -10,19 +10,27 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(GameRenderer.class)
+@Mixin(value = GameRenderer.class, priority = 500)
 public abstract class GameRendererMixin {
 
-    @Shadow public abstract LightTexture lightTexture();
+    @Shadow
+    public abstract LightTexture lightTexture();
 
-    @Shadow @Final private LightTexture lightTexture;
+    @Shadow
+    @Final
+    private LightTexture lightTexture;
 
-    @Inject(method = "render",at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;render(Lnet/minecraft/client/gui/GuiGraphics;F)V",
-    shift = At.Shift.BEFORE))
-    private   void polytone$messWithGui(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo ci){
+    @Inject(method = "render", at = @At(value = "NEW",
+            target = "(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;)Lnet/minecraft/client/gui/GuiGraphics;"))
+    private void polytone$messWithGui(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo ci) {
         LightmapsManager.setupForGUI(true);
-        lightTexture.updateLightTexture = true;
-        lightTexture.updateLightTexture(partialTicks);
-        LightmapsManager.setupForGUI(false);
+        lightTexture.turnOnLightLayer();
     }
+
+    @Inject(method = "render", at = @At(value = "TAIL"))
+    private void polytone$resetGuiLightmap(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo ci) {
+        LightmapsManager.setupForGUI(false);
+        lightTexture.turnOnLightLayer();
+    }
+
 }
