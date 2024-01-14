@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.fabric;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -19,7 +20,7 @@ public record PolytoneFluidRenderHandlerWrapper(FluidRenderHandler instance) imp
 
     @Override
     public int getFluidColor(@Nullable BlockAndTintGetter view, @Nullable BlockPos pos, FluidState state) {
-        return FluidPropertiesManager.modifyColor(instance.getFluidColor(view, pos, state),
+        return Polytone.FLUID_PROPERTIES.modifyColor(instance.getFluidColor(view, pos, state),
                 view, pos, state.createLegacyBlock(), state);
     }
 

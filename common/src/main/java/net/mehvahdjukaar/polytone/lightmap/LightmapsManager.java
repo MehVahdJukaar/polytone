@@ -12,10 +12,13 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class LightmapsManager extends JsonImgPartialReloader {
 
@@ -29,6 +32,27 @@ public class LightmapsManager extends JsonImgPartialReloader {
         super("lightmaps");
     }
 
+    @Override
+    protected Resources prepare(ResourceManager resourceManager) {
+        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
+
+        scanDirectory(resourceManager, path(), GSON, jsons);
+
+        Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
+        for (var j : ArrayImage.gatherImages(resourceManager, "optifine/lightmap").entrySet()) {
+            ResourceLocation key = j.getKey();
+            textures.put(key.withPath(key.getPath()
+                            .replace("world0", "overworld")
+                            .replace("world1", "the_end")
+                            .replace("world-1", "the_nether")),
+                    j.getValue());
+        }
+
+        textures.putAll(ArrayImage.gatherImages(resourceManager, "colormatic/lightmap"));
+        textures.putAll(ArrayImage.gatherImages(resourceManager, path()));
+
+        return new Resources(jsons, textures);
+    }
 
     @Override
     public void process(Resources resources) {
@@ -63,11 +87,11 @@ public class LightmapsManager extends JsonImgPartialReloader {
 
             JsonElement j = jsons.remove(location);
             Lightmap lightmap;
-            if(j != null){
+            if (j != null) {
                 lightmap = Lightmap.CODEC.decode(JsonOps.INSTANCE, j)
                         .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Lightmap with json id {} - error: {}", location, errorMsg))
                         .getFirst();
-            }else{
+            } else {
                 //default samplers
                 lightmap = new Lightmap();
             }
@@ -80,8 +104,8 @@ public class LightmapsManager extends JsonImgPartialReloader {
             lightmaps.put(location, lightmap);
         }
 
-        if(!jsons.isEmpty()){
-            throw new IllegalStateException("Found some lightmaps .jsons with no associated textures at"+ jsons);
+        if (!jsons.isEmpty()) {
+            throw new IllegalStateException("Found some lightmaps .jsons with no associated textures at" + jsons);
         }
     }
 
@@ -99,12 +123,14 @@ public class LightmapsManager extends JsonImgPartialReloader {
             lastDimension = level.dimension();
             currentLightmap = lightmaps.get(lastDimension.location());
         }
-        if(USING_GUI_LIGHTMAP){
-            int aa =1;//error
+        if (USING_GUI_LIGHTMAP) {
+            int aa = 1;//error
         }
         if (currentLightmap != null) {
-            return currentLightmap.applyToLightTexture(instance, lightPixels, lightTexture, minecraft,
+            // if(true)return false;
+            currentLightmap.applyToLightTexture(instance, lightPixels, lightTexture, minecraft,
                     level, flicker, partialTicks);
+            return true;
         }
         return false;
     }

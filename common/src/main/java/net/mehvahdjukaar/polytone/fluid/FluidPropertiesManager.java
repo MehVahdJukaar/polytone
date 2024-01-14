@@ -94,7 +94,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         if (modifier != null) {
             var col = modifier.getColormap();
             if (col != null) {
-                return col.getColor(state, level, pos, -1) | 0xff000000;
+                return col.getColor(state, level, pos, -1) | 0x44000000;
             }
         }
         return original;
