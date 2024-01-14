@@ -29,12 +29,32 @@ configurations {
 
 
 processResources {
-    inputs.property "version", project.version
-    //inputs.property "mod_name": project.getArchivesBaseName()
+    // input variables of this task:
+    var replaceProperties = [
+            minecraft_version    : minecraft_version,
+            minecraft_min_version: minecraft_min_version,
+            minecraft_max_version: minecraft_max_version,
+            pack_format_number   : pack_format_number,
 
-    filesMatching("META-INF/mods.toml") {
-        expand "version": project.version
-        expand "mod_name": project.getArchivesBaseName()
+            mod_id               : mod_id,
+            mod_name             : mod_name,
+            mod_version          : mod_version,
+            mod_license          : mod_license,
+            mod_authors          : mod_authors,
+            mod_description      : mod_description,
+            mod_credits          : mod_credits,
+            mod_homepage         : mod_homepage,
+            mod_github           : mod_github,
+
+            neo_version          : neo_version,
+            neo_version_range    : neo_version_range,
+            loader_version_range : loader_version_range,
+    ]
+    // setting them as input
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta', 'update.json']) {
+        expand replaceProperties + [project: project]
     }
 }
 

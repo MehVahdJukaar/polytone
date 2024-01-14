@@ -1,16 +1,17 @@
 {
   "schemaVersion": 1,
-  "id": "polytone",
-  "version": "${version}",
-  "name": "Polytone",
-  "description": "",
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
   "authors": [
-    "Mehvahdjukaar"
+    "${mod_authors}"
   ],
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/polytone"
+    "homepage": "${mod_homepage}",
+    "sources": "${mod_github}"
   },
-  "license": "GPL 3.0",
+  "license": "${mod_license}",
   "icon": "icon.png",
   "environment": "client",
   "entrypoints": {
@@ -24,7 +25,7 @@
   ],
   "depends": {
     "fabric": "*",
-    "minecraft": ">=1.17"
+    "minecraft": ">=${minecraft_min_version} <${minecraft_max_version}"
   },
   "breaks": {
     "slotify": "*"
