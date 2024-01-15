@@ -113,7 +113,7 @@ public class TintColorGetter implements BlockColor {
     }
 
     @Override
-    public int getColor(BlockState blockState, @Nullable BlockAndTintGetter level, @Nullable BlockPos blockPos, int tintIndex) {
+    public int getColor(@Nullable BlockState blockState, @Nullable BlockAndTintGetter level, @Nullable BlockPos blockPos, int tintIndex) {
         Colormap getter = getters.get(tintIndex);
         if (getter == null) {
             getter = getters.get(-1);

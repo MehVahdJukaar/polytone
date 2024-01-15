@@ -124,6 +124,10 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public @NotNull Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
+            var col = modifier.getFogColormap();
+            if (col != null) {
+                return col.getColor(null, level, null, -1) | 0xff000000;
+            }
             return instance.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
         }
 

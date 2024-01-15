@@ -2,11 +2,10 @@ package net.mehvahdjukaar.polytone.color;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonParseException;
-import com.mojang.authlib.minecraft.client.ObjectMapper;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
+import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +28,7 @@ import java.util.function.Function;
 import static net.mehvahdjukaar.polytone.utils.ColorUtils.pack;
 import static net.mehvahdjukaar.polytone.utils.ColorUtils.unpack;
 
-public class ColorManager extends SinglePropertiesReloadListener {
+public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     private final Object2IntMap<MapColor> vanillaMapColors = new Object2IntOpenHashMap<>();
     private final Map<DyeColor, Integer> vanillaFireworkColors = new EnumMap<>(DyeColor.class);
@@ -46,7 +45,7 @@ public class ColorManager extends SinglePropertiesReloadListener {
     private int waterBottle = 3694022;
 
     public ColorManager() {
-        super("color.properties", "optifine", "vanadium", "colormatic", Polytone.MOD_ID);
+        super("color.properties", "colors.json", "optifine", "vanadium", "colormatic", Polytone.MOD_ID);
     }
 
     public int getEmptyPot() {

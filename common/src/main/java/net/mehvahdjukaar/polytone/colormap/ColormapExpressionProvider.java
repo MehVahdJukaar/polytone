@@ -3,19 +3,15 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -32,7 +28,8 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     private static final String POS_Y = "POS_Y";
     private static final String POS_Z = "POS_Z";
 
-    private static final Function STATE_PROP = new Function("state_prop", 1) {
+    private static final String STATE_FUNC = "state_prop";
+    private static final Function STATE_PROP = new Function(STATE_FUNC, 1) {
         @Override
         public double apply(double... args) {
             BlockState blockState = STATE_HACK.get();
@@ -79,11 +76,6 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
 
     private final String unparsed;
     private final Expression expression;
-    private final boolean hasX;
-    private final boolean hasY;
-    private final boolean hasZ;
-    private final boolean hasT;
-    private final boolean hasD;
 
     // we use this optimistic approach instead of a lock because it's faster,
     // and we don't really care about blocking as we can just use new if its locked
@@ -92,11 +84,6 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     private ColormapExpressionProvider(Expression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
-        this.hasX = unparsed.contains(POS_X);
-        this.hasY = unparsed.contains(POS_Y);
-        this.hasZ = unparsed.contains(POS_Z);
-        this.hasT = unparsed.contains(TEMPERATURE);
-        this.hasD = unparsed.contains(DOWNFALL);
     }
 
     //Unckecked
@@ -106,11 +93,21 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
 
     @Override
     public boolean usesBiome() {
-        return hasT || hasD;
+        return unparsed.contains(POS_X) || unparsed.contains(POS_Y) || unparsed.contains(POS_Z);
     }
 
     @Override
-    public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
+    public boolean usesPos() {
+        return unparsed.contains(TEMPERATURE) || unparsed.contains(DOWNFALL);
+    }
+
+    @Override
+    public boolean usesState() {
+        return unparsed.contains(STATE_FUNC);
+    }
+
+    @Override
+    public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
         float result = 0;
         boolean needsToUnlock = false;
         try {
@@ -125,15 +122,16 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
             }
 
 
-            if(hasT) exp.setVariable(TEMPERATURE, biome != null ? biome.climateSettings.temperature : 0);
-            if(hasD) exp.setVariable(DOWNFALL, biome != null ? biome.climateSettings.temperature : 0);
+            exp.setVariable(TEMPERATURE, biome != null ? biome.climateSettings.temperature : 0);
+            exp.setVariable(DOWNFALL, biome != null ? biome.climateSettings.temperature : 0);
 
-            exp.setVariable(POS_X, hasX ? pos.getX() : 0);
-            exp.setVariable(POS_Y, hasY ? pos.getY() : 0);
-            exp.setVariable(POS_Z, hasZ ? pos.getZ() : 0);
+            exp.setVariable(POS_X, pos != null ? pos.getX() : 0);
+            exp.setVariable(POS_Y, pos != null ? pos.getY() : 0);
+            exp.setVariable(POS_Z, pos != null ? pos.getZ() : 0);
 
             // Evaluate the expression
-            //this state hack wont even work as its multithreaded lmao
+            //this state hack won't even work as its multithreaded lmao
+
             STATE_HACK.set(state);
             result = (float) exp.evaluate();
             STATE_HACK.remove();

@@ -26,11 +26,14 @@ public class Colormap implements ColorResolver {
     private final IColormapNumberProvider yGetter;
     private final boolean triangular;
     private final boolean hasBiomeBlend; //if this should be used as ColorResolver, allowing for biome blend
+    private final boolean usesBiome;
+    private final boolean usesPos;
+    private final boolean usesState;
 
     private Integer defaultColor = null;
     private ArrayImage image = null;
 
-    private ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
+    private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
 
     public static final Codec<Colormap> CODEC = RecordCodecBuilder.create(i -> i.group(
             StrOpt.of(Codec.INT, "default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
@@ -46,7 +49,10 @@ public class Colormap implements ColorResolver {
         this.xGetter = xGetter;
         this.yGetter = yGetter;
         this.triangular = triangular;
-        this.hasBiomeBlend = biomeBlend.orElseGet(() -> (xGetter.usesBiome() || yGetter.usesBiome()));
+        this.usesBiome = (xGetter.usesBiome() || yGetter.usesBiome());
+        this.usesPos = usesBiome || (xGetter.usesPos() || yGetter.usesPos());
+        this.usesState = (xGetter.usesState() || yGetter.usesState());
+        this.hasBiomeBlend = biomeBlend.orElse(usesBiome);
     }
 
     protected Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter) {
@@ -71,14 +77,16 @@ public class Colormap implements ColorResolver {
     }
 
     public int getColor(@Nullable BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
-        if (pos == null || level == null || state == null || image == null) {
+        if (level == null) return defaultColor;
+        if (pos == null && (usesPos || usesBiome)) {
             return defaultColor;
         }
-        if(hasBiomeBlend){
-             // ask the world to calculate color with blend using this.
+        if (state == null && usesState) return defaultColor;
+        if (hasBiomeBlend) {
+            // ask the world to calculate color with blend using this.
             // this will intern call calculateBlendedColor which will call getColor/sampleColor
             stateHack.set(state); //pass blockstate arg like this
-            if(Polytone.sodiumOn && level instanceof LevelReader r){
+            if (Polytone.sodiumOn && level instanceof LevelReader r) {
                 return sampleColor(state, pos, r.getBiome(pos).value());
             }
             return level.getBlockTint(pos, this);
@@ -87,7 +95,7 @@ public class Colormap implements ColorResolver {
         return sampleColor(state, pos, null);
     }
 
-    private int sampleColor(@NotNull BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
+    private int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
         float humidity = Mth.clamp(xGetter.getValue(state, pos, biome), 0, 1);
         float temperature = Mth.clamp(yGetter.getValue(state, pos, biome), 0, 1);
         return sample(humidity, temperature, defaultColor);
@@ -103,7 +111,7 @@ public class Colormap implements ColorResolver {
 
     public int calculateBlendedColor(Level level, BlockPos pos) {
         //Same as vanilla impl. We could have just called it. Just here so we call sampleColor instead of getColor with pos instead of x z
-        int i =  Minecraft.getInstance().options.biomeBlendRadius().get();
+        int i = Minecraft.getInstance().options.biomeBlendRadius().get();
         BlockState state = stateHack.get();
         if (i == 0) {
             return this.sampleColor(state, pos, level.getBiome(pos).value());
@@ -115,9 +123,9 @@ public class Colormap implements ColorResolver {
             Cursor3D cursor3D = new Cursor3D(pos.getX() - i, pos.getY(), pos.getZ() - i, pos.getX() + i, pos.getY(), pos.getZ() + i);
 
             int n;
-            for(BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos(); cursor3D.advance(); m += n & 255) {
+            for (BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos(); cursor3D.advance(); m += n & 255) {
                 mutableBlockPos.set(cursor3D.nextX(), cursor3D.nextY(), cursor3D.nextZ());
-                n = this.sampleColor(state,  mutableBlockPos, level.getBiome(mutableBlockPos).value());
+                n = this.sampleColor(state, mutableBlockPos, level.getBiome(mutableBlockPos).value());
                 k += (n & 16711680) >> 16;
                 l += (n & '\uff00') >> 8;
             }
@@ -125,7 +133,6 @@ public class Colormap implements ColorResolver {
             return (k / j & 255) << 16 | (l / j & 255) << 8 | m / j & 255;
         }
     }
-
 
 
     private int sample(float x, float y, int defValue) {

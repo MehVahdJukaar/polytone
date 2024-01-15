@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.utils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import java.util.Properties;
 
@@ -24,8 +25,8 @@ public class PropertiesUtils {
 
             if (value instanceof JsonObject jo) {
                 iterateJsonObject(jo, properties, newPath);
-            } else {
-                properties.setProperty(newPath, value.toString());
+            } else if(value instanceof JsonPrimitive s && s.isString()){
+                properties.setProperty(newPath, s.getAsString());
             }
         }
     }

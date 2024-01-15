@@ -28,14 +28,43 @@ public interface IColormapNumberProvider {
         return provider;
     }
 
-    float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome);
+    float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome);
 
     default boolean usesBiome() {
-        return false;
+        return true;
+    }
+    default boolean usesPos() {
+        return true;
+    }
+    default boolean usesState() {
+        return true;
     }
 
-    IColormapNumberProvider ZERO = register("zero", (state, pos, b) -> 0);
-    IColormapNumberProvider ONE = register("one", (state, pos, b) -> 1);
+    record Const(float c) implements IColormapNumberProvider{
+
+        @Override
+        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
+            return c;
+        }
+
+        @Override
+        public boolean usesState() {
+            return false;
+        }
+
+        @Override
+        public boolean usesBiome() {
+            return false;
+        }
+
+        @Override
+        public boolean usesPos() {
+            return false;
+        }
+    }
+
+    IColormapNumberProvider ZERO = register("zero", new Const(0));
+    IColormapNumberProvider ONE = register("one", new Const(1));
 
     IColormapNumberProvider TEMPERATURE = register("temperature", new IColormapNumberProvider() {
         @Override
@@ -44,8 +73,8 @@ public interface IColormapNumberProvider {
         }
 
         @Override
-        public boolean usesBiome() {
-            return true;
+        public boolean usesState() {
+            return false;
         }
     });
 
@@ -57,8 +86,8 @@ public interface IColormapNumberProvider {
         }
 
         @Override
-        public boolean usesBiome() {
-            return true;
+        public boolean usesState() {
+            return false;
         }
     });
 
