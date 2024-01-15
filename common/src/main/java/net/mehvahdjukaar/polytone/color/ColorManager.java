@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.color;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonParseException;
+import com.mojang.authlib.minecraft.client.ObjectMapper;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -41,8 +42,19 @@ public class ColorManager extends SinglePropertiesReloadListener {
 
     private final Map<DyeColor, Integer> customSheepColors = new EnumMap<>(DyeColor.class);
 
+    private int emptyPotion = 16253176;
+    private int waterBottle = 3694022;
+
     public ColorManager() {
         super("color.properties", "optifine", "vanadium", "colormatic", Polytone.MOD_ID);
+    }
+
+    public int getEmptyPot() {
+        return emptyPotion;
+    }
+
+    public int getWaterBottle() {
+        return waterBottle;
     }
 
     @Override
@@ -130,6 +142,12 @@ public class ColorManager extends SinglePropertiesReloadListener {
                 if(item == null){
                     item = BuiltInRegistries.ITEM.getOptional(id.withSuffix( "_spawn_egg")).orElse(null);
                 }
+                if(item == null){
+                    var entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
+                    if(entity != null){
+                        item = SpawnEggItem.byId(entity);
+                    }
+                }
                 if (item instanceof SpawnEggItem spawnEggItem) {
                     int col = parseHex(obj);
 
@@ -148,14 +166,20 @@ public class ColorManager extends SinglePropertiesReloadListener {
             }
         } else if (is(prop, 0, "potion") || is(prop, 0, "effect")) {
             ResourceLocation id = new ResourceLocation(prop[1].replace("\\", ""));
-            MobEffect effect = BuiltInRegistries.MOB_EFFECT.getOptional(id).orElse(null);
-            if (effect != null) {
-                int col = parseHex(obj);
-                if (!vanillaEffectColors.containsKey(effect)) {
-                    vanillaEffectColors.put(effect, effect.getColor());
-                }
-                effect.color = col;
-            } else Polytone.LOGGER.warn("Unknown Mob Effect with name {}", id);
+            int col = parseHex(obj);
+            if(id.getPath().equals("empty")){
+                emptyPotion = col;
+            }else if(id.getPath().equals("water")){
+                waterBottle = col;
+            }else {
+                MobEffect effect = BuiltInRegistries.MOB_EFFECT.getOptional(id).orElse(null);
+                if (effect != null) {
+                    if (!vanillaEffectColors.containsKey(effect)) {
+                        vanillaEffectColors.put(effect, effect.getColor());
+                    }
+                    effect.color = col;
+                } else Polytone.LOGGER.warn("Unknown Mob Effect with name {}", id);
+            }
         } else if (is(prop, 0, "sheep")) {
             String name = get(prop, 1);
             DyeColor color = DyeColor.byName(name, null);
@@ -212,6 +236,8 @@ public class ColorManager extends SinglePropertiesReloadListener {
     }
 
     private void resetValues() {
+        emptyPotion = 16253176;
+        waterBottle = 3694022;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();

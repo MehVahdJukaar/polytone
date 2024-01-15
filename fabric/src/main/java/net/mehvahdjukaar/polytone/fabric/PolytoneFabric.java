@@ -1,38 +1,30 @@
 package net.mehvahdjukaar.polytone.fabric;
 
-import com.google.common.base.Suppliers;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.util.profiling.ProfilerFiller;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.function.Supplier;
 
 public class PolytoneFabric implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        Polytone.init();
+        boolean sodiumOn = FabricLoader.getInstance().isModLoaded("sodium");
+        Polytone.init(sodiumOn);
+
+        if (sodiumOn) {
+            Polytone.LOGGER.error("!!!!!");
+            Polytone.LOGGER.error("SODIUM has been detected. POLYTONE colormaps will be OFF. This is a SODIUM issue and CANNOT be fixed by me until Sodium merges this PR https://github.com/CaffeineMC/sodium-fabric/pull/2222");
+            Polytone.LOGGER.error("!!!!!");
+        }
 
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
-            if(client) Polytone.onTagsReceived(registries);
+            if (client) Polytone.onTagsReceived(registries);
         });
-
 
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {

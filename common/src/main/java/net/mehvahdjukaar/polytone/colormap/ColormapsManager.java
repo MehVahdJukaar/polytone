@@ -125,5 +125,4 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
 
-
 }

@@ -1,3 +1,2 @@
-added some more backwards compat with some hardcoded optifine colormaps
-fixed spawn egg colors not being parsed correctly
-other fixes
+Thanks to a sodium bug, all Colormaps are now disabled when that is installed (instead of crashing)
+you can change color of empty potions and water bottles

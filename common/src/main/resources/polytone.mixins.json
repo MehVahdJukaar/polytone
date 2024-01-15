@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_17",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "AbstractContainerMenuMixin"
+    "AbstractContainerMenuMixin",
+    "PotionUtilsMixin"
   ],
   "client": [
     "GameRendererMixin",

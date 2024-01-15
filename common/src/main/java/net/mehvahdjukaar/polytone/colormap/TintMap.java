@@ -159,6 +159,7 @@ public class TintMap implements BlockColor {
             return new Colormap(Optional.of(-1),
                     IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, false);
         }
+
         public static Colormap defTriangle() {
             return new Colormap(Optional.of(-1),
                     IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, true);
@@ -172,7 +173,7 @@ public class TintMap implements BlockColor {
         }
 
         public int getColor(@Nullable BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
-            if (pos == null || level == null || state == null || image == null){
+            if (pos == null || level == null || state == null || image == null) {
                 return defaultColor;
             }
 
@@ -182,6 +183,7 @@ public class TintMap implements BlockColor {
         }
 
         private int sample(float x, float y, int defValue) {
+            if (Polytone.sodiumOn) return defValue;
             if (triangular) x *= y;
             int width = image.width();
             int height = image.height();

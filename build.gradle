@@ -114,6 +114,14 @@ allprojects {
 
         maven { url 'https://jitpack.io' }
 
+        maven {
+            url = 'https://maven.neoforged.net'
+        }
+
+        maven {
+            url = "https://api.modrinth.com/maven"
+        }
+
     }
 
     tasks.withType(JavaCompile) {
