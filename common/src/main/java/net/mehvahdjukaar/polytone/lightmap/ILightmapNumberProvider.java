@@ -28,7 +28,7 @@ public interface ILightmapNumberProvider {
             a->CUSTOM_PROVIDERS.inverse().get(a), CUSTOM_PROVIDERS::get);
 
     Codec<ILightmapNumberProvider> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_CODEC,
-            LightmapExpressionProvider.CODEC);
+            LightmapExpressionProvider.CODEC, true);
 
     static <T extends ILightmapNumberProvider> T register(String name, T provider) {
         CUSTOM_PROVIDERS.put(name, provider);

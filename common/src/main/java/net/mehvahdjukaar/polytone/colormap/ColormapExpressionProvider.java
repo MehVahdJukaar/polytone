@@ -36,6 +36,18 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
             int index = (int) args[0];
             Property<?> p = properties.get(Mth.clamp(index, 0, properties.size() - 1));
             List<?> values = new ArrayList<>(p.getPossibleValues());
+            return values.indexOf(blockState.getValue(p)) / (properties.size() - 1f);
+        }
+    };
+
+    private static final Function STATE_PROP_INT = new Function("state_prop_i", 1) {
+        @Override
+        public double apply(double... args) {
+            BlockState blockState = STATE_HACK.get();
+            List<Property<?>> properties = new ArrayList<>(blockState.getProperties());
+            int index = (int) args[0];
+            Property<?> p = properties.get(Mth.clamp(index, 0, properties.size() - 1));
+            List<?> values = new ArrayList<>(p.getPossibleValues());
             return values.indexOf(blockState.getValue(p));
         }
     };
@@ -55,7 +67,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
 
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(s)
-                .functions(ExpressionUtils.defFunc(STATE_PROP))
+                .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
                 .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z)
                 .operator(ExpressionUtils.defOp())
                 .build();
@@ -102,8 +114,8 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
                 exp = new Expression(this.expression);
             }
 
-            exp.setVariable(TEMPERATURE, hasT ? level.getBlockTint(pos, Colormap.TEMPERATURE_RESOLVER) : 0);
-            exp.setVariable(DOWNFALL, hasD ? level.getBlockTint(pos, Colormap.DOWNFALL_RESOLVER) : 0);
+            exp.setVariable(TEMPERATURE, hasT ? level.getBlockTint(pos, TintMap.TEMPERATURE_RESOLVER) : 0);
+            exp.setVariable(DOWNFALL, hasD ? level.getBlockTint(pos, TintMap.DOWNFALL_RESOLVER) : 0);
             exp.setVariable(POS_X, hasX ? pos.getX() : 0);
             exp.setVariable(POS_Y, hasY ? pos.getY() : 0);
             exp.setVariable(POS_Z, hasZ ? pos.getZ() : 0);

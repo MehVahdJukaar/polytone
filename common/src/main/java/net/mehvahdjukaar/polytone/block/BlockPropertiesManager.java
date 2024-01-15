@@ -2,15 +2,18 @@ package net.mehvahdjukaar.polytone.block;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.TintMap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.StemBlock;
 
 import java.util.*;
 
@@ -31,11 +34,15 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
         Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
         scanDirectory(resourceManager, path(), GSON, jsons);
 
-        var textures = ArrayImage.gatherImages(resourceManager, path());
+        Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 
-        var ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
+        for (var j : ArrayImage.gatherImages(resourceManager, "optifine/colormap").entrySet()) {
+            ResourceLocation key = j.getKey();
+            String path = key.getPath();
+            textures.put(key.withPath("of/" + path), j.getValue());
+        }
 
-
+        textures.putAll(ArrayImage.gatherImages(resourceManager, path()));
 
         return new Resources(jsons, textures);
     }
@@ -58,7 +65,7 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
             //fill inline colormaps colormapTextures
             var colormap = prop.tintGetter();
-            if (colormap.isPresent() && colormap.get() instanceof Colormap c && !c.isReference()) {
+            if (colormap.isPresent() && colormap.get() instanceof TintMap c && !c.isReference()) {
                 ColormapsManager.fillColormapPalette(textures, id, c, usedTextures);
             }
 
@@ -70,8 +77,44 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
-            Colormap defaultColormap = Colormap.createDefault(t.getValue().keySet());
-            ColormapsManager.fillColormapPalette(textures, id, defaultColormap, usedTextures);
+            Int2ObjectMap<ArrayImage> value = t.getValue();
+            //optifine stuff
+            var textToUse = textures;
+            String path = id.getPath();
+
+            if(path.startsWith("of")) {
+                id = id.withPath(path.replace("of/", ""));
+
+                if (path.equals("of/birch")) {
+                    id = new ResourceLocation("birch_leaves");
+                } else if (path.equals("of/pine")) {
+                    id = new ResourceLocation("spruce_leaves");
+                } else if (path.contains("stem")) {
+                    TintMap pumpkinMap = TintMap.createSimple((state, level, pos) -> state.getValue(StemBlock.AGE) / 7f,
+                            IColormapNumberProvider.ZERO);
+                    textToUse = new HashMap<>();
+                    textToUse.put(id, value);
+                    ColormapsManager.fillColormapPalette(textToUse, id, pumpkinMap, usedTextures);
+
+                    BlockPropertyModifier pumpkinProp = new BlockPropertyModifier(Optional.of(pumpkinMap),
+                            Optional.empty(), Optional.empty(), Optional.empty());
+
+                    // so stem maps to both
+                    if(!path.contains("melon")){
+                        modifiers.put(new ResourceLocation("pumpkin_stem"), pumpkinProp);
+                    }
+                    if(!path.contains("pumpkin")){
+                        modifiers.put(new ResourceLocation("melon_stem"), pumpkinProp);
+                    }
+                    continue;
+                }
+                textToUse = new HashMap<>();
+                textToUse.put(id, value);
+            }
+
+            TintMap defaultColormap = TintMap.createDefault(value.keySet(), true);
+            //TODO: improve this method and remove
+            ColormapsManager.fillColormapPalette(textToUse, id, defaultColormap, usedTextures);
 
             BlockPropertyModifier defaultProp = new BlockPropertyModifier(Optional.of(defaultColormap),
                     Optional.empty(), Optional.empty(), Optional.empty());

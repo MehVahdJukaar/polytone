@@ -7,7 +7,6 @@ import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.client.renderer.chunk.RenderChunkRegion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -23,7 +22,7 @@ public interface IColormapNumberProvider {
             a -> CUSTOM_PROVIDERS.inverse().get(a), CUSTOM_PROVIDERS::get);
 
     Codec<IColormapNumberProvider> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_CODEC,
-            ColormapExpressionProvider.CODEC);
+            ColormapExpressionProvider.CODEC, true);
 
     static <T extends IColormapNumberProvider> T register(String name, T provider) {
         CUSTOM_PROVIDERS.put(name, provider);
@@ -32,12 +31,13 @@ public interface IColormapNumberProvider {
 
     float getValue(BlockState state, @NotNull BlockAndTintGetter level, @NotNull BlockPos pos);
 
+    IColormapNumberProvider ZERO = register("zero", (state, level, pos) -> 0);
 
     IColormapNumberProvider TEMPERATURE = register("temperature", (state, level, pos) ->
-            level.getBlockTint(pos, Colormap.TEMPERATURE_RESOLVER));
+            level.getBlockTint(pos, TintMap.TEMPERATURE_RESOLVER));
 
     IColormapNumberProvider DOWNFALL = register("downfall", (state, level, pos) ->
-            level.getBlockTint(pos, Colormap.DOWNFALL_RESOLVER));
+            level.getBlockTint(pos, TintMap.DOWNFALL_RESOLVER));
 
     IColormapNumberProvider BIOME_ID = register("biome_id", (state, level, pos) -> {
        if( level instanceof RenderChunkRegion region) {

@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.fluid;
 import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.TintMap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
@@ -44,7 +44,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
             //fill inline colormaps colormapTextures
             BlockColor colormap = modifier.colormap().orElse(null);
-            if (colormap instanceof Colormap c && !c.isReference()) {
+            if (colormap instanceof TintMap c && !c.isReference()) {
                 ColormapsManager.fillColormapPalette(textures, id, c, usedTextures);
             }
             tryAdd(id, modifier);
@@ -55,7 +55,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
-            Colormap defaultColormap = Colormap.createDefault(t.getValue().keySet());
+            TintMap defaultColormap = TintMap.createDefault(t.getValue().keySet(), true);
             ColormapsManager.fillColormapPalette(textures, id, defaultColormap, usedTextures);
 
             tryAdd(id, new FluidPropertyModifier(Optional.of(defaultColormap)));

@@ -64,7 +64,7 @@ public record ArrayImage(int[][] pixels, int width, int height) {
                 for (int j = 0; j < width; ++j) {
                     int pixel = nativeImage.getPixelRGBA(j, i);
                     pixelMatrix[i][j] = FastColor.ARGB32.color(
-                            FastColor.ABGR32.alpha(pixel),
+                            255,
                             FastColor.ABGR32.red(pixel),
                             FastColor.ABGR32.green(pixel),
                             FastColor.ABGR32.blue(pixel)

@@ -2,24 +2,18 @@ package net.mehvahdjukaar.polytone.colormap;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
-import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class ColormapsManager extends JsonImgPartialReloader {
 
@@ -41,7 +35,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            Colormap colormap = Colormap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
+            TintMap colormap = TintMap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Colormap with json id {} - error: {}",
                             id, errorMsg)).getFirst();
             fillColormapPalette(textures, id, colormap, usedTextures);
@@ -55,7 +49,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
-            Colormap defaultColormap = Colormap.createDefault(t.getValue().keySet());
+            TintMap defaultColormap = TintMap.createDefault(t.getValue().keySet(), false);
             fillColormapPalette(textures, id, defaultColormap, usedTextures);
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, defaultColormap);
@@ -65,11 +59,11 @@ public class ColormapsManager extends JsonImgPartialReloader {
     @Override
     public void reset() {
         colormapsIds.clear();
-        colormapsIds.put(new ResourceLocation("grass_color"), Colormap.GRASS_COLOR);
-        colormapsIds.put(new ResourceLocation("foliage_color"), Colormap.FOLIAGE_COLOR);
-        colormapsIds.put(new ResourceLocation("water_color"), Colormap.WATER_COLOR);
-        colormapsIds.put(new ResourceLocation("biome_sample"), Colormap.BIOME_SAMPLE);
-        colormapsIds.put(new ResourceLocation("triangular_biome_sample"), Colormap.TR_BIOME_SAMPLE);
+        colormapsIds.put(new ResourceLocation("grass_color"), TintMap.GRASS_COLOR);
+        colormapsIds.put(new ResourceLocation("foliage_color"), TintMap.FOLIAGE_COLOR);
+        colormapsIds.put(new ResourceLocation("water_color"), TintMap.WATER_COLOR);
+        colormapsIds.put(new ResourceLocation("biome_sample"), TintMap.BIOME_SAMPLE);
+        colormapsIds.put(new ResourceLocation("triangular_biome_sample"), TintMap.TR_BIOME_SAMPLE);
     }
 
     @Nullable
@@ -83,13 +77,13 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
 
-    public void add(ResourceLocation id, Colormap colormap) {
+    public void add(ResourceLocation id, TintMap colormap) {
         colormapsIds.put(id, colormap);
     }
 
 
     public static void fillColormapPalette(Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures,
-                                           ResourceLocation id, Colormap colormap, Set<ResourceLocation> usedTextures) {
+                                           ResourceLocation id, TintMap colormap, Set<ResourceLocation> usedTextures) {
         var getters = colormap.getGetters();
 
         var textureMap = textures.get(id);
@@ -97,7 +91,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
         if (textureMap != null) {
             for (var g : getters.int2ObjectEntrySet()) {
                 int index = g.getIntKey();
-                Colormap.Sampler tint = g.getValue();
+                TintMap.Colormap tint = g.getValue();
                 boolean success = false;
                 if (getters.size() == 1 || index == 0) {
                     success = tryPopulatingColormap(textureMap, id, -1, tint, usedTextures);
@@ -117,7 +111,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
     private static boolean tryPopulatingColormap(Map<Integer, ArrayImage> textures, ResourceLocation path, int index,
-                                                 Colormap.Sampler g, Set<ResourceLocation> usedTexture) {
+                                                 TintMap.Colormap g, Set<ResourceLocation> usedTexture) {
         ArrayImage texture = textures.get(index);
         if (texture != null) {
             usedTexture.add(path);

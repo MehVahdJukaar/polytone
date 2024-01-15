@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.TintMap;
 import net.minecraft.client.color.block.BlockTintCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -19,9 +19,9 @@ public abstract class ColorResolverMixin {
 
     @Inject(method = "method_23778", at = @At("TAIL"))
     public void polytone$addExtraResolvers(Object2ObjectArrayMap<ColorResolver, BlockTintCache> map, CallbackInfo ci){
-        map.put(Colormap.TEMPERATURE_RESOLVER, new BlockTintCache((blockPos) ->
-                this.calculateBlockTint(blockPos, Colormap.TEMPERATURE_RESOLVER)));
-        map.put(Colormap.DOWNFALL_RESOLVER, new BlockTintCache((blockPos) ->
-                this.calculateBlockTint(blockPos, Colormap.DOWNFALL_RESOLVER)));
+        map.put(TintMap.TEMPERATURE_RESOLVER, new BlockTintCache((blockPos) ->
+                this.calculateBlockTint(blockPos, TintMap.TEMPERATURE_RESOLVER)));
+        map.put(TintMap.DOWNFALL_RESOLVER, new BlockTintCache((blockPos) ->
+                this.calculateBlockTint(blockPos, TintMap.DOWNFALL_RESOLVER)));
     }
 }

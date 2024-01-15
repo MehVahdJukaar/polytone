@@ -4,8 +4,8 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
+import net.mehvahdjukaar.polytone.colormap.TintMap;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -82,7 +82,7 @@ public record BlockPropertyModifier(
 
     public static final Decoder<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    StrOpt.of(Colormap.CODEC, "colormap").forGetter(b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof Colormap c ? c : null))),
+                    StrOpt.of(TintMap.CODEC, "colormap").forGetter(b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof TintMap c ? c : null))),
                     StrOpt.of(SoundTypesManager.CODEC, "sound_type").forGetter(BlockPropertyModifier::soundType),
                     StrOpt.of(MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE),
                             "map_color").forGetter(BlockPropertyModifier::mapColor),
