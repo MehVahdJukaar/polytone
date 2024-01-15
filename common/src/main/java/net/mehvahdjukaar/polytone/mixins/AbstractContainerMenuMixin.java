@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import net.mehvahdjukaar.slotify.GuiModifierManager;
+import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;

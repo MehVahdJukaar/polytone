@@ -2,9 +2,9 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.mehvahdjukaar.slotify.GuiModifierManager;
-import net.mehvahdjukaar.slotify.ScreenModifier;
-import net.mehvahdjukaar.slotify.SlotifyScreen;
+import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
+import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
+import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -21,35 +21,35 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ScreenMixin implements SlotifyScreen {
 
     @Unique
-    private ScreenModifier slotify$modifier = null;
+    private ScreenModifier polytone$modifier = null;
 
     @Inject(method = "init(Lnet/minecraft/client/Minecraft;II)V", at = @At("TAIL"))
     private  void onInit(CallbackInfo ci) {
-        slotify$modifier = GuiModifierManager.getGuiModifier((Screen) (Object) this);
+        polytone$modifier = GuiModifierManager.getGuiModifier((Screen) (Object) this);
     }
 
     @Override
-    public void slotify$renderExtraSprites(PoseStack poseStack) {
-        if (slotify$modifier != null) {
+    public void polytone$renderExtraSprites(PoseStack poseStack) {
+        if (polytone$modifier != null) {
             RenderSystem.enableDepthTest();
-            slotify$modifier.sprites().forEach(r -> r.render(poseStack));
+            polytone$modifier.sprites().forEach(r -> r.render(poseStack));
         }
     }
 
     @Override
-    public boolean slotify$hasSprites() {
-        return slotify$modifier != null && !slotify$modifier.sprites().isEmpty();
+    public boolean polytone$hasSprites() {
+        return polytone$modifier != null && !polytone$modifier.sprites().isEmpty();
     }
 
     @Override
-    public ScreenModifier slotify$getModifier() {
-        return slotify$modifier;
+    public ScreenModifier polytone$getModifier() {
+        return polytone$modifier;
     }
 
     @Inject(method = "addWidget", at = @At("HEAD"))
     public <T extends GuiEventListener & NarratableEntry> void modifyWidget2(T listener, CallbackInfoReturnable<T> cir) {
-        if (slotify$modifier != null && listener instanceof AbstractWidget aw) {
-            for (var m : slotify$modifier.widgetModifiers()) {
+        if (polytone$modifier != null && listener instanceof AbstractWidget aw) {
+            for (var m : polytone$modifier.widgetModifiers()) {
                 m.maybeModify(aw);
             }
         }
@@ -57,8 +57,8 @@ public abstract class ScreenMixin implements SlotifyScreen {
 
     @Inject(method = "addRenderableOnly", at = @At("HEAD"))
     public <T extends Renderable> void modifyRenderable(T listener, CallbackInfoReturnable<T> cir) {
-        if (slotify$modifier != null && listener instanceof AbstractWidget aw) {
-            for (var m : slotify$modifier.widgetModifiers()) {
+        if (polytone$modifier != null && listener instanceof AbstractWidget aw) {
+            for (var m : polytone$modifier.widgetModifiers()) {
                 m.maybeModify(aw);
             }
         }

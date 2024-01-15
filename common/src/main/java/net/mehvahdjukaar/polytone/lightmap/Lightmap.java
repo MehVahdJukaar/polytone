@@ -7,6 +7,7 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -144,11 +145,11 @@ public class Lightmap {
 
         //lerp!
         if (torchLine.length != 0 && lastTorchLine.length != 0) {
-            float lerpDelta = (float) Math.pow(torchLerp, deltaTime);
+            float lerpDelta =1- (float) Math.pow(torchLerp, deltaTime);
             lerpInplace(lastTorchLine, torchLine, lerpDelta);
         }
         if (skyLine.length != 0 && lastSkyLine.length != 0) {
-            float lerpDelta = (float) Math.pow(skyLerp, deltaTime);
+            float lerpDelta = 1-(float) Math.pow(skyLerp, deltaTime);
             lerpInplace(lastSkyLine, skyLine, lerpDelta);
         }
 
@@ -257,7 +258,7 @@ public class Lightmap {
         }
         int h = ((nightVision != 0 && image.height() == 64) ? 32 : 0);
         for (int i = 0; i < 16; i++) {
-            skyLine[i] = ColorManager.unpack(image.pixels()[h + i][w]);
+            skyLine[i] = ColorUtils.unpack(image.pixels()[h + i][w]);
         }
         return skyLine;
     }
@@ -273,7 +274,7 @@ public class Lightmap {
         float[][] torchLine = new float[16][];
         int h = 16 + ((nightVision != 0 && image.height() == 64) ? 32 : 0);
         for (int i = 0; i < 16; i++) {
-            torchLine[i] = ColorManager.unpack(image.pixels()[h + i][(int) (xVal * (image.width() - 1))]);
+            torchLine[i] = ColorUtils.unpack(image.pixels()[h + i][(int) (xVal * (image.width() - 1))]);
         }
         return torchLine;
     }

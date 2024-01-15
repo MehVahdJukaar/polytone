@@ -4,9 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 public interface SlotifyScreen {
 
-    void slotify$renderExtraSprites(PoseStack poseStack);
+    void polytone$renderExtraSprites(PoseStack poseStack);
 
-    boolean slotify$hasSprites();
+    boolean polytone$hasSprites();
 
-    ScreenModifier slotify$getModifier();
+    ScreenModifier polytone$getModifier();
 }

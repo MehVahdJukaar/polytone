@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.color.ColorManager;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.util.Mth;
@@ -90,7 +91,7 @@ public class ParticleExpression {
     public double get(Particle particle) {
         if (hasLifeTime) expression.setVariable(LIFE, particle.getLifetime());
         if (hasColor) {
-            int pack = ColorManager.pack(particle.rCol, particle.gCol, particle.bCol);
+            int pack = ColorUtils.pack(particle.rCol, particle.gCol, particle.bCol);
             expression.setVariable(COLOR, pack);
 
         }

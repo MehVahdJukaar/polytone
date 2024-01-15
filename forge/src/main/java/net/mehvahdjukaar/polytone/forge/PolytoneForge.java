@@ -50,12 +50,12 @@ public class PolytoneForge {
     public static void renderScreen(ScreenEvent.Render.Post event) {
         Screen screen = event.getScreen();
         SlotifyScreen ss = (SlotifyScreen) screen;
-        if (ss.slotify$hasSprites()) {
+        if (ss.polytone$hasSprites()) {
 
             PoseStack poseStack = event.getGuiGraphics().pose();
             poseStack.pushPose();
             poseStack.translate(screen.width / 2F, screen.height / 2F, 500);
-            ss.slotify$renderExtraSprites(poseStack);
+            ss.polytone$renderExtraSprites(poseStack);
             poseStack.popPose();
         }
     }

@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.color.ColorManager;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.particle.Particle;
 import org.jetbrains.annotations.Nullable;
 
@@ -75,7 +76,7 @@ public class ParticleModifier {
 
     public void modify(Particle particle) {
         if (colorGetter != null) {
-            float[] unpack = ColorManager.unpack((int) colorGetter.get(particle));
+            float[] unpack = ColorUtils.unpack((int) colorGetter.get(particle));
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if(lifeGetter != null){

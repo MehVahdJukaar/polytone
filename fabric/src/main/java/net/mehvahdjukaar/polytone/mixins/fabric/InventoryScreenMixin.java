@@ -14,7 +14,7 @@ public abstract class InventoryScreenMixin {
             , index = 1
     )
     public int modifyRenderEntityX(int x) {
-        var m = ((SlotifyScreen) this).slotify$getModifier();
+        var m = ((SlotifyScreen) this).polytone$getModifier();
         if (m != null) {
             var s = m.getSpecial("player");
             if (s != null) {
@@ -29,7 +29,7 @@ public abstract class InventoryScreenMixin {
             , index = 2
     )
     public int modifyRenderEntityY(int y) {
-        var m = ((SlotifyScreen) this).slotify$getModifier();
+        var m = ((SlotifyScreen) this).polytone$getModifier();
         if (m != null) {
             var s = m.getSpecial("player");
             if (s != null) {
