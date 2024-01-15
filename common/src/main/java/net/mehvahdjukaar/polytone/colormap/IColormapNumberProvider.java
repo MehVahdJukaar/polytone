@@ -33,11 +33,9 @@ public interface IColormapNumberProvider {
 
     IColormapNumberProvider ZERO = register("zero", (state, level, pos) -> 0);
 
-    IColormapNumberProvider TEMPERATURE = register("temperature", (state, level, pos) ->
-            level.getBlockTint(pos, TintMap.TEMPERATURE_RESOLVER));
+    IColormapNumberProvider TEMPERATURE = register("temperature", TintMap::temperature);
 
-    IColormapNumberProvider DOWNFALL = register("downfall", (state, level, pos) ->
-            level.getBlockTint(pos, TintMap.DOWNFALL_RESOLVER));
+    IColormapNumberProvider DOWNFALL = register("downfall", TintMap::downfall);
 
     IColormapNumberProvider BIOME_ID = register("biome_id", (state, level, pos) -> {
        if( level instanceof RenderChunkRegion region) {

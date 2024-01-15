@@ -46,16 +46,15 @@ public class StrOpt {
         public boolean equals(Object object) {
             if (this == object) {
                 return true;
-            } else if (!(object instanceof StrictOptionalFieldCodec)) {
+            } else if (!(object instanceof StrictOptionalFieldCodec<?> s)) {
                 return false;
             } else {
-                StrictOptionalFieldCodec<?> strictOptionalFieldCodec = (StrictOptionalFieldCodec)object;
-                return Objects.equals(this.name, strictOptionalFieldCodec.name) && Objects.equals(this.elementCodec, strictOptionalFieldCodec.elementCodec);
+                return Objects.equals(this.name, s.name) && Objects.equals(this.elementCodec, s.elementCodec);
             }
         }
 
         public int hashCode() {
-            return Objects.hash(new Object[]{this.name, this.elementCodec});
+            return Objects.hash(this.name, this.elementCodec);
         }
 
         public String toString() {

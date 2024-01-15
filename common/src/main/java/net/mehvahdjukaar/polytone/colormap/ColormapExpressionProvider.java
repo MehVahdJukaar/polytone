@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.objecthunter.exp4j.Expression;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-public final class ColormapExpressionProvider implements IColormapNumberProvider{
+public final class ColormapExpressionProvider implements IColormapNumberProvider {
 
     //Keywords
     private static final String TEMPERATURE = "TEMPERATURE";
@@ -114,8 +115,18 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
                 exp = new Expression(this.expression);
             }
 
-            exp.setVariable(TEMPERATURE, hasT ? level.getBlockTint(pos, TintMap.TEMPERATURE_RESOLVER) : 0);
-            exp.setVariable(DOWNFALL, hasD ? level.getBlockTint(pos, TintMap.DOWNFALL_RESOLVER) : 0);
+            if (!Polytone.sodiumOn) {
+                exp.setVariable(TEMPERATURE, hasT ? TintMap.temperature(state, level, pos) : 0);
+                exp.setVariable(DOWNFALL, hasD ? TintMap.downfall(state, level, pos) : 0);
+            } else {
+                if (hasT || hasD) {
+                    if (level instanceof Level l) {
+                        var b = l.getBiome(pos).value().climateSettings;
+                        exp.setVariable(TEMPERATURE, b.temperature);
+                        exp.setVariable(DOWNFALL, b.downfall);
+                    } else return -1;
+                }
+            }
             exp.setVariable(POS_X, hasX ? pos.getX() : 0);
             exp.setVariable(POS_Y, hasY ? pos.getY() : 0);
             exp.setVariable(POS_Z, hasZ ? pos.getZ() : 0);

@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.fluid;
 
+import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -7,10 +8,12 @@ import net.mehvahdjukaar.polytone.colormap.TintMap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.utils.LegacyHelper;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
@@ -19,12 +22,32 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
+
 public class FluidPropertiesManager extends JsonImgPartialReloader {
 
     private final Map<Fluid, FluidPropertyModifier> fluidColormaps = new HashMap<>();
 
     public FluidPropertiesManager() {
         super("fluid_properties");
+    }
+
+    @Override
+    protected Resources prepare(ResourceManager resourceManager) {
+        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
+        scanDirectory(resourceManager, path(), GSON, jsons);
+
+        Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
+
+        Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
+        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.gatherImages(resourceManager, "colormatic/colormap");
+
+        textures.putAll(LegacyHelper.convertPaths(ofTextures));
+        textures.putAll(LegacyHelper.convertPaths(cmTextures));
+
+        textures.putAll(ArrayImage.gatherImages(resourceManager, path()));
+
+        return new Resources(jsons, textures);
     }
 
     @Override
@@ -58,7 +81,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             TintMap defaultColormap = TintMap.createDefault(t.getValue().keySet(), true);
             ColormapsManager.fillColormapPalette(textures, id, defaultColormap, usedTextures);
 
-            tryAdd(id, new FluidPropertyModifier(Optional.of(defaultColormap)));
+            tryAdd(id, new FluidPropertyModifier(Optional.of(defaultColormap), Optional.empty()));
         }
     }
 

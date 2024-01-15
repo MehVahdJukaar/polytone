@@ -4,15 +4,17 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.TintMap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
+import net.mehvahdjukaar.polytone.colormap.TintMap;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.utils.LegacyHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.StemBlock;
 
 import java.util.*;
@@ -36,11 +38,11 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 
-        for (var j : ArrayImage.gatherImages(resourceManager, "optifine/colormap").entrySet()) {
-            ResourceLocation key = j.getKey();
-            String path = key.getPath();
-            textures.put(key.withPath("of/" + path), j.getValue());
-        }
+        Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
+        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.gatherImages(resourceManager, "colormatic/colormap");
+
+        textures.putAll(LegacyHelper.convertPaths(ofTextures));
+        textures.putAll(LegacyHelper.convertPaths(cmTextures));
 
         textures.putAll(ArrayImage.gatherImages(resourceManager, path()));
 
@@ -79,44 +81,36 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
             ResourceLocation id = t.getKey();
             Int2ObjectMap<ArrayImage> value = t.getValue();
             //optifine stuff
-            var textToUse = textures;
             String path = id.getPath();
 
-            if(path.startsWith("of")) {
-                id = id.withPath(path.replace("of/", ""));
+            TintMap tintMap = TintMap.createDefault(value.keySet(), true);
 
-                if (path.equals("of/birch")) {
-                    id = new ResourceLocation("birch_leaves");
-                } else if (path.equals("of/pine")) {
-                    id = new ResourceLocation("spruce_leaves");
-                } else if (path.contains("stem")) {
-                    TintMap pumpkinMap = TintMap.createSimple((state, level, pos) -> state.getValue(StemBlock.AGE) / 7f,
-                            IColormapNumberProvider.ZERO);
-                    textToUse = new HashMap<>();
-                    textToUse.put(id, value);
-                    ColormapsManager.fillColormapPalette(textToUse, id, pumpkinMap, usedTextures);
+            if (path.contains("stem")) {
+                TintMap pumpkinMap = TintMap.createSimple((state, level, pos) -> state.getValue(StemBlock.AGE) / 7f,
+                        IColormapNumberProvider.ZERO);
 
-                    BlockPropertyModifier pumpkinProp = new BlockPropertyModifier(Optional.of(pumpkinMap),
-                            Optional.empty(), Optional.empty(), Optional.empty());
+                ColormapsManager.fillColormapPalette(textures, id, pumpkinMap, usedTextures);
 
-                    // so stem maps to both
-                    if(!path.contains("melon")){
-                        modifiers.put(new ResourceLocation("pumpkin_stem"), pumpkinProp);
-                    }
-                    if(!path.contains("pumpkin")){
-                        modifiers.put(new ResourceLocation("melon_stem"), pumpkinProp);
-                    }
-                    continue;
+                BlockPropertyModifier pumpkinProp = new BlockPropertyModifier(Optional.of(pumpkinMap),
+                        Optional.empty(), Optional.empty(), Optional.empty());
+
+                // so stem maps to both
+                if (!path.contains("melon")) {
+                    modifiers.put(new ResourceLocation("pumpkin_stem"), pumpkinProp);
                 }
-                textToUse = new HashMap<>();
-                textToUse.put(id, value);
+                if (!path.contains("pumpkin")) {
+                    modifiers.put(new ResourceLocation("melon_stem"), pumpkinProp);
+                }
+                continue;
+            }else if(path.equals("redstone_wire")){
+                tintMap = TintMap.createSimple((state, level, pos) -> state.getValue(RedStoneWireBlock.POWER) / 15f,
+                        IColormapNumberProvider.ZERO);
             }
 
-            TintMap defaultColormap = TintMap.createDefault(value.keySet(), true);
             //TODO: improve this method and remove
-            ColormapsManager.fillColormapPalette(textToUse, id, defaultColormap, usedTextures);
+            ColormapsManager.fillColormapPalette(textures, id, tintMap, usedTextures);
 
-            BlockPropertyModifier defaultProp = new BlockPropertyModifier(Optional.of(defaultColormap),
+            BlockPropertyModifier defaultProp = new BlockPropertyModifier(Optional.of(tintMap),
                     Optional.empty(), Optional.empty(), Optional.empty());
 
             modifiers.put(id, defaultProp);

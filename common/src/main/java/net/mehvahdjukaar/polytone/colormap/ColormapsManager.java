@@ -35,7 +35,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            TintMap colormap = TintMap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
+            TintMap colormap = TintMap.TINTMAP_DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Colormap with json id {} - error: {}",
                             id, errorMsg)).getFirst();
             fillColormapPalette(textures, id, colormap, usedTextures);

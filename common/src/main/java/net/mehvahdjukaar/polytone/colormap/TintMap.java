@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.colormap;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Keyable;
@@ -8,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.color.block.BlockColor;
@@ -26,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -49,21 +52,21 @@ public class TintMap implements BlockColor {
     final Int2ObjectMap<Colormap> getters = new Int2ObjectArrayMap<>();
     boolean isReference = false;
 
-    protected static final Codec<TintMap> DIRECT_CODEC = Codec.simpleMap(Codec.STRING, Colormap.CODEC,
+    protected static final Codec<TintMap> TINTMAP_DIRECT_CODEC = Codec.simpleMap(Codec.STRING, Colormap.CODEC,
                     Keyable.forStrings(() -> IntStream.rangeClosed(-1, 16).mapToObj(String::valueOf)))
             .xmap(TintMap::new, TintMap::toStringMap).codec();
 
 
-    protected static final Codec<BlockColor> COLORMAP_REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
+    protected static final Codec<BlockColor> TINTMAP_REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
             id -> Optional.ofNullable(Polytone.COLORMAPS.get(id)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
                             " Did you place it in 'assets/[your pack]/polytone/colormaps/' ?")),
             object -> Optional.ofNullable(Polytone.COLORMAPS.getKey(object)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
 
-    public static final Codec<BlockColor> CODEC =
+    public static final Codec<BlockColor> TINTMAP_CODEC =
             ExtraCodecs.validate(new ReferenceOrDirectCodec<>(
-                            COLORMAP_REFERENCE_CODEC, TintMap.DIRECT_CODEC, i ->
+                            TINTMAP_REFERENCE_CODEC, TintMap.TINTMAP_DIRECT_CODEC, i ->
                     {
                         if (i instanceof TintMap c) {
                             c.isReference = true;
@@ -76,6 +79,10 @@ public class TintMap implements BlockColor {
                         return DataResult.success(j);
                     });
 
+    // single or multiple
+    public static final Codec<BlockColor> CODEC = Codec.either(TINTMAP_CODEC, Colormap.CODEC)
+            .xmap(either -> either.map(Function.identity(), TintMap::new), Either::left);
+
     private TintMap(Map<String, Colormap> map) {
         for (var e : map.entrySet()) {
             getters.put(Integer.parseInt(e.getKey()), e.getValue());
@@ -85,10 +92,12 @@ public class TintMap implements BlockColor {
     private TintMap() {
     }
 
+    private TintMap(Colormap colormap) {
+        getters.put(-1, colormap);
+    }
+
     public static TintMap createSimple(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter) {
-        var c = new TintMap();
-        c.getters.put(-1, new Colormap(xGetter, yGetter));
-        return c;
+        return new TintMap(new Colormap(xGetter, yGetter));
     }
 
     // default biome sample vanilla implementation
@@ -183,7 +192,7 @@ public class TintMap implements BlockColor {
         }
 
         private int sample(float x, float y, int defValue) {
-            if (Polytone.sodiumOn) return defValue;
+            //if (Polytone.sodiumOn) return defValue;
             if (triangular) x *= y;
             int width = image.width();
             int height = image.height();
@@ -195,12 +204,27 @@ public class TintMap implements BlockColor {
         }
     }
 
+    private static final int FLOAT_MULT = 100000000;
 
-    public static final ColorResolver TEMPERATURE_RESOLVER = (biome, x, z) ->
-            Float.floatToIntBits(biome.climateSettings.temperature);
+    public static float temperature(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+        int t = level.getBlockTint(pos, TEMPERATURE_RESOLVER) & 255;
+        return t / 255f;
+    }
 
-    public static final ColorResolver DOWNFALL_RESOLVER = (biome, x, z) ->
-            Float.floatToIntBits(biome.climateSettings.downfall);
 
+    public static float downfall(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+        int t = level.getBlockTint(pos, DOWNFALL_RESOLVER) & 255;
+        return t / 255f;
+    }
+
+    public static final ColorResolver TEMPERATURE_RESOLVER = (biome, x, z) -> {
+        byte hack = (byte) (Mth.clamp(biome.climateSettings.temperature, 0, 1) * 255);
+        return ColorUtils.pack(hack, hack, hack, hack);
+    };
+
+    public static final ColorResolver DOWNFALL_RESOLVER = (biome, x, z) -> {
+        byte hack = (byte) (Mth.clamp(biome.climateSettings.downfall, 0, 1) * 255);
+        return ColorUtils.pack(hack, hack, hack, hack);
+    };
 
 }

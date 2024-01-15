@@ -9,16 +9,22 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record FluidPropertyModifier(Optional<BlockColor> colormap) {
+public record FluidPropertyModifier(Optional<BlockColor> colormap, Optional<BlockColor> fogColormap) {
 
     public static final Decoder<FluidPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    StrOpt.of(TintMap.CODEC, "colormap").forGetter(FluidPropertyModifier::colormap)
+                    StrOpt.of(TintMap.CODEC, "colormap").forGetter(FluidPropertyModifier::colormap),
+                    StrOpt.of(TintMap.CODEC, "fog_colormap").forGetter(FluidPropertyModifier::fogColormap)
             ).apply(instance, FluidPropertyModifier::new));
 
     @Nullable
     public BlockColor getColormap() {
-        return  colormap.orElse(null);
+        return colormap.orElse(null);
+    }
+
+    @Nullable
+    public BlockColor getFogColormap() {
+        return fogColormap.orElse(null);
     }
 
 }

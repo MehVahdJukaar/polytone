@@ -7,7 +7,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import java.util.ArrayList;
 import java.util.List;
 
-// Needed to reload stuff in order but still ofthread when we can in prepare
+// Needed to reload stuff in order but still off-thread when we can in prepare
 public class CompoundReloader extends SimplePreparableReloadListener<List<Object>> {
 
     private final List<PartialReloader<?>> children;

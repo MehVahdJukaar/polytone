@@ -6,6 +6,7 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.utils.LegacyHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
@@ -39,16 +40,13 @@ public class LightmapsManager extends JsonImgPartialReloader {
         scanDirectory(resourceManager, path(), GSON, jsons);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
-        for (var j : ArrayImage.gatherImages(resourceManager, "optifine/lightmap").entrySet()) {
-            ResourceLocation key = j.getKey();
-            textures.put(key.withPath(key.getPath()
-                            .replace("world0", "overworld")
-                            .replace("world1", "the_end")
-                            .replace("world-1", "the_nether")),
-                    j.getValue());
-        }
 
-        textures.putAll(ArrayImage.gatherImages(resourceManager, "colormatic/lightmap"));
+        Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/lightmap");
+        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.gatherImages(resourceManager, "colormatic/lightmap");
+
+        textures.putAll(LegacyHelper.convertPaths(ofTextures));
+        textures.putAll(LegacyHelper.convertPaths(cmTextures));
+
         textures.putAll(ArrayImage.gatherImages(resourceManager, path()));
 
         return new Resources(jsons, textures);
