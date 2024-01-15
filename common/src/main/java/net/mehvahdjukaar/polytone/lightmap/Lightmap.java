@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
@@ -29,9 +28,9 @@ public class Lightmap {
     protected static final double DEFAULT_TORCH_LERP = 0;
     public static final Decoder<Lightmap> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    StrOpt.of(LightmapNumberProvider.CODEC, "sky_getter", LightmapNumberProvider.DEFAULT)
+                    StrOpt.of(ILightmapNumberProvider.CODEC, "sky_getter", ILightmapNumberProvider.DEFAULT)
                             .forGetter(l -> l.skyGetter),
-                    StrOpt.of(LightmapNumberProvider.CODEC, "torch_getter", LightmapNumberProvider.DEFAULT)
+                    StrOpt.of(ILightmapNumberProvider.CODEC, "torch_getter", ILightmapNumberProvider.DEFAULT)
                             .forGetter(l -> l.torchGetter),
                     StrOpt.of(Codec.BOOL, "lightning_strike_columns", true)
                             .forGetter(l -> l.hasLightningColumn),
@@ -47,8 +46,8 @@ public class Lightmap {
     }
 
 
-    private final LightmapNumberProvider skyGetter;
-    private final LightmapNumberProvider torchGetter;
+    private final ILightmapNumberProvider skyGetter;
+    private final ILightmapNumberProvider torchGetter;
     private final boolean hasLightningColumn;
     private final double skyLerp;
     private final double torchLerp;
@@ -58,7 +57,7 @@ public class Lightmap {
     private final float[][] lastTorchLine = new float[16][3];
 
 
-    public Lightmap(LightmapNumberProvider skyGetter, LightmapNumberProvider torchGetter,
+    public Lightmap(ILightmapNumberProvider skyGetter, ILightmapNumberProvider torchGetter,
                     boolean lightningColumn, double skyLerp, double torchLerp) {
         this.skyGetter = skyGetter;
         this.torchGetter = torchGetter;
@@ -69,7 +68,7 @@ public class Lightmap {
 
     //default impl
     public Lightmap() {
-        this(LightmapNumberProvider.DEFAULT, LightmapNumberProvider.RANDOM, true, DEFAULT_SKY_LERP, DEFAULT_TORCH_LERP);
+        this(ILightmapNumberProvider.DEFAULT, ILightmapNumberProvider.RANDOM, true, DEFAULT_SKY_LERP, DEFAULT_TORCH_LERP);
     }
 
     public void acceptImages(ArrayImage normal, ArrayImage rain, ArrayImage thunder) {

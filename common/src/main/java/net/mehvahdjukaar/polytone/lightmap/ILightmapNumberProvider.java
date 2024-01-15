@@ -1,8 +1,16 @@
 package net.mehvahdjukaar.polytone.lightmap;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
+import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.objecthunter.exp4j.Expression;
@@ -10,23 +18,19 @@ import net.objecthunter.exp4j.ExpressionBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-public interface LightmapNumberProvider {
+public interface ILightmapNumberProvider {
 
-    Map<String, LightmapNumberProvider> CUSTOM_PROVIDERS = new HashMap<>();
+    BiMap<String, ILightmapNumberProvider> CUSTOM_PROVIDERS = HashBiMap.create();
 
-    Codec<LightmapNumberProvider> CODEC = Codec.STRING.flatXmap(s -> {
-        LightmapNumberProvider custom = CUSTOM_PROVIDERS.get(s);
-        if (custom != null) return DataResult.success(custom);
-        try {
-            ExpressionNumberProvider compiled = ExpressionNumberProvider.create(s);
-            return DataResult.success(compiled);
-        } catch (Exception e) {
-            return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
-        }
-    }, javaxExpression -> DataResult.error(() -> "Encoding not supporteed"));
+    Codec<ILightmapNumberProvider> REFERENCE_CODEC = ExtraCodecs.stringResolverCodec(
+            a->CUSTOM_PROVIDERS.inverse().get(a), CUSTOM_PROVIDERS::get);
 
-    static <T extends LightmapNumberProvider> T register(String name, T provider) {
+    Codec<ILightmapNumberProvider> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_CODEC,
+            LightmapExpressionProvider.CODEC);
+
+    static <T extends ILightmapNumberProvider> T register(String name, T provider) {
         CUSTOM_PROVIDERS.put(name, provider);
         return provider;
     }
@@ -37,7 +41,7 @@ public interface LightmapNumberProvider {
     RandomSource RAND = RandomSource.create();
 
     // Sine
-    LightmapNumberProvider RANDOM = register("random",
+    ILightmapNumberProvider RANDOM = register("random",
             (time, rain, thunder) -> {
                 RAND.setSeed(Float.floatToIntBits(time));
                 return RAND.nextFloat();
@@ -45,7 +49,7 @@ public interface LightmapNumberProvider {
 
     // Same stuff that level.getSkyDarkens does
     // A slanted Step
-    LightmapNumberProvider DEFAULT = register("default",
+    ILightmapNumberProvider DEFAULT = register("default",
             (time, rain, thunder) -> {
                 float g = 1.0F - (Mth.cos(time * Mth.TWO_PI) * 2.0F + 0.2F);
                 g = Mth.clamp(g, 0.0F, 1.0F);
@@ -56,14 +60,14 @@ public interface LightmapNumberProvider {
             });
 
     // Sine
-    LightmapNumberProvider SMOOTH = register("smooth",
+    ILightmapNumberProvider SMOOTH = register("smooth",
             (time, rain, thunder) -> 0.5f + (Mth.cos(time * Mth.TWO_PI) * 0.5f));
 
     // Triangle func
-    LightmapNumberProvider LINEAR = register("linear",
+    ILightmapNumberProvider LINEAR = register("linear",
             (time, rain, thunder) -> Mth.abs(1 - 2 * time));
 
-    LightmapNumberProvider DEFAULT_2 = register("default",
+    ILightmapNumberProvider DEFAULT_2 = register("default",
             (time, rain, thunder) -> {
                 float g = 1.0F - (Mth.cos(time * Mth.TWO_PI) * 2.0F + 0.2F);
                 g = Mth.clamp(g, 0.0F, 1.0F);
@@ -77,7 +81,7 @@ public interface LightmapNumberProvider {
             });
 
     // Sine Saw Tooth
-    LightmapNumberProvider SMOOTH_2 = register("smooth_2",
+    ILightmapNumberProvider SMOOTH_2 = register("smooth_2",
             (time, rain, thunder) -> {
                 if (time > 0.5) {
                     return 0.25f - (Mth.cos(time * Mth.TWO_PI) * 0.25f);
@@ -87,7 +91,7 @@ public interface LightmapNumberProvider {
             });
 
     // Line (Saw Tooth)
-    LightmapNumberProvider LINEAR_2 = register("linear_2",
+    ILightmapNumberProvider LINEAR_2 = register("linear_2",
             (time, rain, thunder) -> {
                 float linear = Mth.abs(1 - 2 * time);
                 if (time > 0.5) {
@@ -98,25 +102,5 @@ public interface LightmapNumberProvider {
             });
 
 
-    record ExpressionNumberProvider(Expression expression) implements LightmapNumberProvider {
-        private static final String TIME = "TIME";
-        private static final String RAIN = "RAIN";
-        private static final String THUNDER = "THUNDER";
-
-        public static ExpressionNumberProvider create(String s) {
-            return new ExpressionNumberProvider(new ExpressionBuilder(s)
-                    .variables(TIME, RAIN, THUNDER)
-                    .operator(ExpressionUtils.defOp())
-                    .build());
-        }
-
-        @Override
-        public float getValue(float time, float rain, float thunder) {
-            expression.setVariable(TIME, time);
-            expression.setVariable(RAIN, rain);
-            expression.setVariable(THUNDER, thunder);
-            return 0;
-        }
-    }
 
 }

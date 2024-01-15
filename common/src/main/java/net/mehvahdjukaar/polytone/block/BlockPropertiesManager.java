@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.block;
 
+import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
@@ -8,9 +9,12 @@ import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
 
 import java.util.*;
+
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class BlockPropertiesManager extends JsonImgPartialReloader {
 
@@ -20,6 +24,20 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
     public BlockPropertiesManager() {
         super("block_properties");
+    }
+
+    @Override
+    protected Resources prepare(ResourceManager resourceManager) {
+        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
+        scanDirectory(resourceManager, path(), GSON, jsons);
+
+        var textures = ArrayImage.gatherImages(resourceManager, path());
+
+        var ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
+
+
+
+        return new Resources(jsons, textures);
     }
 
     @Override

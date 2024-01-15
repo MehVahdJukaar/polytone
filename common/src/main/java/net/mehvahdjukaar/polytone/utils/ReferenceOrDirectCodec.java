@@ -18,8 +18,8 @@ public final class ReferenceOrDirectCodec<E> implements Codec<E> {
         this.direct = direct;
         this.onReference = onReference;
     }
-    public ReferenceOrDirectCodec(final Codec<E> reference, final Codec<E> direct) {
-        this(reference, direct, e -> {});
+    public ReferenceOrDirectCodec(final Codec<? extends E> reference, final Codec<? extends E> direct) {
+        this((Codec<E>) reference, (Codec<E>) direct, e -> {});
     }
 
     @Override

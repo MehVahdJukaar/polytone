@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-public final class NumberProvider {
+public final class ColormapExpressionProvider implements IColormapNumberProvider{
 
     //Keywords
     private static final String TEMPERATURE = "TEMPERATURE";
@@ -44,10 +44,10 @@ public final class NumberProvider {
     private static final ThreadLocal<BlockState> STATE_HACK = new ThreadLocal<>();
 
 
-    public static final Codec<NumberProvider> CODEC = Codec.STRING.flatXmap(s -> {
+    public static final Codec<ColormapExpressionProvider> CODEC = Codec.STRING.flatXmap(s -> {
         try {
             Expression compiled = createExpression(s);
-            return DataResult.success(new NumberProvider(compiled, s));
+            return DataResult.success(new ColormapExpressionProvider(compiled, s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
@@ -69,7 +69,7 @@ public final class NumberProvider {
     private final boolean hasT;
     private final boolean hasD;
 
-    private NumberProvider(Expression expression, String unparsed) {
+    private ColormapExpressionProvider(Expression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
         this.hasX = unparsed.contains(POS_X);
@@ -80,8 +80,8 @@ public final class NumberProvider {
     }
 
     //Unckecked
-    public static NumberProvider make(String s) {
-        return new NumberProvider(createExpression(s), s);
+    public static ColormapExpressionProvider make(String s) {
+        return new ColormapExpressionProvider(createExpression(s), s);
     }
 
     // we use this optimistic approach instead of a lock because it's faster,

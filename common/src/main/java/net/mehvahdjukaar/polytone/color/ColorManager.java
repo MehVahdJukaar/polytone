@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.SinglePropertiesReloadListener;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -33,6 +34,7 @@ public class ColorManager extends SinglePropertiesReloadListener {
     private final Map<DyeColor, Integer> vanillaFireworkColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaDiffuseColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaTextColors = new EnumMap<>(DyeColor.class);
+    private final Map<ChatFormatting, Integer> vanillaChatFormatting = new EnumMap<>(ChatFormatting.class);
     private final Object2IntMap<SpawnEggItem> vanillaEggsBackgrounds = new Object2IntOpenHashMap<>();
     private final Object2IntMap<SpawnEggItem> vanillaEggsHighlight = new Object2IntOpenHashMap<>();
     private final Object2IntMap<MobEffect> vanillaEffectColors = new Object2IntOpenHashMap<>();
@@ -157,6 +159,25 @@ public class ColorManager extends SinglePropertiesReloadListener {
                 int col = parseHex(obj);
                 customSheepColors.put(color, col);
             } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
+        } else if (is(prop, 0, "text")) {
+            int col = parseHex(obj);
+            ChatFormatting text = null;
+            if (is(prop, 1, "code")) {
+                String s = get(prop, 2);
+                if (s != null) {
+                    int code = Integer.parseInt(s);
+                    text = ChatFormatting.getById(code);
+                }
+            } else {
+                String s = get(prop, 1);
+                text = ChatFormatting.getByName(s);
+            }
+            if (text != null) {
+                if (!vanillaChatFormatting.containsKey(text)) {
+                    vanillaChatFormatting.put(text, text.getColor());
+                }
+                text.color = col;
+            }
         }
     }
 
