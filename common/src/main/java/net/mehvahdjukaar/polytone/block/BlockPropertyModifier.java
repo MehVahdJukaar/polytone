@@ -4,7 +4,7 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
-import net.mehvahdjukaar.polytone.colormap.TintMap;
+import net.mehvahdjukaar.polytone.colormap.TintColorGetter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
@@ -45,6 +45,10 @@ public record BlockPropertyModifier(
         );
     }
 
+    public static BlockPropertyModifier ofColor(TintColorGetter colormap) {
+        return new BlockPropertyModifier(Optional.of(colormap), Optional.empty(), Optional.empty(), Optional.empty());
+    }
+
     // returns the old ones
     public BlockPropertyModifier apply(Block block) {
         SoundType oldSound = null;
@@ -82,7 +86,7 @@ public record BlockPropertyModifier(
 
     public static final Decoder<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    StrOpt.of(TintMap.CODEC, "colormap").forGetter(b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof TintMap c ? c : null))),
+                    StrOpt.of(TintColorGetter.CODEC, "colormap").forGetter(b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof TintColorGetter c ? c : null))),
                     StrOpt.of(SoundTypesManager.CODEC, "sound_type").forGetter(BlockPropertyModifier::soundType),
                     StrOpt.of(MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE),
                             "map_color").forGetter(BlockPropertyModifier::mapColor),
@@ -91,7 +95,7 @@ public record BlockPropertyModifier(
                     // Codec.BOOL.optionalFieldOf("view_blocking").forGetter(ClientBlockProperties::viewBlocking),
                     //Codec.BOOL.optionalFieldOf("emissive_rendering").forGetter(c -> c.emissiveRendering.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
                     StrOpt.of(StringRepresentable.fromEnum(BlockPropertyModifier.OffsetTypeR::values)
-                            .xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE),
+                                    .xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE),
                             "offset_type").forGetter(BlockPropertyModifier::offsetType)
             ).apply(instance, BlockPropertyModifier::new));
 

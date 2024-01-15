@@ -3,17 +3,20 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,6 +85,10 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     private final boolean hasT;
     private final boolean hasD;
 
+    // we use this optimistic approach instead of a lock because it's faster,
+    // and we don't really care about blocking as we can just use new if its locked
+    private final AtomicBoolean nonBlockingLock = new AtomicBoolean();
+
     private ColormapExpressionProvider(Expression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
@@ -97,11 +104,13 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
         return new ColormapExpressionProvider(createExpression(s), s);
     }
 
-    // we use this optimistic approach instead of a lock because it's faster,
-    // and we don't really care about blocking as we can just use new if its locked
-    private final AtomicBoolean nonBlockingLock = new AtomicBoolean();
+    @Override
+    public boolean usesBiome() {
+        return hasT || hasD;
+    }
 
-    public float getValue(BlockState state, @NotNull BlockAndTintGetter level, @NotNull BlockPos pos) {
+    @Override
+    public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
         float result = 0;
         boolean needsToUnlock = false;
         try {
@@ -115,18 +124,10 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
                 exp = new Expression(this.expression);
             }
 
-            if (!Polytone.sodiumOn) {
-                exp.setVariable(TEMPERATURE, hasT ? TintMap.temperature(state, level, pos) : 0);
-                exp.setVariable(DOWNFALL, hasD ? TintMap.downfall(state, level, pos) : 0);
-            } else {
-                if (hasT || hasD) {
-                    if (level instanceof Level l) {
-                        var b = l.getBiome(pos).value().climateSettings;
-                        exp.setVariable(TEMPERATURE, b.temperature);
-                        exp.setVariable(DOWNFALL, b.downfall);
-                    } else return -1;
-                }
-            }
+
+            if(hasT) exp.setVariable(TEMPERATURE, biome != null ? biome.climateSettings.temperature : 0);
+            if(hasD) exp.setVariable(DOWNFALL, biome != null ? biome.climateSettings.temperature : 0);
+
             exp.setVariable(POS_X, hasX ? pos.getX() : 0);
             exp.setVariable(POS_Y, hasY ? pos.getY() : 0);
             exp.setVariable(POS_Z, hasZ ? pos.getZ() : 0);

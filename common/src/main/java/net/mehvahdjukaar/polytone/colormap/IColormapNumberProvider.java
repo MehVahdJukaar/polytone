@@ -4,15 +4,14 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.minecraft.client.renderer.chunk.RenderChunkRegion;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface IColormapNumberProvider {
 
@@ -29,18 +28,41 @@ public interface IColormapNumberProvider {
         return provider;
     }
 
-    float getValue(BlockState state, @NotNull BlockAndTintGetter level, @NotNull BlockPos pos);
+    float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome);
 
-    IColormapNumberProvider ZERO = register("zero", (state, level, pos) -> 0);
+    default boolean usesBiome() {
+        return false;
+    }
 
-    IColormapNumberProvider TEMPERATURE = register("temperature", TintMap::temperature);
+    IColormapNumberProvider ZERO = register("zero", (state, pos, b) -> 0);
+    IColormapNumberProvider ONE = register("one", (state, pos, b) -> 1);
 
-    IColormapNumberProvider DOWNFALL = register("downfall", TintMap::downfall);
+    IColormapNumberProvider TEMPERATURE = register("temperature", new IColormapNumberProvider() {
+        @Override
+        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
+            return biome == null ? 0 : biome.climateSettings.temperature;
+        }
 
-    IColormapNumberProvider BIOME_ID = register("biome_id", (state, level, pos) -> {
-       if( level instanceof RenderChunkRegion region) {
-           Holder<Biome> biome = region.level.getBiome(pos);
-           return region.level.registryAccess().registry(Registries.BIOME).get().getId(biome.value()) / 256f;
-       }return 0;
+        @Override
+        public boolean usesBiome() {
+            return true;
+        }
     });
+
+
+    IColormapNumberProvider DOWNFALL = register("downfall", new IColormapNumberProvider() {
+        @Override
+        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
+            return biome == null ? 0 : biome.climateSettings.downfall;
+        }
+
+        @Override
+        public boolean usesBiome() {
+            return true;
+        }
+    });
+
+    IColormapNumberProvider BIOME_ID = register("biome_id", (state, pos, b) -> Minecraft.getInstance().level
+            .registryAccess().registry(Registries.BIOME).get().getId(b) / 256f);
+
 }

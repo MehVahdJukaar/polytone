@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.TintMap;
+import net.mehvahdjukaar.polytone.colormap.TintColorGetter;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
@@ -67,7 +67,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
             //fill inline colormaps colormapTextures
             BlockColor colormap = modifier.colormap().orElse(null);
-            if (colormap instanceof TintMap c && !c.isReference()) {
+            if (colormap instanceof TintColorGetter c && !c.isReference()) {
                 ColormapsManager.fillColormapPalette(textures, id, c, usedTextures);
             }
             tryAdd(id, modifier);
@@ -78,7 +78,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
-            TintMap defaultColormap = TintMap.createDefault(t.getValue().keySet(), true);
+            TintColorGetter defaultColormap = TintColorGetter.createDefault(t.getValue().keySet(), true);
             ColormapsManager.fillColormapPalette(textures, id, defaultColormap, usedTextures);
 
             tryAdd(id, new FluidPropertyModifier(Optional.of(defaultColormap), Optional.empty()));

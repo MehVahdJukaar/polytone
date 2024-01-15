@@ -34,7 +34,7 @@ public class Polytone {
     public static final VariantTextureManager VARIANT_TEXTURES = new VariantTextureManager();
     public static final ColorManager COLORS = new ColorManager();
 
-    public static boolean sodiumOn;
+    public static boolean sodiumOn = false;
 
     public static void init(boolean isSodiumOn) {
         PlatStuff.addClientReloadListener(() -> COLORS, res("color_manager"));

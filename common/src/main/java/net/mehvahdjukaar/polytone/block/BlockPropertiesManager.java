@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
-import net.mehvahdjukaar.polytone.colormap.TintMap;
+import net.mehvahdjukaar.polytone.colormap.TintColorGetter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
@@ -17,7 +17,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.StemBlock;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
@@ -67,11 +70,11 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
             //fill inline colormaps colormapTextures
             var colormap = prop.tintGetter();
-            if (colormap.isPresent() && colormap.get() instanceof TintMap c && !c.isReference()) {
+            if (colormap.isPresent() && colormap.get() instanceof TintColorGetter c && !c.isReference()) {
                 ColormapsManager.fillColormapPalette(textures, id, c, usedTextures);
             }
 
-            modifiers.put(id, prop);
+            addModifier(id, prop);
         }
 
         // creates orphaned texture colormaps & properties
@@ -83,38 +86,44 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
             //optifine stuff
             String path = id.getPath();
 
-            TintMap tintMap = TintMap.createDefault(value.keySet(), true);
+            TintColorGetter tintMap = TintColorGetter.createDefault(value.keySet(), true);
 
             if (path.contains("stem")) {
-                TintMap pumpkinMap = TintMap.createSimple((state, level, pos) -> state.getValue(StemBlock.AGE) / 7f,
+                TintColorGetter stemMap = TintColorGetter.createSimple((state, level, pos) -> state.getValue(StemBlock.AGE) / 7f,
                         IColormapNumberProvider.ZERO);
 
-                ColormapsManager.fillColormapPalette(textures, id, pumpkinMap, usedTextures);
+                TintColorGetter attachedMap = TintColorGetter.createSimple(
+                        IColormapNumberProvider.ONE, IColormapNumberProvider.ZERO);
 
-                BlockPropertyModifier pumpkinProp = new BlockPropertyModifier(Optional.of(pumpkinMap),
-                        Optional.empty(), Optional.empty(), Optional.empty());
+                ColormapsManager.fillColormapPalette(textures, id, stemMap, usedTextures);
+                ColormapsManager.fillColormapPalette(textures, id, attachedMap, usedTextures);
 
                 // so stem maps to both
                 if (!path.contains("melon")) {
-                    modifiers.put(new ResourceLocation("pumpkin_stem"), pumpkinProp);
+                    addModifier(new ResourceLocation("pumpkin_stem"), BlockPropertyModifier.ofColor(stemMap));
+                    addModifier(new ResourceLocation("attached_pumpkin_stem"), BlockPropertyModifier.ofColor(attachedMap));
                 }
                 if (!path.contains("pumpkin")) {
-                    modifiers.put(new ResourceLocation("melon_stem"), pumpkinProp);
+                    addModifier(new ResourceLocation("melon_stem"), BlockPropertyModifier.ofColor(stemMap));
+                    addModifier(new ResourceLocation("attached_melon_stem"), BlockPropertyModifier.ofColor(attachedMap));
                 }
                 continue;
-            }else if(path.equals("redstone_wire")){
-                tintMap = TintMap.createSimple((state, level, pos) -> state.getValue(RedStoneWireBlock.POWER) / 15f,
+            } else if (path.equals("redstone_wire")) {
+                tintMap = TintColorGetter.createSimple((state, level, pos) -> state.getValue(RedStoneWireBlock.POWER) / 15f,
                         IColormapNumberProvider.ZERO);
             }
 
             //TODO: improve this method and remove
             ColormapsManager.fillColormapPalette(textures, id, tintMap, usedTextures);
 
-            BlockPropertyModifier defaultProp = new BlockPropertyModifier(Optional.of(tintMap),
-                    Optional.empty(), Optional.empty(), Optional.empty());
-
-            modifiers.put(id, defaultProp);
+            addModifier(id, BlockPropertyModifier.ofColor(tintMap));
         }
+    }
+
+    private void addModifier(ResourceLocation id, BlockPropertyModifier mod) {
+        var old = modifiers.put(id, mod);
+        if (old != null)
+            Polytone.LOGGER.info("Found duplicate block property modifier with id {}, overwriting", id);
     }
 
     @Override

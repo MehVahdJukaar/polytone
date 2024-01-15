@@ -13,7 +13,8 @@ public class PolytoneFabric implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        boolean sodiumOn = FabricLoader.getInstance().isModLoaded("sodium");
+        FabricLoader instance = FabricLoader.getInstance();
+        boolean sodiumOn = instance.isModLoaded("sodium") || instance.isModLoaded("indium");
         Polytone.init(sodiumOn);
 
         if (sodiumOn) {

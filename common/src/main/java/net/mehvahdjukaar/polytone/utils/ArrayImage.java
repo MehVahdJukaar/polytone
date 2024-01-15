@@ -13,6 +13,7 @@ import net.minecraft.util.FastColor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,7 +77,7 @@ public record ArrayImage(int[][] pixels, int width, int height) {
     }
 
     public static Map<ResourceLocation, Int2ObjectMap<ArrayImage>> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
-        Map<ResourceLocation, Int2ObjectMap<ArrayImage>> groupedMap = new HashMap<>();
+        Map<ResourceLocation, Int2ObjectMap<ArrayImage>> groupedMap = new LinkedHashMap<>();
 
         Pattern pattern = Pattern.compile("(\\D+)(_\\d+)?");
         for (var e : texturesColormap.entrySet()) {

@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +36,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            TintMap colormap = TintMap.TINTMAP_DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
+            TintColorGetter colormap = TintColorGetter.TINTMAP_DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Colormap with json id {} - error: {}",
                             id, errorMsg)).getFirst();
             fillColormapPalette(textures, id, colormap, usedTextures);
@@ -49,7 +50,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
-            TintMap defaultColormap = TintMap.createDefault(t.getValue().keySet(), false);
+            TintColorGetter defaultColormap = TintColorGetter.createDefault(t.getValue().keySet(), false);
             fillColormapPalette(textures, id, defaultColormap, usedTextures);
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, defaultColormap);
@@ -59,11 +60,11 @@ public class ColormapsManager extends JsonImgPartialReloader {
     @Override
     public void reset() {
         colormapsIds.clear();
-        colormapsIds.put(new ResourceLocation("grass_color"), TintMap.GRASS_COLOR);
-        colormapsIds.put(new ResourceLocation("foliage_color"), TintMap.FOLIAGE_COLOR);
-        colormapsIds.put(new ResourceLocation("water_color"), TintMap.WATER_COLOR);
-        colormapsIds.put(new ResourceLocation("biome_sample"), TintMap.BIOME_SAMPLE);
-        colormapsIds.put(new ResourceLocation("triangular_biome_sample"), TintMap.TR_BIOME_SAMPLE);
+        colormapsIds.put(new ResourceLocation("grass_color"), TintColorGetter.GRASS_COLOR);
+        colormapsIds.put(new ResourceLocation("foliage_color"), TintColorGetter.FOLIAGE_COLOR);
+        colormapsIds.put(new ResourceLocation("water_color"), TintColorGetter.WATER_COLOR);
+        colormapsIds.put(new ResourceLocation("biome_sample"), TintColorGetter.BIOME_SAMPLE);
+        colormapsIds.put(new ResourceLocation("triangular_biome_sample"), TintColorGetter.TR_BIOME_SAMPLE);
     }
 
     @Nullable
@@ -77,13 +78,13 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
 
-    public void add(ResourceLocation id, TintMap colormap) {
+    public void add(ResourceLocation id, TintColorGetter colormap) {
         colormapsIds.put(id, colormap);
     }
 
 
     public static void fillColormapPalette(Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures,
-                                           ResourceLocation id, TintMap colormap, Set<ResourceLocation> usedTextures) {
+                                           ResourceLocation id, TintColorGetter colormap, Set<ResourceLocation> usedTextures) {
         var getters = colormap.getGetters();
 
         var textureMap = textures.get(id);
@@ -91,7 +92,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
         if (textureMap != null) {
             for (var g : getters.int2ObjectEntrySet()) {
                 int index = g.getIntKey();
-                TintMap.Colormap tint = g.getValue();
+                Colormap tint = g.getValue();
                 boolean success = false;
                 if (getters.size() == 1 || index == 0) {
                     success = tryPopulatingColormap(textureMap, id, -1, tint, usedTextures);
@@ -111,7 +112,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
     private static boolean tryPopulatingColormap(Map<Integer, ArrayImage> textures, ResourceLocation path, int index,
-                                                 TintMap.Colormap g, Set<ResourceLocation> usedTexture) {
+                                                 Colormap g, Set<ResourceLocation> usedTexture) {
         ArrayImage texture = textures.get(index);
         if (texture != null) {
             usedTexture.add(path);
