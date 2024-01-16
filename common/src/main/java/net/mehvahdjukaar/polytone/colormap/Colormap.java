@@ -111,7 +111,7 @@ public class Colormap implements ColorResolver {
 
     public int calculateBlendedColor(Level level, BlockPos pos) {
         //Same as vanilla impl. We could have just called it. Just here so we call sampleColor instead of getColor with pos instead of x z
-        int i = Minecraft.getInstance().options.biomeBlendRadius().get();
+        int i = Minecraft.getInstance().options.biomeBlendRadius;
         BlockState state = stateHack.get();
         if (i == 0) {
             return this.sampleColor(state, pos, level.getBiome(pos).value());

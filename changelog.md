@@ -1,1 +1,1 @@
-properly implemented colormaps with biome blending
+ported back all new recent features

@@ -10,7 +10,6 @@
     "ColorResolverMixin",
     "GameRendererMixin",
     "LightTextureMixin",
-    "ModelBlockRendererMixin",
     "ParticleEngineMixin"
   ],
   "injectors": {

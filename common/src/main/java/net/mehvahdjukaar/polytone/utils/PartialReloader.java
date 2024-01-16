@@ -10,7 +10,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -38,19 +38,17 @@ public abstract class PartialReloader<T> {
 
     public static void scanDirectory(ResourceManager resourceManager, String string, Gson gson, Map<ResourceLocation, JsonElement> map) {
         FileToIdConverter fileToIdConverter = FileToIdConverter.json(string);
-        Iterator var5 = fileToIdConverter.listMatchingResources(resourceManager).entrySet().iterator();
 
-        while(var5.hasNext()) {
-            Map.Entry<ResourceLocation, Resource> entry = (Map.Entry)var5.next();
-            ResourceLocation resourceLocation = (ResourceLocation)entry.getKey();
+        for (ResourceLocation resourceLocation : fileToIdConverter.listMatchingResources(resourceManager)) {
+
             ResourceLocation resourceLocation2 = fileToIdConverter.fileToId(resourceLocation);
 
             try {
-                Reader reader = ((Resource)entry.getValue()).openAsReader();
+                var reader = resourceManager.getResource(resourceLocation).getInputStream();
 
-                try {
-                    JsonElement jsonElement = (JsonElement) GsonHelper.fromJson(gson, reader, JsonElement.class);
-                    JsonElement jsonElement2 = (JsonElement)map.put(resourceLocation2, jsonElement);
+                try (var re = new InputStreamReader(reader)) {
+                    JsonElement jsonElement =  GsonHelper.fromJson(gson, re, JsonElement.class);
+                    JsonElement jsonElement2 =  map.put(resourceLocation2, jsonElement);
                     if (jsonElement2 != null) {
                         throw new IllegalStateException("Duplicate data file ignored with ID " + resourceLocation2);
                     }

@@ -5,43 +5,50 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.math.Vector3f;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.colormap.TintColorGetter;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
-import org.jetbrains.annotations.NotNull;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class FluidPropertiesManagerImpl {
 
-    private static final Map<FluidType, IClientFluidTypeExtensions> FLUID_EXTENSIONS = new HashMap<>();
+    private static final Map<Fluid, FluidAttributes> FLUID_EXTENSIONS = new HashMap<>();
 
     public static void tryAddSpecial(ResourceLocation id, FluidPropertyModifier colormap) {
-        var fluid = getTarget(id, ForgeRegistries.FLUID_TYPES.get());
+        var fluid = getTarget(id, ForgeRegistries.FLUIDS);
         if (fluid != null) {
-            FluidType type = fluid.getFirst();
+            var type = fluid.getFirst();
 
             //gets real one. will internally try to get wrapped but a map is empty now
-            IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(type);
+            FluidAttributes ext = type.getAttributes();
             if(ext instanceof FluidExtensionWrapper){
                 Polytone.LOGGER.error("Trying to wrap a wrapper. Something went wrong");
             }
 
             //create wrapped one
-            FLUID_EXTENSIONS.put(type, new FluidExtensionWrapper(ext, colormap));
+            FLUID_EXTENSIONS.put(type, new FluidExtensionWrapper(type, ext, colormap));
         }
     }
 
@@ -50,51 +57,58 @@ public class FluidPropertiesManagerImpl {
     }
     
     @Nullable
-    public static <T> Pair<T, ResourceLocation> getTarget(ResourceLocation resourcePath, IForgeRegistry<T> registry) {
+    public static <T extends IForgeRegistryEntry<T>> Pair<T, ResourceLocation> getTarget(ResourceLocation resourcePath, IForgeRegistry<T> registry) {
         ResourceLocation id = Polytone.getLocalId(resourcePath);
         var opt = registry.getHolder(id);
-        if (opt.isPresent()) return Pair.of(opt.get().get(), id);
+        if (opt.isPresent()) return Pair.of(opt.get().value(), id);
         opt = registry.getHolder(resourcePath);
-        return opt.map(t -> Pair.of(t.get(), resourcePath)).orElse(null);
+        return opt.map(t -> Pair.of(t.value(), resourcePath)).orElse(null);
     }
 
     @Nullable
-    public static IClientFluidTypeExtensions maybeGetWrappedExtension(FluidType ft) {
+    public static FluidAttributes maybeGetWrappedExtension(Fluid ft) {
         if (!FLUID_EXTENSIONS.isEmpty()) {
             return FLUID_EXTENSIONS.get(ft);
         }
         return null;
     }
 
-    private record FluidExtensionWrapper(IClientFluidTypeExtensions instance,
-                                         FluidPropertyModifier modifier) implements IClientFluidTypeExtensions {
+    private static class FluidExtensionWrapper extends FluidAttributes {
+        FluidAttributes instance;
+        FluidPropertyModifier modifier;
 
+        protected FluidExtensionWrapper(Fluid fluid, FluidAttributes instance, FluidPropertyModifier modifier) {
+            super(FluidAttributes.builder(new ResourceLocation("a"), new ResourceLocation("b")),
+                    fluid);
+            this.instance = instance;
+            this.modifier  = modifier;
+        }
 
         @Override
-        public int getTintColor() {
+        public int getColor() {
             var col = modifier.getColormap();
             if (col != null) {
                 return col.getColor(null, null, null, -1) | 0xff000000;
             }
-            return instance.getTintColor();
+            return instance.getColor();
         }
 
         @Override
-        public int getTintColor(FluidStack stack) {
+        public int getColor(FluidStack stack) {
             var col = modifier.getColormap();
             if (col != null) {
                 return col.getColor(null, null, null, -1) | 0xff000000;
             }
-            return instance.getTintColor();
+            return instance.getColor();
         }
 
         @Override
-        public int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
+        public int getColor(BlockAndTintGetter level, BlockPos pos) {
             var col = modifier.getColormap();
             if (col != null) {
-                return col.getColor(state.createLegacyBlock(), getter, pos, -1) | 0xff000000;
+                return col.getColor(null, level, pos, -1) | 0xff000000;
             }
-            return instance.getTintColor();
+            return instance.getColor();
         }
 
         @Override
@@ -113,49 +127,141 @@ public class FluidPropertiesManagerImpl {
         }
 
         @Override
-        public @Nullable ResourceLocation getRenderOverlayTexture(Minecraft mc) {
-            return instance.getRenderOverlayTexture(mc);
+        public BlockState getBlock(BlockAndTintGetter reader, BlockPos pos, FluidState state) {
+            return instance.getBlock(reader, pos, state);
         }
 
         @Override
-        public void renderOverlay(Minecraft mc, PoseStack poseStack) {
-            instance.renderOverlay(mc, poseStack);
+        public String getTranslationKey(FluidStack stack) {
+            return instance.getTranslationKey(stack);
         }
 
         @Override
-        public @NotNull Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
-            return instance.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
+        public String getTranslationKey() {
+            return instance.getTranslationKey();
         }
 
         @Override
-        public void modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, float nearDistance, float farDistance, FogShape shape) {
-            instance.modifyFogRender(camera, mode, renderDistance, partialTick, nearDistance, farDistance, shape);
+        public Stream<ResourceLocation> getTextures() {
+            return instance.getTextures();
         }
 
         @Override
-        public ResourceLocation getStillTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            return instance.getStillTexture(state, getter, pos);
+        public SoundEvent getFillSound(BlockAndTintGetter level, BlockPos pos) {
+            return instance.getFillSound(level,pos);
         }
 
         @Override
-        public ResourceLocation getFlowingTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            return instance.getFlowingTexture(state, getter, pos);
+        public SoundEvent getFillSound(FluidStack stack) {
+            return instance.getFillSound(stack);
         }
 
         @Override
-        public ResourceLocation getOverlayTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            return instance.getOverlayTexture(state, getter, pos);
+        public SoundEvent getFillSound() {
+            return instance.getFillSound();
         }
+
+        @Override
+        public SoundEvent getEmptySound(BlockAndTintGetter level, BlockPos pos) {
+            return instance.getEmptySound(level,pos);
+        }
+
+        @Override
+        public SoundEvent getEmptySound(FluidStack stack) {
+            return instance.getEmptySound(stack);
+        }
+
+        @Override
+        public SoundEvent getEmptySound() {
+            return instance.getEmptySound();
+        }
+
+        @Override
+        public ResourceLocation getStillTexture(BlockAndTintGetter level, BlockPos pos) {
+            return instance.getStillTexture(level,pos);
+        }
+
+        @Override
+        public ResourceLocation getFlowingTexture(BlockAndTintGetter level, BlockPos pos) {
+            return instance.getFlowingTexture(level,pos);
+        }
+
+        @Override
+        public Rarity getRarity(BlockAndTintGetter level, BlockPos pos) {
+            return instance.getRarity(level,pos);
+        }
+
+        @Override
+        public Rarity getRarity(FluidStack stack) {
+            return instance.getRarity(stack);
+        }
+
+        @Override
+        public Rarity getRarity() {
+            return instance.getRarity();
+        }
+
+        @Override
+        public ItemStack getBucket(FluidStack stack) {
+            return instance.getBucket(stack);
+        }
+
+        @Override
+        public int getViscosity(BlockAndTintGetter level, BlockPos pos) {
+            return instance.getViscosity(level,pos);
+        }
+
+        @Override
+        public int getViscosity(FluidStack stack) {
+            return instance.getViscosity(   stack);
+        }
+
+        @Override
+        public int getTemperature(BlockAndTintGetter level, BlockPos pos) {
+            return instance.getTemperature(level,pos);
+        }
+
+        @Override
+        public int getTemperature(FluidStack stack) {
+            return instance.getTemperature(stack);
+        }
+
+        @Override
+        public int getLuminosity(BlockAndTintGetter level, BlockPos pos) {
+            return instance.getLuminosity(level,pos);
+        }
+
+        @Override
+        public int getLuminosity(FluidStack stack) {
+            return instance.getLuminosity(stack);
+        }
+
+        @Override
+        public int getDensity(BlockAndTintGetter level, BlockPos pos) {
+            return instance.getDensity(level, pos);
+        }
+
+        @Override
+        public int getDensity(FluidStack stack) {
+            return instance.getDensity(stack);
+        }
+
+        @Override
+        public FluidState getStateForPlacement(BlockAndTintGetter reader, BlockPos pos, FluidStack state) {
+            return instance.getStateForPlacement(reader, pos, state);
+        }
+
+        @Override
+        public Component getDisplayName(FluidStack stack) {
+            return instance.getDisplayName(stack);
+        }
+
 
         @Override
         public ResourceLocation getStillTexture(FluidStack stack) {
             return instance.getStillTexture(stack);
         }
 
-        @Override
-        public ResourceLocation getOverlayTexture(FluidStack stack) {
-            return instance.getOverlayTexture(stack);
-        }
 
         @Override
         public ResourceLocation getFlowingTexture(FluidStack stack) {

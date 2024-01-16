@@ -111,12 +111,8 @@ public class Lightmap {
             skyLightIntensity = skyDarken * 0.95F + 0.05F;
         }
 
-        float darknessEffect = options.darknessEffectScale().get().floatValue();
-        float darknessGamma = instance.getDarknessGamma(partialTicks) * darknessEffect;
-        float darknessSubtract = instance.calculateDarknessScale(player, darknessGamma, partialTicks) * darknessEffect;
-
-        float gamma = (options.gamma().get()).floatValue();
-        float gammaAmount = Math.max(0.0F, gamma - darknessGamma);
+        float gamma = (float) options.gamma;
+        float gammaAmount = Math.max(0.0F, gamma);
 
         float waterVision = player.getWaterVision();
         float nightVisionScale;
@@ -164,7 +160,7 @@ public class Lightmap {
                 skyBuffer.add(new com.mojang.math.Vector3f(floats[0],floats[1],floats[2]));
             } else {
                 // we have no colors. use vanilla logic
-                float skyBrightness = LightTexture.getBrightness(dimensionType, skyY) * skyLightIntensity;
+                float skyBrightness = instance.getBrightness(level, skyY) * skyLightIntensity;
                 skyBuffer.add(skyColor);
                 skyBuffer.mul(skyBrightness);
                 skyBuffer.mul(1 - lightGrayAmount);
@@ -179,7 +175,7 @@ public class Lightmap {
                     torchBuffer.add(new com.mojang.math.Vector3f(floats[0],floats[1],floats[2]));
                 } else {
                     // we have no colors. use vanilla logic
-                    float torchR = LightTexture.getBrightness(dimensionType, torchX) * blockLightFlicker;
+                    float torchR = instance.getBrightness(level, torchX) * blockLightFlicker;
                     float torchG = torchR * ((torchR * 0.6F + 0.4F) * 0.6F + 0.4F);
                     float torchB = torchR * (torchR * torchR * 0.6F + 0.4F);
                     torchBuffer.set(torchR, torchG, torchB);
@@ -217,9 +213,6 @@ public class Lightmap {
                 }
 
                 //we make both hse happen in end too
-                if (darknessSubtract > 0.0F) {
-                    combined.add(-darknessSubtract, -darknessSubtract, -darknessSubtract);
-                }
 
                 clampColor(combined);
 

@@ -4,6 +4,7 @@ import cpw.mods.modlauncher.api.INameMappingService;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
@@ -46,7 +47,7 @@ public class PlatStuffImpl {
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         try {
-            return ((Map<Holder.Reference<Block>, BlockColor>) f.get(colors)).get(ForgeRegistries.BLOCKS.getDelegateOrThrow(block));
+            return ( colors).f_92571_.get(block.delegate);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -57,7 +58,8 @@ public class PlatStuffImpl {
         ForgeRegistry<SoundEvent> reg = (ForgeRegistry<SoundEvent>) ForgeRegistries.SOUND_EVENTS;
         boolean wasLocked = reg.isLocked();
         if (wasLocked) reg.unfreeze();
-        ForgeRegistries.SOUND_EVENTS.register(id, variableRangeEvent);
+        variableRangeEvent.setRegistryName(id);
+        ForgeRegistries.SOUND_EVENTS.register(variableRangeEvent);
         if (wasLocked) reg.freeze();
         return variableRangeEvent;
     }

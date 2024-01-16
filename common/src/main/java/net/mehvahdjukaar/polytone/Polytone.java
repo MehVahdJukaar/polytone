@@ -9,7 +9,6 @@ import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
 import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
-import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -30,7 +29,6 @@ public class Polytone {
     public static final LightmapsManager LIGHTMAPS = new LightmapsManager();
     public static final ParticleModifiersManager PARTICLE_MODIFIERS = new ParticleModifiersManager();
     public static final SoundTypesManager SOUND_TYPES = new SoundTypesManager();
-    public static final VariantTextureManager VARIANT_TEXTURES = new VariantTextureManager();
     public static final ColorManager COLORS = new ColorManager();
 
     public static boolean sodiumOn = false;
@@ -39,7 +37,7 @@ public class Polytone {
         PlatStuff.addClientReloadListener(() -> COLORS, res("color_manager"));
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
                         SOUND_TYPES, COLORMAPS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
-                        BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS),
+                        BIOME_EFFECTS, LIGHTMAPS, PARTICLE_MODIFIERS),
                 res("block_properties_manager"));
         sodiumOn = isSodiumOn;
         //TODO: colormap for particles

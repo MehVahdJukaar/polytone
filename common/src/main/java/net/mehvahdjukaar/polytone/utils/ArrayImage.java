@@ -30,11 +30,10 @@ public record ArrayImage(int[][] pixels, int width, int height) {
 
         FileToIdConverter helper = new FileToIdConverter(path, ".png");
 
-        for (Map.Entry<ResourceLocation, Resource> entry : helper.listMatchingResources(manager).entrySet()) {
-            ResourceLocation fileId = entry.getKey();
+        for (var fileId : helper.listMatchingResources(manager)) {
             ResourceLocation id = helper.fileToId(fileId);
 
-            try (InputStream inputStream = entry.getValue().open();
+            try (InputStream inputStream = manager.getResource(fileId).getInputStream();
                  NativeImage nativeImage = NativeImage.read(inputStream)) {
                 int[][] pixels = makePixelMatrix(nativeImage);
 

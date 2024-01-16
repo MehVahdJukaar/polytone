@@ -30,9 +30,10 @@ public abstract class ColorResolverMixin extends Level {
     @Final
     private Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches;
 
-    protected ColorResolverMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l, int i) {
-        super(writableLevelData, resourceKey, holder, supplier, bl, bl2, l, i);
+    protected ColorResolverMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l) {
+        super(writableLevelData, resourceKey, holder, supplier, bl, bl2, l);
     }
+
 
     /**
      * Hack so we don't have to register these on every reload. They are instead added on request

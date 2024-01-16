@@ -4,6 +4,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 public class FileToIdConverter {
@@ -29,15 +31,9 @@ public class FileToIdConverter {
         return new ResourceLocation(file.getNamespace(),string.substring(this.prefix.length() + 1, string.length() - this.extension.length()));
     }
 
-    public Map<ResourceLocation, Resource> listMatchingResources(ResourceManager resourceManager) {
+    public Collection<ResourceLocation> listMatchingResources(ResourceManager resourceManager) {
         return resourceManager.listResources(this.prefix, (resourceLocation) -> {
-            return resourceLocation.getPath().endsWith(this.extension);
-        });
-    }
-
-    public Map<ResourceLocation, List<Resource>> listMatchingResourceStacks(ResourceManager resourceManager) {
-        return resourceManager.listResourceStacks(this.prefix, (resourceLocation) -> {
-            return resourceLocation.getPath().endsWith(this.extension);
+            return resourceLocation.endsWith(this.extension);
         });
     }
 }

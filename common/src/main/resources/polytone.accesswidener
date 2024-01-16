@@ -58,6 +58,10 @@ mutable field net/minecraft/ChatFormatting color Ljava/lang/Integer;
 
 accessible field net/minecraft/client/renderer/chunk/RenderChunkRegion level Lnet/minecraft/world/level/Level;
 
+accessible method net/minecraft/client/renderer/LightTexture getBrightness (Lnet/minecraft/world/level/Level;I)F
+
+accessible field net/minecraft/client/color/block/BlockColors f_92571_ Ljava/util/Map;
+
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties offsetType Ljava/util/function/Function;
 mutable field net/minecraft/world/level/material/MaterialColor col I
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase materialColor Lnet/minecraft/world/level/material/MaterialColor;

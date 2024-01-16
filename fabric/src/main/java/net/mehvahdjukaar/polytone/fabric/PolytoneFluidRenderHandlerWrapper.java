@@ -25,8 +25,8 @@ public record PolytoneFluidRenderHandlerWrapper(FluidRenderHandler instance) imp
     }
 
     @Override
-    public void renderFluid(BlockPos pos, BlockAndTintGetter world, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState) {
-        instance.renderFluid(pos, world, vertexConsumer, blockState, fluidState);
+    public boolean renderFluid(BlockPos pos, BlockAndTintGetter world, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState) {
+       return instance.renderFluid(pos, world, vertexConsumer, blockState, fluidState);
     }
 
     @Override

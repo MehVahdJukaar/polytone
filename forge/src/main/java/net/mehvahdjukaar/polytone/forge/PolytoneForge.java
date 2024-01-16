@@ -1,12 +1,8 @@
 package net.mehvahdjukaar.polytone.forge;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -31,15 +27,9 @@ public class PolytoneForge {
         }
     }
 
-    @SubscribeEvent
-    public void registerCustomResolver(RegisterColorHandlersEvent.ColorResolvers event) {
-        event.register(ColorUtils.TEMPERATURE_RESOLVER);
-        event.register(ColorUtils.DOWNFALL_RESOLVER);
-    }
-
     public static void onTagSync(TagsUpdatedEvent event) {
         if (event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) {
-            Polytone.onTagsReceived(event.getRegistryAccess());
+            Polytone.onTagsReceived(event.getTagManager());
         }
     }
 

@@ -3,29 +3,18 @@ package net.mehvahdjukaar.polytone.lightmap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
-import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.Random;
 
 public interface ILightmapNumberProvider {
 
     BiMap<String, ILightmapNumberProvider> CUSTOM_PROVIDERS = HashBiMap.create();
 
     Codec<ILightmapNumberProvider> REFERENCE_CODEC = ExtraCodecs.stringResolverCodec(
-            a->CUSTOM_PROVIDERS.inverse().get(a), CUSTOM_PROVIDERS::get);
+            a -> CUSTOM_PROVIDERS.inverse().get(a), CUSTOM_PROVIDERS::get);
 
     Codec<ILightmapNumberProvider> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_CODEC,
             LightmapExpressionProvider.CODEC, true);
@@ -38,7 +27,7 @@ public interface ILightmapNumberProvider {
 
     float getValue(float time, float rain, float thunder);
 
-    RandomSource RAND = RandomSource.create();
+    Random RAND = new Random();
 
     // Sine
     ILightmapNumberProvider RANDOM = register("random",
@@ -100,7 +89,6 @@ public interface ILightmapNumberProvider {
                     return 1 - linear * 0.5f;
                 }
             });
-
 
 
 }

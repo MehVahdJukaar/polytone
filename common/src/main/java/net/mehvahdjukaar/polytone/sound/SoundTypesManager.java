@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.*;
 
@@ -109,22 +110,27 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
 
     public static Map<ResourceLocation, List<String>> gatherSoundEvents(ResourceManager resourceManager, String path) {
         Map<ResourceLocation, List<String>> idList = new HashMap<>();
-        Map<ResourceLocation, List<Resource>> res = resourceManager.listResourceStacks(path, resourceLocation ->
-                resourceLocation.getPath().endsWith("sound_events.csv"));
-        for (var e : res.entrySet()) {
-            for (var r : e.getValue()) {
-                try (Reader reader = r.openAsReader()) {
-                    BufferedReader bufferedReader = new BufferedReader(reader);
-                    List<String> lines = bufferedReader.lines()
-                            .map(line -> line.split(",")) // Splitting by comma
-                            .flatMap(Arrays::stream)
-                            .map(String::trim)
-                            .filter(v -> ResourceLocation.tryParse(v) != null && !v.isEmpty())// Removing extra spaces
-                            .toList();
-                    if (!lines.isEmpty()) idList.put(e.getKey(), lines);
-                } catch (IllegalArgumentException | IOException | JsonParseException ex) {
-                    Polytone.LOGGER.error("Couldn't parse Custom Sound Events file {}:", e.getKey(), ex);
+        var res = resourceManager.listResources(path, resourceLocation ->
+                resourceLocation.endsWith("sound_events.csv"));
+        for (var e : res) {
+            try {
+                var k = resourceManager.getResources(e);
+                for (var r : k) {
+                    try (Reader reader = new InputStreamReader(r.getInputStream())) {
+                        BufferedReader bufferedReader = new BufferedReader(reader);
+                        List<String> lines = bufferedReader.lines()
+                                .map(line -> line.split(",")) // Splitting by comma
+                                .flatMap(Arrays::stream)
+                                .map(String::trim)
+                                .filter(v -> ResourceLocation.tryParse(v) != null && !v.isEmpty())// Removing extra spaces
+                                .toList();
+                        if (!lines.isEmpty()) idList.put(r.getLocation(), lines);
+                    } catch (IllegalArgumentException | IOException | JsonParseException ex) {
+                        Polytone.LOGGER.error("Couldn't parse Custom Sound Events file {}:", r.getLocation(), ex);
+                    }
                 }
+            }catch (Exception n){
+                Polytone.LOGGER.error(n);
             }
         }
         return idList;
@@ -204,21 +210,11 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         map.put("hanging_roots", SoundType.HANGING_ROOTS);
         map.put("azalea_leaves", SoundType.AZALEA_LEAVES);
         map.put("sculk_sensor", SoundType.SCULK_SENSOR);
-        map.put("sculk_catalyst", SoundType.SCULK_CATALYST);
-        map.put("sculk", SoundType.SCULK);
-        map.put("sculk_vein", SoundType.SCULK_VEIN);
-        map.put("sculk_shrieker", SoundType.SCULK_SHRIEKER);
         map.put("glow_lichen", SoundType.GLOW_LICHEN);
         map.put("deepslate", SoundType.DEEPSLATE);
         map.put("deepslate_bricks", SoundType.DEEPSLATE_BRICKS);
         map.put("deepslate_tiles", SoundType.DEEPSLATE_TILES);
         map.put("polished_deepslate", SoundType.POLISHED_DEEPSLATE);
-        map.put("froglight", SoundType.FROGLIGHT);
-        map.put("frogspawn", SoundType.FROGSPAWN);
-        map.put("muddy_mangrove_roots", SoundType.MUDDY_MANGROVE_ROOTS);
-        map.put("mud", SoundType.MUD);
-        map.put("mud_bricks", SoundType.MUD_BRICKS);
-        map.put("packed_mud", SoundType.PACKED_MUD);
         return map;
     });
 

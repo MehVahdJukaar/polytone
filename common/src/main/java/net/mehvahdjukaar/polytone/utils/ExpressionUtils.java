@@ -2,21 +2,21 @@ package net.mehvahdjukaar.polytone.utils;
 
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.objecthunter.exp4j.function.Function;
 import net.objecthunter.exp4j.operator.Operator;
 
+import java.util.Random;
 import java.util.stream.Stream;
 
 public class ExpressionUtils {
 
-    private static final RandomSource RANDOM_SOURCE = RandomSource.createNewThreadLocalInstance();
+    private static final ThreadLocal<Random> RANDOM_SOURCE = ThreadLocal.withInitial(Random::new);
 
 
     private static final Function RAND = new Function("rand", 0) {
         @Override
         public double apply(double... args) {
-            return RANDOM_SOURCE.nextFloat();
+            return RANDOM_SOURCE.get().nextFloat();
         }
     };
 
