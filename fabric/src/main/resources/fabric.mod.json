@@ -29,5 +29,8 @@
   },
   "breaks": {
     "slotify": "*"
+  },
+  "conflicts": {
+    "sodium": "*"
   }
 }
