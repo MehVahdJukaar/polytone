@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -126,7 +127,7 @@ public class FluidPropertiesManagerImpl {
         public @NotNull Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
             var col = modifier.getFogColormap();
             if (col != null) {
-                return col.getColor(null, level, null, -1) | 0xff000000;
+                return new Vector3f(ColorUtils.unpack(col.getColor(null, level, null, -1) | 0xff000000));
             }
             return instance.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
         }

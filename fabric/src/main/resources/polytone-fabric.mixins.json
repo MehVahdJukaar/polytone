@@ -8,7 +8,6 @@
   "client": [
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
-    "net.mehvahdjukaar.polytone.mixins.ColorResolverMixin",
     "FluidRendererHandlerRegistryMixin",
     "InventoryScreenMixin"
   ],

@@ -1,1 +1,1 @@
-properly implemented colormaps with biome blending
+fixed mixin issue on fabric
