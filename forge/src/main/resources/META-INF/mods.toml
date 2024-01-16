@@ -5,6 +5,11 @@ loaderVersion = "${loader_version_range}"
 license = "${mod_license}"
 issueTrackerURL = "${mod_github}/issues"
 
+[[mixins]]
+    config = "${mod_id}.mixins.json"
+[[mixins]]
+    config = "${mod_id}.mixins-forge.json"
+
 [[mods]]
     modId = "polytone"
     version = "${mod_version}"
