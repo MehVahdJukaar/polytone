@@ -46,11 +46,7 @@ public class PlatStuffImpl {
         return ((BlockColorsAccessor) colors).getBlockColors().byId(BuiltInRegistries.BLOCK.getId(block));
     }
 
-    public static SoundEvent registerSoundEvent(ResourceLocation id) {
-        SoundEvent event = SoundEvent.createVariableRangeEvent(id);
-        Registry.register(BuiltInRegistries.SOUND_EVENT, id, event);
-        return event;
-    }
+
 
     public static String maybeRemapName(String s) {
         return FabricLoader.getInstance().getMappingResolver().mapClassName("official", s);

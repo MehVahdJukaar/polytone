@@ -6,8 +6,9 @@
   "mixins": [
   ],
   "client": [
-    "CurioInventoryScreenMixin",
     "AbstractContainerScreenMixin",
+    "BlockColorsAccessor",
+    "CurioInventoryScreenMixin",
     "InventoryScreenMixin"
   ],
   "injectors": {

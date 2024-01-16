@@ -22,19 +22,17 @@ issueTrackerURL = "${mod_github}/issues"
     itemIcon="minecraft:brush" #catalogue icon
 
 [[dependencies.polytone]]
-    modId = "forge"
-    mandatory = true
+    modId = "neoforge"
+    type = "required"
     versionRange = "${neo_version_range}"
     ordering = "NONE"
     side = "CLIENT"
 
 [[dependencies.polytone]]
     modId = "minecraft"
-    mandatory = true
+    type = "required"
     versionRange = "[${minecraft_min_version},${minecraft_max_version})"
     ordering = "NONE"
     side = "CLIENT"
 
-[incompatible_mods]
-    slotify = "*"
 

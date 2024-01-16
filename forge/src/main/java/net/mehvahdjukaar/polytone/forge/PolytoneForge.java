@@ -2,19 +2,18 @@ package net.mehvahdjukaar.polytone.forge;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.TintColorGetter;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TagsUpdatedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.TagsUpdatedEvent;
 
 /**
  * Author: MehVahdJukaar
@@ -22,13 +21,13 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 @Mod(Polytone.MOD_ID)
 public class PolytoneForge {
 
-    public PolytoneForge() {
+    public PolytoneForge(IEventBus bus) {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             Polytone.init(false);
 
-            FMLJavaModLoadingContext.get().getModEventBus().register(this);
-            MinecraftForge.EVENT_BUS.addListener(PolytoneForge::onTagSync);
-            MinecraftForge.EVENT_BUS.addListener(PolytoneForge::renderScreen);
+            bus.register(this);
+            NeoForge.EVENT_BUS.addListener(PolytoneForge::onTagSync);
+            NeoForge.EVENT_BUS.addListener(PolytoneForge::renderScreen);
         } else {
             Polytone.LOGGER.warn("Slotify has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }

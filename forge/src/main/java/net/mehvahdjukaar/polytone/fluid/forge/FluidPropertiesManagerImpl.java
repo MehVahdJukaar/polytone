@@ -11,14 +11,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -31,7 +31,7 @@ public class FluidPropertiesManagerImpl {
     private static final Map<FluidType, IClientFluidTypeExtensions> FLUID_EXTENSIONS = new HashMap<>();
 
     public static void tryAddSpecial(ResourceLocation id, FluidPropertyModifier colormap) {
-        var fluid = getTarget(id, ForgeRegistries.FLUID_TYPES.get());
+        var fluid = getTarget(id, NeoForgeRegistries.FLUID_TYPES);
         if (fluid != null) {
             FluidType type = fluid.getFirst();
 
@@ -51,12 +51,12 @@ public class FluidPropertiesManagerImpl {
     }
     
     @Nullable
-    public static <T> Pair<T, ResourceLocation> getTarget(ResourceLocation resourcePath, IForgeRegistry<T> registry) {
+    public static <T> Pair<T, ResourceLocation> getTarget(ResourceLocation resourcePath, Registry<T> registry) {
         ResourceLocation id = Polytone.getLocalId(resourcePath);
-        var opt = registry.getHolder(id);
-        if (opt.isPresent()) return Pair.of(opt.get().get(), id);
-        opt = registry.getHolder(resourcePath);
-        return opt.map(t -> Pair.of(t.get(), resourcePath)).orElse(null);
+        var opt = registry.getOptional(id);
+        if (opt.isPresent()) return Pair.of(opt.get(), id);
+        opt = registry.getOptional(resourcePath);
+        return opt.map(t -> Pair.of(t, resourcePath)).orElse(null);
     }
 
     @Nullable

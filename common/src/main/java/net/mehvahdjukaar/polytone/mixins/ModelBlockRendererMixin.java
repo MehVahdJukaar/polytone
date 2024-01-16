@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ModelBlockRendererMixin {
 
 
-    @Inject(method = "putQuadData", at = @At(value = "HEAD"), cancellable = true)
+    @Inject(method = "putQuadData", at = @At(value = "HEAD"))
     private void polytone$modifyBiomeTexture(BlockAndTintGetter level, BlockState state, BlockPos pos, VertexConsumer consumer,
                                              PoseStack.Pose pose, BakedQuad quad,
                                              float brightness0, float brightness1, float brightness2, float brightness3,

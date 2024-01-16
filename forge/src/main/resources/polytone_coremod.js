@@ -10,9 +10,9 @@ function initializeCoreMod() {
         "coremod": {
             "target": {
                 "type": "METHOD",
-                "class": "net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions",
+                "class": "net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions",
                 "methodName": "of",
-                "methodDesc": "(Lnet/minecraftforge/fluids/FluidType;)Lnet/minecraftforge/client/extensions/common/IClientFluidTypeExtensions;"
+                "methodDesc": "(Lnet/neoforged/neoforge/fluids/FluidType;)Lnet/neoforged/neoforge/client/extensions/common/IClientFluidTypeExtensions;"
             },
             "transformer": function(methodNode) {
                 var Opcodes = Java.type('org.objectweb.asm.Opcodes');
@@ -22,7 +22,7 @@ function initializeCoreMod() {
                 var LabelNode = Java.type('org.objectweb.asm.tree.LabelNode');
                 var InsnList = Java.type('org.objectweb.asm.tree.InsnList');
 
-                var ASMAPI = Java.type('net.minecraftforge.coremod.api.ASMAPI');
+                var ASMAPI = Java.type('net.neoforged.neoforge.coremod.api.ASMAPI');
 
                 var toInject = new InsnList();
                 // this must be the first variable of the method which is what I want
@@ -31,7 +31,7 @@ function initializeCoreMod() {
                 toInject.add(ASMAPI.buildMethodCall(
                     "net/mehvahdjukaar/polytone/fluid/forge/FluidPropertiesManagerImpl",
                     "maybeGetWrappedExtension",
-                    "(Lnet/minecraftforge/fluids/FluidType;)Lnet/minecraftforge/client/extensions/common/IClientFluidTypeExtensions;",
+                    "(Lnet/neoforged/neoforge/fluids/FluidType;)Lnet/neoforged/neoforge/client/extensions/common/IClientFluidTypeExtensions;",
                     ASMAPI.MethodType.STATIC));
 
                 // Duplicate the result on the stack

@@ -33,10 +33,4 @@ public class PlatStuff {
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         throw new AssertionError();
     }
-
-    @Contract
-    @ExpectPlatform
-    public static SoundEvent registerSoundEvent(ResourceLocation id){
-        throw new AssertionError();
-    }
 }

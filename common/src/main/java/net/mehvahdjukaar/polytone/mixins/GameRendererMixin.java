@@ -14,9 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class GameRendererMixin {
 
     @Shadow
-    public abstract LightTexture lightTexture();
-
-    @Shadow
     @Final
     private LightTexture lightTexture;
 

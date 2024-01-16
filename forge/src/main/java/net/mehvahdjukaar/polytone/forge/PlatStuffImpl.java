@@ -1,16 +1,21 @@
 package net.mehvahdjukaar.polytone.forge;
 
 import cpw.mods.modlauncher.api.INameMappingService;
+import net.mehvahdjukaar.polytone.mixins.forge.BlockColorsAccessor;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.fml.ModLoader;
+import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 
-import java.lang.reflect.Field;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -27,34 +32,12 @@ public class PlatStuffImpl {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(eventConsumer);
     }
 
-    private static final Field f;
-
-    static {
-        try {
-            f = BlockColors.class.getDeclaredField("f_92571_");
-            f.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
-        try {
-            return ((Map<Holder.Reference<Block>, BlockColor>) f.get(colors)).get(ForgeRegistries.BLOCKS.getDelegateOrThrow(block));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return ((BlockColorsAccessor) colors).getBlockColors().get(block);
     }
 
-    public static SoundEvent registerSoundEvent(ResourceLocation id) {
-        SoundEvent variableRangeEvent = SoundEvent.createVariableRangeEvent(id);
-        ForgeRegistry<SoundEvent> reg = (ForgeRegistry<SoundEvent>) ForgeRegistries.SOUND_EVENTS;
-        boolean wasLocked = reg.isLocked();
-        if (wasLocked) reg.unfreeze();
-        ForgeRegistries.SOUND_EVENTS.register(id, variableRangeEvent);
-        if (wasLocked) reg.freeze();
-        return variableRangeEvent;
-    }
+
 
     public static String maybeRemapName(String s) {
         return ObfuscationReflectionHelper.remapName(INameMappingService.Domain.CLASS, s);
