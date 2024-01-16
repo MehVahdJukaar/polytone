@@ -49,8 +49,6 @@ accessible field net/minecraft/world/entity/animal/Sheep COLORARRAY_BY_COLOR Lja
 mutable field net/minecraft/world/entity/animal/Sheep COLORARRAY_BY_COLOR Ljava/util/Map;
 
 
-accessible method net/minecraft/client/renderer/LightTexture getDarknessGamma (F)F
-accessible method net/minecraft/client/renderer/LightTexture calculateDarknessScale (Lnet/minecraft/world/entity/LivingEntity;FF)F
 accessible method net/minecraft/client/renderer/LightTexture notGamma (F)F
 
 accessible field net/minecraft/ChatFormatting color Ljava/lang/Integer;
@@ -60,13 +58,8 @@ accessible field net/minecraft/client/renderer/chunk/RenderChunkRegion level Lne
 
 accessible method net/minecraft/client/renderer/LightTexture getBrightness (Lnet/minecraft/world/level/Level;I)F
 
-accessible field net/minecraft/client/color/block/BlockColors f_92571_ Ljava/util/Map;
-
-accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties offsetType Ljava/util/function/Function;
 mutable field net/minecraft/world/level/material/MaterialColor col I
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase materialColor Lnet/minecraft/world/level/material/MaterialColor;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase materialColor Lnet/minecraft/world/level/material/MaterialColor;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties materialColor Ljava/util/function/Function;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$Properties materialColor Ljava/util/function/Function;
-accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetType Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetType;
-mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetType Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetType;

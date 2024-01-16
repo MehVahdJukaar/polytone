@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.forge;
 
 import cpw.mods.modlauncher.api.INameMappingService;
+import net.mehvahdjukaar.polytone.mixins.forge.BlockColorsAccessor;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.core.Holder;
@@ -47,7 +48,7 @@ public class PlatStuffImpl {
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         try {
-            return ( colors).f_92571_.get(block.delegate);
+            return ((BlockColorsAccessor) colors).getBlockColors().get(block.delegate);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
