@@ -37,12 +37,9 @@ public class FluidPropertiesManagerImpl {
 
             //gets real one. will internally try to get wrapped but a map is empty now
             IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(type);
-            if(ext instanceof FluidExtensionWrapper){
-                Polytone.LOGGER.error("Trying to wrap a wrapper. Something went wrong");
+            if(!(ext instanceof FluidExtensionWrapper)){
+                FLUID_EXTENSIONS.put(type, new FluidExtensionWrapper(ext, colormap));
             }
-
-            //create wrapped one
-            FLUID_EXTENSIONS.put(type, new FluidExtensionWrapper(ext, colormap));
         }
     }
 
