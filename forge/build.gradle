@@ -16,6 +16,7 @@ loom {
         extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
 
         mixinConfig  "polytone-forge.mixins.json"
+        mixinConfig  "polytone.mixins.json"
     }
 }
 
