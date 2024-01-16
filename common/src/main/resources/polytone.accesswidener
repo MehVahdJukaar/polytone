@@ -65,4 +65,3 @@ mutable field net/minecraft/ChatFormatting color Ljava/lang/Integer;
 
 accessible field net/minecraft/client/renderer/chunk/RenderChunkRegion level Lnet/minecraft/world/level/Level;
 
-accessible field net/minecraft/client/color/block/BlockColors blockColors Lnet/minecraft/core/IdMapper;

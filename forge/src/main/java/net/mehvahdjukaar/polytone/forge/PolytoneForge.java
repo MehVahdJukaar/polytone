@@ -9,6 +9,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
@@ -21,11 +22,11 @@ import net.neoforged.neoforge.event.TagsUpdatedEvent;
 @Mod(Polytone.MOD_ID)
 public class PolytoneForge {
 
-    public PolytoneForge(IEventBus bus) {
+    public PolytoneForge() {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             Polytone.init(false);
 
-            bus.register(this);
+            FMLJavaModLoadingContext.get().getModEventBus().register(this);
             NeoForge.EVENT_BUS.addListener(PolytoneForge::onTagSync);
             NeoForge.EVENT_BUS.addListener(PolytoneForge::renderScreen);
         } else {
