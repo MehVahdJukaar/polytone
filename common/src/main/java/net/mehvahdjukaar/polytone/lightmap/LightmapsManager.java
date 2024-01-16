@@ -19,8 +19,6 @@ import net.minecraft.world.level.Level;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
-
 public class LightmapsManager extends JsonImgPartialReloader {
 
     public static final ResourceLocation GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
@@ -69,10 +67,10 @@ public class LightmapsManager extends JsonImgPartialReloader {
             } else {
                 String path = location.getPath();
                 if (path.endsWith("_thunder")) {
-                    grouped.computeIfAbsent(location.withPath(path.replace("_thunder", "")),
+                    grouped.computeIfAbsent(new ResourceLocation(location.getNamespace(), path.replace("_thunder", "")),
                             g -> new HashMap<>()).put("thunder", value);
                 } else if (path.endsWith("_rain")) {
-                    grouped.computeIfAbsent(location.withPath(path.replace("_rain", "")),
+                    grouped.computeIfAbsent(new ResourceLocation(location.getNamespace(),path.replace("_rain", "")),
                             g -> new HashMap<>()).put("rain", value);
                 } else {
                     grouped.computeIfAbsent(location, g -> new HashMap<>()).put("normal", value);

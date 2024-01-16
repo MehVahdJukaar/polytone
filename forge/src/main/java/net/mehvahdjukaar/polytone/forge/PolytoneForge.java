@@ -2,8 +2,6 @@ package net.mehvahdjukaar.polytone.forge;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.TintColorGetter;
-import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraftforge.api.distmarker.Dist;
@@ -28,7 +26,6 @@ public class PolytoneForge {
 
             FMLJavaModLoadingContext.get().getModEventBus().register(this);
             MinecraftForge.EVENT_BUS.addListener(PolytoneForge::onTagSync);
-            MinecraftForge.EVENT_BUS.addListener(PolytoneForge::renderScreen);
         } else {
             Polytone.LOGGER.warn("Slotify has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
@@ -46,18 +43,6 @@ public class PolytoneForge {
         }
     }
 
-    public static void renderScreen(ScreenEvent.Render.Post event) {
-        Screen screen = event.getScreen();
-        SlotifyScreen ss = (SlotifyScreen) screen;
-        if (ss.polytone$hasSprites()) {
-
-            PoseStack poseStack = event.getGuiGraphics().pose();
-            poseStack.pushPose();
-            poseStack.translate(screen.width / 2F, screen.height / 2F, 500);
-            ss.polytone$renderExtraSprites(poseStack);
-            poseStack.popPose();
-        }
-    }
 
 
 }

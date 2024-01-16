@@ -8,8 +8,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
-
 public abstract class JsonImgPartialReloader extends PartialReloader<JsonImgPartialReloader.Resources> {
 
     protected JsonImgPartialReloader(String name) {

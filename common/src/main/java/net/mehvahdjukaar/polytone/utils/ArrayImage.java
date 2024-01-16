@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.NativeImage;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -66,9 +65,9 @@ public record ArrayImage(int[][] pixels, int width, int height) {
                     int pixel = nativeImage.getPixelRGBA(j, i);
                     pixelMatrix[i][j] = FastColor.ARGB32.color(
                             255,
-                            FastColor.ABGR32.red(pixel),
-                            FastColor.ABGR32.green(pixel),
-                            FastColor.ABGR32.blue(pixel)
+                            FastColor.ARGB32.blue(pixel),
+                            FastColor.ARGB32.green(pixel),
+                            FastColor.ARGB32.red(pixel)
                     );
                 }
             }
@@ -95,7 +94,7 @@ public record ArrayImage(int[][] pixels, int width, int height) {
                 }
 
                 // Creating or retrieving the Int2Object map for the key
-                groupedMap.computeIfAbsent(id.withPath(key), a -> new Int2ObjectArrayMap<>())
+                groupedMap.computeIfAbsent(new ResourceLocation(id.getNamespace(), key), a -> new Int2ObjectArrayMap<>())
                         .put(index, e.getValue());
             }
         }

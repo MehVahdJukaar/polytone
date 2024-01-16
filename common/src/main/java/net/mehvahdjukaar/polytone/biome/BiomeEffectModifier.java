@@ -14,7 +14,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Optional<Integer> foliageColorOverride, Optional<Integer> grassColorOverride,
                                   Optional<BiomeSpecialEffects.GrassColorModifier> grassColorModifier,
                                   Optional<AmbientParticleSettings> ambientParticleSettings,
-                                  Optional<Holder<SoundEvent>> ambientLoopSoundEvent,
+                                  Optional<SoundEvent> ambientLoopSoundEvent,
                                   Optional<AmbientMoodSettings> ambientMoodSettings,
                                   Optional<AmbientAdditionsSettings> ambientAdditionsSettings,
                                   Optional<Music> backgroundMusic) {
@@ -89,7 +89,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         }
         newParticle.ifPresent(builder::ambientParticle);
 
-        Optional<Holder<SoundEvent>> newAmbientSound = effects.getAmbientLoopSoundEvent();
+        Optional<SoundEvent> newAmbientSound = effects.getAmbientLoopSoundEvent();
         if (ambientLoopSoundEvent.isPresent()) {
             newAmbientSound = ambientLoopSoundEvent;
         }

@@ -20,8 +20,9 @@ public abstract class GameRendererMixin {
     @Final
     private LightTexture lightTexture;
 
-    @Inject(method = "render", at = @At(value = "NEW",
-            target = "(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;)Lnet/minecraft/client/gui/GuiGraphics;"))
+    @Inject(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/renderer/GameRenderer;renderItemActivationAnimation(IIF)V",
+    shift = At.Shift.BEFORE))
     private void polytone$messWithGui(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo ci) {
         LightmapsManager.setupForGUI(true);
         lightTexture.turnOnLightLayer();

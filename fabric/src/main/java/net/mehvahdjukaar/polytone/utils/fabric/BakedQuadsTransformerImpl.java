@@ -1,16 +1,15 @@
 package net.mehvahdjukaar.polytone.utils.fabric;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
 import net.mehvahdjukaar.polytone.utils.BakedQuadBuilder;
 import net.mehvahdjukaar.polytone.utils.BakedQuadsTransformer;
-import net.mehvahdjukaar.polytone.utils.fabric.BakedQuadBuilderImpl;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
@@ -48,7 +47,7 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
     @Override
     public BakedQuadsTransformer applyingTransform(Matrix4f transform) {
         inner = inner.andThen(applyingTransformInplace(transform));
-        directionRemap = d -> Direction.rotate(new Matrix4f(new Matrix3f(transform)), d);
+       // directionRemap = d -> Direction.rotate(new Matrix4f(new Matrix3f(transform)), d);
         return this;
     }
 
@@ -110,8 +109,8 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
             TextureAtlasSprite oldSprite = lastSpriteHack;
             int stride = getStride();
             int[] v = q.getVertices();
-            float segmentWScale = sprite.contents().width() / (float) oldSprite.contents().width();
-            float segmentHScale = sprite.contents().height() / (float) oldSprite.contents().height();
+            float segmentWScale = sprite.getWidth() / (float) oldSprite.getWidth();
+            float segmentHScale = sprite.getHeight() / (float) oldSprite.getHeight();
 
             for (int i = 0; i < 4; i++) {
                 int offset = i * stride + UV0;
@@ -157,15 +156,17 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
                 float originalZ = Float.intBitsToFloat(v[offset + 2]) - 0.5f;
 
                 Vector4f vec = new Vector4f(originalX, originalY, originalZ, 1);
-                vec.mul(transform);
+                vec.transform(transform);
                 // Divide by homogeneous coordinate to obtain transformed 3D point
-                vec.div(vec.w);
+                vec.mul(1f/vec.w());
 
                 v[offset] = Float.floatToRawIntBits(vec.x() + 0.5f);
                 v[offset + 1] = Float.floatToRawIntBits(vec.y() + 0.5f);
                 v[offset + 2] = Float.floatToRawIntBits(vec.z() + 0.5f);
             }
-            var normalTransform = new Matrix3f(transform).invert().transpose();
+            var normalTransform = new Matrix3f(transform);
+            normalTransform.invert();
+            normalTransform.transpose();
 
             for (int i = 0; i < 4; i++) {
                 int offset = i * stride + NORMAL;
@@ -176,7 +177,7 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
                     float normalZ = ((byte) ((normalIn >> 16) & 0xFF)) / 127.0f;
 
                     Vector3f vec = new Vector3f(normalX, normalY, normalZ);
-                    vec.mul(normalTransform);
+                    vec.transform(normalTransform);
                     vec.normalize();
                     v[offset] = (((byte) (vec.x() * 127.0f)) & 0xFF) |
                             ((((byte) (vec.y() * 127.0f)) & 0xFF) << 8) |

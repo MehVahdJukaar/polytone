@@ -15,6 +15,6 @@ public record VariantTexture(Map<ResourceLocation, Map<ResourceLocation, Resourc
 
     @Nullable
     public Map<ResourceLocation, ResourceLocation> getBiomeMap(TextureAtlasSprite sprite) {
-        return textures.get(sprite.contents().name());
+        return textures.get(sprite.getName());
     }
 }

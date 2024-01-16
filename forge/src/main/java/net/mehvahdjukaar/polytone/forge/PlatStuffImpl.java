@@ -53,7 +53,7 @@ public class PlatStuffImpl {
     }
 
     public static SoundEvent registerSoundEvent(ResourceLocation id) {
-        SoundEvent variableRangeEvent = SoundEvent.createVariableRangeEvent(id);
+        SoundEvent variableRangeEvent = new SoundEvent(id);
         ForgeRegistry<SoundEvent> reg = (ForgeRegistry<SoundEvent>) ForgeRegistries.SOUND_EVENTS;
         boolean wasLocked = reg.isLocked();
         if (wasLocked) reg.unfreeze();

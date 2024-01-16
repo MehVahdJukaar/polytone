@@ -5,8 +5,8 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
@@ -35,7 +35,7 @@ public class ParticleModifiersManager extends JsonPartialReloader {
             ParticleModifier modifier = ParticleModifier.CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Particle Modifier with json res {} - error: {}",
                             res, errorMsg)).getFirst();
-            var particle = Polytone.getTarget(res, BuiltInRegistries.PARTICLE_TYPE);
+            var particle = Polytone.getTarget(res, Registry.PARTICLE_TYPE);
             if (particle != null) {
                 particleModifiers.put(particle.getFirst(), modifier);
             }
@@ -52,7 +52,7 @@ public class ParticleModifiersManager extends JsonPartialReloader {
     }
 
     public void addCustomParticleColor(ResourceLocation id, String color) {
-        var opt = BuiltInRegistries.PARTICLE_TYPE.getOptional(id);
+        var opt = Registry.PARTICLE_TYPE.getOptional(id);
         opt.ifPresent(t -> simpleModifiers.put(t, ParticleModifier.ofColor(color)));
         //hack
         particleModifiers.putAll(simpleModifiers);

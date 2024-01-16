@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -16,7 +16,7 @@ import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.MaterialColor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -30,7 +30,7 @@ import static net.mehvahdjukaar.polytone.utils.ColorUtils.unpack;
 
 public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
-    private final Object2IntMap<MapColor> vanillaMapColors = new Object2IntOpenHashMap<>();
+    private final Object2IntMap<MaterialColor> vanillaMapColors = new Object2IntOpenHashMap<>();
     private final Map<DyeColor, Integer> vanillaFireworkColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaDiffuseColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaTextColors = new EnumMap<>(DyeColor.class);
@@ -84,7 +84,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private void parseColor(String[] prop, Object obj) {
         if (is(prop, 0, "map")) {
             String name = get(prop, 1);
-            MapColor color = MapColorHelper.byName(name);
+            MaterialColor color = MapColorHelper.byName(name);
             if (color != null) {
                 int col = parseHex(obj);
                 // save vanilla value
@@ -137,12 +137,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         } else if (is(prop, 0, "egg")) {
             if (prop.length > 2) {
                 ResourceLocation id = new ResourceLocation(prop[2].replace("\\", ""));
-                Item item = BuiltInRegistries.ITEM.getOptional(id).orElse(null);
+                Item item = Registry.ITEM.getOptional(id).orElse(null);
                 if(item == null){
-                    item = BuiltInRegistries.ITEM.getOptional(id.withSuffix( "_spawn_egg")).orElse(null);
+                    item = Registry.ITEM.getOptional(new ResourceLocation(id.getNamespace(), id.getPath()+ "_spawn_egg")).orElse(null);
                 }
                 if(item == null){
-                    var entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
+                    var entity = Registry.ENTITY_TYPE.getOptional(id).orElse(null);
                     if(entity != null){
                         item = SpawnEggItem.byId(entity);
                     }
@@ -171,7 +171,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             }else if(id.getPath().equals("water")){
                 waterBottle = col;
             }else {
-                MobEffect effect = BuiltInRegistries.MOB_EFFECT.getOptional(id).orElse(null);
+                MobEffect effect = Registry.MOB_EFFECT.getOptional(id).orElse(null);
                 if (effect != null) {
                     if (!vanillaEffectColors.containsKey(effect)) {
                         vanillaEffectColors.put(effect, effect.getColor());
@@ -239,7 +239,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         waterBottle = 3694022;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
-            MapColor color = e.getKey();
+            MaterialColor color = e.getKey();
             color.col = e.getValue();
         }
         vanillaMapColors.clear();

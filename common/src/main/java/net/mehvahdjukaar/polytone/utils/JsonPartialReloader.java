@@ -7,8 +7,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
-
 public abstract class JsonPartialReloader extends PartialReloader<Map<ResourceLocation, JsonElement>> {
 
     protected JsonPartialReloader(String name) {

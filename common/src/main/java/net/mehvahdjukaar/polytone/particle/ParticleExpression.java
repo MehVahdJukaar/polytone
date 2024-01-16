@@ -50,7 +50,7 @@ public class ParticleExpression {
             Expression compiled = createExpression(s);
             return DataResult.success(new ParticleExpression(compiled, s));
         } catch (Exception e) {
-            return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
+            return DataResult.error( "Failed to parse expression:" + e.getMessage());
         }
     }, javaxExpression -> DataResult.success(javaxExpression.unparsed));
 

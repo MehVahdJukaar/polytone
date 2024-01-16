@@ -44,14 +44,14 @@ public class ColorUtils {
 
         // Enforce the maximum length of eight characters (including prefix)
         if (st.length() > 8) {
-            return DataResult.error(()-> "Invalid color format. Hex value must have up to 8 characters.");
+            return DataResult.error("Invalid color format. Hex value must have up to 8 characters.");
         }
 
         try {
             int parsedValue = Integer.parseUnsignedInt(st, 16);
             return DataResult.success(st);
         } catch (NumberFormatException e) {
-            return DataResult.error(()-> "Invalid color format. Must be in hex format (0xff00ff00, #ff00ff00, ff00ff00) or integer value");
+            return DataResult.error("Invalid color format. Must be in hex format (0xff00ff00, #ff00ff00, ff00ff00) or integer value");
         }
     }
 

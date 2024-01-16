@@ -1,9 +1,9 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import com.mojang.math.Matrix4f;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;

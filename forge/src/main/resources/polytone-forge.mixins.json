@@ -6,9 +6,6 @@
   "mixins": [
   ],
   "client": [
-    "CurioInventoryScreenMixin",
-    "AbstractContainerScreenMixin",
-    "InventoryScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

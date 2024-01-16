@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.lightmap;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.math.Vector3f;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
@@ -20,7 +21,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.dimension.DimensionType;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
+
+import java.util.function.Function;
 
 public class Lightmap {
 
@@ -41,10 +43,12 @@ public class Lightmap {
             ).apply(instance, Lightmap::new));
 
     public static Codec<Double> doubleRange(double min, double max) {
-        return ExtraCodecs.validate(Codec.DOUBLE, d -> d.compareTo(min) >= 0 && d.compareTo(max) <= 0 ?
-                DataResult.success(d) : DataResult.error(() -> "Value must be within range [" + min + ";" + max + "]: " + d));
+        return validate(Codec.DOUBLE, d -> d.compareTo(min) >= 0 && d.compareTo(max) <= 0 ?
+                DataResult.success(d) : DataResult.error("Value must be within range [" + min + ";" + max + "]: " + d));
     }
-
+    public static <T> Codec<T> validate(Codec<T> codec, Function<T, DataResult<T>> function) {
+        return codec.flatXmap(function, function);
+    }
 
     private final ILightmapNumberProvider skyGetter;
     private final ILightmapNumberProvider torchGetter;
@@ -124,8 +128,8 @@ public class Lightmap {
             nightVisionScale = 0.0F;
         }
 
-        Vector3f skyColor = (new Vector3f(skyDarken, skyDarken, 1.0F))
-                .lerp(new Vector3f(1.0F, 1.0F, 1.0F), 0.35F);
+        com.mojang.math.Vector3f skyColor = (new com.mojang.math.Vector3f(skyDarken, skyDarken, 1.0F));
+        skyColor.lerp(new com.mojang.math.Vector3f(1.0F, 1.0F, 1.0F), 0.35F);
         float blockLightFlicker = flicker + 1.5F;
         //boolean endBright = level.effects().forceBrightLightmap();
         DimensionType dimensionType = level.dimensionType();
@@ -133,7 +137,7 @@ public class Lightmap {
         float darkenWorldAmount = minecraft.gameRenderer.getDarkenWorldAmount(partialTicks);
 
 
-        Vector3f lightGray = new Vector3f(0.75F, 0.75F, 0.75F);
+        com.mojang.math.Vector3f lightGray = new com.mojang.math.Vector3f(0.75F, 0.75F, 0.75F);
         float lightGrayAmount = 0.04F;
 
         ArrayImage image = selectImage(rainLevel, thunderLevel);
@@ -144,7 +148,7 @@ public class Lightmap {
 
         //lerp!
         if (torchLine.length != 0 && lastTorchLine.length != 0) {
-            float lerpDelta =1- (float) Math.pow(torchLerp, deltaTime);
+            float lerpDelta = 1- (float) Math.pow(torchLerp, deltaTime);
             lerpInplace(lastTorchLine, torchLine, lerpDelta);
         }
         if (skyLine.length != 0 && lastSkyLine.length != 0) {
@@ -153,23 +157,26 @@ public class Lightmap {
         }
 
         for (int skyY = 0; skyY < 16; ++skyY) {
-            Vector3f skyBuffer = new Vector3f();
+            com.mojang.math.Vector3f skyBuffer = new com.mojang.math.Vector3f();
 
             if (torchLine.length != 0) {
-                skyBuffer.add(new Vector3f(skyLine[skyY]));
+                float[] floats = skyLine[skyY];
+                skyBuffer.add(new com.mojang.math.Vector3f(floats[0],floats[1],floats[2]));
             } else {
                 // we have no colors. use vanilla logic
                 float skyBrightness = LightTexture.getBrightness(dimensionType, skyY) * skyLightIntensity;
-                skyBuffer.add(skyColor).mul(skyBrightness);
+                skyBuffer.add(skyColor);
+                skyBuffer.mul(skyBrightness);
                 skyBuffer.mul(1 - lightGrayAmount);
             }
 
             for (int torchX = 0; torchX < 16; ++torchX) {
-                Vector3f addition = new Vector3f();
-                Vector3f torchBuffer = new Vector3f();
+                com.mojang.math.Vector3f addition = new com.mojang.math.Vector3f();
+                com.mojang.math.Vector3f torchBuffer = new com.mojang.math.Vector3f();
 
                 if (torchLine.length != 0) {
-                    torchBuffer.add(new Vector3f(torchLine[torchX]));
+                    float[] floats = torchLine[torchX];
+                    torchBuffer.add(new com.mojang.math.Vector3f(floats[0],floats[1],floats[2]));
                 } else {
                     // we have no colors. use vanilla logic
                     float torchR = LightTexture.getBrightness(dimensionType, torchX) * blockLightFlicker;
@@ -178,19 +185,24 @@ public class Lightmap {
                     torchBuffer.set(torchR, torchG, torchB);
 
                     //vanilla logic
-                    addition.add(new Vector3f(lightGray).mul(lightGrayAmount));
+                    Vector3f vector3f = lightGray.copy();
+                    vector3f.mul(lightGrayAmount);
+                    addition.add(vector3f);
 
                     //torchBuffer.lerp(lightGray, lightGrayAmount);
                     torchBuffer.mul(1 - lightGrayAmount);
                 }
 
 
-                Vector3f combined = new Vector3f();
+                com.mojang.math.Vector3f combined = new com.mojang.math.Vector3f();
 
-                combined.add(torchBuffer).add(skyBuffer).add(addition);
+                combined.add(torchBuffer);
+                combined.add(skyBuffer);
+                combined.add(addition);
 
                 if (darkenWorldAmount > 0.0F) {
-                    Vector3f discolored = (new Vector3f(combined)).mul(0.7F, 0.6F, 0.6F);
+                    com.mojang.math.Vector3f discolored = (combined).copy();
+                    discolored.mul(0.7F, 0.6F, 0.6F);
                     combined.lerp(discolored, darkenWorldAmount);
                 }
 
@@ -198,7 +210,8 @@ public class Lightmap {
                     float maxVal = Math.max(combined.x(), Math.max(combined.y(), combined.z()));
                     if (maxVal < 1.0F) {
                         float percentage = 1.0F / maxVal;
-                        Vector3f discolored = (new Vector3f(combined)).mul(percentage);
+                        com.mojang.math.Vector3f discolored = (combined.copy());
+                        discolored.mul(percentage);
                         combined.lerp(discolored, nightVisionScale);
                     }
                 }
@@ -211,10 +224,11 @@ public class Lightmap {
                 clampColor(combined);
 
                 //apply gamma
-                Vector3f notGamma = new Vector3f(
-                        instance.notGamma(combined.x),
-                        instance.notGamma(combined.y),
-                        instance.notGamma(combined.z));
+                com.mojang.math.Vector3f notGamma = new com.mojang.math.Vector3f(
+                        instance.notGamma(combined.x()),
+                        instance.notGamma(combined.y()),
+                        instance.notGamma(combined.z()));
+
                 combined.lerp(notGamma, gammaAmount);
                 //guess this makes it so its never pitch dark
                 combined.lerp(lightGray, lightGrayAmount);
@@ -292,13 +306,12 @@ public class Lightmap {
                 image = textures[0];
             }
         } else image = textures[0];
+
         return image;
     }
 
-    private static void clampColor(Vector3f color) {
-        color.set(Mth.clamp(color.x, 0.0F, 1.0F),
-                Mth.clamp(color.y, 0.0F, 1.0F),
-                Mth.clamp(color.z, 0.0F, 1.0F));
+    private static void clampColor(com.mojang.math.Vector3f color) {
+        color.clamp(0,1);
     }
 
     public static void lerpInplace(float[][] oldColors, float[][] newColors, float delta) {

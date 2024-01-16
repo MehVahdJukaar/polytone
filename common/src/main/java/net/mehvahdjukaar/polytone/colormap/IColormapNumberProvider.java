@@ -6,7 +6,8 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Registry;
+import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -92,6 +93,6 @@ public interface IColormapNumberProvider {
     });
 
     IColormapNumberProvider BIOME_ID = register("biome_id", (state, pos, b) -> Minecraft.getInstance().level
-            .registryAccess().registry(Registries.BIOME).get().getId(b) / 256f);
+            .registryAccess().registry(Registry.BIOME_REGISTRY).get().getId(b) / 255f);
 
 }

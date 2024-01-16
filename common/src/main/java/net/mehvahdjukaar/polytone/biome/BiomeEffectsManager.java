@@ -4,13 +4,11 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
-import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -18,7 +16,6 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class BiomeEffectsManager extends JsonPartialReloader {
 
@@ -56,7 +53,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     public void doApply(RegistryAccess registryAccess, boolean firstLogin) {
         if (firstLogin) vanillaEffects.clear();
 
-        Registry<Biome> biomeReg = registryAccess.registry(Registries.BIOME).get();
+        Registry<Biome> biomeReg = registryAccess.registry(Registry.BIOME_REGISTRY).get();
         for (var v : effectsToApply.entrySet()) {
 
             var biome = Polytone.getTarget(v.getKey(), biomeReg);
@@ -75,7 +72,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     public void reset() {
         Level level = Minecraft.getInstance().level;
         if (level != null) {
-            Registry<Biome> biomeReg = level.registryAccess().registry(Registries.BIOME).get();
+            Registry<Biome> biomeReg = level.registryAccess().registry(Registry.BIOME_REGISTRY).get();
             for (var v : vanillaEffects.entrySet()) {
                 var biome = biomeReg.getOptional(v.getKey());
                 biome.ifPresent(value -> value.specialEffects = v.getValue());

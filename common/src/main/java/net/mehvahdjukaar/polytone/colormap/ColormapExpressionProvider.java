@@ -62,7 +62,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
             Expression compiled = createExpression(s);
             return DataResult.success(new ColormapExpressionProvider(compiled, s));
         } catch (Exception e) {
-            return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
+            return DataResult.error( "Failed to parse expression:" + e.getMessage());
         }
     }, javaxExpression -> DataResult.success(javaxExpression.unparsed));
 

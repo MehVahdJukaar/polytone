@@ -10,7 +10,7 @@ import net.mehvahdjukaar.polytone.colormap.TintColorGetter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.block.Block;
@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class BlockPropertiesManager extends JsonImgPartialReloader {
 
@@ -129,7 +127,7 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
     @Override
     public void apply() {
         for (var p : modifiers.entrySet()) {
-            var block = Polytone.getTarget(p.getKey(), BuiltInRegistries.BLOCK);
+            var block = Polytone.getTarget(p.getKey(), Registry.BLOCK);
             if (block != null) {
                 Block b = block.getFirst();
                 BlockPropertyModifier value = p.getValue();

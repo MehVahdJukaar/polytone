@@ -1,16 +1,17 @@
 package net.mehvahdjukaar.polytone.utils.forge;
 
 import com.google.common.base.Preconditions;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
 import net.mehvahdjukaar.polytone.utils.BakedQuadBuilder;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraftforge.client.model.QuadTransformers;
 import net.minecraftforge.client.model.pipeline.QuadBakingVertexConsumer;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
@@ -41,7 +42,14 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
         inner.setHasAmbientOcclusion(true);
         inner.setSprite(sprite);
         this.normalTransf = transformation == null ? null :
-                new Matrix3f(transformation).invert().transpose();
+                isInvert(transformation);
+    }
+
+    private static Matrix3f isInvert(@NotNull Matrix4f transformation) {
+        var m = new Matrix3f(transformation);
+        m.invert();
+        m.transpose();;
+        return m;
     }
 
     @Override
@@ -98,9 +106,10 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
     @Override
     public BakedQuadBuilderImpl normal(float x, float y, float z) {
         if (globalTransform != null) {
-            Vector3f normal = normalTransf.transform(new Vector3f(x, y, z));
+            Vector3f normal = new Vector3f(x, y, z);
+            normal.transform(normalTransf);
             normal.normalize();
-            inner.normal(normal.x, normal.y, normal.z);
+            inner.normal(normal.x(), normal.y(), normal.z());
         } else inner.normal(x, y, z);
         if (autoDirection) {
             this.setDirection(Direction.getNearest(x, y, z));

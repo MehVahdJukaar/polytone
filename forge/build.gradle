@@ -132,7 +132,5 @@ dependencies {
     implementation(include("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}"))
     annotationProcessor 'net.fabricmc:sponge-mixin:0.12.5+mixin.0.8.5'
 
-    modImplementation ("curse.maven:curios-309927:4583413")
-
     implementation 'org.jetbrains:annotations:22.0.0'
 }

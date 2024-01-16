@@ -24,11 +24,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static net.mehvahdjukaar.polytone.lightmap.Lightmap.validate;
+
 public class TintColorGetter implements BlockColor {
 
     //TODO: delegate to grass so we have quark compat
     public static final BlockColor GRASS_COLOR = (s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor();
+            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : -65281;
 
     public static final BlockColor FOLIAGE_COLOR = (s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor();
@@ -51,13 +53,13 @@ public class TintColorGetter implements BlockColor {
 
     protected static final Codec<BlockColor> TINTMAP_REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
             id -> Optional.ofNullable(Polytone.COLORMAPS.get(id)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
+                    .orElse(DataResult.error("Could not find a custom Colormap with id " + id +
                             " Did you place it in 'assets/[your pack]/polytone/colormaps/' ?")),
             object -> Optional.ofNullable(Polytone.COLORMAPS.getKey(object)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
+                    .orElse(DataResult.error("Unknown Color Property: " + object)));
 
     public static final Codec<BlockColor> TINTMAP_CODEC =
-            ExtraCodecs.validate(new ReferenceOrDirectCodec<>(
+            validate(new ReferenceOrDirectCodec<>(
                             TINTMAP_REFERENCE_CODEC, TintColorGetter.TINTMAP_DIRECT_CODEC, i ->
                     {
                         if (i instanceof TintColorGetter c) {
@@ -66,7 +68,7 @@ public class TintColorGetter implements BlockColor {
                     }),
                     j -> {
                         if (j instanceof TintColorGetter c && c.getters.size() == 0) {
-                            return DataResult.error(() -> "Must have at least 1 tint getter");
+                            return DataResult.error("Must have at least 1 tint getter");
                         }
                         return DataResult.success(j);
                     });

@@ -11,7 +11,7 @@ import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -21,8 +21,6 @@ import net.minecraft.world.level.material.FluidState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class FluidPropertiesManager extends JsonImgPartialReloader {
 
@@ -92,7 +90,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     private void tryAdd(ResourceLocation id, FluidPropertyModifier colormap) {
-        var fluid = Polytone.getTarget(id, BuiltInRegistries.FLUID);
+        var fluid = Polytone.getTarget(id, Registry.FLUID);
         if (fluid != null) {
             fluidColormaps.put(fluid.getFirst(), colormap);
         }

@@ -31,7 +31,7 @@ public class LegacyHelper {
             String path = id.getPath();
             String newPath = PATHS.get(path);
             if(newPath != null){
-                toUpdate.put(id.withPath(newPath), entry.getValue());
+                toUpdate.put(new ResourceLocation(id.getNamespace(), newPath), entry.getValue());
             }
         }
         map.putAll(toUpdate);

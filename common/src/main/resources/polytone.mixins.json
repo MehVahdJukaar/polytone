@@ -4,7 +4,6 @@
   "compatibilityLevel": "JAVA_17",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "AbstractContainerMenuMixin",
     "PotionUtilsMixin"
   ],
   "client": [
@@ -12,8 +11,7 @@
     "GameRendererMixin",
     "LightTextureMixin",
     "ModelBlockRendererMixin",
-    "ParticleEngineMixin",
-    "ScreenMixin"
+    "ParticleEngineMixin"
   ],
   "injectors": {
     "defaultRequire": 1

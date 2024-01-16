@@ -30,6 +30,3 @@ issueTrackerURL = "${mod_github}/issues"
     ordering = "NONE"
     side = "CLIENT"
 
-[incompatible_mods]
-    slotify = "*"
-

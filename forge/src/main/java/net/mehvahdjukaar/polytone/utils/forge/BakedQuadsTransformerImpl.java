@@ -1,14 +1,15 @@
 package net.mehvahdjukaar.polytone.utils.forge;
 
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
 import com.mojang.math.Transformation;
+import com.mojang.math.Vector3f;
 import net.mehvahdjukaar.polytone.utils.BakedQuadsTransformer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraftforge.client.model.IQuadTransformer;
 import net.minecraftforge.client.model.QuadTransformers;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 
 import java.util.Arrays;
 import java.util.function.IntUnaryOperator;
@@ -44,11 +45,11 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
     public BakedQuadsTransformer applyingTransform(Matrix4f transform) {
         //transform to block center
         var m = new Matrix4f();
-        m.translate(-0.5f, -0.5f, -0.5f);
-        m.mul(transform);
-        m.translate(0.5f, 0.5f, 0.5f);
+        m.translate(new Vector3f( -0.5f, -0.5f, -0.5f));
+        m.multiply(transform);
+        m.translate((new Vector3f(0.5f, 0.5f, 0.5f)));
         inner = inner.andThen(QuadTransformers.applying(new Transformation(m)));
-        directionRemap = d -> Direction.rotate(new Matrix4f(new Matrix3f(transform)), d);
+        //directionRemap = d -> Direction.rotate(new Matrix4f(new Matrix3f(transform)), d);
         return this;
     }
 
@@ -106,8 +107,8 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
             TextureAtlasSprite oldSprite = lastSpriteHack;
             int stride = IQuadTransformer.STRIDE;
             int[] v = q.getVertices();
-            float segmentWScale = sprite.contents().width() / (float) oldSprite.contents().width();
-            float segmentHScale = sprite.contents().height() / (float) oldSprite.contents().height();
+            float segmentWScale = sprite.getWidth() / (float) oldSprite.getWidth();
+            float segmentHScale = sprite.getHeight() / (float) oldSprite.getHeight();
 
             for (int i = 0; i < 4; i++) {
                 int offset = i * stride + IQuadTransformer.UV0;

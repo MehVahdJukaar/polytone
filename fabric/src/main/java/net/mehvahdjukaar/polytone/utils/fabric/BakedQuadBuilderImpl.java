@@ -1,6 +1,10 @@
 package net.mehvahdjukaar.polytone.utils.fabric;
 
 import com.google.common.base.Preconditions;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
@@ -9,11 +13,8 @@ import net.mehvahdjukaar.polytone.utils.BakedQuadBuilder;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import java.util.function.Consumer;
 
@@ -37,9 +38,17 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
         this.inner = meshBuilder.getEmitter();
         this.globalTransform = transform; //new Matrix4f(new Matrix3f(transform));
         this.sprite = sprite;
-        inner.spriteBake(sprite, MutableQuadView.BAKE_LOCK_UV);
+        inner.spriteBake(0,sprite, MutableQuadView.BAKE_LOCK_UV);
         this.normalTransf = transform == null ? null :
-                new Matrix3f(transform).invert().transpose(); //forge uses this in quad transform. idk how it works
+                getMatrix3f(transform); //forge uses this in quad transform. idk how it works
+    }
+
+    @NotNull
+    private static Matrix3f getMatrix3f(@NotNull Matrix4f transform) {
+        var m = new Matrix3f(transform);
+        m.invert();
+        m.transpose();
+        return m;
     }
 
     @Override
@@ -83,7 +92,8 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
     @Override
     public BakedQuadBuilderImpl vertex(double x, double y, double z) {
         if (globalTransform != null) {
-            Vector4f v = globalTransform.transform(new Vector4f((float) x, (float) y, (float) z, 1.0F));
+            Vector4f v = new Vector4f((float) x, (float) y, (float) z, 1.0F);
+            v.transform(globalTransform);
             inner.pos(vertexIndex, v.x(), v.y(), v.z());
             return this;
         }
@@ -95,7 +105,8 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
     @Override
     public BakedQuadBuilderImpl normal(float x, float y, float z) {
         if (globalTransform != null) {
-            Vector3f normal = normalTransf.transform(new Vector3f(x, y, z));
+            Vector3f normal = new Vector3f(x, y, z);
+            normal.transform(normalTransf);
             normal.normalize();
             inner.normal(vertexIndex, normal.x(), normal.y(), normal.z());
         } else inner.normal(vertexIndex, x, y, z);
@@ -107,7 +118,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
     @Override
     public BakedQuadBuilderImpl color(int rgba) {
-        inner.color(vertexIndex, rgba);
+        inner.spriteColor(vertexIndex, rgba);
         return this;
     }
 
@@ -121,7 +132,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
     @Override
     public BakedQuadBuilderImpl uv(float u, float v) {
-        inner.uv(vertexIndex, sprite.getU(u * 16), sprite.getV(v * 16));
+        inner.sprite(vertexIndex, 0, sprite.getU(u * 16), sprite.getV(v * 16));
         return this;
     }
 
@@ -138,7 +149,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
     @Override
     public BakedQuadBuilderImpl lightEmission(int lightLevel) {
-        inner.material(RendererAccess.INSTANCE.getRenderer().materialFinder().emissive(true).find());
+        inner.material(RendererAccess.INSTANCE.getRenderer().materialFinder().emissive(0, true).find());
         return this;
     }
 
@@ -170,7 +181,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
     @Override
     public BakedQuad build() {
         Preconditions.checkNotNull(sprite, "sprite cannot be null");
-        return inner.toBakedQuad(sprite);
+        return inner.toBakedQuad(0,sprite, false);
     }
 }
 

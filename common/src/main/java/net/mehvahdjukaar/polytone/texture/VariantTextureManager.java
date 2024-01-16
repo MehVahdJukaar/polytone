@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.chunk.RenderChunkRegion;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
@@ -42,7 +42,7 @@ public class VariantTextureManager extends JsonPartialReloader {
             VariantTexture variant = VariantTexture.CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Variant Texture with json res {} - error: {}",
                             res, errorMsg)).getFirst();
-            var target = Polytone.getTarget(res, BuiltInRegistries.BLOCK);
+            var target = Polytone.getTarget(res, Registry.BLOCK);
             if (target != null) {
                 blocksWithVariants.put(target.getFirst(), variant);
             }

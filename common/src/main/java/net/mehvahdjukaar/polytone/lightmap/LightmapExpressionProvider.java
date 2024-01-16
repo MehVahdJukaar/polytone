@@ -14,7 +14,7 @@ record LightmapExpressionProvider(Expression expression, String unparsed) implem
         try {
             return DataResult.success(create(s));
         } catch (Exception e) {
-            return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
+            return DataResult.error("Failed to parse expression:" + e.getMessage());
         }
     }, exp -> DataResult.success(exp.unparsed));
 
