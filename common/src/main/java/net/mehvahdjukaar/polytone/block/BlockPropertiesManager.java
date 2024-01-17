@@ -4,9 +4,10 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
-import net.mehvahdjukaar.polytone.colormap.TintColorGetter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
@@ -68,8 +69,8 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
             //fill inline colormaps colormapTextures
             var colormap = prop.tintGetter();
-            if (colormap.isPresent() && colormap.get() instanceof TintColorGetter c && !c.isReference()) {
-                ColormapsManager.fillColormapPalette(textures, id, c, usedTextures);
+            if (colormap.isPresent() && colormap.get() instanceof CompoundBlockColors c) {
+                ColormapsManager.fillCompoundColormapPalette(textures, id, c, usedTextures);
             }
 
             addModifier(id, prop);
@@ -81,20 +82,18 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
             Int2ObjectMap<ArrayImage> value = t.getValue();
+
             //optifine stuff
             String path = id.getPath();
-
-            TintColorGetter tintMap = TintColorGetter.createDefault(value.keySet(), true);
-
             if (path.contains("stem")) {
-                TintColorGetter stemMap = TintColorGetter.createSimple((state, level, pos) -> state.getValue(StemBlock.AGE) / 7f,
+                Colormap stemMap = Colormap.simple((state, level, pos) -> state.getValue(StemBlock.AGE) / 7f,
                         IColormapNumberProvider.ZERO);
 
-                TintColorGetter attachedMap = TintColorGetter.createSimple(
+                Colormap attachedMap = Colormap.simple(
                         IColormapNumberProvider.ONE, IColormapNumberProvider.ZERO);
 
-                ColormapsManager.fillColormapPalette(textures, id, stemMap, usedTextures);
-                ColormapsManager.fillColormapPalette(textures, id, attachedMap, usedTextures);
+                ColormapsManager.tryAcceptingTexture(textures.get(id).get(-1), id, stemMap, usedTextures);
+                ColormapsManager.tryAcceptingTexture(textures.get(id).get(-1), id, attachedMap, usedTextures);
 
                 // so stem maps to both
                 if (!path.contains("melon")) {
@@ -105,16 +104,20 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
                     addModifier(new ResourceLocation("melon_stem"), BlockPropertyModifier.ofColor(stemMap));
                     addModifier(new ResourceLocation("attached_melon_stem"), BlockPropertyModifier.ofColor(attachedMap));
                 }
-                continue;
             } else if (path.equals("redstone_wire")) {
-                tintMap = TintColorGetter.createSimple((state, level, pos) -> state.getValue(RedStoneWireBlock.POWER) / 15f,
+                Colormap tintMap = Colormap.simple((state, level, pos) -> state.getValue(RedStoneWireBlock.POWER) / 15f,
                         IColormapNumberProvider.ZERO);
+
+                ColormapsManager.tryAcceptingTexture(textures.get(id).get(-1), id, tintMap, usedTextures);
+
+                addModifier(id, BlockPropertyModifier.ofColor(tintMap));
             }
+            else {
+                CompoundBlockColors tintMap = CompoundBlockColors.createDefault(value.keySet(), true);
+                ColormapsManager.fillCompoundColormapPalette(textures, id, tintMap, usedTextures);
 
-            //TODO: improve this method and remove
-            ColormapsManager.fillColormapPalette(textures, id, tintMap, usedTextures);
-
-            addModifier(id, BlockPropertyModifier.ofColor(tintMap));
+                addModifier(id, BlockPropertyModifier.ofColor(tintMap));
+            }
         }
     }
 

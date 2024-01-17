@@ -7,9 +7,11 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.FoliageColor;
+import net.minecraft.world.level.GrassColor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -17,6 +19,21 @@ import java.util.Map;
 import java.util.Set;
 
 public class ColormapsManager extends JsonImgPartialReloader {
+
+    // Builtin colormaps
+    //TODO: delegate to grass so we have quark compat
+    public static final BlockColor GRASS_COLOR = (s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor();
+
+    public static final BlockColor FOLIAGE_COLOR = (s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor();
+
+    public static final BlockColor WATER_COLOR = (s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000;
+
+    public static final BlockColor BIOME_SAMPLE = Colormap.defSquare();
+
+    public static final BlockColor TR_BIOME_SAMPLE = Colormap.defTriangle();
 
     // custom defined colormaps
     private final BiMap<ResourceLocation, BlockColor> colormapsIds = HashBiMap.create();
@@ -29,17 +46,17 @@ public class ColormapsManager extends JsonImgPartialReloader {
     @Override
     public void process(Resources resources) {
         var jsons = resources.jsons();
-        var textures = ArrayImage.groupTextures(resources.textures());
+        var textures = resources.textures();
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            TintColorGetter colormap = TintColorGetter.TINTMAP_DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
+            Colormap colormap = Colormap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Colormap with json id {} - error: {}",
                             id, errorMsg)).getFirst();
-            fillColormapPalette(textures, id, colormap, usedTextures);
+            tryAcceptingTexture(textures.get(id), id, colormap, usedTextures);
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, colormap);
         }
@@ -50,8 +67,8 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
-            TintColorGetter defaultColormap = TintColorGetter.createDefault(t.getValue().keySet(), false);
-            fillColormapPalette(textures, id, defaultColormap, usedTextures);
+            Colormap defaultColormap = Colormap.defTriangle();
+            tryAcceptingTexture(textures.get(id), id, defaultColormap, usedTextures);
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, defaultColormap);
         }
@@ -60,11 +77,11 @@ public class ColormapsManager extends JsonImgPartialReloader {
     @Override
     public void reset() {
         colormapsIds.clear();
-        colormapsIds.put(new ResourceLocation("grass_color"), TintColorGetter.GRASS_COLOR);
-        colormapsIds.put(new ResourceLocation("foliage_color"), TintColorGetter.FOLIAGE_COLOR);
-        colormapsIds.put(new ResourceLocation("water_color"), TintColorGetter.WATER_COLOR);
-        colormapsIds.put(new ResourceLocation("biome_sample"), TintColorGetter.BIOME_SAMPLE);
-        colormapsIds.put(new ResourceLocation("triangular_biome_sample"), TintColorGetter.TR_BIOME_SAMPLE);
+        colormapsIds.put(new ResourceLocation("grass_color"), GRASS_COLOR);
+        colormapsIds.put(new ResourceLocation("foliage_color"), FOLIAGE_COLOR);
+        colormapsIds.put(new ResourceLocation("water_color"), WATER_COLOR);
+        colormapsIds.put(new ResourceLocation("biome_sample"), BIOME_SAMPLE);
+        colormapsIds.put(new ResourceLocation("triangular_biome_sample"), TR_BIOME_SAMPLE);
     }
 
     @Nullable
@@ -78,13 +95,13 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
 
-    public void add(ResourceLocation id, TintColorGetter colormap) {
+    public void add(ResourceLocation id, Colormap colormap) {
         colormapsIds.put(id, colormap);
     }
 
 
-    public static void fillColormapPalette(Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures,
-                                           ResourceLocation id, TintColorGetter colormap, Set<ResourceLocation> usedTextures) {
+    public static void fillCompoundColormapPalette(Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures,
+                                                   ResourceLocation id, CompoundBlockColors colormap, Set<ResourceLocation> usedTextures) {
         var getters = colormap.getGetters();
 
         var textureMap = textures.get(id);
@@ -92,17 +109,19 @@ public class ColormapsManager extends JsonImgPartialReloader {
         if (textureMap != null) {
             for (var g : getters.int2ObjectEntrySet()) {
                 int index = g.getIntKey();
-                Colormap tint = g.getValue();
-                boolean success = false;
-                if (getters.size() == 1 || index == 0) {
-                    success = tryPopulatingColormap(textureMap, id, -1, tint, usedTextures);
-                }
-                if (!success) {
-                    success = tryPopulatingColormap(textureMap, id, index, tint, usedTextures);
-                }
-                if (!success) {
-                    throw new IllegalStateException("Could not find any colormap associated with " + id + " for tint index " + index + ". " +
-                            "Expected: " + id);
+                BlockColor inner = g.getValue();
+                if (inner instanceof Colormap c && !c.isReference) {
+                    boolean success = false;
+                    if (getters.size() == 1 || index == 0) {
+                        success = tryAcceptingTexture(textureMap.get(-1), id, c, usedTextures);
+                    }
+                    if (!success) {
+                        success = tryAcceptingTexture(textureMap.get(index), id, c, usedTextures);
+                    }
+                    if (!success) {
+                        throw new IllegalStateException("Could not find any colormap associated with " + id + " for tint index " + index + ". " +
+                                "Expected: " + id);
+                    }
                 }
             }
         } else {
@@ -111,12 +130,12 @@ public class ColormapsManager extends JsonImgPartialReloader {
         }
     }
 
-    private static boolean tryPopulatingColormap(Map<Integer, ArrayImage> textures, ResourceLocation path, int index,
-                                                 Colormap g, Set<ResourceLocation> usedTexture) {
-        ArrayImage texture = textures.get(index);
+    //helper method
+    public static boolean tryAcceptingTexture(@Nullable ArrayImage texture, ResourceLocation path,
+                                              Colormap colormap, Set<ResourceLocation> usedTexture) {
         if (texture != null) {
             usedTexture.add(path);
-            g.acceptTexture(texture);
+            colormap.acceptTexture(texture);
             if (texture.pixels().length == 0) {
                 throw new IllegalStateException("Colormap at location " + path + " had invalid 0 dimension");
             }
