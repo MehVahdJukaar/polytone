@@ -32,6 +32,7 @@ public class Polytone {
     public static final SoundTypesManager SOUND_TYPES = new SoundTypesManager();
     public static final VariantTextureManager VARIANT_TEXTURES = new VariantTextureManager();
     public static final ColorManager COLORS = new ColorManager();
+    public static final GuiModifierManager GUI_MODIFIER = new GuiModifierManager();
 
     public static boolean sodiumOn = false;
 

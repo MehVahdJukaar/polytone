@@ -14,6 +14,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static net.mehvahdjukaar.polytone.utils.ColorUtils.getClimateSettings;
+
 public interface IColormapNumberProvider {
 
     BiMap<String, IColormapNumberProvider> CUSTOM_PROVIDERS = HashBiMap.create();
@@ -34,14 +36,16 @@ public interface IColormapNumberProvider {
     default boolean usesBiome() {
         return true;
     }
+
     default boolean usesPos() {
         return true;
     }
+
     default boolean usesState() {
         return true;
     }
 
-    record Const(float c) implements IColormapNumberProvider{
+    record Const(float c) implements IColormapNumberProvider {
 
         @Override
         public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
@@ -70,7 +74,7 @@ public interface IColormapNumberProvider {
     IColormapNumberProvider TEMPERATURE = register("temperature", new IColormapNumberProvider() {
         @Override
         public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
-            return biome == null ? 0 : biome.climateSettings.temperature;
+            return biome == null ? 0 : getClimateSettings(biome).temperature;
         }
 
         @Override
@@ -83,7 +87,7 @@ public interface IColormapNumberProvider {
     IColormapNumberProvider DOWNFALL = register("downfall", new IColormapNumberProvider() {
         @Override
         public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
-            return biome == null ? 0 : biome.climateSettings.downfall;
+            return biome == null ? 0 : getClimateSettings(biome).downfall;
         }
 
         @Override

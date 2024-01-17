@@ -6,7 +6,6 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties
 
 accessible field net/minecraft/world/level/block/state/BlockBehaviour properties Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;
 
-accessible field net/minecraft/world/level/biome/Biome climateSettings Lnet/minecraft/world/level/biome/Biome$ClimateSettings;
 accessible field net/minecraft/world/level/biome/Biome$ClimateSettings temperature F
 accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall F
 
@@ -42,8 +41,6 @@ mutable field net/minecraft/world/item/SpawnEggItem highlightColor I
 
 accessible field net/minecraft/world/effect/MobEffect color I
 mutable field net/minecraft/world/effect/MobEffect color I
-
-accessible method net/minecraft/world/entity/animal/Sheep createSheepColor (Lnet/minecraft/world/item/DyeColor;)[F
 
 accessible field net/minecraft/world/entity/animal/Sheep COLORARRAY_BY_COLOR Ljava/util/Map;
 mutable field net/minecraft/world/entity/animal/Sheep COLORARRAY_BY_COLOR Ljava/util/Map;

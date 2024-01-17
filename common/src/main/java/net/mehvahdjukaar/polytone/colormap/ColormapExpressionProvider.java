@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -122,8 +123,8 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
             }
 
 
-            exp.setVariable(TEMPERATURE, biome != null ? biome.climateSettings.temperature : 0);
-            exp.setVariable(DOWNFALL, biome != null ? biome.climateSettings.temperature : 0);
+            exp.setVariable(TEMPERATURE, biome != null ? ColorUtils.getClimateSettings(biome).temperature : 0);
+            exp.setVariable(DOWNFALL, biome != null ? ColorUtils.getClimateSettings(biome).downfall : 0);
 
             exp.setVariable(POS_X, pos != null ? pos.getX() : 0);
             exp.setVariable(POS_Y, pos != null ? pos.getY() : 0);

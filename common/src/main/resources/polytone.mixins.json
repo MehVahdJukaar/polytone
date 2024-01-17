@@ -4,7 +4,9 @@
   "compatibilityLevel": "JAVA_17",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "PotionUtilsMixin"
+    "PotionUtilsMixin",
+    "accessor.BiomeAccessor",
+    "accessor.SheepAccessor"
   ],
   "client": [
     "ColorResolverMixin",
