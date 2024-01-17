@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.mixins.accessor.BiomeAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Dynamic;
 
@@ -75,12 +77,17 @@ public class ColorUtils {
     }
 
 
-    private static final int FLOAT_MULT = 100000000;
+    public static Biome.ClimateSettings getClimateSettings(Level level, BlockPos pos){
+        return getClimateSettings(level.getBiome(pos).value());
+    }
+    public static Biome.ClimateSettings getClimateSettings(Biome biome){
+        return ((BiomeAccessor) (Object)biome).getClimateSettings();
+    }
 
     public static float temperature(BlockState state, BlockAndTintGetter level, BlockPos pos) {
         if (Polytone.sodiumOn) {
             if (level instanceof Level l) {
-                var b = l.getBiome(pos).value().climateSettings;
+                var b = getClimateSettings(l,pos);
                 return b.temperature;
             } else return 0.5f;
         }
@@ -93,8 +100,7 @@ public class ColorUtils {
     public static float downfall(BlockState state, BlockAndTintGetter level, BlockPos pos) {
         if (Polytone.sodiumOn) {
             if (level instanceof Level l) {
-                var b = l.getBiome(pos).value().climateSettings;
-                return b.downfall;
+                return getClimateSettings(l,pos).downfall;
             } else return 0.5f;
         }
 
@@ -103,20 +109,20 @@ public class ColorUtils {
     }
 
     public static final ColorResolver TEMPERATURE_RESOLVER = (biome, x, z) -> {
-        byte hack = (byte) (Mth.clamp(biome.climateSettings.temperature, 0, 1) * 255);
+        byte hack = (byte) (Mth.clamp(getClimateSettings(biome).temperature, 0, 1) * 255);
         return ColorUtils.pack(hack, hack, hack, hack);
     };
 
     public static final ColorResolver INT_TEMPERATURE_RESOLVER = (biome, x, z) ->
-            Float.floatToIntBits (Mth.clamp(biome.climateSettings.temperature, 0, 1));
+            Float.floatToIntBits (Mth.clamp(getClimateSettings(biome).temperature, 0, 1));
 
     public static final ColorResolver DOWNFALL_RESOLVER = (biome, x, z) -> {
-        byte hack = (byte) (Mth.clamp(biome.climateSettings.downfall, 0, 1) * 255);
+        byte hack = (byte) (Mth.clamp(getClimateSettings(biome).downfall, 0, 1) * 255);
         return ColorUtils.pack(hack, hack, hack, hack);
     };
 
     public static final ColorResolver INT_DOWNFALL_RESOLVER = (biome, x, z) ->
-            Float.floatToIntBits (Mth.clamp(biome.climateSettings.downfall, 0, 1));
+            Float.floatToIntBits (Mth.clamp(getClimateSettings(biome).downfall, 0, 1));
 
 
 }
