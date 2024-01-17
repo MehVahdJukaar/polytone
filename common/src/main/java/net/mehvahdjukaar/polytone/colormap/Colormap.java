@@ -1,26 +1,26 @@
 package net.mehvahdjukaar.polytone.colormap;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
+import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class Colormap implements ColorResolver {
+public class Colormap implements ColorResolver, BlockColor {
 
     private final IColormapNumberProvider xGetter;
     private final IColormapNumberProvider yGetter;
@@ -32,16 +32,31 @@ public class Colormap implements ColorResolver {
 
     private Integer defaultColor = null;
     private ArrayImage image = null;
+    boolean isReference = false;
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
 
-    public static final Codec<Colormap> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final Codec<Colormap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
             StrOpt.of(Codec.INT, "default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
             IColormapNumberProvider.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
             IColormapNumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
             StrOpt.of(Codec.BOOL, "triangular", false).forGetter(c -> c.triangular),
             StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend))
     ).apply(i, Colormap::new));
+
+    protected static final Codec<BlockColor> REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
+            id -> Optional.ofNullable(Polytone.COLORMAPS.get(id)).map(DataResult::success)
+                    .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
+                            " Did you place it in 'assets/[your pack]/polytone/colormaps/' ?")),
+            object -> Optional.ofNullable(Polytone.COLORMAPS.getKey(object)).map(DataResult::success)
+                    .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
+
+    public static final Codec<BlockColor> CODEC = new ReferenceOrDirectCodec<>(
+            REFERENCE_CODEC, DIRECT_CODEC, i -> {
+        if (i instanceof Colormap c) {
+            c.isReference = true;
+        }
+    });
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
                      boolean triangular, Optional<Boolean> biomeBlend) {
@@ -59,7 +74,12 @@ public class Colormap implements ColorResolver {
         this(Optional.empty(), xGetter, yGetter, false, Optional.empty());
     }
 
-    public static Colormap def() {
+    //Square map with those 2 getters
+    public static Colormap simple(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter) {
+        return new Colormap(xGetter, yGetter);
+    }
+
+    public static Colormap defSquare() {
         return new Colormap(Optional.empty(),
                 IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, false, Optional.empty());
     }
@@ -76,7 +96,9 @@ public class Colormap implements ColorResolver {
         }
     }
 
-    public int getColor(@Nullable BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos) {
+    // Dont use tint index
+    @Override
+    public int getColor(@Nullable BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos, int i) {
         if (level == null) return defaultColor;
         if (pos == null && (usesPos || usesBiome)) {
             return defaultColor;

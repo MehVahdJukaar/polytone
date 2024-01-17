@@ -44,7 +44,7 @@ public class Polytone {
                         BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS),
                 res("block_properties_manager"));
         sodiumOn = isSodiumOn;
-        PlatStuff.addClientReloadListener(() -> GUI_MODIFIER, res("polytone/gui_modifiers"));
+        PlatStuff.addClientReloadListener(() -> GUI_MODIFIER, res("gui_modifiers"));
         //TODO: colormap for particles
     }
 
