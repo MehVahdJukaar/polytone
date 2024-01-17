@@ -5,6 +5,7 @@ import com.google.gson.JsonParseException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -281,7 +282,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     public void regenSheepColors() {
         Sheep.COLORARRAY_BY_COLOR = new EnumMap<>(DyeColor.class);
         for (var d : DyeColor.values()) {
-            Sheep.COLORARRAY_BY_COLOR.put(d, Sheep.createSheepColor(d));
+
+            Sheep.COLORARRAY_BY_COLOR.put(d, SheepAccessor.invokeCreateSheepColor(d));
         }
         for (var e : customSheepColors.entrySet()) {
             Sheep.COLORARRAY_BY_COLOR.put(e.getKey(), unpack(e.getValue()));

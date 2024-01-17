@@ -5,7 +5,9 @@
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
     "AbstractContainerMenuMixin",
-    "PotionUtilsMixin"
+    "PotionUtilsMixin",
+    "accessor.BiomeAccessor",
+    "accessor.SheepAccessor"
   ],
   "client": [
     "ColorResolverMixin",
