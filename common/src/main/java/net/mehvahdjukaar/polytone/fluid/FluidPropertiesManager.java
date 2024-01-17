@@ -4,7 +4,8 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.TintColorGetter;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
@@ -53,7 +54,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     @Override
     public void process(Resources resources) {
         var jsons = resources.jsons();
-        var textures = ArrayImage.groupTextures(resources.textures());
+        var textures = resources.textures();
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
@@ -67,8 +68,8 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
             //fill inline colormaps colormapTextures
             BlockColor colormap = modifier.colormap().orElse(null);
-            if (colormap instanceof TintColorGetter c && !c.isReference()) {
-                ColormapsManager.fillColormapPalette(textures, id, c, usedTextures);
+            if (colormap instanceof Colormap c) {
+                ColormapsManager.tryAcceptingTexture(textures.get(id), id, c, usedTextures);
             }
             tryAdd(id, modifier);
         }
@@ -78,8 +79,8 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
-            TintColorGetter defaultColormap = TintColorGetter.createDefault(t.getValue().keySet(), true);
-            ColormapsManager.fillColormapPalette(textures, id, defaultColormap, usedTextures);
+            Colormap defaultColormap = Colormap.defTriangle();
+            ColormapsManager.tryAcceptingTexture(textures.get(id), id, defaultColormap, usedTextures);
 
             tryAdd(id, new FluidPropertyModifier(Optional.of(defaultColormap), Optional.empty()));
         }

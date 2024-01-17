@@ -39,7 +39,7 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
     private static final String GUI_MODIFIERS = "gui_modifiers";
 
     public GuiModifierManager() {
-        super(GSON, GUI_MODIFIERS + "/" + GUI_MODIFIERS);
+        super(GSON, Polytone.MOD_ID + "/" + GUI_MODIFIERS);
     }
 
     protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
