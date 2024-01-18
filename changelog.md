@@ -1,1 +1,1 @@
-fixed forge mixins not applying
+more support for legacy colormap assignment. still suboptimal so dont use it for new packs

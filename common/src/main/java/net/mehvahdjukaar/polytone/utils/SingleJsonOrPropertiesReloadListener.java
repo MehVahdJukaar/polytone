@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public abstract class SingleJsonOrPropertiesReloadListener extends SimplePreparableReloadListener<List<Properties>> {
+public abstract class SingleJsonOrPropertiesReloadListener extends PartialReloader<List<Properties>> {
     private static final Gson GSON = new Gson();
     private final String[] locations;
     private final String propertiesName;
@@ -23,13 +23,14 @@ public abstract class SingleJsonOrPropertiesReloadListener extends SimplePrepara
 
     // Instead of getting all files in a folder, it gets all files at certain locations
     protected SingleJsonOrPropertiesReloadListener(String propertiesName, String jsonName, String... possibleLocations) {
+        super("color_manager");
         this.locations = possibleLocations;
         this.propertiesName = propertiesName;
         this.jsonName = jsonName;
     }
 
     @Override
-    protected List<Properties> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
+    protected List<Properties> prepare(ResourceManager resourceManager) {
         List<Properties> list = new ArrayList<>();
         for (String paths : locations) {
             var res = resourceManager.listResourceStacks(paths,

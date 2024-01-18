@@ -43,7 +43,6 @@ public class ColormapsManager extends JsonImgPartialReloader {
         super("colormaps");
     }
 
-
     @Override
     public void process(Resources resources) {
         var jsons = resources.jsons();
@@ -54,6 +53,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
+
             Colormap colormap = Colormap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Colormap with json id {} - error: {}",
                             id, errorMsg)).getFirst();
@@ -104,45 +104,43 @@ public class ColormapsManager extends JsonImgPartialReloader {
     public static void fillCompoundColormapPalette(Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures,
                                                    ResourceLocation id, CompoundBlockColors colormap, Set<ResourceLocation> usedTextures) {
         var getters = colormap.getGetters();
-
         var textureMap = textures.get(id);
 
-        if (textureMap != null) {
-            for (var g : getters.int2ObjectEntrySet()) {
-                int index = g.getIntKey();
-                BlockColor inner = g.getValue();
-                if (inner instanceof Colormap c && !c.isReference) {
-                    boolean success = false;
+        for (var g : getters.int2ObjectEntrySet()) {
+            int index = g.getIntKey();
+            BlockColor inner = g.getValue();
+            if (inner instanceof Colormap c && !c.isReference) {
+                if (textureMap != null) {
                     if (getters.size() == 1 || index == 0) {
-                        success = tryAcceptingTexture(textureMap.get(-1), id, c, usedTextures);
-                    }
-                    if (!success) {
-                        success = tryAcceptingTexture(textureMap.get(index), id, c, usedTextures);
-                    }
-                    if (!success) {
-                        throw new IllegalStateException("Could not find any colormap associated with " + id + " for tint index " + index + ". " +
-                                "Expected: " + id);
+                        try {
+                            //try twice. first time doesnt throw
+                            tryAcceptingTexture(textureMap.get(-1), id, c, usedTextures);
+                            continue;
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            tryAcceptingTexture(textureMap.get(index), id, c, usedTextures);
+                        } catch (Exception e) {
+                            throw new IllegalStateException("Failed applying a texture for tint index " + index + ": ", e);
+                        }
                     }
                 }
             }
-        } else {
-            throw new IllegalStateException("Could not find any colormap associated with " + id + ". " +
-                    "Expected: " + id);
         }
+
     }
 
     //helper method
-    public static boolean tryAcceptingTexture(@Nullable ArrayImage texture, ResourceLocation path,
-                                              Colormap colormap, Set<ResourceLocation> usedTexture) {
+    public static void tryAcceptingTexture(@Nullable ArrayImage texture, ResourceLocation path,
+                                           Colormap colormap, Set<ResourceLocation> usedTexture) {
         if (texture != null) {
             usedTexture.add(path);
             colormap.acceptTexture(texture);
             if (texture.pixels().length == 0) {
                 throw new IllegalStateException("Colormap at location " + path + " had invalid 0 dimension");
             }
-            return true;
         }
-        return false;
+        else throw new IllegalStateException("Could not find any colormap associated with path " + path);
     }
 
 

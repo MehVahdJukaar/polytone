@@ -5,6 +5,8 @@ import com.google.gson.JsonParseException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
+import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
@@ -58,24 +60,16 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void apply(List<Properties> list, ResourceManager resourceManager, ProfilerFiller profiler) {
-        resetValues();
-
+    protected void process(List<Properties> list    ) {
         //iterate from the lowest priority to highest
         Lists.reverse(list);
-        try {
-            for (var v : list) {
-                for (var e : v.entrySet()) {
-                    if (e.getKey() instanceof String key) {
-                        String[] split = key.split("\\.");
-                        parseColor(split, e.getValue());
-                    }
+        for (var v : list) {
+            for (var e : v.entrySet()) {
+                if (e.getKey() instanceof String key) {
+                    String[] split = key.split("\\.");
+                    parseColor(split, e.getValue());
                 }
             }
-        } catch (Exception ex) {
-            resetValues();
-
-            throw new IllegalStateException("Polytone failed to apply custom colors. Rolling back to vanilla state", ex);
         }
 
         regenSheepColors();
@@ -83,6 +77,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
 
     private void parseColor(String[] prop, Object obj) {
+        if(!(obj instanceof String str))return;
         if (is(prop, 0, "map")) {
             String name = get(prop, 1);
             MaterialColor color = MapColorHelper.byName(name);
@@ -124,14 +119,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         } else if (is(prop, 0, "particle")) {
             if (prop.length > 1) {
                 ResourceLocation id = new ResourceLocation(prop[1].replace("\\", ""));
-                if (obj instanceof String s) {
-                    try {
-                        // turn from hex to decimal if it is a single number
-                        int hex = parseHex(s);
-                        Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, String.valueOf(hex));
-                    } catch (Exception e) {
-                        Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, s);
-                    }
+                try {
+                    // turn from hex to decimal if it is a single number
+                    int hex = parseHex(str);
+                    Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, String.valueOf(hex));
+                } catch (Exception e) {
+                    Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, str);
                 }
             }
 
@@ -206,6 +199,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 }
                 text.color = col;
             }
+        }else if(is(prop, 0, "palette")){
+            if(is(prop, 1,"block")){
+                if(prop.length >2 && obj instanceof String) {
+                    String path = prop[2].replace("~/colormap/","");
+                    Polytone.BLOCK_PROPERTIES.addSimpleColormap( path, str);
+                }
+            }
         }
     }
 
@@ -235,7 +235,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         throw new JsonParseException("Failed to parse object " + obj + ". Expected a String");
     }
 
-    private void resetValues() {
+    @Override
+    public void reset() {
         emptyPotion = 16253176;
         waterBottle = 3694022;
         // map colors
