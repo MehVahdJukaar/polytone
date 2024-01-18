@@ -1,1 +1,1 @@
-ported to 1.20.4
+more support for legacy colormap assignment. still suboptimal so dont use it for new packs

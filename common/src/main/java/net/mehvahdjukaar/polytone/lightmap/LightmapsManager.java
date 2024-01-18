@@ -89,6 +89,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
                 lightmap = Lightmap.CODEC.decode(JsonOps.INSTANCE, j)
                         .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Lightmap with json id {} - error: {}", location, errorMsg))
                         .getFirst();
+
             } else {
                 //default samplers
                 lightmap = new Lightmap();

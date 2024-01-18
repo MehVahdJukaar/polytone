@@ -5,7 +5,6 @@ import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
-import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
@@ -72,6 +71,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
                 ColormapsManager.tryAcceptingTexture(textures.get(id), id, c, usedTextures);
             }
             tryAdd(id, modifier);
+
         }
 
         // creates orphaned texture colormaps & properties

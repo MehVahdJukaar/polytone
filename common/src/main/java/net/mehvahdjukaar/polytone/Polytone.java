@@ -38,9 +38,8 @@ public class Polytone {
     public static boolean sodiumOn = false;
 
     public static void init(boolean isSodiumOn) {
-        PlatStuff.addClientReloadListener(() -> COLORS, res("color_manager"));
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
-                        SOUND_TYPES, COLORMAPS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
+                        SOUND_TYPES, COLORMAPS,COLORS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
                         BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS),
                 res("block_properties_manager"));
         sodiumOn = isSodiumOn;

@@ -60,5 +60,7 @@ accessible method net/minecraft/client/renderer/LightTexture notGamma (F)F
 accessible field net/minecraft/ChatFormatting color Ljava/lang/Integer;
 mutable field net/minecraft/ChatFormatting color Ljava/lang/Integer;
 
-accessible field net/minecraft/client/renderer/chunk/RenderChunkRegion level Lnet/minecraft/world/level/Level;
+accessible field net/minecraft/client/renderer/block/model/BakedQuad tintIndex I
+mutable field net/minecraft/client/renderer/block/model/BakedQuad tintIndex I
 
+accessible field net/minecraft/client/renderer/chunk/RenderChunkRegion level Lnet/minecraft/world/level/Level;

@@ -42,6 +42,7 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
         super(GSON, Polytone.MOD_ID + "/" + GUI_MODIFIERS);
     }
 
+    @Override
     protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
         Map<ResourceLocation, JsonElement> map = super.prepare(resourceManager, profiler);
         //backwards compat with slotify
@@ -59,9 +60,12 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
         BY_TITLE.clear();
 
         List<GuiModifier> allModifiers = new ArrayList<>();
-        for (var o : object.values()) {
-            var result = GuiModifier.CODEC.parse(JsonOps.INSTANCE, o);
-            GuiModifier modifier = result.getOrThrow(false, e -> Polytone.LOGGER.error("Failed to parse menu modifier: {}", e));
+        for (var entry : object.entrySet()) {
+            var json = entry.getValue();
+            var id = entry.getKey();
+            GuiModifier modifier = GuiModifier.CODEC.decode(JsonOps.INSTANCE, json)
+                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode GUI Modifier with json res {} - error: {}",
+                            id, errorMsg)).getFirst();
             allModifiers.add(modifier);
         }
 

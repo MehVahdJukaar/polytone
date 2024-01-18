@@ -31,6 +31,7 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
     private final Map<ResourceLocation, BlockPropertyModifier> modifiers = new HashMap<>();
 
+
     public BlockPropertiesManager() {
         super("block_properties");
     }
@@ -87,6 +88,29 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
             //optifine stuff
             String path = id.getPath();
+
+
+            var special = colorPropertiesColormaps.get(id);
+            if (special != null) {
+                //TODO: improve tint assignment
+                Colormap colormap = Colormap.defTriangle();
+                ColormapsManager.tryAcceptingTexture(textures.get(id).get(-1), id, colormap, new HashSet<>());
+
+                for (var name : special.split(" ")) {
+                    try {
+                        ResourceLocation blockId = new ResourceLocation(name);
+                        var b = BuiltInRegistries.BLOCK.getOptional(blockId);
+                        if (b.isPresent()) {
+                            //TODO: merge
+                            Polytone.VARIANT_TEXTURES.addTintOverrideHack(b.get());
+                            addModifier(blockId, BlockPropertyModifier.ofColor(colormap));
+                        }
+                    } catch (Exception ignored) {
+                    }
+                }
+                continue;
+            }
+
             if (path.contains("stem")) {
                 Colormap stemMap = Colormap.simple((state, level, pos) -> state.getValue(StemBlock.AGE) / 7f,
                         IColormapNumberProvider.ZERO);
@@ -113,8 +137,7 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
                 ColormapsManager.tryAcceptingTexture(textures.get(id).get(-1), id, tintMap, usedTextures);
 
                 addModifier(id, BlockPropertyModifier.ofColor(tintMap));
-            }
-            else {
+            } else {
                 CompoundBlockColors tintMap = CompoundBlockColors.createDefault(value.keySet(), true);
                 ColormapsManager.fillCompoundColormapPalette(textures, id, tintMap, usedTextures);
 
@@ -123,10 +146,10 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
         }
     }
 
-    private void addModifier(ResourceLocation id, BlockPropertyModifier mod) {
-        var old = modifiers.put(id, mod);
+    private void addModifier(ResourceLocation blockId, BlockPropertyModifier mod) {
+        var old = modifiers.put(blockId, mod);
         if (old != null)
-            Polytone.LOGGER.info("Found duplicate block property modifier with id {}, overwriting", id);
+            Polytone.LOGGER.info("Found duplicate block property modifier with id {}, overwriting", blockId);
     }
 
     @Override
@@ -151,5 +174,13 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
             e.getValue().apply(e.getKey());
         }
         vanillaProperties.clear();
+        modifiers.clear();
+        colorPropertiesColormaps.clear();
+    }
+
+    private final Map<ResourceLocation, String> colorPropertiesColormaps = new HashMap<>();
+
+    public void addSimpleColormap(String path, String str) {
+        colorPropertiesColormaps.put(new ResourceLocation(path), str);
     }
 }

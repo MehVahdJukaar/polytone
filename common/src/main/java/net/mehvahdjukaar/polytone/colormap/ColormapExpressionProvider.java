@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.objecthunter.exp4j.Expression;

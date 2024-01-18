@@ -15,7 +15,6 @@ import java.util.Map;
 public class ParticleModifiersManager extends JsonPartialReloader {
 
     private final Map<ParticleType<?>, ParticleModifier> particleModifiers = new HashMap<>();
-    private final Map<ParticleType<?>, ParticleModifier> simpleModifiers = new HashMap<>();
 
     public ParticleModifiersManager() {
         super("particle_modifiers");
@@ -31,11 +30,11 @@ public class ParticleModifiersManager extends JsonPartialReloader {
 
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
-            var res = j.getKey();
+            var id = j.getKey();
             ParticleModifier modifier = ParticleModifier.CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Particle Modifier with json res {} - error: {}",
-                            res, errorMsg)).getFirst();
-            var particle = Polytone.getTarget(res, BuiltInRegistries.PARTICLE_TYPE);
+                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Particle Modifier with json id {} - error: {}",
+                            id, errorMsg)).getFirst();
+            var particle = Polytone.getTarget(id, BuiltInRegistries.PARTICLE_TYPE);
             if (particle != null) {
                 particleModifiers.put(particle.getFirst(), modifier);
             }
@@ -46,15 +45,10 @@ public class ParticleModifiersManager extends JsonPartialReloader {
     @Override
     protected void reset() {
         particleModifiers.clear();
-        //hack
-        particleModifiers.putAll(simpleModifiers);
-        simpleModifiers.clear();
     }
 
     public void addCustomParticleColor(ResourceLocation id, String color) {
         var opt = BuiltInRegistries.PARTICLE_TYPE.getOptional(id);
-        opt.ifPresent(t -> simpleModifiers.put(t, ParticleModifier.ofColor(color)));
-        //hack
-        particleModifiers.putAll(simpleModifiers);
+        opt.ifPresent(t -> particleModifiers.put(t, ParticleModifier.ofColor(color)));
     }
 }
