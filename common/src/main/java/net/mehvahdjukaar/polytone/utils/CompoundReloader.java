@@ -21,7 +21,9 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         //sequentially prepares all of them in order
         List<Object> list = new ArrayList<>();
         for (var c : children) {
+            profiler.push(c.path() + "_prepare");
             list.add(c.prepare(resourceManager));
+            profiler.pop();
         }
         return list;
     }
@@ -29,15 +31,21 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
     @Override
     protected void apply(List<Object> object, ResourceManager resourceManager, ProfilerFiller profiler) {
         for (var c : children) {
+            profiler.push(c.path() + "_reset");
             c.reset();
         }
 
         for (int i = 0; i < object.size(); i++) {
-            processTyped(children.get(i), object.get(i));
+            PartialReloader<?> c = children.get(i);
+            profiler.push(c.path() + "_process");
+            processTyped(c, object.get(i));
+            profiler.pop();
         }
 
         for (var c : children) {
+            profiler.push(c.path() + "_apply");
             c.apply();
+            profiler.pop();
         }
     }
 

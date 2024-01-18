@@ -1,1 +1,1 @@
-fixed all common mixins not being applied outside of dev for some reason resulting in issues
+more support for legacy colormap assignment. still suboptimal so dont use it for new packs

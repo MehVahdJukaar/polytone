@@ -20,7 +20,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 public class VariantTextureManager extends JsonPartialReloader {
@@ -28,8 +30,9 @@ public class VariantTextureManager extends JsonPartialReloader {
     private final WeakHashMap<BakedQuad, Map<ResourceLocation, BakedQuad>> variantQuadsCache = new WeakHashMap();
 
     private final Map<Block, VariantTexture> blocksWithVariants = new Object2ObjectOpenHashMap<>();
+    public final Set<Block> specialOFTintHack = new HashSet<>();
 
-    public VariantTextureManager(){
+    public VariantTextureManager() {
         super("variant_textures");
     }
 
@@ -38,11 +41,11 @@ public class VariantTextureManager extends JsonPartialReloader {
 
         for (var j : jsonElementMap.entrySet()) {
             var json = j.getValue();
-            var res = j.getKey();
+            var id = j.getKey();
             VariantTexture variant = VariantTexture.CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Variant Texture with json res {} - error: {}",
-                            res, errorMsg)).getFirst();
-            var target = Polytone.getTarget(res, BuiltInRegistries.BLOCK);
+                            id, errorMsg)).getFirst();
+            var target = Polytone.getTarget(id, BuiltInRegistries.BLOCK);
             if (target != null) {
                 blocksWithVariants.put(target.getFirst(), variant);
             }
@@ -53,11 +56,16 @@ public class VariantTextureManager extends JsonPartialReloader {
     protected void reset() {
         blocksWithVariants.clear();
         variantQuadsCache.clear(); //we might need a lock here
+        specialOFTintHack.clear();
     }
 
     public BakedQuad maybeModify(BakedQuad quad, BlockAndTintGetter level, BlockState state, BlockPos pos) {
+        if (quad.tintIndex == -1 && !specialOFTintHack.isEmpty()) {
+            if (specialOFTintHack.contains(state.getBlock())) quad.tintIndex = 0;
+        }
         if (blocksWithVariants.isEmpty()) return null;
-        var variant = blocksWithVariants.get(state.getBlock());
+        Block block = state.getBlock();
+        var variant = blocksWithVariants.get(block);
         if (variant != null) {
             var biomeToTexture = variant.getBiomeMap(quad.getSprite());
             if (biomeToTexture != null && level instanceof RenderChunkRegion region) {
@@ -86,4 +94,7 @@ public class VariantTextureManager extends JsonPartialReloader {
                         });
     }
 
+    public void addTintOverrideHack(Block block) {
+        specialOFTintHack.add(block);
+    }
 }
