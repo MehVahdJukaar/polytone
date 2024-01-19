@@ -6,6 +6,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Keyable;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import net.mehvahdjukaar.polytone.lightmap.Lightmap;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ExtraCodecs;
@@ -24,12 +25,12 @@ public class CompoundBlockColors implements BlockColor {
 
     final Int2ObjectMap<BlockColor> getters = new Int2ObjectArrayMap<>();
 
-    protected static final Codec<CompoundBlockColors> DIRECT_CODEC = ExtraCodecs.validate(Codec.simpleMap(Codec.STRING, Colormap.CODEC,
+    protected static final Codec<CompoundBlockColors> DIRECT_CODEC = Lightmap.validate(Codec.simpleMap(Codec.STRING, Colormap.CODEC,
                             Keyable.forStrings(() -> IntStream.rangeClosed(-1, 16).mapToObj(String::valueOf)))
                     .xmap(CompoundBlockColors::new, CompoundBlockColors::toStringMap).codec(),
             c -> {
                 if (c.getters.size() == 0) {
-                    return DataResult.error(() -> "Must have at least 1 tint getter");
+                    return DataResult.error( "Must have at least 1 tint getter");
                 }
                 return DataResult.success(c);
             });

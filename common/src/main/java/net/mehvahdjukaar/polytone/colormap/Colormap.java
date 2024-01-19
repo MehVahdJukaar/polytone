@@ -46,10 +46,10 @@ public class Colormap implements ColorResolver, BlockColor {
 
     protected static final Codec<BlockColor> REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
             id -> Optional.ofNullable(Polytone.COLORMAPS.get(id)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
+                    .orElse(DataResult.error( "Could not find a custom Colormap with id " + id +
                             " Did you place it in 'assets/[your pack]/polytone/colormaps/' ?")),
             object -> Optional.ofNullable(Polytone.COLORMAPS.getKey(object)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
+                    .orElse(DataResult.error( "Unknown Color Property: " + object)));
 
     public static final Codec<BlockColor> CODEC = new ReferenceOrDirectCodec<>(
             REFERENCE_CODEC, DIRECT_CODEC, i -> {

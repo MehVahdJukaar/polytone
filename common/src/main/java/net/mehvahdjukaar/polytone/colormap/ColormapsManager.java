@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.FoliageColor;
@@ -23,7 +24,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     // Builtin colormaps
     //TODO: delegate to grass so we have quark compat
     public static final BlockColor GRASS_COLOR = (s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor();
+            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) :  GrassColor.get(0.5, 1.0);
 
     public static final BlockColor FOLIAGE_COLOR = (s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor();
