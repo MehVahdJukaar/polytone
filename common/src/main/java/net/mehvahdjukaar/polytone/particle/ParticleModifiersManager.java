@@ -44,14 +44,14 @@ public class ParticleModifiersManager extends JsonPartialReloader {
 
     private void addModifier(ResourceLocation pathId, ParticleModifier mod) {
         var explTargets = mod.explicitTargets;
-        var pathTarget = BuiltInRegistries.PARTICLE_TYPE.getOptional(pathId);
+        var pathTarget = Registry.PARTICLE_TYPE.getOptional(pathId);
         if (explTargets.isPresent()) {
             if (pathTarget.isPresent()) {
                 Polytone.LOGGER.error("Found Particle Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
                         "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), pathId);
             }
             for (var explicitId : explTargets.get()) {
-                var target = BuiltInRegistries.PARTICLE_TYPE.getOptional(explicitId);
+                var target = Registry.PARTICLE_TYPE.getOptional(explicitId);
                 if(target.isPresent()) {
                     var old = particleModifiers.put(target.get(), mod);
                     if(old != null){

@@ -2,6 +2,8 @@ package net.mehvahdjukaar.polytone.fluid.forge;
 
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Vector3f;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;

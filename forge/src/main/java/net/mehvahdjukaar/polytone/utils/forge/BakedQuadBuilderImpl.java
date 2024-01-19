@@ -46,10 +46,10 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
                 isInvert(transformation);
     }
 
-    private static Matrix3f isInvert(@NotNull Matrix4f transformation) {
+    private static Matrix3f isInvert(Matrix4f transformation) {
         var m = new Matrix3f(transformation);
         m.invert();
-        m.transpose();;
+        m.transpose();
         return m;
     }
 

@@ -52,14 +52,14 @@ public class VariantTextureManager extends JsonPartialReloader {
 
     private void addVariant(ResourceLocation pathId, VariantTexture mod) {
         var explTargets = mod.explicitTargets();
-        var pathTarget = BuiltInRegistries.BLOCK.getOptional(pathId);
+        var pathTarget = Registry.BLOCK.getOptional(pathId);
         if (explTargets.isPresent()) {
             if (pathTarget.isPresent()) {
                 Polytone.LOGGER.error("Found Variant Texture with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
                         "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), pathId);
             }
             for (var explicitId : explTargets.get()) {
-                var target = BuiltInRegistries.BLOCK.getOptional(explicitId);
+                var target = Registry.BLOCK.getOptional(explicitId);
                 if(target.isPresent()) {
                     var old = blocksWithVariants.put(target.get(), mod);
                     if(old != null){

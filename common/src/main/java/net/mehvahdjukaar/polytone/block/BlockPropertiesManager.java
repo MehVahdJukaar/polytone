@@ -95,7 +95,7 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
                 for (var name : special.split(" ")) {
                     try {
                         ResourceLocation blockId = new ResourceLocation(name);
-                        var b = BuiltInRegistries.BLOCK.getOptional(blockId);
+                        var b = Registry.BLOCK.getOptional(blockId);
                         if (b.isPresent()) {
                             //TODO: merge
                             Polytone.VARIANT_TEXTURES.addTintOverrideHack(b.get());
@@ -144,14 +144,14 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
     private void addModifier(ResourceLocation pathId, BlockPropertyModifier mod) {
         var explTargets = mod.explicitTargets();
-        Optional<Block> idTarget = BuiltInRegistries.BLOCK.getOptional(pathId);
+        Optional<Block> idTarget = Registry.BLOCK.getOptional(pathId);
         if (explTargets.isPresent()) {
             if (idTarget.isPresent()) {
                 Polytone.LOGGER.error("Found Block Properties Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
                         "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), pathId);
             }
             for (var explicitId : explTargets.get()) {
-                Optional<Block> target = BuiltInRegistries.BLOCK.getOptional(explicitId);
+                Optional<Block> target = Registry.BLOCK.getOptional(explicitId);
                 target.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
             }
         }

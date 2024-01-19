@@ -29,7 +29,7 @@ import java.util.function.Function;
 public record BlockPropertyModifier(
         Optional<? extends BlockColor> tintGetter,
         Optional<SoundType> soundType,
-        Optional<Function<BlockState, MaterialColor>> mapColor
+        Optional<Function<BlockState, MaterialColor>> mapColor,
         //Optional<Boolean> canOcclude,
         //Optional<Object> spawnParticlesOnBreak,
         //Optional<Boolean> viewBlocking,
@@ -41,7 +41,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(
                 other.tintGetter.isPresent() ? other.tintGetter() : this.tintGetter(),
                 other.soundType().isPresent() ? other.soundType() : this.soundType(),
-                other.mapColor.isPresent() ? other.mapColor() : this.mapColor()
+                other.mapColor.isPresent() ? other.mapColor() : this.mapColor(),
                 //other.canOcclude().isPresent() ? other.canOcclude() : this.canOcclude(),
                 //other.spawnParticlesOnBreak().isPresent() ? other.spawnParticlesOnBreak() : this.spawnParticlesOnBreak(),
                 // other.viewBlocking().isPresent() ? other.viewBlocking() : this.viewBlocking(),
@@ -88,7 +88,7 @@ public record BlockPropertyModifier(
                     StrOpt.of(CompoundBlockColors.CODEC, "colormap").forGetter(b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof CompoundBlockColors c ? c : null))),
                     StrOpt.of(SoundTypesManager.CODEC, "sound_type").forGetter(BlockPropertyModifier::soundType),
                     StrOpt.of(MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MaterialColor>) (a) -> c, f -> MaterialColor.NONE),
-                            "map_color").forGetter(BlockPropertyModifier::mapColor)
+                            "map_color").forGetter(BlockPropertyModifier::mapColor),
                     // Codec.BOOL.optionalFieldOf("can_occlude").forGetter(ClientBlockProperties::canOcclude),
                     //Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(c -> c.spawnParticlesOnBreak.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
                     // Codec.BOOL.optionalFieldOf("view_blocking").forGetter(ClientBlockProperties::viewBlocking),
