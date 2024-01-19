@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.fluid.forge;
 
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Camera;
@@ -9,14 +10,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -29,16 +29,16 @@ public class FluidPropertiesManagerImpl {
     private static final Map<FluidType, IClientFluidTypeExtensions> FLUID_EXTENSIONS = new HashMap<>();
 
     public static void tryAddSpecial(ResourceLocation id, FluidPropertyModifier colormap) {
-        var fluid = NeoForgeRegistries.FLUID_TYPES.get().getValue(id);
-        if (fluid != null) {
+        var fluid = NeoForgeRegistries.FLUID_TYPES.getOptional(id);
+        if (fluid.isPresent()) {
             //gets real one. will internally try to get wrapped but a map is empty now
-            IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fluid);
+            IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fluid.get());
             if (ext instanceof FluidExtensionWrapper) {
                 Polytone.LOGGER.error("Trying to wrap a wrapper. Something went wrong");
             }
 
             //create wrapped one
-            FLUID_EXTENSIONS.put(fluid, new FluidExtensionWrapper(ext, colormap));
+            FLUID_EXTENSIONS.put(fluid.get(), new FluidExtensionWrapper(ext, colormap));
         }
     }
 
