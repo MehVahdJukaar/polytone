@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.particle.ParticleModifier;
 import net.mehvahdjukaar.polytone.utils.BakedQuadsTransformer;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
@@ -45,9 +46,35 @@ public class VariantTextureManager extends JsonPartialReloader {
             VariantTexture variant = VariantTexture.CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Variant Texture with json res {} - error: {}",
                             id, errorMsg)).getFirst();
-            var target = Polytone.getTarget(id, Registry.BLOCK);
-            if (target != null) {
-                blocksWithVariants.put(target.getFirst(), variant);
+            addVariant(id, variant);
+        }
+    }
+
+    private void addVariant(ResourceLocation pathId, VariantTexture mod) {
+        var explTargets = mod.explicitTargets();
+        var pathTarget = BuiltInRegistries.BLOCK.getOptional(pathId);
+        if (explTargets.isPresent()) {
+            if (pathTarget.isPresent()) {
+                Polytone.LOGGER.error("Found Variant Texture with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
+                        "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), pathId);
+            }
+            for (var explicitId : explTargets.get()) {
+                var target = BuiltInRegistries.BLOCK.getOptional(explicitId);
+                if(target.isPresent()) {
+                    var old = blocksWithVariants.put(target.get(), mod);
+                    if(old != null){
+                        Polytone.LOGGER.info("Found 2 Variant Textures jsons with same target ({}). Overriding", explicitId);
+                    }
+                }
+            }
+        }
+        //no explicit targets. use its own ID instead
+        else {
+            if(pathTarget.isPresent()) {
+                var old = blocksWithVariants.put(pathTarget.get(), mod);
+                if(old != null){
+                    Polytone.LOGGER.info("Found 2 Variant Textures jsons with same target ({}). Overriding", pathTarget);
+                }
             }
         }
     }

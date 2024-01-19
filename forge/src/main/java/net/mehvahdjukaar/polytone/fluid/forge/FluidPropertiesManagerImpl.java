@@ -2,9 +2,6 @@ package net.mehvahdjukaar.polytone.fluid.forge;
 
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.math.Vector3f;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -18,7 +15,6 @@ import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,32 +26,21 @@ public class FluidPropertiesManagerImpl {
     private static final Map<FluidType, IClientFluidTypeExtensions> FLUID_EXTENSIONS = new HashMap<>();
 
     public static void tryAddSpecial(ResourceLocation id, FluidPropertyModifier colormap) {
-        var fluid = getTarget(id, ForgeRegistries.FLUID_TYPES.get());
+        var fluid = ForgeRegistries.FLUID_TYPES.get().getValue(id);
         if (fluid != null) {
-            FluidType type = fluid.getFirst();
-
             //gets real one. will internally try to get wrapped but a map is empty now
-            IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(type);
-            if(ext instanceof FluidExtensionWrapper){
+            IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fluid);
+            if (ext instanceof FluidExtensionWrapper) {
                 Polytone.LOGGER.error("Trying to wrap a wrapper. Something went wrong");
             }
 
             //create wrapped one
-            FLUID_EXTENSIONS.put(type, new FluidExtensionWrapper(ext, colormap));
+            FLUID_EXTENSIONS.put(fluid, new FluidExtensionWrapper(ext, colormap));
         }
     }
 
     public static void clearSpecial() {
         FLUID_EXTENSIONS.clear();
-    }
-    
-    @Nullable
-    public static <T> Pair<T, ResourceLocation> getTarget(ResourceLocation resourcePath, IForgeRegistry<T> registry) {
-        ResourceLocation id = Polytone.getLocalId(resourcePath);
-        var opt = registry.getHolder(id);
-        if (opt.isPresent()) return Pair.of(opt.get().get(), id);
-        opt = registry.getHolder(resourcePath);
-        return opt.map(t -> Pair.of(t.get(), resourcePath)).orElse(null);
     }
 
     @Nullable

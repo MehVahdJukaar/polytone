@@ -7,9 +7,11 @@ import net.mehvahdjukaar.polytone.color.MapColorHelper;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -21,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 public record BlockPropertyModifier(
@@ -30,24 +33,26 @@ public record BlockPropertyModifier(
         //Optional<Boolean> canOcclude,
         //Optional<Object> spawnParticlesOnBreak,
         //Optional<Boolean> viewBlocking,
-        //Optional<Object> emissiveRendering)
-){
+        //Optional<Object> emissiveRendering,
+        Optional<Set<ResourceLocation>> explicitTargets) {
 
+    // Other has priority
     public BlockPropertyModifier merge(BlockPropertyModifier other) {
         return new BlockPropertyModifier(
-                this.tintGetter,
+                other.tintGetter.isPresent() ? other.tintGetter() : this.tintGetter(),
                 other.soundType().isPresent() ? other.soundType() : this.soundType(),
                 other.mapColor.isPresent() ? other.mapColor() : this.mapColor()
                 //other.canOcclude().isPresent() ? other.canOcclude() : this.canOcclude(),
                 //other.spawnParticlesOnBreak().isPresent() ? other.spawnParticlesOnBreak() : this.spawnParticlesOnBreak(),
                 // other.viewBlocking().isPresent() ? other.viewBlocking() : this.viewBlocking(),
                 //other.emissiveRendering().isPresent() ? other.emissiveRendering() : this.emissiveRendering(),
-
+                TargetsHelper.merge(other.explicitTargets, this.explicitTargets)
         );
     }
 
     public static BlockPropertyModifier ofColor(BlockColor colormap) {
-        return new BlockPropertyModifier(Optional.of(colormap), Optional.empty(), Optional.empty());
+        return new BlockPropertyModifier(Optional.of(colormap), Optional.empty(),
+                Optional.empty(), Optional.empty());
     }
 
     // returns the old ones
@@ -74,7 +79,7 @@ public record BlockPropertyModifier(
         }
         // returns old properties
         return new BlockPropertyModifier(Optional.ofNullable(color), Optional.ofNullable(oldSound),
-                Optional.ofNullable(oldMapColor));
+                Optional.ofNullable(oldMapColor),  Optional.empty());
     }
 
 
@@ -88,6 +93,7 @@ public record BlockPropertyModifier(
                     //Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(c -> c.spawnParticlesOnBreak.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
                     // Codec.BOOL.optionalFieldOf("view_blocking").forGetter(ClientBlockProperties::viewBlocking),
                     //Codec.BOOL.optionalFieldOf("emissive_rendering").forGetter(c -> c.emissiveRendering.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
+                    StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(BlockPropertyModifier::explicitTargets)
             ).apply(instance, BlockPropertyModifier::new));
 
 

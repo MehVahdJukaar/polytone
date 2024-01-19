@@ -1,1 +1,1 @@
-more support for legacy colormap assignment. still suboptimal so dont use it for new packs
+Added support for explicit targets in biome effects, block properties, fluid properties, particle modifiers and variant textures

@@ -8,9 +8,10 @@ import net.mehvahdjukaar.polytone.utils.BakedQuadBuilder;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraftforge.client.model.QuadTransformers;
 import net.minecraftforge.client.model.pipeline.QuadBakingVertexConsumer;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
