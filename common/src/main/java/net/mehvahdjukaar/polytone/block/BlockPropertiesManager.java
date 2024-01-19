@@ -18,10 +18,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.StemBlock;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
@@ -29,7 +26,8 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();
 
-    private final Map<ResourceLocation, BlockPropertyModifier> modifiers = new HashMap<>();
+    // Block ID to modifier
+    private final Map<Block, BlockPropertyModifier> modifiers = new HashMap<>();
 
 
     public BlockPropertiesManager() {
@@ -146,21 +144,32 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
         }
     }
 
-    private void addModifier(ResourceLocation blockId, BlockPropertyModifier mod) {
-        var old = modifiers.put(blockId, mod);
-        if (old != null)
-            Polytone.LOGGER.info("Found duplicate block property modifier with id {}, overwriting", blockId);
+    private void addModifier(ResourceLocation pathId, BlockPropertyModifier mod) {
+        var explTargets = mod.explicitTargets();
+        Optional<Block> idTarget = BuiltInRegistries.BLOCK.getOptional(pathId);
+        if (explTargets.isPresent()) {
+            if (idTarget.isPresent()) {
+                Polytone.LOGGER.error("Found Block Properties Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
+                        "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), pathId);
+            }
+            for (var explicitId : explTargets.get()) {
+                Optional<Block> target = BuiltInRegistries.BLOCK.getOptional(explicitId);
+                target.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
+            }
+        }
+        //no explicit targets. use its own ID instead
+        else {
+            idTarget.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
+        }
     }
 
     @Override
     public void apply() {
-        for (var p : modifiers.entrySet()) {
-            var block = Polytone.getTarget(p.getKey(), BuiltInRegistries.BLOCK);
-            if (block != null) {
-                Block b = block.getFirst();
-                BlockPropertyModifier value = p.getValue();
-                vanillaProperties.put(b, value.apply(b));
-            }
+        for (var e : modifiers.entrySet()) {
+            var block = e.getKey();
+
+            BlockPropertyModifier value = e.getValue();
+            vanillaProperties.put(block, value.apply(block));
         }
         if (!vanillaProperties.isEmpty())
             Polytone.LOGGER.info("Applied {} Custom Block Properties", vanillaProperties.size());
