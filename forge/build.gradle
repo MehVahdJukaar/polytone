@@ -119,7 +119,7 @@ dependencies {
     neoForge "net.neoforged:neoforge:${neo_version}"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive = false }
+    shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
 
     implementation include( 'net.objecthunter:exp4j:0.4.8')
     forgeRuntimeLibrary ( 'net.objecthunter:exp4j:0.4.8')
