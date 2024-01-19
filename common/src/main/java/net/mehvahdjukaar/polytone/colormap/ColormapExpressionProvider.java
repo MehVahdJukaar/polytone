@@ -95,12 +95,12 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
 
     @Override
     public boolean usesBiome() {
-        return unparsed.contains(POS_X) || unparsed.contains(POS_Y) || unparsed.contains(POS_Z);
+        return unparsed.contains(TEMPERATURE) || unparsed.contains(DOWNFALL);
     }
 
     @Override
     public boolean usesPos() {
-        return unparsed.contains(TEMPERATURE) || unparsed.contains(DOWNFALL);
+        return unparsed.contains(POS_X) || unparsed.contains(POS_Y) || unparsed.contains(POS_Z);
     }
 
     @Override

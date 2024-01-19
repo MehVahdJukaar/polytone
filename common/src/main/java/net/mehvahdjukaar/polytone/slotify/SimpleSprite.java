@@ -4,17 +4,15 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EntityEvent;
-import net.minecraft.world.entity.player.Player;
 import org.joml.Matrix4f;
 
-import java.awt.*;
 import java.util.Optional;
 
 public record SimpleSprite(ResourceLocation texture, float x, float y, float width, float height, float z,
-                           Optional<String> tooltip){//, Optional<ScreenSupplier> screenSupp) {
+                           Optional<String> tooltip) {//, Optional<ScreenSupplier> screenSupp) {
 
     public static final Codec<SimpleSprite> CODEC = RecordCodecBuilder.create(i -> i.group(
             ResourceLocation.CODEC.fieldOf("texture").forGetter(SimpleSprite::texture),
@@ -22,17 +20,16 @@ public record SimpleSprite(ResourceLocation texture, float x, float y, float wid
             Codec.FLOAT.fieldOf("y").forGetter(SimpleSprite::y),
             Codec.FLOAT.fieldOf("width").forGetter(SimpleSprite::width),
             Codec.FLOAT.fieldOf("height").forGetter(SimpleSprite::height),
-            Codec.FLOAT.optionalFieldOf("z", 0.0f).forGetter(SimpleSprite::z),
-            Codec.STRING.optionalFieldOf("tooltip").forGetter(SimpleSprite::tooltip)
-           // Codec.STRING.xmap(ScreenSupplier::decode, ScreenSupplier::toString).f
-                 //   .optionalFieldOf("screen_class").forGetter(SimpleSprite:: screenSupp)
+            StrOpt.of(Codec.FLOAT, "z", 0.0f).forGetter(SimpleSprite::z),
+            StrOpt.of(Codec.STRING, "tooltip").forGetter(SimpleSprite::tooltip)
+            // Codec.STRING.xmap(ScreenSupplier::decode, ScreenSupplier::toString).f
+            //   .optionalFieldOf("screen_class").forGetter(SimpleSprite:: screenSupp)
     ).apply(i, SimpleSprite::new));
-
 
 
     public void render(PoseStack poseStack) {
         RenderSystem.setShaderTexture(0, texture);
-        innerBlit(poseStack.last().pose(), x, x+width, y, y+height, z);
+        innerBlit(poseStack.last().pose(), x, x + width, y, y + height, z);
     }
 
     private static void innerBlit(Matrix4f matrix, float x1, float x2, float y1, float y2, float blitOffset) {

@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.color.ColorManager;
@@ -18,6 +20,10 @@ import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Polytone {
     public static final String MOD_ID = "polytone";
@@ -39,7 +45,7 @@ public class Polytone {
 
     public static void init(boolean isSodiumOn) {
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
-                        SOUND_TYPES, COLORMAPS,COLORS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
+                        SOUND_TYPES, COLORMAPS, COLORS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
                         BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS),
                 res("block_properties_manager"));
         sodiumOn = isSodiumOn;
@@ -56,20 +62,6 @@ public class Polytone {
         BIOME_EFFECTS.doApply(registryAccess, true);
     }
 
-    public static ResourceLocation getLocalId(ResourceLocation path) {
-        //TODO: this is unconventional and bad
-        return new ResourceLocation(path.getPath().replaceFirst("/", ":"));
-    }
-
-    // gets a target either at local path or global one
-    @Nullable
-    public static <T> Pair<T, ResourceLocation> getTarget(ResourceLocation resourcePath, Registry<T> registry) {
-        ResourceLocation id = getLocalId(resourcePath);
-        var opt = registry.getOptional(id);
-        if (opt.isPresent()) return Pair.of(opt.get(), id);
-        opt = registry.getOptional(resourcePath);
-        return opt.map(t -> Pair.of(t, resourcePath)).orElse(null);
-    }
 
 
 }

@@ -4,13 +4,11 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
-import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -18,15 +16,13 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
-
 public class BiomeEffectsManager extends JsonPartialReloader {
 
     private final Map<ResourceLocation, BiomeSpecialEffects> vanillaEffects = new HashMap<>();
 
     private final Map<ResourceLocation, BiomeEffectModifier> effectsToApply = new HashMap<>();
 
-    public BiomeEffectsManager(){
+    public BiomeEffectsManager() {
         super("biome_effects");
     }
 
@@ -40,7 +36,20 @@ public class BiomeEffectsManager extends JsonPartialReloader {
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Biome Special Effect with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 
-            effectsToApply.put(id, effect);
+            addEffect(id, effect);
+        }
+    }
+
+    private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod) {
+        var explTargets = mod.explicitTargets();
+        if (explTargets.isPresent()) {
+            for (var explicitId : explTargets.get()) {
+                effectsToApply.merge(explicitId, mod, BiomeEffectModifier::merge);
+            }
+        }
+        //no explicit targets. use its own ID instead
+        else {
+            effectsToApply.merge(pathId, mod, BiomeEffectModifier::merge);
         }
     }
 
@@ -58,17 +67,18 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
         Registry<Biome> biomeReg = registryAccess.registry(Registries.BIOME).get();
         for (var v : effectsToApply.entrySet()) {
+            ResourceLocation biomeId = v.getKey();
+            BiomeEffectModifier modifier = v.getValue();
+            var biome = biomeReg.getOptional(biomeId);
+            if (biome.isPresent()) {
+                var old = modifier.apply(biome.get());
 
-            var biome = Polytone.getTarget(v.getKey(), biomeReg);
-            if (biome != null) {
-                var old = v.getValue().apply(biome.getFirst());
-
-                vanillaEffects.put(biome.getSecond(), old);
+                vanillaEffects.put(biomeId, old);
             }
         }
         if (!vanillaEffects.isEmpty())
             Polytone.LOGGER.info("Applied {} Custom Biome Effects Properties", vanillaEffects.size());
-        //we dont clear effects to apply because we need to re apply on world reload
+        //we don't clear effects to apply because we need to re apply on world reload
     }
 
     @Override
@@ -86,7 +96,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
         vanillaEffects.clear();
 
-        //whatever happens we always clear stuff to apply
+        //whatever happens, we always clear stuff to apply
         effectsToApply.clear();
     }
 

@@ -98,8 +98,6 @@ public class LightmapsManager extends JsonImgPartialReloader {
             var map = e.getValue();
             lightmap.acceptImages(map.get("normal"), map.get("rain"), map.get("thunder"));
 
-            ResourceLocation localId = Polytone.getLocalId(location);
-            lightmaps.put(localId, lightmap);
             lightmaps.put(location, lightmap);
         }
 
