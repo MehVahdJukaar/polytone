@@ -108,9 +108,6 @@ public class Colormap implements ColorResolver, BlockColor {
             // ask the world to calculate color with blend using this.
             // this will intern call calculateBlendedColor which will call getColor/sampleColor
             stateHack.set(state); //pass blockstate arg like this
-            if (Polytone.sodiumOn && level instanceof LevelReader r) {
-                return sampleColor(state, pos, r.getBiome(pos).value());
-            }
             return level.getBlockTint(pos, this);
         }
         //else we sample normally
