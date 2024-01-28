@@ -123,26 +123,4 @@ public record BlockPropertyModifier(
             ).apply(instance, BlockPropertyModifier::new));
 
 
-    public enum OffsetTypeR implements StringRepresentable {
-        NONE(BlockBehaviour.OffsetType.NONE),
-        XZ(BlockBehaviour.OffsetType.XZ),
-        XYZ(BlockBehaviour.OffsetType.XYZ);
-
-        private final BlockBehaviour.OffsetType original;
-
-        OffsetTypeR(BlockBehaviour.OffsetType offsetType) {
-            this.original = offsetType;
-        }
-
-        @Override
-        public String getSerializedName() {
-            return this.name().toLowerCase(Locale.ROOT);
-        }
-
-        public BlockBehaviour.OffsetFunction getFunction() {
-            var p = BlockBehaviour.Properties.of().offsetType(original);
-            return p.offsetFunction.orElse((blockState, blockGetter, blockPos) -> Vec3.ZERO);
-        }
-    }
-
 }

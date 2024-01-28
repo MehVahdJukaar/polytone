@@ -5,8 +5,8 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -22,10 +22,10 @@ public record ParticleEmitter(
 ) {
 
     public static final Codec<ParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("particle")
+            Registry.PARTICLE_TYPE.byNameCodec().fieldOf("particle")
                     .flatXmap(t -> t instanceof SimpleParticleType s ?
                                     DataResult.success(s) :
-                                    DataResult.error(() -> "Particle must be of SimpleParticleType class"),
+                                    DataResult.error( "Particle must be of SimpleParticleType class"),
                             DataResult::success)
                     .forGetter(ParticleEmitter::type),
             BlockParticleExpression.CODEC.fieldOf("chance").forGetter(ParticleEmitter::chance),

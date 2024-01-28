@@ -62,7 +62,7 @@ public class BlockParticleExpression {
             Expression compiled = createExpression(s);
             return DataResult.success(new BlockParticleExpression(compiled, s));
         } catch (Exception e) {
-            return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
+            return DataResult.error("Failed to parse expression:" + e.getMessage());
         }
     }, javaxExpression -> DataResult.success(javaxExpression.unparsed));
 
