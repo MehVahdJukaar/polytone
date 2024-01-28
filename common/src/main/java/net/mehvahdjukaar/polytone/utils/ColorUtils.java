@@ -86,25 +86,12 @@ public class ColorUtils {
     }
 
     public static float temperature(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-        if (Polytone.sodiumOn) {
-            if (level instanceof Level l) {
-                var b = getClimateSettings(l,pos);
-                return b.temperature;
-            } else return 0.5f;
-        }
-
         int t = level.getBlockTint(pos, TEMPERATURE_RESOLVER) & 255;
         return t / 255f;
     }
 
 
     public static float downfall(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-        if (Polytone.sodiumOn) {
-            if (level instanceof Level l) {
-                return getClimateSettings(l,pos).downfall;
-            } else return 0.5f;
-        }
-
         int t = level.getBlockTint(pos, DOWNFALL_RESOLVER) & 255;
         return t / 255f;
     }
