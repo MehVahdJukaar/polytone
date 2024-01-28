@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ModelBlockRenderer.class)
-public class ModelBlockRendererMixin {
+public abstract class ModelBlockRendererMixin {
 
 
     @Inject(method = "putQuadData", at = @At(value = "HEAD"))

@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.lightmap;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
@@ -109,12 +110,15 @@ public class LightmapsManager extends JsonImgPartialReloader {
         lightmaps.clear();
     }
 
+    private static boolean reachedMainMenuHack = false;
+
     public boolean maybeModifyLightTexture(LightTexture instance,
                                            NativeImage lightPixels,
                                            DynamicTexture lightTexture,
                                            Minecraft minecraft, ClientLevel level,
                                            float flicker, float partialTicks) {
         if (lastDimension != level.dimension()) {
+            reachedMainMenuHack = true;
             lastDimension = level.dimension();
             currentLightmap = lightmaps.get(lastDimension.location());
         }
@@ -137,6 +141,9 @@ public class LightmapsManager extends JsonImgPartialReloader {
     }
 
     public static boolean isGui() {
+        if (!reachedMainMenuHack && !PlatStuff.isModStateValid()) {
+            return false;
+        }
         return USING_GUI_LIGHTMAP;
     }
 }

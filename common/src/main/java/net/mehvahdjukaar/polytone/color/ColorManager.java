@@ -5,15 +5,11 @@ import com.google.gson.JsonParseException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
-import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
@@ -60,7 +56,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void process(List<Properties> list    ) {
+    protected void process(List<Properties> list) {
         //iterate from the lowest priority to highest
         Lists.reverse(list);
         for (var v : list) {
@@ -77,7 +73,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
 
     private void parseColor(String[] prop, Object obj) {
-        if(!(obj instanceof String str))return;
+        if (!(obj instanceof String str)) return;
         if (is(prop, 0, "map")) {
             String name = get(prop, 1);
             MaterialColor color = MapColorHelper.byName(name);
@@ -132,12 +128,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             if (prop.length > 2) {
                 ResourceLocation id = new ResourceLocation(prop[2].replace("\\", ""));
                 Item item = Registry.ITEM.getOptional(id).orElse(null);
-                if(item == null){
+                if (item == null) {
                     item = Registry.ITEM.getOptional(new ResourceLocation(id.getNamespace(), id.getPath()+ "_spawn_egg")).orElse(null);
                 }
-                if(item == null){
+                if (item == null) {
                     var entity = Registry.ENTITY_TYPE.getOptional(id).orElse(null);
-                    if(entity != null){
+                    if (entity != null) {
                         item = SpawnEggItem.byId(entity);
                     }
                 }
@@ -160,11 +156,11 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         } else if (is(prop, 0, "potion") || is(prop, 0, "effect")) {
             ResourceLocation id = new ResourceLocation(prop[1].replace("\\", ""));
             int col = parseHex(obj);
-            if(id.getPath().equals("empty")){
+            if (id.getPath().equals("empty")) {
                 emptyPotion = col;
-            }else if(id.getPath().equals("water")){
+            } else if (id.getPath().equals("water")) {
                 waterBottle = col;
-            }else {
+            } else {
                 MobEffect effect = Registry.MOB_EFFECT.getOptional(id).orElse(null);
                 if (effect != null) {
                     if (!vanillaEffectColors.containsKey(effect)) {
@@ -199,11 +195,11 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 }
                 text.color = col;
             }
-        }else if(is(prop, 0, "palette")){
-            if(is(prop, 1,"block")){
-                if(prop.length >2 && obj instanceof String) {
-                    String path = prop[2].replace("~/colormap/","");
-                    Polytone.BLOCK_PROPERTIES.addSimpleColormap( path, str);
+        } else if (is(prop, 0, "palette")) {
+            if (is(prop, 1, "block")) {
+                if (prop.length > 2 && obj instanceof String) {
+                    String path = prop[2].replace("~/colormap/", "");
+                    Polytone.BLOCK_PROPERTIES.addSimpleColormap(path, str);
                 }
             }
         }

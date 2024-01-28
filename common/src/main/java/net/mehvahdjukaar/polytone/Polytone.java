@@ -48,6 +48,9 @@ public class Polytone {
                 res("block_properties_manager"));
         sodiumOn = isSodiumOn;
         //TODO: colormap for particles
+        //SKY and fog
+        //block particles
+        //item properties and color. cache pllayer coord
     }
 
     public static ResourceLocation res(String name) {

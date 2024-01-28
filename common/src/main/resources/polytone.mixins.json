@@ -9,6 +9,7 @@
     "accessor.SheepAccessor"
   ],
   "client": [
+    "ClientLevelMixin",
     "ColorResolverMixin",
     "GameRendererMixin",
     "LightTextureMixin",
