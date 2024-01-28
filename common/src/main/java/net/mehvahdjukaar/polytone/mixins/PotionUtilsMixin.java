@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(PotionUtils.class)
-public class PotionUtilsMixin {
+public abstract class PotionUtilsMixin {
 
 
     @ModifyReturnValue(method = "getColor(Lnet/minecraft/world/item/alchemy/Potion;)I", at = @At("RETURN"))

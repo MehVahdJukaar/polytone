@@ -51,6 +51,9 @@ public class Polytone {
         sodiumOn = isSodiumOn;
         PlatStuff.addClientReloadListener(() -> GUI_MODIFIER, res("gui_modifiers"));
         //TODO: colormap for particles
+        //SKY and fog
+        //block particles
+        //item properties and color. cache pllayer coord
     }
 
     public static ResourceLocation res(String name) {

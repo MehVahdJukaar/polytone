@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(LightTexture.class)
-public class LightTextureMixin {
+public abstract class LightTextureMixin {
 
     @Shadow
     @Final

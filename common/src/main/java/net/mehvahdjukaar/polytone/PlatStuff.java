@@ -7,6 +7,7 @@ import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
 
@@ -18,6 +19,7 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @Contract
     @ExpectPlatform
     public static boolean isModStateValid() {
         throw new AssertionError();

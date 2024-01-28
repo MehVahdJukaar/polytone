@@ -3,20 +3,26 @@ package net.mehvahdjukaar.polytone.block;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
+import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.StemBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.*;
 
@@ -28,7 +34,7 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
     // Block ID to modifier
     private final Map<Block, BlockPropertyModifier> modifiers = new HashMap<>();
-
+    private final Map<Block, List<ParticleEmitter>> particleEmitters = new Object2ObjectOpenHashMap<>();
 
     public BlockPropertiesManager() {
         super("block_properties");
@@ -170,10 +176,14 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
             BlockPropertyModifier value = e.getValue();
             vanillaProperties.put(block, value.apply(block));
+
+             var particle = value.particleEmitters();
+            particle.ifPresent(emitters -> particleEmitters.put(block, emitters));
         }
         if (!vanillaProperties.isEmpty())
             Polytone.LOGGER.info("Applied {} Custom Block Properties", vanillaProperties.size());
 
+        //clear as we dont need the anymore
         modifiers.clear();
     }
 
@@ -185,11 +195,22 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
         vanillaProperties.clear();
         modifiers.clear();
         colorPropertiesColormaps.clear();
+        particleEmitters.clear();
     }
 
+    //optifine stuff
     private final Map<ResourceLocation, String> colorPropertiesColormaps = new HashMap<>();
 
     public void addSimpleColormap(String path, String str) {
         colorPropertiesColormaps.put(new ResourceLocation(path), str);
+    }
+
+    public void maybeEmitParticle(Block block, BlockState state, Level level, BlockPos pos) {
+        var m = particleEmitters.get(block);
+        if(m != null){
+            for(var p : m){
+                p.tick(level, pos, state);
+            }
+        }
     }
 }
