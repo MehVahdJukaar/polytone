@@ -31,8 +31,7 @@ public abstract class ScreenMixin implements SlotifyScreen {
     @Override
     public void polytone$renderExtraSprites(PoseStack poseStack) {
         if (polytone$modifier != null) {
-            RenderSystem.enableDepthTest();
-            polytone$modifier.sprites().forEach(r -> r.render(poseStack));
+            polytone$modifier.renderSprites(poseStack);
         }
     }
 
@@ -49,18 +48,14 @@ public abstract class ScreenMixin implements SlotifyScreen {
     @Inject(method = "addWidget", at = @At("HEAD"))
     public <T extends GuiEventListener & NarratableEntry> void modifyWidget2(T listener, CallbackInfoReturnable<T> cir) {
         if (polytone$modifier != null && listener instanceof AbstractWidget aw) {
-            for (var m : polytone$modifier.widgetModifiers()) {
-                m.maybeModify(aw);
-            }
+            polytone$modifier.modifyWidgets(aw);
         }
     }
 
     @Inject(method = "addRenderableOnly", at = @At("HEAD"))
     public <T extends Renderable> void modifyRenderable(T listener, CallbackInfoReturnable<T> cir) {
         if (polytone$modifier != null && listener instanceof AbstractWidget aw) {
-            for (var m : polytone$modifier.widgetModifiers()) {
-                m.maybeModify(aw);
-            }
+            polytone$modifier.modifyWidgets(aw);
         }
     }
 

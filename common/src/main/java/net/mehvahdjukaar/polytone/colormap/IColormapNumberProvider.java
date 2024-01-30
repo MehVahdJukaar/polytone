@@ -98,4 +98,7 @@ public interface IColormapNumberProvider {
     IColormapNumberProvider BIOME_ID = register("biome_id", (state, pos, b) -> Minecraft.getInstance().level
             .registryAccess().registry(Registries.BIOME).get().getId(b) / 256f);
 
+    IColormapNumberProvider Y_LEVEL = register("y_level", (state, pos, biome) ->
+            (pos == null ? 64 : pos.getY()) / 256f); //hoping this will be flipped
+
 }
