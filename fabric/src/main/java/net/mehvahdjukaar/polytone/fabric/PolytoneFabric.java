@@ -14,12 +14,6 @@ public class PolytoneFabric implements ClientModInitializer {
         boolean sodiumOn = instance.isModLoaded("sodium") || instance.isModLoaded("indium");
         Polytone.init(sodiumOn);
 
-        if (sodiumOn) {
-            Polytone.LOGGER.error("!!!!!");
-            Polytone.LOGGER.error("SODIUM has been detected. POLYTONE colormaps will be OFF. This is a SODIUM issue and CANNOT be fixed by me until Sodium merges this PR https://github.com/CaffeineMC/sodium-fabric/pull/2222");
-            Polytone.LOGGER.error("!!!!!");
-        }
-
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
             if (client) Polytone.onTagsReceived(registries);
         });

@@ -72,8 +72,18 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Client Block Property with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 
-            //fill inline colormaps colormapTextures
             var colormap = prop.tintGetter();
+            if(colormap.isEmpty()) {
+                //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
+                var text = textures.get(id);
+                if(text != null){
+                    CompoundBlockColors defaultSampler = CompoundBlockColors.createDefault(text.keySet(), true);
+                    prop = prop.merge(BlockPropertyModifier.ofColor(defaultSampler));
+                    colormap = prop.tintGetter();
+                }
+            }
+
+            //fill inline colormaps colormapTextures
             if (colormap.isPresent() && colormap.get() instanceof CompoundBlockColors c) {
                 ColormapsManager.fillCompoundColormapPalette(textures, id, c, usedTextures);
             }
