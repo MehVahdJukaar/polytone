@@ -16,6 +16,7 @@ import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -106,7 +107,10 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
 
     public static SoundEvent registerSoundEvent(ResourceLocation id) {
         SoundEvent event = SoundEvent.createVariableRangeEvent(id);
+        ((MappedRegistry)  BuiltInRegistries.SOUND_EVENT).frozen  = false;
         Registry.register(BuiltInRegistries.SOUND_EVENT, id, event);
+        BuiltInRegistries.SOUND_EVENT.freeze();
+
         return event;
     }
 

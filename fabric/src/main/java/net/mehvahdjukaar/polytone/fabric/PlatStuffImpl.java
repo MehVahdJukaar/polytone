@@ -4,6 +4,7 @@ import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
+import net.mehvahdjukaar.polytone.mixins.ColorResolverMixin;
 import net.mehvahdjukaar.polytone.mixins.fabric.BlockColorsAccessor;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;

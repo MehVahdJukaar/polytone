@@ -28,7 +28,7 @@ dependencies {
 
     implementation include( 'net.objecthunter:exp4j:0.4.8')
 
-    modCompileOnly("maven.modrinth:sodium:mc1.20.1-0.5.3")
+    modRuntimeOnly("maven.modrinth:sodium:mc1.20.3-0.5.7")
 
 }
 

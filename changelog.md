@@ -1,1 +1,2 @@
-added block particle emitters
+fixed color resolvers on sodium
+fixed widget modifiers not working

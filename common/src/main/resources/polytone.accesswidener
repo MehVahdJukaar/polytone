@@ -70,3 +70,5 @@ accessible field net/minecraft/client/renderer/chunk/RenderChunkRegion level Lne
 
 accessible field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
 mutable field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
+
+accessible field net/minecraft/core/MappedRegistry frozen Z
