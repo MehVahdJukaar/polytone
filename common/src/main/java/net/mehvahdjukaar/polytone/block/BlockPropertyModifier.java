@@ -5,6 +5,7 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
@@ -22,12 +23,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 
 public record BlockPropertyModifier(
         Optional<? extends BlockColor> tintGetter,
@@ -83,7 +82,7 @@ public record BlockPropertyModifier(
                 hasOffset = true;
             }
         }
-        if(hasOffset) block.dynamicShape = true;
+        if (hasOffset) block.dynamicShape = true;
 
         Function<BlockState, MapColor> oldMapColor = null;
         if (mapColor.isPresent()) {
@@ -95,7 +94,7 @@ public record BlockPropertyModifier(
         }
 
         ToIntFunction<BlockState> oldClientLight = null;
-        if(clientLight.isPresent()){
+        if (clientLight.isPresent()) {
             oldClientLight = block.properties.lightEmission;
             block.properties.lightEmission = clientLight.get();
             for (var s : block.getStateDefinition().getPossibleStates()) {
@@ -109,7 +108,6 @@ public record BlockPropertyModifier(
             color = PlatStuff.getBlockColor(blockColors, block);
             blockColors.register(tintGetter.get(), block);
         }
-
 
 
         // returns old properties
@@ -161,5 +159,27 @@ public record BlockPropertyModifier(
         }
     }
 
+
+    public static BlockPropertyModifier fromOfProperties(Properties properties) {
+        Set<ResourceLocation> set = null;
+        Colormap colormap;
+        var targets = properties.getProperty("blocks");
+        if (targets != null) {
+            set = Arrays.stream(targets.split(" "))
+                    .map(ResourceLocation::new)
+                    .collect(Collectors.toSet());
+        }
+        String format = properties.getProperty("format");
+        if ("fixed".equals(format)) {
+            colormap = Colormap.fixed();
+        } else if ("grid".equals(format)) {
+            colormap = Colormap.biomeId();
+        } else {
+            colormap = Colormap.defTriangle();
+        }
+        return new BlockPropertyModifier(Optional.of(colormap),
+                Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.ofNullable(set));
+    }
 
 }

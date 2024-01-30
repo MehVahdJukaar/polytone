@@ -1,5 +1,8 @@
 package net.mehvahdjukaar.polytone.slotify;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.components.AbstractWidget;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -26,5 +29,16 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
     @Nullable
     public SpecialOffset getSpecial(String key) {
         return this.specialOffsets.get(key);
+    }
+
+    public void modifyWidgets(AbstractWidget button) {
+        for (var m : this.widgetModifiers) {
+            m.maybeModify(button);
+        }
+    }
+
+    public void renderSprites(PoseStack poseStack) {
+        RenderSystem.enableDepthTest();
+        this.sprites.forEach(r -> r.render(poseStack));
     }
 }
