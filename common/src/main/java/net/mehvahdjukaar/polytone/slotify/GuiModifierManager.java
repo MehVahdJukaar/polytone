@@ -10,14 +10,20 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.recipebook.RecipeBookTabButton;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.stats.RecipeBook;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -72,8 +78,16 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
         for (GuiModifier mod : allModifiers) {
             //inventory has a null menu type for some reason
             if (mod.targetsClass()) {
+                String target = mod.target();
                 try {
-                    var cl = Class.forName(mod.target());
+                    Class<?> cl;
+                    if (target.equals("InventoryMenu")) {
+                        cl = InventoryMenu.class;
+                    }
+
+                    else if(target.equals("ItemPickerMenu")){
+                        cl = CreativeModeInventoryScreen.ItemPickerMenu.class;
+                    } else cl = Class.forName(target);
                     BY_CLASS.merge(cl, new ScreenModifier(mod), (a, b) -> b.merge(a));
 
                     if (!mod.slotModifiers().isEmpty()) {
@@ -83,6 +97,7 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
                     }
 
                 } catch (ClassNotFoundException ignored) {
+                    Polytone.LOGGER.error("Could not find class target with name {}",target);
                 }
 
 
@@ -129,6 +144,12 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
     private static ScreenModifier getScreenModifier(AbstractContainerScreen<?> screen) {
         ScreenModifier m = null;
         AbstractContainerMenu menu = screen.getMenu();
+        if(screen.getClass() == InventoryScreen.class){
+            m = BY_CLASS.get(InventoryMenu.class);
+        }
+        else if(screen.getClass() == CreativeModeInventoryScreen.class){
+            m = BY_CLASS.get(CreativeModeInventoryScreen.ItemPickerMenu.class);
+        }
         if (menu != null) {
             m = BY_CLASS.get(menu.getClass());
         }

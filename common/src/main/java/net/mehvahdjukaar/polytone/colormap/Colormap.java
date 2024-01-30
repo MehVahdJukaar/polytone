@@ -13,7 +13,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.*;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +37,7 @@ public class Colormap implements ColorResolver, BlockColor {
     boolean isReference = false;
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
+    private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
 
     public static final Codec<Colormap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
             StrOpt.of(Codec.INT, "default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
@@ -108,6 +111,7 @@ public class Colormap implements ColorResolver, BlockColor {
             // ask the world to calculate color with blend using this.
             // this will intern call calculateBlendedColor which will call getColor/sampleColor
             stateHack.set(state); //pass blockstate arg like this
+            yHack.set(pos.getY());
             return level.getBlockTint(pos, this);
         }
         //else we sample normally
@@ -122,12 +126,12 @@ public class Colormap implements ColorResolver, BlockColor {
 
     //gets color for blend
     @Override
-    public int getColor(Biome biome, double x, double y) {
-        // Unused. Error if it gets called. We use sampleColor instead
-        return 0;
+    public int getColor(Biome biome, double x, double z) {
+        //this actually gets called when sodium is on as we cant define our own blend method
+        return this.sampleColor(stateHack.get(), BlockPos.containing(x, yHack.get(), z), biome);
     }
 
-
+    //calculate color blend. could just use vanilla impl tbh since we got above hack for sodium anyway
     public int calculateBlendedColor(Level level, BlockPos pos) {
         //Same as vanilla impl. We could have just called it. Just here so we call sampleColor instead of getColor with pos instead of x z
         int i = Minecraft.getInstance().options.biomeBlendRadius().get();

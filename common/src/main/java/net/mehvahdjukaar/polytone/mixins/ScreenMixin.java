@@ -23,8 +23,8 @@ public abstract class ScreenMixin implements SlotifyScreen {
     @Unique
     private ScreenModifier polytone$modifier = null;
 
-    @Inject(method = "init(Lnet/minecraft/client/Minecraft;II)V", at = @At("TAIL"))
-    private  void onInit(CallbackInfo ci) {
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void onInit(CallbackInfo ci) {
         polytone$modifier = GuiModifierManager.getGuiModifier((Screen) (Object) this);
     }
 
