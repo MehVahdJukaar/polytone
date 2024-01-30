@@ -1,2 +1,1 @@
-fixed color resolvers on sodium
-fixed widget modifiers not working
+added backward compat for OF really bad grid format. dont use it tho
