@@ -11,24 +11,17 @@ import java.util.function.Consumer;
 public final class ReferenceOrDirectCodec<E> implements Codec<E> {
     private final Codec<E> reference;
     private final Codec<E> direct;
-    private final Consumer<E> onReference;
     private final boolean bothStrings;
 
-    public ReferenceOrDirectCodec(final Codec<? extends E> reference, final Codec<? extends E> direct, Consumer<? extends E> onReference) {
+    public ReferenceOrDirectCodec(final Codec<? extends E> reference, final Codec<? extends E> direct) {
         this.reference = (Codec<E>) reference;
         this.direct = (Codec<E>) direct;
-        this.onReference = (Consumer<E>) onReference;
         this.bothStrings = false;
-    }
-
-    public ReferenceOrDirectCodec(final Codec<? extends E> reference, final Codec<? extends E> direct) {
-        this(reference, direct, e -> {});
     }
 
     public ReferenceOrDirectCodec(final Codec<? extends E> reference, final Codec<? extends E> direct, boolean bothStrings) {
         this.reference = (Codec<E>) reference;
         this.direct = (Codec<E>) direct;
-        this.onReference = a -> {};
         this.bothStrings = bothStrings;
     }
 
@@ -36,9 +29,6 @@ public final class ReferenceOrDirectCodec<E> implements Codec<E> {
     public <T> DataResult<Pair<E, T>> decode(final DynamicOps<T> ops, final T input) {
         if (ops.getStringValue(input).result().isPresent()) {
             var ref = reference.decode(ops, input);
-            if (ref.result().isPresent()) {
-                onReference.accept(ref.result().get().getFirst());
-            }
             if (!bothStrings) return ref;
         }
         return direct.decode(ops, input);

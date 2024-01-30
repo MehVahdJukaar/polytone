@@ -5,6 +5,7 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
@@ -23,12 +24,10 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 
 public record BlockPropertyModifier(
         Optional<? extends BlockColor> tintGetter,
@@ -82,7 +81,7 @@ public record BlockPropertyModifier(
         }
 
         ToIntFunction<BlockState> oldClientLight = null;
-        if(clientLight.isPresent()){
+        if (clientLight.isPresent()) {
             oldClientLight = block.properties.lightEmission;
             block.properties.lightEmission = clientLight.get();
             for (var s : block.getStateDefinition().getPossibleStates()) {
@@ -96,7 +95,6 @@ public record BlockPropertyModifier(
             color = PlatStuff.getBlockColor(blockColors, block);
             blockColors.register(tintGetter.get(), block);
         }
-
 
 
         // returns old properties
@@ -122,5 +120,50 @@ public record BlockPropertyModifier(
                     StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(BlockPropertyModifier::explicitTargets)
             ).apply(instance, BlockPropertyModifier::new));
 
+
+    public enum OffsetTypeR implements StringRepresentable {
+        NONE(BlockBehaviour.OffsetType.NONE),
+        XZ(BlockBehaviour.OffsetType.XZ),
+        XYZ(BlockBehaviour.OffsetType.XYZ);
+
+        private final BlockBehaviour.OffsetType original;
+
+        OffsetTypeR(BlockBehaviour.OffsetType offsetType) {
+            this.original = offsetType;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return this.name().toLowerCase(Locale.ROOT);
+        }
+
+        public BlockBehaviour.OffsetFunction getFunction() {
+            var p = BlockBehaviour.Properties.of().offsetType(original);
+            return p.offsetFunction.orElse((blockState, blockGetter, blockPos) -> Vec3.ZERO);
+        }
+    }
+
+
+    public static BlockPropertyModifier fromOfProperties(Properties properties) {
+        Set<ResourceLocation> set = null;
+        Colormap colormap;
+        var targets = properties.getProperty("blocks");
+        if (targets != null) {
+            set = Arrays.stream(targets.split(" "))
+                    .map(ResourceLocation::new)
+                    .collect(Collectors.toSet());
+        }
+        String format = properties.getProperty("format");
+        if ("fixed".equals(format)) {
+            colormap = Colormap.fixed();
+        } else if ("grid".equals(format)) {
+            colormap = Colormap.biomeId();
+        } else {
+            colormap = Colormap.defTriangle();
+        }
+        return new BlockPropertyModifier(Optional.of(colormap),
+                Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.ofNullable(set));
+    }
 
 }

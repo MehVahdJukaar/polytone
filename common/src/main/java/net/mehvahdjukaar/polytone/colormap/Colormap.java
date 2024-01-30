@@ -34,7 +34,6 @@ public class Colormap implements ColorResolver, BlockColor {
 
     private Integer defaultColor = null;
     private ArrayImage image = null;
-    boolean isReference = false;
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
@@ -54,12 +53,7 @@ public class Colormap implements ColorResolver, BlockColor {
             object -> Optional.ofNullable(Polytone.COLORMAPS.getKey(object)).map(DataResult::success)
                     .orElse(DataResult.error( "Unknown Color Property: " + object)));
 
-    public static final Codec<BlockColor> CODEC = new ReferenceOrDirectCodec<>(
-            REFERENCE_CODEC, DIRECT_CODEC, i -> {
-        if (i instanceof Colormap c) {
-            c.isReference = true;
-        }
-    });
+    public static final Codec<BlockColor> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_CODEC, DIRECT_CODEC);
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
                      boolean triangular, Optional<Boolean> biomeBlend) {
@@ -82,6 +76,11 @@ public class Colormap implements ColorResolver, BlockColor {
         return new Colormap(xGetter, yGetter);
     }
 
+    public static Colormap fixed() {
+        return new Colormap(Optional.empty(), IColormapNumberProvider.ZERO,
+                IColormapNumberProvider.ZERO, false, Optional.empty());
+    }
+
     public static Colormap defSquare() {
         return new Colormap(Optional.empty(),
                 IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, false, Optional.empty());
@@ -92,11 +91,23 @@ public class Colormap implements ColorResolver, BlockColor {
                 IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, true, Optional.empty());
     }
 
+    public static Colormap biomeId(){
+        return new Colormap(Optional.empty(),
+                IColormapNumberProvider.BIOME_ID,
+                IColormapNumberProvider.Y_LEVEL,
+                false, Optional.of(Boolean.TRUE));
+
+    }
+
     public void acceptTexture(ArrayImage image) {
         this.image = image;
         if (defaultColor == null) {
             this.defaultColor = sample(0.5f, 0.5f, -1);
         }
+    }
+
+    public boolean hasTexture(){
+        return image != null;
     }
 
     // Dont use tint index
@@ -111,7 +122,7 @@ public class Colormap implements ColorResolver, BlockColor {
             // ask the world to calculate color with blend using this.
             // this will intern call calculateBlendedColor which will call getColor/sampleColor
             stateHack.set(state); //pass blockstate arg like this
-            yHack.set(pos.getY());
+            yHack.set(pos != null ? pos.getY() : 0);
             return level.getBlockTint(pos, this);
         }
         //else we sample normally

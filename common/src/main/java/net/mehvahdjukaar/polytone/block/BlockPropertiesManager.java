@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.block;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
@@ -12,8 +11,9 @@ import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
-import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
+import net.mehvahdjukaar.polytone.utils.PartialReloader;
+import net.mehvahdjukaar.polytone.utils.PropertiesUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.*;
 
-public class BlockPropertiesManager extends JsonImgPartialReloader {
+public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
 
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();
 
@@ -36,6 +36,11 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
     public BlockPropertiesManager() {
         super("block_properties");
+    }
+
+    public record Resources(Map<ResourceLocation, JsonElement> jsons,
+                            Map<ResourceLocation, ArrayImage> textures,
+                            Map<ResourceLocation, Properties> ofProperties) {
     }
 
     @Override
@@ -48,12 +53,14 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
         Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
         Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.gatherImages(resourceManager, "colormatic/colormap");
 
+        Map<ResourceLocation, Properties> ofProperties = PropertiesUtils.gatherProperties(resourceManager, "optifine/colormap");
+
         textures.putAll(LegacyHelper.convertPaths(ofTextures));
         textures.putAll(LegacyHelper.convertPaths(cmTextures));
 
         textures.putAll(ArrayImage.gatherImages(resourceManager, path()));
 
-        return new Resources(jsons, textures);
+        return new Resources(jsons, textures, LegacyHelper.convertPaths(ofProperties));
     }
 
     @Override
@@ -73,10 +80,10 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
                     .getFirst();
 
             var colormap = prop.tintGetter();
-            if(colormap.isEmpty()) {
+            if (colormap.isEmpty()) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
                 var text = textures.get(id);
-                if(text != null){
+                if (text != null) {
                     CompoundBlockColors defaultSampler = CompoundBlockColors.createDefault(text.keySet(), true);
                     prop = prop.merge(BlockPropertyModifier.ofColor(defaultSampler));
                     colormap = prop.tintGetter();
@@ -101,7 +108,6 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
             //optifine stuff
             String path = id.getPath();
 
-
             var special = colorPropertiesColormaps.get(id);
             if (special != null) {
                 //TODO: improve tint assignment
@@ -122,6 +128,8 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
                 }
                 continue;
             }
+
+            //check it it has an optifine property
 
             if (path.contains("stem")) {
                 Colormap stemMap = Colormap.simple((state, level, pos) -> state.getValue(StemBlock.AGE) / 7f,
@@ -153,13 +161,27 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
                 CompoundBlockColors tintMap = CompoundBlockColors.createDefault(value.keySet(), true);
                 ColormapsManager.fillCompoundColormapPalette(textures, id, tintMap, usedTextures);
 
-                addModifier(id, BlockPropertyModifier.ofColor(tintMap));
+                BlockPropertyModifier modifier;
+                Properties ofProp = resources.ofProperties.get(id);
+                if (ofProp != null) {
+                    modifier = BlockPropertyModifier.fromOfProperties(ofProp);
+                } else {
+                    modifier = BlockPropertyModifier.ofColor(tintMap);
+                }
+
+                addModifier(id, modifier);
             }
         }
     }
 
     private void addModifier(ResourceLocation pathId, BlockPropertyModifier mod) {
         var explTargets = mod.explicitTargets();
+        //validate colormap
+        if (mod.tintGetter().isPresent()) {
+            if (mod.tintGetter().get() instanceof Colormap c && !c.hasTexture()) {
+                throw new IllegalStateException("Did not find any texture png for implicit colormap for block modifier" + pathId);
+            }
+        }
         Optional<Block> idTarget = Registry.BLOCK.getOptional(pathId);
         if (explTargets.isPresent()) {
             if (idTarget.isPresent()) {
@@ -185,7 +207,7 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
             BlockPropertyModifier value = e.getValue();
             vanillaProperties.put(block, value.apply(block));
 
-             var particle = value.particleEmitters();
+            var particle = value.particleEmitters();
             particle.ifPresent(emitters -> particleEmitters.put(block, emitters));
         }
         if (!vanillaProperties.isEmpty())
@@ -215,8 +237,8 @@ public class BlockPropertiesManager extends JsonImgPartialReloader {
 
     public void maybeEmitParticle(Block block, BlockState state, Level level, BlockPos pos) {
         var m = particleEmitters.get(block);
-        if(m != null){
-            for(var p : m){
+        if (m != null) {
+            for (var p : m) {
                 p.tick(level, pos, state);
             }
         }

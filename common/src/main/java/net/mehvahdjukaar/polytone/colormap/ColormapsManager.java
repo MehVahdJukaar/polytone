@@ -32,10 +32,6 @@ public class ColormapsManager extends JsonImgPartialReloader {
     public static final BlockColor WATER_COLOR = (s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000;
 
-    public static final BlockColor BIOME_SAMPLE = Colormap.defSquare();
-
-    public static final BlockColor TR_BIOME_SAMPLE = Colormap.defTriangle();
-
     // custom defined colormaps
     private final BiMap<ResourceLocation, BlockColor> colormapsIds = HashBiMap.create();
 
@@ -81,12 +77,20 @@ public class ColormapsManager extends JsonImgPartialReloader {
         colormapsIds.put(new ResourceLocation("grass_color"), GRASS_COLOR);
         colormapsIds.put(new ResourceLocation("foliage_color"), FOLIAGE_COLOR);
         colormapsIds.put(new ResourceLocation("water_color"), WATER_COLOR);
-        colormapsIds.put(new ResourceLocation("biome_sample"), BIOME_SAMPLE);
-        colormapsIds.put(new ResourceLocation("triangular_biome_sample"), TR_BIOME_SAMPLE);
     }
 
     @Nullable
     public BlockColor get(ResourceLocation id) {
+        //default samplers
+        if (id.equals(new ResourceLocation("biome_sample"))) {
+            return Colormap.defSquare();
+        } else if (id.equals(new ResourceLocation("triangular_biome_sample"))) {
+            return Colormap.defTriangle();
+        } else if (id.equals(new ResourceLocation("fixed"))) {
+            return Colormap.fixed();
+        } else if (id.equals(new ResourceLocation("biome_id"))) {
+            return Colormap.biomeId();
+        }
         return colormapsIds.get(id);
     }
 
@@ -98,6 +102,9 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     public void add(ResourceLocation id, Colormap colormap) {
         colormapsIds.put(id, colormap);
+        if (!colormap.hasTexture()) {
+            throw new IllegalStateException("Did not find any texture png for colormap " + id);
+        }
     }
 
 
@@ -109,7 +116,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
         for (var g : getters.int2ObjectEntrySet()) {
             int index = g.getIntKey();
             BlockColor inner = g.getValue();
-            if (inner instanceof Colormap c && !c.isReference) {
+            if (inner instanceof Colormap c && !c.hasTexture()) {
                 if (textureMap != null) {
                     if (getters.size() == 1 || index == 0) {
                         try {
@@ -139,8 +146,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
             if (texture.pixels().length == 0) {
                 throw new IllegalStateException("Colormap at location " + path + " had invalid 0 dimension");
             }
-        }
-        else throw new IllegalStateException("Could not find any colormap associated with path " + path);
+        } else throw new IllegalStateException("Could not find any colormap associated with path " + path);
     }
 
 
