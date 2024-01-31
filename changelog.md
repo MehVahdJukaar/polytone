@@ -1,1 +1,2 @@
-added backward compat for OF really bad grid format. dont use it tho
+fixe biome colors not refreshing due to a possible fabric bug
+fixed issue with gui modifiers
