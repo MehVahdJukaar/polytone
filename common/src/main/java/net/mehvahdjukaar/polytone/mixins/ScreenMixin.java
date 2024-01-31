@@ -23,7 +23,8 @@ public abstract class ScreenMixin implements SlotifyScreen {
     @Unique
     private ScreenModifier polytone$modifier = null;
 
-    @Inject(method = "<init>", at = @At("TAIL"))
+    //we cant access screen title during consturciton so we delay
+    @Inject(method = "init(Lnet/minecraft/client/Minecraft;II)V", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
         polytone$modifier = GuiModifierManager.getGuiModifier((Screen) (Object) this);
     }
@@ -47,15 +48,18 @@ public abstract class ScreenMixin implements SlotifyScreen {
 
     @Inject(method = "addWidget", at = @At("HEAD"))
     public <T extends GuiEventListener & NarratableEntry> void modifyWidget2(T listener, CallbackInfoReturnable<T> cir) {
-        if (polytone$modifier != null && listener instanceof AbstractWidget aw) {
-            polytone$modifier.modifyWidgets(aw);
+        //gets it new as it migt not have been init yet
+        var mod = GuiModifierManager.getGuiModifier((Screen) (Object) this);
+        if (mod != null && listener instanceof AbstractWidget aw) {
+            mod.modifyWidgets(aw);
         }
     }
 
     @Inject(method = "addRenderableOnly", at = @At("HEAD"))
     public <T extends Renderable> void modifyRenderable(T listener, CallbackInfoReturnable<T> cir) {
-        if (polytone$modifier != null && listener instanceof AbstractWidget aw) {
-            polytone$modifier.modifyWidgets(aw);
+        var mod = GuiModifierManager.getGuiModifier((Screen) (Object) this);
+        if (mod != null && listener instanceof AbstractWidget aw) {
+            mod.modifyWidgets(aw);
         }
     }
 

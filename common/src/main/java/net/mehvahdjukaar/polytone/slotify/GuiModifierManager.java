@@ -11,14 +11,13 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.gui.screens.recipebook.RecipeBookTabButton;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.stats.RecipeBook;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -83,9 +82,7 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
                     Class<?> cl;
                     if (target.equals("InventoryMenu")) {
                         cl = InventoryMenu.class;
-                    }
-
-                    else if(target.equals("ItemPickerMenu")){
+                    } else if (target.equals("ItemPickerMenu")) {
                         cl = CreativeModeInventoryScreen.ItemPickerMenu.class;
                     } else cl = Class.forName(target);
                     BY_CLASS.merge(cl, new ScreenModifier(mod), (a, b) -> b.merge(a));
@@ -97,7 +94,7 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
                     }
 
                 } catch (ClassNotFoundException ignored) {
-                    Polytone.LOGGER.error("Could not find class target with name {}",target);
+                    Polytone.LOGGER.error("Could not find class target with name {}", target);
                 }
 
 
@@ -144,10 +141,9 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
     private static ScreenModifier getScreenModifier(AbstractContainerScreen<?> screen) {
         ScreenModifier m = null;
         AbstractContainerMenu menu = screen.getMenu();
-        if(screen.getClass() == InventoryScreen.class){
+        if (screen.getClass() == InventoryScreen.class) {
             m = BY_CLASS.get(InventoryMenu.class);
-        }
-        else if(screen.getClass() == CreativeModeInventoryScreen.class){
+        } else if (screen.getClass() == CreativeModeInventoryScreen.class) {
             m = BY_CLASS.get(CreativeModeInventoryScreen.ItemPickerMenu.class);
         }
         if (menu != null) {
@@ -167,19 +163,22 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
 
     @Nullable
     public static ScreenModifier getGuiModifier(Screen screen) {
-        ScreenModifier m = null;
-        var c = screen.getTitle();
-        m = BY_TITLE.get(c.getString());
-        if (m == null && c instanceof MutableComponent mc && mc.getContents() instanceof TranslatableContents tc) {
-            m = BY_TITLE.get(tc.getKey());
-        }
-        if (m == null) {
-            m = BY_CLASS.get(screen.getClass());
-        }
+        ScreenModifier m = BY_CLASS.get(screen.getClass());
         if (m == null && screen instanceof AbstractContainerScreen<?> as) {
             m = getScreenModifier(as);
         }
-
+        Component c;
+        try {
+            c = screen.getTitle();
+        } catch (Exception e) {
+            return null;
+        }
+        if (m == null) {
+            m = BY_TITLE.get(c.getString());
+        }
+        if (m == null && c instanceof MutableComponent mc && mc.getContents() instanceof TranslatableContents tc) {
+            m = BY_TITLE.get(tc.getKey());
+        }
         return m;
     }
 

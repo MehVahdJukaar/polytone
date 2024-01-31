@@ -1,2 +1,2 @@
-fixed color resolvers on sodium
-fixed widget modifiers not working
+fixe biome colors not refreshing due to a possible fabric bug
+fixed issue with gui modifiers
