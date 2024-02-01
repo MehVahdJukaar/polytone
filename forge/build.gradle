@@ -134,7 +134,7 @@ dependencies {
     annotationProcessor 'net.fabricmc:sponge-mixin:0.12.5+mixin.0.8.5'
 
     modImplementation ("curse.maven:curios-309927:4583413")
-    modImplementation ("curse.maven:quark-243121:4812006")
+    modCompileOnly ("curse.maven:quark-243121:4812006")
 
     implementation 'org.jetbrains:annotations:22.0.0'
 }

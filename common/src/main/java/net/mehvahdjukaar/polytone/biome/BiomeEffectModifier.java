@@ -42,6 +42,13 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(BiomeEffectModifier::explicitTargets)
     ).apply(instance, BiomeEffectModifier::new));
 
+    public static BiomeEffectModifier ofWaterColor(int waterColor){
+        return new BiomeEffectModifier(Optional.empty(), Optional.of(waterColor),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+    }
+
     // Other has priority
     public BiomeEffectModifier merge(BiomeEffectModifier other) {
         return new BiomeEffectModifier(

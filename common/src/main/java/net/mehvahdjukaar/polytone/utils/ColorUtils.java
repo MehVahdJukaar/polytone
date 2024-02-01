@@ -85,32 +85,4 @@ public class ColorUtils {
         return ((BiomeAccessor) (Object)biome).getClimateSettings();
     }
 
-    public static float temperature(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-        int t = level.getBlockTint(pos, TEMPERATURE_RESOLVER) & 255;
-        return t / 255f;
-    }
-
-
-    public static float downfall(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-        int t = level.getBlockTint(pos, DOWNFALL_RESOLVER) & 255;
-        return t / 255f;
-    }
-
-    public static final ColorResolver TEMPERATURE_RESOLVER = (biome, x, z) -> {
-        byte hack = (byte) (Mth.clamp(getClimateSettings(biome).temperature, 0, 1) * 255);
-        return ColorUtils.pack(hack, hack, hack, hack);
-    };
-
-    public static final ColorResolver INT_TEMPERATURE_RESOLVER = (biome, x, z) ->
-            Float.floatToIntBits (Mth.clamp(getClimateSettings(biome).temperature, 0, 1));
-
-    public static final ColorResolver DOWNFALL_RESOLVER = (biome, x, z) -> {
-        byte hack = (byte) (Mth.clamp(getClimateSettings(biome).downfall, 0, 1) * 255);
-        return ColorUtils.pack(hack, hack, hack, hack);
-    };
-
-    public static final ColorResolver INT_DOWNFALL_RESOLVER = (biome, x, z) ->
-            Float.floatToIntBits (Mth.clamp(getClimateSettings(biome).downfall, 0, 1));
-
-
 }

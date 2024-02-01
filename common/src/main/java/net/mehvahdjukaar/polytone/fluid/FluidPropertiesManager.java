@@ -96,6 +96,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     private void addModifier(ResourceLocation pathId, FluidPropertyModifier mod) {
+
         var explTargets = mod.explicitTargets();
         Optional<Fluid> pathTarget = BuiltInRegistries.FLUID.getOptional(pathId);
         if (explTargets.isPresent()) {
@@ -138,5 +139,9 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             }
         }
         return original;
+    }
+
+    public FluidPropertyModifier getModifier(Fluid water) {
+        return modifiers.get(water);
     }
 }
