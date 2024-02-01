@@ -3,6 +3,8 @@ package net.mehvahdjukaar.polytone.biome;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
@@ -12,6 +14,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,7 +70,9 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     public void doApply(RegistryAccess registryAccess, boolean firstLogin) {
         if (firstLogin) vanillaEffects.clear();
 
+
         Registry<Biome> biomeReg = registryAccess.registry(Registry.BIOME_REGISTRY).get();
+        addAllWaterColors(biomeReg);
         for (var v : effectsToApply.entrySet()) {
             ResourceLocation biomeId = v.getKey();
             BiomeEffectModifier modifier = v.getValue();
@@ -102,4 +108,20 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     }
 
 
+    //hack
+    public void addAllWaterColors(Registry<Biome> biomeReg) {
+        if(Polytone.sodiumOn){
+            var water =  Polytone.FLUID_PROPERTIES.getModifier(Fluids.WATER);
+            for (var e : biomeReg.entrySet()){
+                var id = e.getKey();
+                var b = e.getValue();
+                if(water.getColormap() instanceof Colormap cl){
+                    var col = cl.getColor(b, 0,0);
+                    var dummy = BiomeEffectModifier.ofWaterColor(col);
+                    addEffect(id.location(), dummy);
+                }
+            }
+        }
+
+    }
 }

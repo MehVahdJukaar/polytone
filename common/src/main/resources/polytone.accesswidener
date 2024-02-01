@@ -69,3 +69,9 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$Properties materialColor Ljava/util/function/Function;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetType Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetType;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetType Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetType;
+accessible field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
+mutable field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
+
+accessible field net/minecraft/core/MappedRegistry frozen Z
+
+accessible method net/minecraft/world/level/biome/Biome getTemperature (Lnet/minecraft/core/BlockPos;)F

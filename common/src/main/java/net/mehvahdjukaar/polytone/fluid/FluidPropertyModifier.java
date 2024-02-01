@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.fluid;
 
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
@@ -17,8 +18,8 @@ public record FluidPropertyModifier(Optional<BlockColor> colormap, Optional<Bloc
 
     public static final Decoder<FluidPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    StrOpt.of(CompoundBlockColors.CODEC, "colormap").forGetter(FluidPropertyModifier::colormap),
-                    StrOpt.of(CompoundBlockColors.CODEC, "fog_colormap").forGetter(FluidPropertyModifier::fogColormap),
+                    StrOpt.of(Colormap.CODEC, "colormap").forGetter(FluidPropertyModifier::colormap),
+                    StrOpt.of(Colormap.CODEC, "fog_colormap").forGetter(FluidPropertyModifier::fogColormap),
                     StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(FluidPropertyModifier::explicitTargets)
             ).apply(instance, FluidPropertyModifier::new));
 
