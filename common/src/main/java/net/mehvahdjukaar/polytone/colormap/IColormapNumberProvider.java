@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -82,6 +83,17 @@ public interface IColormapNumberProvider {
         }
     });
 
+    IColormapNumberProvider LEGACY_TEMPERATURE = register("legacy_temperature", new IColormapNumberProvider() {
+        @Override
+        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
+            return biome == null ? 0 : biome.getTemperature(pos);
+        }
+
+        @Override
+        public boolean usesState() {
+            return false;
+        }
+    });
 
     IColormapNumberProvider DOWNFALL = register("downfall", new IColormapNumberProvider() {
         @Override

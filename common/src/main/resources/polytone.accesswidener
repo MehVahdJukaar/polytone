@@ -72,3 +72,5 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour dynamicSha
 mutable field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
 
 accessible field net/minecraft/core/MappedRegistry frozen Z
+
+accessible method net/minecraft/world/level/biome/Biome getTemperature (Lnet/minecraft/core/BlockPos;)F
