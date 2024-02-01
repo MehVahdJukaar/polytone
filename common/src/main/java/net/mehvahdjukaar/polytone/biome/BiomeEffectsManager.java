@@ -113,12 +113,15 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         if(Polytone.sodiumOn){
             var water =  Polytone.FLUID_PROPERTIES.getModifier(Fluids.WATER);
             for (var e : biomeReg.entrySet()){
-                var id = e.getKey();
+                var id = e.getKey().location();
                 var b = e.getValue();
-                if(water.getColormap() instanceof Colormap cl){
-                    var col = cl.getColor(b, 0,0);
-                    var dummy = BiomeEffectModifier.ofWaterColor(col);
-                    addEffect(id.location(), dummy);
+                var original = effectsToApply.get(id);
+                if(original.waterColor().isEmpty()) {
+                    if (water.getColormap() instanceof Colormap cl) {
+                        var col = cl.getColor(b, 0, 0);
+                        var dummy = BiomeEffectModifier.ofWaterColor(col);
+                        addEffect(id, dummy);
+                    }
                 }
             }
         }
