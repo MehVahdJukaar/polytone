@@ -31,12 +31,6 @@ public class PolytoneForge {
         }
     }
 
-    @SubscribeEvent
-    public void registerCustomResolver(RegisterColorHandlersEvent.ColorResolvers event) {
-        event.register(ColorUtils.TEMPERATURE_RESOLVER);
-        event.register(ColorUtils.DOWNFALL_RESOLVER);
-    }
-
     public static void onTagSync(TagsUpdatedEvent event) {
         if (event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) {
             Polytone.onTagsReceived(event.getRegistryAccess());
