@@ -164,7 +164,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                 ColormapsManager.fillCompoundColormapPalette(textures, id, tintMap, usedTextures);
 
                 BlockPropertyModifier modifier;
-                Properties ofProp = resources.ofProperties.get(id);
+                Properties ofProp = resources.ofProperties.remove(id);
                 if (ofProp != null) {
                     modifier = BlockPropertyModifier.fromOfProperties(ofProp);
                 } else {
@@ -172,6 +172,25 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                 }
 
                 addModifier(id, modifier);
+            }
+        }
+
+        //crap optifine single property shit. Just recolor a texture FFS
+        for (var entry : resources.ofProperties.entrySet()) {
+            var strayProp = entry.getValue();
+            var modifier = BlockPropertyModifier.fromOfProperties(strayProp);
+            if (modifier.tintGetter().get() instanceof Colormap c && !c.hasTexture()) {
+                continue; //error basically. invalid one
+            }
+            ResourceLocation id = entry.getKey();
+            addModifier(id, modifier);
+            //and also tint them... shit format. just use block models and define the tint index
+            var exp = modifier.explicitTargets();
+            if(exp.isPresent()){
+                for(var t : exp.get()) {
+                    BuiltInRegistries.BLOCK.getOptional(t)
+                            .ifPresent(Polytone.VARIANT_TEXTURES::addTintOverrideHack);
+                }
             }
         }
     }
@@ -233,8 +252,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     //optifine stuff
     private final Map<ResourceLocation, String> colorPropertiesColormaps = new HashMap<>();
 
-    public void addSimpleColormap(String path, String str) {
-        colorPropertiesColormaps.put(new ResourceLocation(path), str);
+    public void addSimpleColormap(ResourceLocation path, String str) {
+        colorPropertiesColormaps.put(path, str);
     }
 
     public void maybeEmitParticle(Block block, BlockState state, Level level, BlockPos pos) {

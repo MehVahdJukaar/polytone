@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
+import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.Minecraft;
@@ -171,12 +172,21 @@ public record BlockPropertyModifier(
                     .collect(Collectors.toSet());
         }
         String format = properties.getProperty("format");
+        Integer col = null;
+        String singleColor = properties.getProperty("color");
+        if(singleColor != null){
+            col = Integer.parseInt(singleColor, 16);
+        }
         if ("fixed".equals(format)) {
             colormap = Colormap.fixed();
         } else if ("grid".equals(format)) {
             colormap = Colormap.biomeId();
         } else {
             colormap = Colormap.defTriangle();
+        }
+        if(col != null) {
+            int[][] matrix = {{col}};
+            colormap.acceptTexture(new ArrayImage(matrix));
         }
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(), Optional.empty(),
