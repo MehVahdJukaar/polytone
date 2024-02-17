@@ -54,6 +54,7 @@ public class Polytone {
         //SKY and fog
         //block particles
         //item properties and color. cache pllayer coord
+        //exp color
     }
 
     public static ResourceLocation res(String name) {

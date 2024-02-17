@@ -4,6 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
@@ -26,6 +28,7 @@ public class Colormap implements ColorResolver, BlockColor {
 
     private final IColormapNumberProvider xGetter;
     private final IColormapNumberProvider yGetter;
+    private final BiomeIdMapper biomeMapper;
     private final boolean triangular;
     private final boolean hasBiomeBlend; //if this should be used as ColorResolver, allowing for biome blend
     private final boolean usesBiome;
@@ -43,7 +46,8 @@ public class Colormap implements ColorResolver, BlockColor {
             IColormapNumberProvider.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
             IColormapNumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
             StrOpt.of(Codec.BOOL, "triangular", false).forGetter(c -> c.triangular),
-            StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend))
+            StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
+            StrOpt.of(BiomeIdMapperManager.CODEC, "biome_mapper").forGetter(c->Optional.of(c.biomeMapper))
     ).apply(i, Colormap::new));
 
     protected static final Codec<BlockColor> REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
@@ -56,7 +60,7 @@ public class Colormap implements ColorResolver, BlockColor {
     public static final Codec<BlockColor> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_CODEC, DIRECT_CODEC);
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
-                     boolean triangular, Optional<Boolean> biomeBlend) {
+                     boolean triangular, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper) {
         this.defaultColor = defaultColor.orElse(null);
         this.xGetter = xGetter;
         this.yGetter = yGetter;
@@ -65,10 +69,11 @@ public class Colormap implements ColorResolver, BlockColor {
         this.usesPos = usesBiome || (xGetter.usesPos() || yGetter.usesPos());
         this.usesState = (xGetter.usesState() || yGetter.usesState());
         this.hasBiomeBlend = biomeBlend.orElse(usesBiome);
+        this.biomeMapper = biomeMapper.orElse(BiomeIdMapperManager.BY_INDEX);
     }
 
     protected Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter) {
-        this(Optional.empty(), xGetter, yGetter, false, Optional.empty());
+        this(Optional.empty(), xGetter, yGetter, false, Optional.empty(), Optional.empty());
     }
 
     //Square map with those 2 getters
@@ -78,24 +83,24 @@ public class Colormap implements ColorResolver, BlockColor {
 
     public static Colormap fixed() {
         return new Colormap(Optional.empty(), IColormapNumberProvider.ZERO,
-                IColormapNumberProvider.ZERO, false, Optional.empty());
+                IColormapNumberProvider.ZERO, false, Optional.empty(), Optional.empty());
     }
 
     public static Colormap defSquare() {
         return new Colormap(Optional.empty(),
-                IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, false, Optional.empty());
+                IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, false, Optional.empty(), Optional.empty());
     }
 
     public static Colormap defTriangle() {
         return new Colormap(Optional.empty(),
-                IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, true, Optional.empty());
+                IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, true, Optional.empty(), Optional.empty());
     }
 
     public static Colormap biomeId() {
         return new Colormap(Optional.empty(),
                 IColormapNumberProvider.BIOME_ID,
                 IColormapNumberProvider.Y_LEVEL,
-                false, Optional.of(Boolean.TRUE));
+                false, Optional.of(Boolean.TRUE),  Optional.empty());
 
     }
 

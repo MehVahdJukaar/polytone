@@ -199,7 +199,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             if (is(prop, 1, "block")) {
                 if (prop.length > 2 && obj instanceof String) {
                     String path = prop[2].replace("~/colormap/", "");
-                    Polytone.BLOCK_PROPERTIES.addSimpleColormap(path, str);
+                    Polytone.BLOCK_PROPERTIES.addSimpleColormap(new ResourceLocation(path), str);
                 }
             }
         }
