@@ -91,7 +91,7 @@ public class Colormap implements ColorResolver, BlockColor {
                 IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, true, Optional.empty());
     }
 
-    public static Colormap biomeId(){
+    public static Colormap biomeId() {
         return new Colormap(Optional.empty(),
                 IColormapNumberProvider.BIOME_ID,
                 IColormapNumberProvider.Y_LEVEL,
@@ -106,7 +106,7 @@ public class Colormap implements ColorResolver, BlockColor {
         }
     }
 
-    public boolean hasTexture(){
+    public boolean hasTexture() {
         return image != null;
     }
 
@@ -139,7 +139,9 @@ public class Colormap implements ColorResolver, BlockColor {
     @Override
     public int getColor(Biome biome, double x, double z) {
         //this actually gets called when sodium is on as we cant define our own blend method
-        return this.sampleColor(stateHack.get(), BlockPos.containing(x, yHack.get(), z), biome);
+        Integer y = yHack.get();
+        if (y == null) y = 0;
+        return this.sampleColor(stateHack.get(), BlockPos.containing(x, y, z), biome);
     }
 
     //calculate color blend. could just use vanilla impl tbh since we got above hack for sodium anyway
