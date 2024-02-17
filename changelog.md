@@ -1,1 +1,1 @@
-fixed crash from last update when one dint have a specific pack on
+properly tagged as neoforge
