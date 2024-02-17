@@ -29,6 +29,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     private static final String POS_X = "POS_X";
     private static final String POS_Y = "POS_Y";
     private static final String POS_Z = "POS_Z";
+    private static final String BIOME_VALUE = "BIOME_VALUE";
 
     private static final String STATE_FUNC = "state_prop";
     private static final Function STATE_PROP = new Function(STATE_FUNC, 1) {
@@ -71,7 +72,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
-                .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z)
+                .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z, BIOME_VALUE)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
@@ -95,7 +96,8 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
 
     @Override
     public boolean usesBiome() {
-        return unparsed.contains(TEMPERATURE) || unparsed.contains(DOWNFALL);
+        return unparsed.contains(TEMPERATURE) || unparsed.contains(DOWNFALL)
+                || unparsed.contains(BIOME_VALUE);
     }
 
     @Override
