@@ -10,8 +10,8 @@ public class BiomeIdMapperManager {
 
     private final BiMap<ResourceLocation, BiomeIdMapper> biomeMappers = HashBiMap.create();
 
-    public static final Codec<BiomeIdMapper> CODEC;
-    public static final Codec<BiomeIdMapper> CODEC;
+    public static final Codec<BiomeIdMapper> CODEC = null;
+    public static final Codec<BiomeIdMapper> CODEC2 = null;
 
     public static final BiomeIdMapper BY_INDEX = (biomeRegistry, biome) -> biomeRegistry.getId(biome.value());
 

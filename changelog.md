@@ -1,2 +1,2 @@
-fixed an issue when using BOTH sodium AND darn optifine format.
-Use polytone format instead! (also sodium isnt really suggested either as some of the mods features cant work with it)
+- colormaps can be made to have just a single color with just an integer value, check the wiki
+- colormap default color and single color colormaps can accept string hex color values like "oxffaabb" or "#ffaabb"

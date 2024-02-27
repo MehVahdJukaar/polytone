@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.colormap;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -7,6 +8,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
@@ -23,6 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 public class Colormap implements ColorResolver, BlockColor {
 
@@ -42,12 +45,12 @@ public class Colormap implements ColorResolver, BlockColor {
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
 
     public static final Codec<Colormap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
-            StrOpt.of(Codec.INT, "default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
+            StrOpt.of(ColorUtils.CODEC, "default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
             IColormapNumberProvider.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
             IColormapNumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
             StrOpt.of(Codec.BOOL, "triangular", false).forGetter(c -> c.triangular),
             StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
-            StrOpt.of(BiomeIdMapperManager.CODEC, "biome_mapper").forGetter(c->Optional.of(c.biomeMapper))
+            StrOpt.of(BiomeIdMapperManager.CODEC, "biome_mapper").forGetter(c -> Optional.of(c.biomeMapper))
     ).apply(i, Colormap::new));
 
     protected static final Codec<BlockColor> REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
@@ -57,7 +60,13 @@ public class Colormap implements ColorResolver, BlockColor {
             object -> Optional.ofNullable(Polytone.COLORMAPS.getKey(object)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
 
-    public static final Codec<BlockColor> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_CODEC, DIRECT_CODEC);
+    protected static final Codec<BlockColor> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
+            Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
+
+    public static final Codec<BlockColor> CODEC = Codec.either(SINGLE_COLOR_CODEC,
+                    new ReferenceOrDirectCodec<>(REFERENCE_CODEC, DIRECT_CODEC))
+            .xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
+    ;
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
                      boolean triangular, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper) {
@@ -86,6 +95,14 @@ public class Colormap implements ColorResolver, BlockColor {
                 IColormapNumberProvider.ZERO, false, Optional.empty(), Optional.empty());
     }
 
+    //this is dumb. dont use
+    private static Colormap singleColor(int color) {
+        var c = new Colormap(Optional.empty(), IColormapNumberProvider.ZERO,
+                IColormapNumberProvider.ZERO, false, Optional.empty(), Optional.empty());
+        c.acceptTexture(new ArrayImage(new int[][]{{color}}));
+        return c;
+    }
+
     public static Colormap defSquare() {
         return new Colormap(Optional.empty(),
                 IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, false, Optional.empty(), Optional.empty());
@@ -100,7 +117,7 @@ public class Colormap implements ColorResolver, BlockColor {
         return new Colormap(Optional.empty(),
                 IColormapNumberProvider.BIOME_ID,
                 IColormapNumberProvider.Y_LEVEL,
-                false, Optional.of(Boolean.TRUE),  Optional.empty());
+                false, Optional.of(Boolean.TRUE), Optional.empty());
 
     }
 
