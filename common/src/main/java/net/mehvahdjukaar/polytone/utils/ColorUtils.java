@@ -26,7 +26,7 @@ import java.util.Locale;
 public class ColorUtils {
 
     //utility codec that serializes either a string or an integer
-    public static final Codec<Integer> CODEC = Codec.either(Codec.intRange(0, 0xffffffff),
+    public static final Codec<Integer> CODEC = Codec.either(Codec.INT,
             Codec.STRING.flatXmap(ColorUtils::isValidStringOrError, s->isValidStringOrError(s)
                     .map(ColorUtils::formatString))).xmap(
             either -> either.map(integer -> integer, s -> Integer.parseUnsignedInt(s, 16)),

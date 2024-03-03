@@ -4,18 +4,17 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.util.profiling.ProfilerFiller;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
-public abstract class SingleJsonOrPropertiesReloadListener extends PartialReloader<List<Properties>> {
+public abstract class SingleJsonOrPropertiesReloadListener extends PartialReloader<Map<ResourceLocation, Properties>> {
     private static final Gson GSON = new Gson();
     private final String[] locations;
     private final String propertiesName;
@@ -30,33 +29,48 @@ public abstract class SingleJsonOrPropertiesReloadListener extends PartialReload
     }
 
     @Override
-    protected List<Properties> prepare(ResourceManager resourceManager) {
-        List<Properties> list = new ArrayList<>();
+    protected Map<ResourceLocation, Properties> prepare(ResourceManager resourceManager) {
+        Map<ResourceLocation, Properties> list = new HashMap<>();
         for (String paths : locations) {
-            var res = resourceManager.listResourceStacks(paths,
-                    resourceLocation -> resourceLocation.getPath().endsWith(propertiesName)).values();
-            for (var l : res) {
-                for (var r : l) {
-                    try (Reader reader = r.openAsReader()) {
+
+            //properties
+            var resources = resourceManager.listResourceStacks(paths, id -> id.getPath().endsWith(propertiesName));
+
+            for (var entrySet : resources.entrySet()) {
+                var resourceStack = entrySet.getValue();
+                ResourceLocation id = entrySet.getKey();
+                for (var resource : resourceStack) {
+                    try (Reader reader = resource.openAsReader()) {
                         Properties properties = new Properties();
                         properties.load(reader);
-                        list.add(properties);
+                        //merge all. only for .properties... optifine
+                        list.merge(id, properties, (properties1, properties2) -> {
+                            properties1.putAll(properties2);
+                            return properties1;
+                        });
                     } catch (IllegalArgumentException | IOException | JsonParseException ex) {
-                        Polytone.LOGGER.error("Couldn't parse data file {}:", l, ex);
+                        Polytone.LOGGER.error("Couldn't parse data file {}:", resourceStack, ex);
                     }
                 }
             }
 
-            res = resourceManager.listResourceStacks(paths,
-                    resourceLocation -> resourceLocation.getPath().endsWith(jsonName)).values();
-            for (var l : res) {
-                for (var r : l) {
-                    try (Reader reader = r.openAsReader()) {
+            //json
+            resources = resourceManager.listResourceStacks(paths, id -> id.getPath().endsWith(jsonName));
+
+            for (var entrySet : resources.entrySet()) {
+                var resourceStack = entrySet.getValue();
+                ResourceLocation id = entrySet.getKey();
+                //dont merge. too bad. jsons should have unique names here
+                for (var resource : resourceStack) {
+                    try (Reader reader = resource.openAsReader()) {
                         JsonElement jsonElement = GsonHelper.fromJson(GSON, reader, JsonElement.class);
                         Properties prop = PropertiesUtils.jsonToProperties(jsonElement);
-                        list.add(prop);
+                        if (list.containsKey(id)) {
+                            Polytone.LOGGER.warn("Found duplicate color.json with path {}. Old one will be overwritten. Be sure to put this file in your own namespace, not minecraft one!", id);
+                        }
+                        list.put(id, prop);
                     } catch (IllegalArgumentException | IOException | JsonParseException ex) {
-                        Polytone.LOGGER.error("Couldn't parse data file {}:", l, ex);
+                        Polytone.LOGGER.error("Couldn't parse data file {}:", resource, ex);
                     }
                 }
             }

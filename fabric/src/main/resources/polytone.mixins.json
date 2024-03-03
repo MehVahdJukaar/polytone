@@ -8,8 +8,10 @@
   "client": [
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
+    "BlockInfoAccessor",
     "FluidRendererHandlerRegistryMixin",
-    "InventoryScreenMixin"
+    "InventoryScreenMixin",
+    "ModelHackMixin"
   ],
   "injectors": {
     "defaultRequire": 1

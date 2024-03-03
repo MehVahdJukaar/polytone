@@ -66,6 +66,13 @@ public record BlockPropertyModifier(
                 Optional.empty(), Optional.empty());
     }
 
+    public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
+        return new BlockPropertyModifier(Optional.of(colormap),
+                java.util.Optional.empty(), java.util.Optional.empty(),
+                java.util.Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.of(blocks));
+    }
+
     // returns the old ones
     public BlockPropertyModifier apply(Block block) {
         SoundType oldSound = null;
