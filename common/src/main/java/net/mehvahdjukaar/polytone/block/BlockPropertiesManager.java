@@ -100,38 +100,19 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             addModifier(id, prop);
         }
 
+        //optifine stuff
+        addOptifineColormaps(textures, usedTextures);
+
         // creates orphaned texture colormaps & properties
         textures.keySet().removeAll(usedTextures);
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
             Int2ObjectMap<ArrayImage> value = t.getValue();
-
-            //optifine stuff
             String path = id.getPath();
 
-            var special = colorPropertiesColormaps.get(id);
-            if (special != null) {
-                //TODO: improve tint assignment
-                Colormap colormap = Colormap.defTriangle();
-                ColormapsManager.tryAcceptingTexture(textures.get(id).get(-1), id, colormap, new HashSet<>());
 
-                for (var name : special.split(" ")) {
-                    try {
-                        ResourceLocation blockId = new ResourceLocation(name);
-                        var b = BuiltInRegistries.BLOCK.getOptional(blockId);
-                        if (b.isPresent()) {
-                            //TODO: merge
-                            Polytone.VARIANT_TEXTURES.addTintOverrideHack(b.get());
-                            addModifier(blockId, BlockPropertyModifier.ofColor(colormap));
-                        }
-                    } catch (Exception ignored) {
-                    }
-                }
-                continue;
-            }
-
-            //check it it has an optifine property
+            //check if it has an optifine property
 
             if (path.contains("stem")) {
                 Colormap stemMap = Colormap.simple((state, level, pos) -> state.getValue(StemBlock.AGE) / 7f,
@@ -186,8 +167,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             addModifier(id, modifier);
             //and also tint them... shit format. just use block models and define the tint index
             var exp = modifier.explicitTargets();
-            if(exp.isPresent()){
-                for(var t : exp.get()) {
+            if (exp.isPresent()) {
+                for (var t : exp.get()) {
                     BuiltInRegistries.BLOCK.getOptional(t)
                             .ifPresent(Polytone.VARIANT_TEXTURES::addTintOverrideHack);
                 }
@@ -195,19 +176,50 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         }
     }
 
-    private void addModifier(ResourceLocation pathId, BlockPropertyModifier mod) {
+    private void addOptifineColormaps(Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures,
+                                      Set<ResourceLocation> usedTextures) {
+        for (var special : optifineColormapsToBlocks.entrySet()) {
+            ResourceLocation colormapId = special.getKey();
+            var texture = textures.get(colormapId);
+            if (texture != null) {
+                addOptifineColormap(special.getValue(), texture.get(-1), colormapId, usedTextures);
+            }
+        }
+    }
+
+    private void addOptifineColormap(String specialTarget, ArrayImage image, ResourceLocation colormapId, Set<ResourceLocation> usedTexture) {
+        Colormap colormap = Colormap.defTriangle();
+        ColormapsManager.tryAcceptingTexture(image, colormapId, colormap, usedTexture);
+
+        Set<ResourceLocation> targets = new HashSet<>();
+        for (var name : specialTarget.split(" ")) {
+            if (name.isEmpty()) continue;
+            ResourceLocation blockId = new ResourceLocation(name);
+            var b = BuiltInRegistries.BLOCK.getOptional(blockId);
+            if (b.isPresent()) {
+                Polytone.VARIANT_TEXTURES.addTintOverrideHack(b.get());
+                targets.add(blockId);
+            }
+        }
+        BlockPropertyModifier mod = BlockPropertyModifier.coloringBlocks(colormap, targets);
+        if (!targets.isEmpty()) {
+            addModifier(colormapId.withSuffix("_optifine"), mod);
+        }
+    }
+
+    private void addModifier(ResourceLocation modifierId, BlockPropertyModifier mod) {
         var explTargets = mod.explicitTargets();
         //validate colormap
         if (mod.tintGetter().isPresent()) {
             if (mod.tintGetter().get() instanceof Colormap c && !c.hasTexture()) {
-                throw new IllegalStateException("Did not find any texture png for implicit colormap for block modifier" + pathId);
+                throw new IllegalStateException("Did not find any texture png for implicit colormap for block modifier" + modifierId);
             }
         }
-        Optional<Block> idTarget = BuiltInRegistries.BLOCK.getOptional(pathId);
+        Optional<Block> idTarget = BuiltInRegistries.BLOCK.getOptional(modifierId);
         if (explTargets.isPresent()) {
             if (idTarget.isPresent()) {
                 Polytone.LOGGER.error("Found Block Properties Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
-                        "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), pathId);
+                        "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), modifierId);
             }
             for (var explicitId : explTargets.get()) {
                 Optional<Block> target = BuiltInRegistries.BLOCK.getOptional(explicitId);
@@ -245,15 +257,15 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         }
         vanillaProperties.clear();
         modifiers.clear();
-        colorPropertiesColormaps.clear();
+        optifineColormapsToBlocks.clear();
         particleEmitters.clear();
     }
 
     //optifine stuff
-    private final Map<ResourceLocation, String> colorPropertiesColormaps = new HashMap<>();
+    private final Map<ResourceLocation, String> optifineColormapsToBlocks = new HashMap<>();
 
     public void addSimpleColormap(ResourceLocation path, String str) {
-        colorPropertiesColormaps.put(path, str);
+        optifineColormapsToBlocks.put(path, str);
     }
 
     public void maybeEmitParticle(Block block, BlockState state, Level level, BlockPos pos) {
