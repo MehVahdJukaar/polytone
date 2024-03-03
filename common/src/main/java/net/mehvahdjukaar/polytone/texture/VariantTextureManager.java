@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.particle.ParticleModifier;
 import net.mehvahdjukaar.polytone.utils.BakedQuadsTransformer;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
@@ -31,6 +30,10 @@ public class VariantTextureManager extends JsonPartialReloader {
     private final WeakHashMap<BakedQuad, Map<ResourceLocation, BakedQuad>> variantQuadsCache = new WeakHashMap();
 
     private final Map<Block, VariantTexture> blocksWithVariants = new Object2ObjectOpenHashMap<>();
+
+    // list of blocks that will have their tint sent to 0.
+    // why? because optifine is crap and allows assigning colors to models without a tint index.
+    // Just edit your models people!
     public final Set<Block> specialOFTintHack = new HashSet<>();
 
     public VariantTextureManager() {
@@ -60,9 +63,9 @@ public class VariantTextureManager extends JsonPartialReloader {
             }
             for (var explicitId : explTargets.get()) {
                 var target = Registry.BLOCK.getOptional(explicitId);
-                if(target.isPresent()) {
+                if (target.isPresent()) {
                     var old = blocksWithVariants.put(target.get(), mod);
-                    if(old != null){
+                    if (old != null) {
                         Polytone.LOGGER.info("Found 2 Variant Textures jsons with same target ({}). Overriding", explicitId);
                     }
                 }
@@ -70,9 +73,9 @@ public class VariantTextureManager extends JsonPartialReloader {
         }
         //no explicit targets. use its own ID instead
         else {
-            if(pathTarget.isPresent()) {
+            if (pathTarget.isPresent()) {
                 var old = blocksWithVariants.put(pathTarget.get(), mod);
-                if(old != null){
+                if (old != null) {
                     Polytone.LOGGER.info("Found 2 Variant Textures jsons with same target ({}). Overriding", pathTarget);
                 }
             }
@@ -84,6 +87,14 @@ public class VariantTextureManager extends JsonPartialReloader {
         blocksWithVariants.clear();
         variantQuadsCache.clear(); //we might need a lock here
         specialOFTintHack.clear();
+    }
+
+
+    public boolean shouldSetTintTo0(int tintIndex, BlockAndTintGetter blockView, BlockState state, BlockPos blockPos) {
+        if (tintIndex == -1 && !specialOFTintHack.isEmpty() && state != null) {
+            return specialOFTintHack.contains(state.getBlock());
+        }
+        return false;
     }
 
     public BakedQuad maybeModify(BakedQuad quad, BlockAndTintGetter level, BlockState state, BlockPos pos) {
@@ -124,4 +135,6 @@ public class VariantTextureManager extends JsonPartialReloader {
     public void addTintOverrideHack(Block block) {
         specialOFTintHack.add(block);
     }
+
+
 }

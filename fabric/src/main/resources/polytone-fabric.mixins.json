@@ -7,7 +7,9 @@
   ],
   "client": [
     "BlockColorsAccessor",
-    "FluidRendererHandlerRegistryMixin"
+    "BlockInfoAccessor",
+    "FluidRendererHandlerRegistryMixin",
+    "ModelHackMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -2,27 +2,31 @@ package net.mehvahdjukaar.polytone.block;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
+import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.mehvahdjukaar.polytone.utils.PropertiesUtils;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.*;
+
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
 
@@ -66,12 +70,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
         var jsons = resources.jsons();
         var textures = ArrayImage.groupTextures(resources.textures());
-        var parsedModifiers = LegacyHelper.convertBlockProperties(resources.ofProperties);
-        parsedModifiers.putAll(LegacyHelper.convertInlinedPalettes(optifineColormapsToBlocks));
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        // parse jsons
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
@@ -80,93 +81,154 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Client Block Property with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 
-            //always have priority
-            if (parsedModifiers.containsKey(id)) {
-                Polytone.LOGGER.warn("Found duplicate block modifier with id {}. This is likely a non .json converted legacy one" +
-                        "Overriding previous one", id);
-            }
-            parsedModifiers.put(id, prop);
-        }
-
-
-        // add all modifiers (with or without texture)
-        for (var entry : parsedModifiers.entrySet()) {
-            var id = entry.getKey();
-            var modifier = entry.getValue();
-
-            var colormap = modifier.tintGetter();
+            var colormap = prop.tintGetter();
             if (colormap.isEmpty()) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
-
                 var text = textures.get(id);
                 if (text != null) {
                     CompoundBlockColors defaultSampler = CompoundBlockColors.createDefault(text.keySet(), true);
-                    modifier = modifier.merge(BlockPropertyModifier.ofColor(defaultSampler));
-                    colormap = modifier.tintGetter();
+                    prop = prop.merge(BlockPropertyModifier.ofColor(defaultSampler));
+                    colormap = prop.tintGetter();
                 }
             }
 
             //fill inline colormaps colormapTextures
-            if(colormap.isPresent()) {
-                BlockColor tint = colormap.get();
-                if (tint instanceof CompoundBlockColors c) {
-                    ColormapsManager.fillCompoundColormapPalette(textures, id, c, usedTextures);
-                } else if (tint instanceof Colormap c) {
-                    var text = textures.get(c.getTargetTexture() == null ? id : c.getTargetTexture());
-                    if (text != null) {
-                        ColormapsManager.tryAcceptingTexture(text.getDefault(), id, c, usedTextures);
-                    }
-                }
+            if (colormap.isPresent() && colormap.get() instanceof CompoundBlockColors c) {
+                ColormapsManager.fillCompoundColormapPalette(textures, id, c, usedTextures);
             }
 
-            addModifier(id, modifier);
+            addModifier(id, prop);
         }
 
+        //optifine stuff
+        addOptifineColormaps(textures, usedTextures);
+
+        // creates orphaned texture colormaps & properties
         textures.keySet().removeAll(usedTextures);
 
-        // creates default modifiers for orphaned textures without one
-        for (var entry : textures.entrySet()) {
+        for (var t : textures.entrySet()) {
+            ResourceLocation id = t.getKey();
+            Int2ObjectMap<ArrayImage> value = t.getValue();
+            String path = id.getPath();
+
+
+            //check if it has an optifine property
+
+            if (path.contains("stem")) {
+                Colormap stemMap = Colormap.simple((state, level, pos) -> state.getValue(StemBlock.AGE) / 7f,
+                        IColormapNumberProvider.ZERO);
+
+                Colormap attachedMap = Colormap.simple(
+                        IColormapNumberProvider.ONE, IColormapNumberProvider.ZERO);
+
+                ColormapsManager.tryAcceptingTexture(textures.get(id).get(-1), id, stemMap, usedTextures);
+                ColormapsManager.tryAcceptingTexture(textures.get(id).get(-1), id, attachedMap, usedTextures);
+
+                // so stem maps to both
+                if (!path.contains("melon")) {
+                    addModifier(new ResourceLocation("pumpkin_stem"), BlockPropertyModifier.ofColor(stemMap));
+                    addModifier(new ResourceLocation("attached_pumpkin_stem"), BlockPropertyModifier.ofColor(attachedMap));
+                }
+                if (!path.contains("pumpkin")) {
+                    addModifier(new ResourceLocation("melon_stem"), BlockPropertyModifier.ofColor(stemMap));
+                    addModifier(new ResourceLocation("attached_melon_stem"), BlockPropertyModifier.ofColor(attachedMap));
+                }
+            } else if (path.equals("redstone_wire")) {
+                Colormap tintMap = Colormap.simple((state, level, pos) -> state.getValue(RedStoneWireBlock.POWER) / 15f,
+                        IColormapNumberProvider.ZERO);
+
+                ColormapsManager.tryAcceptingTexture(textures.get(id).get(-1), id, tintMap, usedTextures);
+
+                addModifier(id, BlockPropertyModifier.ofColor(tintMap));
+            } else {
+                CompoundBlockColors tintMap = CompoundBlockColors.createDefault(value.keySet(), true);
+                ColormapsManager.fillCompoundColormapPalette(textures, id, tintMap, usedTextures);
+
+                BlockPropertyModifier modifier;
+                Properties ofProp = resources.ofProperties.remove(id);
+                if (ofProp != null) {
+                    modifier = BlockPropertyModifier.fromOfProperties(ofProp);
+                } else {
+                    modifier = BlockPropertyModifier.ofColor(tintMap);
+                }
+
+                addModifier(id, modifier);
+            }
+        }
+
+        //crap optifine single property shit. Just recolor a texture FFS
+        for (var entry : resources.ofProperties.entrySet()) {
+            var strayProp = entry.getValue();
+            var modifier = BlockPropertyModifier.fromOfProperties(strayProp);
+            if (modifier.tintGetter().get() instanceof Colormap c && !c.hasTexture()) {
+                continue; //error basically. invalid one
+            }
             ResourceLocation id = entry.getKey();
-
-            ArrayImage.Group image = entry.getValue();
-
-            CompoundBlockColors tintMap = CompoundBlockColors.createDefault(image.keySet(), true);
-            ColormapsManager.fillCompoundColormapPalette(textures, id, tintMap, usedTextures);
-
-            BlockPropertyModifier modifier = BlockPropertyModifier.ofColor(tintMap);
-
             addModifier(id, modifier);
+            //and also tint them... shit format. just use block models and define the tint index
+            var exp = modifier.explicitTargets();
+            if (exp.isPresent()) {
+                for (var t : exp.get()) {
+                    BuiltInRegistries.BLOCK.getOptional(t)
+                            .ifPresent(Polytone.VARIANT_TEXTURES::addTintOverrideHack);
+                }
+            }
         }
     }
 
+    private void addOptifineColormaps(Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures,
+                                      Set<ResourceLocation> usedTextures) {
+        for (var special : optifineColormapsToBlocks.entrySet()) {
+            ResourceLocation colormapId = special.getKey();
+            var texture = textures.get(colormapId);
+            if (texture != null) {
+                addOptifineColormap(special.getValue(), texture.get(-1), colormapId, usedTextures);
+            }
+        }
+    }
+
+    private void addOptifineColormap(String specialTarget, ArrayImage image, ResourceLocation colormapId, Set<ResourceLocation> usedTexture) {
+        Colormap colormap = Colormap.defTriangle();
+        ColormapsManager.tryAcceptingTexture(image, colormapId, colormap, usedTexture);
+
+        Set<ResourceLocation> targets = new HashSet<>();
+        for (var name : specialTarget.split(" ")) {
+            if (name.isEmpty()) continue;
+            ResourceLocation blockId = new ResourceLocation(name);
+            var b = BuiltInRegistries.BLOCK.getOptional(blockId);
+            if (b.isPresent()) {
+                Polytone.VARIANT_TEXTURES.addTintOverrideHack(b.get());
+                targets.add(blockId);
+            }
+        }
+        BlockPropertyModifier mod = BlockPropertyModifier.coloringBlocks(colormap, targets);
+        if (!targets.isEmpty()) {
+            addModifier(colormapId.withSuffix("_optifine"), mod);
+        }
+    }
 
     private void addModifier(ResourceLocation modifierId, BlockPropertyModifier mod) {
         var explTargets = mod.explicitTargets();
         //validate colormap
         if (mod.tintGetter().isPresent()) {
             if (mod.tintGetter().get() instanceof Colormap c && !c.hasTexture()) {
-                throw new IllegalStateException("Did not find any texture png for implicit colormap from block modifier " + modifierId);
+                throw new IllegalStateException("Did not find any texture png for implicit colormap for block modifier" + modifierId);
             }
         }
-        Optional<Block> implicitTarget = Registry.BLOCK.getOptional(modifierId);
+        Optional<Block> idTarget = BuiltInRegistries.BLOCK.getOptional(modifierId);
         if (explTargets.isPresent()) {
-            if (implicitTarget.isPresent()) {
+            if (idTarget.isPresent()) {
                 Polytone.LOGGER.error("Found Block Properties Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
                         "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), modifierId);
             }
             for (var explicitId : explTargets.get()) {
-                Optional<Block> target = Registry.BLOCK.getOptional(explicitId);
+                Optional<Block> target = BuiltInRegistries.BLOCK.getOptional(explicitId);
                 target.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
             }
         }
         //no explicit targets. use its own ID instead
         else {
-            implicitTarget.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
-            if(implicitTarget.isEmpty()) {
-                if (PlatStuff.isModLoaded(modifierId.getNamespace())) {
-                    Polytone.LOGGER.error("Found Block Properties Modifier with no implicit target ({}) and no explicit targets. Skipping", modifierId);
-                }
-            }
+            idTarget.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
         }
     }
 

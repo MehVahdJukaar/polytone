@@ -18,8 +18,8 @@ import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.material.MaterialColor;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
@@ -44,7 +44,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private int waterBottle = 3694022;
 
     public ColorManager() {
-        super("color.properties", "colors.json", "optifine", "vanadium", "colormatic", Polytone.MOD_ID);
+        //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
+        super("color.properties", "colors.json",
+                Polytone.MOD_ID, "colormatic", "vanadium", "optifine");
     }
 
     public int getEmptyPot() {
@@ -56,14 +58,16 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void process(List<Properties> list) {
+    protected void process(Map<ResourceLocation, Properties> map) {
         //iterate from the lowest priority to highest
-        Lists.reverse(list);
-        for (var v : list) {
-            for (var e : v.entrySet()) {
+        var keySet = new ArrayList<>(map.keySet());
+        Lists.reverse(keySet);
+        for (var k : keySet) {
+            Properties p = map.get(k);
+            for (var e : p.entrySet()) {
                 if (e.getKey() instanceof String key) {
                     String[] split = key.split("\\.");
-                    parseColor(split, e.getValue());
+                    parseColor(split, e.getValue(), k);
                 }
             }
         }
@@ -72,7 +76,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
 
-    private void parseColor(String[] prop, Object obj) {
+    private void parseColor(String[] prop, Object obj, ResourceLocation colorPropFileId) {
         if (!(obj instanceof String str)) return;
         if (is(prop, 0, "map")) {
             String name = get(prop, 1);
@@ -198,7 +202,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         } else if (is(prop, 0, "palette")) {
             if (is(prop, 1, "block")) {
                 if (prop.length > 2 && obj instanceof String) {
-                    String path = prop[2].replace("~/colormap/", "");
+                    String path = prop[2].replace("~/colormap/", colorPropFileId.getNamespace()+":");
                     Polytone.BLOCK_PROPERTIES.addSimpleColormap(new ResourceLocation(path), str);
                 }
             }

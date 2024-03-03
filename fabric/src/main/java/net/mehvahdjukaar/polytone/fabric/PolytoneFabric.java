@@ -1,10 +1,17 @@
 package net.mehvahdjukaar.polytone.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
+import net.fabricmc.fabric.impl.client.model.loading.ModelLoaderHooks;
+import net.fabricmc.fabric.impl.client.model.loading.ModelLoadingEventDispatcher;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
+import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
+import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
+import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 
 public class PolytoneFabric implements ClientModInitializer {
 
@@ -17,6 +24,13 @@ public class PolytoneFabric implements ClientModInitializer {
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
             Polytone.onTagsReceived(registries);
         });
+        /*
+        ModelLoadingPlugin.register(pluginContext -> {
+           pluginContext.modifyModelAfterBake().register((model, context) -> {
+               Polytone.VARIANT_TEXTURES.maybeModifyModel(model, context.id());
+               return model;
+           });
+        });*/
 
     }
 
