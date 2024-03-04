@@ -25,6 +25,7 @@ record LightmapExpressionProvider(Expression expression, String unparsed) implem
     public static LightmapExpressionProvider create(String s) {
         return new LightmapExpressionProvider(new ExpressionBuilder(s)
                 .variables(TIME, RAIN, THUNDER)
+                .functions(ExpressionUtils.defFunc())
                 .operator(ExpressionUtils.defOp())
                 .build(), s);
     }
