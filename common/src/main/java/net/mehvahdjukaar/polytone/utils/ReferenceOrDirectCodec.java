@@ -6,7 +6,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 
 public final class ReferenceOrDirectCodec<E> implements Codec<E> {
     private final Codec<E> reference;
@@ -29,6 +28,7 @@ public final class ReferenceOrDirectCodec<E> implements Codec<E> {
     public <T> DataResult<Pair<E, T>> decode(final DynamicOps<T> ops, final T input) {
         if (ops.getStringValue(input).result().isPresent()) {
             var ref = reference.decode(ops, input);
+            if (ref.result().isPresent()) return ref;
             if (!bothStrings) return ref;
         }
         return direct.decode(ops, input);

@@ -1,2 +1,2 @@
-- colormaps can be made to have just a single color with just an integer value, check the wiki
-- colormap default color and single color colormaps can accept string hex color values like "oxffaabb" or "#ffaabb"
+- fixed lightmaps not supporting math expression functions
+- fixed lightmaps samplers not working by reference
