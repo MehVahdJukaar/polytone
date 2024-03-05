@@ -28,8 +28,7 @@ public final class ReferenceOrDirectCodec<E> implements Codec<E> {
     public <T> DataResult<Pair<E, T>> decode(final DynamicOps<T> ops, final T input) {
         if (ops.getStringValue(input).result().isPresent()) {
             var ref = reference.decode(ops, input);
-            if (ref.result().isPresent()) return ref;
-            if (!bothStrings) return ref;
+            if (ref.result().isPresent() || !bothStrings) return ref;
         }
         return direct.decode(ops, input);
     }
