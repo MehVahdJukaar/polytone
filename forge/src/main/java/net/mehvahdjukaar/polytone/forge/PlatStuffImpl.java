@@ -42,4 +42,9 @@ public class PlatStuffImpl {
     public static String maybeRemapName(String s) {
         return ObfuscationReflectionHelper.remapName(INameMappingService.Domain.CLASS, s);
     }
+
+    @org.jetbrains.annotations.Contract
+    public static boolean isModLoaded(String namespace) {
+        return ModList.get().isLoaded(namespace);
+    }
 }

@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.fluid;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
@@ -113,7 +114,9 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             implicitTarget.ifPresent(block -> modifiers.merge(block, mod, FluidPropertyModifier::merge));
             tryAddSpecial(pathId, mod);
             if (implicitTarget.isEmpty()) {
-                Polytone.LOGGER.error("Found Fluid Properties Modifier with no implicit target ({}) and no explicit targets", pathId);
+                if (PlatStuff.isModLoaded(pathId.getNamespace())) {
+                    Polytone.LOGGER.error("Found Fluid Properties Modifier with no implicit target ({}) and no explicit targets", pathId);
+                }
             }
         }
     }
