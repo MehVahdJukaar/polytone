@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.block;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
@@ -163,8 +164,10 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         //no explicit targets. use its own ID instead
         else {
             implicitTarget.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
-            if(implicitTarget.isEmpty()){
-                Polytone.LOGGER.error("Found Block Properties Modifier with no implicit target ({}) and no explicit targets", implicitTarget);
+            if(implicitTarget.isEmpty()) {
+                if (PlatStuff.isModLoaded(modifierId.getNamespace())) {
+                    Polytone.LOGGER.error("Found Block Properties Modifier with no implicit target ({}) and no explicit targets. Skipping", modifierId);
+                }
             }
         }
     }
