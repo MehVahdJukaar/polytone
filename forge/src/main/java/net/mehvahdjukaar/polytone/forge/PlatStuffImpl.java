@@ -9,6 +9,7 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
@@ -64,5 +65,10 @@ public class PlatStuffImpl {
 
     public static String maybeRemapName(String s) {
         return ObfuscationReflectionHelper.remapName(INameMappingService.Domain.CLASS, s);
+    }
+
+    @org.jetbrains.annotations.Contract
+    public static boolean isModLoaded(String namespace) {
+        return ModList.get().isLoaded(namespace);
     }
 }

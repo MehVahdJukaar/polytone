@@ -58,4 +58,9 @@ public class PlatStuffImpl {
         return FabricLoader.getInstance().getMappingResolver().mapClassName("official", s);
 
     }
+
+    @org.jetbrains.annotations.Contract
+    public static boolean isModLoaded(String namespace) {
+        return FabricLoader.getInstance().isModLoaded(namespace);
+    }
 }
