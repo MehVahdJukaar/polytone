@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
@@ -16,7 +15,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -96,9 +94,9 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     private void addModifier(ResourceLocation pathId, FluidPropertyModifier mod) {
 
         var explTargets = mod.explicitTargets();
-        Optional<Fluid> pathTarget = Registry.FLUID.getOptional(pathId);
+        Optional<Fluid> implicitTarget = Registry.FLUID.getOptional(pathId);
         if (explTargets.isPresent()) {
-            if (pathTarget.isPresent()) {
+            if (implicitTarget.isPresent()) {
                 Polytone.LOGGER.error("Found Fluid Properties Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
                         "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), pathId);
             }
@@ -110,8 +108,11 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         }
         //no explicit targets. use its own ID instead
         else {
-            pathTarget.ifPresent(block -> modifiers.merge(block, mod, FluidPropertyModifier::merge));
+            implicitTarget.ifPresent(block -> modifiers.merge(block, mod, FluidPropertyModifier::merge));
             tryAddSpecial(pathId, mod);
+            if (implicitTarget.isEmpty()) {
+                Polytone.LOGGER.error("Found Fluid Properties Modifier with no implicit target ({}) and no explicit targets", pathId);
+            }
         }
     }
 

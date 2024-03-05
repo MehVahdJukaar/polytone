@@ -8,7 +8,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -50,7 +49,9 @@ public class PropertiesUtils {
             try (Reader reader = e.getValue().openAsReader()) {
                 Properties properties = new Properties();
                 properties.load(reader);
-                map.put(e.getKey(), properties);
+                ResourceLocation fileId = converter.fileToId(e.getKey());
+
+                map.put(fileId, properties);
             } catch (IllegalArgumentException | IOException | JsonParseException ex) {
                 Polytone.LOGGER.error("Couldn't parse property file {}:", e, ex);
             }
