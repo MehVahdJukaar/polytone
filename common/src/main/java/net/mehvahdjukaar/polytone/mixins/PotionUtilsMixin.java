@@ -2,7 +2,9 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
