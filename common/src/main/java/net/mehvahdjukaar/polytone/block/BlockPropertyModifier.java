@@ -5,25 +5,27 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
+import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.phys.Vec3;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
@@ -31,13 +33,14 @@ import java.util.stream.Collectors;
 public record BlockPropertyModifier(
         Optional<? extends BlockColor> tintGetter,
         Optional<SoundType> soundType,
-        Optional<Function<BlockState, MaterialColor>> mapColor,
+        Optional<Function<BlockState, MapColor>> mapColor,
         //Optional<Boolean> canOcclude,
         //Optional<Object> spawnParticlesOnBreak,
         //Optional<Boolean> viewBlocking,
         //Optional<Object> emissiveRendering,
         Optional<ToIntFunction<BlockState>> clientLight,
         Optional<List<ParticleEmitter>> particleEmitters,
+        Optional<BlockBehaviour.OffsetFunction> offsetType,
         Optional<Set<ResourceLocation>> explicitTargets) {
 
     // Other has priority
@@ -52,6 +55,7 @@ public record BlockPropertyModifier(
                 //other.emissiveRendering().isPresent() ? other.emissiveRendering() : this.emissiveRendering(),
                 other.clientLight.isPresent() ? other.clientLight : this.clientLight,
                 other.particleEmitters.isPresent() ? other.particleEmitters : this.particleEmitters,
+                other.offsetType().isPresent() ? other.offsetType() : this.offsetType(),
                 TargetsHelper.merge(other.explicitTargets, this.explicitTargets)
         );
     }
@@ -60,22 +64,15 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.of(colormap),
                 java.util.Optional.empty(), java.util.Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(),
-                Optional.empty());
+                Optional.empty(), Optional.empty());
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
-        return coloringBlocks(colormap, Set.of(Arrays.stream(blocks).map(Registry.BLOCK::getKey).toArray(ResourceLocation[]::new)));
+        return coloringBlocks(colormap, Set.of(Arrays.stream(blocks).map(BuiltInRegistries.BLOCK::getKey).toArray(ResourceLocation[]::new)));
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, List<Block> blocks) {
-        return coloringBlocks(colormap, blocks.stream().map(Registry.BLOCK::getKey).collect(Collectors.toSet()));
-    }
-
-    public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
-        return new BlockPropertyModifier(Optional.of(colormap),
-                java.util.Optional.empty(), java.util.Optional.empty(),
-                java.util.Optional.empty(), Optional.empty(),
-                Optional.of(blocks));
+        return coloringBlocks(colormap, blocks.stream().map(BuiltInRegistries.BLOCK::getKey).collect(Collectors.toSet()));
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
@@ -92,12 +89,24 @@ public record BlockPropertyModifier(
             oldSound = block.soundType;
             block.soundType = soundType.get();
         }
-        Function<BlockState, MaterialColor> oldMapColor = null;
-        if (mapColor.isPresent()) {
-            oldMapColor = block.properties.materialColor;
-            block.properties.materialColor = mapColor.get();
+
+        Optional<BlockBehaviour.OffsetFunction> oldOffsetType = Optional.empty();
+        boolean hasOffset = false;
+        if (offsetType.isPresent()) {
+            oldOffsetType = block.defaultBlockState().offsetFunction;
             for (var s : block.getStateDefinition().getPossibleStates()) {
-                s.materialColor = block.properties.materialColor.apply(s);
+                s.offsetFunction = offsetType;
+                hasOffset = true;
+            }
+        }
+        if (hasOffset) block.dynamicShape = true;
+
+        Function<BlockState, MapColor> oldMapColor = null;
+        if (mapColor.isPresent()) {
+            oldMapColor = block.properties.mapColor;
+            block.properties.mapColor = mapColor.get();
+            for (var s : block.getStateDefinition().getPossibleStates()) {
+                s.mapColor = block.properties.mapColor.apply(s);
             }
         }
 
@@ -121,7 +130,7 @@ public record BlockPropertyModifier(
         // returns old properties
         return new BlockPropertyModifier(Optional.ofNullable(color), Optional.ofNullable(oldSound),
                 Optional.ofNullable(oldMapColor), Optional.ofNullable(oldClientLight),
-                Optional.empty(), Optional.empty());
+                Optional.empty(), oldOffsetType, Optional.empty());
     }
 
 
@@ -130,7 +139,7 @@ public record BlockPropertyModifier(
                     StrOpt.of(CompoundBlockColors.CODEC, "colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof CompoundBlockColors c ? c : null))),
                     //normal opt so it can fail when using modded sounds
                     SoundTypesManager.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
-                    StrOpt.of(MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MaterialColor>) (a) -> c, f -> MaterialColor.NONE),
+                    StrOpt.of(MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE),
                             "map_color").forGetter(BlockPropertyModifier::mapColor),
                     // Codec.BOOL.optionalFieldOf("can_occlude").forGetter(ClientBlockProperties::canOcclude),
                     //Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(c -> c.spawnParticlesOnBreak.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
@@ -139,8 +148,35 @@ public record BlockPropertyModifier(
                     StrOpt.of(Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0),
                             "client_light").forGetter(BlockPropertyModifier::clientLight),
                     StrOpt.of(ParticleEmitter.CODEC.listOf(), "particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
+                    StrOpt.of(StringRepresentable.fromEnum(BlockPropertyModifier.OffsetTypeR::values)
+                                    .xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE),
+                            "offset_type").forGetter(BlockPropertyModifier::offsetType),
                     StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(BlockPropertyModifier::explicitTargets)
             ).apply(instance, BlockPropertyModifier::new));
+
+
+    public enum OffsetTypeR implements StringRepresentable {
+        NONE(BlockBehaviour.OffsetType.NONE),
+        XZ(BlockBehaviour.OffsetType.XZ),
+        XYZ(BlockBehaviour.OffsetType.XYZ);
+
+        private final BlockBehaviour.OffsetType original;
+
+        OffsetTypeR(BlockBehaviour.OffsetType offsetType) {
+            this.original = offsetType;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return this.name().toLowerCase(Locale.ROOT);
+        }
+
+        public BlockBehaviour.OffsetFunction getFunction() {
+            var p = BlockBehaviour.Properties.of().offsetType(original);
+            return p.offsetFunction.orElse((blockState, blockGetter, blockPos) -> Vec3.ZERO);
+        }
+    }
+
 
 
 }
