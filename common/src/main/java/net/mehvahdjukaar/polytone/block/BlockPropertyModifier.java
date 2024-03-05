@@ -5,28 +5,25 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
-import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
-import net.minecraft.world.phys.Vec3;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
@@ -63,22 +60,22 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.of(colormap),
                 java.util.Optional.empty(), java.util.Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty());
+                Optional.empty());
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
-        return coloringBlocks(colormap, Set.of(Arrays.stream(blocks).map(BuiltInRegistries.BLOCK::getKey).toArray(ResourceLocation[]::new)));
+        return coloringBlocks(colormap, Set.of(Arrays.stream(blocks).map(Registry.BLOCK::getKey).toArray(ResourceLocation[]::new)));
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, List<Block> blocks) {
-        return coloringBlocks(colormap, blocks.stream().map(BuiltInRegistries.BLOCK::getKey).collect(Collectors.toSet()));
+        return coloringBlocks(colormap, blocks.stream().map(Registry.BLOCK::getKey).collect(Collectors.toSet()));
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
         return new BlockPropertyModifier(Optional.of(colormap),
                 java.util.Optional.empty(), java.util.Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.of(blocks));
+                Optional.of(blocks));
     }
 
     // returns the old ones
@@ -117,7 +114,7 @@ public record BlockPropertyModifier(
         // returns old properties
         return new BlockPropertyModifier(Optional.ofNullable(color), Optional.ofNullable(oldSound),
                 Optional.ofNullable(oldMapColor), Optional.ofNullable(oldClientLight),
-                Optional.empty(),  Optional.empty());
+                Optional.empty(), Optional.empty());
     }
 
 
@@ -137,30 +134,6 @@ public record BlockPropertyModifier(
                     StrOpt.of(ParticleEmitter.CODEC.listOf(), "particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
                     StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(BlockPropertyModifier::explicitTargets)
             ).apply(instance, BlockPropertyModifier::new));
-
-
-    public enum OffsetTypeR implements StringRepresentable {
-        NONE(BlockBehaviour.OffsetType.NONE),
-        XZ(BlockBehaviour.OffsetType.XZ),
-        XYZ(BlockBehaviour.OffsetType.XYZ);
-
-        private final BlockBehaviour.OffsetType original;
-
-        OffsetTypeR(BlockBehaviour.OffsetType offsetType) {
-            this.original = offsetType;
-        }
-
-        @Override
-        public String getSerializedName() {
-            return this.name().toLowerCase(Locale.ROOT);
-        }
-
-        public BlockBehaviour.OffsetFunction getFunction() {
-            var p = BlockBehaviour.Properties.of().offsetType(original);
-            return p.offsetFunction.orElse((blockState, blockGetter, blockPos) -> Vec3.ZERO);
-        }
-    }
-
 
 
 }

@@ -172,7 +172,7 @@ public class Colormap implements ColorResolver, BlockColor {
         //this actually gets called when sodium is on as we cant define our own blend method
         Integer y = yHack.get();
         if (y == null) y = 0;
-        return this.sampleColor(stateHack.get(), BlockPos.containing(x, y, z), biome);
+        return this.sampleColor(stateHack.get(), new BlockPos(x, y, z), biome);
     }
 
     //calculate color blend. could just use vanilla impl tbh since we got above hack for sodium anyway

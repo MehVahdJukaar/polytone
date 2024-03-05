@@ -9,7 +9,6 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -47,9 +46,9 @@ public class PlatStuffImpl {
 
     public static SoundEvent registerSoundEvent(ResourceLocation id) {
         SoundEvent event = new SoundEvent(id);
-        ((MappedRegistry) BuiltInRegistries.SOUND_EVENT).frozen = false;
+        ((MappedRegistry) Registry.SOUND_EVENT).frozen = false;
         Registry.register(Registry.SOUND_EVENT, id, event);
-        BuiltInRegistries.SOUND_EVENT.freeze();
+        Registry.SOUND_EVENT.freeze();
         return event;
     }
 

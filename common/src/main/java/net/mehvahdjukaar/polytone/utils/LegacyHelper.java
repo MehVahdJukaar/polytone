@@ -6,7 +6,7 @@ import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
 import net.minecraft.Util;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -121,7 +121,7 @@ public class LegacyHelper {
         }
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.ofNullable(set));
+                Optional.empty(), Optional.ofNullable(set));
     }
 
     public static Map<ResourceLocation, BlockPropertyModifier> convertInlinedPalettes(
@@ -145,14 +145,14 @@ public class LegacyHelper {
                 BlockPropertyModifier mod = BlockPropertyModifier.coloringBlocks(colormap, blockTargets);
 
                 // unique id just because
-                map.put(texturePath.withSuffix("-color_prop_palette_" + k++), mod);
+                map.put(new ResourceLocation(texturePath.getNamespace(), texturePath.getPath()+"-color_prop_palette_" + k++), mod);
             }
         }
         return map;
     }
 
     private static void forceBlockToHaveTintIndex(ResourceLocation blockId) {
-        var b = BuiltInRegistries.BLOCK.getOptional(blockId);
+        var b = Registry.BLOCK.getOptional(blockId);
         b.ifPresent(Polytone.VARIANT_TEXTURES::addTintOverrideHack);
     }
 }

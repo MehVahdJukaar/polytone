@@ -15,7 +15,7 @@ import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.mehvahdjukaar.polytone.utils.PropertiesUtils;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
@@ -23,8 +23,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.*;
-
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
 
@@ -150,14 +148,14 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                 throw new IllegalStateException("Did not find any texture png for implicit colormap from block modifier " + modifierId);
             }
         }
-        Optional<Block> implicitTarget = BuiltInRegistries.BLOCK.getOptional(modifierId);
+        Optional<Block> implicitTarget = Registry.BLOCK.getOptional(modifierId);
         if (explTargets.isPresent()) {
             if (implicitTarget.isPresent()) {
                 Polytone.LOGGER.error("Found Block Properties Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
                         "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), modifierId);
             }
             for (var explicitId : explTargets.get()) {
-                Optional<Block> target = BuiltInRegistries.BLOCK.getOptional(explicitId);
+                Optional<Block> target = Registry.BLOCK.getOptional(explicitId);
                 target.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
             }
         }
