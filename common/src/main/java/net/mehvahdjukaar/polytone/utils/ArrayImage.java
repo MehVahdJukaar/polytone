@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.utils;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
@@ -25,7 +24,7 @@ public record ArrayImage(int[][] pixels, int width, int height) {
     }
     //TODO: remove this isnt needed
 
-    public static Map<ResourceLocation, Int2ObjectMap<ArrayImage>> gatherGroupedImages(ResourceManager manager, String path) {
+    public static Map<ResourceLocation, Group> gatherGroupedImages(ResourceManager manager, String path) {
         return groupTextures(gatherImages(manager, path));
     }
 
@@ -79,8 +78,8 @@ public record ArrayImage(int[][] pixels, int width, int height) {
         }
     }
 
-    public static Map<ResourceLocation, Int2ObjectMap<ArrayImage>> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
-        Map<ResourceLocation, Int2ObjectMap<ArrayImage>> groupedMap = new LinkedHashMap<>();
+    public static Map<ResourceLocation, Group> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
+        Map<ResourceLocation, Group> groupedMap = new LinkedHashMap<>();
 
         Pattern pattern = Pattern.compile("(\\D+)(_\\d+)?");
         for (var e : texturesColormap.entrySet()) {
@@ -98,11 +97,22 @@ public record ArrayImage(int[][] pixels, int width, int height) {
                 }
 
                 // Creating or retrieving the Int2Object map for the key
-                groupedMap.computeIfAbsent(id.withPath(key), a -> new Int2ObjectArrayMap<>())
+                groupedMap.computeIfAbsent(id.withPath(key), a -> new Group())
                         .put(index, e.getValue());
             }
         }
         return groupedMap;
+    }
+
+    public static class Group extends Int2ObjectArrayMap<ArrayImage> {
+
+        public Group() {
+            super();
+        }
+
+        public ArrayImage getDefault(){
+            return this.get(-1);
+        }
     }
 
 }

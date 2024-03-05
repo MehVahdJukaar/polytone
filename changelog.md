@@ -1,2 +1,1 @@
-- fixed lightmaps not supporting math expression functions
-- fixed lightmaps samplers not working by reference
+- further improvements to legacy compatibility

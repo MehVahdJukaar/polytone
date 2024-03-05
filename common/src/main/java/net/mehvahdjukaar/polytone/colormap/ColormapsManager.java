@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.JsonOps;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
@@ -107,20 +106,24 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
 
-    public static void fillCompoundColormapPalette(Map<ResourceLocation, Int2ObjectMap<ArrayImage>> textures,
-                                                   ResourceLocation id, CompoundBlockColors colormap, Set<ResourceLocation> usedTextures) {
+    public static void fillCompoundColormapPalette(Map<ResourceLocation, ArrayImage.Group> textures,
+                                                   ResourceLocation id, CompoundBlockColors colormap,
+                                                   Set<ResourceLocation> usedTextures) {
         var getters = colormap.getGetters();
-        var textureMap = textures.get(id);
 
         for (var g : getters.int2ObjectEntrySet()) {
             int index = g.getIntKey();
             BlockColor inner = g.getValue();
+
             if (inner instanceof Colormap c && !c.hasTexture()) {
+
+                var textureMap = textures.get(c.getTargetTexture() == null ? id : c.getTargetTexture());
+
                 if (textureMap != null) {
                     if (getters.size() == 1 || index == 0) {
                         try {
                             //try twice. first time doesnt throw
-                            tryAcceptingTexture(textureMap.get(-1), id, c, usedTextures);
+                            tryAcceptingTexture(textureMap.getDefault(), id, c, usedTextures);
                             continue;
                         } catch (Exception ignored) {
                         }
@@ -137,15 +140,16 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
     //helper method
-    public static void tryAcceptingTexture(@Nullable ArrayImage texture, ResourceLocation path,
+    public static void tryAcceptingTexture(@Nullable ArrayImage texture, ResourceLocation textureLocation,
                                            Colormap colormap, Set<ResourceLocation> usedTexture) {
+        if (colormap.hasTexture()) return; //we already are filled
         if (texture != null) {
-            usedTexture.add(path);
+            usedTexture.add(textureLocation);
             colormap.acceptTexture(texture);
             if (texture.pixels().length == 0) {
-                throw new IllegalStateException("Colormap at location " + path + " had invalid 0 dimension");
+                throw new IllegalStateException("Colormap at location " + textureLocation + " had invalid 0 dimension");
             }
-        } else throw new IllegalStateException("Could not find any colormap associated with path " + path);
+        } else throw new IllegalStateException("Could not find any colormap associated with path " + textureLocation);
     }
 
 

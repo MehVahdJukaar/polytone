@@ -15,6 +15,7 @@ import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Block;
@@ -64,6 +65,14 @@ public record BlockPropertyModifier(
                 java.util.Optional.empty(), java.util.Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty());
+    }
+
+    public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
+        return coloringBlocks(colormap, Set.of(Arrays.stream(blocks).map(BuiltInRegistries.BLOCK::getKey).toArray(ResourceLocation[]::new)));
+    }
+
+    public static BlockPropertyModifier coloringBlocks(BlockColor colormap, List<Block> blocks) {
+        return coloringBlocks(colormap, blocks.stream().map(BuiltInRegistries.BLOCK::getKey).collect(Collectors.toSet()));
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
@@ -169,35 +178,5 @@ public record BlockPropertyModifier(
     }
 
 
-    public static BlockPropertyModifier fromOfProperties(Properties properties) {
-        Set<ResourceLocation> set = null;
-        Colormap colormap;
-        var targets = properties.getProperty("blocks");
-        if (targets != null) {
-            set = Arrays.stream(targets.split(" "))
-                    .map(ResourceLocation::new)
-                    .collect(Collectors.toSet());
-        }
-        String format = properties.getProperty("format");
-        Integer col = null;
-        String singleColor = properties.getProperty("color");
-        if(singleColor != null){
-            col = Integer.parseInt(singleColor, 16);
-        }
-        if ("fixed".equals(format)) {
-            colormap = Colormap.fixed();
-        } else if ("grid".equals(format)) {
-            colormap = Colormap.biomeId();
-        } else {
-            colormap = Colormap.defTriangle();
-        }
-        if(col != null) {
-            int[][] matrix = {{col}};
-            colormap.acceptTexture(new ArrayImage(matrix));
-        }
-        return new BlockPropertyModifier(Optional.of(colormap),
-                Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.ofNullable(set));
-    }
 
 }
