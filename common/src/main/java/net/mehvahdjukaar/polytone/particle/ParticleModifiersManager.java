@@ -1,12 +1,14 @@
 package net.mehvahdjukaar.polytone.particle;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.core.Registry;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluid;
@@ -17,15 +19,17 @@ import java.util.Optional;
 
 public class ParticleModifiersManager extends JsonPartialReloader {
 
-    private final Map<ParticleType<?>, ParticleModifier> particleModifiers = new HashMap<>();
+    private final Multimap<ParticleType<?>, ParticleModifier> particleModifiers = HashMultimap.create();
 
     public ParticleModifiersManager() {
         super("particle_modifiers");
     }
 
-    public void maybeModify(ParticleType<?> type, Particle particle) {
-        var mod = particleModifiers.get(type);
-        if (mod != null) mod.modify(particle);
+    public void maybeModify(ParticleOptions options, Particle particle) {
+        var mod = particleModifiers.get(options.getType());
+        for (var modifier : mod) {
+            modifier.modify(particle, options);
+        }
     }
 
     @Override
@@ -52,22 +56,12 @@ public class ParticleModifiersManager extends JsonPartialReloader {
             }
             for (var explicitId : explTargets.get()) {
                 var target = Registry.PARTICLE_TYPE.getOptional(explicitId);
-                if(target.isPresent()) {
-                    var old = particleModifiers.put(target.get(), mod);
-                    if(old != null){
-                        Polytone.LOGGER.info("Found 2 Particle Modifiers with same target ({}). Overriding", explicitId);
-                    }
-                }
+                target.ifPresent(type -> particleModifiers.put(type, mod));
             }
         }
         //no explicit targets. use its own ID instead
         else {
-            if(pathTarget.isPresent()) {
-                var old = particleModifiers.put(pathTarget.get(), mod);
-                if(old != null){
-                    Polytone.LOGGER.info("Found 2 Particle Modifiers with same target ({}). Overriding", pathTarget);
-                }
-            }
+            pathTarget.ifPresent(type -> particleModifiers.put(type, mod));
         }
     }
 

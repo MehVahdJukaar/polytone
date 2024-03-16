@@ -147,19 +147,20 @@ public class Lightmap {
         // we need pow to simulate multiple lerps
 
         //lerp!
+        /*
         if (torchLine.length != 0 && lastTorchLine.length != 0) {
-            float lerpDelta = 1- (float) Math.pow(torchLerp, deltaTime);
+            float lerpDelta = 1 - (float) Math.pow(torchLerp, deltaTime);
             lerpInplace(lastTorchLine, torchLine, lerpDelta);
         }
         if (skyLine.length != 0 && lastSkyLine.length != 0) {
-            float lerpDelta = 1-(float) Math.pow(skyLerp, deltaTime);
+            float lerpDelta = 1 - (float) Math.pow(skyLerp, deltaTime);
             lerpInplace(lastSkyLine, skyLine, lerpDelta);
-        }
+        }*/
 
         for (int skyY = 0; skyY < 16; ++skyY) {
             com.mojang.math.Vector3f skyBuffer = new com.mojang.math.Vector3f();
 
-            if (torchLine.length != 0) {
+            if (skyLine.length != 0) {
                 float[] floats = skyLine[skyY];
                 skyBuffer.add(new com.mojang.math.Vector3f(floats[0],floats[1],floats[2]));
             } else {

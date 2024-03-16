@@ -166,7 +166,7 @@ public class Colormap implements ColorResolver, BlockColor {
         return sample(humidity, temperature, defaultColor);
     }
 
-    //gets color for blend
+    // gets color for blend
     @Override
     public int getColor(Biome biome, double x, double z) {
         //this actually gets called when sodium is on as we cant define our own blend method
