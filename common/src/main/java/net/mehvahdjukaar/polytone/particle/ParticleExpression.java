@@ -6,7 +6,10 @@ import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.state.BlockState;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
@@ -72,7 +75,6 @@ public class ParticleExpression {
         this.hasAlpha = unparsed.contains(ALPHA);
         this.hasSize = unparsed.contains(SIZE);
         this.hasLifeTime = unparsed.contains(LIFE);
-
     }
 
     public static ParticleExpression parse(String s) {
@@ -88,7 +90,7 @@ public class ParticleExpression {
     }
 
 
-    public double get(Particle particle) {
+    public double get(Particle particle, ParticleOptions options) {
         if (hasLifeTime) expression.setVariable(LIFE, particle.getLifetime());
         if (hasColor) {
             int pack = ColorUtils.pack(particle.rCol, particle.gCol, particle.bCol);

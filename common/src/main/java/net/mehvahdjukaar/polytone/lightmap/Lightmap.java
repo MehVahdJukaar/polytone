@@ -143,19 +143,20 @@ public class Lightmap {
         // we need pow to simulate multiple lerps
 
         //lerp!
+        /*
         if (torchLine.length != 0 && lastTorchLine.length != 0) {
-            float lerpDelta =1- (float) Math.pow(torchLerp, deltaTime);
+            float lerpDelta = 1 - (float) Math.pow(torchLerp, deltaTime);
             lerpInplace(lastTorchLine, torchLine, lerpDelta);
         }
         if (skyLine.length != 0 && lastSkyLine.length != 0) {
-            float lerpDelta = 1-(float) Math.pow(skyLerp, deltaTime);
+            float lerpDelta = 1 - (float) Math.pow(skyLerp, deltaTime);
             lerpInplace(lastSkyLine, skyLine, lerpDelta);
-        }
+        }*/
 
         for (int skyY = 0; skyY < 16; ++skyY) {
             Vector3f skyBuffer = new Vector3f();
 
-            if (torchLine.length != 0) {
+            if (skyLine.length != 0) {
                 skyBuffer.add(new Vector3f(skyLine[skyY]));
             } else {
                 // we have no colors. use vanilla logic
