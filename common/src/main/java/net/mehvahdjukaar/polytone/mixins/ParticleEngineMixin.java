@@ -15,7 +15,7 @@ public abstract class ParticleEngineMixin {
 
     @ModifyReturnValue(method = "makeParticle", at = @At("RETURN"))
     public @Nullable <T extends ParticleOptions> Particle polytone$applyModifiers(@Nullable Particle original, @Local T particleData){
-        Polytone.PARTICLE_MODIFIERS.maybeModify(particleData.getType(), original);
+        Polytone.PARTICLE_MODIFIERS.maybeModify( particleData, original);
         return original;
     }
 }

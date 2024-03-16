@@ -1,1 +1,1 @@
-- further improvements to legacy compatibility
+added filter for particle modifiers allowign to filter for items and blocks
