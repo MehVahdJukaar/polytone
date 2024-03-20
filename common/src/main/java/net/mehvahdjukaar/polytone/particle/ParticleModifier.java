@@ -6,10 +6,10 @@ import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.core.Registry;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -134,8 +134,8 @@ public class ParticleModifier {
         }
 
         public static final Codec<Filter> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-                StrOpt.of(BuiltInRegistries.BLOCK.byNameCodec(), "block").forGetter(p -> Optional.ofNullable(p.forBlock)),
-                StrOpt.of(BuiltInRegistries.ITEM.byNameCodec(), "item").forGetter(p -> Optional.ofNullable(p.forItem))
+                StrOpt.of(Registry.BLOCK.byNameCodec(), "block").forGetter(p -> Optional.ofNullable(p.forBlock)),
+                StrOpt.of(Registry.ITEM.byNameCodec(), "item").forGetter(p -> Optional.ofNullable(p.forItem))
         ).apply(instance, Filter::new));
 
         @Override
