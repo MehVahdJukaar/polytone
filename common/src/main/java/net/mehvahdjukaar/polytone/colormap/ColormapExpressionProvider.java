@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.core.BlockPos;
@@ -111,7 +112,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     }
 
     @Override
-    public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
+    public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, BiomeIdMapper mapper) {
         float result = 0;
         boolean needsToUnlock = false;
         try {

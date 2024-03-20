@@ -39,7 +39,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     // custom defined sound types
     private final BiMap<ResourceLocation, SoundType> soundTypesIds = HashBiMap.create();
 
-    public SoundTypesManager(){
+    public SoundTypesManager() {
         super("sound_types");
     }
 
@@ -268,7 +268,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                 if (vanilla != null) return DataResult.success(vanilla);
                 ResourceLocation r = ResourceLocation.tryParse(s);
                 if (r != null) {
-                    var custom = Polytone.SOUND_TYPES. getCustom(new ResourceLocation(s));
+                    var custom = Polytone.SOUND_TYPES.getCustom(new ResourceLocation(s));
                     if (custom != null) return DataResult.success(custom);
                 }
                 return DataResult.error(() -> "Could not find any custom Sound Type with id " + r +
@@ -290,7 +290,10 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     public static final Codec<SoundType> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_OR_COPY_CODEC, DIRECT_CODEC);
 
 
-    public record Resources(Map<ResourceLocation,JsonElement> soundTypes,
-                                   Map<ResourceLocation, List<String>> soundEvents){};
+    public record Resources(Map<ResourceLocation, JsonElement> soundTypes,
+                            Map<ResourceLocation, List<String>> soundEvents) {
+    }
+
+    ;
 
 }
