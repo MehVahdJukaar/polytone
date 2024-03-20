@@ -4,6 +4,8 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
+import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
@@ -35,6 +37,7 @@ public class Polytone {
     public static final BiomeEffectsManager BIOME_EFFECTS = new BiomeEffectsManager();
     public static final ColormapsManager COLORMAPS = new ColormapsManager();
     public static final LightmapsManager LIGHTMAPS = new LightmapsManager();
+    public static final BiomeIdMapperManager BIOME_ID_MAPPERS = new BiomeIdMapperManager();
     public static final ParticleModifiersManager PARTICLE_MODIFIERS = new ParticleModifiersManager();
     public static final SoundTypesManager SOUND_TYPES = new SoundTypesManager();
     public static final VariantTextureManager VARIANT_TEXTURES = new VariantTextureManager();
@@ -45,7 +48,7 @@ public class Polytone {
 
     public static void init(boolean isSodiumOn) {
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
-                        SOUND_TYPES, COLORMAPS, COLORS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
+                        SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, COLORS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
                         BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS),
                 res("block_properties_manager"));
         sodiumOn = isSodiumOn;

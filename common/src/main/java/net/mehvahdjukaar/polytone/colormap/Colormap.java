@@ -16,6 +16,7 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
@@ -51,7 +52,7 @@ public class Colormap implements ColorResolver, BlockColor {
             IColormapNumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
             StrOpt.of(Codec.BOOL, "triangular", false).forGetter(c -> c.triangular),
             StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
-            StrOpt.of(BiomeIdMapperManager.CODEC, "biome_mapper").forGetter(c -> Optional.of(c.biomeMapper))
+            StrOpt.of(BiomeIdMapperManager.CODEC, "biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper))
     ).apply(i, Colormap::new));
 
     protected static final Codec<BlockColor> REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
@@ -79,7 +80,7 @@ public class Colormap implements ColorResolver, BlockColor {
         this.usesPos = usesBiome || (xGetter.usesPos() || yGetter.usesPos());
         this.usesState = (xGetter.usesState() || yGetter.usesState());
         this.hasBiomeBlend = biomeBlend.orElse(usesBiome);
-        this.biomeMapper = biomeMapper.orElse(BiomeIdMapperManager.BY_INDEX);
+        this.biomeMapper = biomeMapper.orElse(BiomeIdMapper.BY_INDEX);
     }
 
     protected Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter) {
@@ -161,8 +162,8 @@ public class Colormap implements ColorResolver, BlockColor {
     }
 
     private int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
-        float humidity = Mth.clamp(xGetter.getValue(state, pos, biome), 0, 1);
-        float temperature = Mth.clamp(yGetter.getValue(state, pos, biome), 0, 1);
+        float humidity = Mth.clamp(xGetter.getValue(state, pos, biome, biomeMapper), 0, 1);
+        float temperature = Mth.clamp(yGetter.getValue(state, pos, biome, biomeMapper), 0, 1);
         return sample(humidity, temperature, defaultColor);
     }
 

@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.biome;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
@@ -10,16 +9,22 @@ import java.util.Map;
 
 public interface BiomeIdMapper {
 
-    float getIndex(Registry<Biome> biomeRegistry, Holder<Biome> biome);
+    BiomeIdMapper BY_INDEX = (biomeRegistry, biome) -> biomeRegistry.getId(biome) / 255f;
 
-    record Custom(Map<ResourceLocation, Float> map) implements BiomeIdMapper{
+    float getIndex(Registry<Biome> biomeRegistry, Biome biome);
+
+    record Custom(Map<ResourceLocation, Float> map, float textureSize) implements BiomeIdMapper {
+
+        public Custom(Map<ResourceLocation, Float> map) {
+            this(map, map.getOrDefault(new ResourceLocation("texture_size"), 1f));
+        }
 
         public static final Codec<Custom> CODEC = Codec.unboundedMap(ResourceLocation.CODEC, Codec.FLOAT)
                 .xmap(Custom::new, Custom::map);
 
         @Override
-        public float getIndex(Registry<Biome> biomeRegistry, Holder<Biome> biome) {
-            return map.getOrDefault(biome.unwrapKey().get().location(),0f);
+        public float getIndex(Registry<Biome> biomeRegistry, Biome biome) {
+            return map.getOrDefault(biomeRegistry.getKey(biome), 0f) / textureSize;
         }
     }
 }

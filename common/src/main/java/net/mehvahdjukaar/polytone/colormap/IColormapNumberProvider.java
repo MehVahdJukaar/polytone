@@ -3,12 +3,12 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +31,7 @@ public interface IColormapNumberProvider {
         return provider;
     }
 
-    float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome);
+    float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper);
 
     default boolean usesBiome() {
         return true;
@@ -48,7 +48,7 @@ public interface IColormapNumberProvider {
     record Const(float c) implements IColormapNumberProvider {
 
         @Override
-        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
+        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome, BiomeIdMapper mapper) {
             return c;
         }
 
@@ -73,7 +73,7 @@ public interface IColormapNumberProvider {
 
     IColormapNumberProvider TEMPERATURE = register("temperature", new IColormapNumberProvider() {
         @Override
-        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
+        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome, BiomeIdMapper mapper) {
             return biome == null ? 0 : getClimateSettings(biome).temperature;
         }
 
@@ -85,7 +85,7 @@ public interface IColormapNumberProvider {
 
     IColormapNumberProvider LEGACY_TEMPERATURE = register("legacy_temperature", new IColormapNumberProvider() {
         @Override
-        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
+        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome, BiomeIdMapper mapper) {
             return biome == null ? 0 : biome.getTemperature(pos);
         }
 
@@ -97,7 +97,7 @@ public interface IColormapNumberProvider {
 
     IColormapNumberProvider DOWNFALL = register("downfall", new IColormapNumberProvider() {
         @Override
-        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome) {
+        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome, BiomeIdMapper mapper) {
             return biome == null ? 0 : getClimateSettings(biome).downfall;
         }
 
@@ -107,10 +107,15 @@ public interface IColormapNumberProvider {
         }
     });
 
-    IColormapNumberProvider BIOME_ID = register("biome_id", (state, pos, b) -> Minecraft.getInstance().level
-            .registryAccess().registry(Registries.BIOME).get().getId(b) / 256f);
+    // grid format
+    IColormapNumberProvider BIOME_ID = register("biome_id",
+            (state, pos, biome, mapper) -> {
+                var registry = Minecraft.getInstance().level.registryAccess().registry(Registries.BIOME).get();
+                return mapper.getIndex(registry, biome);
+            });
 
-    IColormapNumberProvider Y_LEVEL = register("y_level", (state, pos, biome) ->
+
+    IColormapNumberProvider Y_LEVEL = register("y_level", (state, pos, biome, m) ->
             (pos == null ? 64 : pos.getY()) / 256f); //hoping this will be flipped
 
 }
