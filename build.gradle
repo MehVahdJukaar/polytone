@@ -7,7 +7,7 @@ plugins {
 }
 
 architectury {
-    minecraft = rootProject.minecraft_version
+    minecraft = minecraft_version
 }
 
 subprojects {
@@ -21,9 +21,9 @@ subprojects {
     }
 
     dependencies {
-        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+        minecraft "com.mojang:minecraft:${minecraft_version}"
         mappings loom.layered() {
-            it.parchment("org.parchmentmc.data:parchment-${rootProject.parchment_version}")
+            it.parchment("org.parchmentmc.data:parchment-${parchment_version}")
             it.officialMojangMappings {
                 setNameSyntheticMembers(false)
             }
@@ -40,7 +40,7 @@ subprojects {
         modrinth {
             projectId = rootProject.mod_id
             uploadFile = tasks.remapJar
-            gameVersions = [rootProject.minecraft_version]
+            gameVersions = [minecraft_version]
             if (modLoader == "forge") {
                 loaders = ["neoforge"]
             } else loaders = [modLoader]
@@ -61,10 +61,10 @@ subprojects {
         curseforge {
             apiKey = env.CURSEFORGE_TOKEN
             project {
-                id = rootProject.project_id
+                id = project_id
                 changelog = changelogText
                 releaseType = 'release'
-                addGameVersion rootProject.minecraft_version
+                addGameVersion minecraft_version
 
                 if (modLoader == "forge") {
                     addGameVersion("NeoForge")

@@ -138,7 +138,7 @@ public class Colormap implements ColorResolver, BlockColor {
     }
 
     public void setTargetTexture(ResourceLocation imageTarget) {
-        this.targetTexture = imageTarget;
+        this.targetTexture = imageTarget.withPath(imageTarget.getPath().replace(".png", ""));
     }
 
     // Dont use tint index

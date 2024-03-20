@@ -109,7 +109,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             }
 
             //fill inline colormaps colormapTextures
-            if(colormap.isPresent()) {
+            if (colormap.isPresent()) {
                 BlockColor tint = colormap.get();
                 if (tint instanceof CompoundBlockColors c) {
                     ColormapsManager.fillCompoundColormapPalette(textures, id, c, usedTextures);
@@ -117,6 +117,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                     var text = textures.get(c.getTargetTexture() == null ? id : c.getTargetTexture());
                     if (text != null) {
                         ColormapsManager.tryAcceptingTexture(text.getDefault(), id, c, usedTextures);
+                    } else if (c.getTargetTexture() != null) {
+                        Polytone.LOGGER.error("Could not resolve explicit texture for colormap {} from block modifier {}", c.getTargetTexture(), id);
                     }
                 }
             }
@@ -147,7 +149,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         //validate colormap
         if (mod.tintGetter().isPresent()) {
             if (mod.tintGetter().get() instanceof Colormap c && !c.hasTexture()) {
-                throw new IllegalStateException("Did not find any texture png for implicit colormap from block modifier " + modifierId);
+                Polytone.LOGGER.error("Did not find any texture png for implicit colormap from block modifier {}. Skipping", modifierId);
             }
         }
         Optional<Block> implicitTarget = BuiltInRegistries.BLOCK.getOptional(modifierId);
@@ -164,7 +166,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         //no explicit targets. use its own ID instead
         else {
             implicitTarget.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
-            if(implicitTarget.isEmpty()) {
+            if (implicitTarget.isEmpty()) {
                 if (PlatStuff.isModLoaded(modifierId.getNamespace())) {
                     Polytone.LOGGER.error("Found Block Properties Modifier with no implicit target ({}) and no explicit targets. Skipping", modifierId);
                 }
