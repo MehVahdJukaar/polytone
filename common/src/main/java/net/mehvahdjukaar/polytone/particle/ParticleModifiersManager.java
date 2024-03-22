@@ -12,6 +12,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 
 import java.util.HashMap;
@@ -26,10 +27,10 @@ public class ParticleModifiersManager extends JsonPartialReloader {
         super("particle_modifiers");
     }
 
-    public void maybeModify(ParticleOptions options, Particle particle) {
+    public void maybeModify(ParticleOptions options, Level level, Particle particle) {
         var mod = particleModifiers.get(options.getType());
         for (var modifier : mod) {
-            modifier.modify(particle, options);
+            modifier.modify(particle, level, options);
         }
     }
 

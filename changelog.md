@@ -1,1 +1,2 @@
-added biome ID mapper for grid colormaps
+particle modifiers can now use colormaps
+added color properties to redstone wire paericle color array

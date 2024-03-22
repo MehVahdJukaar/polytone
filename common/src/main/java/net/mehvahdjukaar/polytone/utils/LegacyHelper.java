@@ -160,6 +160,11 @@ public class LegacyHelper {
 
     private static void forceBlockToHaveTintIndex(ResourceLocation blockId) {
         var b = BuiltInRegistries.BLOCK.getOptional(blockId);
-        b.ifPresent(Polytone.VARIANT_TEXTURES::addTintOverrideHack);
+        if(b.isPresent()){
+            Block block = b.get();
+            if(block != Blocks.REDSTONE_WIRE && block != Blocks.PUMPKIN_STEM && block != Blocks.MELON_STEM){
+                Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
+            }
+        }
     }
 }

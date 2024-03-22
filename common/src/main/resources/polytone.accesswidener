@@ -24,6 +24,9 @@ mutable field net/minecraft/world/item/DyeColor fireworkColor I
 mutable field net/minecraft/world/item/DyeColor textColor I
 accessible field net/minecraft/world/item/DyeColor textColor I
 
+accessible field net/minecraft/world/level/block/RedStoneWireBlock COLORS [Lnet/minecraft/world/phys/Vec3;
+mutable field net/minecraft/world/level/block/RedStoneWireBlock COLORS [Lnet/minecraft/world/phys/Vec3;
+
 accessible field net/minecraft/world/level/biome/Biome specialEffects Lnet/minecraft/world/level/biome/BiomeSpecialEffects;
 mutable field net/minecraft/world/level/biome/Biome specialEffects Lnet/minecraft/world/level/biome/BiomeSpecialEffects;
 
