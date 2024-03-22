@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -15,13 +16,13 @@ import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.redstone.Redstone;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.Function;
 
 import static net.mehvahdjukaar.polytone.utils.ColorUtils.pack;
@@ -39,6 +40,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private final Object2IntMap<MobEffect> vanillaEffectColors = new Object2IntOpenHashMap<>();
 
     private final Map<DyeColor, Integer> customSheepColors = new EnumMap<>(DyeColor.class);
+    protected final List<Vec3> originalRedstoneWireColors =  Arrays.stream(RedStoneWireBlock.COLORS).toList();
 
     private int emptyPotion = 16253176;
     private int waterBottle = 3694022;
@@ -118,7 +120,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             } else Polytone.LOGGER.warn("Unknown DyeColor with name {}", name);
         } else if (is(prop, 0, "particle")) {
             if (prop.length > 1) {
-                ResourceLocation id = new ResourceLocation(prop[1].replace("\\", ""));
+                String s = prop[1];
+                ResourceLocation id = new ResourceLocation(s.replace("\\", ""));
                 try {
                     // turn from hex to decimal if it is a single number
                     int hex = parseHex(str);
@@ -180,7 +183,19 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 int col = parseHex(obj);
                 customSheepColors.put(color, col);
             } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
-        } else if (is(prop, 0, "text")) {
+        }
+        else if(is(prop,0, "redstone")){
+            String ind = get(prop, 1);
+            if(ind != null) {
+                int code = Integer.parseInt(ind);
+                if(code<RedStoneWireBlock.COLORS.length) {
+                    int col = parseHex(obj);
+                    var rgb = ColorUtils.unpack(col);
+                    RedStoneWireBlock.COLORS[code] = new Vec3(rgb[0], rgb[1], rgb[2]);
+                }else Polytone.LOGGER.warn("Redstone color index must be between 0 and 15");
+            }
+        }
+        else if (is(prop, 0, "text")) {
             int col = parseHex(obj);
             ChatFormatting text = null;
             if (is(prop, 1, "code")) {
@@ -278,6 +293,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             item.highlightColor = e.getValue();
         }
         vanillaEggsHighlight.clear();
+
+        RedStoneWireBlock.COLORS = originalRedstoneWireColors.toArray(new Vec3[0]);
     }
 
     public void regenSheepColors() {

@@ -2,17 +2,23 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
+import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -23,6 +29,7 @@ public class ParticleModifier {
 
     public static final Codec<ParticleModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             StrOpt.of(Filter.CODEC, "filter").forGetter(p -> Optional.ofNullable(p.filter)),
+            StrOpt.of(Colormap.CODEC, "colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
             StrOpt.of(ParticleExpression.CODEC, "color").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             StrOpt.of(ParticleExpression.CODEC, "life").forGetter(p -> Optional.ofNullable(p.lifeGetter)),
             StrOpt.of(ParticleExpression.CODEC, "size").forGetter(p -> Optional.ofNullable(p.colorGetter)),
@@ -38,6 +45,8 @@ public class ParticleModifier {
 
     @Nullable
     public Filter filter;
+    @Nullable
+    public BlockColor colormap;
     @Nullable
     public ParticleExpression colorGetter;
     @Nullable
@@ -56,7 +65,7 @@ public class ParticleModifier {
     public ParticleExpression alphaGetter;
     public Optional<Set<ResourceLocation>> explicitTargets;
 
-    private ParticleModifier(Optional<Filter> filter,
+    private ParticleModifier(Optional<Filter> filter, Optional<BlockColor> colormap,
                              Optional<ParticleExpression> color, Optional<ParticleExpression> life,
                              Optional<ParticleExpression> size, Optional<ParticleExpression> red,
                              Optional<ParticleExpression> green, Optional<ParticleExpression> blue,
@@ -92,37 +101,45 @@ public class ParticleModifier {
     }
 
 
-    public void modify(Particle particle, ParticleOptions options) {
+    public void modify(Particle particle, Level level, ParticleOptions options) {
         if (filter != null) {
             if (!filter.test(options)) return;
         }
         if (colorGetter != null) {
-            float[] unpack = ColorUtils.unpack((int) colorGetter.get(particle, options));
+            float[] unpack = ColorUtils.unpack((int) colorGetter.get(particle, level, options));
+            particle.setColor(unpack[0], unpack[1], unpack[2]);
+        }
+        if(colormap != null){
+            BlockState state = null;
+            if(options instanceof BlockParticleOption bo){
+                state = bo.getState();
+            }
+            float[] unpack = ColorUtils.unpack(colormap.getColor(state, level, BlockPos.containing(particle.x,particle.y, particle.z), 0));
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (lifeGetter != null) {
-            particle.setLifetime((int) lifeGetter.get(particle, options));
+            particle.setLifetime((int) lifeGetter.get(particle, level, options));
         }
         if (sizeGetter != null) {
-            particle.scale((float) sizeGetter.get(particle, options));
+            particle.scale((float) sizeGetter.get(particle, level, options));
         }
         if (redGetter != null) {
-            particle.rCol = (float) redGetter.get(particle, options);
+            particle.rCol = (float) redGetter.get(particle, level, options);
         }
         if (greenGetter != null) {
-            particle.gCol = (float) greenGetter.get(particle, options);
+            particle.gCol = (float) greenGetter.get(particle, level, options);
         }
         if (blueGetter != null) {
-            particle.bCol = (float) blueGetter.get(particle, options);
+            particle.bCol = (float) blueGetter.get(particle, level, options);
         }
         if (speedGetter != null) {
-            double speed = speedGetter.get(particle, options);
+            double speed = speedGetter.get(particle, level, options);
             particle.xd *= speed;
             particle.yd *= speed;
             particle.zd *= speed;
         }
         if (alphaGetter != null) {
-            particle.alpha = (float) alphaGetter.get(particle, options);
+            particle.alpha = (float) alphaGetter.get(particle, level, options);
         }
     }
 
