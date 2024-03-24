@@ -5,6 +5,7 @@ import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
@@ -33,6 +34,23 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         super("fluid_properties");
     }
 
+    private Map<ResourceLocation, FluidPropertyModifier> extraModifiers;
+    private Map<ResourceLocation, ArrayImage> extraImages;
+
+    // fot OF lava and water. shit code...
+    public void addConvertedBlockProperties(Map<ResourceLocation, BlockPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
+        this.extraImages = textures;
+        extraModifiers = new HashMap<>();
+        for (var v : modifiers.entrySet()) {
+            var m = v.getValue();
+            var c = m.tintGetter();
+            if (c.isPresent()) {
+                // ignore targets as those are block targets anyways
+                extraModifiers.put(v.getKey(), new FluidPropertyModifier((Optional<BlockColor>) c, Optional.empty(), Optional.empty()));
+            }
+        }
+    }
+
     @Override
     protected Resources prepare(ResourceManager resourceManager) {
         Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
@@ -40,11 +58,11 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 
-        Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
-        LegacyHelper.filterOfFluidTextures(ofTextures);
+        //Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
+        //LegacyHelper.filterOfFluidTextures(ofTextures);
         Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.gatherImages(resourceManager, "colormatic/colormap");
 
-        textures.putAll(LegacyHelper.convertPaths(ofTextures));
+        //textures.putAll(LegacyHelper.convertPaths(ofTextures));
         textures.putAll(LegacyHelper.convertPaths(cmTextures));
 
         textures.putAll(ArrayImage.gatherImages(resourceManager, path()));
@@ -59,6 +77,10 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
+        Map<ResourceLocation, FluidPropertyModifier> parsedModifiers = new HashMap<>(extraModifiers);
+        textures.putAll(extraImages);
+
+
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
@@ -67,13 +89,25 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Fluid Color Modifier with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 
+            //always have priority
+            if (parsedModifiers.containsKey(id)) {
+                Polytone.LOGGER.warn("Found duplicate fluid modifier with id {}. This is likely a non .json converted legacy one" +
+                        "Overriding previous one", id);
+            }
+            parsedModifiers.put(id, modifier);
+        }
+
+
+        // add all modifiers (with or without texture)
+        for (var entry : parsedModifiers.entrySet()) {
+            var id = entry.getKey();
+            FluidPropertyModifier modifier = entry.getValue();
             //fill inline colormaps colormapTextures
             BlockColor colormap = modifier.colormap().orElse(null);
             if (colormap instanceof Colormap c) {
                 ColormapsManager.tryAcceptingTexture(textures.get(id), id, c, usedTextures);
             }
             addModifier(id, modifier);
-
         }
 
         // creates orphaned texture colormaps & properties
@@ -149,4 +183,5 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     public FluidPropertyModifier getModifier(Fluid water) {
         return modifiers.get(water);
     }
+
 }

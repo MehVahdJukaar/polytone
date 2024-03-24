@@ -71,6 +71,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         var parsedModifiers = LegacyHelper.convertBlockProperties(resources.ofProperties);
         parsedModifiers.putAll(LegacyHelper.convertInlinedPalettes(optifineColormapsToBlocks));
 
+        LegacyHelper.convertOfBlockToFluidProp(parsedModifiers, resources.textures);
+
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
         // parse jsons

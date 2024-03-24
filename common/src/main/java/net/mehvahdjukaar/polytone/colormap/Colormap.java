@@ -162,8 +162,8 @@ public class Colormap implements ColorResolver, BlockColor {
     }
 
     private int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
-        float humidity = Mth.clamp(xGetter.getValue(state, pos, biome, biomeMapper), 0, 1);
-        float temperature = Mth.clamp(yGetter.getValue(state, pos, biome, biomeMapper), 0, 1);
+        float temperature = Mth.clamp(xGetter.getValue(state, pos, biome, biomeMapper), 0, 1);
+        float humidity = Mth.clamp(yGetter.getValue(state, pos, biome, biomeMapper), 0, 1);
         return sample(humidity, temperature, defaultColor);
     }
 
@@ -203,14 +203,15 @@ public class Colormap implements ColorResolver, BlockColor {
     }
 
 
-    private int sample(float x, float y, int defValue) {
+    private int sample(float textY, float textX, int defValue) {
+        // dont ask questions here
         //if (Polytone.sodiumOn) return defValue;
-        if (triangular) x *= y;
+        if (triangular) textY *= textX;
         int width = image.width();
         int height = image.height();
 
-        int w = (int) ((1.0 - y) * (width - 1));
-        int h = (int) ((1.0 - x) * (height - 1));
+        int w = (int) ((1.0 - textX) * (width - 1));
+        int h = (int) ((1.0 - textY) * (height - 1));
 
         return w >= width || h >= height ? defValue : image.pixels()[h][w];
     }

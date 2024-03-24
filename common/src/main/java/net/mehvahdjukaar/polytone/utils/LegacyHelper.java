@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.utils;
 
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -100,7 +99,16 @@ public class LegacyHelper {
         var targets = properties.getProperty("blocks");
         if (targets != null) {
             set = Arrays.stream(targets.split(" "))
-                    .map(ResourceLocation::new)
+                    .filter(s -> {
+                        // fuck this i wont parse numerical shit
+                        try {
+                            int iHateOptishit = Integer.parseInt(s);
+                           // return BuiltInRegistries.BLOCK.getKey(BuiltInRegistries.BLOCK.byId(iHateOptishit));
+                        } catch (Exception ignored) {
+                            return false;
+                        }
+                        return true;
+                    }).map(ResourceLocation::new)
                     .collect(Collectors.toSet());
             set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
 
@@ -178,15 +186,6 @@ public class LegacyHelper {
         }
     }
 
-    public static void filterOfFluidTextures(Map<ResourceLocation, ArrayImage> ofTextures) {
-        ofTextures.entrySet().removeIf(e -> {
-            ResourceLocation id = e.getKey();
-            String path = id.getPath();
-            return (!path.contains("water") && !path.contains("lava"));
-        });
-    }
-
-
     public static int getBiomeId(Biome biome, Registry<Biome> biomeRegistry) {
         ResourceLocation id = biomeRegistry.getKey(biome);
         return BIOME_ID_MAP.getOrDefault(id, 0);
@@ -262,4 +261,29 @@ public class LegacyHelper {
         map.put(new ResourceLocation("end_barrens"), 63);
         return map;
     });
+
+    public static void convertOfBlockToFluidProp(Map<ResourceLocation, BlockPropertyModifier> parsedModifiers,
+                                                 Map<ResourceLocation, ArrayImage> textures) {
+
+        Map<ResourceLocation, BlockPropertyModifier> filtered = new HashMap<>();
+        Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
+        for (var entry : parsedModifiers.entrySet()) {
+            ResourceLocation id = entry.getKey();
+            BlockPropertyModifier modifier = entry.getValue();
+            if (id.getPath().contains("water") || id.getPath().contains("lava")) {
+                filtered.put(id, modifier);
+            }
+        }
+        for (var entry : textures.entrySet()) {
+            ResourceLocation id = entry.getKey();
+            ArrayImage modifier = entry.getValue();
+            if (id.getPath().contains("water") || id.getPath().contains("lava")) {
+                filteredTextures.put(id, modifier);
+            }
+        }
+        textures.keySet().removeAll(filteredTextures.keySet());
+        parsedModifiers.keySet().removeAll(filtered.keySet());
+
+        Polytone.FLUID_PROPERTIES.addConvertedBlockProperties(filtered, filteredTextures);
+    }
 }
