@@ -12,7 +12,7 @@ public interface BiomeIdMapper {
 
     BiomeIdMapper BY_INDEX = (biomeRegistry, biome) -> {
         int id = LegacyHelper.getBiomeId(biome, biomeRegistry);
-        return id/255f;
+        return (1 + id) / 255f;
     };
 
     float getIndex(Registry<Biome> biomeRegistry, Biome biome);
@@ -28,7 +28,8 @@ public interface BiomeIdMapper {
 
         @Override
         public float getIndex(Registry<Biome> biomeRegistry, Biome biome) {
-            return map.getOrDefault(biomeRegistry.getKey(biome), 0f) / textureSize;
+            // no clue why 1 is needed
+            return (1 + map.getOrDefault(biomeRegistry.getKey(biome), 0f)) / (textureSize-1);
         }
     }
 

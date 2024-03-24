@@ -111,11 +111,12 @@ public interface IColormapNumberProvider {
     IColormapNumberProvider BIOME_ID = register("biome_id",
             (state, pos, biome, mapper) -> {
                 var registry = Minecraft.getInstance().level.registryAccess().registry(Registries.BIOME).get();
-                return mapper.getIndex(registry, biome);
+                // texture is flipped...
+                return 1 - mapper.getIndex(registry, biome);
             });
 
 
     IColormapNumberProvider Y_LEVEL = register("y_level", (state, pos, biome, m) ->
-            (pos == null ? 64 : pos.getY()) / 256f); //hoping this will be flipped
+            (pos == null ? 64 : pos.getY()) / 255f); //hoping this will be flipped
 
 }

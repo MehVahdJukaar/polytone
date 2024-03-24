@@ -1,1 +1,3 @@
-fixed an issue when converting OF format colormaps with no explicit source
+- fixed particle colormaps not woking poperly
+- aded more "support" for optifine super ugly and anciant "biome id"/"grid" system by copy pasting an ID table on minecraft wiki that isnt even used anyhwere in the game
+- The game has been using string IDs for 4 years now!!! Use those instead with polytone format for the love of god and stopusing shit optifine system
