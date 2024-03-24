@@ -104,8 +104,8 @@ public class LegacyHelper {
                         try {
                             int iHateOptishit = Integer.parseInt(s);
                            // return BuiltInRegistries.BLOCK.getKey(BuiltInRegistries.BLOCK.byId(iHateOptishit));
-                        } catch (Exception ignored) {
                             return false;
+                        } catch (Exception ignored) {
                         }
                         return true;
                     }).map(ResourceLocation::new)
