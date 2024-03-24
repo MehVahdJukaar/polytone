@@ -46,7 +46,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             var c = m.tintGetter();
             if (c.isPresent()) {
                 // ignore targets as those are block targets anyways
-                extraModifiers.put(v.getKey(), new FluidPropertyModifier((Optional<BlockColor>) c, Optional.empty(), Optional.empty()));
+                extraModifiers.put(v.getKey(), new FluidPropertyModifier((Optional<BlockColor>) c, Optional.empty(), m.explicitTargets()));
             }
         }
     }
