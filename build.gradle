@@ -42,7 +42,7 @@ subprojects {
             uploadFile = tasks.remapJar
             gameVersions = [minecraft_version]
             if (modLoader == "forge") {
-                loaders = ["neoforge"]
+                loaders = ["neoforge", "forge"]
             } else loaders = [modLoader]
             changelog = changelogText
 
