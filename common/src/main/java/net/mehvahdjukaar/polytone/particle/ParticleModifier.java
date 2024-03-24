@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
-import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
@@ -71,12 +70,12 @@ public class ParticleModifier {
                              Optional<ParticleExpression> green, Optional<ParticleExpression> blue,
                              Optional<ParticleExpression> alpha, Optional<ParticleExpression> speed,
                              Optional<Set<ResourceLocation>> explicitTargets) {
-        this(filter.orElse(null), color.orElse(null), life.orElse(null), size.orElse(null),
+        this(filter.orElse(null), colormap.orElse(null),  color.orElse(null), life.orElse(null), size.orElse(null),
                 red.orElse(null), green.orElse(null), blue.orElse(null),
                 alpha.orElse(null), speed.orElse(null), explicitTargets);
     }
 
-    public ParticleModifier(@Nullable Filter filter,
+    public ParticleModifier(@Nullable Filter filter,@Nullable BlockColor colormap,
                             @Nullable ParticleExpression color, @Nullable ParticleExpression life,
                             @Nullable ParticleExpression size, @Nullable ParticleExpression red,
                             @Nullable ParticleExpression green, @Nullable ParticleExpression blue,
@@ -92,11 +91,12 @@ public class ParticleModifier {
         this.speedGetter = speed;
         this.explicitTargets = explicitTargets;
         this.filter = filter;
+        this.colormap = colormap;
     }
 
     public static ParticleModifier ofColor(String color) {
         ParticleExpression expression = ParticleExpression.parse(color);
-        return new ParticleModifier(null, expression, null, null, null, null,
+        return new ParticleModifier(null, null, expression, null, null, null, null,
                 null, null, null, Optional.empty());
     }
 

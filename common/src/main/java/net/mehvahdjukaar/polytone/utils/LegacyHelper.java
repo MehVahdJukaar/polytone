@@ -1,13 +1,18 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
 import net.minecraft.Util;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedStoneWireBlock;
@@ -119,7 +124,7 @@ public class LegacyHelper {
             colormap.acceptTexture(new ArrayImage(matrix));
         } else {
             String source = properties.getProperty("source");
-            if(source != null) {
+            if (source != null) {
                 source = source.replace("~/colormap/", id.getNamespace() + ":");
                 if (source.contains("./")) {
                     // resolve relative paths
@@ -165,9 +170,9 @@ public class LegacyHelper {
 
     private static void forceBlockToHaveTintIndex(ResourceLocation blockId) {
         var b = BuiltInRegistries.BLOCK.getOptional(blockId);
-        if(b.isPresent()){
+        if (b.isPresent()) {
             Block block = b.get();
-            if(block != Blocks.REDSTONE_WIRE && block != Blocks.PUMPKIN_STEM && block != Blocks.MELON_STEM){
+            if (block != Blocks.REDSTONE_WIRE && block != Blocks.PUMPKIN_STEM && block != Blocks.MELON_STEM) {
                 Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
             }
         }
@@ -180,4 +185,81 @@ public class LegacyHelper {
             return (!path.contains("water") && !path.contains("lava"));
         });
     }
+
+
+    public static int getBiomeId(Biome biome, Registry<Biome> biomeRegistry) {
+        ResourceLocation id = biomeRegistry.getKey(biome);
+        return BIOME_ID_MAP.getOrDefault(id, 0);
+    }
+
+    //whateve optifine uses...
+    private static final Object2IntMap<ResourceLocation> BIOME_ID_MAP = Util.make(() -> {
+        Object2IntMap<ResourceLocation> map = new Object2IntOpenHashMap<>();
+        // Add entries to the map
+        map.put(new ResourceLocation("the_void"), 0);
+        map.put(new ResourceLocation("plains"), 1);
+        map.put(new ResourceLocation("sunflower_plains"), 2);
+        map.put(new ResourceLocation("snowy_plains"), 3);
+        map.put(new ResourceLocation("ice_spikes"), 4);
+        map.put(new ResourceLocation("desert"), 5);
+        map.put(new ResourceLocation("swamp"), 6);
+        map.put(new ResourceLocation("mangrove_swamp"), 7);
+        map.put(new ResourceLocation("forest"), 8);
+        map.put(new ResourceLocation("flower_forest"), 9);
+        map.put(new ResourceLocation("birch_forest"), 10);
+        map.put(new ResourceLocation("dark_forest"), 11);
+        map.put(new ResourceLocation("old_growth_birch_forest"), 12);
+        map.put(new ResourceLocation("old_growth_pine_taiga"), 13);
+        map.put(new ResourceLocation("old_growth_spruce_taiga"), 14);
+        map.put(new ResourceLocation("taiga"), 15);
+        map.put(new ResourceLocation("snowy_taiga"), 16);
+        map.put(new ResourceLocation("savanna"), 17);
+        map.put(new ResourceLocation("savanna_plateau"), 18);
+        map.put(new ResourceLocation("windswept_hills"), 19);
+        map.put(new ResourceLocation("windswept_gravelly_hills"), 20);
+        map.put(new ResourceLocation("windswept_forest"), 21);
+        map.put(new ResourceLocation("windswept_savanna"), 22);
+        map.put(new ResourceLocation("jungle"), 23);
+        map.put(new ResourceLocation("sparse_jungle"), 24);
+        map.put(new ResourceLocation("bamboo_jungle"), 25);
+        map.put(new ResourceLocation("badlands"), 26);
+        map.put(new ResourceLocation("eroded_badlands"), 27);
+        map.put(new ResourceLocation("wooded_badlands"), 28);
+        map.put(new ResourceLocation("meadow"), 29);
+        map.put(new ResourceLocation("cherry_grove"), 30);
+        map.put(new ResourceLocation("grove"), 31);
+        map.put(new ResourceLocation("snowy_slopes"), 32);
+        map.put(new ResourceLocation("frozen_peaks"), 33);
+        map.put(new ResourceLocation("jagged_peaks"), 34);
+        map.put(new ResourceLocation("stony_peaks"), 35);
+        map.put(new ResourceLocation("river"), 36);
+        map.put(new ResourceLocation("frozen_river"), 37);
+        map.put(new ResourceLocation("beach"), 38);
+        map.put(new ResourceLocation("snowy_beach"), 39);
+        map.put(new ResourceLocation("stony_shore"), 40);
+        map.put(new ResourceLocation("warm_ocean"), 41);
+        map.put(new ResourceLocation("lukewarm_ocean"), 42);
+        map.put(new ResourceLocation("deep_lukewarm_ocean"), 43);
+        map.put(new ResourceLocation("ocean"), 44);
+        map.put(new ResourceLocation("deep_ocean"), 45);
+        map.put(new ResourceLocation("cold_ocean"), 46);
+        map.put(new ResourceLocation("deep_cold_ocean"), 47);
+        map.put(new ResourceLocation("frozen_ocean"), 48);
+        map.put(new ResourceLocation("deep_frozen_ocean"), 49);
+        map.put(new ResourceLocation("mushroom_fields"), 50);
+        map.put(new ResourceLocation("dripstone_caves"), 51);
+        map.put(new ResourceLocation("lush_caves"), 52);
+        map.put(new ResourceLocation("deep_dark"), 53);
+        map.put(new ResourceLocation("nether_wastes"), 54);
+        map.put(new ResourceLocation("warped_forest"), 55);
+        map.put(new ResourceLocation("crimson_forest"), 56);
+        map.put(new ResourceLocation("soul_sand_valley"), 57);
+        map.put(new ResourceLocation("basalt_deltas"), 58);
+        map.put(new ResourceLocation("the_end"), 59);
+        map.put(new ResourceLocation("end_highlands"), 60);
+        map.put(new ResourceLocation("end_midlands"), 61);
+        map.put(new ResourceLocation("small_end_islands"), 62);
+        map.put(new ResourceLocation("end_barrens"), 63);
+        return map;
+    });
 }
