@@ -35,14 +35,17 @@ public class LegacyHelper {
 
     public static <T> Map<ResourceLocation, T> convertPaths(Map<ResourceLocation, T> map) {
         Map<ResourceLocation, T> toUpdate = new HashMap<>();
+        List<ResourceLocation> toRemove = new ArrayList<>();
         for (var entry : map.entrySet()) {
             ResourceLocation id = entry.getKey();
             String path = id.getPath();
             String newPath = PATHS.get(path);
             if (newPath != null) {
                 toUpdate.put(id.withPath(newPath), entry.getValue());
+                toRemove.add(id);
             }
         }
+        toRemove.forEach(map.keySet()::remove);
         map.putAll(toUpdate);
         return map;
     }
@@ -116,15 +119,17 @@ public class LegacyHelper {
             colormap.acceptTexture(new ArrayImage(matrix));
         } else {
             String source = properties.getProperty("source");
-            source = source.replace("~/colormap/", id.getNamespace() + ":");
-            if (source.contains("./")) {
-                // resolve relative paths
-                String path = id.getPath();
-                int index = path.lastIndexOf('/');
-                String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
-                source = source.replace("./", id.getNamespace() + ":" + directoryPath);
+            if(source != null) {
+                source = source.replace("~/colormap/", id.getNamespace() + ":");
+                if (source.contains("./")) {
+                    // resolve relative paths
+                    String path = id.getPath();
+                    int index = path.lastIndexOf('/');
+                    String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
+                    source = source.replace("./", id.getNamespace() + ":" + directoryPath);
+                }
+                colormap.setTargetTexture(new ResourceLocation(source));
             }
-            colormap.setTargetTexture(new ResourceLocation(source));
         }
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(), Optional.empty(),
@@ -166,5 +171,13 @@ public class LegacyHelper {
                 Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
             }
         }
+    }
+
+    public static void filterOfFluidTextures(Map<ResourceLocation, ArrayImage> ofTextures) {
+        ofTextures.entrySet().removeIf(e -> {
+            ResourceLocation id = e.getKey();
+            String path = id.getPath();
+            return (!path.contains("water") && !path.contains("lava"));
+        });
     }
 }

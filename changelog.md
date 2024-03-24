@@ -1,2 +1,1 @@
-particle modifiers can now use colormaps
-added color properties to redstone wire paericle color array
+fixed an issue when converting OF format colormaps with no explicit source

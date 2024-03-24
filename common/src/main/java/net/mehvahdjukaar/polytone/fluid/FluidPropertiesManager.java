@@ -41,6 +41,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 
         Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
+        LegacyHelper.filterOfFluidTextures(ofTextures);
         Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.gatherImages(resourceManager, "colormatic/colormap");
 
         textures.putAll(LegacyHelper.convertPaths(ofTextures));
