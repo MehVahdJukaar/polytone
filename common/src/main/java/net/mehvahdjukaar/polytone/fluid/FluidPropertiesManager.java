@@ -133,7 +133,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         var explTargets = mod.explicitTargets();
         Optional<Fluid> implicitTarget = BuiltInRegistries.FLUID.getOptional(pathId);
-        if (explTargets.isPresent()) {
+        if (explTargets.isPresent() && !explTargets.get().isEmpty()) {
             if (implicitTarget.isPresent()) {
                 Polytone.LOGGER.error("Found Fluid Properties Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
                         "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), pathId);

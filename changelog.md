@@ -1,1 +1,2 @@
-gui modifiers can now change title and label color
+fixed an issue with biome colors
+fixed another issue when converting the god darn optifine water colormap

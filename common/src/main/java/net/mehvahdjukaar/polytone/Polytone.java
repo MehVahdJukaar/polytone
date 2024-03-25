@@ -1,10 +1,6 @@
 package net.mehvahdjukaar.polytone;
 
-import com.mojang.datafixers.util.Either;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
-import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.color.ColorManager;
@@ -16,20 +12,12 @@ import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
-import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.lang.ref.WeakReference;
 
 public class Polytone {
     public static final String MOD_ID = "polytone";
@@ -57,9 +45,9 @@ public class Polytone {
                 res("block_properties_manager"));
         sodiumOn = isSodiumOn;
         PlatStuff.addClientReloadListener(() -> GUI_MODIFIER, res("gui_modifiers"));
-        //TODO: colormap for particles
+        //for colormap grid support
+
         //SKY and fog
-        //block particles
         //item properties and color. cache pllayer coord
         //exp color
     }
@@ -70,8 +58,11 @@ public class Polytone {
 
 
     public static void onTagsReceived(RegistryAccess registryAccess) {
+        REGISTRY_ACCESS_HACK = new WeakReference<>(registryAccess);
         BIOME_EFFECTS.doApply(registryAccess, true);
     }
+
+    public static WeakReference<RegistryAccess> REGISTRY_ACCESS_HACK = new WeakReference<>(null);
 
 
 
