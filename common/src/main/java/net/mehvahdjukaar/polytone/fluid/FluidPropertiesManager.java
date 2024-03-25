@@ -146,7 +146,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         }
         //no explicit targets. use its own ID instead
         else {
-            implicitTarget.ifPresent(block -> modifiers.merge(block, mod, FluidPropertyModifier::merge));
+            implicitTarget.ifPresent(fluid -> modifiers.merge(fluid, mod, FluidPropertyModifier::merge));
             tryAddSpecial(pathId, mod);
             if (implicitTarget.isEmpty()) {
                 if (PlatStuff.isModLoaded(pathId.getNamespace())) {
@@ -167,18 +167,6 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
 
-    public int modifyColor(int original, @Nullable BlockAndTintGetter level,
-                           @Nullable BlockPos pos, @Nullable BlockState state,
-                           FluidState fluidState) {
-        var modifier = modifiers.get(fluidState.getType());
-        if (modifier != null) {
-            var col = modifier.getColormap();
-            if (col != null) {
-                return col.getColor(state, level, pos, -1) | 0x44000000;
-            }
-        }
-        return original;
-    }
 
     public FluidPropertyModifier getModifier(Fluid water) {
         return modifiers.get(water);
