@@ -1,1 +1,1 @@
-- works with newest fabric fluid api
+gui modifiers can now change title and label color
