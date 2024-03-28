@@ -1,0 +1,6 @@
+{
+  "x_axis": "0",
+  "y_axis": "sqrt((POS_X*POS_X + POS_Z*POS_Z)/1000)%1",
+  "triangular": false,
+  "biome_blend": false
+}

@@ -5,6 +5,8 @@ import com.google.gson.JsonParseException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
@@ -130,7 +132,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, str);
                 }
             }
-
         } else if (is(prop, 0, "egg")) {
             if (prop.length > 2) {
                 ResourceLocation id = new ResourceLocation(prop[2].replace("\\", ""));

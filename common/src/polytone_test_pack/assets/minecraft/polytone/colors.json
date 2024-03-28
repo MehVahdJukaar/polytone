@@ -1,0 +1,42 @@
+{
+  "dye": {
+    "black": {
+      "diffuse": "000000",
+      "firework": "0",
+      "text": "0"
+    },
+    "red": {
+      "diffuse": "ff0000"
+    },
+    "blue": {
+      "diffuse": "0000ff"
+    }
+  },
+  "map": {
+    "grass": "0x00ff22",
+    "plant": "00bbaa"
+  },
+  "particle":{
+    "minecraft:portal": "0x00ff22",
+    "poof": "0x333333"
+  },
+  "egg": {
+    "shell": {
+      "minecraft:pig_spawn_egg": "0"
+    },
+    "spots": {
+      "minecraft:pig_spawn_egg": "ffffff"
+    }
+  },
+  "effect": {
+    "minecraft:jump_boost": "0x005522",
+    "minecraft:poison": "0x22ff22"
+  },
+  "sheep": {
+    "white": "442200",
+    "blue": "0000ff"
+  },
+  "text": {
+    "gold": "0xffcc00"
+  }
+}
