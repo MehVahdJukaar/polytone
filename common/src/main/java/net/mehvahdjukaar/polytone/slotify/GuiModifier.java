@@ -25,6 +25,27 @@ public record GuiModifier(Type type, String target,
                           List<WidgetModifier> widgetModifiers,
                           Map<String, SpecialOffset> specialOffsets) {
 
+    public GuiModifier(Type type, String target, List<SlotModifier> slotModifiers, int titleX, int titleY, int labelX, int labelY,
+                       Optional<Integer> titleColor, Optional< Integer> labelColor,
+                       List<SimpleSprite> sprites, List<WidgetModifier> widgetModifiers,
+                       Map<String, SpecialOffset> specialOffsets) {
+        this(type, target, slotModifiers, titleX, titleY, labelX, labelY,
+                titleColor.orElse(null), labelColor.orElse(null), sprites, widgetModifiers, specialOffsets);
+    }
+
+
+    public enum Type implements StringRepresentable {
+        MENU_ID,
+        MENU_CLASS,
+        SCREEN_CLASS,
+        SCREEN_TITLE;
+
+        @Override
+        public String getSerializedName() {
+            return this.name().toLowerCase(Locale.ROOT);
+        }
+    }
+
     public static final Codec<GuiModifier> CODEC =
             RecordCodecBuilder.<GuiModifier>create(i -> i.group(
                     StringRepresentable.fromEnum(Type::values).fieldOf("target_type").forGetter(GuiModifier::type),
@@ -34,8 +55,8 @@ public record GuiModifier(Type type, String target,
                     StrOpt.of(Codec.INT, "title_y_offset", 0).forGetter(GuiModifier::titleY),
                     StrOpt.of(Codec.INT, "label_x_offset", 0).forGetter(GuiModifier::labelX),
                     StrOpt.of(Codec.INT, "label_y_offset", 0).forGetter(GuiModifier::labelY),
-                    StrOpt.of(ColorUtils.CODEC, "title_color", null).forGetter(GuiModifier::titleColor),
-                    StrOpt.of(ColorUtils.CODEC, "label_color", null).forGetter(GuiModifier::labelColor),
+                    StrOpt.of(ColorUtils.CODEC, "title_color").forGetter(g->Optional.ofNullable(g.titleColor)),
+                    StrOpt.of(ColorUtils.CODEC, "label_color").forGetter(g->Optional.ofNullable(g.labelColor)),
                     StrOpt.of(SimpleSprite.CODEC.listOf(), "sprites", List.of()).forGetter(GuiModifier::sprites),
                     StrOpt.of(WidgetModifier.CODEC.listOf(), "widget_modifiers", List.of()).forGetter(GuiModifier::widgetModifiers),
                     StrOpt.of(Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC), "special_offsets", Map.of()).forGetter(GuiModifier::specialOffsets)
@@ -52,18 +73,6 @@ public record GuiModifier(Type type, String target,
                 return DataResult.success(instance);
             }, Function.identity());
 
-
-    public enum Type implements StringRepresentable {
-        MENU_ID,
-        MENU_CLASS,
-        SCREEN_CLASS,
-        SCREEN_TITLE;
-
-        @Override
-        public String getSerializedName() {
-            return this.name().toLowerCase(Locale.ROOT);
-        }
-    }
 
     public boolean targetsClass() {
         return type != Type.MENU_ID && type != Type.SCREEN_TITLE;

@@ -1,1 +1,1 @@
-gui modifiers can now change title and label color
+fixed an issue with particuel emitters

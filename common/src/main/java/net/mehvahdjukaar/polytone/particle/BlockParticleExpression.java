@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlockParticleExpression {
+
+
     private final Expression expression;
     private final String unparsed;
 
@@ -59,8 +61,7 @@ public class BlockParticleExpression {
 
     public static final Codec<BlockParticleExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
-            Expression compiled = createExpression(s);
-            return DataResult.success(new BlockParticleExpression(compiled, s));
+            return DataResult.success(new BlockParticleExpression(s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
@@ -70,9 +71,13 @@ public class BlockParticleExpression {
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
-                .variables(TIME)
+                .variables(TIME, POS_X, POS_Y, POS_Z)
                 .operator(ExpressionUtils.defOp())
                 .build();
+    }
+
+    public BlockParticleExpression(String expression){
+        this(createExpression(expression), expression);
     }
 
     public BlockParticleExpression(Expression expression, String unparsed) {
@@ -93,4 +98,7 @@ public class BlockParticleExpression {
         if (hasState) STATE_HACK.set(state);
         return expression.evaluate();
     }
+
+    public static final BlockParticleExpression ZERO = new BlockParticleExpression("0");
+    public static final BlockParticleExpression ONE = new BlockParticleExpression("1");
 }
