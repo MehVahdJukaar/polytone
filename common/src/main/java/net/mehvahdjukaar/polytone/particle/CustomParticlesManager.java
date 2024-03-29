@@ -9,16 +9,18 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ExtraCodecs;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class CustomParticlesManager extends JsonPartialReloader {
 
-    private static final BiMap<String, CustomParticleType> CUSTOM_PARTICLES = HashBiMap.create();
+    public static final BiMap<String, CustomParticleType> CUSTOM_PARTICLES = HashBiMap.create();
 
     public static final Codec<CustomParticleType> REFERENCE_CODEC = ExtraCodecs.stringResolverCodec(
             a -> CUSTOM_PARTICLES.inverse().get(a), CUSTOM_PARTICLES::get);
@@ -32,18 +34,18 @@ public class CustomParticlesManager extends JsonPartialReloader {
         CUSTOM_PARTICLES.clear();
     }
 
-    @Override
-    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
-        var map = super.prepare(resourceManager);
-        // super hacky
+
+    // not ideal
+    public void addSpriteSets(ResourceManager resourceManager) {
         ParticleEngine engine = Minecraft.getInstance().particleEngine;
         for (var v : CUSTOM_PARTICLES.keySet()) {
             engine.spriteSets.remove(new ResourceLocation(v));
         }
-        for (var v : map.keySet()) {
+        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
+        scanDirectory(resourceManager, path(), GSON, jsons);
+        for (var v : jsons.keySet()) {
             engine.spriteSets.put(v, new ParticleEngine.MutableSpriteSet());
         }
-        return map;
     }
 
     @Override
@@ -56,7 +58,9 @@ public class CustomParticlesManager extends JsonPartialReloader {
                             id, errorMsg)).getFirst();
             type.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
-            CUSTOM_PARTICLES.put(id.getPath(), type);
+            CUSTOM_PARTICLES.put(id.toString(), type);
         }
     }
+
+
 }

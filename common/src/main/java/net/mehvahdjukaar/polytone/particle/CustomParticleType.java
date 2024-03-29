@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,12 +45,17 @@ public class CustomParticleType implements ParticleFactory {
 
     @Override
     public void createParticle(ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                                @Nullable BlockState state) {
+                               @Nullable BlockState state) {
         Minecraft mc = Minecraft.getInstance();
         Camera camera = mc.gameRenderer.getMainCamera();
         if (camera.getPosition().distanceToSqr(x, y, z) < 1024.0) {
-            Particle particle = new Instance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this);
-            mc.particleEngine.add(particle);
+            if (spriteSet != null) {
+                Particle particle = new Instance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this);
+                mc.particleEngine.add(particle);
+
+            } else {
+                throw new IllegalStateException("Sprite set not set for custom particle type");
+            }
         }
     }
 
@@ -62,6 +68,7 @@ public class CustomParticleType implements ParticleFactory {
         private final ParticleRenderType renderType;
         private final @Nullable Ticker ticker;
         private final SpriteSet spriteSet;
+        private float oQuadSize;
 
         protected Instance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                            @Nullable BlockState state, CustomParticleType type) {
@@ -109,7 +116,8 @@ public class CustomParticleType implements ParticleFactory {
                     this.roll = (float) this.ticker.roll.get(this, level);
                 }
                 if (this.ticker.size != null) {
-                    this.scale((float) this.ticker.size.get(this, level));
+                    this.oQuadSize = this.quadSize;
+                    this.quadSize = (float) this.ticker.size.get(this, level);
                 }
                 if (this.ticker.red != null) {
                     this.rCol = (float) this.ticker.red.get(this, level);
@@ -142,7 +150,11 @@ public class CustomParticleType implements ParticleFactory {
                     this.zd = this.ticker.dz.get(this, level);
                 }
             }
+        }
 
+        @Override
+        public float getQuadSize(float scaleFactor) {
+            return Mth.lerp(scaleFactor, this.oQuadSize, this.quadSize);
         }
 
         @Override

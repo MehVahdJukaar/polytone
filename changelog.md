@@ -1,1 +1,2 @@
-fixed an issue with particuel emitters
+- you can now add client side particles in the "custom_particles" folder
+- you can change xp bar color
