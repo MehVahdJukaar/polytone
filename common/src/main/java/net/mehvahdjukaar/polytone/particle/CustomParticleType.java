@@ -6,21 +6,29 @@ import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.particle.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record CustomParticleType(RenderType renderType, @Nullable CustomParticleType.Initializer initializer,
-                                 @Nullable CustomParticleType.Ticker ticker) implements ParticleFactory {
+public class CustomParticleType implements ParticleFactory {
+
+    private final RenderType renderType;
+    private final @Nullable Initializer initializer;
+    private final @Nullable Ticker ticker;
+    private transient SpriteSet spriteSet;
+
+    public CustomParticleType(RenderType renderType, @Nullable Initializer initializer, @Nullable Ticker ticker) {
+        this.renderType = renderType;
+        this.initializer = initializer;
+        this.ticker = ticker;
+    }
 
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
             StrOpt.of(RenderType.CODEC, "render_type", RenderType.PARTICLE_SHEET_OPAQUE)
-                    .forGetter(CustomParticleType::renderType),
+                    .forGetter(CustomParticleType::getRenderType),
             StrOpt.of(Initializer.CODEC, "initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
             StrOpt.of(Ticker.CODEC, "ticker").forGetter(c -> Optional.ofNullable(c.ticker))
     ).apply(i, CustomParticleType::new));
@@ -30,8 +38,13 @@ public record CustomParticleType(RenderType renderType, @Nullable CustomParticle
         this(renderType, initializer.orElse(null), ticker.orElse(null));
     }
 
+    public RenderType getRenderType() {
+        return renderType;
+    }
+
     @Override
-    public void createParticle(ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, @Nullable BlockState state) {
+    public void createParticle(ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
+                                @Nullable BlockState state) {
         Minecraft mc = Minecraft.getInstance();
         Camera camera = mc.gameRenderer.getMainCamera();
         if (camera.getPosition().distanceToSqr(x, y, z) < 1024.0) {
@@ -40,16 +53,22 @@ public record CustomParticleType(RenderType renderType, @Nullable CustomParticle
         }
     }
 
+    public void setSpriteSet(ParticleEngine.MutableSpriteSet mutableSpriteSet) {
+        this.spriteSet = mutableSpriteSet;
+    }
+
     public static class Instance extends TextureSheetParticle {
 
         private final ParticleRenderType renderType;
         private final @Nullable Ticker ticker;
+        private final SpriteSet spriteSet;
 
         protected Instance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                            @Nullable BlockState state, CustomParticleType type) {
             super(level, x, y, z, xSpeed, ySpeed, zSpeed);
             this.renderType = type.renderType.get();
             this.ticker = type.ticker;
+            this.spriteSet = type.spriteSet;
             Initializer initializer = type.initializer;
             if (initializer != null) {
                 BlockPos pos = BlockPos.containing(x, y, z);
@@ -77,10 +96,12 @@ public record CustomParticleType(RenderType renderType, @Nullable CustomParticle
                 this.friction = initializer.friction;
                 this.hasPhysics = initializer.hasPhysics;
             }
+            this.setSpriteFromAge(spriteSet);
         }
 
         @Override
         public void tick() {
+            this.setSpriteFromAge(spriteSet);
             super.tick();
             if (this.ticker != null) {
                 if (this.ticker.roll != null) {
