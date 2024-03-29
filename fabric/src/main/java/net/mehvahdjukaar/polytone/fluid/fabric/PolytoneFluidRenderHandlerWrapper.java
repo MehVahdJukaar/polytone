@@ -24,7 +24,6 @@ public record PolytoneFluidRenderHandlerWrapper(FluidRenderHandler instance,
         var col = modifier.getColormap();
         if (col != null) {
             int color = col.getColor(state.createLegacyBlock(), view, pos, -1);
-            color = 0;
             var p = ColorUtils.unpack(color);
             return ColorUtils.pack(p[2], p[1], p[0]);
         }
