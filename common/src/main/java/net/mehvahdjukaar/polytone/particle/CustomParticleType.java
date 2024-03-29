@@ -12,6 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
 import java.util.Optional;
 
 public class CustomParticleType implements ParticleFactory {
@@ -28,7 +29,7 @@ public class CustomParticleType implements ParticleFactory {
     }
 
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
-            StrOpt.of(RenderType.CODEC, "render_type", RenderType.PARTICLE_SHEET_OPAQUE)
+            StrOpt.of(RenderType.CODEC, "render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
             StrOpt.of(Initializer.CODEC, "initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
             StrOpt.of(Ticker.CODEC, "ticker").forGetter(c -> Optional.ofNullable(c.ticker))
@@ -100,7 +101,9 @@ public class CustomParticleType implements ParticleFactory {
                 if (initializer.lifetime != null) {
                     this.lifetime = (int) initializer.lifetime.getValue(level, pos, state);
                 }
-                this.friction = initializer.friction;
+                if (initializer.friction != null) {
+                    this.friction = (float) initializer.friction.getValue(level, pos, state);
+                }
                 this.hasPhysics = initializer.hasPhysics;
             }
             this.setSpriteFromAge(spriteSet);
@@ -164,18 +167,20 @@ public class CustomParticleType implements ParticleFactory {
     }
 
     private enum RenderType {
-        TERRAIN_SHEET,
-        PARTICLE_SHEET_OPAQUE,
-        PARTICLE_SHEET_TRANSLUCENT,
+        TERRAIN,
+        OPAQUE,
+        TRANSLUCENT,
         CUSTOM;
 
-        public static final Codec<RenderType> CODEC = Codec.STRING.xmap(RenderType::valueOf, RenderType::name);
+        public static final Codec<RenderType> CODEC = Codec.STRING.xmap(
+                a -> valueOf(a.toUpperCase()), e -> e.name().toLowerCase(Locale.ROOT)
+        );
 
         public ParticleRenderType get() {
             return switch (this) {
-                case TERRAIN_SHEET -> ParticleRenderType.TERRAIN_SHEET;
+                case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
                 default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
-                case PARTICLE_SHEET_TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+                case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
                 case CUSTOM -> ParticleRenderType.CUSTOM;
             };
         }
@@ -227,7 +232,7 @@ public class CustomParticleType implements ParticleFactory {
                                @Nullable BlockParticleExpression blue,
                                @Nullable BlockParticleExpression alpha,
                                @Nullable BlockParticleExpression roll,
-                               float friction,
+                               @Nullable BlockParticleExpression friction,
                                boolean hasPhysics) {
 
         private static final Codec<Initializer> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -238,7 +243,7 @@ public class CustomParticleType implements ParticleFactory {
                 StrOpt.of(BlockParticleExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.blue)),
                 StrOpt.of(BlockParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
                 StrOpt.of(BlockParticleExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.roll)),
-                Codec.FLOAT.optionalFieldOf("friction", 0.98f).forGetter(p -> p.friction),
+                StrOpt.of(BlockParticleExpression.CODEC, "friction").forGetter(p -> Optional.ofNullable(p.friction)),
                 Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(p -> p.hasPhysics)
         ).apply(i, Initializer::new));
 
@@ -246,10 +251,10 @@ public class CustomParticleType implements ParticleFactory {
                             Optional<BlockParticleExpression> red, Optional<BlockParticleExpression> green,
                             Optional<BlockParticleExpression> blue, Optional<BlockParticleExpression> alpha,
                             Optional<BlockParticleExpression> roll,
-                            float friction, boolean hasPhysics) {
+                            Optional<BlockParticleExpression> friction, boolean hasPhysics) {
             this(size.orElse(null), lifetime.orElse(null), red.orElse(null),
                     green.orElse(null), blue.orElse(null), alpha.orElse(null),
-                    roll.orElse(null), friction, hasPhysics);
+                    roll.orElse(null), friction.orElse(null), hasPhysics);
         }
     }
 }
