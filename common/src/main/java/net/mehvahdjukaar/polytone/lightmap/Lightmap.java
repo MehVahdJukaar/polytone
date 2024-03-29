@@ -143,15 +143,15 @@ public class Lightmap {
         // we need pow to simulate multiple lerps
 
         //lerp!
-        /*
-        if (torchLine.length != 0 && lastTorchLine.length != 0) {
+
+        if (torchLine.length != 0 && lastTorchLine.length != 0 && torchLerp != 1) {
             float lerpDelta = 1 - (float) Math.pow(torchLerp, deltaTime);
-            lerpInplace(lastTorchLine, torchLine, lerpDelta);
+            lerpInplace(lastTorchLine, torchLine, deltaTime);
         }
-        if (skyLine.length != 0 && lastSkyLine.length != 0) {
+        if (skyLine.length != 0 && lastSkyLine.length != 0 && skyLerp != 1) {
             float lerpDelta = 1 - (float) Math.pow(skyLerp, deltaTime);
-            lerpInplace(lastSkyLine, skyLine, lerpDelta);
-        }*/
+            lerpInplace(lastSkyLine, skyLine, deltaTime);
+        }
 
         for (int skyY = 0; skyY < 16; ++skyY) {
             Vector3f skyBuffer = new Vector3f();
