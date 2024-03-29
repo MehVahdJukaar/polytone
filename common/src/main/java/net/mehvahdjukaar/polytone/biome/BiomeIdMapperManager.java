@@ -19,8 +19,9 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
     private static final BiMap<String, BiomeIdMapper> ID_MAPPERS = HashBiMap.create();
 
 
-    public static final  Codec<BiomeIdMapper> REFERENCE_CODEC = ExtraCodecs.stringResolverCodec(
-            a->ID_MAPPERS.inverse().get(a), ID_MAPPERS::get);
+    public static final Codec<BiomeIdMapper> REFERENCE_CODEC = ExtraCodecs.stringResolverCodec(
+            a -> ID_MAPPERS.inverse().get(a), ID_MAPPERS::get);
+
     public static final Codec<BiomeIdMapper> CODEC = new ReferenceOrDirectCodec<>(
             REFERENCE_CODEC, BiomeIdMapper.Custom.CODEC, false);
 

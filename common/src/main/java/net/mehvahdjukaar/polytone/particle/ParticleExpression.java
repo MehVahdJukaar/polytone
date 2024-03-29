@@ -61,7 +61,7 @@ public class ParticleExpression {
     }
 
 
-    public double get(Particle particle, Level level, ParticleOptions options) {
+    public double get(Particle particle, Level level) {
         expression.setVariable(LIFE, particle.getLifetime());
 
         int pack = ColorUtils.pack(particle.rCol, particle.gCol, particle.bCol);

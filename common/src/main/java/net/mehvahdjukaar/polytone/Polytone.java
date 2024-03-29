@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
 import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
+import net.mehvahdjukaar.polytone.particle.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
@@ -30,6 +31,7 @@ public class Polytone {
     public static final ColormapsManager COLORMAPS = new ColormapsManager();
     public static final LightmapsManager LIGHTMAPS = new LightmapsManager();
     public static final BiomeIdMapperManager BIOME_ID_MAPPERS = new BiomeIdMapperManager();
+    public static final CustomParticlesManager CUSTOM_PARTICLES = new CustomParticlesManager();
     public static final ParticleModifiersManager PARTICLE_MODIFIERS = new ParticleModifiersManager();
     public static final SoundTypesManager SOUND_TYPES = new SoundTypesManager();
     public static final VariantTextureManager VARIANT_TEXTURES = new VariantTextureManager();
@@ -41,7 +43,7 @@ public class Polytone {
     public static void init(boolean isSodiumOn) {
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
                         SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, COLORS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
-                        BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS),
+                        BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, CUSTOM_PARTICLES, PARTICLE_MODIFIERS),
                 res("block_properties_manager"));
         sodiumOn = isSodiumOn;
         PlatStuff.addClientReloadListener(() -> GUI_MODIFIER, res("gui_modifiers"));
@@ -63,7 +65,6 @@ public class Polytone {
     }
 
     public static WeakReference<RegistryAccess> REGISTRY_ACCESS_HACK = new WeakReference<>(null);
-
 
 
 }

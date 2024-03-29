@@ -106,7 +106,7 @@ public class ParticleModifier {
             if (!filter.test(options)) return;
         }
         if (colorGetter != null) {
-            float[] unpack = ColorUtils.unpack((int) colorGetter.get(particle, level, options));
+            float[] unpack = ColorUtils.unpack((int) colorGetter.get(particle, level));
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if(colormap != null){
@@ -118,28 +118,28 @@ public class ParticleModifier {
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (lifeGetter != null) {
-            particle.setLifetime((int) lifeGetter.get(particle, level, options));
+            particle.setLifetime((int) lifeGetter.get(particle, level));
         }
         if (sizeGetter != null) {
-            particle.scale((float) sizeGetter.get(particle, level, options));
+            particle.scale((float) sizeGetter.get(particle, level));
         }
         if (redGetter != null) {
-            particle.rCol = (float) redGetter.get(particle, level, options);
+            particle.rCol = (float) redGetter.get(particle, level);
         }
         if (greenGetter != null) {
-            particle.gCol = (float) greenGetter.get(particle, level, options);
+            particle.gCol = (float) greenGetter.get(particle, level);
         }
         if (blueGetter != null) {
-            particle.bCol = (float) blueGetter.get(particle, level, options);
+            particle.bCol = (float) blueGetter.get(particle, level);
         }
         if (speedGetter != null) {
-            double speed = speedGetter.get(particle, level, options);
+            double speed = speedGetter.get(particle, level);
             particle.xd *= speed;
             particle.yd *= speed;
             particle.zd *= speed;
         }
         if (alphaGetter != null) {
-            particle.alpha = (float) alphaGetter.get(particle, level, options);
+            particle.alpha = (float) alphaGetter.get(particle, level);
         }
     }
 
