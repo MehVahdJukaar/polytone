@@ -7,7 +7,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ExtraCodecs;
 
 import java.util.Map;
@@ -29,14 +33,30 @@ public class CustomParticlesManager extends JsonPartialReloader {
     }
 
     @Override
+    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
+        var map = super.prepare(resourceManager);
+        // super hacky
+        ParticleEngine engine = Minecraft.getInstance().particleEngine;
+        for (var v : CUSTOM_PARTICLES.keySet()) {
+            engine.spriteSets.remove(new ResourceLocation(v));
+        }
+        for (var v : map.keySet()) {
+            engine.spriteSets.put(v, new ParticleEngine.MutableSpriteSet());
+        }
+        return map;
+    }
+
+    @Override
     protected void process(Map<ResourceLocation, JsonElement> obj) {
         for (var j : obj.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            var mapper = CustomParticleType.CODEC.decode(JsonOps.INSTANCE, json)
+            var type = CustomParticleType.CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Custom Particle Type with json id {} - error: {}",
                             id, errorMsg)).getFirst();
-            CUSTOM_PARTICLES.put(id.getPath(), mapper);
+            type.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
+
+            CUSTOM_PARTICLES.put(id.getPath(), type);
         }
     }
 }
