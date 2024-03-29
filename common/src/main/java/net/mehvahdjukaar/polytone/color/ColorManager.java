@@ -8,11 +8,13 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
+import net.mehvahdjukaar.polytone.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
@@ -64,6 +66,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     public int getXpBar() {
         return xpBar;
+    }
+
+    @Override
+    protected Map<ResourceLocation, Properties> prepare(ResourceManager resourceManager) {
+        GuiOverlayManager.reload(resourceManager);
+        return super.prepare(resourceManager);
     }
 
     @Override
