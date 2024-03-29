@@ -5,6 +5,7 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
@@ -31,6 +32,8 @@ public class ParticleExpression {
     private static final String SIZE = "SIZE";
     private static final String LIFE = "LIFETIME";
     private static final String GAMETIME = "GAMETIME";
+    private static final String AGE = "AGE";
+    private static final String ROLL = "ROLL";
 
 
     public static final Codec<ParticleExpression> CODEC = Codec.STRING.flatXmap(s -> {
@@ -55,7 +58,7 @@ public class ParticleExpression {
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc())
-                .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, GAMETIME)
+                .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, GAMETIME, ROLL, AGE)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
@@ -72,7 +75,7 @@ public class ParticleExpression {
         expression.setVariable(BLUE, particle.bCol);
         expression.setVariable(SPEED, Mth.length(particle.xd, particle.yd, particle.zd));
         expression.setVariable(ALPHA, particle.alpha);
-        expression.setVariable(SIZE, particle.getBoundingBox().getSize());
+        expression.setVariable(SIZE, ((SingleQuadParticle) particle).quadSize);
         expression.setVariable(DX, particle.xd);
         expression.setVariable(DX, particle.yd);
         expression.setVariable(DX, particle.zd);
@@ -80,6 +83,8 @@ public class ParticleExpression {
         expression.setVariable(DX, particle.y);
         expression.setVariable(DX, particle.z);
         expression.setVariable(GAMETIME, level.getGameTime());
+        expression.setVariable(AGE, particle.age);
+        expression.setVariable(ROLL, particle.roll);
 
         return expression.evaluate();
     }

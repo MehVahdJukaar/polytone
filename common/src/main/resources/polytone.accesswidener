@@ -17,6 +17,9 @@ mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBas
 accessible field net/minecraft/client/particle/ParticleEngine spriteSets Ljava/util/Map;
 accessible class net/minecraft/client/particle/ParticleEngine$MutableSpriteSet
 accessible method net/minecraft/client/particle/ParticleEngine$MutableSpriteSet <init> ()V
+accessible field net/minecraft/client/particle/Particle age I
+accessible field net/minecraft/client/particle/SingleQuadParticle quadSize F
+accessible field net/minecraft/client/particle/Particle roll F
 
 accessible field net/minecraft/world/level/biome/Biome$ClimateSettings temperature F
 accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall F

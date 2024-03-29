@@ -13,6 +13,7 @@
     "ClientLevelMixin",
     "ColorResolverMixin",
     "GameRendererMixin",
+    "GuiMixin",
     "LightTextureMixin",
     "ModelBlockRendererMixin",
     "ParticleEngineMixin",

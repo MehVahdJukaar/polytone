@@ -46,6 +46,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     private int emptyPotion = 16253176;
     private int waterBottle = 3694022;
+    private int xpBar = 8453920;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -59,6 +60,10 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     public int getWaterBottle() {
         return waterBottle;
+    }
+
+    public int getXpBar() {
+        return xpBar;
     }
 
     @Override
@@ -199,7 +204,10 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         else if (is(prop, 0, "text")) {
             int col = parseHex(obj);
             ChatFormatting text = null;
-            if (is(prop, 1, "code")) {
+            if (is(prop, 1, "xpbar")) {
+                xpBar = col;
+            }
+            else if (is(prop, 1, "code")) {
                 String s = get(prop, 2);
                 if (s != null) {
                     int code = Integer.parseInt(s);
@@ -255,6 +263,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     public void reset() {
         emptyPotion = 16253176;
         waterBottle = 3694022;
+        xpBar = 8453920;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();
