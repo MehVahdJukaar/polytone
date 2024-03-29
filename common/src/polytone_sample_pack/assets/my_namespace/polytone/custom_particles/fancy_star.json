@@ -2,7 +2,7 @@
   "initializer": {
     "lifetime": "40",
     "size": "0.3 + rand()*0.1",
-    "friction": 0.9
+    "friction": "0.9"
   },
   "ticker": {
     "size": "SIZE+0.01",
