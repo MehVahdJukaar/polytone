@@ -156,7 +156,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         }
         Optional<Block> implicitTarget = BuiltInRegistries.BLOCK.getOptional(modifierId);
         if (explTargets.isPresent()) {
-            if (implicitTarget.isPresent()) {
+            if (implicitTarget.isPresent() && !explTargets.get().contains(modifierId)) {
                 Polytone.LOGGER.error("Found Block Properties Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
                         "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), modifierId);
             }

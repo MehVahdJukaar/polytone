@@ -1,0 +1,13 @@
+{
+  "initializer": {
+    "lifetime": "40",
+    "size": "0.3 + rand()*0.1",
+    "friction": 0.9
+  },
+  "ticker": {
+    "size": "SIZE+0.01",
+    "red": "sin((GAMETIME%200)/200*pi)",
+    "green": "sin((GAMETIME%200)/200*pi + 2*pi/3)",
+    "blue": "sin((GAMETIME%200)/200*pi + 4*pi/3)"
+  }
+}

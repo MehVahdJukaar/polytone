@@ -37,6 +37,7 @@
     "blue": "0000ff"
   },
   "text": {
-    "gold": "0xffcc00"
+    "gold": "0xffcc00",
+    "xpbar": "0x00ff55ff"
   }
 }
