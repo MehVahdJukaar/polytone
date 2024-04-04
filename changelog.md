@@ -1,1 +1,1 @@
-added more support for legacy formats
+fixed yet another niche issue with legacy format. Please use Polytone own format instead.

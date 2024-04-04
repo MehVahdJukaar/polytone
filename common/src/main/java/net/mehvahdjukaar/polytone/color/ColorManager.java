@@ -5,8 +5,6 @@ import com.google.gson.JsonParseException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
@@ -22,7 +20,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.redstone.Redstone;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,7 +41,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private final Object2IntMap<MobEffect> vanillaEffectColors = new Object2IntOpenHashMap<>();
 
     private final Map<DyeColor, Integer> customSheepColors = new EnumMap<>(DyeColor.class);
-    protected final List<Vec3> originalRedstoneWireColors =  Arrays.stream(RedStoneWireBlock.COLORS).toList();
+    protected final List<Vec3> originalRedstoneWireColors = Arrays.stream(RedStoneWireBlock.COLORS).toList();
 
     private int emptyPotion = 16253176;
     private int waterBottle = 3694022;
@@ -197,25 +194,22 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 int col = parseHex(obj);
                 customSheepColors.put(color, col);
             } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
-        }
-        else if(is(prop,0, "redstone")){
+        } else if (is(prop, 0, "redstone")) {
             String ind = get(prop, 1);
-            if(ind != null) {
+            if (ind != null) {
                 int code = Integer.parseInt(ind);
-                if(code<RedStoneWireBlock.COLORS.length) {
+                if (code < RedStoneWireBlock.COLORS.length) {
                     int col = parseHex(obj);
                     var rgb = ColorUtils.unpack(col);
                     RedStoneWireBlock.COLORS[code] = new Vec3(rgb[0], rgb[1], rgb[2]);
-                }else Polytone.LOGGER.warn("Redstone color index must be between 0 and 15");
+                } else Polytone.LOGGER.warn("Redstone color index must be between 0 and 15");
             }
-        }
-        else if (is(prop, 0, "text")) {
+        } else if (is(prop, 0, "text")) {
             int col = parseHex(obj);
             ChatFormatting text = null;
             if (is(prop, 1, "xpbar")) {
                 xpBar = col;
-            }
-            else if (is(prop, 1, "code")) {
+            } else if (is(prop, 1, "code")) {
                 String s = get(prop, 2);
                 if (s != null) {
                     int code = Integer.parseInt(s);
@@ -234,7 +228,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         } else if (is(prop, 0, "palette")) {
             if (is(prop, 1, "block")) {
                 if (prop.length > 2 && obj instanceof String) {
-                    String path = prop[2].replace("~/colormap/", colorPropFileId.getNamespace()+":");
+                    String path = prop[2].replace("~/colormap/", colorPropFileId.getNamespace() + ":");
                     Polytone.BLOCK_PROPERTIES.addSimpleColormap(new ResourceLocation(path), str);
                 }
             }
