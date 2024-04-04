@@ -147,9 +147,9 @@ public class ColormapsManager extends JsonImgPartialReloader {
             usedTexture.add(textureLocation);
             colormap.acceptTexture(texture);
             if (texture.pixels().length == 0) {
-                throw new IllegalStateException("Colormap at location " + textureLocation + " had invalid 0 dimension");
+                throw new IllegalStateException("Colormap texture at location " + textureLocation + " had invalid 0 dimension");
             }
-        } else throw new IllegalStateException("Could not find any colormap associated with path " + textureLocation);
+        } else throw new IllegalStateException("Could not find any colormap texture .png associated with path " + textureLocation);
     }
 
 

@@ -54,6 +54,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.gatherImages(resourceManager, "colormatic/colormap");
 
         Map<ResourceLocation, Properties> ofProperties = PropertiesUtils.gatherProperties(resourceManager, "optifine/colormap");
+        Map<ResourceLocation, JsonElement> ofJsons = new HashMap<>();
+        scanDirectory(resourceManager, "optifine/colormap", GSON, ofJsons);
+        ofJsons.forEach((k, v) -> ofProperties.put(k, PropertiesUtils.jsonToProperties(v)));
 
         textures.putAll(LegacyHelper.convertPaths(ofTextures));
         textures.putAll(LegacyHelper.convertPaths(cmTextures));
@@ -121,6 +124,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                         ColormapsManager.tryAcceptingTexture(text.getDefault(), id, c, usedTextures);
                     } else if (c.getTargetTexture() != null) {
                         Polytone.LOGGER.error("Could not resolve explicit texture for colormap {} from block modifier {}", c.getTargetTexture(), id);
+                        continue;
                     }
                 }
             }

@@ -23,7 +23,6 @@ public class PropertiesUtils {
             iterateJsonObject(jo, properties, "");
         }
         return properties;
-
     }
 
     private static void iterateJsonObject(JsonObject jsonObject, Properties properties, String currentPath) {
@@ -38,6 +37,48 @@ public class PropertiesUtils {
                 properties.setProperty(newPath, s.getAsString());
             }
         }
+    }
+
+    public static JsonObject propertiesToJson(Properties properties) {
+        JsonObject jsonObject = new JsonObject();
+        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+            String key = entry.getKey().toString();
+            String value = entry.getValue().toString();
+            String[] keys = key.split("\\.");
+
+            JsonObject currentObject = jsonObject;
+            for (int i = 0; i < keys.length - 1; i++) {
+                String currentKey = keys[i];
+                if (!currentObject.has(currentKey)) {
+                    JsonObject newObject = new JsonObject();
+                    currentObject.add(currentKey, newObject);
+                    currentObject = newObject;
+                } else {
+                    JsonElement element = currentObject.get(currentKey);
+                    if (!element.isJsonObject()) {
+                        // Key already exists with a non-object value, we can't overwrite it.
+                        throw new IllegalArgumentException("Invalid properties file: Duplicate key found: " + currentKey);
+                    }
+                    currentObject = element.getAsJsonObject();
+                }
+            }
+
+            String finalKey = keys[keys.length - 1];
+            if (currentObject.has(finalKey)) {
+                throw new IllegalArgumentException("Invalid properties file: Duplicate key found: " + finalKey);
+            }
+
+            if (value.contains(" ")) {
+                String[] values = value.split(" ");
+                jsonObject.getAsJsonObject(keys[0]).addProperty(finalKey, values[0]);
+                for (int i = 1; i < values.length; i++) {
+                    jsonObject.getAsJsonObject(keys[0]).getAsJsonArray(finalKey).add(values[i]);
+                }
+            } else {
+                jsonObject.getAsJsonObject(keys[0]).addProperty(finalKey, value);
+            }
+        }
+        return jsonObject;
     }
 
     public static Map<ResourceLocation, Properties> gatherProperties(ResourceManager resourceManager, String path) {

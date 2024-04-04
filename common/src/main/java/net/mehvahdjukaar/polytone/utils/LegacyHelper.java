@@ -1,9 +1,14 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.Decoder;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
@@ -92,6 +97,71 @@ public class LegacyHelper {
         return map;
 
     }
+
+    public static final Decoder<BlockPropertyModifier> OF_JSON_CODEC = RecordCodecBuilder.create(i -> i.group(
+            StrOpt.of(Codec.STRING, "format", "").forGetter(c -> ""),
+            StrOpt.of(Codec.STRING.listOf(), "blocks", List.of()).forGetter(c ->List.of()),
+            StrOpt.of(ColorUtils.CODEC, "color").forGetter(c -> Optional.empty()),
+            StrOpt.of(Codec.STRING.xmap(Integer::parseInt, String::valueOf), "yVariance").forGetter(c -> Optional.empty()),
+            StrOpt.of(Codec.STRING.xmap(Integer::parseInt, String::valueOf), "yoffset").forGetter(c -> Optional.empty()),
+            StrOpt.of(Codec.STRING, "source").forGetter(c -> Optional.empty())
+    ).apply(i, LegacyHelper::decodeOFPropertyJson));
+
+    private static BlockPropertyModifier decodeOFPropertyJson(String format, List<String> targets,
+                                                              Optional<Integer> singleColor, Optional<Integer> yVariance,
+                                                              Optional<Integer> yoffset, Optional<String> sourceTexture) {
+
+        Set<ResourceLocation> set = null;
+        Colormap colormap;
+        if (!targets.isEmpty()) {
+            set = targets.stream()
+                    .filter(s -> {
+                        // fuck this i wont parse numerical shit
+                        try {
+                            int iHateOptishit = Integer.parseInt(s);
+                            // return BuiltInRegistries.BLOCK.getKey(BuiltInRegistries.BLOCK.byId(iHateOptishit));
+                            return false;
+                        } catch (Exception ignored) {
+                        }
+                        return true;
+                    }).map(ResourceLocation::new)
+                    .collect(Collectors.toSet());
+            set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
+
+        }
+        Integer col = singleColor.orElse(null);
+        if ("fixed".equals(format)) {
+            colormap = Colormap.fixed();
+        } else if ("grid".equals(format)) {
+            colormap = Colormap.biomeId();
+            //variance and y offset are ignored. todo: add
+        } else {
+            colormap = Colormap.defTriangle();
+        }
+        if (col != null) {
+            int[][] matrix = {{col}};
+            colormap.acceptTexture(new ArrayImage(matrix));
+        } else {
+            if (sourceTexture.isPresent()) {
+
+                // assumes id is minecraft. Not ideal.. too bad
+                ResourceLocation id = new ResourceLocation("none");
+                String source = sourceTexture.get().replace("~/colormap/", id.getNamespace() + ":");
+                if (source.contains("./")) {
+                    // resolve relative paths
+                    String path = id.getPath();
+                    int index = path.lastIndexOf('/');
+                    String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
+                    source = source.replace("./", id.getNamespace() + ":" + directoryPath);
+                }
+                colormap.setTargetTexture(new ResourceLocation(source));
+            }
+        }
+        return new BlockPropertyModifier(Optional.of(colormap),
+                Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.ofNullable(set));
+    }
+
 
     public static BlockPropertyModifier convertOFProperty(Properties properties, ResourceLocation id) {
         Set<ResourceLocation> set = null;

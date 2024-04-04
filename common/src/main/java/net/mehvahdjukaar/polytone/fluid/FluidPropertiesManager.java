@@ -105,7 +105,13 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             //fill inline colormaps colormapTextures
             BlockColor colormap = modifier.colormap().orElse(null);
             if (colormap instanceof Colormap c) {
-                ColormapsManager.tryAcceptingTexture(textures.get(id), id, c, usedTextures);
+                var text = textures.get(c.getTargetTexture() == null ? id : c.getTargetTexture());
+                if (text != null) {
+                    ColormapsManager.tryAcceptingTexture(text, id, c, usedTextures);
+                } else if (c.getTargetTexture() != null) {
+                    Polytone.LOGGER.error("Could not resolve explicit texture for colormap {} from fluid modifier {}", c.getTargetTexture(), id);
+                    continue;
+                }
             }
             addModifier(id, modifier);
         }
