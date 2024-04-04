@@ -39,7 +39,7 @@ public class Colormap implements ColorResolver, BlockColor {
     private final boolean usesPos;
     private final boolean usesState;
 
-    private Integer defaultColor = null;
+    private Integer defaultColor;
     private ArrayImage image = null;
     private ResourceLocation targetTexture = null; //explicit target
 

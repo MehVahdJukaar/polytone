@@ -53,14 +53,14 @@ public class GuiOverlayManager {
                     if (hardcoreHalfBlinking.isEmpty()) {
                         hardcoreHalfBlinkingRes = hardcoreHalfRes;
                     }
-                    fullRes = fullRes.withPath(p->p.replace("textures/gui/sprites","").replace(".png",""));
-                    halfRes = halfRes.withPath(p->p.replace("textures/gui/sprites","").replace(".png",""));
-                    fullBlinkingRes = fullBlinkingRes.withPath(p->p.replace("textures/gui/sprites","").replace(".png",""));
-                    halfBlinkingRes = halfBlinkingRes.withPath(p->p.replace("textures/gui/sprites","").replace(".png",""));
-                    hardcoreFullRes = hardcoreFullRes.withPath(p->p.replace("textures/gui/sprites","").replace(".png",""));
-                    hardcoreFullBlinkingRes = hardcoreFullBlinkingRes.withPath(p->p.replace("textures/gui/sprites","").replace(".png",""));
-                    hardcoreHalfRes = hardcoreHalfRes.withPath(p->p.replace("textures/gui/sprites","").replace(".png",""));
-                    hardcoreHalfBlinkingRes = hardcoreHalfBlinkingRes.withPath(p->p.replace("textures/gui/sprites","").replace(".png",""));
+                    fullRes = fullRes.withPath(p -> p.replace("textures/gui/sprites/", "").replace(".png", ""));
+                    halfRes = halfRes.withPath(p -> p.replace("textures/gui/sprites/", "").replace(".png", ""));
+                    fullBlinkingRes = fullBlinkingRes.withPath(p -> p.replace("textures/gui/sprites/", "").replace(".png", ""));
+                    halfBlinkingRes = halfBlinkingRes.withPath(p -> p.replace("textures/gui/sprites/", "").replace(".png", ""));
+                    hardcoreFullRes = hardcoreFullRes.withPath(p -> p.replace("textures/gui/sprites/", "").replace(".png", ""));
+                    hardcoreFullBlinkingRes = hardcoreFullBlinkingRes.withPath(p -> p.replace("textures/gui/sprites/", "").replace(".png", ""));
+                    hardcoreHalfRes = hardcoreHalfRes.withPath(p -> p.replace("textures/gui/sprites/", "").replace(".png", ""));
+                    hardcoreHalfBlinkingRes = hardcoreHalfBlinkingRes.withPath(p -> p.replace("textures/gui/sprites/", "").replace(".png", ""));
                     HEART_SPRITES_MAP.put(h, new HeartSprites(fullRes, halfRes, fullBlinkingRes, halfBlinkingRes,
                             hardcoreFullRes, hardcoreHalfRes, hardcoreFullBlinkingRes, hardcoreHalfBlinkingRes));
                 }
@@ -69,7 +69,7 @@ public class GuiOverlayManager {
     }
 
     public static boolean maybeFancifyHeart(Gui instance, GuiGraphics graphics, Gui.HeartType actualType, int i, int j, boolean bl, boolean bl2, boolean bl3) {
-        if(HEART_SPRITES_MAP.isEmpty())return false;
+        if (HEART_SPRITES_MAP.isEmpty()) return false;
         HeartSprites sprites = HEART_SPRITES_MAP.get(actualType);
         if (sprites != null) {
             graphics.blitSprite(sprites.getSprite(bl, bl3, bl2), i, j, 9, 9);

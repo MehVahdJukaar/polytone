@@ -1,19 +1,14 @@
 package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.*;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.Locale;
 
 public record ParticleEmitter(
         ParticleFactory factory,
@@ -24,7 +19,8 @@ public record ParticleEmitter(
         BlockParticleExpression z,
         BlockParticleExpression dx,
         BlockParticleExpression dy,
-        BlockParticleExpression dz
+        BlockParticleExpression dz,
+        SpawnLocation spawnLocation
 ) {
 
     public static final Codec<ParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -36,7 +32,8 @@ public record ParticleEmitter(
             BlockParticleExpression.CODEC.fieldOf("z").forGetter(ParticleEmitter::z),
             StrOpt.of(BlockParticleExpression.CODEC, "dx", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dx),
             StrOpt.of(BlockParticleExpression.CODEC, "dy", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dy),
-            StrOpt.of(BlockParticleExpression.CODEC, "dz", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dz)
+            StrOpt.of(BlockParticleExpression.CODEC, "dz", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dz),
+            StrOpt.of(SpawnLocation.CODEC, "spawn_location", SpawnLocation.CENTER).forGetter(ParticleEmitter::spawnLocation)
     ).apply(i, ParticleEmitter::new));
 
 
@@ -57,5 +54,10 @@ public record ParticleEmitter(
         }
     }
 
+    public enum SpawnLocation {
+        CENTER, BLOCK_EDGE, BLOCK_SHAPE;
 
+        public static final Codec<SpawnLocation> CODEC = Codec.STRING.xmap(s-> SpawnLocation.valueOf(s.toUpperCase(Locale.ROOT)),
+                e->e.name().toLowerCase(Locale.ROOT));
+    }
 }
