@@ -1,1 +1,1 @@
-fixed yet another niche issue with legacy format. Please use Polytone own format instead.
+fixed a rare issue on fabric

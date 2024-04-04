@@ -18,6 +18,8 @@ import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.ref.WeakReference;
+
 public class Polytone {
     public static final String MOD_ID = "polytone";
 
@@ -56,10 +58,13 @@ public class Polytone {
         return new ResourceLocation(MOD_ID, name);
     }
 
-
     public static void onTagsReceived(RegistryAccess registryAccess) {
+        REGISTRY_ACCESS_HACK = new WeakReference<>(registryAccess);
         BIOME_EFFECTS.doApply(registryAccess, true);
     }
+
+    public static WeakReference<RegistryAccess> REGISTRY_ACCESS_HACK = new WeakReference<>(null);
+
 
 
 }
