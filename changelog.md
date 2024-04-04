@@ -1,1 +1,1 @@
-you can now change empty heart textures depending on heart type
+added more support for legacy formats
