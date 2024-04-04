@@ -203,13 +203,15 @@ public class LegacyHelper {
         } else {
             String source = properties.getProperty("source");
             if (source != null) {
-                source = source.replace("~/colormap/", id.getNamespace() + ":");
-                if (source.contains("./")) {
+                if(source.contains("~")) {
+                    source = source.replace("~/colormap/", id.getNamespace() + ":");
+                }
+                else {
                     // resolve relative paths
                     String path = id.getPath();
                     int index = path.lastIndexOf('/');
                     String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
-                    source = source.replace("./", id.getNamespace() + ":" + directoryPath);
+                    source = (id.getNamespace() + ":" + directoryPath) + source.replace("./", "");
                 }
                 colormap.setTargetTexture(new ResourceLocation(source));
             }

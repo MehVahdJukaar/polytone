@@ -123,7 +123,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                     if (text != null) {
                         ColormapsManager.tryAcceptingTexture(text.getDefault(), id, c, usedTextures);
                     } else if (c.getTargetTexture() != null) {
-                        Polytone.LOGGER.error("Could not resolve explicit texture for colormap {} from block modifier {}. Skipping", c.getTargetTexture(), id);
+                        Polytone.LOGGER.error("Could not resolve explicit texture at location {}.png for colormap from block modifier {}. Skipping", c.getTargetTexture(), id);
                         continue;
                     }
                 }
@@ -174,7 +174,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             implicitTarget.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
             if (implicitTarget.isEmpty()) {
                 if (PlatStuff.isModLoaded(modifierId.getNamespace())) {
-                    Polytone.LOGGER.error("Found Block Properties Modifier with no implicit target ({}) and no explicit targets. Skipping", modifierId);
+                    Polytone.LOGGER.error("Found Block Properties Modifier with no implicit target (expected block with ID {}) and no explicit targets. Skipping", modifierId);
                 }
             }
         }

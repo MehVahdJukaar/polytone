@@ -1,3 +1,1 @@
-- you can now add client side particles in the "custom_particles" folder
-- you can change xp bar color
-- fixed fabric issue
+fixed yet another niche issue with legacy format. Please use Polytone own format instead.
