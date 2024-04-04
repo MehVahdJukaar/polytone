@@ -123,7 +123,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                     if (text != null) {
                         ColormapsManager.tryAcceptingTexture(text.getDefault(), id, c, usedTextures);
                     } else if (c.getTargetTexture() != null) {
-                        Polytone.LOGGER.error("Could not resolve explicit texture for colormap {} from block modifier {}", c.getTargetTexture(), id);
+                        Polytone.LOGGER.error("Could not resolve explicit texture for colormap {} from block modifier {}. Skipping", c.getTargetTexture(), id);
                         continue;
                     }
                 }

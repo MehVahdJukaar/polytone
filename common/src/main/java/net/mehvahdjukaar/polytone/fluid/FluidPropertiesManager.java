@@ -109,7 +109,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
                 if (text != null) {
                     ColormapsManager.tryAcceptingTexture(text, id, c, usedTextures);
                 } else if (c.getTargetTexture() != null) {
-                    Polytone.LOGGER.error("Could not resolve explicit texture for colormap {} from fluid modifier {}", c.getTargetTexture(), id);
+                    Polytone.LOGGER.error("Could not resolve explicit texture for colormap {} from fluid modifier {}. Skipping", c.getTargetTexture(), id);
                     continue;
                 }
             }

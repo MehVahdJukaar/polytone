@@ -1,9 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
@@ -35,6 +32,14 @@ public class PropertiesUtils {
                 iterateJsonObject(jo, properties, newPath);
             } else if (value instanceof JsonPrimitive s && s.isString()) {
                 properties.setProperty(newPath, s.getAsString());
+            }else if(value instanceof JsonArray ja){
+                StringBuilder builder = new StringBuilder();
+                for (JsonElement e : ja) {
+                    if (e instanceof JsonPrimitive p && p.isString()) {
+                        builder.append(p.getAsString()).append(" ");
+                    }
+                }
+                properties.setProperty(newPath, builder.toString().trim());
             }
         }
     }
