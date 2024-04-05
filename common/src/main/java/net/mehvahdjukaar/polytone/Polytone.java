@@ -15,6 +15,7 @@ import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -52,6 +53,7 @@ public class Polytone {
         //block particles
         //item properties and color. cache pllayer coord
         //exp color
+        //durability bar color
     }
 
     public static ResourceLocation res(String name) {
