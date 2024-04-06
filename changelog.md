@@ -1,1 +1,1 @@
-fixed yet another niche issue with legacy format. Please use Polytone own format instead.
+fixed an issue with packages imports

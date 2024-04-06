@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.moonlight.api.client.util;
+package net.mehvahdjukaar.polytone.utils;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
