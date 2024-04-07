@@ -12,7 +12,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RenderGuiOverlayEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
@@ -27,21 +29,22 @@ public class PolytoneForge {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             Polytone.init(false);
 
-            FMLJavaModLoadingContext.get().getModEventBus().register(this);
-            NeoForge.EVENT_BUS.addListener(PolytoneForge::onTagSync);
-            NeoForge.EVENT_BUS.addListener(PolytoneForge::renderScreen);
+            NeoForge.EVENT_BUS.register(this);
         } else {
             Polytone.LOGGER.warn("Slotify has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
     }
 
-    public static void onTagSync(TagsUpdatedEvent event) {
+
+    @SubscribeEvent
+    public void onTagSync(TagsUpdatedEvent event) {
         if (event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) {
             Polytone.onTagsReceived(event.getRegistryAccess());
         }
     }
 
-    public static void renderScreen(ScreenEvent.Render.Post event) {
+    @SubscribeEvent
+    public void renderScreen(ScreenEvent.Render.Post event) {
         Screen screen = event.getScreen();
         SlotifyScreen ss = (SlotifyScreen) screen;
         if (ss.polytone$hasSprites()) {

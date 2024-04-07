@@ -16,6 +16,7 @@ import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;

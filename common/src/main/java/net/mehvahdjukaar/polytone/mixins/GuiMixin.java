@@ -29,7 +29,7 @@ public class GuiMixin {
     public void polytone$renderFancyEmptyHeart(Gui instance, GuiGraphics graphics, Gui.HeartType empty, int i, int j,
                                                boolean bl, boolean bl2, boolean bl3, Operation<Void> original,
                                                @Local Gui.HeartType actualType) {
-        if(GuiOverlayManager.maybeFancifyHeart(instance, graphics, actualType, i, j, bl, bl2, bl3)){
+        if(Polytone.OVERLAY_MODIFIERS.maybeFancifyHeart(instance, graphics, actualType, i, j, bl, bl2, bl3)){
             return;
         }
         original.call(instance, graphics, empty, i, j, bl, bl2, bl3);

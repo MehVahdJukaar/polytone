@@ -1,21 +1,89 @@
 package net.mehvahdjukaar.polytone.slotify;
 
+import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class GuiOverlayManager {
+public class GuiOverlayManager extends JsonPartialReloader {
 
-    private static final Map<Gui.HeartType, HeartSprites> HEART_SPRITES_MAP = new EnumMap<>(Gui.HeartType.class);
+    private final Map<Gui.HeartType, HeartSprites> heartSprites = new EnumMap<>(Gui.HeartType.class);
+    private final Map<ResourceLocation, BlitModifier> blitModifiers = new HashMap<>();
 
-    public static void reload(ResourceManager manager) {
-        HEART_SPRITES_MAP.clear();
+    public GuiOverlayManager() {
+        super("overlay_modifiers");
+    }
+
+    @Override
+    protected void reset() {
+        heartSprites.clear();
+        blitModifiers.clear();
+    }
+
+    @Override
+    protected void process(Map<ResourceLocation, JsonElement> obj) {
+        for (var j : obj.entrySet()) {
+            var json = j.getValue();
+            var id = j.getKey();
+
+            BlitModifier effect = BlitModifier.CODEC.decode(JsonOps.INSTANCE, json)
+                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Overlay Modifier with json id {} - error: {}", id, errorMsg))
+                    .getFirst();
+
+            ResourceLocation textureId = effect.target();
+            if (blitModifiers.containsKey(textureId)) {
+                Polytone.LOGGER.warn("Overlay Modifier with texture id {} already exists. Overwriting", textureId);
+            }
+            blitModifiers.put(textureId, effect);
+        }
+    }
+
+    @Override
+    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
+        reloadHearths(resourceManager);
+        return super.prepare(resourceManager);
+    }
+
+    private int index = 0;
+    private boolean active = false;
+
+    public boolean maybeModifyBlit(GuiGraphics gui, TextureAtlasSprite sprite, int x, int y, int offset, int width, int height) {
+        if (!active || blitModifiers.isEmpty()) return false;
+        var mod = blitModifiers.get(sprite.contents().name());
+        if (mod != null) {
+            int ind = mod.index();
+            if (ind == -1 || ind == index) {
+                mod.blitModified(gui, sprite.atlasLocation(), x, x + width, y, y + height, offset,
+                        sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1());
+                return true;
+            }
+            index++;
+        }
+        return false;
+    }
+
+    public void onStartRenderingOverlay() {
+        index = 0;
+        active = true;
+    }
+
+    public void onEndRenderingOverlay() {
+        active = false;
+    }
+
+
+    private void reloadHearths(ResourceManager manager) {
+        heartSprites.clear();
         for (var h : Gui.HeartType.values()) {
             if (h != Gui.HeartType.CONTAINER && h != Gui.HeartType.NORMAL) {
                 String name = h.name().toLowerCase(Locale.ROOT);
@@ -61,16 +129,16 @@ public class GuiOverlayManager {
                     hardcoreFullBlinkingRes = hardcoreFullBlinkingRes.withPath(p -> p.replace("textures/gui/sprites/", "").replace(".png", ""));
                     hardcoreHalfRes = hardcoreHalfRes.withPath(p -> p.replace("textures/gui/sprites/", "").replace(".png", ""));
                     hardcoreHalfBlinkingRes = hardcoreHalfBlinkingRes.withPath(p -> p.replace("textures/gui/sprites/", "").replace(".png", ""));
-                    HEART_SPRITES_MAP.put(h, new HeartSprites(fullRes, halfRes, fullBlinkingRes, halfBlinkingRes,
+                    heartSprites.put(h, new HeartSprites(fullRes, halfRes, fullBlinkingRes, halfBlinkingRes,
                             hardcoreFullRes, hardcoreHalfRes, hardcoreFullBlinkingRes, hardcoreHalfBlinkingRes));
                 }
             }
         }
     }
 
-    public static boolean maybeFancifyHeart(Gui instance, GuiGraphics graphics, Gui.HeartType actualType, int i, int j, boolean bl, boolean bl2, boolean bl3) {
-        if (HEART_SPRITES_MAP.isEmpty()) return false;
-        HeartSprites sprites = HEART_SPRITES_MAP.get(actualType);
+    public boolean maybeFancifyHeart(Gui instance, GuiGraphics graphics, Gui.HeartType actualType, int i, int j, boolean bl, boolean bl2, boolean bl3) {
+        if (heartSprites.isEmpty()) return false;
+        HeartSprites sprites = heartSprites.get(actualType);
         if (sprites != null) {
             graphics.blitSprite(sprites.getSprite(bl, bl3, bl2), i, j, 9, 9);
             return true;

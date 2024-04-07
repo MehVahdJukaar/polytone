@@ -1,1 +1,1 @@
-fixed an issue with packages imports
+- added overlay modifiers, a new tool to modify screen overlay sprites.Change their size, position and UVs

@@ -65,11 +65,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         return xpBar;
     }
 
-    @Override
-    protected Map<ResourceLocation, Properties> prepare(ResourceManager resourceManager) {
-        GuiOverlayManager.reload(resourceManager);
-        return super.prepare(resourceManager);
-    }
+
 
     @Override
     protected void process(Map<ResourceLocation, Properties> map) {
