@@ -47,7 +47,7 @@ public abstract class LightTextureMixin {
 
     @Inject(method = "turnOnLightLayer", at = @At(value = "HEAD"), cancellable = true)
     public void polytone$useGuiLightmap(CallbackInfo ci) {
-        if (LightmapsManager.isGui()) {
+        if (Polytone.LIGHTMAPS.isGui()) {
             RenderSystem.setShaderTexture(2, LightmapsManager.GUI_LIGHTMAP);
             this.minecraft.getTextureManager().bindForSetup(LightmapsManager.GUI_LIGHTMAP);
             RenderSystem.texParameter(3553, 10241, 9729);

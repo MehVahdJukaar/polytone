@@ -26,21 +26,22 @@ public class PolytoneForge {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             Polytone.init(false);
 
-            FMLJavaModLoadingContext.get().getModEventBus().register(this);
-            MinecraftForge.EVENT_BUS.addListener(PolytoneForge::onTagSync);
-            MinecraftForge.EVENT_BUS.addListener(PolytoneForge::renderScreen);
+            MinecraftForge.EVENT_BUS.register(this);
         } else {
             Polytone.LOGGER.warn("Slotify has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
     }
 
-    public static void onTagSync(TagsUpdatedEvent event) {
+
+    @SubscribeEvent
+    public void onTagSync(TagsUpdatedEvent event) {
         if (event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) {
             Polytone.onTagsReceived(event.getRegistryAccess());
         }
     }
 
-    public static void renderScreen(ScreenEvent.Render.Post event) {
+    @SubscribeEvent
+    public void renderScreen(ScreenEvent.Render.Post event) {
         Screen screen = event.getScreen();
         SlotifyScreen ss = (SlotifyScreen) screen;
         if (ss.polytone$hasSprites()) {

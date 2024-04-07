@@ -27,14 +27,14 @@ import java.util.WeakHashMap;
 
 public class VariantTextureManager extends JsonPartialReloader {
 
-    private final WeakHashMap<BakedQuad, Map<ResourceLocation, BakedQuad>> variantQuadsCache = new WeakHashMap();
+    private final WeakHashMap<BakedQuad, Map<ResourceLocation, BakedQuad>> variantQuadsCache = new WeakHashMap<>();
 
     private final Map<Block, VariantTexture> blocksWithVariants = new Object2ObjectOpenHashMap<>();
 
     // list of blocks that will have their tint sent to 0.
     // why? because optifine is crap and allows assigning colors to models without a tint index.
     // Just edit your models people!
-    public final Set<Block> specialOFTintHack = new HashSet<>();
+    public final Set<Block> forceTintBlocks = new HashSet<>();
 
     public VariantTextureManager() {
         super("variant_textures");
@@ -86,20 +86,20 @@ public class VariantTextureManager extends JsonPartialReloader {
     protected void reset() {
         blocksWithVariants.clear();
         variantQuadsCache.clear(); //we might need a lock here
-        specialOFTintHack.clear();
+        forceTintBlocks.clear();
     }
 
 
     public boolean shouldSetTintTo0(int tintIndex, BlockAndTintGetter blockView, BlockState state, BlockPos blockPos) {
-        if (tintIndex == -1 && !specialOFTintHack.isEmpty() && state != null) {
-            return specialOFTintHack.contains(state.getBlock());
+        if (tintIndex == -1 && !forceTintBlocks.isEmpty() && state != null) {
+            return forceTintBlocks.contains(state.getBlock());
         }
         return false;
     }
 
     public BakedQuad maybeModify(BakedQuad quad, BlockAndTintGetter level, BlockState state, BlockPos pos) {
-        if (quad.tintIndex == -1 && !specialOFTintHack.isEmpty()) {
-            if (specialOFTintHack.contains(state.getBlock())) quad.tintIndex = 0;
+        if (quad.tintIndex == -1 && !forceTintBlocks.isEmpty()) {
+            if (forceTintBlocks.contains(state.getBlock())) quad.tintIndex = 0;
         }
         if (blocksWithVariants.isEmpty()) return null;
         Block block = state.getBlock();
@@ -133,7 +133,7 @@ public class VariantTextureManager extends JsonPartialReloader {
     }
 
     public void addTintOverrideHack(Block block) {
-        specialOFTintHack.add(block);
+        forceTintBlocks.add(block);
     }
 
 

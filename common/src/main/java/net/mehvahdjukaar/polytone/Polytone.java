@@ -10,6 +10,7 @@ import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.particle.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
+import net.mehvahdjukaar.polytone.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
@@ -38,13 +39,14 @@ public class Polytone {
     public static final VariantTextureManager VARIANT_TEXTURES = new VariantTextureManager();
     public static final ColorManager COLORS = new ColorManager();
     public static final GuiModifierManager GUI_MODIFIER = new GuiModifierManager();
+    public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
 
     public static boolean sodiumOn = false;
 
     public static void init(boolean isSodiumOn) {
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
                         SOUND_TYPES, CUSTOM_PARTICLES, BIOME_ID_MAPPERS, COLORMAPS, COLORS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
-                        BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS),
+                        BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS, OVERLAY_MODIFIERS),
                 res("block_properties_manager"));
         sodiumOn = isSodiumOn;
         PlatStuff.addClientReloadListener(() -> GUI_MODIFIER, res("gui_modifiers"));

@@ -1,0 +1,7 @@
+{
+  "texture": "minecraft:hud/hotbar_selection",
+  "width_inc": -2,
+  "height_inc": -2,
+  "x_inc": 2,
+  "y_inc": 2
+}

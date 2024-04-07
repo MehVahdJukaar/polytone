@@ -112,7 +112,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
         lightmaps.clear();
     }
 
-    private static boolean reachedMainMenuHack = false;
+    private boolean reachedMainMenuHack = false;
 
     public boolean maybeModifyLightTexture(LightTexture instance,
                                            NativeImage lightPixels,
@@ -124,7 +124,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
             lastDimension = level.dimension();
             currentLightmap = lightmaps.get(lastDimension.location());
         }
-        if (USING_GUI_LIGHTMAP) {
+        if (usingGuiLightmap) {
             int aa = 1;//error
         }
         if (currentLightmap != null) {
@@ -136,16 +136,16 @@ public class LightmapsManager extends JsonImgPartialReloader {
         return false;
     }
 
-    private static boolean USING_GUI_LIGHTMAP = false;
+    private boolean usingGuiLightmap = false;
 
-    public static void setupForGUI(boolean gui) {
-        USING_GUI_LIGHTMAP = gui;
+    public void setupForGUI(boolean gui) {
+        usingGuiLightmap = gui;
     }
 
-    public static boolean isGui() {
+    public boolean isGui() {
         if (!reachedMainMenuHack && !PlatStuff.isModStateValid()) {
             return false;
         }
-        return USING_GUI_LIGHTMAP;
+        return usingGuiLightmap;
     }
 }

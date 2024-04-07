@@ -15,6 +15,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
+import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
 
 import java.lang.reflect.Field;
 import java.util.Map;
