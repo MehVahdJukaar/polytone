@@ -1,0 +1,5 @@
+{
+	"x_axis": "biome_id",
+	"y_axis": "0",
+	"biome_id_mapper": "my_namespace:my_biome_mapper"
+}

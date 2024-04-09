@@ -30,7 +30,7 @@ public abstract class GameRendererMixin {
     private void polytone$resetGuiLightmap(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(false);
         lightTexture.turnOnLightLayer();
-        Polytone.OVERLAY_MODIFIERS.onStartRenderingOverlay();
+        Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
     }
 
 }
