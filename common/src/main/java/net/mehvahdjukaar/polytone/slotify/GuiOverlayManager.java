@@ -63,8 +63,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
         if (mod != null) {
             int ind = mod.index();
             if (ind == -1 || ind == index) {
-                mod.blitModified(gui, sprite.atlasLocation(), x, x + width, y, y + height, offset,
-                        sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1());
+                mod.blitModified(gui, sprite, x, x + width, y, y + height, offset);
                 return true;
             }
             index++;

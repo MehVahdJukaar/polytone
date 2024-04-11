@@ -1,1 +1,1 @@
-- added overlay modifiers, a new tool to modify screen overlay sprites.Change their size, position and UVs
+overlay for overlays
