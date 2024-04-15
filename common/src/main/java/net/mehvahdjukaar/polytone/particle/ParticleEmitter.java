@@ -2,11 +2,16 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.utils.ParticleUtil;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Locale;
 
@@ -41,7 +46,7 @@ public record ParticleEmitter(
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance) {
             for (int i = 0; i < count.getValue(level, pos, state); i++) {
-                factory.createParticle((ClientLevel)level,
+                factory.createParticle((ClientLevel) level,
                         pos.getX() + x.getValue(level, pos, state),
                         pos.getY() + y.getValue(level, pos, state),
                         pos.getZ() + z.getValue(level, pos, state),
@@ -55,9 +60,33 @@ public record ParticleEmitter(
     }
 
     public enum SpawnLocation {
-        CENTER, BLOCK_EDGE, BLOCK_SHAPE;
+        CENTER, LOWER_CORNER, BLOCK_FACES;
 
-        public static final Codec<SpawnLocation> CODEC = Codec.STRING.xmap(s-> SpawnLocation.valueOf(s.toUpperCase(Locale.ROOT)),
-                e->e.name().toLowerCase(Locale.ROOT));
+        public static final Codec<SpawnLocation> CODEC = Codec.STRING.xmap(s -> SpawnLocation.valueOf(s.toUpperCase(Locale.ROOT)),
+                e -> e.name().toLowerCase(Locale.ROOT));
+
+        Vec3 getLocation(BlockPos pos, BlockState state, RandomSource rand) {
+            return switch (this) {
+                case LOWER_CORNER -> Vec3.atLowerCornerOf(pos);
+                case CENTER -> Vec3.atCenterOf(pos);
+                case BLOCK_FACES -> {
+                    Direction dir = Direction.values()[rand.nextInt(Direction.values().length)];
+                    yield getParticleSpawnPosOnFace(rand, pos, dir);
+                }
+            };
+        }
     }
+
+
+    public static Vec3 getParticleSpawnPosOnFace(RandomSource random, BlockPos pos, Direction direction) {
+        Vec3 vec3 = Vec3.atCenterOf(pos);
+        int i = direction.getStepX();
+        int j = direction.getStepY();
+        int k = direction.getStepZ();
+        double d0 = vec3.x + (i == 0 ? Mth.nextDouble(random, -0.5D, 0.5D) : i * 0.6D);
+        double d1 = vec3.y + (j == 0 ? Mth.nextDouble(random, -0.5D, 0.5D) : j * 0.6D);
+        double d2 = vec3.z + (k == 0 ? Mth.nextDouble(random, -0.5D, 0.5D) : k * 0.6D);
+        return new Vec3(d0, d1, d2);
+    }
+
 }

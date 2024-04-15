@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
@@ -133,7 +134,9 @@ public class VariantTextureManager extends JsonPartialReloader {
     }
 
     public void addTintOverrideHack(Block block) {
-        forceTintBlocks.add(block);
+        if (block != Blocks.GRASS_BLOCK) {//hardcoding yay
+            forceTintBlocks.add(block);
+        }
     }
 
 

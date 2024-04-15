@@ -1,1 +1,2 @@
-overlay for overlays
+- you can now change xp color
+- you can now spawn particles on block faces
