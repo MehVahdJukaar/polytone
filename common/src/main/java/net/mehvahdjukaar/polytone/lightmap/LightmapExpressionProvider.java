@@ -23,7 +23,7 @@ record LightmapExpressionProvider(Expression expression, String unparsed) implem
     private static final String THUNDER = "THUNDER";
 
     public static LightmapExpressionProvider create(String s) {
-        return new LightmapExpressionProvider(new ExpressionBuilder(s)
+        return new LightmapExpressionProvider(new ExpressionBuilder(ExpressionUtils.removeHex(s))
                 .variables(TIME, RAIN, THUNDER)
                 .functions(ExpressionUtils.defFunc())
                 .operator(ExpressionUtils.defOp())

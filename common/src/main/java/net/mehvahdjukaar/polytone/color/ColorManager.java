@@ -200,13 +200,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
         } else if (is(prop, 0, "xporb")) {
             if (is(prop, 1, "color")) {
-                xpOrbColor = get(prop, 1, BlockParticleExpression::new);
+                xpOrbColor = new BlockParticleExpression(str);
             } else if (is(prop, 1, "red")) {
-                xpOrbColorR = get(prop, 1, BlockParticleExpression::new);
+                xpOrbColorR = new BlockParticleExpression(str);
             } else if (is(prop, 1, "green")) {
-                xpOrbColorG = get(prop, 1, BlockParticleExpression::new);
+                xpOrbColorG = new BlockParticleExpression(str);
             } else if (is(prop, 1, "blue")) {
-                xpOrbColorB = get(prop, 1, BlockParticleExpression::new);
+                xpOrbColorB = new BlockParticleExpression(str);
             }
 
         } else if (is(prop, 0, "redstone")) {

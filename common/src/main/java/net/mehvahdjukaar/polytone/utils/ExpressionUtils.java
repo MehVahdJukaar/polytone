@@ -6,6 +6,8 @@ import net.minecraft.util.RandomSource;
 import net.objecthunter.exp4j.function.Function;
 import net.objecthunter.exp4j.operator.Operator;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class ExpressionUtils {
@@ -191,5 +193,27 @@ public class ExpressionUtils {
                 Stream.of(EQUALS, GREATER, LESS, GREATER_EQUAL, LESS_EQUAL, FACTORIAL),
                 Stream.of(others)
         ).toArray(Operator[]::new);
+    }
+
+    private static final Pattern HEX_PATTERN = Pattern.compile("(?:#|0x)[0-9a-fA-F]+");
+
+    public static String removeHex(String s) {
+        // Create a Matcher object
+        Matcher matcher = HEX_PATTERN.matcher(s);
+
+        // StringBuffer to build the modified expression
+        StringBuilder sb = new StringBuilder();
+
+        // Iterate through the matches and replace each with its decimal equivalent
+        while (matcher.find()) {
+            String hexString = matcher.group().replace("#","").replace("0x",""); // Remove the prefix
+            long decimalValue = Long.parseLong(hexString, 16);
+            matcher.appendReplacement(sb, Long.toString(decimalValue));
+        }
+
+        // Append the remaining part of the original expression
+        matcher.appendTail(sb);
+
+        return sb.toString();
     }
 }

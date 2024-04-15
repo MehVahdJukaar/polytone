@@ -71,7 +71,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     }, javaxExpression -> DataResult.success(javaxExpression.unparsed));
 
     private static Expression createExpression(String s) {
-        return new ExpressionBuilder(s)
+        return new ExpressionBuilder(ExpressionUtils.removeHex(s))
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
                 .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z, BIOME_VALUE)
                 .operator(ExpressionUtils.defOp())

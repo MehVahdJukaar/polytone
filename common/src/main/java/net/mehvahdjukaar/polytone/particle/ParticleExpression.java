@@ -56,7 +56,7 @@ public class ParticleExpression {
     }
 
     private static Expression createExpression(String s) {
-        return new ExpressionBuilder(s)
+        return new ExpressionBuilder(ExpressionUtils.removeHex(s))
                 .functions(ExpressionUtils.defFunc())
                 .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, GAMETIME, ROLL, AGE)
                 .operator(ExpressionUtils.defOp())

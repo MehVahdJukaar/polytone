@@ -70,7 +70,7 @@ public class BlockParticleExpression {
 
 
     private static Expression createExpression(String s) {
-        return new ExpressionBuilder(s)
+        return new ExpressionBuilder(ExpressionUtils.removeHex(s))
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
                 .variables(TIME, POS_X, POS_Y, POS_Z)
                 .operator(ExpressionUtils.defOp())
