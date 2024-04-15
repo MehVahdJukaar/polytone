@@ -6,14 +6,14 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
-import net.mehvahdjukaar.polytone.slotify.GuiOverlayManager;
+import net.mehvahdjukaar.polytone.particle.BlockParticleExpression;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -43,6 +43,15 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private final Map<DyeColor, Integer> customSheepColors = new EnumMap<>(DyeColor.class);
     protected final List<Vec3> originalRedstoneWireColors = Arrays.stream(RedStoneWireBlock.COLORS).toList();
 
+    @Nullable
+    private BlockParticleExpression xpOrbColor;
+    @Nullable
+    private BlockParticleExpression xpOrbColorR;
+    @Nullable
+    private BlockParticleExpression xpOrbColorG;
+    @Nullable
+    private BlockParticleExpression xpOrbColorB;
+
     private int emptyPotion = 16253176;
     private int waterBottle = 3694022;
     private int xpBar = 8453920;
@@ -64,7 +73,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     public int getXpBar() {
         return xpBar;
     }
-
 
 
     @Override
@@ -190,6 +198,17 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 int col = parseHex(obj);
                 customSheepColors.put(color, col);
             } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
+        } else if (is(prop, 0, "xporb")) {
+            if (is(prop, 1, "color")) {
+                xpOrbColor = get(prop, 1, BlockParticleExpression::new);
+            } else if (is(prop, 1, "red")) {
+                xpOrbColorR = get(prop, 1, BlockParticleExpression::new);
+            } else if (is(prop, 1, "green")) {
+                xpOrbColorG = get(prop, 1, BlockParticleExpression::new);
+            } else if (is(prop, 1, "blue")) {
+                xpOrbColorB = get(prop, 1, BlockParticleExpression::new);
+            }
+
         } else if (is(prop, 0, "redstone")) {
             String ind = get(prop, 1);
             if (ind != null) {
@@ -262,6 +281,10 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         emptyPotion = 16253176;
         waterBottle = 3694022;
         xpBar = 8453920;
+        xpOrbColor = null;
+        xpOrbColorR = null;
+        xpOrbColorG = null;
+        xpOrbColorB = null;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();
@@ -315,6 +338,22 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             Sheep.COLORARRAY_BY_COLOR.put(e.getKey(), unpack(e.getValue()));
         }
         customSheepColors.clear();
+    }
+
+    @Nullable
+    public float[] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
+        if (xpOrbColor != null){
+            int color = (int) xpOrbColor.getValue(orb.position(), orb.tickCount + partialTicks);
+            return ColorUtils.unpack(color);
+        }
+        if(xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
+        float r = 0;
+        float g = 0;
+        float b = 0;
+        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(orb.position(), orb.tickCount + partialTicks);
+        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(orb.position(), orb.tickCount + partialTicks);
+        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(orb.position(), orb.tickCount + partialTicks);
+        return new float[]{r, g, b};
     }
 
 }

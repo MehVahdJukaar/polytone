@@ -8,6 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.phys.Vec3;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;
@@ -88,6 +89,14 @@ public class BlockParticleExpression {
         this.hasY = unparsed.contains(POS_Y);
         this.hasZ = unparsed.contains(POS_Z);
         this.hasState = unparsed.contains(STATE_FUNC);
+    }
+
+    public double getValue(Vec3 pos, float time) {
+        if (hasTime) expression.setVariable(TIME, time);
+        if (hasX) expression.setVariable(POS_X, pos.x);
+        if (hasY) expression.setVariable(POS_Y, pos.y);
+        if (hasZ) expression.setVariable(POS_Z, pos.z);
+        return expression.evaluate();
     }
 
     public double getValue(Level level, BlockPos pos, BlockState state) {

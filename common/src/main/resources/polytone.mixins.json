@@ -18,7 +18,8 @@
     "LightTextureMixin",
     "ModelBlockRendererMixin",
     "ParticleEngineMixin",
-    "ScreenMixin"
+    "ScreenMixin",
+    "XpOrbMixin"
   ],
   "injectors": {
     "defaultRequire": 1
