@@ -33,8 +33,8 @@ public record RelativeSprite(ResourceLocation texture, int x, int y, int z, int 
         y1 += y;
         oldh += height;
         y2 = y1 + oldh;
-        TextureAtlasSprite sprite = Minecraft.getInstance().getGuiSprites().getSprite(texture);
-        SimpleSprite.blit(pose.last().pose(), sprite.atlasLocation(), x1, x2, y1, y2, blitOffset,
-                sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1());
+        //TextureAtlasSprite sprite = Minecraft.getInstance().getGuiSprites().getSprite(texture);
+       // SimpleSprite.blit(pose.last().pose(), sprite.atlasLocation(), x1, x2, y1, y2, blitOffset,
+         //       sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1());
     }
 }

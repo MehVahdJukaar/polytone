@@ -5,9 +5,7 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
@@ -30,22 +28,18 @@ public record SimpleSprite(ResourceLocation texture, float x, float y, float wid
 
 
     public void render(PoseStack poseStack) {
-        TextureAtlasSprite sprite = Minecraft.getInstance().getGuiSprites().getSprite(texture);
-        blit(poseStack.last().pose(), sprite.atlasLocation(), x, x + width, y, y + height, z,
-                sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1());
+        RenderSystem.setShaderTexture(0, texture);
+        innerBlit(poseStack.last().pose(), x, x + width, y, y + height, z);
     }
 
-
-    public static void blit(Matrix4f matrix, ResourceLocation atlasLoc, float x1, float x2, float y1, float y2,
-                            float blitOffset, float minU, float maxU, float minV, float maxV) {
-        RenderSystem.setShaderTexture(0, atlasLoc);
+    private static void innerBlit(Matrix4f matrix, float x1, float x2, float y1, float y2, float blitOffset) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferBuilder.vertex(matrix, x1, y1, blitOffset).uv(minU, minV).endVertex();
-        bufferBuilder.vertex(matrix, x1, y2, blitOffset).uv(minU, maxV).endVertex();
-        bufferBuilder.vertex(matrix, x2, y2, blitOffset).uv(maxU, maxV).endVertex();
-        bufferBuilder.vertex(matrix, x2, y1, blitOffset).uv(maxU, minV).endVertex();
+        bufferBuilder.vertex(matrix, x1, y2, blitOffset).uv(0, 1).endVertex();
+        bufferBuilder.vertex(matrix, x2, y2, blitOffset).uv(1, 1).endVertex();
+        bufferBuilder.vertex(matrix, x2, y1, blitOffset).uv(1, 0).endVertex();
+        bufferBuilder.vertex(matrix, x1, y1, blitOffset).uv(0, 0).endVertex();
         BufferUploader.drawWithShader(bufferBuilder.end());
     }
 }

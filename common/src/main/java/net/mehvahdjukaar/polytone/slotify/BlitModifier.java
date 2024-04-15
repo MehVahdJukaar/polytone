@@ -39,7 +39,7 @@ public record BlitModifier(ResourceLocation target, int index, int x, int y, int
         }
 
         if (newTexture.isPresent()) {
-            sprite = Minecraft.getInstance().getGuiSprites().getSprite(newTexture.get());
+           // sprite = Minecraft.getInstance().getGuiSprites().getSprite(newTexture.get());
         }
         float minU = u1 == -1 ? sprite.getU0() : u1;
         float maxU = u0 == -1 ? sprite.getU1() : u0;
@@ -59,8 +59,8 @@ public record BlitModifier(ResourceLocation target, int index, int x, int y, int
         y2 = y1 + oldh;
 
 
-        SimpleSprite.blit(gui.pose().last().pose(), sprite.atlasLocation(),
-                (float) x1, (float) x2, (float) y1, (float) y2, (float) blitOffset, minU, maxU, minV, maxV);
+        //SimpleSprite.blit(gui.pose().last().pose(), sprite.atlasLocation(),
+          //      (float) x1, (float) x2, (float) y1, (float) y2, (float) blitOffset, minU, maxU, minV, maxV);
     }
 
 

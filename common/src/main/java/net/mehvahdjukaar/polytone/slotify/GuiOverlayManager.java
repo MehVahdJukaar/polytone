@@ -26,7 +26,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
 
     @Override
     protected void reset() {
-        heartSprites.clear();
+       // heartSprites.clear();
         blitModifiers.clear();
     }
 
@@ -50,7 +50,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
 
     @Override
     protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
-        reloadHearths(resourceManager);
+       // reloadHearths(resourceManager);
         return super.prepare(resourceManager);
     }
 

@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
+import net.mehvahdjukaar.polytone.particle.BlockParticleExpression;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
@@ -200,13 +201,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
         } else if (is(prop, 0, "xporb")) {
             if (is(prop, 1, "color")) {
-                xpOrbColor = get(prop, 1, BlockParticleExpression::new);
+                xpOrbColor = new BlockParticleExpression(str);
             } else if (is(prop, 1, "red")) {
-                xpOrbColorR = get(prop, 1, BlockParticleExpression::new);
+                xpOrbColorR = new BlockParticleExpression(str);
             } else if (is(prop, 1, "green")) {
-                xpOrbColorG = get(prop, 1, BlockParticleExpression::new);
+                xpOrbColorG = new BlockParticleExpression(str);
             } else if (is(prop, 1, "blue")) {
-                xpOrbColorB = get(prop, 1, BlockParticleExpression::new);
+                xpOrbColorB = new BlockParticleExpression(str);
             }
 
         } else if (is(prop, 0, "redstone")) {
@@ -342,17 +343,19 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     @Nullable
     public float[] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
+        float time = orb.tickCount + partialTicks;
+        Vec3 position = orb.position();
         if (xpOrbColor != null){
-            int color = (int) xpOrbColor.getValue(orb.position(), orb.tickCount + partialTicks);
+            int color = (int) xpOrbColor.getValue(position, time);
             return ColorUtils.unpack(color);
         }
         if(xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         float r = 0;
         float g = 0;
         float b = 0;
-        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(orb.position(), orb.tickCount + partialTicks);
-        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(orb.position(), orb.tickCount + partialTicks);
-        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(orb.position(), orb.tickCount + partialTicks);
+        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(position, time);
+        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(position, time);
+        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(position, time);
         return new float[]{r, g, b};
     }
 
