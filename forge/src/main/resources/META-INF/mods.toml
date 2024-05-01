@@ -8,7 +8,7 @@ issueTrackerURL = "${mod_github}/issues"
 [[mixins]]
     config = "${mod_id}.mixins.json"
 [[mixins]]
-    config = "${mod_id}.mixins-forge.json"
+    config = "${mod_id}-forge.mixins.json"
 
 [[mods]]
     modId = "polytone"

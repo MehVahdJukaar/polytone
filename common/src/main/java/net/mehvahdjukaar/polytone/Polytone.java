@@ -45,15 +45,15 @@ public class Polytone {
     public static void init(boolean isSodiumOn) {
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
                         SOUND_TYPES, CUSTOM_PARTICLES, BIOME_ID_MAPPERS, COLORMAPS, COLORS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
-                        BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS, OVERLAY_MODIFIERS),
-                res("block_properties_manager"));
+                        BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, PARTICLE_MODIFIERS, GUI_MODIFIER, OVERLAY_MODIFIERS),
+                res("polytone_stuff"));
         sodiumOn = isSodiumOn;
-        PlatStuff.addClientReloadListener(() -> GUI_MODIFIER, res("gui_modifiers"));
         //for colormap grid support
 
         //SKY and fog
         //item properties and color. cache pllayer coord
         //exp color
+        //biome lightmap
     }
 
     public static ResourceLocation res(String name) {

@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import static net.mehvahdjukaar.polytone.particle.CustomParticlesManager.CUSTOM_PARTICLES;
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 @Mixin(ParticleEngine.class)
 public abstract class ParticleEngineMixin {

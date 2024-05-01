@@ -36,7 +36,6 @@ public class FluidPropertiesManagerImpl {
             if (ext instanceof FluidExtensionWrapper) {
                 Polytone.LOGGER.error("Trying to wrap a wrapper. Something went wrong");
             }
-
             //create wrapped one
             FLUID_EXTENSIONS.put(fluid.get(), new FluidExtensionWrapper(ext, colormap));
         }

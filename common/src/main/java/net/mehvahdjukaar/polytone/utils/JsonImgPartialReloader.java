@@ -22,6 +22,7 @@ public abstract class JsonImgPartialReloader extends PartialReloader<JsonImgPart
         scanDirectory(resourceManager, path(), GSON, jsons);
         var textures = ArrayImage.gatherImages(resourceManager, path());
 
+        checkConditions(jsons);
         return new Resources(jsons, textures);
     }
 

@@ -43,6 +43,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
         }
         Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
         scanDirectory(resourceManager, path(), GSON, jsons);
+        checkConditions(jsons);
         for (var v : jsons.keySet()) {
             engine.spriteSets.put(v, new ParticleEngine.MutableSpriteSet());
         }

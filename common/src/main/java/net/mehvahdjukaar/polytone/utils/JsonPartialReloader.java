@@ -19,6 +19,8 @@ public abstract class JsonPartialReloader extends PartialReloader<Map<ResourceLo
     protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
         Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
         scanDirectory(resourceManager, path(), GSON, jsons);
+
+        checkConditions(jsons);
         return jsons;
     }
 }

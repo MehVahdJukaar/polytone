@@ -47,6 +47,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     protected Resources prepare(ResourceManager resourceManager) {
         Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
         scanDirectory(resourceManager, path(), GSON, jsons);
+        checkConditions(jsons);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 
@@ -56,6 +57,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         Map<ResourceLocation, Properties> ofProperties = PropertiesUtils.gatherProperties(resourceManager, "optifine/colormap");
         Map<ResourceLocation, JsonElement> ofJsons = new HashMap<>();
         scanDirectory(resourceManager, "optifine/colormap", GSON, ofJsons);
+        checkConditions(ofJsons);
+
         ofJsons.forEach((k, v) -> ofProperties.put(k, PropertiesUtils.jsonToProperties(v)));
 
         textures.putAll(LegacyHelper.convertPaths(ofTextures));

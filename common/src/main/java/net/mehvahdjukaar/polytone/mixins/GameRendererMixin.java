@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import org.spongepowered.asm.mixin.Final;

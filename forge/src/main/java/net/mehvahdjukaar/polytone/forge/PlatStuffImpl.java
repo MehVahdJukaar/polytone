@@ -4,19 +4,14 @@ import cpw.mods.modlauncher.api.INameMappingService;
 import net.mehvahdjukaar.polytone.mixins.forge.BlockColorsAccessor;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -38,7 +33,6 @@ public class PlatStuffImpl {
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         return ((BlockColorsAccessor) colors).getBlockColors().get(block);
     }
-
 
 
     public static String maybeRemapName(String s) {

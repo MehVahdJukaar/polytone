@@ -39,12 +39,6 @@ public class PlatStuff {
 
     @Contract
     @ExpectPlatform
-    public static SoundEvent registerSoundEvent(ResourceLocation id){
-        throw new AssertionError();
-    }
-
-    @Contract
-    @ExpectPlatform
     public static boolean isModLoaded(String namespace) {
         throw new AssertionError();
     }
