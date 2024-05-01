@@ -55,6 +55,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     protected Resources prepare(ResourceManager resourceManager) {
         Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
         scanDirectory(resourceManager, path(), GSON, jsons);
+        checkConditions(jsons);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 

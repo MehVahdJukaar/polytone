@@ -1,8 +1,14 @@
 package net.mehvahdjukaar.polytone.utils;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+
+import java.util.Map;
 
 public abstract class PartialReloader<T> {
 
@@ -24,5 +30,27 @@ public abstract class PartialReloader<T> {
 
     protected abstract void process(T obj);
 
-    protected void apply(){};
+    protected void apply() {
+    }
+
+    public static void checkConditions(Map<ResourceLocation, JsonElement> object) {
+        object.entrySet().removeIf(e -> {
+            if (e.getValue() instanceof JsonObject jo) {
+                JsonElement je = jo.get("require_mods");
+                if (je != null) {
+                    if (je.isJsonArray()) {
+                        for (JsonElement el : je.getAsJsonArray()) {
+                            if (!PlatStuff.isModLoaded(el.getAsString())) {
+                                return true;
+                            }
+                        }
+                    } else if (je.isJsonPrimitive()) {
+                        return !PlatStuff.isModLoaded(je.getAsString());
+                    }
+                }
+            }
+            return false;
+        });
+
+    }
 }

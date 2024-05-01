@@ -229,7 +229,6 @@ public class Lightmap {
             }
 
             lightTexture.upload();
-            minecraft.getProfiler().pop();
         }
     }
 

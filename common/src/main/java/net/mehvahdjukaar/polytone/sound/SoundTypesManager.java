@@ -57,6 +57,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     protected Resources prepare(ResourceManager resourceManager) {
         Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
         scanDirectory(resourceManager, path(), GSON, jsons);
+        checkConditions(jsons);
 
         var types = gatherSoundEvents(resourceManager, Polytone.MOD_ID);
 

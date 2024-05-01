@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -27,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class GuiModifierManager extends SimpleJsonResourceReloadListener {
+public class GuiModifierManager extends JsonPartialReloader {
 
     private static final Map<MenuType<?>, Int2ObjectArrayMap<SlotModifier>> SLOTS_BY_MENU_ID = new IdentityHashMap<>();
     private static final Map<Class<?>, Int2ObjectArrayMap<SlotModifier>> SLOTS_BY_CLASS = new IdentityHashMap<>();
@@ -39,30 +40,22 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
 
     private static final ResourceLocation INVENTORY = new ResourceLocation("inventory");
 
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final String GUI_MODIFIERS = "gui_modifiers";
-
     public GuiModifierManager() {
-        super(GSON, Polytone.MOD_ID + "/" + GUI_MODIFIERS);
+        super("gui_modifiers");
     }
 
     @Override
-    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
-        Map<ResourceLocation, JsonElement> map = super.prepare(resourceManager, profiler);
-        //backwards compat with slotify
-
-        scanDirectory(resourceManager, GUI_MODIFIERS, GSON, map);
-        return map;
-    }
-
-    @Override
-    protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
+    protected void reset() {
         SLOTS_BY_MENU_ID.clear();
         SLOTS_BY_CLASS.clear();
         SLOTS_BY_TITLE.clear();
         BY_MENU_ID.clear();
         BY_CLASS.clear();
         BY_TITLE.clear();
+    }
+
+    @Override
+    protected void process(Map<ResourceLocation, JsonElement> object) {
 
         List<GuiModifier> allModifiers = new ArrayList<>();
         for (var entry : object.entrySet()) {
@@ -244,4 +237,6 @@ public class GuiModifierManager extends SimpleJsonResourceReloadListener {
         }
         return true;
     }
+
+
 }

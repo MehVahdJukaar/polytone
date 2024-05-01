@@ -6,7 +6,6 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.fml.ModList;
@@ -62,7 +61,6 @@ public class PlatStuffImpl {
         if (wasLocked) reg.freeze();
         return variableRangeEvent;
     }
-
     public static String maybeRemapName(String s) {
         return ObfuscationReflectionHelper.remapName(INameMappingService.Domain.CLASS, s);
     }

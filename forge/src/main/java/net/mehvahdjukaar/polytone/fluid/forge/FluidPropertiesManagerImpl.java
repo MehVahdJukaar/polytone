@@ -35,6 +35,8 @@ public class FluidPropertiesManagerImpl {
             if (!(ext instanceof FluidExtensionWrapper)) {
                 FLUID_EXTENSIONS.put(fluid, new FluidExtensionWrapper(ext, colormap));
             }
+            //create wrapped one
+            FLUID_EXTENSIONS.put(fluid.get(), new FluidExtensionWrapper(ext, colormap));
         }
     }
 
