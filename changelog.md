@@ -1,1 +1,1 @@
-works on neoforge
+added "require_mods" conditions
