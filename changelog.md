@@ -1,1 +1,1 @@
-added a forge separate_prespective model implementation
+no more mixin for separte prespective model

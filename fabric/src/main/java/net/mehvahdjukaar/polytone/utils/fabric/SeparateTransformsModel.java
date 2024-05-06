@@ -4,22 +4,29 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
+import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
+import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.*;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static net.minecraft.client.resources.model.ModelBakery.ITEM_MODEL_GENERATOR;
 
@@ -104,13 +111,8 @@ public class SeparateTransformsModel extends BlockModel {
         return this.getOverrides().isEmpty() ? ItemOverrides.EMPTY : new ItemOverrides(baker, model, this.getOverrides());
     }
 
-    public Collection<BlockModel> getAllModels() {
-        Collection<BlockModel> models = new ArrayList<>(perspectives.values());
-        models.add(baseModel);
-        return models;
-    }
 
-    public static class Baked implements BakedModel {
+    public static class Baked implements BakedModel, FabricBakedModel {
         private final boolean isAmbientOcclusion;
         private final boolean isGui3d;
         private final boolean isSideLit;
@@ -118,6 +120,7 @@ public class SeparateTransformsModel extends BlockModel {
         private final ItemOverrides overrides;
         private final BakedModel baseModel;
         private final ImmutableMap<ItemDisplayContext, BakedModel> perspectives;
+        private final ItemTransforms transforms;
 
         public Baked(boolean isAmbientOcclusion, boolean isGui3d, boolean isSideLit, TextureAtlasSprite particle, ItemOverrides overrides, BakedModel baseModel, ImmutableMap<ItemDisplayContext, BakedModel> perspectives) {
             this.isAmbientOcclusion = isAmbientOcclusion;
@@ -127,6 +130,79 @@ public class SeparateTransformsModel extends BlockModel {
             this.overrides = overrides;
             this.baseModel = baseModel;
             this.perspectives = perspectives;
+
+            ItemTransform gui = perspectives.getOrDefault(ItemDisplayContext.GUI, baseModel)
+                    .getTransforms().getTransform(ItemDisplayContext.GUI);
+            ItemTransform ground = perspectives.getOrDefault(ItemDisplayContext.GROUND, baseModel)
+                    .getTransforms().getTransform(ItemDisplayContext.GROUND);
+            ItemTransform fixed = perspectives.getOrDefault(ItemDisplayContext.FIXED, baseModel)
+                    .getTransforms().getTransform(ItemDisplayContext.FIXED);
+            ItemTransform thirdPersonRight = perspectives.getOrDefault(ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, baseModel)
+                    .getTransforms().getTransform(ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
+            ItemTransform thirdPersonLeft = perspectives.getOrDefault(ItemDisplayContext.THIRD_PERSON_LEFT_HAND, baseModel)
+                    .getTransforms().getTransform(ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
+            ItemTransform firstPersonRight = perspectives.getOrDefault(ItemDisplayContext.FIRST_PERSON_RIGHT_HAND, baseModel)
+                    .getTransforms().getTransform(ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
+            ItemTransform firstPersonLeft = perspectives.getOrDefault(ItemDisplayContext.FIRST_PERSON_LEFT_HAND, baseModel)
+                    .getTransforms().getTransform(ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
+            ItemTransform head = perspectives.getOrDefault(ItemDisplayContext.HEAD, baseModel)
+                    .getTransforms().getTransform(ItemDisplayContext.HEAD);
+
+            this.transforms = new ItemTransforms(thirdPersonLeft, thirdPersonRight, firstPersonLeft, firstPersonRight,
+                    head, gui, ground, fixed);
+
+        }
+
+
+        @Override
+        public void emitItemQuads(ItemStack stack, Supplier<RandomSource> randomSupplier, RenderContext context) {
+            var transformType = context.itemTransformationMode();
+            BakedModel m = perspectives.getOrDefault(transformType, baseModel);
+            var material = RendererAccess.INSTANCE.getRenderer().materialFinder().find();
+            QuadEmitter emitter = context.getEmitter();
+
+            for (Direction d : Direction.values()) {
+                var quads = m.getQuads(null, d, randomSupplier.get());
+                for (var q : quads) {
+                    emitter.fromVanilla(q, material, d);
+                    emitter.emit();
+                }
+            }
+            var quads = m.getQuads(null, null, randomSupplier.get());
+            for (var q : quads) {
+                emitter.fromVanilla(q, material, null);
+                emitter.emit();
+            }
+        }
+
+        @Override
+        public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context) {
+            var transformType = context.itemTransformationMode();
+            BakedModel m = perspectives.getOrDefault(transformType, baseModel);
+            QuadEmitter emitter = context.getEmitter();
+            var material = RendererAccess.INSTANCE.getRenderer().materialFinder().find();
+            for (Direction d : Direction.values()) {
+                var quads = m.getQuads(state, d, randomSupplier.get());
+                for (var q : quads) {
+                    emitter.fromVanilla(q, material, d);
+                    emitter.emit();
+                }
+            }
+            var quads = m.getQuads(state, null, randomSupplier.get());
+            for (var q : quads) {
+                emitter.fromVanilla(q, material, null);
+                emitter.emit();
+            }
+        }
+
+        @Override
+        public boolean isVanillaAdapter() {
+            return false;
+        }
+
+        @Override
+        public boolean isCustomRenderer() {
+            return false;
         }
 
         @Override
@@ -149,10 +225,6 @@ public class SeparateTransformsModel extends BlockModel {
             return isSideLit;
         }
 
-        @Override
-        public boolean isCustomRenderer() {
-            return false;
-        }
 
         @Override
         public TextureAtlasSprite getParticleIcon() {
@@ -166,7 +238,7 @@ public class SeparateTransformsModel extends BlockModel {
 
         @Override
         public ItemTransforms getTransforms() {
-            return ItemTransforms.NO_TRANSFORMS;
+            return transforms;
         }
 
         public BakedModel applyTransform(ItemDisplayContext transformType, PoseStack poseStack, boolean applyLeftHandTransform) {

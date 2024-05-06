@@ -10,7 +10,6 @@
     "BlockColorsAccessor",
     "BlockModelDeserializerMixin",
     "InventoryScreenMixin",
-    "ItemRendererMixin",
     "ModelHackMixin"
   ],
   "injectors": {
