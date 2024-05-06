@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins.forge;
 
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
+import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraftforge.client.model.SeparateTransformsModel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;

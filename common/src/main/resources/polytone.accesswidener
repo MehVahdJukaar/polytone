@@ -84,3 +84,5 @@ mutable field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape 
 accessible field net/minecraft/core/MappedRegistry frozen Z
 
 accessible method net/minecraft/world/level/biome/Biome getTemperature (Lnet/minecraft/core/BlockPos;)F
+
+accessible field net/minecraft/client/resources/model/ModelBakery ITEM_MODEL_GENERATOR Lnet/minecraft/client/renderer/block/model/ItemModelGenerator;
