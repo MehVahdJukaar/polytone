@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
+import net.fabricmc.fabric.mixin.client.indigo.renderer.ItemRendererMixin;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,6 +18,7 @@ public abstract class InventoryScreenMixin {
     public int modifyRenderEntityX(int x) {
         var m = ((SlotifyScreen) this).polytone$getModifier();
         if (m != null) {
+
             var s = m.getSpecial("player");
             if (s != null) {
                 return x + s.x();

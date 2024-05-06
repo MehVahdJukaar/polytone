@@ -1,1 +1,1 @@
-added require_mods conditions that can be added to any json
+added a forge separate_prespective model implementation

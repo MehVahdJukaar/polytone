@@ -8,7 +8,9 @@
   "client": [
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
+    "BlockModelDeserializerMixin",
     "InventoryScreenMixin",
+    "ItemRendererMixin",
     "ModelHackMixin"
   ],
   "injectors": {
