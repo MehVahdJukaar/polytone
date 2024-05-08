@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.biome;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.core.Holder;
@@ -10,7 +9,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.biome.*;
-import net.minecraft.world.level.material.Fluids;
 
 import java.util.Optional;
 import java.util.Set;
@@ -148,7 +146,47 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         newMusic.ifPresent(builder::backgroundMusic);
 
         // merged and saved old. now we can apply
-        biome.specialEffects = builder.build();
-        return effects;
+
+        // freaking forge field to methods...
+        //biome.specialEffects = builder.build();
+        var copy = copy(effects);
+        applyInplace(biome, builder.build());
+
+        //return a copy of the old effects
+        return copy;
+    }
+
+    private BiomeSpecialEffects copy(BiomeSpecialEffects effects) {
+        var builder = new BiomeSpecialEffects.Builder();
+        builder.fogColor(effects.getFogColor());
+        builder.waterColor(effects.getWaterColor());
+        builder.waterFogColor(effects.getWaterFogColor());
+        builder.skyColor(effects.getSkyColor());
+        effects.getFoliageColorOverride().ifPresent(builder::foliageColorOverride);
+        effects.getGrassColorOverride().ifPresent(builder::grassColorOverride);
+        builder.grassColorModifier(effects.getGrassColorModifier());
+        effects.getAmbientParticleSettings().ifPresent(builder::ambientParticle);
+        effects.getAmbientLoopSoundEvent().ifPresent(builder::ambientLoopSound);
+        effects.getAmbientMoodSettings().ifPresent(builder::ambientMoodSound);
+        effects.getAmbientAdditionsSettings().ifPresent(builder::ambientAdditionsSound);
+        effects.getBackgroundMusic().ifPresent(builder::backgroundMusic);
+        return builder.build();
+    }
+
+    public static void applyInplace(Biome biome, BiomeSpecialEffects newEffects) {
+        //we cant replcate biome effects object so we set its fields
+        var oldEffects = biome.getSpecialEffects();
+        oldEffects.fogColor = newEffects.getFogColor();
+        oldEffects.waterColor = newEffects.getWaterColor();
+        oldEffects.waterFogColor = newEffects.getWaterFogColor();
+        oldEffects.skyColor = newEffects.getSkyColor();
+        oldEffects.foliageColorOverride = newEffects.getFoliageColorOverride();
+        oldEffects.grassColorOverride = newEffects.getGrassColorOverride();
+        oldEffects.grassColorModifier = newEffects.getGrassColorModifier();
+        oldEffects.ambientParticleSettings = newEffects.getAmbientParticleSettings();
+        oldEffects.ambientLoopSoundEvent = newEffects.getAmbientLoopSoundEvent();
+        oldEffects.ambientMoodSettings = newEffects.getAmbientMoodSettings();
+        oldEffects.ambientAdditionsSettings = newEffects.getAmbientAdditionsSettings();
+        oldEffects.backgroundMusic = newEffects.getBackgroundMusic();
     }
 }
