@@ -35,7 +35,7 @@ public class PlatStuffImpl {
 
 
     public static String maybeRemapName(String s) {
-        return ObfuscationReflectionHelper.remapName(INameMappingService.Domain.CLASS, s);
+        return s;
     }
 
     @org.jetbrains.annotations.Contract

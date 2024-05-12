@@ -5,6 +5,7 @@
  * @return {object} All the transformers of this coremod.
  * //TODO: this isnt needed anymore we can mixin
  */
+//TODO: we can now use mixins remove this
 function initializeCoreMod() {
     print("Initializing Polytone Transformers");
     return {
