@@ -1,1 +1,1 @@
-no more mixin for separte prespective model
+changed how some access widerenrs work related to biome effets. hopefully fixes an issue with old forge
