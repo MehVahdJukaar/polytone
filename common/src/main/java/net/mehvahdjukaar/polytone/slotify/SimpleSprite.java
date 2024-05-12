@@ -22,8 +22,8 @@ public record SimpleSprite(ResourceLocation texture, float x, float y, float wid
             Codec.FLOAT.fieldOf("y").forGetter(SimpleSprite::y),
             Codec.FLOAT.fieldOf("width").forGetter(SimpleSprite::width),
             Codec.FLOAT.fieldOf("height").forGetter(SimpleSprite::height),
-            StrOpt.of(Codec.FLOAT, "z", 0.0f).forGetter(SimpleSprite::z),
-            StrOpt.of(Codec.STRING, "tooltip").forGetter(SimpleSprite::tooltip)
+            Codec.FLOAT.optionalFieldOf("z", 0.0f).forGetter(SimpleSprite::z),
+            Codec.STRING.optionalFieldOf("tooltip").forGetter(SimpleSprite::tooltip)
             // Codec.STRING.xmap(ScreenSupplier::decode, ScreenSupplier::toString).f
             //   .optionalFieldOf("screen_class").forGetter(SimpleSprite:: screenSupp)
     ).apply(i, SimpleSprite::new));

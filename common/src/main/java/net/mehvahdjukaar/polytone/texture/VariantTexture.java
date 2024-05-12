@@ -32,7 +32,7 @@ public record VariantTexture(Map<ResourceLocation, Map<ResourceLocation, Resourc
     public static final Decoder<VariantTexture> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     MAP_CODEC.fieldOf("textures").forGetter(VariantTexture::textures),
-                    StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(VariantTexture::explicitTargets)
+                    TargetsHelper.CODEC.optionalFieldOf("targets").forGetter(VariantTexture::explicitTargets)
             ).apply(instance, VariantTexture::new));
 
 

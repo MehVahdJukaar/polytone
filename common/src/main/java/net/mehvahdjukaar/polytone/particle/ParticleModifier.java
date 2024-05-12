@@ -27,17 +27,17 @@ import java.util.function.Predicate;
 public class ParticleModifier {
 
     public static final Codec<ParticleModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-            StrOpt.of(Filter.CODEC, "filter").forGetter(p -> Optional.ofNullable(p.filter)),
-            StrOpt.of(Colormap.CODEC, "colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
-            StrOpt.of(ParticleExpression.CODEC, "color").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            StrOpt.of(ParticleExpression.CODEC, "life").forGetter(p -> Optional.ofNullable(p.lifeGetter)),
-            StrOpt.of(ParticleExpression.CODEC, "size").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            StrOpt.of(ParticleExpression.CODEC, "red").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            StrOpt.of(ParticleExpression.CODEC, "green").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            StrOpt.of(ParticleExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            StrOpt.of(ParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            StrOpt.of(ParticleExpression.CODEC, "speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
-            StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(p -> p.explicitTargets)
+            Filter.CODEC.optionalFieldOf("filter").forGetter(p -> Optional.ofNullable(p.filter)),
+            Colormap.CODEC.optionalFieldOf("colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
+            ParticleExpression.CODEC.optionalFieldOf("color").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleExpression.CODEC.optionalFieldOf("life").forGetter(p -> Optional.ofNullable(p.lifeGetter)),
+            ParticleExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleExpression.CODEC.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
+            TargetsHelper.CODEC.optionalFieldOf("targets").forGetter(p -> p.explicitTargets)
 
     ).apply(instance, ParticleModifier::new));
 
@@ -151,8 +151,8 @@ public class ParticleModifier {
         }
 
         public static final Codec<Filter> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-                StrOpt.of(BuiltInRegistries.BLOCK.byNameCodec(), "block").forGetter(p -> Optional.ofNullable(p.forBlock)),
-                StrOpt.of(BuiltInRegistries.ITEM.byNameCodec(), "item").forGetter(p -> Optional.ofNullable(p.forItem))
+                BuiltInRegistries.BLOCK.byNameCodec().optionalFieldOf("block").forGetter(p -> Optional.ofNullable(p.forBlock)),
+                BuiltInRegistries.ITEM.byNameCodec().optionalFieldOf("item").forGetter(p -> Optional.ofNullable(p.forItem))
         ).apply(instance, Filter::new));
 
         @Override

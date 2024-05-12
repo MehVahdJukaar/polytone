@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
 
@@ -20,16 +19,16 @@ public record WidgetModifier(int xOffset, int yOffset,
                              Optional<String> targetClass) {
 
     public static final Codec<WidgetModifier> CODEC = RecordCodecBuilder.<WidgetModifier>create(i -> i.group(
-            StrOpt.of(Codec.INT,"x_offset", 0).forGetter(WidgetModifier::xOffset),
-            StrOpt.of(Codec.INT,"y_offset", 0).forGetter(WidgetModifier::yOffset),
-            StrOpt.of(Codec.INT,"width_increment", 0).forGetter(WidgetModifier::width),
-            StrOpt.of(Codec.STRING,"message").forGetter(WidgetModifier::message),
-            StrOpt.of(Codec.INT,"target_x").forGetter(WidgetModifier::targetX),
-            StrOpt.of(Codec.INT,"target_y").forGetter(WidgetModifier::targetY),
-            StrOpt.of(Codec.INT,"target_width").forGetter(WidgetModifier::targetY),
-            StrOpt.of(Codec.INT,"target_height").forGetter(WidgetModifier::targetY),
-            StrOpt.of(Codec.STRING,"target_message").forGetter(WidgetModifier::targetMessage),
-            StrOpt.of(Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName),"target_class_name").forGetter(WidgetModifier::targetClass)
+            Codec.INT.optionalFieldOf("x_offset", 0).forGetter(WidgetModifier::xOffset),
+            Codec.INT.optionalFieldOf("y_offset", 0).forGetter(WidgetModifier::yOffset),
+            Codec.INT.optionalFieldOf("width_increment", 0).forGetter(WidgetModifier::width),
+            Codec.STRING.optionalFieldOf("message").forGetter(WidgetModifier::message),
+            Codec.INT.optionalFieldOf("target_x").forGetter(WidgetModifier::targetX),
+            Codec.INT.optionalFieldOf("target_y").forGetter(WidgetModifier::targetY),
+            Codec.INT.optionalFieldOf("target_width").forGetter(WidgetModifier::targetY),
+            Codec.INT.optionalFieldOf("target_height").forGetter(WidgetModifier::targetY),
+            Codec.STRING.optionalFieldOf("target_message").forGetter(WidgetModifier::targetMessage),
+            Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName).optionalFieldOf("target_class_name").forGetter(WidgetModifier::targetClass)
     ).apply(i, WidgetModifier::new)).comapFlatMap(o -> {
         if (o.targetW.isEmpty() && o.targetH.isEmpty() && o.targetX.isEmpty()
                 && o.targetClass.isEmpty()

@@ -87,7 +87,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             var id = j.getKey();
 
             FluidPropertyModifier modifier = FluidPropertyModifier.CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Fluid Color Modifier with json id {} - error: {}", id, errorMsg))
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Fluid Color Modifier with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
 
             //always have priority

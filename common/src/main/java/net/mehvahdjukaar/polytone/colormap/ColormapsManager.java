@@ -3,12 +3,12 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.JsonOps;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import org.jetbrains.annotations.Nullable;
@@ -49,8 +49,9 @@ public class ColormapsManager extends JsonImgPartialReloader {
             var id = j.getKey();
 
             Colormap colormap = Colormap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Colormap with json id {} - error: {}",
-                            id, errorMsg)).getFirst();
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Colormap with json id " + id + "\n error: " + errorMsg))
+                    .getFirst();
+
             tryAcceptingTexture(textures.get(id), id, colormap, usedTextures);
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, colormap);
@@ -149,7 +150,8 @@ public class ColormapsManager extends JsonImgPartialReloader {
             if (texture.pixels().length == 0) {
                 throw new IllegalStateException("Colormap texture at location " + textureLocation + " had invalid 0 dimension");
             }
-        } else throw new IllegalStateException("Could not find any colormap texture .png associated with path " + textureLocation);
+        } else
+            throw new IllegalStateException("Could not find any colormap texture .png associated with path " + textureLocation);
     }
 
 

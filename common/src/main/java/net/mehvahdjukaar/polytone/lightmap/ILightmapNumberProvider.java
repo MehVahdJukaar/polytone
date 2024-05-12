@@ -24,7 +24,7 @@ public interface ILightmapNumberProvider {
 
     BiMap<String, ILightmapNumberProvider> CUSTOM_PROVIDERS = HashBiMap.create();
 
-    Codec<ILightmapNumberProvider> REFERENCE_CODEC = ExtraCodecs.stringResolverCodec(
+    Codec<ILightmapNumberProvider> REFERENCE_CODEC = Codec.stringResolver(
             a->CUSTOM_PROVIDERS.inverse().get(a), CUSTOM_PROVIDERS::get);
 
     Codec<ILightmapNumberProvider> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_CODEC,

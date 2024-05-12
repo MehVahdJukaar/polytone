@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.forge;
 
-import cpw.mods.modlauncher.api.INameMappingService;
 import net.mehvahdjukaar.polytone.mixins.forge.BlockColorsAccessor;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -19,7 +18,7 @@ import java.util.function.Supplier;
 public class PlatStuffImpl {
 
     public static boolean isModStateValid() {
-        return ModLoader.isLoadingStateValid();
+        return !ModLoader.hasErrors();
     }
 
     public static void addClientReloadListener(Supplier<PreparableReloadListener> listener, ResourceLocation location) {

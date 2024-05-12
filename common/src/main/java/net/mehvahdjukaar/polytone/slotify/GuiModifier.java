@@ -50,16 +50,16 @@ public record GuiModifier(Type type, String target,
             RecordCodecBuilder.<GuiModifier>create(i -> i.group(
                     StringRepresentable.fromEnum(Type::values).fieldOf("target_type").forGetter(GuiModifier::type),
                     Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName).fieldOf("target").forGetter(GuiModifier::target),
-                    StrOpt.of(SlotModifier.CODEC.listOf(), "slot_modifiers", List.of()).forGetter(GuiModifier::slotModifiers),
-                    StrOpt.of(Codec.INT, "title_x_offset", 0).forGetter(GuiModifier::titleX),
-                    StrOpt.of(Codec.INT, "title_y_offset", 0).forGetter(GuiModifier::titleY),
-                    StrOpt.of(Codec.INT, "label_x_offset", 0).forGetter(GuiModifier::labelX),
-                    StrOpt.of(Codec.INT, "label_y_offset", 0).forGetter(GuiModifier::labelY),
-                    StrOpt.of(ColorUtils.CODEC, "title_color").forGetter(g->Optional.ofNullable(g.titleColor)),
-                    StrOpt.of(ColorUtils.CODEC, "label_color").forGetter(g->Optional.ofNullable(g.labelColor)),
-                    StrOpt.of(SimpleSprite.CODEC.listOf(), "sprites", List.of()).forGetter(GuiModifier::sprites),
-                    StrOpt.of(WidgetModifier.CODEC.listOf(), "widget_modifiers", List.of()).forGetter(GuiModifier::widgetModifiers),
-                    StrOpt.of(Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC), "special_offsets", Map.of()).forGetter(GuiModifier::specialOffsets)
+                    SlotModifier.CODEC.listOf().optionalFieldOf("slot_modifiers", List.of()).forGetter(GuiModifier::slotModifiers),
+                    Codec.INT.optionalFieldOf("title_x_offset", 0).forGetter(GuiModifier::titleX),
+                    Codec.INT.optionalFieldOf("title_y_offset", 0).forGetter(GuiModifier::titleY),
+                    Codec.INT.optionalFieldOf("label_x_offset", 0).forGetter(GuiModifier::labelX),
+                    Codec.INT.optionalFieldOf("label_y_offset", 0).forGetter(GuiModifier::labelY),
+                    ColorUtils.CODEC.optionalFieldOf("title_color").forGetter(g->Optional.ofNullable(g.titleColor)),
+                    ColorUtils.CODEC.optionalFieldOf("label_color").forGetter(g->Optional.ofNullable(g.labelColor)),
+                    SimpleSprite.CODEC.listOf().optionalFieldOf("sprites", List.of()).forGetter(GuiModifier::sprites),
+                    WidgetModifier.CODEC.listOf().optionalFieldOf("widget_modifiers", List.of()).forGetter(GuiModifier::widgetModifiers),
+                    Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC).optionalFieldOf("special_offsets", Map.of()).forGetter(GuiModifier::specialOffsets)
 
             ).apply(i, GuiModifier::new)).comapFlatMap((instance) -> {
                 if (instance.type == Type.MENU_ID) {

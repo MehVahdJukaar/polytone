@@ -42,13 +42,13 @@ public class XpOrbMixin {
     }
 
     @Inject(method = "vertex", at = @At("HEAD"), cancellable = true)
-    private static void polytone$changeColor(VertexConsumer consumer, Matrix4f matrix, Matrix3f matrixNormal, float x, float y, int red, int green, int blue, float texU, float texV, int packedLight, CallbackInfo ci) {
+    private static void polytone$changeColor(VertexConsumer consumer, PoseStack.Pose matrix, float x, float y, int red, int green, int blue, float texU, float texV, int packedLight, CallbackInfo ci) {
         if(polytone$specialColor != null){
             ci.cancel();
             consumer.vertex(matrix, x, y, 0.0F).color(polytone$specialColor[0], polytone$specialColor[1],
                             polytone$specialColor[2], 0.5f)
                     .uv(texU, texV).overlayCoords(OverlayTexture.NO_OVERLAY)
-                    .uv2(packedLight).normal(matrixNormal, 0.0F, 1.0F, 0.0F).endVertex();
+                    .uv2(packedLight).normal(matrix, 0.0F, 1.0F, 0.0F).endVertex();
 
         }
     }

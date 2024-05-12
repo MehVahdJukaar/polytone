@@ -5,7 +5,6 @@ import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
@@ -22,7 +21,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     public static final BiMap<String, CustomParticleType> CUSTOM_PARTICLES = HashBiMap.create();
 
-    public static final Codec<CustomParticleType> REFERENCE_CODEC = ExtraCodecs.stringResolverCodec(
+    public static final Codec<CustomParticleType> REFERENCE_CODEC = Codec.stringResolver(
             a -> CUSTOM_PARTICLES.inverse().get(a), CUSTOM_PARTICLES::get);
 
     public CustomParticlesManager() {
@@ -55,8 +54,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
             var json = j.getValue();
             var id = j.getKey();
             var type = CustomParticleType.CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Custom Particle Type with json id {} - error: {}",
-                            id, errorMsg)).getFirst();
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
+                    .getFirst();
             type.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
             CUSTOM_PARTICLES.put(id.toString(), type);

@@ -29,10 +29,10 @@ public class CustomParticleType implements ParticleFactory {
     }
 
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
-            StrOpt.of(RenderType.CODEC, "render_type", RenderType.OPAQUE)
+            RenderType.CODEC.optionalFieldOf("render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
-            StrOpt.of(Initializer.CODEC, "initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
-            StrOpt.of(Ticker.CODEC, "ticker").forGetter(c -> Optional.ofNullable(c.ticker))
+            Initializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
+            Ticker.CODEC.optionalFieldOf("ticker").forGetter(c -> Optional.ofNullable(c.ticker))
     ).apply(i, CustomParticleType::new));
 
     public CustomParticleType(RenderType renderType, Optional<Initializer> initializer,
@@ -196,18 +196,18 @@ public class CustomParticleType implements ParticleFactory {
                           @Nullable ParticleExpression roll) {
 
         private static final Codec<Ticker> CODEC = RecordCodecBuilder.create(i -> i.group(
-                StrOpt.of(ParticleExpression.CODEC, "x").forGetter(p -> Optional.ofNullable(p.x)),
-                StrOpt.of(ParticleExpression.CODEC, "y").forGetter(p -> Optional.ofNullable(p.y)),
-                StrOpt.of(ParticleExpression.CODEC, "z").forGetter(p -> Optional.ofNullable(p.z)),
-                StrOpt.of(ParticleExpression.CODEC, "dx").forGetter(p -> Optional.ofNullable(p.dx)),
-                StrOpt.of(ParticleExpression.CODEC, "dy").forGetter(p -> Optional.ofNullable(p.dy)),
-                StrOpt.of(ParticleExpression.CODEC, "dz").forGetter(p -> Optional.ofNullable(p.dz)),
-                StrOpt.of(ParticleExpression.CODEC, "size").forGetter(p -> Optional.ofNullable(p.size)),
-                StrOpt.of(ParticleExpression.CODEC, "red").forGetter(p -> Optional.ofNullable(p.red)),
-                StrOpt.of(ParticleExpression.CODEC, "green").forGetter(p -> Optional.ofNullable(p.green)),
-                StrOpt.of(ParticleExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.blue)),
-                StrOpt.of(ParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
-                StrOpt.of(ParticleExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.alpha))
+                ParticleExpression.CODEC.optionalFieldOf("x").forGetter(p -> Optional.ofNullable(p.x)),
+                ParticleExpression.CODEC.optionalFieldOf("y").forGetter(p -> Optional.ofNullable(p.y)),
+                ParticleExpression.CODEC.optionalFieldOf("z").forGetter(p -> Optional.ofNullable(p.z)),
+                ParticleExpression.CODEC.optionalFieldOf("dx").forGetter(p -> Optional.ofNullable(p.dx)),
+                ParticleExpression.CODEC.optionalFieldOf("dy").forGetter(p -> Optional.ofNullable(p.dy)),
+                ParticleExpression.CODEC.optionalFieldOf("dz").forGetter(p -> Optional.ofNullable(p.dz)),
+                ParticleExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.size)),
+                ParticleExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.red)),
+                ParticleExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.green)),
+                ParticleExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blue)),
+                ParticleExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
+                ParticleExpression.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.alpha))
         ).apply(i, Ticker::new));
 
         private Ticker(Optional<ParticleExpression> x, Optional<ParticleExpression> y,
@@ -236,14 +236,14 @@ public class CustomParticleType implements ParticleFactory {
                                boolean hasPhysics) {
 
         private static final Codec<Initializer> CODEC = RecordCodecBuilder.create(i -> i.group(
-                StrOpt.of(BlockParticleExpression.CODEC, "size").forGetter(p -> Optional.ofNullable(p.size)),
-                StrOpt.of(BlockParticleExpression.CODEC, "lifetime").forGetter(p -> Optional.ofNullable(p.lifetime)),
-                StrOpt.of(BlockParticleExpression.CODEC, "red").forGetter(p -> Optional.ofNullable(p.red)),
-                StrOpt.of(BlockParticleExpression.CODEC, "green").forGetter(p -> Optional.ofNullable(p.green)),
-                StrOpt.of(BlockParticleExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.blue)),
-                StrOpt.of(BlockParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
-                StrOpt.of(BlockParticleExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.roll)),
-                StrOpt.of(BlockParticleExpression.CODEC, "friction").forGetter(p -> Optional.ofNullable(p.friction)),
+                BlockParticleExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.size)),
+                BlockParticleExpression.CODEC.optionalFieldOf("lifetime").forGetter(p -> Optional.ofNullable(p.lifetime)),
+                BlockParticleExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.red)),
+                BlockParticleExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.green)),
+                BlockParticleExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blue)),
+                BlockParticleExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
+                BlockParticleExpression.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.roll)),
+                BlockParticleExpression.CODEC.optionalFieldOf("friction").forGetter(p -> Optional.ofNullable(p.friction)),
                 Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(p -> p.hasPhysics)
         ).apply(i, Initializer::new));
 

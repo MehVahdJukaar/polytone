@@ -17,18 +17,18 @@ public record BlitModifier(ResourceLocation target, int index, int x, int y, int
 
     public static final Codec<BlitModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
             ResourceLocation.CODEC.fieldOf("texture").forGetter(BlitModifier::target),
-            StrOpt.of(Codec.INT, "index", -1).forGetter(BlitModifier::index),
-            StrOpt.of(Codec.INT, "x_inc", 0).forGetter(BlitModifier::x),
-            StrOpt.of(Codec.INT, "y_inc", 0).forGetter(BlitModifier::y),
-            StrOpt.of(Codec.INT, "z_inc", 0).forGetter(BlitModifier::z),
-            StrOpt.of(Codec.INT, "width_inc", 0).forGetter(BlitModifier::width),
-            StrOpt.of(Codec.INT, "height_inc", 0).forGetter(BlitModifier::height),
-            StrOpt.of(Codec.FLOAT, "u0", -1f).forGetter(BlitModifier::u0),
-            StrOpt.of(Codec.FLOAT, "v0", -1f).forGetter(BlitModifier::v0),
-            StrOpt.of(Codec.FLOAT, "u1", -1f).forGetter(BlitModifier::u1),
-            StrOpt.of(Codec.FLOAT, "v1", -1f).forGetter(BlitModifier::v1),
-            StrOpt.of(ResourceLocation.CODEC, "new_texture").forGetter(BlitModifier::newTexture),
-            StrOpt.of(RelativeSprite.CODEC.listOf(), "overlays", List.of()).forGetter(BlitModifier::extraSprites)
+            Codec.INT.optionalFieldOf("index", -1).forGetter(BlitModifier::index),
+            Codec.INT.optionalFieldOf("x_inc", 0).forGetter(BlitModifier::x),
+            Codec.INT.optionalFieldOf("y_inc", 0).forGetter(BlitModifier::y),
+            Codec.INT.optionalFieldOf("z_inc", 0).forGetter(BlitModifier::z),
+            Codec.INT.optionalFieldOf("width_inc", 0).forGetter(BlitModifier::width),
+            Codec.INT.optionalFieldOf("height_inc", 0).forGetter(BlitModifier::height),
+            Codec.FLOAT.optionalFieldOf("u0", -1f).forGetter(BlitModifier::u0),
+            Codec.FLOAT.optionalFieldOf("v0", -1f).forGetter(BlitModifier::v0),
+            Codec.FLOAT.optionalFieldOf("u1", -1f).forGetter(BlitModifier::u1),
+            Codec.FLOAT.optionalFieldOf("v1", -1f).forGetter(BlitModifier::v1),
+            ResourceLocation.CODEC.optionalFieldOf("new_texture").forGetter(BlitModifier::newTexture),
+            RelativeSprite.CODEC.listOf().optionalFieldOf("overlays", List.of()).forGetter(BlitModifier::extraSprites)
     ).apply(i, BlitModifier::new));
 
 

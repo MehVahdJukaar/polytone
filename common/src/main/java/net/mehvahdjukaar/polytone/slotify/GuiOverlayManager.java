@@ -37,7 +37,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
             var id = j.getKey();
 
             BlitModifier effect = BlitModifier.CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Overlay Modifier with json id {} - error: {}", id, errorMsg))
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Overlay Modifier with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
 
             ResourceLocation textureId = effect.target();

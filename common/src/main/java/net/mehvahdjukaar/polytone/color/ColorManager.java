@@ -18,6 +18,7 @@ import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.Vec3;
@@ -52,22 +53,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     private BlockParticleExpression xpOrbColorB;
 
-    private int emptyPotion = 16253176;
-    private int waterBottle = 3694022;
     private int xpBar = 8453920;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
         super("color.properties", "colors.json",
                 Polytone.MOD_ID, "colormatic", "vanadium", "optifine");
-    }
-
-    public int getEmptyPot() {
-        return emptyPotion;
-    }
-
-    public int getWaterBottle() {
-        return waterBottle;
     }
 
     public int getXpBar() {
@@ -179,9 +170,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             ResourceLocation id = new ResourceLocation(prop[1].replace("\\", ""));
             int col = parseHex(obj);
             if (id.getPath().equals("empty")) {
-                emptyPotion = col;
+                PotionContents.EMPTY_COLOR = col;
             } else if (id.getPath().equals("water")) {
-                waterBottle = col;
+                PotionContents.BASE_POTION_COLOR = col;
             } else {
                 MobEffect effect = BuiltInRegistries.MOB_EFFECT.getOptional(id).orElse(null);
                 if (effect != null) {
@@ -278,8 +269,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     @Override
     public void reset() {
-        emptyPotion = 16253176;
-        waterBottle = 3694022;
+        PotionContents.EMPTY_COLOR = 16253176;
+        PotionContents.BASE_POTION_COLOR = 3694022;
         xpBar = 8453920;
         xpOrbColor = null;
         xpOrbColorR = null;

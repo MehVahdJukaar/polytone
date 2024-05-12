@@ -8,7 +8,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
@@ -98,8 +97,8 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
             var json = j.getValue();
             var id = j.getKey();
             SoundType soundType = SoundTypesManager.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Sound Type with json id {} - error: {}",
-                            id, errorMsg)).getFirst();
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Sound Type with json id " + id + "\n error: " + errorMsg))
+                    .getFirst();
 
             soundTypesIds.put(id, soundType);
         }
@@ -107,7 +106,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
 
     public static SoundEvent registerSoundEvent(ResourceLocation id) {
         SoundEvent event = SoundEvent.createVariableRangeEvent(id);
-        ((MappedRegistry)  BuiltInRegistries.SOUND_EVENT).frozen  = false;
+        ((MappedRegistry) BuiltInRegistries.SOUND_EVENT).frozen = false;
         Registry.register(BuiltInRegistries.SOUND_EVENT, id, event);
         BuiltInRegistries.SOUND_EVENT.freeze();
 
@@ -252,7 +251,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     });
 
     private static final Codec<SoundType> SOUND_TYPE_BLOCK_COPY = BuiltInRegistries.BLOCK.byNameCodec()
-            .xmap(block -> block.getSoundType(block.defaultBlockState()), soundType1 -> Blocks.AIR);
+            .xmap(block -> block.defaultBlockState().getSoundType(), soundType1 -> Blocks.AIR);
 
     //reference or copy. hacky stuff only decodes
     public static final Codec<SoundType> REFERENCE_OR_COPY_CODEC = Codec.STRING.flatXmap(s -> {
@@ -265,7 +264,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                     var block = BuiltInRegistries.BLOCK.getOptional(r);
                     if (block.isEmpty()) return DataResult.error(() -> "No block with id '" + r + "' found", SoundType.EMPTY);
                     Block b = block.get();
-                    return DataResult.success(b.getSoundType(b.defaultBlockState()));
+                    return DataResult.success(b.defaultBlockState().getSoundType());
                 }
                 var vanilla = SOUND_NAMES.get(s);
                 if (vanilla != null) return DataResult.success(vanilla);
@@ -281,8 +280,8 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
 
     public static final Codec<SoundType> DIRECT_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    StrOpt.of(Codec.FLOAT, "volume", 1f).forGetter(SoundType::getVolume),
-                    StrOpt.of(Codec.FLOAT, "pitch", 1f).forGetter(SoundType::getPitch),
+                    Codec.FLOAT.optionalFieldOf("volume", 1f).forGetter(SoundType::getVolume),
+                    Codec.FLOAT.optionalFieldOf("pitch", 1f).forGetter(SoundType::getPitch),
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("break_sound").forGetter(SoundType::getBreakSound),
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("step_sound").forGetter(SoundType::getStepSound),
                     BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("place_sound").forGetter(SoundType::getPlaceSound),

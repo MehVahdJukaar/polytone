@@ -87,7 +87,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             var id = j.getKey();
 
             BlockPropertyModifier prop = BlockPropertyModifier.CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Client Block Property with json id {} - error: {}", id, errorMsg))
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Client Block Property with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
 
             //always have priority

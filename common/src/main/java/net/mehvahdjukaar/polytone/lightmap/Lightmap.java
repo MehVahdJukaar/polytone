@@ -7,7 +7,6 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -15,7 +14,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -28,20 +26,20 @@ public class Lightmap {
     protected static final double DEFAULT_TORCH_LERP = 0;
     public static final Decoder<Lightmap> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    StrOpt.of(ILightmapNumberProvider.CODEC, "sky_getter", ILightmapNumberProvider.DEFAULT)
+                    ILightmapNumberProvider.CODEC.optionalFieldOf("sky_getter", ILightmapNumberProvider.DEFAULT)
                             .forGetter(l -> l.skyGetter),
-                    StrOpt.of(ILightmapNumberProvider.CODEC, "torch_getter", ILightmapNumberProvider.DEFAULT)
+                    ILightmapNumberProvider.CODEC.optionalFieldOf("torch_getter", ILightmapNumberProvider.DEFAULT)
                             .forGetter(l -> l.torchGetter),
-                    StrOpt.of(Codec.BOOL, "lightning_strike_columns", true)
+                    Codec.BOOL.optionalFieldOf("lightning_strike_columns", true)
                             .forGetter(l -> l.hasLightningColumn),
-                    StrOpt.of(doubleRange(0, 1), "sky_lerp_factor", DEFAULT_SKY_LERP)
+                    doubleRange(0, 1).optionalFieldOf("sky_lerp_factor", DEFAULT_SKY_LERP)
                             .forGetter(l -> l.skyLerp),
-                    StrOpt.of(doubleRange(0, 1), "torch_lerp_factor", DEFAULT_TORCH_LERP)
+                    doubleRange(0, 1).optionalFieldOf("torch_lerp_factor", DEFAULT_TORCH_LERP)
                             .forGetter(l -> l.torchLerp)
             ).apply(instance, Lightmap::new));
 
     public static Codec<Double> doubleRange(double min, double max) {
-        return ExtraCodecs.validate(Codec.DOUBLE, d -> d.compareTo(min) >= 0 && d.compareTo(max) <= 0 ?
+        return Codec.DOUBLE.validate(d -> d.compareTo(min) >= 0 && d.compareTo(max) <= 0 ?
                 DataResult.success(d) : DataResult.error(() -> "Value must be within range [" + min + ";" + max + "]: " + d));
     }
 

@@ -61,9 +61,4 @@ public interface BakedQuadBuilder extends VertexConsumer {
         return this;
     }
 
-    @Override
-    default BakedQuadBuilder normal(Matrix3f matrix, float x, float y, float z) {
-        VertexConsumer.super.normal(matrix, x, y, z);
-        return this;
-    }
 }

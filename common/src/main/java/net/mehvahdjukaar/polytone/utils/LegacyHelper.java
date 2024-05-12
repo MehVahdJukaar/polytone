@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.utils;
 
-import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
@@ -99,12 +97,12 @@ public class LegacyHelper {
     }
 
     public static final Decoder<BlockPropertyModifier> OF_JSON_CODEC = RecordCodecBuilder.create(i -> i.group(
-            StrOpt.of(Codec.STRING, "format", "").forGetter(c -> ""),
-            StrOpt.of(Codec.STRING.listOf(), "blocks", List.of()).forGetter(c ->List.of()),
-            StrOpt.of(ColorUtils.CODEC, "color").forGetter(c -> Optional.empty()),
-            StrOpt.of(Codec.STRING.xmap(Integer::parseInt, String::valueOf), "yVariance").forGetter(c -> Optional.empty()),
-            StrOpt.of(Codec.STRING.xmap(Integer::parseInt, String::valueOf), "yoffset").forGetter(c -> Optional.empty()),
-            StrOpt.of(Codec.STRING, "source").forGetter(c -> Optional.empty())
+            Codec.STRING.optionalFieldOf("format", "").forGetter(c -> ""),
+            Codec.STRING.listOf().optionalFieldOf("blocks", List.of()).forGetter(c -> List.of()),
+            ColorUtils.CODEC.optionalFieldOf("color").forGetter(c -> Optional.empty()),
+            Codec.STRING.xmap(Integer::parseInt, String::valueOf).optionalFieldOf("yVariance").forGetter(c -> Optional.empty()),
+            Codec.STRING.xmap(Integer::parseInt, String::valueOf).optionalFieldOf("yoffset").forGetter(c -> Optional.empty()),
+            Codec.STRING.optionalFieldOf("source").forGetter(c -> Optional.empty())
     ).apply(i, LegacyHelper::decodeOFPropertyJson));
 
     private static BlockPropertyModifier decodeOFPropertyJson(String format, List<String> targets,
@@ -173,7 +171,7 @@ public class LegacyHelper {
                         // fuck this i wont parse numerical shit
                         try {
                             int iHateOptishit = Integer.parseInt(s);
-                           // return BuiltInRegistries.BLOCK.getKey(BuiltInRegistries.BLOCK.byId(iHateOptishit));
+                            // return BuiltInRegistries.BLOCK.getKey(BuiltInRegistries.BLOCK.byId(iHateOptishit));
                             return false;
                         } catch (Exception ignored) {
                         }
@@ -203,10 +201,9 @@ public class LegacyHelper {
         } else {
             String source = properties.getProperty("source");
             if (source != null) {
-                if(source.contains("~")) {
+                if (source.contains("~")) {
                     source = source.replace("~/colormap/", id.getNamespace() + ":");
-                }
-                else {
+                } else {
                     // resolve relative paths
                     String path = id.getPath();
                     int index = path.lastIndexOf('/');

@@ -13,11 +13,11 @@ public record RelativeSprite(ResourceLocation texture, int x, int y, int z, int 
 
     public static final Codec<RelativeSprite> CODEC = RecordCodecBuilder.create(i -> i.group(
             ResourceLocation.CODEC.fieldOf("texture").forGetter(RelativeSprite::texture),
-            StrOpt.of(Codec.INT, "x_inc", 0).forGetter(RelativeSprite::x),
-            StrOpt.of(Codec.INT, "y_inc", 0).forGetter(RelativeSprite::y),
-            StrOpt.of(Codec.INT, "z_inc", 0).forGetter(RelativeSprite::z),
-            StrOpt.of(Codec.INT, "width_inc", 0).forGetter(RelativeSprite::width),
-            StrOpt.of(Codec.INT, "height_inc", 0).forGetter(RelativeSprite::height)
+            Codec.INT.optionalFieldOf("x_inc", 0).forGetter(RelativeSprite::x),
+            Codec.INT.optionalFieldOf("y_inc", 0).forGetter(RelativeSprite::y),
+            Codec.INT.optionalFieldOf("z_inc", 0).forGetter(RelativeSprite::z),
+            Codec.INT.optionalFieldOf("width_inc", 0).forGetter(RelativeSprite::width),
+            Codec.INT.optionalFieldOf("height_inc", 0).forGetter(RelativeSprite::height)
     ).apply(i, RelativeSprite::new));
 
 

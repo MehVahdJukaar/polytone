@@ -10,13 +10,11 @@ import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
@@ -47,12 +45,12 @@ public class Colormap implements ColorResolver, BlockColor {
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
 
     public static final Codec<Colormap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
-            StrOpt.of(ColorUtils.CODEC, "default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
+            ColorUtils.CODEC.optionalFieldOf("default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
             IColormapNumberProvider.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
             IColormapNumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
-            StrOpt.of(Codec.BOOL, "triangular", false).forGetter(c -> c.triangular),
-            StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
-            StrOpt.of(BiomeIdMapperManager.CODEC, "biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper))
+            Codec.BOOL.optionalFieldOf("triangular", false).forGetter(c -> c.triangular),
+            Codec.BOOL.optionalFieldOf("biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
+            BiomeIdMapperManager.CODEC.optionalFieldOf("biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper))
     ).apply(i, Colormap::new));
 
     protected static final Codec<BlockColor> REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(

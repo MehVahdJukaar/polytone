@@ -41,8 +41,8 @@ public class ParticleModifiersManager extends JsonPartialReloader {
             var json = j.getValue();
             var id = j.getKey();
             ParticleModifier modifier = ParticleModifier.CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Particle Modifier with json id {} - error: {}",
-                            id, errorMsg)).getFirst();
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Particle Modifier with json id " + id + "\n error: " + errorMsg))
+                    .getFirst();
             addModifier(id, modifier);
         }
     }

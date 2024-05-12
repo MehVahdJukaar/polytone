@@ -21,7 +21,7 @@ public interface IColormapNumberProvider {
 
     BiMap<String, IColormapNumberProvider> CUSTOM_PROVIDERS = HashBiMap.create();
 
-    Codec<IColormapNumberProvider> REFERENCE_CODEC = ExtraCodecs.stringResolverCodec(
+    Codec<IColormapNumberProvider> REFERENCE_CODEC = Codec.stringResolver(
             a -> CUSTOM_PROVIDERS.inverse().get(a), CUSTOM_PROVIDERS::get);
 
     Codec<IColormapNumberProvider> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_CODEC,

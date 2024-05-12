@@ -19,7 +19,7 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
     private static final BiMap<String, BiomeIdMapper> ID_MAPPERS = HashBiMap.create();
 
 
-    public static final Codec<BiomeIdMapper> REFERENCE_CODEC = ExtraCodecs.stringResolverCodec(
+    public static final Codec<BiomeIdMapper> REFERENCE_CODEC = Codec.stringResolver(
             a -> ID_MAPPERS.inverse().get(a), ID_MAPPERS::get);
 
     public static final Codec<BiomeIdMapper> CODEC = new ReferenceOrDirectCodec<>(
@@ -41,8 +41,8 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
             var json = j.getValue();
             var id = j.getKey();
             var mapper = CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Biome ID mapper with json id {} - error: {}",
-                            id, errorMsg)).getFirst();
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Biome ID mapper with json id " + id + "\n error: " + errorMsg))
+                    .getFirst();
             ID_MAPPERS.put(id.getPath(), mapper);
         }
     }

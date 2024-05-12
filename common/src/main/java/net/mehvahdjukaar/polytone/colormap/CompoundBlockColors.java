@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -24,15 +23,15 @@ public class CompoundBlockColors implements BlockColor {
 
     final Int2ObjectMap<BlockColor> getters = new Int2ObjectArrayMap<>();
 
-    protected static final Codec<CompoundBlockColors> DIRECT_CODEC = ExtraCodecs.validate(Codec.simpleMap(Codec.STRING, Colormap.CODEC,
-                            Keyable.forStrings(() -> IntStream.rangeClosed(-1, 16).mapToObj(String::valueOf)))
-                    .xmap(CompoundBlockColors::new, CompoundBlockColors::toStringMap).codec(),
-            c -> {
-                if (c.getters.size() == 0) {
-                    return DataResult.error(() -> "Must have at least 1 tint getter");
-                }
-                return DataResult.success(c);
-            });
+    protected static final Codec<CompoundBlockColors> DIRECT_CODEC = Codec.simpleMap(Codec.STRING, Colormap.CODEC,
+                    Keyable.forStrings(() -> IntStream.rangeClosed(-1, 16).mapToObj(String::valueOf)))
+            .xmap(CompoundBlockColors::new, CompoundBlockColors::toStringMap).codec().validate(
+                    c -> {
+                        if (c.getters.size() == 0) {
+                            return DataResult.error(() -> "Must have at least 1 tint getter");
+                        }
+                        return DataResult.success(c);
+                    });
 
     // single or multiple
     public static final Codec<BlockColor> CODEC = Codec.either(DIRECT_CODEC, Colormap.CODEC)
@@ -50,7 +49,6 @@ public class CompoundBlockColors implements BlockColor {
     public CompoundBlockColors(BlockColor colormap) {
         getters.put(-1, colormap);
     }
-
 
 
     // default biome sample vanilla implementation
