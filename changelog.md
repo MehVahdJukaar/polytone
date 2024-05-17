@@ -1,1 +1,1 @@
-changed how some access widerenrs work related to biome effets. hopefully fixes an issue with old forge
+fixed an issue with standalone biome id mappers having their id set wrong

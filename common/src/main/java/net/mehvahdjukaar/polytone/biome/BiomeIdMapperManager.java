@@ -43,7 +43,7 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
             var mapper = CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Biome ID mapper with json id {} - error: {}",
                             id, errorMsg)).getFirst();
-            ID_MAPPERS.put(id.getPath(), mapper);
+            ID_MAPPERS.put(id.toString(), mapper);
         }
     }
 
