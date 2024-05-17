@@ -1,2 +1,1 @@
-added separate prespective model on fabric
-better access widener stuff on forge
+fixed an issue with standalone biome id mappers having their id set wrong
