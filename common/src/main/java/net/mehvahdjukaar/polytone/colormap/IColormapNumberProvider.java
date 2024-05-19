@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.client.Minecraft;
@@ -111,7 +110,9 @@ public interface IColormapNumberProvider {
     // grid format
     IColormapNumberProvider BIOME_ID = register("biome_id",
             (state, pos, biome, mapper) -> {
-                var registry = Polytone.REGISTRY_ACCESS_HACK.get().registry(Registries.BIOME).get();
+                var level = Minecraft.getInstance().level;
+                if (level == null) return 0;
+                var registry = level.registryAccess().registry(Registries.BIOME).get();
                 // texture is flipped...
                 return 1 - mapper.getIndex(registry, biome);
             });
