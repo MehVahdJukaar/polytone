@@ -1,1 +1,1 @@
-fixed an issue with standalone biome id mappers having their id set wrong
+fixed an issue when some blocks with colormaps were rendered outside of a world like on main screen

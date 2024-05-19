@@ -63,12 +63,8 @@ public class Polytone {
     }
 
     public static void onTagsReceived(RegistryAccess registryAccess) {
-        REGISTRY_ACCESS_HACK = new WeakReference<>(registryAccess);
         BIOME_EFFECTS.doApply(registryAccess, true);
     }
-
-    public static WeakReference<RegistryAccess> REGISTRY_ACCESS_HACK = new WeakReference<>(null);
-
 
 
 }
