@@ -43,12 +43,12 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     }
 
     @WrapWithCondition(method = "render", at = @At(
-            target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlotHighlight(Lnet/minecraft/client/gui/GuiGraphics;IIII)V",
+            target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlotHighlight(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/inventory/Slot;IIF)V",
             value = "INVOKE"
     ))
-    public boolean slotifyColor(GuiGraphics poseStack, int x, int y, int blitOffset, int color,
-                                @Local Slot slot) {
-        return GuiModifierManager.maybeChangeColor((AbstractContainerScreen<?>) (Object) this, slot, poseStack, x, y, blitOffset);
+    public boolean slotifyColor(AbstractContainerScreen screen, GuiGraphics poseStack, Slot slot, int x, int y, float partialTicks) {
+        return GuiModifierManager.maybeChangeColor(screen, slot,
+                poseStack, x, y, 0);
     }
 
     @Inject(method = "init", at = @At("TAIL"))

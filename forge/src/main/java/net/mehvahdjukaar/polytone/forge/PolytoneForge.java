@@ -24,7 +24,7 @@ public class PolytoneForge {
 
             NeoForge.EVENT_BUS.register(this);
         } else {
-            Polytone.LOGGER.warn("Slotify has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
+            Polytone.LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
     }
 

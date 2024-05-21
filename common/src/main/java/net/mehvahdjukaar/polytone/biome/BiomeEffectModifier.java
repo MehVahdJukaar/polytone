@@ -5,6 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
@@ -49,6 +51,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
 
     // Other has priority
     public BiomeEffectModifier merge(BiomeEffectModifier other) {
+        ComponentSerialization.CODEC
         return new BiomeEffectModifier(
                 other.fogColor.isPresent() ? other.fogColor() : this.fogColor(),
                 other.waterColor().isPresent() ? other.waterColor() : this.waterColor(),

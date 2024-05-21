@@ -1,1 +1,1 @@
-fixed an issue when some blocks with colormaps were rendered outside of a world like on main screen
+fixed not working on latest neoforge

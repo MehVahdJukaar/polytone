@@ -48,7 +48,7 @@ processResources {
     // setting them as input
     inputs.properties replaceProperties
 
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta', 'update.json']) {
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta', 'update.json']) {
         expand replaceProperties + [project: project]
     }
 }
