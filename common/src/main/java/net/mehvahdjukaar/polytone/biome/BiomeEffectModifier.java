@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.biome;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
