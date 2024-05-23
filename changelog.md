@@ -1,1 +1,1 @@
-fixed an issue when some blocks with colormaps were rendered outside of a world like on main screen
+added more stuff for compat with darn of
