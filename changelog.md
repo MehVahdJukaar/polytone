@@ -1,1 +1,1 @@
-fixed not working on latest neoforge
+added more stuff for compat with darn of

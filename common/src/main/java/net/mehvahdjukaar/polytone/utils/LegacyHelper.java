@@ -57,12 +57,18 @@ public class LegacyHelper {
         return map;
     }
 
-    public static Map<ResourceLocation, BlockPropertyModifier> convertBlockProperties(Map<ResourceLocation, Properties> ofProperties) {
+
+    public static Map<ResourceLocation, BlockPropertyModifier> convertBlockProperties(
+            Map<ResourceLocation, Properties> ofProperties, Map<ResourceLocation, ArrayImage> textures) {
+
+        List<ResourceLocation> ids = new ArrayList<>();
+        ids.addAll(ofProperties.keySet());
+        ids.addAll(textures.keySet());
+
         Map<ResourceLocation, BlockPropertyModifier> map = new HashMap<>();
 
-        for (var entry : ofProperties.entrySet()) {
-            ResourceLocation id = entry.getKey();
-            Properties prop = entry.getValue();
+        for (ResourceLocation id : ids) {
+            Properties prop = ofProperties.get(id);
             String path = id.getPath();
 
             // hardcoded special color stuff
@@ -86,7 +92,7 @@ public class LegacyHelper {
                         IColormapNumberProvider.ZERO);
 
                 map.put(id, BlockPropertyModifier.coloringBlocks(colormap, Blocks.REDSTONE_WIRE));
-            } else {
+            } else if(prop != null){
                 BlockPropertyModifier modifier = convertOFProperty(prop, id);
                 map.put(id, modifier);
             }
@@ -159,6 +165,7 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.ofNullable(set));
     }
+
 
 
     public static BlockPropertyModifier convertOFProperty(Properties properties, ResourceLocation id) {
@@ -331,6 +338,7 @@ public class LegacyHelper {
         return map;
     });
 
+
     public static void convertOfBlockToFluidProp(Map<ResourceLocation, BlockPropertyModifier> parsedModifiers,
                                                  Map<ResourceLocation, ArrayImage> textures) {
 
@@ -355,4 +363,6 @@ public class LegacyHelper {
 
         Polytone.FLUID_PROPERTIES.addConvertedBlockProperties(filtered, filteredTextures);
     }
+
+
 }
