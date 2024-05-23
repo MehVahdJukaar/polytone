@@ -87,8 +87,8 @@ public class ColormapsManager extends JsonImgPartialReloader {
             return Colormap.defTriangle();
         } else if (id.equals(new ResourceLocation("fixed"))) {
             return Colormap.fixed();
-        } else if (id.equals(new ResourceLocation("biome_id"))) {
-            return Colormap.biomeId();
+        } else if (id.equals(new ResourceLocation("grid"))) {
+            return Colormap.biomeId(); //grid
         }
         return colormapsIds.get(id);
     }
