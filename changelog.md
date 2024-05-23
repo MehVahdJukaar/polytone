@@ -1,1 +1,1 @@
-added more stuff for compat with darn of
+fixed "grid" format being called "biome_id", the name of its sampler
