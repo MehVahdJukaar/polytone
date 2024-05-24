@@ -4,11 +4,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
+import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
@@ -41,7 +43,8 @@ public record BlockPropertyModifier(
         Optional<ToIntFunction<BlockState>> clientLight,
         Optional<List<ParticleEmitter>> particleEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
-        Optional<Set<ResourceLocation>> explicitTargets) {
+        Optional<Set<ResourceLocation>> explicitTargets,
+        boolean tintHack) {
 
     // Other has priority
     public BlockPropertyModifier merge(BlockPropertyModifier other) {
@@ -56,7 +59,8 @@ public record BlockPropertyModifier(
                 other.clientLight.isPresent() ? other.clientLight : this.clientLight,
                 other.particleEmitters.isPresent() ? other.particleEmitters : this.particleEmitters,
                 other.offsetType().isPresent() ? other.offsetType() : this.offsetType(),
-                TargetsHelper.merge(other.explicitTargets, this.explicitTargets)
+                TargetsHelper.merge(other.explicitTargets, this.explicitTargets),
+                other.tintHack || this.tintHack
         );
     }
 
@@ -64,7 +68,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.of(colormap),
                 java.util.Optional.empty(), java.util.Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty());
+                Optional.empty(), Optional.empty(), false);
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
@@ -79,7 +83,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.of(colormap),
                 java.util.Optional.empty(), java.util.Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.of(blocks));
+                Optional.empty(), Optional.of(blocks), false);
     }
 
     // returns the old ones
@@ -126,11 +130,14 @@ public record BlockPropertyModifier(
             blockColors.register(tintGetter.get(), block);
         }
 
+        if(tintHack){
+            Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
+        }
 
         // returns old properties
         return new BlockPropertyModifier(Optional.ofNullable(color), Optional.ofNullable(oldSound),
                 Optional.ofNullable(oldMapColor), Optional.ofNullable(oldClientLight),
-                Optional.empty(), oldOffsetType, Optional.empty());
+                Optional.empty(), oldOffsetType, Optional.empty(), false);
     }
 
 
@@ -151,7 +158,9 @@ public record BlockPropertyModifier(
                     StringRepresentable.fromEnum(BlockPropertyModifier.OffsetTypeR::values)
                                     .xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
                             .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
-                    TargetsHelper.CODEC.optionalFieldOf("targets").forGetter(BlockPropertyModifier::explicitTargets)
+                    TargetsHelper.CODEC.optionalFieldOf("targets").forGetter(BlockPropertyModifier::explicitTargets),
+                    //dont use
+                    StrOpt.of(Codec.BOOL, "force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
             ).apply(instance, BlockPropertyModifier::new));
 
 
