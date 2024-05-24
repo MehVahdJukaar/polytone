@@ -61,7 +61,7 @@ public record BlockPropertyModifier(
         );
     }
 
-    public static BlockPropertyModifier ofColor(BlockColor colormap) {
+    public static BlockPropertyModifier ofBlockColor(BlockColor colormap) {
         return new BlockPropertyModifier(Optional.of(colormap),
                 java.util.Optional.empty(), java.util.Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(),

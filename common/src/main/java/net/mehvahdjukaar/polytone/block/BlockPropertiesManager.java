@@ -113,7 +113,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                 var text = textures.get(id);
                 if (text != null) {
                     CompoundBlockColors defaultSampler = CompoundBlockColors.createDefault(text.keySet(), true);
-                    modifier = modifier.merge(BlockPropertyModifier.ofColor(defaultSampler));
+                    modifier = modifier.merge(BlockPropertyModifier.ofBlockColor(defaultSampler));
                     colormap = modifier.tintGetter();
                 }
             }
@@ -148,7 +148,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             CompoundBlockColors tintMap = CompoundBlockColors.createDefault(image.keySet(), true);
             ColormapsManager.fillCompoundColormapPalette(textures, id, tintMap, usedTextures);
 
-            BlockPropertyModifier modifier = BlockPropertyModifier.ofColor(tintMap);
+            BlockPropertyModifier modifier = BlockPropertyModifier.ofBlockColor(tintMap);
 
             addModifier(id, modifier);
         }

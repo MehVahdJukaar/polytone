@@ -8,19 +8,15 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.FluidState;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -71,6 +67,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         return new Resources(jsons, textures);
     }
 
+    //TODO: this is a mess. Improve
     @Override
     public void process(Resources resources) {
         var jsons = resources.jsons();
@@ -98,20 +95,33 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             parsedModifiers.put(id, modifier);
         }
 
-
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
             var id = entry.getKey();
-            FluidPropertyModifier modifier = entry.getValue();
-            //fill inline colormaps colormapTextures
-            BlockColor colormap = modifier.colormap().orElse(null);
-            if (colormap instanceof Colormap c) {
-                var text = textures.get(c.getTargetTexture() == null ? id : c.getTargetTexture());
+            var modifier = entry.getValue();
+
+            var colormap = modifier.colormap();
+            if (colormap.isEmpty()) {
+                //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
+
+                var text = textures.get(id);
                 if (text != null) {
-                    ColormapsManager.tryAcceptingTexture(text, id, c, usedTextures);
-                } else if (c.getTargetTexture() != null) {
-                    Polytone.LOGGER.error("Could not resolve explicit texture for colormap {} from fluid modifier {}. Skipping", c.getTargetTexture(), id);
-                    continue;
+                    modifier = modifier.merge(FluidPropertyModifier.ofBlockColor(Colormap.defTriangle()));
+                    colormap = modifier.colormap();
+                }
+            }
+
+            //fill inline colormaps colormapTextures
+            if (colormap.isPresent()) {
+                BlockColor tint = colormap.get();
+                if (tint instanceof Colormap c) {
+                    var text = textures.get(c.getTargetTexture() == null ? id : c.getTargetTexture());
+                    if (text != null) {
+                        ColormapsManager.tryAcceptingTexture(text, id, c, usedTextures);
+                    } else if (c.getTargetTexture() != null) {
+                        Polytone.LOGGER.error("Could not resolve explicit texture at location {}.png for colormap from fluid modifier {}. Skipping", c.getTargetTexture(), id);
+                        continue;
+                    }
                 }
             }
             addModifier(id, modifier);
@@ -172,7 +182,6 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     private static void clearSpecial() {
         throw new AssertionError();
     }
-
 
 
     public FluidPropertyModifier getModifier(Fluid water) {

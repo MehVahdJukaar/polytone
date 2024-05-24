@@ -44,7 +44,11 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
             var mapper = CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Biome ID mapper with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
-            ID_MAPPERS.put(id.toString(), mapper);
+            try {
+                ID_MAPPERS.put(id.toString(), mapper);
+            }catch (Exception e){
+                Polytone.LOGGER.warn("Found duplicate biome in biome id mapper {}", id);
+            }
         }
     }
 
