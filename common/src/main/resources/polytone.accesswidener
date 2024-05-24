@@ -31,6 +31,8 @@ mutable field net/minecraft/world/item/DyeColor fireworkColor I
 mutable field net/minecraft/world/item/DyeColor textColor I
 accessible field net/minecraft/world/item/DyeColor textColor I
 
+mutable field net/minecraft/core/particles/DustParticleOptions REDSTONE_PARTICLE_COLOR Lorg/joml/Vector3f;
+
 accessible field net/minecraft/world/level/block/RedStoneWireBlock COLORS [Lnet/minecraft/world/phys/Vec3;
 mutable field net/minecraft/world/level/block/RedStoneWireBlock COLORS [Lnet/minecraft/world/phys/Vec3;
 

@@ -4,12 +4,13 @@
   "compatibilityLevel": "JAVA_17",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "AbstractContainerMenuMixin",
-    "PotionUtilsMixin",
-    "accessor.BiomeAccessor",
-    "accessor.SheepAccessor"
   ],
   "client": [
+    "AbstractContainerMenuMixin",
+    "DustParticleOptionsBaseAccessor",
+    "PotionUtilsMixin",
+    "accessor.BiomeAccessor",
+    "accessor.SheepAccessor",
     "ClientLevelMixin",
     "ColorResolverMixin",
     "GameRendererMixin",

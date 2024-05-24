@@ -135,7 +135,7 @@ dependencies {
 
     modCompileOnly ("curse.maven:curios-309927:4583413")
     modCompileOnly ("curse.maven:quark-243121:4812006")
-    modImplementation("curse.maven:selene-499980:5318429")
+    //modImplementation("curse.maven:selene-499980:5318429")
 
     implementation 'org.jetbrains:annotations:22.0.0'
 }
