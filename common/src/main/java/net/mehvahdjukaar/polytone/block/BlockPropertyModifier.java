@@ -6,12 +6,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
-import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
-import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.Minecraft;
@@ -130,7 +127,7 @@ public record BlockPropertyModifier(
             blockColors.register(tintGetter.get(), block);
         }
 
-        if(tintHack){
+        if (tintHack) {
             Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
         }
 
@@ -185,7 +182,6 @@ public record BlockPropertyModifier(
             return p.offsetFunction.orElse((blockState, blockGetter, blockPos) -> Vec3.ZERO);
         }
     }
-
 
 
 }

@@ -4,11 +4,13 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "AbstractContainerMenuMixin",
-    "accessor.BiomeAccessor",
-    "accessor.SheepAccessor"
   ],
   "client": [
+    "AbstractContainerMenuMixin",
+    "DustParticleOptionsBaseAccessor",
+    "PotionUtilsMixin",
+    "accessor.BiomeAccessor",
+    "accessor.SheepAccessor",
     "ClientLevelMixin",
     "ColorResolverMixin",
     "GameRendererMixin",

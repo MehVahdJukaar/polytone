@@ -5,11 +5,13 @@ import com.google.gson.JsonParseException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.mixins.DustParticleOptionsBaseAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.particle.BlockParticleExpression;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -23,6 +25,7 @@ import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Function;
@@ -208,6 +211,11 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     int col = parseHex(obj);
                     var rgb = ColorUtils.unpack(col);
                     RedStoneWireBlock.COLORS[code] = new Vec3(rgb[0], rgb[1], rgb[2]);
+                    if (code == 15) {
+                        Vector3f maxPower = new Vector3f(rgb[0], rgb[1], rgb[2]);
+                        DustParticleOptions.REDSTONE_PARTICLE_COLOR = maxPower;
+                        ((DustParticleOptionsBaseAccessor)DustParticleOptions.REDSTONE).setColor(maxPower);
+                    }
                 } else Polytone.LOGGER.warn("Redstone color index must be between 0 and 15");
             }
         } else if (is(prop, 0, "text")) {
@@ -317,6 +325,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         vanillaEggsHighlight.clear();
 
         RedStoneWireBlock.COLORS = originalRedstoneWireColors.toArray(new Vec3[0]);
+        DustParticleOptions.REDSTONE_PARTICLE_COLOR = new Vector3f(1, 0, 0);//default
+        ((DustParticleOptionsBaseAccessor)DustParticleOptions.REDSTONE).setColor(DustParticleOptions.REDSTONE_PARTICLE_COLOR);
     }
 
     public void regenSheepColors() {
@@ -333,11 +343,11 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     @Nullable
     public float[] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
-        if (xpOrbColor != null){
+        if (xpOrbColor != null) {
             int color = (int) xpOrbColor.getValue(orb.position(), orb.tickCount + partialTicks);
             return ColorUtils.unpack(color);
         }
-        if(xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
+        if (xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         float r = 0;
         float g = 0;
         float b = 0;

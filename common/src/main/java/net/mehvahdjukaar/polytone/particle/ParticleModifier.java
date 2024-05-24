@@ -160,7 +160,6 @@ public class ParticleModifier {
         @Override
         public boolean test(ParticleOptions particleOptions) {
             if (forBlock != null && particleOptions instanceof BlockParticleOption bo) {
-                DustParticle
                 return bo.getState().getBlock() == forBlock;
             }
             if (forItem != null && particleOptions instanceof ItemParticleOption io) {
