@@ -165,7 +165,7 @@ public class LegacyHelper {
         }
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.ofNullable(set));
+                Optional.empty(), Optional.empty(), Optional.ofNullable(set), false);
     }
 
 
@@ -225,7 +225,7 @@ public class LegacyHelper {
         }
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.ofNullable(set));
+                Optional.empty(), Optional.empty(), Optional.ofNullable(set), false);
     }
 
     public static Map<ResourceLocation, BlockPropertyModifier> convertInlinedPalettes(

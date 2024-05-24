@@ -7,6 +7,8 @@ import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.particle.DustParticle;
+import net.minecraft.client.particle.FallingDustParticle;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -158,6 +160,7 @@ public class ParticleModifier {
         @Override
         public boolean test(ParticleOptions particleOptions) {
             if (forBlock != null && particleOptions instanceof BlockParticleOption bo) {
+                DustParticle
                 return bo.getState().getBlock() == forBlock;
             }
             if (forItem != null && particleOptions instanceof ItemParticleOption io) {

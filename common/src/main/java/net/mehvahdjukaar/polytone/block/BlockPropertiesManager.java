@@ -188,13 +188,13 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     @Override
     public void apply() {
         for (var e : modifiers.entrySet()) {
-            var block = e.getKey();
+            Block target = e.getKey();
 
             BlockPropertyModifier value = e.getValue();
-            vanillaProperties.put(block, value.apply(block));
+            vanillaProperties.put(target, value.apply(target));
 
             var particle = value.particleEmitters();
-            particle.ifPresent(emitters -> particleEmitters.put(block, emitters));
+            particle.ifPresent(emitters -> particleEmitters.put(target, emitters));
         }
         if (!vanillaProperties.isEmpty())
             Polytone.LOGGER.info("Applied {} Custom Block Properties", vanillaProperties.size());

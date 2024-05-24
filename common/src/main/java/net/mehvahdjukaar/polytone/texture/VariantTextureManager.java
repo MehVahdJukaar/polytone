@@ -35,7 +35,7 @@ public class VariantTextureManager extends JsonPartialReloader {
     // list of blocks that will have their tint sent to 0.
     // why? because optifine is crap and allows assigning colors to models without a tint index.
     // Just edit your models people!
-    public final Set<Block> forceTintBlocks = new HashSet<>();
+    private final Set<Block> forceTintBlocks = new HashSet<>();
 
     public VariantTextureManager() {
         super("variant_textures");
