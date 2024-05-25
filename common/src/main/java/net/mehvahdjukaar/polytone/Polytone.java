@@ -19,6 +19,9 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.MixinEnvironment;
+import org.spongepowered.tools.agent.MixinAgent;
 
 public class Polytone {
     public static final String MOD_ID = "polytone";
@@ -41,13 +44,15 @@ public class Polytone {
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
 
     public static boolean sodiumOn = false;
+    public static boolean isDevEnv = false;
 
-    public static void init(boolean isSodiumOn) {
+    public static void init(boolean isSodiumOn, boolean devEnv) {
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
                         SOUND_TYPES, CUSTOM_PARTICLES, BIOME_ID_MAPPERS, COLORMAPS, COLORS, BLOCK_PROPERTIES, FLUID_PROPERTIES,
                         BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_EFFECTS, PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS),
                 res("polytone_stuff"));
         sodiumOn = isSodiumOn;
+        isDevEnv = devEnv;
         //TODO: rename effects, modifiers and properties to a common standard naming scheme
         //TODO: colormap for particles
         //for colormap grid support
@@ -56,6 +61,11 @@ public class Polytone {
         //item properties and color. cache pllayer coord
         //exp color
         //biome lightmap
+        // per blockstate offset like block models
+
+        if (isDevEnv) {// force all mixins to load in dev
+            MixinEnvironment.getCurrentEnvironment().audit();
+        }
     }
 
     public static ResourceLocation res(String name) {

@@ -17,6 +17,7 @@
     "ModelBlockRendererMixin",
     "ParticleEngineMixin",
     "ScreenMixin",
+    "VariantDeserializerMixin",
     "XpOrbMixin",
     "accessor.DustParticleOptions",
     "accessor.BiomeAccessor",

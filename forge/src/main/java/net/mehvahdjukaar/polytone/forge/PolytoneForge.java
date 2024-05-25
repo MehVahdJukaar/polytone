@@ -20,7 +20,7 @@ public class PolytoneForge {
 
     public PolytoneForge() {
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            Polytone.init(false);
+            Polytone.init(false, !FMLEnvironment.production);
 
             NeoForge.EVENT_BUS.register(this);
         } else {
