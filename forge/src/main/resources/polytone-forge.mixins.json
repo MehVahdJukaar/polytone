@@ -6,6 +6,8 @@
   "mixins": [
   ],
   "client": [
+    "ModifiableBiomeInfoBiomeInfoAccessor",
+    "ModifiableBiomeAccessor",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "CurioInventoryScreenMixin",

@@ -2,6 +2,8 @@ package net.mehvahdjukaar.polytone.biome;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.core.Holder;
@@ -10,6 +12,7 @@ import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.biome.*;
 
+import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.Set;
 
@@ -40,7 +43,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             TargetsHelper.CODEC.optionalFieldOf("targets").forGetter(BiomeEffectModifier::explicitTargets)
     ).apply(instance, BiomeEffectModifier::new));
 
-    public static BiomeEffectModifier ofWaterColor(int waterColor){
+    public static BiomeEffectModifier ofWaterColor(int waterColor) {
         return new BiomeEffectModifier(Optional.empty(), Optional.of(waterColor),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
@@ -68,6 +71,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
 
     //Returns vanilla effect that got replaced
     public BiomeSpecialEffects apply(Biome biome) {
+        //on forge this will get the modified ones if they exist
         BiomeSpecialEffects effects = biome.getSpecialEffects();
         var builder = new BiomeSpecialEffects.Builder();
 
@@ -150,8 +154,9 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         // freaking forge field to methods...
         //biome.specialEffects = builder.build();
         var copy = copy(effects);
-        applyInplace(biome, builder.build());
+       // applyInplace(biome, builder.build());
 
+        applyEffects(biome, builder.build());
         //return a copy of the old effects
         return copy;
     }
@@ -173,16 +178,25 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         return builder.build();
     }
 
-    public static void applyInplace(Biome biome, BiomeSpecialEffects newEffects) {
+    public static void applyEffects(Biome biome, BiomeSpecialEffects newEffects) {
+        //we cant replace field in biome because forge replaces it
+        //we cant replace fields in the effects object becuase embeddium relies on it.
+        //applyInplace(biome, modifier);
+        //we use reflections on fabric and a special hackery for forte
+        PlatStuff.applyBiomeSurgery(biome, newEffects);
+    }
+
+    private static void applyInplace(Biome biome, BiomeSpecialEffects newEffects) {
         //we cant replcate biome effects object so we set its fields
+        //we cant do this either because embeddium doesnt like it
         var oldEffects = biome.getSpecialEffects();
-        oldEffects.fogColor = newEffects.getFogColor();
+        oldEffects.fogColor = -1;//newEffects.getFogColor();
         oldEffects.waterColor = newEffects.getWaterColor();
         oldEffects.waterFogColor = newEffects.getWaterFogColor();
-        oldEffects.skyColor = newEffects.getSkyColor();
+        oldEffects.skyColor = -1;//newEffects.getSkyColor();
         oldEffects.foliageColorOverride = newEffects.getFoliageColorOverride();
-        oldEffects.grassColorOverride = newEffects.getGrassColorOverride();
-        oldEffects.grassColorModifier = newEffects.getGrassColorModifier();
+        oldEffects.grassColorOverride = Optional.of(-1);//newEffects.getGrassColorOverride();
+        oldEffects.grassColorModifier =  newEffects.getGrassColorModifier();
         oldEffects.ambientParticleSettings = newEffects.getAmbientParticleSettings();
         oldEffects.ambientLoopSoundEvent = newEffects.getAmbientLoopSoundEvent();
         oldEffects.ambientMoodSettings = newEffects.getAmbientMoodSettings();

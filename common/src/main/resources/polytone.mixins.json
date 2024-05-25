@@ -12,7 +12,6 @@
     "DustParticleOptionsBaseAccessor",
     "FogRendererMixin",
     "GameRendererMixin",
-    "GuiGraphicsMixin",
     "GuiMixin",
     "LightTextureMixin",
     "ModelBlockRendererMixin",

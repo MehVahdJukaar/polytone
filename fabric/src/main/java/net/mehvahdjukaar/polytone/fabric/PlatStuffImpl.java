@@ -1,12 +1,14 @@
 package net.mehvahdjukaar.polytone.fabric;
 
 import com.google.common.base.Suppliers;
+import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.mixins.fabric.BlockColorsAccessor;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -16,8 +18,11 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 
+import java.lang.reflect.Field;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
@@ -56,4 +61,29 @@ public class PlatStuffImpl {
     public static boolean isModLoaded(String namespace) {
         return FabricLoader.getInstance().isModLoaded(namespace);
     }
+
+    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation id) {
+        return DimensionRenderingRegistry.getDimensionEffects(id);
+    }
+
+    public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
+        try {
+            field.setAccessible(true);
+            field.set(biome, newEffects);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static Field field;
+
+    static {
+        for (var f : Biome.class.getDeclaredFields()) {
+            if (f.getType() == BiomeSpecialEffects.class) {
+                field = f;
+                break;
+            }
+        }
+    }
+
 }

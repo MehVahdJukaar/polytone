@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.forge;
 
 import net.mehvahdjukaar.polytone.mixins.forge.BlockColorsAccessor;
+import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeAccessor;
+import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeInfoBiomeInfoAccessor;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.resources.ResourceLocation;
@@ -42,4 +44,23 @@ public class PlatStuffImpl {
     public static boolean isModLoaded(String namespace) {
         return ModList.get().isLoaded(namespace);
     }
+
+    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation id) {
+        return DimensionSpecialEffectsManager.getForType(id);
+    }
+
+    public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
+        //forge original biome effect object is never user and redirected by coremod
+        //we apply to the biome modifier. We dont want to change the original
+        ModifiableBiomeInfo modifiable = biome.modifiableBiomeInfo();
+        ModifiableBiomeInfo.BiomeInfo modifiedInfo = modifiable.getModifiedBiomeInfo();
+        if (modifiedInfo == null) {
+            modifiedInfo = ModifiableBiomeInfo.BiomeInfo.Builder.copyOf(modifiable.getOriginalBiomeInfo()).build();
+            //assign modified info
+            ((ModifiableBiomeAccessor) modifiable).setModifiedBiomeInfo(modifiedInfo);
+        }
+        //assign new effects
+        ((ModifiableBiomeInfoBiomeInfoAccessor) (Object) modifiedInfo).setEffects(newEffects);
+    }
+
 }

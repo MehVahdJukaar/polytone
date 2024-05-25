@@ -3,33 +3,37 @@ package net.mehvahdjukaar.polytone.dimension;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.biome.BiomeEffectModifier;
-import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.DimensionTypes;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.CubicSampler;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class DimensionEffectsManager extends JsonImgPartialReloader {
 
-    private final Map<ResourceKey<Level>, DimensionEffectsModifier> dimensionEffects = new HashMap<>();
+    private final Map<ResourceLocation, DimensionEffectsModifier> effectsToApply = new HashMap<>();
 
-    private final Map<ResourceKey<Level>, DimensionEffectsModifier> vanillaEffects = new HashMap<>();
+    private final Map<ResourceLocation, DimensionEffectsModifier> vanillaEffects = new HashMap<>();
+
+    private final Map<DimensionType, Colormap> fogColormaps = new HashMap<>();
+    private final Map<DimensionType, Colormap> skyColormaps = new HashMap<>();
 
 
     public DimensionEffectsManager() {
@@ -37,9 +41,24 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void reset() {
+    public void reset() {
+        Level level = Minecraft.getInstance().level;
+        if (level != null) {
+            for (var v : vanillaEffects.entrySet()) {
+                v.getValue().applyInplace(v.getKey());
+            }
+            //reset all
+        }
+        //if we don't have a level, biomes don't exist anymore, so we don't care
 
+        vanillaEffects.clear();
+
+        //whatever happens, we always clear stuff to apply
+        effectsToApply.clear();
+        fogColormaps.clear();
+        skyColormaps.clear();
     }
+
 
     @Override
     protected void process(Resources resources) {
@@ -72,14 +91,14 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             ResourceLocation id = entry.getKey();
             DimensionEffectsModifier modifier = entry.getValue();
 
-            if (!modifier.hasColormap() && textures.containsKey(id)) {
+            if (!modifier.hasFogColormap() && textures.containsKey(id)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
                 modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.defTriangle()));
             }
 
             //fill inline colormaps colormapTextures
-            if (modifier.hasColormap()) {
-                BlockColor tint = modifier.getColormap();
+            if (modifier.hasFogColormap()) {
+                BlockColor tint = modifier.getFogColormap();
                 if (tint instanceof Colormap c) {
                     var text = textures.get(c.getTargetTexture() == null ? id : c.getTargetTexture());
                     if (text != null) {
@@ -106,17 +125,57 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     private void addModifier(ResourceLocation fileId, DimensionEffectsModifier mod) {
-        for (Block block : mod.getTargets(fileId, Registries.DIMENSION)) {
-            DimensionSpecialEffects
-            dimensionEffects.merge(block, mod, DimensionEffectsModifier::merge);
+        for (ResourceLocation id : mod.getTargetsKeys(fileId)) {
+            effectsToApply.merge(id, mod, DimensionEffectsModifier::merge);
         }
+    }
+
+    @Override
+    public void apply() {
+        Level level = Minecraft.getInstance().level;
+        if (level != null) {
+            doApply(level.registryAccess(), false);
+        }
+        //else apply as soon as we load a level
+    }
+
+    public void doApply(RegistryAccess registryAccess, boolean firstLogin) {
+        if (firstLogin) vanillaEffects.clear();
+
+        Registry<DimensionType> dimReg = registryAccess.registryOrThrow(Registries.DIMENSION_TYPE);
+
+        for (var v : effectsToApply.entrySet()) {
+            ResourceLocation dimensionId = v.getKey();
+            DimensionEffectsModifier modifier = v.getValue();
+            var old = modifier.applyInplace(dimensionId);
+
+            vanillaEffects.put(dimensionId, old);
+
+            if(modifier.getFogColormap() instanceof Colormap c){
+                fogColormaps.put(dimReg.get(dimensionId), c);
+            }
+            if(modifier.getSkyColormap() instanceof Colormap c){
+                skyColormaps.put(dimReg.get(dimensionId), c);
+            }
+        }
+        if (!vanillaEffects.isEmpty())
+            Polytone.LOGGER.info("Applied {} Custom Dimension Effects Properties", vanillaEffects.size());
+        //we don't clear effects to apply because we need to re apply on world reload
+
     }
 
     @Nullable
     public Vec3 modifyFogColor(Vec3 center, ClientLevel level, int lightLevel) {
-        var mod = this.modifiers.get(level.dimension());
-        if (mod == null) return null;
+        Colormap colormap = this.fogColormaps.get(level.dimensionType());
+        if (colormap == null) return null;
 
-       return mod.computeFogColor(center, level, lightLevel);
+        BiomeManager biomeManager = level.getBiomeManager();
+        return level.effects().getBrightnessDependentFogColor(
+                CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
+                    var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();
+                    //int fogColor = biome.getFogColor();
+                    int fogColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome); //quark coords to block coord
+                    return Vec3.fromRGB24(fogColor1);
+                }), lightLevel);
     }
 }

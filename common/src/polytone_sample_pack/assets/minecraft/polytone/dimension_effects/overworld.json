@@ -1,0 +1,5 @@
+{
+  "cloud_level":70,
+  "force_bright_lightmap": true,
+  "fog_colormap": "my_namespace:rainbow"
+}
