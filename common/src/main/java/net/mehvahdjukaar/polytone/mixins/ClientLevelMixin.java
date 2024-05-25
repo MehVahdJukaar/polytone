@@ -2,14 +2,17 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.CubicSampler;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -23,5 +26,14 @@ public abstract class ClientLevelMixin {
         original.call(instance, state, level, pos, random);
 
         Polytone.BLOCK_PROPERTIES.maybeEmitParticle(instance, state, level, pos);
+    }
+
+    @WrapOperation(method = "getSkyColor", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/util/CubicSampler;gaussianSampleVec3(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/util/CubicSampler$Vec3Fetcher;)Lnet/minecraft/world/phys/Vec3;"))
+    private Vec3 polytone$modifySkyColor(Vec3 center, CubicSampler.Vec3Fetcher fetcher,
+                                       Operation<Vec3> original, @Local ClientLevel level) {
+        Vec3 modified = Polytone.DIMENSION_EFFECTS.modifySkyColor(center, level);
+        if (modified != null) return modified;
+        return original.call(center, fetcher);
     }
 }
