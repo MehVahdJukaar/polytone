@@ -154,12 +154,11 @@ public record BlockPropertyModifier(
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
                     ParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
-                    StringRepresentable.fromEnum(BlockPropertyModifier.OffsetTypeR::values)
-                                    .xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
+                    OffsetTypeR.CODEC.xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
                             .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
                     TargetsHelper.CODEC.optionalFieldOf("targets").forGetter(BlockPropertyModifier::explicitTargets),
                     //dont use
-                    StrOpt.of(Codec.BOOL, "force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
+                    Codec.BOOL.optionalFieldOf("force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
             ).apply(instance, BlockPropertyModifier::new));
 
     public boolean hasColormap() {
@@ -174,6 +173,8 @@ public record BlockPropertyModifier(
         NONE(BlockBehaviour.OffsetType.NONE),
         XZ(BlockBehaviour.OffsetType.XZ),
         XYZ(BlockBehaviour.OffsetType.XYZ);
+
+        public static final Codec<OffsetTypeR> CODEC = StringRepresentable.fromEnum(BlockPropertyModifier.OffsetTypeR::values);
 
         private final BlockBehaviour.OffsetType original;
 

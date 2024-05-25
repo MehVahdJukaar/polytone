@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
+    "GuiGraphicsMixin"
   ],
   "client": [
     "AbstractContainerMenuMixin",
