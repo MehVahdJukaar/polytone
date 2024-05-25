@@ -6,8 +6,10 @@
   "mixins": [
   ],
   "client": [
-    "CurioInventoryScreenMixin",
+    "ModifiableBiomeInfoBiomeInfoAccessor",
+    "ModifiableBiomeAccessor",
     "AbstractContainerScreenMixin",
+    "CurioInventoryScreenMixin",
     "InventoryScreenMixin"
   ],
   "injectors": {

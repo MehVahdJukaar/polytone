@@ -158,13 +158,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 ResourceLocation id = new ResourceLocation(prop[2].replace("\\", ""));
                 Item item = BuiltInRegistries.ITEM.getOptional(id).orElse(null);
                 if (item == null) {
-                    item = BuiltInRegistries.ITEM.getOptional(id.withSuffix("_spawn_egg")).orElse(null);
-                }
-                if (item == null) {
                     var entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
                     if (entity != null) {
                         item = SpawnEggItem.byId(entity);
                     }
+                }
+                if (item == null) {
+                    item = BuiltInRegistries.ITEM.getOptional(id.withSuffix("_spawn_egg")).orElse(null);
                 }
                 if (item instanceof SpawnEggItem spawnEggItem) {
                     int col = parseHex(obj);
@@ -180,7 +180,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                         }
                         spawnEggItem.highlightColor = col;
                     }
-                } else Polytone.LOGGER.warn("Unknown or invalid Spawn Egg Item with name {}", id);
+                } else{
+                    Polytone.LOGGER.warn("Unknown or invalid Spawn Egg Item with name {}", id);
+                }
             }
         } else if (is(prop, 0, "potion") || is(prop, 0, "effect")) {
             ResourceLocation id = new ResourceLocation(prop[1].replace("\\", ""));

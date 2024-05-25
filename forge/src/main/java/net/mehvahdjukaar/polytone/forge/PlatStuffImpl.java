@@ -1,14 +1,21 @@
 package net.mehvahdjukaar.polytone.forge;
 
 import cpw.mods.modlauncher.api.INameMappingService;
+import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeAccessor;
+import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeInfoBiomeInfoAccessor;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
+import net.minecraftforge.client.DimensionSpecialEffectsManager;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.common.world.ModifiableBiomeInfo;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -62,6 +69,7 @@ public class PlatStuffImpl {
         if (wasLocked) reg.freeze();
         return variableRangeEvent;
     }
+
     public static String maybeRemapName(String s) {
         return ObfuscationReflectionHelper.remapName(INameMappingService.Domain.CLASS, s);
     }
@@ -70,4 +78,23 @@ public class PlatStuffImpl {
     public static boolean isModLoaded(String namespace) {
         return ModList.get().isLoaded(namespace);
     }
+
+    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation id) {
+        return DimensionSpecialEffectsManager.getForType(id);
+    }
+
+    public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
+        //forge original biome effect object is never user and redirected by coremod
+        //we apply to the biome modifier. We dont want to change the original
+        ModifiableBiomeInfo modifiable = biome.modifiableBiomeInfo();
+        ModifiableBiomeInfo.BiomeInfo modifiedInfo = modifiable.getModifiedBiomeInfo();
+        if (modifiedInfo == null) {
+            modifiedInfo = ModifiableBiomeInfo.BiomeInfo.Builder.copyOf(modifiable.getOriginalBiomeInfo()).build();
+            //assign modified info
+            ((ModifiableBiomeAccessor) modifiable).setModifiedBiomeInfo(modifiedInfo);
+        }
+        //assign new effects
+        ((ModifiableBiomeInfoBiomeInfoAccessor) (Object) modifiedInfo).setEffects(newEffects);
+    }
+
 }

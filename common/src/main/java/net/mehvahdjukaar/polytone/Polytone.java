@@ -64,6 +64,7 @@ public class Polytone {
 
     public static void onTagsReceived(RegistryAccess registryAccess) {
         BIOME_EFFECTS.doApply(registryAccess, true);
+        DIMENSION_EFFECTS.doApply(registryAccess, true);
     }
 
 

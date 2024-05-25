@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
@@ -26,7 +27,7 @@ public abstract class ScreenMixin implements SlotifyScreen {
     //we cant access screen title during consturciton so we delay
     @Inject(method = "init(Lnet/minecraft/client/Minecraft;II)V", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
-        polytone$modifier = GuiModifierManager.getGuiModifier((Screen) (Object) this);
+        polytone$modifier = Polytone.SLOTIFY.getGuiModifier((Screen) (Object) this);
     }
 
     @Override
@@ -48,8 +49,8 @@ public abstract class ScreenMixin implements SlotifyScreen {
 
     @Inject(method = "addWidget", at = @At("HEAD"))
     public <T extends GuiEventListener & NarratableEntry> void modifyWidget2(T listener, CallbackInfoReturnable<T> cir) {
-        //gets it new as it migt not have been init yet
-        var mod = GuiModifierManager.getGuiModifier((Screen) (Object) this);
+        //gets it new as it might not have been init yet
+        var mod = Polytone.SLOTIFY.getGuiModifier((Screen) (Object) this);
         if (mod != null && listener instanceof AbstractWidget aw) {
             mod.modifyWidgets(aw);
         }
@@ -57,7 +58,7 @@ public abstract class ScreenMixin implements SlotifyScreen {
 
     @Inject(method = "addRenderableOnly", at = @At("HEAD"))
     public <T extends Renderable> void modifyRenderable(T listener, CallbackInfoReturnable<T> cir) {
-        var mod = GuiModifierManager.getGuiModifier((Screen) (Object) this);
+        var mod = Polytone.SLOTIFY.getGuiModifier((Screen) (Object) this);
         if (mod != null && listener instanceof AbstractWidget aw) {
             mod.modifyWidgets(aw);
         }

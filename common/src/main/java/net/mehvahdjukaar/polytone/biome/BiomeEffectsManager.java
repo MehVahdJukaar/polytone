@@ -93,7 +93,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
             Registry<Biome> biomeReg = level.registryAccess().registry(Registries.BIOME).get();
             for (var v : vanillaEffects.entrySet()) {
                 var biome = biomeReg.getOptional(v.getKey());
-                biome.ifPresent(bio -> BiomeEffectModifier.applyInplace(bio, v.getValue()));
+                biome.ifPresent(bio -> BiomeEffectModifier.applyEffects(bio, v.getValue()));
             }
             //reset all
         }

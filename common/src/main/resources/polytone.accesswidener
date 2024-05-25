@@ -84,6 +84,19 @@ accessible field net/minecraft/core/MappedRegistry frozen Z
 
 accessible method net/minecraft/world/level/biome/Biome getTemperature (Lnet/minecraft/core/BlockPos;)F
 
+accessible field net/minecraft/client/renderer/DimensionSpecialEffects cloudLevel F
+mutable field net/minecraft/client/renderer/DimensionSpecialEffects cloudLevel F
+accessible field net/minecraft/client/renderer/DimensionSpecialEffects hasGround Z
+mutable field net/minecraft/client/renderer/DimensionSpecialEffects hasGround Z
+accessible field net/minecraft/client/renderer/DimensionSpecialEffects skyType Lnet/minecraft/client/renderer/DimensionSpecialEffects$SkyType;
+mutable field net/minecraft/client/renderer/DimensionSpecialEffects skyType Lnet/minecraft/client/renderer/DimensionSpecialEffects$SkyType;
+accessible field net/minecraft/client/renderer/DimensionSpecialEffects forceBrightLightmap Z
+mutable field net/minecraft/client/renderer/DimensionSpecialEffects forceBrightLightmap Z
+accessible field net/minecraft/client/renderer/DimensionSpecialEffects constantAmbientLight Z
+mutable field net/minecraft/client/renderer/DimensionSpecialEffects constantAmbientLight Z
+
+
+
 # freaking forge field to method...mutable
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects fogColor I
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects fogColor I

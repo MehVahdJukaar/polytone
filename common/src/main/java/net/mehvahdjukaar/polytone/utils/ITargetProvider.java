@@ -12,6 +12,10 @@ public interface ITargetProvider {
 
     Optional<Set<ResourceLocation>> explicitTargets();
 
+    default Set<ResourceLocation> getTargetsKeys(ResourceLocation fileId) {
+        return this.explicitTargets().orElse(Set.of(fileId));
+    }
+
     default <T> Set<T> getTargets(ResourceLocation fileId, Registry<T> registry) {
         Set<T> set = new HashSet<>();
         var explTargets = this.explicitTargets();
