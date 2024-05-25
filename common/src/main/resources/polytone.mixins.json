@@ -4,22 +4,21 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "GuiGraphicsMixin"
   ],
   "client": [
+    "GuiGraphicsMixin",
     "AbstractContainerMenuMixin",
     "ClientLevelMixin",
     "ColorResolverMixin",
-    "DustParticleOptionsBaseAccessor",
     "FogRendererMixin",
     "GameRendererMixin",
     "GuiMixin",
     "LightTextureMixin",
     "ModelBlockRendererMixin",
     "ParticleEngineMixin",
-    "PotionUtilsMixin",
     "ScreenMixin",
     "XpOrbMixin",
+    "accessor.DustParticleOptions",
     "accessor.BiomeAccessor",
     "accessor.SheepAccessor"
   ],

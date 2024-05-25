@@ -75,7 +75,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             ResourceLocation id = j.getKey();
 
             DimensionEffectsModifier modifier = DimensionEffectsModifier.CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Dimension Effects with json id {} - error: {}", id, errorMsg))
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Dimension Effects with json id " + id + " - error: " + errorMsg))
                     .getFirst();
 
             //always have priority
@@ -151,10 +151,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
             vanillaEffects.put(dimensionId, old);
 
-            if(modifier.getFogColormap() instanceof Colormap c){
+            if (modifier.getFogColormap() instanceof Colormap c) {
                 fogColormaps.put(dimReg.get(dimensionId), c);
             }
-            if(modifier.getSkyColormap() instanceof Colormap c){
+            if (modifier.getSkyColormap() instanceof Colormap c) {
                 skyColormaps.put(dimReg.get(dimensionId), c);
             }
         }

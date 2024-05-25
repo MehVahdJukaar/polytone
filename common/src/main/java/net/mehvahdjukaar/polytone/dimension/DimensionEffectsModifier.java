@@ -6,7 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
@@ -29,14 +28,14 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
 
     public static final Decoder<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    StrOpt.of(Codec.FLOAT, "cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
-                    StrOpt.of(Codec.BOOL, "has_ground").forGetter(DimensionEffectsModifier::hasGround),
-                    StrOpt.of(SKY_TYPE_CODEC, "sky_type").forGetter(DimensionEffectsModifier::skyType),
-                    StrOpt.of(Codec.BOOL, "force_bright_lightmap").forGetter(DimensionEffectsModifier::forceBrightLightmap),
-                    StrOpt.of(Codec.BOOL, "constant_ambient_light").forGetter(DimensionEffectsModifier::constantAmbientLight),
-                    StrOpt.of(Colormap.CODEC, "fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
-                    StrOpt.of(Colormap.CODEC, "sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
-                    StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(DimensionEffectsModifier::explicitTargets)
+                    Codec.FLOAT.optionalFieldOf("cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
+                    Codec.BOOL.optionalFieldOf("has_ground").forGetter(DimensionEffectsModifier::hasGround),
+                    SKY_TYPE_CODEC.optionalFieldOf("sky_type").forGetter(DimensionEffectsModifier::skyType),
+                    Codec.BOOL.optionalFieldOf("force_bright_lightmap").forGetter(DimensionEffectsModifier::forceBrightLightmap),
+                    Codec.BOOL.optionalFieldOf("constant_ambient_light").forGetter(DimensionEffectsModifier::constantAmbientLight),
+                    Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
+                    Colormap.CODEC.optionalFieldOf("sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
+                    TargetsHelper.CODEC.optionalFieldOf("targets").forGetter(DimensionEffectsModifier::explicitTargets)
             ).apply(instance, DimensionEffectsModifier::new));
 
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
