@@ -1,21 +1,14 @@
 package net.mehvahdjukaar.polytone.texture;
 
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.UnboundedMapCodec;
-import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
-import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
+import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.Feature;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -24,7 +17,7 @@ import java.util.Set;
 
 // texture to variant texture map
 public record VariantTexture(Map<ResourceLocation, Map<ResourceLocation, ResourceLocation>> textures,
-                             Optional<Set<ResourceLocation>> explicitTargets) {
+                             Optional<Set<ResourceLocation>> explicitTargets) implements ITargetProvider {
 
     private static final UnboundedMapCodec<ResourceLocation, Map<ResourceLocation, ResourceLocation>> MAP_CODEC = Codec.unboundedMap(ResourceLocation.CODEC,
             Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC));

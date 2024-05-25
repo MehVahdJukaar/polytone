@@ -55,30 +55,10 @@ public class VariantTextureManager extends JsonPartialReloader {
     }
 
     private void addVariant(ResourceLocation pathId, VariantTexture mod) {
-        var explTargets = mod.explicitTargets();
-        var pathTarget = BuiltInRegistries.BLOCK.getOptional(pathId);
-        if (explTargets.isPresent()) {
-            if (pathTarget.isPresent()) {
-                Polytone.LOGGER.error("Found Variant Texture with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
-                        "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), pathId);
-            }
-            for (var explicitId : explTargets.get()) {
-                var target = BuiltInRegistries.BLOCK.getOptional(explicitId);
-                if (target.isPresent()) {
-                    var old = blocksWithVariants.put(target.get(), mod);
-                    if (old != null) {
-                        Polytone.LOGGER.info("Found 2 Variant Textures jsons with same target ({}). Overriding", explicitId);
-                    }
-                }
-            }
-        }
-        //no explicit targets. use its own ID instead
-        else {
-            if (pathTarget.isPresent()) {
-                var old = blocksWithVariants.put(pathTarget.get(), mod);
-                if (old != null) {
-                    Polytone.LOGGER.info("Found 2 Variant Textures jsons with same target ({}). Overriding", pathTarget);
-                }
+        for (Block b : mod.getTargets(pathId, BuiltInRegistries.BLOCK)) {
+            var old = blocksWithVariants.put(b, mod);
+            if (old != null) {
+                Polytone.LOGGER.warn("Found 2 Variant Textures jsons with same target ({}). Overriding", b);
             }
         }
     }

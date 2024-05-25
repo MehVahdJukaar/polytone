@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
+import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.color.block.BlockColor;
@@ -26,7 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class ParticleModifier {
+public class ParticleModifier implements ITargetProvider {
 
     public static final Codec<ParticleModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             Filter.CODEC.optionalFieldOf("filter").forGetter(p -> Optional.ofNullable(p.filter)),
@@ -45,26 +46,26 @@ public class ParticleModifier {
 
 
     @Nullable
-    public Filter filter;
+    public final Filter filter;
     @Nullable
-    public BlockColor colormap;
+    public final BlockColor colormap;
     @Nullable
-    public ParticleExpression colorGetter;
+    public final ParticleExpression colorGetter;
     @Nullable
-    public ParticleExpression lifeGetter;
+    public final ParticleExpression lifeGetter;
     @Nullable
-    public ParticleExpression sizeGetter;
+    public final ParticleExpression sizeGetter;
     @Nullable
-    public ParticleExpression speedGetter;
+    public final ParticleExpression speedGetter;
     @Nullable
-    public ParticleExpression redGetter;
+    public final ParticleExpression redGetter;
     @Nullable
-    public ParticleExpression blueGetter;
+    public final ParticleExpression blueGetter;
     @Nullable
-    public ParticleExpression greenGetter;
+    public final ParticleExpression greenGetter;
     @Nullable
-    public ParticleExpression alphaGetter;
-    public Optional<Set<ResourceLocation>> explicitTargets;
+    public final ParticleExpression alphaGetter;
+    public final Optional<Set<ResourceLocation>> explicitTargets;
 
     private ParticleModifier(Optional<Filter> filter, Optional<BlockColor> colormap,
                              Optional<ParticleExpression> color, Optional<ParticleExpression> life,
@@ -143,6 +144,11 @@ public class ParticleModifier {
         if (alphaGetter != null) {
             particle.alpha = (float) alphaGetter.get(particle, level);
         }
+    }
+
+    @Override
+    public Optional<Set<ResourceLocation>> explicitTargets() {
+        return explicitTargets;
     }
 
     private record Filter(@Nullable Block forBlock,

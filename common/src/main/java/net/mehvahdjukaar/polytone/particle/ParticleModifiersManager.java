@@ -5,7 +5,6 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.particles.ParticleOptions;
@@ -13,11 +12,8 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.material.Fluid;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class ParticleModifiersManager extends JsonPartialReloader {
 
@@ -49,21 +45,9 @@ public class ParticleModifiersManager extends JsonPartialReloader {
 
 
     private void addModifier(ResourceLocation pathId, ParticleModifier mod) {
-        var explTargets = mod.explicitTargets;
-        var pathTarget = BuiltInRegistries.PARTICLE_TYPE.getOptional(pathId);
-        if (explTargets.isPresent()) {
-            if (pathTarget.isPresent()) {
-                Polytone.LOGGER.error("Found Particle Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
-                        "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), pathId);
-            }
-            for (var explicitId : explTargets.get()) {
-                var target = BuiltInRegistries.PARTICLE_TYPE.getOptional(explicitId);
-                target.ifPresent(type -> particleModifiers.put(type, mod));
-            }
-        }
-        //no explicit targets. use its own ID instead
-        else {
-            pathTarget.ifPresent(type -> particleModifiers.put(type, mod));
+        for (var p : mod.getTargets(pathId, BuiltInRegistries.PARTICLE_TYPE)) {
+            //can have multiple
+            particleModifiers.put(p, mod);
         }
     }
 

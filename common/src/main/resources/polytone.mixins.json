@@ -7,20 +7,21 @@
   ],
   "client": [
     "AbstractContainerMenuMixin",
-    "DustParticleOptionsBaseAccessor",
-    "PotionUtilsMixin",
-    "accessor.BiomeAccessor",
-    "accessor.SheepAccessor",
     "ClientLevelMixin",
     "ColorResolverMixin",
+    "DustParticleOptionsBaseAccessor",
+    "FogRendererMixin",
     "GameRendererMixin",
     "GuiGraphicsMixin",
     "GuiMixin",
     "LightTextureMixin",
     "ModelBlockRendererMixin",
     "ParticleEngineMixin",
+    "PotionUtilsMixin",
     "ScreenMixin",
-    "XpOrbMixin"
+    "XpOrbMixin",
+    "accessor.BiomeAccessor",
+    "accessor.SheepAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

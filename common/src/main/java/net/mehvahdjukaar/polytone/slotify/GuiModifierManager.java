@@ -25,12 +25,15 @@ import java.util.*;
 
 public class GuiModifierManager extends JsonPartialReloader {
 
-    private static final Map<MenuType<?>, Int2ObjectArrayMap<SlotModifier>> SLOTS_BY_MENU_ID = new IdentityHashMap<>();
-    private static final Map<Class<?>, Int2ObjectArrayMap<SlotModifier>> SLOTS_BY_CLASS = new IdentityHashMap<>();
-    private static final Map<String, Int2ObjectArrayMap<SlotModifier>> SLOTS_BY_TITLE = new HashMap<>();
-    public static final Map<MenuType<?>, ScreenModifier> BY_MENU_ID = new IdentityHashMap<>();
-    public static final Map<Class<?>, ScreenModifier> BY_CLASS = new IdentityHashMap<>();
-    public static final Map<String, ScreenModifier> BY_TITLE = new HashMap<>();
+    //slot modifiers
+    private final Map<MenuType<?>, Int2ObjectArrayMap<SlotModifier>> slotsByMenuId = new IdentityHashMap<>();
+    private final Map<Class<?>, Int2ObjectArrayMap<SlotModifier>> slotsByClass = new IdentityHashMap<>();
+    private final Map<String, Int2ObjectArrayMap<SlotModifier>> slotsByTitle = new HashMap<>();
+
+    //screen modifiers
+    public final Map<MenuType<?>, ScreenModifier> byMenuId = new IdentityHashMap<>();
+    public final Map<Class<?>, ScreenModifier> byClass = new IdentityHashMap<>();
+    public final Map<String, ScreenModifier> byTitle = new HashMap<>();
 
 
     private static final ResourceLocation INVENTORY = new ResourceLocation("inventory");
@@ -41,12 +44,12 @@ public class GuiModifierManager extends JsonPartialReloader {
 
     @Override
     protected void reset() {
-        SLOTS_BY_MENU_ID.clear();
-        SLOTS_BY_CLASS.clear();
-        SLOTS_BY_TITLE.clear();
-        BY_MENU_ID.clear();
-        BY_CLASS.clear();
-        BY_TITLE.clear();
+        slotsByMenuId.clear();
+        slotsByClass.clear();
+        slotsByTitle.clear();
+        byMenuId.clear();
+        byClass.clear();
+        byTitle.clear();
     }
 
     @Override
@@ -73,10 +76,10 @@ public class GuiModifierManager extends JsonPartialReloader {
                     } else if (target.equals("ItemPickerMenu")) {
                         cl = CreativeModeInventoryScreen.ItemPickerMenu.class;
                     } else cl = Class.forName(target);
-                    BY_CLASS.merge(cl, new ScreenModifier(mod), (a, b) -> b.merge(a));
+                    byClass.merge(cl, new ScreenModifier(mod), (a, b) -> b.merge(a));
 
                     if (!mod.slotModifiers().isEmpty()) {
-                        Int2ObjectArrayMap<SlotModifier> map = SLOTS_BY_CLASS.computeIfAbsent(cl,
+                        Int2ObjectArrayMap<SlotModifier> map = slotsByClass.computeIfAbsent(cl,
                                 i -> new Int2ObjectArrayMap<>());
                         unwrapSlots(mod, map);
                     }
@@ -92,10 +95,10 @@ public class GuiModifierManager extends JsonPartialReloader {
                 Optional<MenuType<?>> menu = BuiltInRegistries.MENU.getOptional(menuId);
 
                 if (menu.isPresent() || isInventory) {
-                    BY_MENU_ID.merge(menu.orElse(null), new ScreenModifier(mod), (a, b) -> b.merge(a));
+                    byMenuId.merge(menu.orElse(null), new ScreenModifier(mod), (a, b) -> b.merge(a));
 
                     if (!mod.slotModifiers().isEmpty()) {
-                        Int2ObjectArrayMap<SlotModifier> map = SLOTS_BY_MENU_ID.computeIfAbsent(menu.orElse(null),
+                        Int2ObjectArrayMap<SlotModifier> map = slotsByMenuId.computeIfAbsent(menu.orElse(null),
                                 i -> new Int2ObjectArrayMap<>());
                         unwrapSlots(mod, map);
                     }
@@ -103,18 +106,18 @@ public class GuiModifierManager extends JsonPartialReloader {
             } else {
                 //title target
                 String title = mod.target();
-                BY_TITLE.merge(title, new ScreenModifier(mod), (a, b) -> b.merge(a));
+                byTitle.merge(title, new ScreenModifier(mod), (a, b) -> b.merge(a));
 
                 if (!mod.slotModifiers().isEmpty()) {
-                    Int2ObjectArrayMap<SlotModifier> map = SLOTS_BY_TITLE.computeIfAbsent(title,
+                    Int2ObjectArrayMap<SlotModifier> map = slotsByTitle.computeIfAbsent(title,
                             i -> new Int2ObjectArrayMap<>());
                     unwrapSlots(mod, map);
                 }
             }
 
         }
-        Polytone.LOGGER.info("Loaded GUI modifiers for: " + SLOTS_BY_MENU_ID.keySet() + " " +
-                SLOTS_BY_CLASS.keySet() + " " + BY_MENU_ID.keySet() + " " + BY_CLASS.keySet());
+        Polytone.LOGGER.info("Loaded GUI modifiers for: " + slotsByMenuId.keySet() + " " +
+                slotsByClass.keySet() + " " + byMenuId.keySet() + " " + byClass.keySet());
     }
 
     private static void unwrapSlots(GuiModifier mod, Int2ObjectArrayMap<SlotModifier> map) {
@@ -126,16 +129,16 @@ public class GuiModifierManager extends JsonPartialReloader {
         }
     }
 
-    private static ScreenModifier getScreenModifier(AbstractContainerScreen<?> screen) {
+    private ScreenModifier getScreenModifier(AbstractContainerScreen<?> screen) {
         ScreenModifier m = null;
         AbstractContainerMenu menu = screen.getMenu();
         if (screen.getClass() == InventoryScreen.class) {
-            m = BY_CLASS.get(InventoryMenu.class);
+            m = byClass.get(InventoryMenu.class);
         } else if (screen.getClass() == CreativeModeInventoryScreen.class) {
-            m = BY_CLASS.get(CreativeModeInventoryScreen.ItemPickerMenu.class);
+            m = byClass.get(CreativeModeInventoryScreen.ItemPickerMenu.class);
         }
         if (menu != null) {
-            m = BY_CLASS.get(menu.getClass());
+            m = byClass.get(menu.getClass());
         }
         if (m == null) {
             MenuType<?> type;
@@ -144,14 +147,14 @@ public class GuiModifierManager extends JsonPartialReloader {
             } catch (Exception e) {
                 type = null;
             }
-            m = BY_MENU_ID.get(type);
+            m = byMenuId.get(type);
         }
         return m;
     }
 
     @Nullable
-    public static ScreenModifier getGuiModifier(Screen screen) {
-        ScreenModifier m = BY_CLASS.get(screen.getClass());
+    public ScreenModifier getGuiModifier(Screen screen) {
+        ScreenModifier m = byClass.get(screen.getClass());
         if (m == null && screen instanceof AbstractContainerScreen<?> as) {
             m = getScreenModifier(as);
         }
@@ -162,26 +165,26 @@ public class GuiModifierManager extends JsonPartialReloader {
             return null;
         }
         if (m == null) {
-            m = BY_TITLE.get(c.getString());
+            m = byTitle.get(c.getString());
         }
         if (m == null && c instanceof MutableComponent mc && mc.getContents() instanceof TranslatableContents tc) {
-            m = BY_TITLE.get(tc.getKey());
+            m = byTitle.get(tc.getKey());
         }
         return m;
     }
 
     @Nullable
-    public static SlotModifier getSlotModifier(AbstractContainerScreen<?> screen, Slot slot) {
+    public SlotModifier getSlotModifier(AbstractContainerScreen<?> screen, Slot slot) {
         Int2ObjectArrayMap<SlotModifier> m = null;
         var c = screen.getTitle();
-        m = SLOTS_BY_TITLE.get(c.getString());
+        m = slotsByTitle.get(c.getString());
         if (m == null && c instanceof MutableComponent mc && mc.getContents() instanceof TranslatableContents tc) {
-            m = SLOTS_BY_TITLE.get(tc.getKey());
+            m = slotsByTitle.get(tc.getKey());
         }
         if (m == null) {
-            m = SLOTS_BY_CLASS.get(screen.getClass());
+            m = slotsByClass.get(screen.getClass());
         }
-        if (m == null) SLOTS_BY_CLASS.get(screen.getMenu().getClass());
+        if (m == null) slotsByClass.get(screen.getMenu().getClass());
         if (m == null) {
             MenuType<?> type;
             try {
@@ -189,7 +192,7 @@ public class GuiModifierManager extends JsonPartialReloader {
             } catch (Exception e) {
                 type = null;
             }
-            m = SLOTS_BY_MENU_ID.get(type);
+            m = slotsByMenuId.get(type);
         }
         if (m != null) {
             return m.get(slot.index);
@@ -198,8 +201,8 @@ public class GuiModifierManager extends JsonPartialReloader {
     }
 
     @Nullable
-    public static SlotModifier getSlotModifier(AbstractContainerMenu menu, Slot slot) {
-        var m = SLOTS_BY_CLASS.get(menu.getClass());
+    public SlotModifier getSlotModifier(AbstractContainerMenu menu, Slot slot) {
+        var m = slotsByClass.get(menu.getClass());
         if (m == null) {
             MenuType<?> type;
             try {
@@ -207,7 +210,7 @@ public class GuiModifierManager extends JsonPartialReloader {
             } catch (Exception e) {
                 type = null;
             }
-            m = SLOTS_BY_MENU_ID.get(type);
+            m = slotsByMenuId.get(type);
         }
         if (m != null) {
             return m.get(slot.index);
@@ -216,14 +219,14 @@ public class GuiModifierManager extends JsonPartialReloader {
     }
 
 
-    public static void maybeModifySlot(AbstractContainerMenu menu, Slot slot) {
+    public void maybeModifySlot(AbstractContainerMenu menu, Slot slot) {
         var mod = getSlotModifier(menu, slot);
         if (mod != null) {
             mod.modify(slot);
         }
     }
 
-    public static boolean maybeChangeColor(AbstractContainerScreen<?> screen, Slot slot, GuiGraphics graphics,
+    public boolean maybeChangeColor(AbstractContainerScreen<?> screen, Slot slot, GuiGraphics graphics,
                                            int x, int y, int offset) {
         var mod = getSlotModifier(screen, slot);
         if (mod != null && mod.hasCustomColor()) {

@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.block;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
@@ -85,8 +84,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
         // parse jsons
         for (var j : jsons.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
+            JsonElement json = j.getValue();
+            ResourceLocation id = j.getKey();
 
             BlockPropertyModifier prop = BlockPropertyModifier.CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Client Block Property with json id " + id + "\n error: " + errorMsg))
@@ -103,24 +102,19 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
-            var id = entry.getKey();
-            var modifier = entry.getValue();
+            ResourceLocation id = entry.getKey();
+            BlockPropertyModifier modifier = entry.getValue();
 
-            var colormap = modifier.tintGetter();
-            if (colormap.isEmpty()) {
+            if (!modifier.hasColormap() && textures.containsKey(id)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
-
                 var text = textures.get(id);
-                if (text != null) {
-                    CompoundBlockColors defaultSampler = CompoundBlockColors.createDefault(text.keySet(), true);
-                    modifier = modifier.merge(BlockPropertyModifier.ofBlockColor(defaultSampler));
-                    colormap = modifier.tintGetter();
-                }
+                CompoundBlockColors defaultSampler = CompoundBlockColors.createDefault(text.keySet(), true);
+                modifier = modifier.merge(BlockPropertyModifier.ofBlockColor(defaultSampler));
             }
 
             //fill inline colormaps colormapTextures
-            if (colormap.isPresent()) {
-                BlockColor tint = colormap.get();
+            if (modifier.hasColormap()) {
+                BlockColor tint = modifier.getColormap();
                 if (tint instanceof CompoundBlockColors c) {
                     ColormapsManager.fillCompoundColormapPalette(textures, id, c, usedTextures);
                 } else if (tint instanceof Colormap c) {
@@ -155,33 +149,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
 
-    private void addModifier(ResourceLocation modifierId, BlockPropertyModifier mod) {
-        var explTargets = mod.explicitTargets();
-        //validate colormap
-        if (mod.tintGetter().isPresent()) {
-            if (mod.tintGetter().get() instanceof Colormap c && !c.hasTexture()) {
-                Polytone.LOGGER.error("Did not find any texture png for implicit colormap from block modifier {}. Skipping", modifierId);
-            }
-        }
-        Optional<Block> implicitTarget = BuiltInRegistries.BLOCK.getOptional(modifierId);
-        if (explTargets.isPresent()) {
-            if (implicitTarget.isPresent() && !explTargets.get().contains(modifierId)) {
-                Polytone.LOGGER.error("Found Block Properties Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
-                        "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), modifierId);
-            }
-            for (var explicitId : explTargets.get()) {
-                Optional<Block> target = BuiltInRegistries.BLOCK.getOptional(explicitId);
-                target.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
-            }
-        }
-        //no explicit targets. use its own ID instead
-        else {
-            implicitTarget.ifPresent(block -> modifiers.merge(block, mod, BlockPropertyModifier::merge));
-            if (implicitTarget.isEmpty()) {
-                if (PlatStuff.isModLoaded(modifierId.getNamespace())) {
-                    Polytone.LOGGER.error("Found Block Properties Modifier with no implicit target (expected block with ID {}) and no explicit targets. Skipping", modifierId);
-                }
-            }
+    private void addModifier(ResourceLocation fileId, BlockPropertyModifier mod) {
+        for (Block block : mod.getTargets(fileId, BuiltInRegistries.BLOCK)) {
+            modifiers.merge(block, mod, BlockPropertyModifier::merge);
         }
     }
 
@@ -196,9 +166,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             var particle = value.particleEmitters();
             particle.ifPresent(emitters -> particleEmitters.put(target, emitters));
         }
-        if (!vanillaProperties.isEmpty())
+        if (!vanillaProperties.isEmpty()) {
             Polytone.LOGGER.info("Applied {} Custom Block Properties", vanillaProperties.size());
-
+        }
         //clear as we dont need the anymore
         modifiers.clear();
     }
