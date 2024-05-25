@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
+import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.color.block.BlockColor;
@@ -15,7 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public record FluidPropertyModifier(Optional<BlockColor> colormap, Optional<BlockColor> fogColormap,
-                                    Optional<Set<ResourceLocation>> explicitTargets) {
+                                    Optional<Set<ResourceLocation>> explicitTargets) implements ITargetProvider {
 
     public static final Decoder<FluidPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -46,4 +47,7 @@ public record FluidPropertyModifier(Optional<BlockColor> colormap, Optional<Bloc
         return fogColormap.orElse(null);
     }
 
+    public boolean hasColormap() {
+        return colormap.isPresent();
+    }
 }

@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,6 +19,6 @@ public abstract class AbstractContainerMenuMixin {
             require = 1)
     public void interact(Slot slot, CallbackInfoReturnable<Slot> cir,
                          @Local LocalRef<Slot> mutableSlot) {
-        GuiModifierManager.maybeModifySlot((AbstractContainerMenu) (Object) this, slot);
+        Polytone.SLOTIFY.maybeModifySlot((AbstractContainerMenu) (Object) this, slot);
     }
 }

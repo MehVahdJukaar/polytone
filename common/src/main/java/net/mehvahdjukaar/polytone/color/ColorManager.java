@@ -88,7 +88,11 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             for (var e : p.entrySet()) {
                 if (e.getKey() instanceof String key) {
                     String[] split = key.split("\\.");
-                    parseColor(split, e.getValue(), k);
+                    try {
+                        parseColor(split, e.getValue(), k);
+                    } catch (Exception e1) {
+                        Polytone.LOGGER.error("Failed to parse color property {} in file {}", key, k);
+                    }
                 }
             }
         }
@@ -279,7 +283,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private static int parseHex(Object obj) {
         if (obj instanceof String value) {
             value = value.replace("#", "").replace("0x", "");
-            return Integer.parseInt(value, 16);
+            return Integer.parseInt(value.trim(), 16);
         }
         throw new JsonParseException("Failed to parse object " + obj + ". Expected a String");
     }

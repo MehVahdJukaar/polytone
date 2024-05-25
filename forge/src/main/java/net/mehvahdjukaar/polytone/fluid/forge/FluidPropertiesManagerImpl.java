@@ -11,11 +11,11 @@ import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -27,17 +27,15 @@ public class FluidPropertiesManagerImpl {
 
     private static final Map<FluidType, IClientFluidTypeExtensions> FLUID_EXTENSIONS = new HashMap<>();
 
-    public static void tryAddSpecial(ResourceLocation id, FluidPropertyModifier colormap) {
-        var fluid = ForgeRegistries.FLUID_TYPES.get().getValue(id);
-        if (fluid != null) {
-            //gets real one. will internally try to get wrapped but a map is empty now
-            IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fluid);
-            if (!(ext instanceof FluidExtensionWrapper)) {
-                FLUID_EXTENSIONS.put(fluid, new FluidExtensionWrapper(ext, colormap));
-            }
-            //create wrapped one
-            FLUID_EXTENSIONS.put(fluid, new FluidExtensionWrapper(ext, colormap));
+    public static void tryAddSpecial(Fluid fluid, FluidPropertyModifier colormap) {
+        var fluidType = fluid.getFluidType();
+        //gets real one. will internally try to get wrapped but a map is empty now
+        IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fluidType);
+        if (!(ext instanceof FluidExtensionWrapper)) {
+            FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, colormap));
         }
+        //create wrapped one
+        FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, colormap));
     }
 
     public static void clearSpecial() {

@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.color.MapColorHelper;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
+import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.Minecraft;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
@@ -41,7 +43,7 @@ public record BlockPropertyModifier(
         Optional<List<ParticleEmitter>> particleEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
         Optional<Set<ResourceLocation>> explicitTargets,
-        boolean tintHack) {
+        boolean tintHack) implements ITargetProvider {
 
     // Other has priority
     public BlockPropertyModifier merge(BlockPropertyModifier other) {
@@ -160,6 +162,13 @@ public record BlockPropertyModifier(
                     StrOpt.of(Codec.BOOL, "force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
             ).apply(instance, BlockPropertyModifier::new));
 
+    public boolean hasColormap() {
+        return this.tintGetter.isPresent();
+    }
+    @Nullable
+    public BlockColor getColormap() {
+        return tintGetter.orElse(null);
+    }
 
     public enum OffsetTypeR implements StringRepresentable {
         NONE(BlockBehaviour.OffsetType.NONE),

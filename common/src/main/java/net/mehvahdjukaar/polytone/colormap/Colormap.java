@@ -161,7 +161,7 @@ public class Colormap implements ColorResolver, BlockColor {
         return sampleColor(state, pos, null);
     }
 
-    private int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
+    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
         float temperature = Mth.clamp(xGetter.getValue(state, pos, biome, biomeMapper), 0, 1);
         float humidity = Mth.clamp(yGetter.getValue(state, pos, biome, biomeMapper), 0, 1);
         return sample(humidity, temperature, defaultColor);

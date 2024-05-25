@@ -89,6 +89,10 @@ public class Lightmap {
                                     Minecraft minecraft, ClientLevel level,
                                     float flicker, float partialTicks) {
 
+        // this makes a copy
+        var oldTexture = lightPixels.getPixelsRGBA();
+        boolean needsUpload = false;
+
         //this wasn't using partial ticks for some reasons
         float skyDarken = level.getSkyDarken(partialTicks);
         float rainLevel = level.getRainLevel(partialTicks);
@@ -225,9 +229,16 @@ public class Lightmap {
                 int x = (int) combined.x();
                 int y = (int) combined.y();
                 int z = (int) combined.z();
-                lightPixels.setPixelRGBA(torchX, skyY, -16777216 | z << 16 | y << 8 | x);
-            }
+                int newColor = -16777216 | z << 16 | y << 8 | x;
+                lightPixels.setPixelRGBA(torchX, skyY, newColor);
 
+                if (newColor != oldTexture[skyY * 16 + torchX]) {
+                    needsUpload = true;
+                }
+            }
+        }
+
+        if (needsUpload) {
             lightTexture.upload();
         }
     }

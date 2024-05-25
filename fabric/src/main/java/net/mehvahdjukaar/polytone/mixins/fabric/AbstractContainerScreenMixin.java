@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -48,12 +49,12 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     ))
     public boolean slotifyColor(GuiGraphics graphics, int x, int y, int blitOffset,
                                 @Local Slot slot) {
-        return GuiModifierManager.maybeChangeColor((AbstractContainerScreen<?>) (Object) this, slot, graphics, x, y, blitOffset);
+        return Polytone.SLOTIFY.maybeChangeColor((AbstractContainerScreen<?>) (Object) this, slot, graphics, x, y, blitOffset);
     }
 
     @Inject(method = "init", at = @At("TAIL"))
     public void modifyLabels(CallbackInfo ci) {
-        var m = GuiModifierManager.getGuiModifier((AbstractContainerScreen<?>) (Object) this);
+        var m = Polytone.SLOTIFY.getGuiModifier((AbstractContainerScreen<?>) (Object) this);
         if (m != null) {
             this.titleLabelX += m.titleX();
             this.titleLabelY += m.titleY();

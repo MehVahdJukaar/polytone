@@ -8,7 +8,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
@@ -80,11 +79,11 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
 
         for (var j : jsons.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
+            JsonElement json = j.getValue();
+            ResourceLocation id = j.getKey();
 
             FluidPropertyModifier modifier = FluidPropertyModifier.CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Fluid Color Modifier with json id {} - error: {}", id, errorMsg))
+                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Fluid Modifier with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 
             //always have priority
@@ -97,23 +96,17 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
-            var id = entry.getKey();
-            var modifier = entry.getValue();
+            ResourceLocation id = entry.getKey();
+            FluidPropertyModifier modifier = entry.getValue();
 
-            var colormap = modifier.colormap();
-            if (colormap.isEmpty()) {
+            if (!modifier.hasColormap() && textures.containsKey(id)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
-
-                var text = textures.get(id);
-                if (text != null) {
-                    modifier = modifier.merge(FluidPropertyModifier.ofBlockColor(Colormap.defTriangle()));
-                    colormap = modifier.colormap();
-                }
+                modifier = modifier.merge(FluidPropertyModifier.ofBlockColor(Colormap.defTriangle()));
             }
 
             //fill inline colormaps colormapTextures
-            if (colormap.isPresent()) {
-                BlockColor tint = colormap.get();
+            if (modifier.hasColormap()) {
+                BlockColor tint = modifier.getColormap();
                 if (tint instanceof Colormap c) {
                     var text = textures.get(c.getTargetTexture() == null ? id : c.getTargetTexture());
                     if (text != null) {
@@ -147,34 +140,14 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     private void addModifier(ResourceLocation pathId, FluidPropertyModifier mod) {
-
-        var explTargets = mod.explicitTargets();
-        Optional<Fluid> implicitTarget = BuiltInRegistries.FLUID.getOptional(pathId);
-        if (explTargets.isPresent()) {
-            if (implicitTarget.isPresent() && !explTargets.get().contains(pathId)) {
-                Polytone.LOGGER.error("Found Fluid Properties Modifier with Explicit Targets ({}) also having a valid IMPLICIT Path Target ({})." +
-                        "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets.get(), pathId);
-            }
-            for (var explicitId : explTargets.get()) {
-                Optional<Fluid> target = BuiltInRegistries.FLUID.getOptional(explicitId);
-                target.ifPresent(fluid -> modifiers.merge(fluid, mod, FluidPropertyModifier::merge));
-                tryAddSpecial(explicitId, mod);
-            }
-        }
-        //no explicit targets. use its own ID instead
-        else {
-            implicitTarget.ifPresent(fluid -> modifiers.merge(fluid, mod, FluidPropertyModifier::merge));
-            tryAddSpecial(pathId, mod);
-            if (implicitTarget.isEmpty()) {
-                if (PlatStuff.isModLoaded(pathId.getNamespace())) {
-                    Polytone.LOGGER.error("Found Fluid Properties Modifier with no implicit target ({}) and no explicit targets", pathId);
-                }
-            }
+        for (Fluid fluid :  mod.getTargets(pathId, BuiltInRegistries.FLUID)) {
+            modifiers.merge(fluid, mod, FluidPropertyModifier::merge);
+            tryAddSpecial(fluid, mod);
         }
     }
 
     @ExpectPlatform
-    private static void tryAddSpecial(ResourceLocation id, FluidPropertyModifier colormap) {
+    private static void tryAddSpecial(Fluid fluid, FluidPropertyModifier colormap) {
         throw new AssertionError();
     }
 

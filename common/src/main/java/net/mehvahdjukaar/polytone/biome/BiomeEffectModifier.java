@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.biome;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.core.Holder;
@@ -22,7 +23,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Optional<AmbientMoodSettings> ambientMoodSettings,
                                   Optional<AmbientAdditionsSettings> ambientAdditionsSettings,
                                   Optional<Music> backgroundMusic,
-                                  Optional<Set<ResourceLocation>> explicitTargets) {
+                                  Optional<Set<ResourceLocation>> explicitTargets) implements ITargetProvider {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             StrOpt.of(Codec.INT, "fog_color").forGetter(BiomeEffectModifier::fogColor),
