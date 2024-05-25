@@ -165,7 +165,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     @Nullable
-    public Vec3 modifyFogColor(Vec3 center, ClientLevel level, int lightLevel) {
+    public Vec3 modifyFogColor(Vec3 center, ClientLevel level, float brightness) {
         Colormap colormap = this.fogColormaps.get(level.dimensionType());
         if (colormap == null) return null;
 
@@ -174,8 +174,22 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
                 CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
                     var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();
                     //int fogColor = biome.getFogColor();
-                    int fogColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome); //quark coords to block coord
+                    int fogColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome); //quart coords to block coord
                     return Vec3.fromRGB24(fogColor1);
-                }), lightLevel);
+                }), brightness);
+    }
+
+    @Nullable
+    public Vec3 modifySkyColor(Vec3 center, ClientLevel level) {
+        Colormap colormap = this.skyColormaps.get(level.dimensionType());
+        if (colormap == null) return null;
+
+        BiomeManager biomeManager = level.getBiomeManager();
+        return CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
+            var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();
+            //int skyColor = biome.getSkyColor();
+            int skyColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome); //quart coords to block coord
+            return Vec3.fromRGB24(skyColor1);
+        });
     }
 }

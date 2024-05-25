@@ -16,9 +16,10 @@ public abstract class FogRendererMixin {
 
     @WrapOperation(method = "setupColor", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/util/CubicSampler;gaussianSampleVec3(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/util/CubicSampler$Vec3Fetcher;)Lnet/minecraft/world/phys/Vec3;"))
-    private static Vec3 modifyFogColor(Vec3 center, CubicSampler.Vec3Fetcher fetcher,
-                                       Operation<Vec3> original, @Local ClientLevel level) {
-        Vec3 modified = Polytone.DIMENSION_EFFECTS.modifyFogColor(center, level, 0);
+    private static Vec3 polytone$modifyFogColor(Vec3 center, CubicSampler.Vec3Fetcher fetcher,
+                                       Operation<Vec3> original, @Local ClientLevel level,
+                                       @Local(ordinal = 4) float lightLevel) {
+        Vec3 modified = Polytone.DIMENSION_EFFECTS.modifyFogColor(center, level, lightLevel);
         if (modified != null) return modified;
         return original.call(center, fetcher);
     }
