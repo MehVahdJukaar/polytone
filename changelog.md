@@ -2,3 +2,4 @@
 - color.properties will now accept badly formatted colors having trailing whitespaces
 - failed color.properties lines will now be ignored, throwing an error
 - fixed biome effects not working with embeddium and not at all on forge
+- added yoffset, xoffset and zoffset parameter to variant blockstate models

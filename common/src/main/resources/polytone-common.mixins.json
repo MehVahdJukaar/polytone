@@ -18,6 +18,7 @@
     "ParticleEngineMixin",
     "PotionUtilsMixin",
     "ScreenMixin",
+    "VariantDeserializerMixin",
     "XpOrbMixin",
     "accessor.BiomeAccessor",
     "accessor.SheepAccessor"
