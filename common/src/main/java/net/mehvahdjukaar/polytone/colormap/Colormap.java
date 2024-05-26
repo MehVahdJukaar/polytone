@@ -39,7 +39,7 @@ public class Colormap implements ColorResolver, BlockColor {
 
     private Integer defaultColor;
     private ArrayImage image = null;
-    private ResourceLocation targetTexture = null; //explicit target
+    private ResourceLocation explicitTargetTexture = null; //explicit target
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
@@ -132,12 +132,16 @@ public class Colormap implements ColorResolver, BlockColor {
         return image != null;
     }
 
-    public ResourceLocation getTargetTexture() {
-        return targetTexture;
+    protected ResourceLocation getExplicitTargetTexture() {
+        return explicitTargetTexture;
     }
 
-    public void setTargetTexture(ResourceLocation imageTarget) {
-        this.targetTexture = imageTarget.withPath(imageTarget.getPath().replace(".png", ""));
+    protected ResourceLocation getTargetTexture(ResourceLocation def) {
+        return explicitTargetTexture != null ? explicitTargetTexture : def;
+    }
+
+    public void setExplicitTargetTexture(ResourceLocation imageTarget) {
+        this.explicitTargetTexture = imageTarget.withPath(imageTarget.getPath().replace(".png", ""));
     }
 
     // Dont use tint index

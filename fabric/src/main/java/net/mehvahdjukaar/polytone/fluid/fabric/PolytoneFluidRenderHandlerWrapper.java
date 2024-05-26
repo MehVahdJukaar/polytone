@@ -21,7 +21,7 @@ public record PolytoneFluidRenderHandlerWrapper(FluidRenderHandler instance,
 
     @Override
     public int getFluidColor(@Nullable BlockAndTintGetter view, @Nullable BlockPos pos, FluidState state) {
-        var col = modifier.getColormap();
+        var col = modifier.getTint();
         if (col != null) {
             int color = col.getColor(state.createLegacyBlock(), view, pos, -1);
             var p = ColorUtils.unpack(color);

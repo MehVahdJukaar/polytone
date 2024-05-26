@@ -1,5 +1,3 @@
-- Added Dimension Effects, allowing to tweak things like fog color, sky color, cloud level and more of each dimension 
-- color.properties will now accept badly formatted colors having trailing whitespaces
-- failed color.properties lines will now be ignored, throwing an error
-- fixed biome effects not working with embeddium and not at all on forge
-- added yoffset, xoffset and zoffset parameter to variant blockstate models
+- Fixed Sky and Fog inlined colormap texture names for dimension effects not being correct.
+- Improved error handling, preventing to load with a missing colormap texture.
+- BlockState model offset is now in pixel coordinates instead of block coordinates.

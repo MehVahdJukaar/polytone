@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
@@ -113,20 +112,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             }
 
             //fill inline colormaps colormapTextures
-            if (modifier.hasColormap()) {
-                BlockColor tint = modifier.getColormap();
-                if (tint instanceof CompoundBlockColors c) {
-                    ColormapsManager.fillCompoundColormapPalette(textures, id, c, usedTextures);
-                } else if (tint instanceof Colormap c) {
-                    var text = textures.get(c.getTargetTexture() == null ? id : c.getTargetTexture());
-                    if (text != null) {
-                        ColormapsManager.tryAcceptingTexture(text.getDefault(), id, c, usedTextures);
-                    } else if (c.getTargetTexture() != null) {
-                        Polytone.LOGGER.error("Could not resolve explicit texture at location {}.png for colormap from block modifier {}. Skipping", c.getTargetTexture(), id);
-                        continue;
-                    }
-                }
-            }
+            BlockColor tint = modifier.getColormap();
+            ColormapsManager.tryAcceptingTextureGroup(textures, id, tint, usedTextures, true);
 
             addModifier(id, modifier);
         }
@@ -140,7 +127,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             ArrayImage.Group image = entry.getValue();
 
             CompoundBlockColors tintMap = CompoundBlockColors.createDefault(image.keySet(), true);
-            ColormapsManager.fillCompoundColormapPalette(textures, id, tintMap, usedTextures);
+            ColormapsManager.tryAcceptingTextureGroup(textures, id, tintMap, usedTextures, true);
 
             BlockPropertyModifier modifier = BlockPropertyModifier.ofBlockColor(tintMap);
 

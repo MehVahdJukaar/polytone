@@ -21,6 +21,7 @@
     "XpOrbMixin",
     "accessor.DustParticleOptionAccessor",
     "accessor.BiomeAccessor",
+    "accessor.DustParticleOptionAccessor",
     "accessor.SheepAccessor"
   ],
   "injectors": {

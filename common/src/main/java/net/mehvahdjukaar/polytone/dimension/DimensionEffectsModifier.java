@@ -43,6 +43,11 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                 Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty());
     }
 
+    public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
+        return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty());
+    }
+
 
     public DimensionEffectsModifier merge(DimensionEffectsModifier other) {
         return new DimensionEffectsModifier(
@@ -55,10 +60,6 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                 other.skyColor.isPresent() ? other.skyColor : this.skyColor,
                 TargetsHelper.merge(other.explicitTargets, this.explicitTargets)
         );
-    }
-
-    public boolean hasFogColormap() {
-        return this.fogColor.isPresent();
     }
 
     public BlockColor getFogColormap() {

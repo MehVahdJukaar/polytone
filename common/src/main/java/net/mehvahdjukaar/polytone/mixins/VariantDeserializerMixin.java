@@ -21,9 +21,9 @@ public class VariantDeserializerMixin {
         float x = GsonHelper.getAsFloat(jsonObject, "xoffset", 0);
         float y = GsonHelper.getAsFloat(jsonObject, "yoffset", 0);
         float z = GsonHelper.getAsFloat(jsonObject, "zoffset", 0);
-        if(x == 0 && y == 0 && z == 0) return original;
+        if (x == 0 && y == 0 && z == 0) return original;
         Matrix4f mat = new Matrix4f();
-        mat.translate(x/16f, y/16f, z/16f);
+        mat.translate(x /16f, y /16f, z /16f);
         return new Transformation(mat).compose(original);
     }
 }

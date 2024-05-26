@@ -117,7 +117,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
                     var b = e.getValue();
                     var original = effectsToApply.get(id);
                     if (original == null || original.waterColor().isEmpty()) {
-                        if (water.getColormap() instanceof Colormap cl) {
+                        if (water.getTint() instanceof Colormap cl) {
                             var col = cl.getColor(b, 0, 0);
                             var dummy = BiomeEffectModifier.ofWaterColor(col);
                             addEffect(id, dummy);

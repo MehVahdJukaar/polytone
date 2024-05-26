@@ -158,7 +158,7 @@ public class LegacyHelper {
                     String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
                     source = source.replace("./", id.getNamespace() + ":" + directoryPath);
                 }
-                colormap.setTargetTexture(new ResourceLocation(source));
+                colormap.setExplicitTargetTexture(new ResourceLocation(source));
             }
         }
         return new BlockPropertyModifier(Optional.of(colormap),
@@ -217,7 +217,7 @@ public class LegacyHelper {
                     String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
                     source = (id.getNamespace() + ":" + directoryPath) + source.replace("./", "");
                 }
-                colormap.setTargetTexture(new ResourceLocation(source));
+                colormap.setExplicitTargetTexture(new ResourceLocation(source));
             }
         }
         return new BlockPropertyModifier(Optional.of(colormap),
@@ -233,7 +233,7 @@ public class LegacyHelper {
         for (var special : inlineColormaps.entrySet()) {
             ResourceLocation texturePath = special.getKey();
             Colormap colormap = Colormap.defTriangle();
-            colormap.setTargetTexture(texturePath);
+            colormap.setExplicitTargetTexture(texturePath);
 
             Set<ResourceLocation> blockTargets = new HashSet<>();
             for (var name : special.getValue().split(" ")) {

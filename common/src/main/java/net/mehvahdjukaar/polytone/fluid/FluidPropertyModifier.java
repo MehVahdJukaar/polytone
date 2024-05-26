@@ -2,9 +2,7 @@ package net.mehvahdjukaar.polytone.fluid;
 
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
-import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
@@ -38,7 +36,7 @@ public record FluidPropertyModifier(Optional<BlockColor> colormap, Optional<Bloc
         return new FluidPropertyModifier(Optional.of(colormap), Optional.empty(), Optional.empty());
     }
     @Nullable
-    public BlockColor getColormap() {
+    public BlockColor getTint() {
         return colormap.orElse(null);
     }
 
