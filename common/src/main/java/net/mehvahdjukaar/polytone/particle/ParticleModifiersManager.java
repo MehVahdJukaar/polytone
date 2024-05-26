@@ -41,6 +41,9 @@ public class ParticleModifiersManager extends JsonPartialReloader {
                             id, errorMsg)).getFirst();
             addModifier(id, modifier);
         }
+
+        //TODO: add inline colormap support
+        //does not support inline colormaps yet
     }
 
 

@@ -9,7 +9,6 @@
     "AbstractContainerMenuMixin",
     "ClientLevelMixin",
     "ColorResolverMixin",
-    "DustParticleOptionsBaseAccessor",
     "FogRendererMixin",
     "GameRendererMixin",
     "GuiMixin",
@@ -21,6 +20,7 @@
     "VariantDeserializerMixin",
     "XpOrbMixin",
     "accessor.BiomeAccessor",
+    "accessor.DustParticleOptionAccessor",
     "accessor.SheepAccessor"
   ],
   "injectors": {

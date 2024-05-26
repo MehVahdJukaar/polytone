@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -57,7 +56,7 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public int getTintColor() {
-            var col = modifier.getColormap();
+            var col = modifier.getTint();
             if (col != null) {
                 return col.getColor(null, null, null, -1) | 0xff000000;
             }
@@ -66,7 +65,7 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public int getTintColor(FluidStack stack) {
-            var col = modifier.getColormap();
+            var col = modifier.getTint();
             if (col != null) {
                 return col.getColor(null, null, null, -1) | 0xff000000;
             }
@@ -75,7 +74,7 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            var col = modifier.getColormap();
+            var col = modifier.getTint();
             if (col != null) {
                 return col.getColor(state.createLegacyBlock(), getter, pos, -1) | 0xff000000;
             }

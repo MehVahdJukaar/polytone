@@ -91,24 +91,48 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             ResourceLocation id = entry.getKey();
             DimensionEffectsModifier modifier = entry.getValue();
 
-            if (!modifier.hasFogColormap() && textures.containsKey(id)) {
-                //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
+            BlockColor fog = modifier.getFogColormap();
+            BlockColor sky = modifier.getSkyColormap();
+
+
+            //first try adding implicit single texture
+
+            //adds implicit single texture
+            // just 1 colormap defined
+            if (textures.containsKey(id) && fog == null && sky == null) {
+                //if this map doesn't have any colormaps but has a texture we give it fog color
                 modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.defTriangle()));
+                fog = modifier.getFogColormap();
+                //refresh fog. assign texture below
             }
 
-            //fill inline colormaps colormapTextures
-            if (modifier.hasFogColormap()) {
-                BlockColor tint = modifier.getFogColormap();
-                if (tint instanceof Colormap c) {
-                    var text = textures.get(c.getTargetTexture() == null ? id : c.getTargetTexture());
-                    if (text != null) {
-                        ColormapsManager.tryAcceptingTexture(text, id, c, usedTextures);
-                    } else if (c.getTargetTexture() != null) {
-                        Polytone.LOGGER.error("Could not resolve explicit texture at location {}.png for colormap from dimension effects file with it {}. Skipping", c.getTargetTexture(), id);
-                        continue;
-                    }
-                }
+            // if sky is not defined BUT they have a valid texture
+            if(textures.containsKey(id.withSuffix("_sky")) && sky == null){
+                modifier = modifier.merge(DimensionEffectsModifier.ofSkyColor(Colormap.defTriangle()));
+                sky = modifier.getSkyColormap();
+                //refresh sky. assign texture below
             }
+
+            // if fog is not defined BUT they have a valid texture
+            if(textures.containsKey(id.withSuffix("_fog")) && sky == null){
+                modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.defTriangle()));
+                fog = modifier.getFogColormap();
+                //refresh sky. assign texture below
+            }
+
+            // if just one of them is defined we try assigning to the deafult texture at id
+            if ((fog != null) ^ (sky != null)) {
+                ColormapsManager.tryAcceptingTexture(textures, id, fog, usedTextures, false);
+                ColormapsManager.tryAcceptingTexture(textures, id, sky, usedTextures, false);
+            }
+
+
+            //fill inline colormaps colormapTextures
+            ColormapsManager.tryAcceptingTexture(textures, id.withSuffix("_fog"), fog, usedTextures, true);
+
+            ColormapsManager.tryAcceptingTexture(textures, id.withSuffix("_sky"), sky, usedTextures, true);
+
+
             addModifier(id, modifier);
         }
 
@@ -118,7 +142,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
             Colormap defaultColormap = Colormap.defTriangle();
-            ColormapsManager.tryAcceptingTexture(textures.get(id), id, defaultColormap, usedTextures);
+            ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
             addModifier(id, DimensionEffectsModifier.ofFogColor(defaultColormap));
         }
@@ -151,10 +175,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
             vanillaEffects.put(dimensionId, old);
 
-            if(modifier.getFogColormap() instanceof Colormap c){
+            if (modifier.getFogColormap() instanceof Colormap c) {
                 fogColormaps.put(dimReg.get(dimensionId), c);
             }
-            if(modifier.getSkyColormap() instanceof Colormap c){
+            if (modifier.getSkyColormap() instanceof Colormap c) {
                 skyColormaps.put(dimReg.get(dimensionId), c);
             }
         }

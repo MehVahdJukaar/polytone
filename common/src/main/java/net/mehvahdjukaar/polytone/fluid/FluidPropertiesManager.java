@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.fluid;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
@@ -105,18 +104,8 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             }
 
             //fill inline colormaps colormapTextures
-            if (modifier.hasColormap()) {
-                BlockColor tint = modifier.getColormap();
-                if (tint instanceof Colormap c) {
-                    var text = textures.get(c.getTargetTexture() == null ? id : c.getTargetTexture());
-                    if (text != null) {
-                        ColormapsManager.tryAcceptingTexture(text, id, c, usedTextures);
-                    } else if (c.getTargetTexture() != null) {
-                        Polytone.LOGGER.error("Could not resolve explicit texture at location {}.png for colormap from fluid modifier {}. Skipping", c.getTargetTexture(), id);
-                        continue;
-                    }
-                }
-            }
+            BlockColor tint = modifier.getTint();
+            ColormapsManager.tryAcceptingTexture(textures, id, tint, usedTextures, true);
             addModifier(id, modifier);
         }
 
@@ -126,7 +115,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
             Colormap defaultColormap = Colormap.defTriangle();
-            ColormapsManager.tryAcceptingTexture(textures.get(id), id, defaultColormap, usedTextures);
+            ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
             addModifier(id, new FluidPropertyModifier(Optional.of(defaultColormap),
                     Optional.empty(), Optional.empty()));
@@ -140,7 +129,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     private void addModifier(ResourceLocation pathId, FluidPropertyModifier mod) {
-        for (Fluid fluid :  mod.getTargets(pathId, BuiltInRegistries.FLUID)) {
+        for (Fluid fluid : mod.getTargets(pathId, BuiltInRegistries.FLUID)) {
             modifiers.merge(fluid, mod, FluidPropertyModifier::merge);
             tryAddSpecial(fluid, mod);
         }

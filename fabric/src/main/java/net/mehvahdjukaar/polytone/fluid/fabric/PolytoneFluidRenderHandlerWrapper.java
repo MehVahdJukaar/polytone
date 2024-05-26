@@ -5,13 +5,9 @@ import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.inventory.HorseInventoryMenu;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -29,7 +25,7 @@ public record PolytoneFluidRenderHandlerWrapper(FluidRenderHandler instance,
 
     @Override
     public int getFluidColor(@Nullable BlockAndTintGetter view, @Nullable BlockPos pos, FluidState state) {
-        var col = modifier.getColormap();
+        var col = modifier.getTint();
         if (col != null) {
             int color = col.getColor(state.createLegacyBlock(), view, pos, -1);
             if (SODIUM_ON) {

@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.utils;
 
-import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
@@ -160,7 +158,7 @@ public class LegacyHelper {
                     String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
                     source = source.replace("./", id.getNamespace() + ":" + directoryPath);
                 }
-                colormap.setTargetTexture(new ResourceLocation(source));
+                colormap.setExplicitTargetTexture(new ResourceLocation(source));
             }
         }
         return new BlockPropertyModifier(Optional.of(colormap),
@@ -220,7 +218,7 @@ public class LegacyHelper {
                     String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
                     source = (id.getNamespace() + ":" + directoryPath) + source.replace("./", "");
                 }
-                colormap.setTargetTexture(new ResourceLocation(source));
+                colormap.setExplicitTargetTexture(new ResourceLocation(source));
             }
         }
         return new BlockPropertyModifier(Optional.of(colormap),
@@ -236,7 +234,7 @@ public class LegacyHelper {
         for (var special : inlineColormaps.entrySet()) {
             ResourceLocation texturePath = special.getKey();
             Colormap colormap = Colormap.defTriangle();
-            colormap.setTargetTexture(texturePath);
+            colormap.setExplicitTargetTexture(texturePath);
 
             Set<ResourceLocation> blockTargets = new HashSet<>();
             for (var name : special.getValue().split(" ")) {

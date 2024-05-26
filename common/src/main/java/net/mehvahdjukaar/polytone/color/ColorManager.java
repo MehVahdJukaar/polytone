@@ -5,13 +5,14 @@ import com.google.gson.JsonParseException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.mixins.DustParticleOptionsBaseAccessor;
+import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.particle.BlockParticleExpression;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.DustParticleOptionsBase;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -229,7 +230,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     if (code == 15) {
                         Vector3f maxPower = new Vector3f(rgb[0], rgb[1], rgb[2]);
                         DustParticleOptions.REDSTONE_PARTICLE_COLOR = maxPower;
-                        ((DustParticleOptionsBaseAccessor)DustParticleOptions.REDSTONE).setColor(maxPower);
+                        ((DustParticleOptionAccessor)DustParticleOptions.REDSTONE).setColor(maxPower);
                     }
                 } else Polytone.LOGGER.warn("Redstone color index must be between 0 and 15");
             }
@@ -341,7 +342,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
         RedStoneWireBlock.COLORS = originalRedstoneWireColors.toArray(new Vec3[0]);
         DustParticleOptions.REDSTONE_PARTICLE_COLOR = new Vector3f(1, 0, 0);//default
-        ((DustParticleOptionsBaseAccessor)DustParticleOptions.REDSTONE).setColor(DustParticleOptions.REDSTONE_PARTICLE_COLOR);
+        ((DustParticleOptionAccessor)DustParticleOptions.REDSTONE).setColor(DustParticleOptions.REDSTONE_PARTICLE_COLOR);
     }
 
     public void regenSheepColors() {
