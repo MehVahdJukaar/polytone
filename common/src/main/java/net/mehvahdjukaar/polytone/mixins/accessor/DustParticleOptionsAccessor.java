@@ -1,12 +1,13 @@
 package net.mehvahdjukaar.polytone.mixins.accessor;
 
+import net.minecraft.core.particles.DustParticleOptions;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(net.minecraft.core.particles.DustParticleOptions.class)
-public interface DustParticleOptions {
+@Mixin(DustParticleOptions.class)
+public interface DustParticleOptionsAccessor {
 
     @Mutable
     @Accessor("color")
