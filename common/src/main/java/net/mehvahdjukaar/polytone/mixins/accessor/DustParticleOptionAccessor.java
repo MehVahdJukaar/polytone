@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(DustParticleOptions.class)
-public interface DustParticleOptionsAccessor {
+public interface DustParticleOptionAccessor {
 
     @Mutable
     @Accessor("color")

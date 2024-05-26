@@ -19,7 +19,7 @@
     "ScreenMixin",
     "VariantDeserializerMixin",
     "XpOrbMixin",
-    "accessor.DustParticleOptionsAccessor",
+    "accessor.DustParticleOptionAccessor",
     "accessor.BiomeAccessor",
     "accessor.SheepAccessor"
   ],
