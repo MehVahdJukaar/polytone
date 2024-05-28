@@ -24,6 +24,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     private final Map<ResourceLocation, BiomeSpecialEffects> vanillaEffects = new HashMap<>();
 
     private final Map<ResourceLocation, BiomeEffectModifier> effectsToApply = new HashMap<>();
+    private boolean needsDynamicApplication = true;
 
     public BiomeEffectsManager() {
         super("biome_effects");
@@ -66,6 +67,8 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     }
 
     public void doApply(RegistryAccess registryAccess, boolean firstLogin) {
+        if (!needsDynamicApplication) return;
+        needsDynamicApplication = false;
         if (firstLogin) vanillaEffects.clear();
 
 
@@ -89,6 +92,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     @Override
     public void reset() {
+        this.needsDynamicApplication = true;
         Level level = Minecraft.getInstance().level;
         if (level != null) {
             Registry<Biome> biomeReg = level.registryAccess().registry(Registries.BIOME).get();
@@ -108,8 +112,8 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
 
     //hack
-    public  void addAllWaterColors(Registry<Biome> biomeReg) {
-        if (Polytone.sodiumOn) {
+    public void addAllWaterColors(Registry<Biome> biomeReg) {
+        if (Polytone.sodiumOn) { //TODO:is this needed with embeddium?
             var water = Polytone.FLUID_PROPERTIES.getModifier(Fluids.WATER);
             if (water != null) {
                 for (var e : biomeReg.entrySet()) {

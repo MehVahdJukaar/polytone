@@ -1,3 +1,3 @@
-- Fixed Sky and Fog inlined colormap texture names for dimension effects not being correct.
-- Improved error handling, preventing to load with a missing colormap texture.
-- BlockState model offset is now in pixel coordinates instead of block coordinates.
+- Improved error handling when converting broken optifine colormaps
+- Mod will now ignore broken optifine colormaps instead of rejecting the pack. Check your logs!
+- Fixed biome modifiers and dimension modifiers not resetting properly when removed

@@ -92,9 +92,13 @@ public class LegacyHelper {
                         IColormapNumberProvider.ZERO);
 
                 map.put(id, BlockPropertyModifier.coloringBlocks(colormap, Blocks.REDSTONE_WIRE));
-            } else if(prop != null){
-                BlockPropertyModifier modifier = convertOFProperty(prop, id);
-                map.put(id, modifier);
+            } else if (prop != null) {
+                try{
+                    BlockPropertyModifier modifier = convertOFProperty(prop, id);
+                    map.put(id, modifier);
+                }catch (Exception e){
+                    Polytone.LOGGER.error("FAILED TO CONVERT OPTIFINE COLORMAP AT {}: ", id, e);
+                }
             }
 
         }
@@ -165,7 +169,6 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.ofNullable(set), false);
     }
-
 
 
     public static BlockPropertyModifier convertOFProperty(Properties properties, ResourceLocation id) {

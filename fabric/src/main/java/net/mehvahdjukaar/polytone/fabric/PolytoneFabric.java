@@ -18,7 +18,9 @@ public class PolytoneFabric implements ClientModInitializer {
         Polytone.init(sodiumOn, instance.isDevelopmentEnvironment());
 
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
-            Polytone.onTagsReceived(registries);
+            if (client) {
+                Polytone.onTagsReceived(registries);
+            }
         });
         /*
         ModelLoadingPlugin.register(pluginContext -> {

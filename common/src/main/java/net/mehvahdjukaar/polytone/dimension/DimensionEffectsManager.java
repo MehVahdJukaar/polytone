@@ -35,6 +35,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private final Map<DimensionType, Colormap> fogColormaps = new HashMap<>();
     private final Map<DimensionType, Colormap> skyColormaps = new HashMap<>();
 
+    private boolean needsDynamicApplication = true;
 
     public DimensionEffectsManager() {
         super("dimension_effects");
@@ -42,6 +43,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     @Override
     public void reset() {
+        needsDynamicApplication = true;
         Level level = Minecraft.getInstance().level;
         if (level != null) {
             for (var v : vanillaEffects.entrySet()) {
@@ -94,31 +96,27 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             BlockColor fog = modifier.getFogColormap();
             BlockColor sky = modifier.getSkyColormap();
 
-
-            //first try adding implicit single texture
-
             //adds implicit single texture
             // just 1 colormap defined
             if (textures.containsKey(id) && fog == null && sky == null) {
                 //if this map doesn't have any colormaps but has a texture we give it fog color
                 modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.defTriangle()));
                 fog = modifier.getFogColormap();
-                //refresh fog. assign texture below
             }
 
-            // if sky is not defined BUT they have a valid texture
+            // if sky is not defined BUT they have a valid texture create a colormap for it
             if(textures.containsKey(id.withSuffix("_sky")) && sky == null){
                 modifier = modifier.merge(DimensionEffectsModifier.ofSkyColor(Colormap.defTriangle()));
                 sky = modifier.getSkyColormap();
-                //refresh sky. assign texture below
             }
 
-            // if fog is not defined BUT they have a valid texture
+            // if fog is not defined BUT they have a valid texture create a colormap for it
             if(textures.containsKey(id.withSuffix("_fog")) && sky == null){
                 modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.defTriangle()));
                 fog = modifier.getFogColormap();
-                //refresh sky. assign texture below
             }
+
+            //fill textures
 
             // if just one of them is defined we try assigning to the deafult texture at id
             if ((fog != null) ^ (sky != null)) {
@@ -126,12 +124,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
                 ColormapsManager.tryAcceptingTexture(textures, id, sky, usedTextures, false);
             }
 
-
-            //fill inline colormaps colormapTextures
+            //try filling with standard textures paths, failing if they are not there
             ColormapsManager.tryAcceptingTexture(textures, id.withSuffix("_fog"), fog, usedTextures, true);
-
             ColormapsManager.tryAcceptingTexture(textures, id.withSuffix("_sky"), sky, usedTextures, true);
-
 
             addModifier(id, modifier);
         }
@@ -164,6 +159,8 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     public void doApply(RegistryAccess registryAccess, boolean firstLogin) {
+        if (!needsDynamicApplication) return;
+        needsDynamicApplication = false;
         if (firstLogin) vanillaEffects.clear();
 
         Registry<DimensionType> dimReg = registryAccess.registryOrThrow(Registries.DIMENSION_TYPE);
