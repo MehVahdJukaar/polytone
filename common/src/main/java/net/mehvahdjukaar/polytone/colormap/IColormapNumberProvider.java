@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -118,7 +119,12 @@ public interface IColormapNumberProvider {
             });
 
 
-    IColormapNumberProvider Y_LEVEL = register("y_level", (state, pos, biome, m) ->
-            (pos == null ? 64 : pos.getY()) / 255f); //hoping this will be flipped
+    IColormapNumberProvider Y_LEVEL = register("y_level", (state, pos, biome, m) -> {
+        if (pos == null) return 64;
+        // some builtin variance just because
+        RandomSource rs = RandomSource.create(pos.asLong());
+        return (pos.getY() + rs.nextIntBetweenInclusive(-3, 3)) / 255f;
+    });
+
 
 }

@@ -86,6 +86,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
+            if(json.toString().contains("sound_type")){
+                int aa = 1;
+            }
             BlockPropertyModifier prop = BlockPropertyModifier.CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Client Block Property with json id {} - error: {}", id, errorMsg))
                     .getFirst();

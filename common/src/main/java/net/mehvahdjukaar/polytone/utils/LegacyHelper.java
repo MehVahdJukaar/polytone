@@ -92,9 +92,13 @@ public class LegacyHelper {
                         IColormapNumberProvider.ZERO);
 
                 map.put(id, BlockPropertyModifier.coloringBlocks(colormap, Blocks.REDSTONE_WIRE));
-            } else if(prop != null){
-                BlockPropertyModifier modifier = convertOFProperty(prop, id);
-                map.put(id, modifier);
+            } else if (prop != null) {
+                try{
+                    BlockPropertyModifier modifier = convertOFProperty(prop, id);
+                    map.put(id, modifier);
+                }catch (Exception e){
+                    Polytone.LOGGER.error("FAILED TO CONVERT OPTIFINE COLORMAP AT {}: ", id, e);
+                }
             }
 
         }
@@ -104,7 +108,7 @@ public class LegacyHelper {
 
     public static final Decoder<BlockPropertyModifier> OF_JSON_CODEC = RecordCodecBuilder.create(i -> i.group(
             StrOpt.of(Codec.STRING, "format", "").forGetter(c -> ""),
-            StrOpt.of(Codec.STRING.listOf(), "blocks", List.of()).forGetter(c ->List.of()),
+            StrOpt.of(Codec.STRING.listOf(), "blocks", List.of()).forGetter(c -> List.of()),
             StrOpt.of(ColorUtils.CODEC, "color").forGetter(c -> Optional.empty()),
             StrOpt.of(Codec.STRING.xmap(Integer::parseInt, String::valueOf), "yVariance").forGetter(c -> Optional.empty()),
             StrOpt.of(Codec.STRING.xmap(Integer::parseInt, String::valueOf), "yoffset").forGetter(c -> Optional.empty()),
@@ -167,7 +171,6 @@ public class LegacyHelper {
     }
 
 
-
     public static BlockPropertyModifier convertOFProperty(Properties properties, ResourceLocation id) {
         Set<ResourceLocation> set = null;
         Colormap colormap;
@@ -178,7 +181,7 @@ public class LegacyHelper {
                         // fuck this i wont parse numerical shit
                         try {
                             int iHateOptishit = Integer.parseInt(s);
-                           // return BuiltInRegistries.BLOCK.getKey(BuiltInRegistries.BLOCK.byId(iHateOptishit));
+                            // return BuiltInRegistries.BLOCK.getKey(BuiltInRegistries.BLOCK.byId(iHateOptishit));
                             return false;
                         } catch (Exception ignored) {
                         }
@@ -208,10 +211,9 @@ public class LegacyHelper {
         } else {
             String source = properties.getProperty("source");
             if (source != null) {
-                if(source.contains("~")) {
+                if (source.contains("~")) {
                     source = source.replace("~/colormap/", id.getNamespace() + ":");
-                }
-                else {
+                } else {
                     // resolve relative paths
                     String path = id.getPath();
                     int index = path.lastIndexOf('/');
