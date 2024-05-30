@@ -1,6 +1,9 @@
 package net.mehvahdjukaar.polytone.block;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.mojang.realmsclient.util.JsonUtils;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -16,9 +19,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -33,8 +41,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     private final Map<Block, List<ParticleEmitter>> particleEmitters = new Object2ObjectOpenHashMap<>();
 
     public BlockPropertiesManager() {
-        super("block_properties");
+        super("block_modifiers", "block_properties");
     }
+
 
     public record Resources(Map<ResourceLocation, JsonElement> jsons,
                             Map<ResourceLocation, ArrayImage> textures,
@@ -43,14 +52,13 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
     @Override
     protected Resources prepare(ResourceManager resourceManager) {
-        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
-        scanDirectory(resourceManager, path(), GSON, jsons);
+        var jsons = this.getJsonsInDirectories(resourceManager);
         checkConditions(jsons);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 
-        Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
-        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.gatherImages(resourceManager, "colormatic/colormap");
+        Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.scanDirectory(resourceManager, "optifine/colormap");
+        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.scanDirectory(resourceManager, "colormatic/colormap");
 
         Map<ResourceLocation, Properties> ofProperties = PropertiesUtils.gatherProperties(resourceManager, "optifine/colormap");
         Map<ResourceLocation, JsonElement> ofJsons = new HashMap<>();
@@ -62,7 +70,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         textures.putAll(LegacyHelper.convertPaths(ofTextures));
         textures.putAll(LegacyHelper.convertPaths(cmTextures));
 
-        textures.putAll(ArrayImage.gatherImages(resourceManager, path()));
+        textures.putAll(this.getImagesInDirectories(resourceManager));
 
         return new Resources(jsons, textures, LegacyHelper.convertPaths(ofProperties));
     }
@@ -86,9 +94,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            if(json.toString().contains("sound_type")){
-                int aa = 1;
-            }
+
             BlockPropertyModifier prop = BlockPropertyModifier.CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Client Block Property with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
@@ -146,6 +152,17 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
     @Override
+    public void reset() {
+        for (var e : vanillaProperties.entrySet()) {
+            e.getValue().apply(e.getKey());
+        }
+        vanillaProperties.clear();
+        modifiers.clear();
+        optifineColormapsToBlocks.clear();
+        particleEmitters.clear();
+    }
+
+    @Override
     public void apply() {
         for (var e : modifiers.entrySet()) {
             Block target = e.getKey();
@@ -161,17 +178,6 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         }
         //clear as we dont need the anymore
         modifiers.clear();
-    }
-
-    @Override
-    public void reset() {
-        for (var e : vanillaProperties.entrySet()) {
-            e.getValue().apply(e.getKey());
-        }
-        vanillaProperties.clear();
-        modifiers.clear();
-        optifineColormapsToBlocks.clear();
-        particleEmitters.clear();
     }
 
     //optifine stuff

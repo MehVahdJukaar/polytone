@@ -110,15 +110,15 @@ public class ColormapsManager extends JsonImgPartialReloader {
     //helper methods
     public static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> availableTextures,
                                                 ResourceLocation defaultPath, BlockColor col, Set<ResourceLocation> usedTexture, boolean strict) {
-        if(col instanceof CompoundBlockColors c) {
+        if (col instanceof CompoundBlockColors c) {
             tryAcceptingTextureGroup(availableTextures, defaultPath, c, usedTexture, strict);
-        } else if(col instanceof Colormap c) {
+        } else if (col instanceof Colormap c) {
             tryAcceptingTextureGroup(availableTextures, defaultPath, c, usedTexture, strict);
         }
     }
 
     private static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> availableTextures,
-                                                 ResourceLocation defaultPath,  Colormap c, Set<ResourceLocation> usedTexture, boolean strict) {
+                                                 ResourceLocation defaultPath, Colormap c, Set<ResourceLocation> usedTexture, boolean strict) {
         ResourceLocation textureLoc = c.getTargetTexture(defaultPath);
         ArrayImage.Group group = availableTextures.get(textureLoc);
         ArrayImage texture = group != null ? group.getDefault() : null;
@@ -128,9 +128,9 @@ public class ColormapsManager extends JsonImgPartialReloader {
     private static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> textures,
                                                  ResourceLocation id, CompoundBlockColors colormap,
                                                  Set<ResourceLocation> usedTextures, boolean strict) {
-        var getters = colormap.getGetters();
+        var blockColorGetters = colormap.getGetters();
 
-        for (var g : getters.int2ObjectEntrySet()) {
+        for (var g : blockColorGetters.int2ObjectEntrySet()) {
             int index = g.getIntKey();
             BlockColor inner = g.getValue();
 
@@ -138,17 +138,20 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
                 var textureMap = textures.get(c.getTargetTexture(id));
 
-                if (textureMap != null) {
-                    if (getters.size() == 1 || index == 0) {
-                        //try twice. first time doesnt throw
-                        tryAcceptingTexture(textureMap.getDefault(), id, c, usedTextures, false);
+                if (strict && textureMap == null) {
+                    throw new IllegalStateException("Could not find a texture for tint index " + index + " for compound colormap " + id + "." +
+                            "Expected " + id + "_" + index);
+                }
 
-                        try {
-                            tryAcceptingTexture(textureMap.get(index), id, c, usedTextures, strict);
-                        } catch (Exception e) {
-                            throw new IllegalStateException("Failed applying a texture for tint index " + index + ": ", e);
-                        }
-                    }
+                if (blockColorGetters.size() == 1 || index == 0) {
+                    //try twice. first time doesnt throw
+                    tryAcceptingTexture(textureMap.getDefault(), id, c, usedTextures, false);
+                }
+                try {
+                    tryAcceptingTexture(textureMap.get(index), id, c, usedTextures, strict);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Failed to apply a texture for tint index " + index + " for compound colormap " + id + "." +
+                            "Expected " + id + "_" + index + " : ", e);
                 }
             }
         }
@@ -158,7 +161,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     public static void tryAcceptingTexture(Map<ResourceLocation, ArrayImage> availableTextures,
                                            ResourceLocation defaultPath,
                                            BlockColor col, Set<ResourceLocation> usedTexture, boolean strict) {
-        if(col instanceof Colormap colormap) {
+        if (col instanceof Colormap colormap) {
             ResourceLocation textureLoc = colormap.getTargetTexture(defaultPath);
             ArrayImage texture = availableTextures.get(textureLoc);
             tryAcceptingTexture(texture, textureLoc, colormap, usedTexture, strict);

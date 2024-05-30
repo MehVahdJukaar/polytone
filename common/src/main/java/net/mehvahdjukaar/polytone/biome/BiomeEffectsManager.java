@@ -27,7 +27,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     private boolean needsDynamicApplication = true;
 
     public BiomeEffectsManager() {
-        super("biome_effects");
+        super("biome_modifiers", "biome_effects");
     }
 
     @Override

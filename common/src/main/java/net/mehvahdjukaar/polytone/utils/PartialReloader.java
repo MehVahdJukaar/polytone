@@ -8,20 +8,40 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public abstract class PartialReloader<T> {
 
     public static final Gson GSON = new Gson();
 
-    protected String name;
+    protected String[] names;
 
-    protected PartialReloader(String name) {
-        this.name = name;
+    protected PartialReloader(String... name) {
+        this.names = name;
     }
 
-    public String path() {
-        return Polytone.MOD_ID + "/" + name;
+    protected Map<ResourceLocation, JsonElement> getJsonsInDirectories(ResourceManager resourceManager) {
+        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
+        for (String name : names) {
+            scanDirectory(resourceManager, Polytone.MOD_ID + "/" + name, GSON, jsons);
+        }
+        return jsons;
+    }
+
+
+    protected Map<ResourceLocation, ArrayImage> getImagesInDirectories(ResourceManager resourceManager) {
+        Map<ResourceLocation, ArrayImage> images = new HashMap<>();
+        for (String name : names) {
+            ArrayImage.scanDirectory(resourceManager, Polytone.MOD_ID + "/" + name, images);
+        }
+        return images;
+    }
+
+    protected Map<ResourceLocation, ArrayImage.Group> getGroupedImagesInDirectories(ResourceManager manager) {
+        return ArrayImage.groupTextures(this.getImagesInDirectories(manager));
     }
 
     protected abstract T prepare(ResourceManager resourceManager);
@@ -33,7 +53,7 @@ public abstract class PartialReloader<T> {
     protected void apply() {
     }
 
-    public static void checkConditions(Map<ResourceLocation, JsonElement> object) {
+    protected void checkConditions(Map<ResourceLocation, JsonElement> object) {
         object.entrySet().removeIf(e -> {
             if (e.getValue() instanceof JsonObject jo) {
                 JsonElement je = jo.get("require_mods");

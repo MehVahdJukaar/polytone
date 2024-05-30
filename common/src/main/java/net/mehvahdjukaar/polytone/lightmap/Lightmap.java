@@ -24,7 +24,10 @@ public class Lightmap {
 
     protected static final double DEFAULT_SKY_LERP = 0.5;
     protected static final double DEFAULT_TORCH_LERP = 0;
-    public static final Decoder<Lightmap> CODEC = RecordCodecBuilder.create(instance ->
+
+
+
+    public static final Decoder<Lightmap> DIRECT_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     ILightmapNumberProvider.CODEC.optionalFieldOf("sky_getter", ILightmapNumberProvider.DEFAULT)
                             .forGetter(l -> l.skyGetter),
@@ -37,6 +40,8 @@ public class Lightmap {
                     doubleRange(0, 1).optionalFieldOf("torch_lerp_factor", DEFAULT_TORCH_LERP)
                             .forGetter(l -> l.torchLerp)
             ).apply(instance, Lightmap::new));
+
+    public static final Codec<Lightmap> CODEC = Codec.unit(new Lightmap());
 
     public static Codec<Double> doubleRange(double min, double max) {
         return Codec.DOUBLE.validate(d -> d.compareTo(min) >= 0 && d.compareTo(max) <= 0 ?

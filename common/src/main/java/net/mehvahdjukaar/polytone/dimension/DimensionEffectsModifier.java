@@ -5,7 +5,9 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
@@ -21,6 +23,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                                        Optional<Boolean> constantAmbientLight,
                                        Optional<BlockColor> fogColor,
                                        Optional<BlockColor> skyColor,
+                                       Optional<Lightmap> lightmap,
                                        Optional<Set<ResourceLocation>> explicitTargets) implements ITargetProvider {
 
     public static final Codec<DimensionSpecialEffects.SkyType> SKY_TYPE_CODEC = Codec.STRING
@@ -35,17 +38,18 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                     Codec.BOOL.optionalFieldOf("constant_ambient_light").forGetter(DimensionEffectsModifier::constantAmbientLight),
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
                     Colormap.CODEC.optionalFieldOf("sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
+                    Lightmap.CODEC.optionalFieldOf("lightmap").forGetter(DimensionEffectsModifier::lightmap),
                     TargetsHelper.CODEC.optionalFieldOf("targets").forGetter(DimensionEffectsModifier::explicitTargets)
             ).apply(instance, DimensionEffectsModifier::new));
 
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty());
+                Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty());
+                Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty());
     }
 
 
@@ -58,6 +62,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                 other.constantAmbientLight.isPresent() ? other.constantAmbientLight : this.constantAmbientLight,
                 other.fogColor.isPresent() ? other.fogColor : this.fogColor,
                 other.skyColor.isPresent() ? other.skyColor : this.skyColor,
+                other.lightmap.isPresent() ? other.lightmap : this.lightmap,
                 TargetsHelper.merge(other.explicitTargets, this.explicitTargets)
         );
     }
@@ -98,7 +103,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
             effects.constantAmbientLight = this.constantAmbientLight.get();
         }
         return new DimensionEffectsModifier(oldCloud, oldGround, oldSky, oldBright, oldAmbient,
-                Optional.empty(), Optional.empty(), Optional.empty());
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
     }
 
 }

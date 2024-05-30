@@ -93,14 +93,13 @@ public class LegacyHelper {
 
                 map.put(id, BlockPropertyModifier.coloringBlocks(colormap, Blocks.REDSTONE_WIRE));
             } else if (prop != null) {
-                try{
+                try {
                     BlockPropertyModifier modifier = convertOFProperty(prop, id);
                     map.put(id, modifier);
-                }catch (Exception e){
+                } catch (Exception e) {
                     Polytone.LOGGER.error("FAILED TO CONVERT OPTIFINE COLORMAP AT {}: ", id, e);
                 }
             }
-
         }
         return map;
 
@@ -167,7 +166,7 @@ public class LegacyHelper {
         }
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.ofNullable(set), false);
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.ofNullable(set), false);
     }
 
 
@@ -225,7 +224,7 @@ public class LegacyHelper {
         }
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.ofNullable(set), false);
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.ofNullable(set), false);
     }
 
     public static Map<ResourceLocation, BlockPropertyModifier> convertInlinedPalettes(

@@ -16,6 +16,18 @@ mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBas
 
 accessible class net/minecraft/client/gui/Gui$HeartType
 
+accessible field net/minecraft/world/level/block/DoorBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
+mutable field net/minecraft/world/level/block/DoorBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
+
+accessible field net/minecraft/world/level/block/TrapDoorBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
+mutable field net/minecraft/world/level/block/TrapDoorBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
+
+accessible field net/minecraft/world/level/block/ButtonBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
+mutable field net/minecraft/world/level/block/ButtonBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
+
+accessible field net/minecraft/world/level/block/BasePressurePlateBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
+mutable field net/minecraft/world/level/block/BasePressurePlateBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
+
 accessible field net/minecraft/client/particle/ParticleEngine spriteSets Ljava/util/Map;
 accessible class net/minecraft/client/particle/ParticleEngine$MutableSpriteSet
 accessible method net/minecraft/client/particle/ParticleEngine$MutableSpriteSet <init> ()V

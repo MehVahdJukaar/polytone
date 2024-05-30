@@ -15,12 +15,12 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.properties.BlockSetType;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class LightmapsManager extends JsonImgPartialReloader {
 
@@ -36,20 +36,18 @@ public class LightmapsManager extends JsonImgPartialReloader {
 
     @Override
     protected Resources prepare(ResourceManager resourceManager) {
-        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
-
-        scanDirectory(resourceManager, path(), GSON, jsons);
-        checkConditions(jsons);
+        var jsons = this.getJsonsInDirectories(resourceManager);
+        this.checkConditions(jsons);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 
-        Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/lightmap");
-        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.gatherImages(resourceManager, "colormatic/lightmap");
+        Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.scanDirectory(resourceManager, "optifine/lightmap");
+        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.scanDirectory(resourceManager, "colormatic/lightmap");
 
         textures.putAll(LegacyHelper.convertPaths(ofTextures));
         textures.putAll(LegacyHelper.convertPaths(cmTextures));
 
-        textures.putAll(ArrayImage.gatherImages(resourceManager, path()));
+        textures.putAll(this.getImagesInDirectories(resourceManager));
 
         return new Resources(jsons, textures);
     }
@@ -65,6 +63,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
         for (var e : images.entrySet()) {
             ArrayImage value = e.getValue();
             int height = value.height();
+
             ResourceLocation location = e.getKey();
             if (height != 16 && height != 32 && height != 64) {
                 throw new IllegalStateException("Lightmap must be either 16, 32 or 64 pixels tall. Provided one at " + location + " was " + height + " pixels");
@@ -88,7 +87,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
             JsonElement j = jsons.remove(location);
             Lightmap lightmap;
             if (j != null) {
-                lightmap = Lightmap.CODEC.decode(JsonOps.INSTANCE, j)
+                lightmap = Lightmap.DIRECT_CODEC.decode(JsonOps.INSTANCE, j)
                         .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Lightmap with json id " + location + "\n error: " + errorMsg))
                         .getFirst();
 
