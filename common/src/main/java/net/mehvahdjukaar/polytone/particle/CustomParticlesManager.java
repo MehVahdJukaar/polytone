@@ -13,10 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ExtraCodecs;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class CustomParticlesManager extends JsonPartialReloader {
 
@@ -41,9 +38,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
         for (var v : CUSTOM_PARTICLES.keySet()) {
             engine.spriteSets.remove(new ResourceLocation(v));
         }
-        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
-        scanDirectory(resourceManager, path(), GSON, jsons);
-        checkConditions(jsons);
+        var jsons = this.getJsonsInDirectories(resourceManager);
+        this.checkConditions(jsons);
         for (var v : jsons.keySet()) {
             engine.spriteSets.put(v, new ParticleEngine.MutableSpriteSet());
         }

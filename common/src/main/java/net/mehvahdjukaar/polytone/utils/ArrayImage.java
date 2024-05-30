@@ -24,12 +24,13 @@ public record ArrayImage(int[][] pixels, int width, int height) {
     }
     //TODO: remove this isnt needed
 
-    public static Map<ResourceLocation, Group> gatherGroupedImages(ResourceManager manager, String path) {
-        return groupTextures(gatherImages(manager, path));
+    public static  Map<ResourceLocation, ArrayImage> scanDirectory(ResourceManager manager, String path) {
+        Map<ResourceLocation, ArrayImage> map = new HashMap<>();
+        scanDirectory(manager, path, map);
+        return map;
     }
 
-    public static Map<ResourceLocation, ArrayImage> gatherImages(ResourceManager manager, String path) {
-        Map<ResourceLocation, ArrayImage> map = new HashMap<>();
+    public static void scanDirectory(ResourceManager manager, String path, Map<ResourceLocation, ArrayImage> map) {
 
         FileToIdConverter helper = new FileToIdConverter(path, ".png");
 
@@ -50,8 +51,6 @@ public record ArrayImage(int[][] pixels, int width, int height) {
                 Polytone.LOGGER.error("Couldn't parse texture file {} from {}", id, fileId, var14);
             }
         }
-
-        return map;
     }
 
     //basically just swaps the color format

@@ -38,7 +38,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private boolean needsDynamicApplication = true;
 
     public DimensionEffectsManager() {
-        super("dimension_effects");
+        super("dimension_modifiers", "dimension_effects");
     }
 
     @Override

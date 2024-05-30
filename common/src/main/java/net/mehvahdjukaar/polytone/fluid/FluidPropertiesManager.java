@@ -14,18 +14,18 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.material.Fluid;
 
 import java.util.*;
-
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class FluidPropertiesManager extends JsonImgPartialReloader {
 
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
 
     public FluidPropertiesManager() {
-        super("fluid_properties");
+        super( "fluid_modifiers", "fluid_properties");
     }
 
     private Map<ResourceLocation, FluidPropertyModifier> extraModifiers;
@@ -47,20 +47,19 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
     @Override
     protected Resources prepare(ResourceManager resourceManager) {
-        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
-        scanDirectory(resourceManager, path(), GSON, jsons);
-        checkConditions(jsons);
+        var jsons = this.getJsonsInDirectories(resourceManager);
+        this.checkConditions(jsons);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 
         //Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
         //LegacyHelper.filterOfFluidTextures(ofTextures);
-        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.gatherImages(resourceManager, "colormatic/colormap");
+        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.scanDirectory(resourceManager, "colormatic/colormap");
 
         //textures.putAll(LegacyHelper.convertPaths(ofTextures));
         textures.putAll(LegacyHelper.convertPaths(cmTextures));
 
-        textures.putAll(ArrayImage.gatherImages(resourceManager, path()));
+        textures.putAll(this.getImagesInDirectories(resourceManager));
 
         return new Resources(jsons, textures);
     }

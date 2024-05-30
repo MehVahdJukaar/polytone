@@ -30,8 +30,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
-
 public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resources> {
 
     private final Map<ResourceLocation, SoundEvent> customSoundEvents = new HashMap<>();
@@ -40,7 +38,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     private final BiMap<ResourceLocation, SoundType> soundTypesIds = HashBiMap.create();
 
     public SoundTypesManager() {
-        super("sound_types");
+        super("custom_sound_types", "sound_types");
     }
 
     @Nullable
@@ -55,9 +53,8 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
 
     @Override
     protected Resources prepare(ResourceManager resourceManager) {
-        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
-        scanDirectory(resourceManager, path(), GSON, jsons);
-        checkConditions(jsons);
+        var jsons = getJsonsInDirectories(resourceManager);
+        this.checkConditions(jsons);
 
         var types = gatherSoundEvents(resourceManager, Polytone.MOD_ID);
 

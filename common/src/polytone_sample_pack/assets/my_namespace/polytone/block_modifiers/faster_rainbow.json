@@ -2,6 +2,6 @@
    "targets": ["minecraft:lily_pad"],
    "colormap": {
       "y_axis": "biome_id",
-      "x_axis": 0
+      "x_axis": "0"
    }
 }

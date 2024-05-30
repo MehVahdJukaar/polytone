@@ -11,16 +11,14 @@ import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListe
 
 public abstract class JsonPartialReloader extends PartialReloader<Map<ResourceLocation, JsonElement>> {
 
-    protected JsonPartialReloader(String name) {
+    protected JsonPartialReloader(String ...name) {
         super(name);
     }
 
     @Override
     protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
-        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
-        scanDirectory(resourceManager, path(), GSON, jsons);
-
-        checkConditions(jsons);
+        var jsons = this.getJsonsInDirectories(resourceManager);
+        this.checkConditions(jsons);
         return jsons;
     }
 }
