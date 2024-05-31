@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import com.google.common.base.Stopwatch;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -18,7 +20,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
     @Override
     protected List<Object> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
-        //sequentially prepares all of them in order
+        //sequentially prepares all of them in order. Whole point of this is that we cant multi thread this part. This still happens off-thread
         List<Object> list = new ArrayList<>();
         for (var c : children) {
             list.add(c.prepare(resourceManager));
@@ -28,6 +30,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
     @Override
     protected void apply(List<Object> object, ResourceManager resourceManager, ProfilerFiller profiler) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         for (var c : children) {
             c.reset();
         }
@@ -40,6 +43,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         for (var c : children) {
             c.apply();
         }
+        Polytone.LOGGER.info("Reloaded Polytone Resources in {} ms", stopwatch.elapsed().toMillis());
     }
 
     @SuppressWarnings("all")

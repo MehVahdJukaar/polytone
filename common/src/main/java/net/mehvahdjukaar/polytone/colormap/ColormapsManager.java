@@ -110,7 +110,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     //helper methods
     public static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> availableTextures,
                                                 ResourceLocation defaultPath, BlockColor col, Set<ResourceLocation> usedTexture, boolean strict) {
-        if (col instanceof CompoundBlockColors c) {
+        if (col instanceof IndexCompoundBlockColors c) {
             tryAcceptingTextureGroup(availableTextures, defaultPath, c, usedTexture, strict);
         } else if (col instanceof Colormap c) {
             tryAcceptingTextureGroup(availableTextures, defaultPath, c, usedTexture, strict);
@@ -126,7 +126,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
     private static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> textures,
-                                                 ResourceLocation id, CompoundBlockColors colormap,
+                                                 ResourceLocation id, IndexCompoundBlockColors colormap,
                                                  Set<ResourceLocation> usedTextures, boolean strict) {
         var blockColorGetters = colormap.getGetters();
 

@@ -1,8 +1,10 @@
 package net.mehvahdjukaar.polytone.biome;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 
@@ -10,26 +12,28 @@ import java.util.Map;
 
 public interface BiomeIdMapper {
 
-    BiomeIdMapper BY_INDEX = (biomeRegistry, biome) -> {
-        int id = LegacyHelper.getBiomeId(biome, biomeRegistry);
+    BiomeIdMapper BY_INDEX = (biome) -> {
+        int id = LegacyHelper.getBiomeId(biome);
         return (1 + id) / 255f;
     };
 
-    float getIndex(Registry<Biome> biomeRegistry, Biome biome);
+    float getIndex(Biome biome);
 
-    record Custom(Map<ResourceLocation, Float> map, float textureSize) implements BiomeIdMapper {
+    record Custom(Map<ResourceKey<Biome>, Float> map, float textureSize) implements BiomeIdMapper {
 
-        public Custom(Map<ResourceLocation, Float> map) {
-            this(map, map.getOrDefault(new ResourceLocation("texture_size"), 1f));
+        public Custom(Map<ResourceKey<Biome>, Float> map) {
+            this(map, map.getOrDefault(ResourceKey.create(Registries.BIOME, new ResourceLocation("texture_size")), 1f));
         }
 
-        public static final Codec<Custom> CODEC = Codec.unboundedMap(ResourceLocation.CODEC, Codec.FLOAT)
+        public static final Codec<Custom> CODEC = Codec.unboundedMap(ResourceLocation.CODEC
+                                .xmap(r -> ResourceKey.create(Registries.BIOME, r), ResourceKey::location),
+                        Codec.FLOAT)
                 .xmap(Custom::new, Custom::map);
 
         @Override
-        public float getIndex(Registry<Biome> biomeRegistry, Biome biome) {
+        public float getIndex(Biome biome) {
             // no clue why 1 is needed
-            return (1 + map.getOrDefault(biomeRegistry.getKey(biome), 0f)) / (textureSize-1);
+            return (1 + map.getOrDefault(BiomeKeysCache.get(biome), 0f)) / (textureSize - 1);
         }
     }
 

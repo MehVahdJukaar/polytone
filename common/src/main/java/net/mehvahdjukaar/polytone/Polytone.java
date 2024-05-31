@@ -14,15 +14,15 @@ import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
+import net.mehvahdjukaar.polytone.tabs.CreativeTabsModifiersManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
+import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.MixinEnvironment;
-import org.spongepowered.tools.agent.MixinAgent;
 
 public class Polytone {
     public static final String MOD_ID = "polytone";
@@ -44,6 +44,7 @@ public class Polytone {
     public static final GuiModifierManager SLOTIFY = new GuiModifierManager();
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
+    public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
 
     public static boolean sodiumOn = false;
     public static boolean isDevEnv = false;
@@ -51,7 +52,8 @@ public class Polytone {
     public static void init(boolean isSodiumOn, boolean devEnv) {
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
                         SOUND_TYPES, CUSTOM_PARTICLES, BIOME_ID_MAPPERS, COLORMAPS, COLORS, BLOCK_SET, BLOCK_PROPERTIES, FLUID_PROPERTIES,
-                        BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_EFFECTS, PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS),
+                        BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_EFFECTS, PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,
+                        CREATIVE_TABS_MODIFIERS),
                 res("polytone_stuff"));
         sodiumOn = isSodiumOn;
         isDevEnv = devEnv;
@@ -78,6 +80,11 @@ public class Polytone {
     public static void onTagsReceived(RegistryAccess registryAccess) {
         BIOME_EFFECTS.doApply(registryAccess, true);
         DIMENSION_EFFECTS.doApply(registryAccess, true);
+        BiomeKeysCache.clear();
+    }
+
+    public static void onLevelUnload() {
+        BiomeKeysCache.clear();
     }
 
 

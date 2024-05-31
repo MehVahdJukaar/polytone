@@ -5,7 +5,6 @@ import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.particle.ParticleModifier;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
@@ -16,12 +15,11 @@ public class BlockSetManager extends JsonPartialReloader {
 
     // we keep our own registry
     private final BiMap<ResourceLocation, BlockSetTypeProvider> blockSetTypes = HashBiMap.create();
+    private int counter = 0;
 
     public BlockSetManager() {
         super("custom_block_sets", "block_sets");
     }
-
-    private int counter = 0;
 
     public String getNextName() {
         return "polytone:custom_" + counter++;
@@ -34,6 +32,7 @@ public class BlockSetManager extends JsonPartialReloader {
         BlockSetType.values().forEach(type ->
                 blockSetTypes.put(new ResourceLocation(type.name()),
                         new BlockSetTypeProvider.Vanilla(type)));
+        counter = 0;
     }
 
     @Override
