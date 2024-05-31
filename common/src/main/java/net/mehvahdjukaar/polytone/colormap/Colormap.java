@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -51,7 +52,8 @@ public class Colormap implements ColorResolver, BlockColor {
             IColormapNumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
             StrOpt.of(Codec.BOOL, "triangular", false).forGetter(c -> c.triangular),
             StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
-            StrOpt.of(BiomeIdMapperManager.CODEC, "biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper))
+            StrOpt.of(BiomeIdMapperManager.CODEC, "biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
+            StrOpt.of(ResourceLocation.CODEC, "texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture))
     ).apply(i, Colormap::new));
 
     protected static final Codec<BlockColor> REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
@@ -64,13 +66,18 @@ public class Colormap implements ColorResolver, BlockColor {
     protected static final Codec<BlockColor> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
-    public static final Codec<BlockColor> CODEC = Codec.either(SINGLE_COLOR_CODEC,
+    public static final Codec<BlockColor> COLORMAP_CODEC = Codec.either(SINGLE_COLOR_CODEC,
                     new ReferenceOrDirectCodec<>(REFERENCE_CODEC, DIRECT_CODEC))
             .xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
-    ;
+
+
+    // single or biome compound
+    public static final Codec<BlockColor> CODEC = COLORMAP_CODEC;// Codec.either(BiomeCompoundBlockColors.DIRECT_CODEC, Colormap.COLORMAP_CODEC)
+          //  .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
-                     boolean triangular, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper) {
+                     boolean triangular, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
+                     Optional<ResourceLocation> explicitTargetTexture) {
         this.defaultColor = defaultColor.orElse(null);
         this.xGetter = xGetter;
         this.yGetter = yGetter;
@@ -80,10 +87,11 @@ public class Colormap implements ColorResolver, BlockColor {
         this.usesState = (xGetter.usesState() || yGetter.usesState());
         this.hasBiomeBlend = biomeBlend.orElse(usesBiome);
         this.biomeMapper = biomeMapper.orElse(BiomeIdMapper.BY_INDEX);
+        this.explicitTargetTexture = explicitTargetTexture.orElse(null);
     }
 
     protected Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter) {
-        this(Optional.empty(), xGetter, yGetter, false, Optional.empty(), Optional.empty());
+        this(Optional.empty(), xGetter, yGetter, false, Optional.empty(), Optional.empty(),Optional.empty());
     }
 
     //Square map with those 2 getters
@@ -93,32 +101,32 @@ public class Colormap implements ColorResolver, BlockColor {
 
     public static Colormap fixed() {
         return new Colormap(Optional.empty(), IColormapNumberProvider.ZERO,
-                IColormapNumberProvider.ZERO, false, Optional.empty(), Optional.empty());
+                IColormapNumberProvider.ZERO, false, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     //this is dumb. dont use
     private static Colormap singleColor(int color) {
         var c = new Colormap(Optional.empty(), IColormapNumberProvider.ZERO,
-                IColormapNumberProvider.ZERO, false, Optional.empty(), Optional.empty());
+                IColormapNumberProvider.ZERO, false, Optional.empty(), Optional.empty(), Optional.empty());
         c.acceptTexture(new ArrayImage(new int[][]{{color}}));
         return c;
     }
 
     public static Colormap defSquare() {
         return new Colormap(Optional.empty(),
-                IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, false, Optional.empty(), Optional.empty());
+                IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, false, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public static Colormap defTriangle() {
         return new Colormap(Optional.empty(),
-                IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, true, Optional.empty(), Optional.empty());
+                IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, true, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public static Colormap biomeId() {
         return new Colormap(Optional.empty(),
                 IColormapNumberProvider.BIOME_ID,
                 IColormapNumberProvider.Y_LEVEL,
-                false, Optional.of(Boolean.TRUE), Optional.empty());
+                false, Optional.of(Boolean.TRUE), Optional.empty(), Optional.empty());
 
     }
 

@@ -9,10 +9,8 @@ import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -29,18 +27,35 @@ public interface BlockSetTypeProvider {
 
     BlockSetType getOrCreate(BlockSetType original, Optional<SoundType> customSound);
 
-    record Vanilla(BlockSetType vanilla) implements BlockSetTypeProvider{
+    record Vanilla(BlockSetType vanilla) implements BlockSetTypeProvider {
 
         @Override
-        public BlockSetType getOrCreate(BlockSetType original,  Optional<SoundType> customSound) {
-            return vanilla;
+        public BlockSetType getOrCreate(BlockSetType original, Optional<SoundType> customSound) {
+            if (customSound.isEmpty() && original.canOpenByHand() == vanilla.canOpenByHand()) {
+                //we can return vanilla if no custom sound and no change in canOpenByHand
+                return vanilla;
+            }
+            return new BlockSetType(
+                    Polytone.BLOCK_SET.getNextName(),
+                    original.canOpenByHand(), //always creates a new one because of this...
+                    customSound.orElse(vanilla.soundType()),
+                    vanilla.doorClose(),
+                    vanilla.doorOpen(),
+                    vanilla.trapdoorClose(),
+                    vanilla.trapdoorOpen(),
+                    vanilla.pressurePlateClickOff(),
+                    vanilla.pressurePlateClickOn(),
+                    vanilla.buttonClickOff(),
+                    vanilla.buttonClickOn()
+            );
         }
     }
 
     record Custom(Optional<SoundEvent> doorClose, Optional<SoundEvent> doorOpen,
                   Optional<SoundEvent> trapdoorClose, Optional<SoundEvent> trapdoorOpen,
                   Optional<SoundEvent> pressurePlateClickOff, Optional<SoundEvent> pressurePlateClickOn,
-                  Optional<SoundEvent> buttonClickOff, Optional<SoundEvent> buttonClickOn) implements BlockSetTypeProvider{
+                  Optional<SoundEvent> buttonClickOff,
+                  Optional<SoundEvent> buttonClickOn) implements BlockSetTypeProvider {
 
         public static final Codec<Custom> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
                 StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "door_close").forGetter(Custom::doorClose),
@@ -54,7 +69,7 @@ public interface BlockSetTypeProvider {
         ).apply(instance, Custom::new));
 
         @Override
-        public BlockSetType getOrCreate(BlockSetType original,  Optional<SoundType> customSound) {
+        public BlockSetType getOrCreate(BlockSetType original, Optional<SoundType> customSound) {
             return new BlockSetType(
                     Polytone.BLOCK_SET.getNextName(),
                     original.canOpenByHand(),

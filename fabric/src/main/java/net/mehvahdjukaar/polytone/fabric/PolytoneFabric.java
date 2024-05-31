@@ -22,6 +22,7 @@ public class PolytoneFabric implements ClientModInitializer {
                 Polytone.onTagsReceived(registries);
             }
         });
+
         /*
         ModelLoadingPlugin.register(pluginContext -> {
            pluginContext.modifyModelAfterBake().register((model, context) -> {

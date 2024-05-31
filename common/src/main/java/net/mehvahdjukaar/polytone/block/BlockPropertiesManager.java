@@ -1,14 +1,11 @@
 package net.mehvahdjukaar.polytone.block;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.mojang.realmsclient.util.JsonUtils;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.colormap.CompoundBlockColors;
+import net.mehvahdjukaar.polytone.colormap.IndexCompoundBlockColors;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
@@ -19,14 +16,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -116,7 +108,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             if (!modifier.hasColormap() && textures.containsKey(id)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
                 var text = textures.get(id);
-                CompoundBlockColors defaultSampler = CompoundBlockColors.createDefault(text.keySet(), true);
+                IndexCompoundBlockColors defaultSampler = IndexCompoundBlockColors.createDefault(text.keySet(), true);
                 modifier = modifier.merge(BlockPropertyModifier.ofBlockColor(defaultSampler));
             }
 
@@ -135,7 +127,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
             ArrayImage.Group image = entry.getValue();
 
-            CompoundBlockColors tintMap = CompoundBlockColors.createDefault(image.keySet(), true);
+            IndexCompoundBlockColors tintMap = IndexCompoundBlockColors.createDefault(image.keySet(), true);
             ColormapsManager.tryAcceptingTextureGroup(textures, id, tintMap, usedTextures, true);
 
             BlockPropertyModifier modifier = BlockPropertyModifier.ofBlockColor(tintMap);

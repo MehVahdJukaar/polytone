@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
@@ -111,11 +112,8 @@ public interface IColormapNumberProvider {
     // grid format
     IColormapNumberProvider BIOME_ID = register("biome_id",
             (state, pos, biome, mapper) -> {
-                var level = Minecraft.getInstance().level;
-                if (level == null) return 0;
-                var registry = level.registryAccess().registry(Registries.BIOME).get();
                 // texture is flipped...
-                return 1 - mapper.getIndex(registry, biome);
+                return 1 - mapper.getIndex(biome);
             });
 
 

@@ -11,8 +11,11 @@ import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
 import net.minecraft.Util;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
@@ -264,81 +267,84 @@ public class LegacyHelper {
         }
     }
 
-    public static int getBiomeId(Biome biome, Registry<Biome> biomeRegistry) {
-        ResourceLocation id = biomeRegistry.getKey(biome);
-        return BIOME_ID_MAP.getOrDefault(id, 0);
+    public static int getBiomeId(Biome biome) {
+        return BIOME_ID_MAP.getOrDefault(BiomeKeysCache.get(biome), 0);
     }
 
     //whateve optifine uses...
-    private static final Object2IntMap<ResourceLocation> BIOME_ID_MAP = Util.make(() -> {
-        Object2IntMap<ResourceLocation> map = new Object2IntOpenHashMap<>();
+    private static final Object2IntMap<ResourceKey<Biome>> BIOME_ID_MAP = Util.make(() -> {
+        Object2IntMap<ResourceKey<Biome>> map = new Object2IntOpenHashMap<>();
         // Add entries to the map
-        map.put(new ResourceLocation("the_void"), 0);
-        map.put(new ResourceLocation("plains"), 1);
-        map.put(new ResourceLocation("sunflower_plains"), 2);
-        map.put(new ResourceLocation("snowy_plains"), 3);
-        map.put(new ResourceLocation("ice_spikes"), 4);
-        map.put(new ResourceLocation("desert"), 5);
-        map.put(new ResourceLocation("swamp"), 6);
-        map.put(new ResourceLocation("mangrove_swamp"), 7);
-        map.put(new ResourceLocation("forest"), 8);
-        map.put(new ResourceLocation("flower_forest"), 9);
-        map.put(new ResourceLocation("birch_forest"), 10);
-        map.put(new ResourceLocation("dark_forest"), 11);
-        map.put(new ResourceLocation("old_growth_birch_forest"), 12);
-        map.put(new ResourceLocation("old_growth_pine_taiga"), 13);
-        map.put(new ResourceLocation("old_growth_spruce_taiga"), 14);
-        map.put(new ResourceLocation("taiga"), 15);
-        map.put(new ResourceLocation("snowy_taiga"), 16);
-        map.put(new ResourceLocation("savanna"), 17);
-        map.put(new ResourceLocation("savanna_plateau"), 18);
-        map.put(new ResourceLocation("windswept_hills"), 19);
-        map.put(new ResourceLocation("windswept_gravelly_hills"), 20);
-        map.put(new ResourceLocation("windswept_forest"), 21);
-        map.put(new ResourceLocation("windswept_savanna"), 22);
-        map.put(new ResourceLocation("jungle"), 23);
-        map.put(new ResourceLocation("sparse_jungle"), 24);
-        map.put(new ResourceLocation("bamboo_jungle"), 25);
-        map.put(new ResourceLocation("badlands"), 26);
-        map.put(new ResourceLocation("eroded_badlands"), 27);
-        map.put(new ResourceLocation("wooded_badlands"), 28);
-        map.put(new ResourceLocation("meadow"), 29);
-        map.put(new ResourceLocation("cherry_grove"), 30);
-        map.put(new ResourceLocation("grove"), 31);
-        map.put(new ResourceLocation("snowy_slopes"), 32);
-        map.put(new ResourceLocation("frozen_peaks"), 33);
-        map.put(new ResourceLocation("jagged_peaks"), 34);
-        map.put(new ResourceLocation("stony_peaks"), 35);
-        map.put(new ResourceLocation("river"), 36);
-        map.put(new ResourceLocation("frozen_river"), 37);
-        map.put(new ResourceLocation("beach"), 38);
-        map.put(new ResourceLocation("snowy_beach"), 39);
-        map.put(new ResourceLocation("stony_shore"), 40);
-        map.put(new ResourceLocation("warm_ocean"), 41);
-        map.put(new ResourceLocation("lukewarm_ocean"), 42);
-        map.put(new ResourceLocation("deep_lukewarm_ocean"), 43);
-        map.put(new ResourceLocation("ocean"), 44);
-        map.put(new ResourceLocation("deep_ocean"), 45);
-        map.put(new ResourceLocation("cold_ocean"), 46);
-        map.put(new ResourceLocation("deep_cold_ocean"), 47);
-        map.put(new ResourceLocation("frozen_ocean"), 48);
-        map.put(new ResourceLocation("deep_frozen_ocean"), 49);
-        map.put(new ResourceLocation("mushroom_fields"), 50);
-        map.put(new ResourceLocation("dripstone_caves"), 51);
-        map.put(new ResourceLocation("lush_caves"), 52);
-        map.put(new ResourceLocation("deep_dark"), 53);
-        map.put(new ResourceLocation("nether_wastes"), 54);
-        map.put(new ResourceLocation("warped_forest"), 55);
-        map.put(new ResourceLocation("crimson_forest"), 56);
-        map.put(new ResourceLocation("soul_sand_valley"), 57);
-        map.put(new ResourceLocation("basalt_deltas"), 58);
-        map.put(new ResourceLocation("the_end"), 59);
-        map.put(new ResourceLocation("end_highlands"), 60);
-        map.put(new ResourceLocation("end_midlands"), 61);
-        map.put(new ResourceLocation("small_end_islands"), 62);
-        map.put(new ResourceLocation("end_barrens"), 63);
+        map.put(biomeResKey("the_void"), 0);
+        map.put(biomeResKey("plains"), 1);
+        map.put(biomeResKey("sunflower_plains"), 2);
+        map.put(biomeResKey("snowy_plains"), 3);
+        map.put(biomeResKey("ice_spikes"), 4);
+        map.put(biomeResKey("desert"), 5);
+        map.put(biomeResKey("swamp"), 6);
+        map.put(biomeResKey("mangrove_swamp"), 7);
+        map.put(biomeResKey("forest"), 8);
+        map.put(biomeResKey("flower_forest"), 9);
+        map.put(biomeResKey("birch_forest"), 10);
+        map.put(biomeResKey("dark_forest"), 11);
+        map.put(biomeResKey("old_growth_birch_forest"), 12);
+        map.put(biomeResKey("old_growth_pine_taiga"), 13);
+        map.put(biomeResKey("old_growth_spruce_taiga"), 14);
+        map.put(biomeResKey("taiga"), 15);
+        map.put(biomeResKey("snowy_taiga"), 16);
+        map.put(biomeResKey("savanna"), 17);
+        map.put(biomeResKey("savanna_plateau"), 18);
+        map.put(biomeResKey("windswept_hills"), 19);
+        map.put(biomeResKey("windswept_gravelly_hills"), 20);
+        map.put(biomeResKey("windswept_forest"), 21);
+        map.put(biomeResKey("windswept_savanna"), 22);
+        map.put(biomeResKey("jungle"), 23);
+        map.put(biomeResKey("sparse_jungle"), 24);
+        map.put(biomeResKey("bamboo_jungle"), 25);
+        map.put(biomeResKey("badlands"), 26);
+        map.put(biomeResKey("eroded_badlands"), 27);
+        map.put(biomeResKey("wooded_badlands"), 28);
+        map.put(biomeResKey("meadow"), 29);
+        map.put(biomeResKey("cherry_grove"), 30);
+        map.put(biomeResKey("grove"), 31);
+        map.put(biomeResKey("snowy_slopes"), 32);
+        map.put(biomeResKey("frozen_peaks"), 33);
+        map.put(biomeResKey("jagged_peaks"), 34);
+        map.put(biomeResKey("stony_peaks"), 35);
+        map.put(biomeResKey("river"), 36);
+        map.put(biomeResKey("frozen_river"), 37);
+        map.put(biomeResKey("beach"), 38);
+        map.put(biomeResKey("snowy_beach"), 39);
+        map.put(biomeResKey("stony_shore"), 40);
+        map.put(biomeResKey("warm_ocean"), 41);
+        map.put(biomeResKey("lukewarm_ocean"), 42);
+        map.put(biomeResKey("deep_lukewarm_ocean"), 43);
+        map.put(biomeResKey("ocean"), 44);
+        map.put(biomeResKey("deep_ocean"), 45);
+        map.put(biomeResKey("cold_ocean"), 46);
+        map.put(biomeResKey("deep_cold_ocean"), 47);
+        map.put(biomeResKey("frozen_ocean"), 48);
+        map.put(biomeResKey("deep_frozen_ocean"), 49);
+        map.put(biomeResKey("mushroom_fields"), 50);
+        map.put(biomeResKey("dripstone_caves"), 51);
+        map.put(biomeResKey("lush_caves"), 52);
+        map.put(biomeResKey("deep_dark"), 53);
+        map.put(biomeResKey("nether_wastes"), 54);
+        map.put(biomeResKey("warped_forest"), 55);
+        map.put(biomeResKey("crimson_forest"), 56);
+        map.put(biomeResKey("soul_sand_valley"), 57);
+        map.put(biomeResKey("basalt_deltas"), 58);
+        map.put(biomeResKey("the_end"), 59);
+        map.put(biomeResKey("end_highlands"), 60);
+        map.put(biomeResKey("end_midlands"), 61);
+        map.put(biomeResKey("small_end_islands"), 62);
+        map.put(biomeResKey("end_barrens"), 63);
         return map;
     });
+
+    private static ResourceKey<Biome> biomeResKey(String endBarrens) {
+        return ResourceKey.create(Registries.BIOME, new ResourceLocation(endBarrens));
+    }
 
 
     public static void convertOfBlockToFluidProp(Map<ResourceLocation, BlockPropertyModifier> parsedModifiers,

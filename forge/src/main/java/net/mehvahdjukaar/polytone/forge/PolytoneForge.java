@@ -1,16 +1,25 @@
 package net.mehvahdjukaar.polytone.forge;
 
+import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
+import net.mehvahdjukaar.polytone.utils.ItemToTabEvent;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.TagsUpdatedEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+
+import java.util.ArrayList;
 
 /**
  * Author: MehVahdJukaar
@@ -23,6 +32,7 @@ public class PolytoneForge {
             Polytone.init(false, !FMLEnvironment.production);
 
             MinecraftForge.EVENT_BUS.register(this);
+            FMLJavaModLoadingContext.get().getModEventBus().addListener(this::modifyCreativeTabs);
         } else {
             Polytone.LOGGER.warn("Slotify has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
@@ -48,6 +58,56 @@ public class PolytoneForge {
             ss.polytone$renderExtraSprites(poseStack);
             poseStack.popPose();
         }
+    }
+
+    @SubscribeEvent
+    public void onLevelUnload(LevelEvent.Unload event) {
+        Polytone.onLevelUnload();
+    }
+
+
+    public void modifyCreativeTabs(BuildCreativeModeTabContentsEvent event) {
+        ItemToTabEvent itemToTabEvent = new ItemToTabEvent((tab, target, after, items) -> {
+            if (tab != event.getTabKey()) return;
+
+            if (target == null) {
+                event.acceptAll(items);
+            } else {
+
+                var entries = event.getEntries();
+                ItemStack lastValid = null;
+
+
+                for (var e : entries) {
+                    ItemStack item = e.getKey();
+
+                    if (!item.isItemEnabled(event.getFlags())) continue;
+
+                    boolean isValid = target.test(item);
+                    if (after && lastValid != null && !isValid) {
+                        var rev = Lists.reverse(new ArrayList<>(items));
+                        for (var ni : rev) {
+                            entries.putAfter(lastValid, ni, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                        }
+                        return;
+                    }
+
+                    if (isValid) {
+                        lastValid = item;
+                    }
+
+                    if (!after && isValid) {
+                        items.forEach(ni -> entries.putBefore(item, ni, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
+                        return;
+                    }
+                }
+                //add at the end if it fails
+                for (var ni : items) {
+                    entries.put(ni, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                }
+            }
+        });
+        Polytone.CREATIVE_TABS_MODIFIERS.modifyTabs(itemToTabEvent);
     }
 
 }

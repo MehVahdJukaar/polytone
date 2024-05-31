@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import com.google.common.base.Preconditions;
 import com.mojang.serialization.*;
 
 import java.util.Objects;
@@ -27,7 +28,7 @@ public class StrOpt {
 
         public StrictOptionalFieldCodec(String name, Codec<A> elementCodec) {
             this.name = name;
-            this.elementCodec = elementCodec;
+            this.elementCodec = Preconditions.checkNotNull(elementCodec);
         }
 
         public <T> DataResult<Optional<A>> decode(DynamicOps<T> dynamicOps, MapLike<T> mapLike) {
