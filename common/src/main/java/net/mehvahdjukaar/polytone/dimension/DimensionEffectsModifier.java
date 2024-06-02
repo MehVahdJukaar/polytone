@@ -38,7 +38,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                     Codec.BOOL.optionalFieldOf("constant_ambient_light").forGetter(DimensionEffectsModifier::constantAmbientLight),
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
                     Colormap.CODEC.optionalFieldOf("sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
-                    Lightmap.CODEC.optionalFieldOf("lightmap").forGetter(DimensionEffectsModifier::lightmap),
+                    Lightmap.REFERENCE_CODEC.optionalFieldOf("lightmap").forGetter(DimensionEffectsModifier::lightmap),
                     TargetsHelper.CODEC.optionalFieldOf("targets").forGetter(DimensionEffectsModifier::explicitTargets)
             ).apply(instance, DimensionEffectsModifier::new));
 

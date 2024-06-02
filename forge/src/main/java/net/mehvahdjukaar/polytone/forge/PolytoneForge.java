@@ -4,9 +4,11 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
-import net.mehvahdjukaar.polytone.utils.ItemToTabEvent;
+import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -18,8 +20,11 @@ import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Author: MehVahdJukaar
@@ -67,8 +72,29 @@ public class PolytoneForge {
 
 
     public void modifyCreativeTabs(BuildCreativeModeTabContentsEvent event) {
-        ItemToTabEvent itemToTabEvent = new ItemToTabEvent((tab, target, after, items) -> {
-            if (tab != event.getTabKey()) return;
+        Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(event));
+    }
+
+    public record ItemToTabEventImpl(BuildCreativeModeTabContentsEvent event) implements ItemToTabEvent {
+
+        @Override
+        public ResourceKey<CreativeModeTab> getTab() {
+            return event.getTabKey();
+        }
+
+        @Override
+        public void removeItems(Predicate<ItemStack> target) {
+            var iter = event.getEntries().iterator();
+            while (iter.hasNext()) {
+                var e = iter.next();
+                if (target.test(e.getKey())) {
+                    iter.remove();
+                }
+            }
+        }
+
+        @Override
+        public void addItems(@Nullable Predicate<ItemStack> target, boolean after, List<ItemStack> items) {
 
             if (target == null) {
                 event.acceptAll(items);
@@ -106,8 +132,6 @@ public class PolytoneForge {
                     entries.put(ni, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                 }
             }
-        });
-        Polytone.CREATIVE_TABS_MODIFIERS.modifyTabs(itemToTabEvent);
+        }
     }
-
 }

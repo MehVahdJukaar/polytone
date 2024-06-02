@@ -1,0 +1,56 @@
+{
+  "targets": [
+    "combat"
+  ],
+  "additions": [
+    {
+      "items": [
+        "minecraft:iron_pickaxe",
+        "minecraft:iron_shovel"
+      ],
+      "before": false,
+      "predicate": {
+        "type": "items_match",
+        "items": [
+          "minecraft:iron_axe"
+        ]
+      }
+    },
+    {
+      "items": "minecraft:diamond"
+    },
+    {
+      "items": [
+        {
+          "id": "minecraft:potion",
+          "tag": {
+            "Potion": "minecraft:water_breathing"
+          }
+        }
+      ]
+    }
+  ],
+  "removals": [
+    {
+      "type": "tag_match",
+      "tag": "swords"
+    },
+    {
+      "type": "id_match",
+      "path": "^arrow$"
+    },
+    {
+      "type": "id_match",
+      "path": "leggings"
+    },
+    {
+      "type": "itemstack_match",
+      "itemstack": {
+        "id": "minecraft:tipped_arrow",
+        "tag": {
+          "Potion": "minecraft:water_breathing"
+        }
+      }
+    }
+  ]
+}

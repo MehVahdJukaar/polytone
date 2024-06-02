@@ -60,7 +60,7 @@ public class Colormap implements ColorResolver, BlockColor {
                     .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
                             " Did you place it in 'assets/[your pack]/polytone/colormaps/' ?")),
             object -> Optional.ofNullable(Polytone.COLORMAPS.getKey(object)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Unknown Color Property: " + object)));
+                    .orElse(DataResult.error(() -> "Unknown Colormap: " + object)));
 
     protected static final Codec<BlockColor> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);

@@ -6,8 +6,13 @@ import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeInfoBiomeInfoAcces
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -66,6 +71,10 @@ public class PlatStuffImpl {
         }
         //assign new effects
         ((ModifiableBiomeInfoBiomeInfoAccessor) (Object) modifiedInfo).setEffects(newEffects);
+    }
+
+    public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
+
     }
 
 }
