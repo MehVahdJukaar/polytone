@@ -2,29 +2,43 @@ package net.mehvahdjukaar.polytone.fabric;
 
 import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
+import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.fabric.BlockColorsAccessor;
+import net.mehvahdjukaar.polytone.mixins.fabric.FabricItemGroupEntriesAccessor;
+import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class PlatStuffImpl {
@@ -93,4 +107,46 @@ public class PlatStuffImpl {
         }
     }
 
+    private static final Set<ResourceKey<CreativeModeTab>> addedCallbacks = new HashSet<>();
+    private static final ResourceLocation POLYTONE_PHASE = Polytone.res("modify_tabs");
+
+    public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
+        if (!addedCallbacks.contains(key)) {
+            addedCallbacks.add(key);
+            Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(key);
+            event.addPhaseOrdering(Event.DEFAULT_PHASE, POLYTONE_PHASE);
+            event.register(POLYTONE_PHASE, f ->
+                    Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(key, f)));
+        }
+    }
+
+    public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,
+                                     FabricItemGroupEntries entries) implements ItemToTabEvent {
+
+        @Override
+        public ResourceKey<CreativeModeTab> getTab() {
+            return tab;
+        }
+
+        @Override
+        public void addItems(@Nullable Predicate<ItemStack> target, boolean after, List<ItemStack> items) {
+            if (target == null) {
+                entries.acceptAll(items);
+            } else {
+                if (after) {
+                    entries.addAfter(target, items, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                } else {
+                    entries.addBefore(target, items, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                }
+            }
+        }
+
+        @Override
+        public void removeItems(Predicate<ItemStack> target) {
+            FabricItemGroupEntriesAccessor acc = ((FabricItemGroupEntriesAccessor) entries);
+            acc.getDisplayStacks().removeIf(target);
+            acc.getSearchTabStacks().removeIf(target);
+        }
+
+    }
 }

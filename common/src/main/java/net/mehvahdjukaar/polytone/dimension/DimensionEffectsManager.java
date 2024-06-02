@@ -82,7 +82,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
             //always have priority
             if (parsedModifiers.containsKey(id)) {
-                Polytone.LOGGER.warn("Found duplicate Dimension Effects file with id {}. This is likely a non .json converted legacy one" +
+                Polytone.LOGGER.warn("Found duplicate Dimension Effects file with id {}." +
                         "Overriding previous one", id);
             }
             parsedModifiers.put(id, modifier);
