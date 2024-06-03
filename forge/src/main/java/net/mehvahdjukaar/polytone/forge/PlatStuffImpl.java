@@ -100,16 +100,16 @@ public class PlatStuffImpl {
         }
 
         Boolean oldSearch = null;
+        Integer oldSearchWidth = null;
+        /*
         if (mod.search().isPresent()) {
             oldSearch = tab.hasSearchBar();
             acc.setHasSearchBar(mod.search().get());
         }
-
-        Integer oldSearchWidth = null;
         if (mod.searchWidth().isPresent()) {
             oldSearchWidth = tab.getSearchBarWidth();
             acc.setSearchBarWidth(mod.searchWidth().get());
-        }
+        }*/
 
         Boolean oldCanScroll = null;
         if (mod.canScroll().isPresent()) {
@@ -137,15 +137,15 @@ public class PlatStuffImpl {
 
 
         List<ResourceLocation> oldBeforeTabs = null;
-        if (!mod.beforeTabs().isEmpty()) {
+        if (mod.beforeTabs().isPresent()) {
             oldBeforeTabs = tab.tabsBefore;
-            acc.setBeforeTabs(mod.beforeTabs());
+            acc.setBeforeTabs(mod.beforeTabs().get());
         }
 
         List<ResourceLocation> oldAfterTabs = null;
-        if (!mod.afterTabs().isEmpty()) {
+        if (mod.afterTabs().isPresent()) {
             oldAfterTabs = tab.tabsAfter;
-            acc.setAfterTabs(mod.afterTabs());
+            acc.setAfterTabs(mod.afterTabs().get());
         }
 
         return new CreativeTabModifier(
