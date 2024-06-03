@@ -8,7 +8,6 @@ import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -16,6 +15,7 @@ import net.neoforged.fml.common.Mod;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -37,7 +37,7 @@ public class PolytoneForge {
             Polytone.init(false, !FMLEnvironment.production);
 
             NeoForge.EVENT_BUS.register(this);
-            FMLJavaModLoadingContext.get().getModEventBus().addListener(this::modifyCreativeTabs);
+            FMLJavaModLoadingContext.get().getModEventBus().addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
         } else {
             Polytone.LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }

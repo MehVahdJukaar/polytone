@@ -5,6 +5,7 @@ import net.mehvahdjukaar.polytone.utils.BakedQuadsTransformer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.neoforge.client.model.IQuadTransformer;
 import net.neoforged.neoforge.client.model.QuadTransformers;
 import org.joml.Matrix3f;

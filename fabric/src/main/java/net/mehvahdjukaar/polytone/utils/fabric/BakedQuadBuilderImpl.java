@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.utils.fabric;
 
 import com.google.common.base.Preconditions;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
