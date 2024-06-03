@@ -1,2 +1,2 @@
-- added creative_tab_modifiers
-- They allow to change the content of any creative tab
+backported all recent changes
+improved creative tab modifiers. you can change icon and if scroll bar is there or not
