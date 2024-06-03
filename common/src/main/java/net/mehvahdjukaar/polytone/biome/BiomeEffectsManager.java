@@ -45,8 +45,8 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod) {
         var explTargets = mod.explicitTargets();
-        if (explTargets.isPresent()) {
-            for (var explicitId : explTargets.get()) {
+        if (!explTargets.isEmpty()) {
+            for (var explicitId : explTargets) {
                 effectsToApply.merge(explicitId, mod, BiomeEffectModifier::merge);
             }
         }

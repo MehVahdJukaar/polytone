@@ -34,7 +34,7 @@ public record CreativeTabModifier(
 
     public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
             StrOpt.of(ExtraItemCodecs.ITEMSTACK, "icon").forGetter(CreativeTabModifier::icon),
-            StrOpt.of(Codec.BOOL, "search").forGetter(CreativeTabModifier::search),
+            StrOpt.of(Codec.BOOL, "search").forGetter(CreativeTabModifier::search), //unused
             StrOpt.of(Codec.INT, "search_width").forGetter(CreativeTabModifier::searchWidth),
             StrOpt.of(Codec.BOOL, "can_scroll").forGetter(CreativeTabModifier::canScroll),
             StrOpt.of(Codec.BOOL, "show_title").forGetter(CreativeTabModifier::showTitle),

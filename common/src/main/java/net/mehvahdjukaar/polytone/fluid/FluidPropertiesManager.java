@@ -117,7 +117,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
             addModifier(id, new FluidPropertyModifier(Optional.of(defaultColormap),
-                    Optional.empty(), Optional.empty()));
+                    Optional.empty(), Set.of()));
         }
     }
 

@@ -8,7 +8,6 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.resources.ResourceLocation;
