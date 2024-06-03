@@ -1,10 +1,2 @@
-- Added custom_block_set_types object type. Can define custom block sets (sound groups like the ones that vanilla wooden blocks use
-- With those you can now change open and close sounds for doors, trapdoors, buttons and pressure plates
-- Done via a "block_set_type" field in block_modifiers
-- Renamed some folders. Old folder names wll still work but new ones are preferred:
-    - "block_properties" -> "block_modifiers"
-    - "fluid_properties" -> "fluid_modifiers"
-    - "dimension_effects" -> "dimension_modifiers"
-    - "biome_effects" -> "biome_modifiers"
-    - "sound_types" -> "custom_sound_types"
-- better error handling for compound colormaps
+- added creative_tab_modifiers
+- They allow to change the content of any creative tab

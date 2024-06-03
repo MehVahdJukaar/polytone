@@ -4,9 +4,10 @@
   "compatibilityLevel": "JAVA_17",
   "package": "net.mehvahdjukaar.polytone.mixins.fabric",
   "mixins": [
-    "FabricItemGroupEntriesAccessor"
   ],
   "client": [
+    "CreativeTabAccessor",
+    "FabricItemGroupEntriesAccessor",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "BlockModelDeserializerMixin",

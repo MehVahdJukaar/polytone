@@ -11,7 +11,6 @@ import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -42,7 +41,7 @@ public record BlockPropertyModifier(
         Optional<List<ParticleEmitter>> particleEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
         Optional<BlockSetTypeProvider> blockSetType,
-        Optional<Set<ResourceLocation>> explicitTargets,
+        Set<ResourceLocation> explicitTargets,
         boolean tintHack) implements ITargetProvider {
 
     // Other has priority
@@ -59,7 +58,7 @@ public record BlockPropertyModifier(
                 other.particleEmitters.isPresent() ? other.particleEmitters : this.particleEmitters,
                 other.offsetType().isPresent() ? other.offsetType() : this.offsetType(),
                 other.blockSetType().isPresent() ? other.blockSetType() : this.blockSetType(),
-                TargetsHelper.merge(other.explicitTargets, this.explicitTargets),
+                mergeSet(other.explicitTargets, this.explicitTargets),
                 other.tintHack || this.tintHack
         );
     }
@@ -68,7 +67,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.of(colormap),
                 java.util.Optional.empty(), java.util.Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), false);
+                Optional.empty(), Optional.empty(), Set.of(), false);
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
@@ -83,7 +82,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.of(colormap),
                 java.util.Optional.empty(), java.util.Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.of(blocks), false);
+                Optional.empty(), Optional.empty(), blocks, false);
     }
 
     // returns the old ones
@@ -154,7 +153,7 @@ public record BlockPropertyModifier(
         // returns old properties
         return new BlockPropertyModifier(Optional.ofNullable(oldColor), Optional.ofNullable(oldSound),
                 Optional.ofNullable(oldMapColor), Optional.ofNullable(oldClientLight),
-                Optional.empty(), oldOffsetType, Optional.ofNullable(oldType), Optional.empty(), false);
+                Optional.empty(), oldOffsetType, Optional.ofNullable(oldType), Set.of(), false);
     }
 
 
@@ -176,7 +175,7 @@ public record BlockPropertyModifier(
                                     .xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE),
                             "offset_type").forGetter(BlockPropertyModifier::offsetType),
                     StrOpt.of(BlockSetTypeProvider.CODEC, "block_set_type").forGetter(BlockPropertyModifier::blockSetType),
-                    StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(BlockPropertyModifier::explicitTargets),
+                    StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(BlockPropertyModifier::explicitTargets),
                     //dont use
                     StrOpt.of(Codec.BOOL, "force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
             ).apply(instance, BlockPropertyModifier::new));

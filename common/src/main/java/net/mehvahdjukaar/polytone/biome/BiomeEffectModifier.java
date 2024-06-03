@@ -5,14 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.biome.*;
 
-import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.Set;
 
@@ -25,7 +23,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Optional<AmbientMoodSettings> ambientMoodSettings,
                                   Optional<AmbientAdditionsSettings> ambientAdditionsSettings,
                                   Optional<Music> backgroundMusic,
-                                  Optional<Set<ResourceLocation>> explicitTargets) implements ITargetProvider {
+                                  Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             StrOpt.of(Codec.INT, "fog_color").forGetter(BiomeEffectModifier::fogColor),
@@ -40,14 +38,14 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             StrOpt.of(AmbientMoodSettings.CODEC, "mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
             StrOpt.of(AmbientAdditionsSettings.CODEC, "additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
             StrOpt.of(Music.CODEC, "music").forGetter(BiomeEffectModifier::backgroundMusic),
-            StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(BiomeEffectModifier::explicitTargets)
+            StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(BiomeEffectModifier::explicitTargets)
     ).apply(instance, BiomeEffectModifier::new));
 
     public static BiomeEffectModifier ofWaterColor(int waterColor) {
         return new BiomeEffectModifier(Optional.empty(), Optional.of(waterColor),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+                Optional.empty(), Optional.empty(), Optional.empty(), Set.of());
     }
 
     // Other has priority
@@ -65,7 +63,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                 other.ambientMoodSettings().isPresent() ? other.ambientMoodSettings() : this.ambientMoodSettings(),
                 other.ambientAdditionsSettings().isPresent() ? other.ambientAdditionsSettings() : this.ambientAdditionsSettings(),
                 other.backgroundMusic().isPresent() ? other.backgroundMusic() : this.backgroundMusic(),
-                TargetsHelper.merge(other.explicitTargets, this.explicitTargets)
+                mergeSet(explicitTargets, other.explicitTargets)
         );
     }
 
@@ -154,7 +152,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         // freaking forge field to methods...
         //biome.specialEffects = builder.build();
         var copy = copy(effects);
-       // applyInplace(biome, builder.build());
+        // applyInplace(biome, builder.build());
 
         applyEffects(biome, builder.build());
         //return a copy of the old effects
@@ -196,7 +194,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         oldEffects.skyColor = -1;//newEffects.getSkyColor();
         oldEffects.foliageColorOverride = newEffects.getFoliageColorOverride();
         oldEffects.grassColorOverride = Optional.of(-1);//newEffects.getGrassColorOverride();
-        oldEffects.grassColorModifier =  newEffects.getGrassColorModifier();
+        oldEffects.grassColorModifier = newEffects.getGrassColorModifier();
         oldEffects.ambientParticleSettings = newEffects.getAmbientParticleSettings();
         oldEffects.ambientLoopSoundEvent = newEffects.getAmbientLoopSoundEvent();
         oldEffects.ambientMoodSettings = newEffects.getAmbientMoodSettings();

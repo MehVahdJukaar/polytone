@@ -6,10 +6,7 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.mehvahdjukaar.polytone.utils.TargetsHelper;
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.particle.DustParticle;
-import net.minecraft.client.particle.FallingDustParticle;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -40,7 +37,7 @@ public class ParticleModifier implements ITargetProvider {
             StrOpt.of(ParticleExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             StrOpt.of(ParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             StrOpt.of(ParticleExpression.CODEC, "speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
-            StrOpt.of(TargetsHelper.CODEC, "targets").forGetter(p -> p.explicitTargets)
+            StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(p -> p.explicitTargets)
 
     ).apply(instance, ParticleModifier::new));
 
@@ -65,25 +62,25 @@ public class ParticleModifier implements ITargetProvider {
     public final ParticleExpression greenGetter;
     @Nullable
     public final ParticleExpression alphaGetter;
-    public final Optional<Set<ResourceLocation>> explicitTargets;
+    public final Set<ResourceLocation> explicitTargets;
 
     private ParticleModifier(Optional<Filter> filter, Optional<BlockColor> colormap,
                              Optional<ParticleExpression> color, Optional<ParticleExpression> life,
                              Optional<ParticleExpression> size, Optional<ParticleExpression> red,
                              Optional<ParticleExpression> green, Optional<ParticleExpression> blue,
                              Optional<ParticleExpression> alpha, Optional<ParticleExpression> speed,
-                             Optional<Set<ResourceLocation>> explicitTargets) {
-        this(filter.orElse(null), colormap.orElse(null),  color.orElse(null), life.orElse(null), size.orElse(null),
+                             Set<ResourceLocation> explicitTargets) {
+        this(filter.orElse(null), colormap.orElse(null), color.orElse(null), life.orElse(null), size.orElse(null),
                 red.orElse(null), green.orElse(null), blue.orElse(null),
                 alpha.orElse(null), speed.orElse(null), explicitTargets);
     }
 
-    public ParticleModifier(@Nullable Filter filter,@Nullable BlockColor colormap,
+    public ParticleModifier(@Nullable Filter filter, @Nullable BlockColor colormap,
                             @Nullable ParticleExpression color, @Nullable ParticleExpression life,
                             @Nullable ParticleExpression size, @Nullable ParticleExpression red,
                             @Nullable ParticleExpression green, @Nullable ParticleExpression blue,
                             @Nullable ParticleExpression alpha, @Nullable ParticleExpression speed,
-                            Optional<Set<ResourceLocation>> explicitTargets) {
+                            Set<ResourceLocation> explicitTargets) {
         this.colorGetter = color;
         this.lifeGetter = life;
         this.sizeGetter = size;
@@ -100,7 +97,7 @@ public class ParticleModifier implements ITargetProvider {
     public static ParticleModifier ofColor(String color) {
         ParticleExpression expression = ParticleExpression.parse(color);
         return new ParticleModifier(null, null, expression, null, null, null, null,
-                null, null, null, Optional.empty());
+                null, null, null, Set.of());
     }
 
 
@@ -112,12 +109,12 @@ public class ParticleModifier implements ITargetProvider {
             float[] unpack = ColorUtils.unpack((int) colorGetter.get(particle, level));
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
-        if(colormap != null){
+        if (colormap != null) {
             BlockState state = null;
-            if(options instanceof BlockParticleOption bo){
+            if (options instanceof BlockParticleOption bo) {
                 state = bo.getState();
             }
-            float[] unpack = ColorUtils.unpack(colormap.getColor(state, level, BlockPos.containing(particle.x,particle.y, particle.z), 0));
+            float[] unpack = ColorUtils.unpack(colormap.getColor(state, level, BlockPos.containing(particle.x, particle.y, particle.z), 0));
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (lifeGetter != null) {
@@ -147,7 +144,7 @@ public class ParticleModifier implements ITargetProvider {
     }
 
     @Override
-    public Optional<Set<ResourceLocation>> explicitTargets() {
+    public Set<ResourceLocation> explicitTargets() {
         return explicitTargets;
     }
 

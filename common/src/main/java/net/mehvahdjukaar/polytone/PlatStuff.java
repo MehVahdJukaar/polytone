@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
@@ -65,6 +66,11 @@ public class PlatStuff {
 
     @ExpectPlatform
     public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static CreativeTabModifier modifyTab(CreativeTabModifier mod, CreativeModeTab tab) {
         throw new AssertionError();
     }
 }

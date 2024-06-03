@@ -11,6 +11,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.fabric.BlockColorsAccessor;
 import net.mehvahdjukaar.polytone.mixins.fabric.FabricItemGroupEntriesAccessor;
+import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -118,6 +119,10 @@ public class PlatStuffImpl {
             event.register(POLYTONE_PHASE, f ->
                     Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(key, f)));
         }
+    }
+
+
+    public static CreativeTabModifier modifyTab(CreativeTabModifier mod, CreativeModeTab tab) {
     }
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,

@@ -1,7 +1,5 @@
 package net.mehvahdjukaar.polytone.tabs;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -14,14 +12,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class CreativeTabsModifiersManager extends JsonPartialReloader {
 
-    private final Multimap<ResourceKey<CreativeModeTab>, CreativeTabModifier> modifiers = HashMultimap.create();
+    private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> modifiers = new HashMap<>();
     private final Set<ResourceKey<CreativeModeTab>> needsRefresh = new HashSet<>();
+
+    private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> vanillaTabs = new HashMap<>();
 
 
     public CreativeTabsModifiersManager() {
@@ -30,7 +31,11 @@ public class CreativeTabsModifiersManager extends JsonPartialReloader {
 
     @Override
     protected void reset() {
-        needsRefresh.addAll(modifiers.keys());
+        for (var e : vanillaTabs.entrySet()) {
+            e.getValue().applyAttributes(e.getKey());
+        }
+        vanillaTabs.clear();
+        needsRefresh.addAll(modifiers.keySet());
         modifiers.clear();
     }
 
@@ -47,7 +52,7 @@ public class CreativeTabsModifiersManager extends JsonPartialReloader {
             addModifier(id, modifier);
         }
         if (!modifiers.isEmpty()) {
-            needsRefresh.addAll(modifiers.keys());
+            needsRefresh.addAll(modifiers.keySet());
         }
     }
 
@@ -75,15 +80,17 @@ public class CreativeTabsModifiersManager extends JsonPartialReloader {
     private void addModifier(ResourceLocation fileId, CreativeTabModifier mod) {
         for (ResourceLocation id : mod.getTargetsKeys(fileId)) {
             ResourceKey<CreativeModeTab> key = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id);
-            modifiers.put(key, mod);
+            modifiers.merge(key, mod, CreativeTabModifier::merge);
+
             PlatStuff.addTabEventForTab(key);
         }
     }
 
     public void modifyTab(ItemToTabEvent event) {
         var tab = event.getTab();
-        for (var modifier : modifiers.get(tab)) {
-            modifier.apply(event);
+        var mod = modifiers.get(tab);
+        if (mod != null) {
+            vanillaTabs.put(tab, mod.applyItemsAndAttributes(event));
         }
     }
 }
