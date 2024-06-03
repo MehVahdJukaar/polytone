@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.slotify.GuiOverlayManager;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;

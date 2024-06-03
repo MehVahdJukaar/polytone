@@ -4,12 +4,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 
@@ -33,19 +32,19 @@ public record CreativeTabModifier(
         Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
     public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            StrOpt.of(ExtraItemCodecs.ITEMSTACK, "icon").forGetter(CreativeTabModifier::icon),
-            StrOpt.of(Codec.BOOL, "search").forGetter(CreativeTabModifier::search), //unused
-            StrOpt.of(Codec.INT, "search_width").forGetter(CreativeTabModifier::searchWidth),
-            StrOpt.of(Codec.BOOL, "can_scroll").forGetter(CreativeTabModifier::canScroll),
-            StrOpt.of(Codec.BOOL, "show_title").forGetter(CreativeTabModifier::showTitle),
-            StrOpt.of(ExtraCodecs.COMPONENT, "name").forGetter(CreativeTabModifier::name),
-            StrOpt.of(ResourceLocation.CODEC, "background").forGetter(CreativeTabModifier::backGroundLocation),
-            StrOpt.of(ResourceLocation.CODEC, "tabs_image").forGetter(CreativeTabModifier::tabsImage),
-            StrOpt.of(ResourceLocation.CODEC.listOf(), "before_tabs").forGetter(CreativeTabModifier::beforeTabs),
-            StrOpt.of(ResourceLocation.CODEC.listOf(), "after_tabs").forGetter(CreativeTabModifier::afterTabs),
-            StrOpt.of(ItemPredicate.CODEC.listOf(), "removals", List.of()).forGetter(CreativeTabModifier::removals),
-            StrOpt.of(ItemAddition.CODEC.listOf(), "additions", List.of()).forGetter(CreativeTabModifier::additions),
-            StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(CreativeTabModifier::explicitTargets)
+            ItemStack.SINGLE_ITEM_CODEC.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
+            Codec.BOOL.optionalFieldOf("search").forGetter(CreativeTabModifier::search), //unused
+            Codec.INT.optionalFieldOf("search_width").forGetter(CreativeTabModifier::searchWidth),
+            Codec.BOOL.optionalFieldOf("can_scroll").forGetter(CreativeTabModifier::canScroll),
+            Codec.BOOL.optionalFieldOf("show_title").forGetter(CreativeTabModifier::showTitle),
+            ComponentSerialization.CODEC.optionalFieldOf("name").forGetter(CreativeTabModifier::name),
+            ResourceLocation.CODEC.optionalFieldOf("background").forGetter(CreativeTabModifier::backGroundLocation),
+            ResourceLocation.CODEC.optionalFieldOf("tabs_image").forGetter(CreativeTabModifier::tabsImage),
+            ResourceLocation.CODEC.listOf().optionalFieldOf("before_tabs").forGetter(CreativeTabModifier::beforeTabs),
+            ResourceLocation.CODEC.listOf().optionalFieldOf("after_tabs").forGetter(CreativeTabModifier::afterTabs),
+            ItemPredicate.CODEC.listOf().optionalFieldOf("removals", List.of()).forGetter(CreativeTabModifier::removals),
+            ItemAddition.CODEC.listOf().optionalFieldOf("additions", List.of()).forGetter(CreativeTabModifier::additions),
+            TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(CreativeTabModifier::explicitTargets)
     ).apply(i, CreativeTabModifier::new));
 
     public CreativeTabModifier merge(CreativeTabModifier other) {

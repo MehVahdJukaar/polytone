@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
@@ -38,7 +37,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
             AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
             Music.CODEC.optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
-            TargetsHelper.CODEC.optionalFieldOf("targets", Set.of()).forGetter(BiomeEffectModifier::explicitTargets)
+            TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(BiomeEffectModifier::explicitTargets)
     ).apply(instance, BiomeEffectModifier::new));
 
     public static BiomeEffectModifier ofWaterColor(int waterColor) {

@@ -6,8 +6,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
-import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptions;
-import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.particle.BlockParticleExpression;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;

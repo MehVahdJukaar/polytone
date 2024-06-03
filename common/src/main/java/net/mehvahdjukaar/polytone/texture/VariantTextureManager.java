@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.chunk.RenderChunkRegion;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;

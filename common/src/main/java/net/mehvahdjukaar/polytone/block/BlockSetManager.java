@@ -4,7 +4,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
@@ -41,8 +40,8 @@ public class BlockSetManager extends JsonPartialReloader {
             var json = j.getValue();
             var id = j.getKey();
             BlockSetTypeProvider type = BlockSetTypeProvider.CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Custom Block Set Type with json id {} - error: {}",
-                            id, errorMsg)).getFirst();
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Block Set Type with json id " + id + " - error: " + errorMsg
+                    )).getFirst();
             blockSetTypes.put(id, type);
         }
 

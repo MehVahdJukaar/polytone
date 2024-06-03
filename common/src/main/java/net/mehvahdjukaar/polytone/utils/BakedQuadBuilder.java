@@ -7,7 +7,6 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 import java.util.function.Consumer;

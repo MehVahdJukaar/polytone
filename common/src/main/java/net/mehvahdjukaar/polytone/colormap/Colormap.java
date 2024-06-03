@@ -14,7 +14,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
-import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -52,7 +51,7 @@ public class Colormap implements ColorResolver, BlockColor {
             Codec.BOOL.optionalFieldOf("triangular", false).forGetter(c -> c.triangular),
             Codec.BOOL.optionalFieldOf("biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
             BiomeIdMapperManager.CODEC.optionalFieldOf("biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
-            StrOpt.of(ResourceLocation.CODEC, "texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture))
+            ResourceLocation.CODEC.optionalFieldOf("texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture))
     ).apply(i, Colormap::new));
 
     protected static final Codec<BlockColor> REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
@@ -72,7 +71,7 @@ public class Colormap implements ColorResolver, BlockColor {
 
     // single or biome compound
     public static final Codec<BlockColor> CODEC = COLORMAP_CODEC;// Codec.either(BiomeCompoundBlockColors.DIRECT_CODEC, Colormap.COLORMAP_CODEC)
-          //  .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
+    //  .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
                      boolean triangular, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
@@ -90,7 +89,7 @@ public class Colormap implements ColorResolver, BlockColor {
     }
 
     protected Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter) {
-        this(Optional.empty(), xGetter, yGetter, false, Optional.empty(), Optional.empty(),Optional.empty());
+        this(Optional.empty(), xGetter, yGetter, false, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     //Square map with those 2 getters

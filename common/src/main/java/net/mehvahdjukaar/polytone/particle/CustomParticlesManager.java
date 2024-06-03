@@ -10,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.ExtraCodecs;
 
 import java.util.Map;
 

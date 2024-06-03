@@ -6,7 +6,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;

@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.mehvahdjukaar.polytone.mixins.XpOrbMixin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;

@@ -3,22 +3,10 @@ package net.mehvahdjukaar.polytone.utils;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.accessor.BiomeAccessor;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Cursor3D;
-import net.minecraft.stats.Stats;
-import net.minecraft.util.Mth;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import org.spongepowered.asm.mixin.Dynamic;
 
 import java.util.Locale;
 

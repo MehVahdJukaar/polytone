@@ -7,7 +7,6 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.resources.ResourceLocation;
@@ -38,7 +37,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
                     Colormap.CODEC.optionalFieldOf("sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
                     Lightmap.REFERENCE_CODEC.optionalFieldOf("lightmap").forGetter(DimensionEffectsModifier::lightmap),
-                    TargetsHelper.CODEC.optionalFieldOf("targets", Set.of()).forGetter(DimensionEffectsModifier::explicitTargets)
+                    TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(DimensionEffectsModifier::explicitTargets)
             ).apply(instance, DimensionEffectsModifier::new));
 
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {

@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.particles.ParticleOptions;

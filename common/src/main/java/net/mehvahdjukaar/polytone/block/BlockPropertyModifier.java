@@ -10,7 +10,6 @@ import net.mehvahdjukaar.polytone.colormap.IndexCompoundBlockColors;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -159,7 +158,7 @@ public record BlockPropertyModifier(
 
     public static final Decoder<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    IndexCompoundBlockColors.CODEC.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof CompoundBlockColors c ? c : null))),
+                    IndexCompoundBlockColors.CODEC.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.of(t instanceof BlockColor c ? c : null))),
                     //normal opt so it can fail when using modded sounds
                     SoundTypesManager.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
                     MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE).optionalFieldOf(
@@ -173,15 +172,8 @@ public record BlockPropertyModifier(
                     ParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
                     OffsetTypeR.CODEC.xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
                             .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
-                    TargetsHelper.CODEC.optionalFieldOf("targets").forGetter(BlockPropertyModifier::explicitTargets),
-                    StrOpt.of(Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0),
-                            "client_light").forGetter(BlockPropertyModifier::clientLight),
-                    StrOpt.of(ParticleEmitter.CODEC.listOf(), "particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
-                    StrOpt.of(StringRepresentable.fromEnum(BlockPropertyModifier.OffsetTypeR::values)
-                                    .xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE),
-                            "offset_type").forGetter(BlockPropertyModifier::offsetType),
-                    StrOpt.of(BlockSetTypeProvider.CODEC, "block_set_type").forGetter(BlockPropertyModifier::blockSetType),
-                    StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(BlockPropertyModifier::explicitTargets),
+                    BlockSetTypeProvider.CODEC.optionalFieldOf("block_set_type").forGetter(BlockPropertyModifier::blockSetType),
+                    TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(BlockPropertyModifier::explicitTargets),
                     //dont use
                     Codec.BOOL.optionalFieldOf("force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
             ).apply(instance, BlockPropertyModifier::new));

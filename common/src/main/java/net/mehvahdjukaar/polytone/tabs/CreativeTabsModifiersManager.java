@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.tabs;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -46,7 +45,7 @@ public class CreativeTabsModifiersManager extends JsonPartialReloader {
             ResourceLocation id = j.getKey();
 
             CreativeTabModifier modifier = CreativeTabModifier.CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Creative Mode Tab Modifier with json id {} - error: {}", id, errorMsg))
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Creative Mode Tab Modifier with json id " + id + " - error: " + errorMsg))
                     .getFirst();
 
             addModifier(id, modifier);

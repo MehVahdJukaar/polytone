@@ -5,7 +5,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -38,6 +37,9 @@ public interface BlockSetTypeProvider {
             return new BlockSetType(
                     Polytone.BLOCK_SET.getNextName(),
                     original.canOpenByHand(), //always creates a new one because of this...
+                    original.canOpenByWindCharge(),
+                    original.canButtonBeActivatedByArrows(),
+                    original.pressurePlateSensitivity(),
                     customSound.orElse(vanilla.soundType()),
                     vanilla.doorClose(),
                     vanilla.doorOpen(),
@@ -58,14 +60,14 @@ public interface BlockSetTypeProvider {
                   Optional<SoundEvent> buttonClickOn) implements BlockSetTypeProvider {
 
         public static final Codec<Custom> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "door_close").forGetter(Custom::doorClose),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "door_open").forGetter(Custom::doorOpen),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "trapdoor_close").forGetter(Custom::trapdoorClose),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "trapdoor_open").forGetter(Custom::trapdoorOpen),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "pressure_plate_click_off").forGetter(Custom::pressurePlateClickOff),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "pressure_plate_click_on").forGetter(Custom::pressurePlateClickOn),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "button_click_off").forGetter(Custom::buttonClickOff),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "button_click_on").forGetter(Custom::buttonClickOn)
+                BuiltInRegistries.SOUND_EVENT.byNameCodec().optionalFieldOf("door_close").forGetter(Custom::doorClose),
+                BuiltInRegistries.SOUND_EVENT.byNameCodec().optionalFieldOf("door_open").forGetter(Custom::doorOpen),
+                BuiltInRegistries.SOUND_EVENT.byNameCodec().optionalFieldOf("trapdoor_close").forGetter(Custom::trapdoorClose),
+                BuiltInRegistries.SOUND_EVENT.byNameCodec().optionalFieldOf("trapdoor_open").forGetter(Custom::trapdoorOpen),
+                BuiltInRegistries.SOUND_EVENT.byNameCodec().optionalFieldOf("pressure_plate_click_off").forGetter(Custom::pressurePlateClickOff),
+                BuiltInRegistries.SOUND_EVENT.byNameCodec().optionalFieldOf("pressure_plate_click_on").forGetter(Custom::pressurePlateClickOn),
+                BuiltInRegistries.SOUND_EVENT.byNameCodec().optionalFieldOf("button_click_off").forGetter(Custom::buttonClickOff),
+                BuiltInRegistries.SOUND_EVENT.byNameCodec().optionalFieldOf("button_click_on").forGetter(Custom::buttonClickOn)
         ).apply(instance, Custom::new));
 
         @Override
@@ -73,6 +75,9 @@ public interface BlockSetTypeProvider {
             return new BlockSetType(
                     Polytone.BLOCK_SET.getNextName(),
                     original.canOpenByHand(),
+                    original.canOpenByWindCharge(),
+                    original.canButtonBeActivatedByArrows(),
+                    original.pressurePlateSensitivity(),
                     customSound.orElse(original.soundType()),
                     doorClose.orElse(original.doorClose()),
                     doorOpen.orElse(original.doorOpen()),

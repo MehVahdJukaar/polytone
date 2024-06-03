@@ -4,18 +4,16 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.entity.animal.Cod;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +31,8 @@ public interface ItemPredicate extends Predicate<ItemStack> {
             object -> Optional.ofNullable(predicates.inverse().get(object)).map(DataResult::success)
                     .orElse(DataResult.error(() -> "Unknown Item Predicate Type: " + object)));
 
-    Codec<ItemPredicate> CODEC = TYPE_CODEC.dispatch("type", ItemPredicate::getCodec, Function.identity());
+    Codec<ItemPredicate> CODEC = TYPE_CODEC.dispatch("type",
+            ItemPredicate::getCodec, c->(MapCodec<? extends ItemPredicate>) c);
 
 
     Codec<? extends ItemPredicate> getCodec();
@@ -45,7 +44,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
     }
 
     ItemPredicate TRUE_PRED = new True();
-    Codec<ItemPredicate> TRUE =ItemPredicate.register("true",Codec.unit(TRUE_PRED));
+    Codec<ItemPredicate> TRUE = ItemPredicate.register("true", Codec.unit(TRUE_PRED));
 
     class True implements ItemPredicate {
 
@@ -149,7 +148,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
     }
 
     Codec<ItemStackMatch> ITEMSTACK_MATCH = ItemPredicate.register("itemstack_match",
-            ExtraItemCodecs.ITEMSTACK.fieldOf("itemstack")
+            ItemStack.SINGLE_ITEM_CODEC.fieldOf("itemstack")
                     .xmap(ItemStackMatch::new, ItemStackMatch::items).codec());
 
     record ItemStackMatch(ItemStack items) implements ItemPredicate {
@@ -169,8 +168,8 @@ public interface ItemPredicate extends Predicate<ItemStack> {
     Pattern TRUE_PATTERN = Pattern.compile(".*");
     Codec<IDMatch> ID_MATCH = ItemPredicate.register("id_match",
             RecordCodecBuilder.create(i -> i.group(
-                    StrOpt.of(ExtraCodecs.PATTERN, "namespace", TRUE_PATTERN).forGetter(IDMatch::namespace),
-                    StrOpt.of(ExtraCodecs.PATTERN, "path", TRUE_PATTERN).forGetter(IDMatch::path)
+                    ExtraCodecs.PATTERN.optionalFieldOf("namespace", TRUE_PATTERN).forGetter(IDMatch::namespace),
+                    ExtraCodecs.PATTERN.optionalFieldOf("path", TRUE_PATTERN).forGetter(IDMatch::path)
             ).apply(i, IDMatch::new)));
 
     record IDMatch(Pattern namespace, Pattern path) implements ItemPredicate {

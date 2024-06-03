@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.fabric.BlockColorsAccessor;
+import net.mehvahdjukaar.polytone.mixins.fabric.CreativeTabAccessor;
 import net.mehvahdjukaar.polytone.mixins.fabric.FabricItemGroupEntriesAccessor;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
@@ -19,6 +20,7 @@ import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
@@ -36,6 +38,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -116,6 +119,68 @@ public class PlatStuffImpl {
 
 
     public static CreativeTabModifier modifyTab(CreativeTabModifier mod, CreativeModeTab tab) {
+        CreativeTabAccessor acc = (CreativeTabAccessor) tab;
+        Component oldName = null;
+        if (mod.name().isPresent()) {
+            oldName = tab.getDisplayName();
+            acc.setDisplayName(mod.name().get());
+        }
+
+        ItemStack oldIcon = null;
+        if (mod.icon().isPresent()) {
+            oldIcon = tab.getIconItem();
+            acc.setIcon(mod.icon().get());
+        }
+
+        Boolean oldSearch = null;
+        Integer oldSearchWidth = null;
+        /*
+        if (mod.search().isPresent()) {
+            oldSearch = tab.hasSearchBar();
+            acc.setHasSearchBar(mod.search().get());
+        }
+        if (mod.searchWidth().isPresent()) {
+            oldSearchWidth = tab.getSearchBarWidth();
+            acc.setSearchBarWidth(mod.searchWidth().get());
+        }*/
+
+        Boolean oldCanScroll = null;
+        if (mod.canScroll().isPresent()) {
+            oldCanScroll = tab.canScroll();
+            acc.setCanScroll(mod.canScroll().get());
+        }
+
+        Boolean oldShowTitle = null;
+        if (mod.showTitle().isPresent()) {
+            oldShowTitle = tab.showTitle();
+            acc.setShowTitle(mod.showTitle().get());
+        }
+
+        ResourceLocation oldTabsImage = null;
+
+        ResourceLocation oldBackgroundLocation = null;
+
+
+        List<ResourceLocation> oldBeforeTabs = null;
+
+        List<ResourceLocation> oldAfterTabs = null;
+
+        return new CreativeTabModifier(
+                Optional.ofNullable(oldIcon),
+                Optional.ofNullable(oldSearch),
+                Optional.ofNullable(oldSearchWidth),
+                Optional.ofNullable(oldCanScroll),
+                Optional.ofNullable(oldShowTitle),
+                Optional.ofNullable(oldName),
+                Optional.ofNullable(oldBackgroundLocation),
+                Optional.ofNullable(oldTabsImage),
+                Optional.ofNullable(oldBeforeTabs),
+                Optional.ofNullable(oldAfterTabs),
+                List.of(),
+                List.of(),
+                Set.of()
+        );
+
     }
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,

@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.colormap;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -27,7 +26,7 @@ public class BiomeCompoundBlockColors implements BlockColor, ColorResolver {
     final BlockColor defaultGetter;
 
     protected static ResourceKey<Biome> DEFAULT_KEY = ResourceKey.create(Registries.BIOME, new ResourceLocation("default"));
-    protected static final Codec<BiomeCompoundBlockColors> DIRECT_CODEC = ExtraCodecs.validate(
+    protected static final Codec<BiomeCompoundBlockColors> DIRECT_CODEC = validate(
             Codec.unboundedMap(ResourceLocation.CODEC.xmap(r -> ResourceKey.create(Registries.BIOME, r), ResourceKey::location), Colormap.CODEC)
                     .xmap(BiomeCompoundBlockColors::new, comp -> comp.getters),
             c -> {
@@ -40,6 +39,9 @@ public class BiomeCompoundBlockColors implements BlockColor, ColorResolver {
                 return DataResult.success(c);
             });
 
+    public static <T> Codec<T> validate(Codec<T> codec, Function<T, DataResult<T>> function) {
+        return codec.flatXmap(function, function);
+    }
 
 
     private BiomeCompoundBlockColors(Map<ResourceKey<Biome>, BlockColor> map) {

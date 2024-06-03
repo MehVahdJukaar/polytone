@@ -4,10 +4,7 @@ import com.google.gson.JsonElement;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public abstract class JsonPartialReloader extends PartialReloader<Map<ResourceLocation, JsonElement>> {
 

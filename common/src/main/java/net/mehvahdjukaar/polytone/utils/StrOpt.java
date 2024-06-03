@@ -1,13 +1,9 @@
 package net.mehvahdjukaar.polytone.utils;
 
-import com.google.common.base.Preconditions;
-import com.mojang.serialization.*;
-import com.mojang.serialization.codecs.OptionalFieldCodec;
-import net.minecraft.util.ExtraCodecs;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 // String Optional codec
 @Deprecated(forRemoval = true)

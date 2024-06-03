@@ -4,7 +4,6 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +18,7 @@ public record FluidPropertyModifier(Optional<BlockColor> colormap, Optional<Bloc
             instance.group(
                     Colormap.CODEC.optionalFieldOf("colormap").forGetter(FluidPropertyModifier::colormap),
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(FluidPropertyModifier::fogColormap),
-                    TargetsHelper.CODEC.optionalFieldOf("targets", Set.of()).forGetter(FluidPropertyModifier::explicitTargets)
+                    TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(FluidPropertyModifier::explicitTargets)
             ).apply(instance, FluidPropertyModifier::new));
 
     // Other has priority

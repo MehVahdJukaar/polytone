@@ -3,22 +3,9 @@ package net.mehvahdjukaar.polytone.lightmap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
-import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 public interface ILightmapNumberProvider {
 

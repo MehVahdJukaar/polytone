@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
@@ -37,7 +36,7 @@ public class ParticleModifier implements ITargetProvider {
             ParticleExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             ParticleExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             ParticleExpression.CODEC.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
-            TargetsHelper.CODEC.optionalFieldOf("targets", Set.of()).forGetter(p -> p.explicitTargets)
+            TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(p -> p.explicitTargets)
 
     ).apply(instance, ParticleModifier::new));
 

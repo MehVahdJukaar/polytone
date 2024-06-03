@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.BlockPos;

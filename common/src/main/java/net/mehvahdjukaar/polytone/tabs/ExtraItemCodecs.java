@@ -14,17 +14,8 @@ import java.util.function.Function;
 
 public class ExtraItemCodecs {
 
-    // with no mandatory count
-    public static final Codec<ItemStack> ITEMSTACK = RecordCodecBuilder.create((i) -> i.group(
-            BuiltInRegistries.ITEM.byNameCodec().fieldOf("id").forGetter(ItemStack::getItem),
-            CompoundTag.CODEC.optionalFieldOf("tag").forGetter((s) -> Optional.ofNullable(s.getTag()))
-    ).apply(i, (item, tag) -> {
-        var stack = new ItemStack(item, 1);
-        tag.ifPresent(stack::setTag);
-        return stack;
-    }));
 
-    public static final Codec<ItemStack> ITEM_OR_STACK = Codec.either(BuiltInRegistries.ITEM.byNameCodec(), ITEMSTACK)
+    public static final Codec<ItemStack> ITEM_OR_STACK = Codec.either(BuiltInRegistries.ITEM.byNameCodec(), ItemStack.SINGLE_ITEM_CODEC)
             .xmap(e -> e.map(Item::getDefaultInstance, Function.identity()), Either::right);
 
     public static final Codec<List<ItemStack>> ITEMSTACK_OR_ITEMSTACK_LIST = Codec.either(ITEM_OR_STACK, ITEM_OR_STACK.listOf())

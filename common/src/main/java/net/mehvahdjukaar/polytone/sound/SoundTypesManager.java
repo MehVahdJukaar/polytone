@@ -11,7 +11,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.MappedRegistry;
