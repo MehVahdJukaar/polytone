@@ -1,13 +1,11 @@
 package net.mehvahdjukaar.polytone.block;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
@@ -16,14 +14,8 @@ import java.util.Optional;
 
 public interface BlockSetTypeProvider {
 
-    Codec<BlockSetTypeProvider> REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
-            id -> Optional.ofNullable(Polytone.BLOCK_SET.get(id)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Could not find a custom Block Set with id " + id +
-                            " Did you place it in 'assets/[your pack]/polytone/block_sets/' ?")),
-            object -> Optional.ofNullable(Polytone.BLOCK_SET.getKey(object)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Unknown Block Set: " + object)));
-
-    Codec<BlockSetTypeProvider> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_CODEC, Custom.CODEC);
+    Codec<BlockSetTypeProvider> CODEC = new ReferenceOrDirectCodec<>(
+            Polytone.BLOCK_SET.byNameCodec(), Custom.CODEC);
 
     BlockSetType getOrCreate(BlockSetType original, Optional<SoundType> customSound);
 

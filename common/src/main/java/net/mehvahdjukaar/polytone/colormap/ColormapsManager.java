@@ -1,21 +1,21 @@
 package net.mehvahdjukaar.polytone.colormap;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class ColormapsManager extends JsonImgPartialReloader {
 
@@ -31,7 +31,11 @@ public class ColormapsManager extends JsonImgPartialReloader {
             l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000;
 
     // custom defined colormaps
-    private final BiMap<ResourceLocation, BlockColor> colormapsIds = HashBiMap.create();
+    private final MapRegistry<Supplier<BlockColor>> colormaps = new MapRegistry<>("Polytone Colormaps");
+
+    public Codec<BlockColor> byNameCodec() {
+        return colormaps.xmap(Supplier::get, s -> () -> s);
+    }
 
     public ColormapsManager() {
         super("colormaps");
@@ -71,35 +75,19 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     @Override
     public void reset() {
-        colormapsIds.clear();
-        colormapsIds.put(new ResourceLocation("grass_color"), GRASS_COLOR);
-        colormapsIds.put(new ResourceLocation("foliage_color"), FOLIAGE_COLOR);
-        colormapsIds.put(new ResourceLocation("water_color"), WATER_COLOR);
+        colormaps.clear();
+        colormaps.register(new ResourceLocation("grass_color"), () -> GRASS_COLOR);
+        colormaps.register(new ResourceLocation("foliage_color"), () -> FOLIAGE_COLOR);
+        colormaps.register(new ResourceLocation("water_color"), () -> WATER_COLOR);
+        //These create new incomplete ones every time
+        colormaps.register(new ResourceLocation("biome_sample"), Colormap::defSquare);
+        colormaps.register(new ResourceLocation("triangular_biome_sample"), Colormap::defTriangle);
+        colormaps.register(new ResourceLocation("fixed"), Colormap::fixed);
+        colormaps.register(new ResourceLocation("grid"), Colormap::biomeId);
     }
-
-    @Nullable
-    public BlockColor get(ResourceLocation id) {
-        //default samplers
-        if (id.equals(new ResourceLocation("biome_sample"))) {
-            return Colormap.defSquare();
-        } else if (id.equals(new ResourceLocation("triangular_biome_sample"))) {
-            return Colormap.defTriangle();
-        } else if (id.equals(new ResourceLocation("fixed"))) {
-            return Colormap.fixed();
-        } else if (id.equals(new ResourceLocation("grid"))) {
-            return Colormap.biomeId(); //grid
-        }
-        return colormapsIds.get(id);
-    }
-
-    @Nullable
-    public ResourceLocation getKey(BlockColor object) {
-        return colormapsIds.inverse().get(object);
-    }
-
 
     public void add(ResourceLocation id, Colormap colormap) {
-        colormapsIds.put(id, colormap);
+        colormaps.register(id, () -> colormap);
         if (!colormap.hasTexture()) {
             throw new IllegalStateException("Did not find any texture png for colormap " + id);
         }

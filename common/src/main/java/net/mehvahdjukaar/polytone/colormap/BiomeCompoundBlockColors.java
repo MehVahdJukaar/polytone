@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.colormap;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -18,7 +17,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
-import java.util.function.Function;
 
 // basically a map of colormap to tint color
 public class BiomeCompoundBlockColors implements BlockColor, ColorResolver {

@@ -1,17 +1,11 @@
 package net.mehvahdjukaar.polytone.tabs;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
 public record ItemAddition(List<ItemStack> stack, ItemPredicate predicate, boolean before) {
 

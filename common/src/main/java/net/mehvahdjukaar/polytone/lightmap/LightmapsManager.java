@@ -1,15 +1,15 @@
 package net.mehvahdjukaar.polytone.lightmap;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
+import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
@@ -18,7 +18,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +26,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
 
     public static final ResourceLocation GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
 
-    private final BiMap<ResourceLocation, Lightmap> lightmapsById = HashBiMap.create();
+    private final MapRegistry<Lightmap> lightmaps = new MapRegistry<>("Lightmaps");
 
     private ResourceKey<Level> lastDimension = null;
     private Lightmap currentLightmap = null;
@@ -101,7 +100,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
             var map = e.getValue();
             lightmap.acceptImages(map.get("normal"), map.get("rain"), map.get("thunder"));
 
-            lightmapsById.put(location, lightmap);
+            lightmaps.register(location, lightmap);
         }
 
         if (!jsons.isEmpty()) {
@@ -111,7 +110,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
 
     @Override
     protected void reset() {
-        lightmapsById.clear();
+        lightmaps.clear();
     }
 
     private boolean reachedMainMenuHack = false;
@@ -124,7 +123,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
         if (lastDimension != level.dimension()) {
             reachedMainMenuHack = true;
             lastDimension = level.dimension();
-            currentLightmap = lightmapsById.get(lastDimension.location());
+            currentLightmap = lightmaps.getValue(lastDimension.location());
         }
         if (usingGuiLightmap) {
             int aa = 1;//error
@@ -151,13 +150,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
         return usingGuiLightmap;
     }
 
-    @Nullable
-    public Lightmap get(ResourceLocation id) {
-        return lightmapsById.get(id);
-    }
-
-    @Nullable
-    public ResourceLocation getKey(Lightmap lightmap) {
-        return lightmapsById.inverse().get(lightmap);
+    public Codec<Lightmap> byNameCodec() {
+        return lightmaps;
     }
 }

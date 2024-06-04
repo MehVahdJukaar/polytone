@@ -1,26 +1,20 @@
 package net.mehvahdjukaar.polytone.particle;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.ExtraCodecs;
 
 import java.util.Map;
 
 public class CustomParticlesManager extends JsonPartialReloader {
 
-    public static final BiMap<String, CustomParticleType> CUSTOM_PARTICLES = HashBiMap.create();
-
-    public static final Codec<CustomParticleType> REFERENCE_CODEC = ExtraCodecs.stringResolverCodec(
-            a -> CUSTOM_PARTICLES.inverse().get(a), CUSTOM_PARTICLES::get);
+    public final MapRegistry<CustomParticleType> customParticles = new MapRegistry<>("Custom Particles");
 
     public CustomParticlesManager() {
         super("custom_particles");
@@ -28,15 +22,14 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     @Override
     protected void reset() {
-        CUSTOM_PARTICLES.clear();
+        customParticles.clear();
     }
-
 
     // not ideal
     public void addSpriteSets(ResourceManager resourceManager) {
         ParticleEngine engine = Minecraft.getInstance().particleEngine;
-        for (var v : CUSTOM_PARTICLES.keySet()) {
-            engine.spriteSets.remove(new ResourceLocation(v));
+        for (var v : customParticles.keySet()) {
+            engine.spriteSets.remove(v);
         }
         var jsons = this.getJsonsInDirectories(resourceManager);
         this.checkConditions(jsons);
@@ -55,7 +48,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
                             id, errorMsg)).getFirst();
             type.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
-            CUSTOM_PARTICLES.put(id.toString(), type);
+            customParticles.register(id, type);
         }
     }
 

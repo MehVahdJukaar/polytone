@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
@@ -37,7 +38,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                     StrOpt.of(Codec.BOOL, "constant_ambient_light").forGetter(DimensionEffectsModifier::constantAmbientLight),
                     StrOpt.of(Colormap.CODEC, "fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
                     StrOpt.of(Colormap.CODEC, "sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
-                    StrOpt.of(Lightmap.REFERENCE_CODEC, "lightmap").forGetter(DimensionEffectsModifier::lightmap), //Just references for now
+                    StrOpt.of(Polytone.LIGHTMAPS.byNameCodec(), "lightmap").forGetter(DimensionEffectsModifier::lightmap), //Just references for now
                     StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(DimensionEffectsModifier::explicitTargets)
             ).apply(instance, DimensionEffectsModifier::new));
 
