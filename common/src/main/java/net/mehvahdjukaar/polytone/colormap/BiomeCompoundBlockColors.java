@@ -17,7 +17,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
-import java.util.function.Function;
 
 // basically a map of colormap to tint color
 public class BiomeCompoundBlockColors implements BlockColor, ColorResolver {

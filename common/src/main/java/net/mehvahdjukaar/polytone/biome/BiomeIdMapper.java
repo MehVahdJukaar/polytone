@@ -1,8 +1,10 @@
 package net.mehvahdjukaar.polytone.biome;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
+import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -11,6 +13,10 @@ import net.minecraft.world.level.biome.Biome;
 import java.util.Map;
 
 public interface BiomeIdMapper {
+
+
+    Codec<BiomeIdMapper> CODEC = new ReferenceOrDirectCodec<>(
+            Polytone.BIOME_ID_MAPPERS.byNameCodec(), Custom.CUSTOM_CODEC, false);
 
     BiomeIdMapper BY_INDEX = (biome) -> {
         int id = LegacyHelper.getBiomeId(biome);
@@ -25,7 +31,7 @@ public interface BiomeIdMapper {
             this(map, map.getOrDefault(ResourceKey.create(Registries.BIOME, new ResourceLocation("texture_size")), 1f));
         }
 
-        public static final Codec<Custom> CODEC = Codec.unboundedMap(ResourceLocation.CODEC
+        public static final Codec<Custom> CUSTOM_CODEC = Codec.unboundedMap(ResourceLocation.CODEC
                                 .xmap(r -> ResourceKey.create(Registries.BIOME, r), ResourceKey::location),
                         Codec.FLOAT)
                 .xmap(Custom::new, Custom::map);

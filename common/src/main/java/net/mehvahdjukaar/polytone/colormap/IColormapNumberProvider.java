@@ -1,9 +1,8 @@
 package net.mehvahdjukaar.polytone.colormap;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -16,18 +15,10 @@ import static net.mehvahdjukaar.polytone.utils.ColorUtils.getClimateSettings;
 
 public interface IColormapNumberProvider {
 
-    BiMap<String, IColormapNumberProvider> CUSTOM_PROVIDERS = HashBiMap.create();
+    MapRegistry<IColormapNumberProvider> BUILTIN_PROVIDERS = new MapRegistry<>("Colormap Number Providers");
 
-    Codec<IColormapNumberProvider> REFERENCE_CODEC = Codec.stringResolver(
-            a -> CUSTOM_PROVIDERS.inverse().get(a), CUSTOM_PROVIDERS::get);
-
-    Codec<IColormapNumberProvider> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_CODEC,
+    Codec<IColormapNumberProvider> CODEC = new ReferenceOrDirectCodec<>(BUILTIN_PROVIDERS,
             ColormapExpressionProvider.CODEC, true);
-
-    static <T extends IColormapNumberProvider> T register(String name, T provider) {
-        CUSTOM_PROVIDERS.put(name, provider);
-        return provider;
-    }
 
     float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper);
 
@@ -66,10 +57,10 @@ public interface IColormapNumberProvider {
         }
     }
 
-    IColormapNumberProvider ZERO = register("zero", new Const(0));
-    IColormapNumberProvider ONE = register("one", new Const(1));
+    IColormapNumberProvider ZERO = BUILTIN_PROVIDERS.register("zero", new Const(0));
+    IColormapNumberProvider ONE = BUILTIN_PROVIDERS.register("one", new Const(1));
 
-    IColormapNumberProvider TEMPERATURE = register("temperature", new IColormapNumberProvider() {
+    IColormapNumberProvider TEMPERATURE = BUILTIN_PROVIDERS.register("temperature", new IColormapNumberProvider() {
         @Override
         public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome, BiomeIdMapper mapper) {
             return biome == null ? 0 : getClimateSettings(biome).temperature;
@@ -81,7 +72,7 @@ public interface IColormapNumberProvider {
         }
     });
 
-    IColormapNumberProvider LEGACY_TEMPERATURE = register("legacy_temperature", new IColormapNumberProvider() {
+    IColormapNumberProvider LEGACY_TEMPERATURE = BUILTIN_PROVIDERS.register("legacy_temperature", new IColormapNumberProvider() {
         @Override
         public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome, BiomeIdMapper mapper) {
             return biome == null ? 0 : biome.getTemperature(pos);
@@ -93,7 +84,7 @@ public interface IColormapNumberProvider {
         }
     });
 
-    IColormapNumberProvider DOWNFALL = register("downfall", new IColormapNumberProvider() {
+    IColormapNumberProvider DOWNFALL = BUILTIN_PROVIDERS.register("downfall", new IColormapNumberProvider() {
         @Override
         public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome, BiomeIdMapper mapper) {
             return biome == null ? 0 : getClimateSettings(biome).downfall;
@@ -106,14 +97,14 @@ public interface IColormapNumberProvider {
     });
 
     // grid format
-    IColormapNumberProvider BIOME_ID = register("biome_id",
+    IColormapNumberProvider BIOME_ID = BUILTIN_PROVIDERS.register("biome_id",
             (state, pos, biome, mapper) -> {
                 // texture is flipped...
                 return 1 - mapper.getIndex(biome);
             });
 
 
-    IColormapNumberProvider Y_LEVEL = register("y_level", (state, pos, biome, m) -> {
+    IColormapNumberProvider Y_LEVEL = BUILTIN_PROVIDERS.register("y_level", (state, pos, biome, m) -> {
         if (pos == null) return 64;
         // some builtin variance just because
         RandomSource rs = RandomSource.create(pos.asLong());

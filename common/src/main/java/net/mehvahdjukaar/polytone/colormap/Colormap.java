@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.colormap;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
@@ -54,18 +53,11 @@ public class Colormap implements ColorResolver, BlockColor {
             ResourceLocation.CODEC.optionalFieldOf("texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture))
     ).apply(i, Colormap::new));
 
-    protected static final Codec<BlockColor> REFERENCE_CODEC = ResourceLocation.CODEC.flatXmap(
-            id -> Optional.ofNullable(Polytone.COLORMAPS.get(id)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Could not find a custom Colormap with id " + id +
-                            " Did you place it in 'assets/[your pack]/polytone/colormaps/' ?")),
-            object -> Optional.ofNullable(Polytone.COLORMAPS.getKey(object)).map(DataResult::success)
-                    .orElse(DataResult.error(() -> "Unknown Colormap: " + object)));
-
     protected static final Codec<BlockColor> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
     public static final Codec<BlockColor> COLORMAP_CODEC = Codec.either(SINGLE_COLOR_CODEC,
-                    new ReferenceOrDirectCodec<>(REFERENCE_CODEC, DIRECT_CODEC))
+                    new ReferenceOrDirectCodec<>(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC))
             .xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
 
 

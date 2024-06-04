@@ -1,13 +1,12 @@
 package net.mehvahdjukaar.polytone.biome;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
@@ -15,15 +14,7 @@ import java.util.Map;
 //
 public class BiomeIdMapperManager extends JsonPartialReloader {
 
-    private static final BiMap<String, BiomeIdMapper> ID_MAPPERS = HashBiMap.create();
-
-
-    public static final Codec<BiomeIdMapper> REFERENCE_CODEC = Codec.stringResolver(
-            a -> ID_MAPPERS.inverse().get(a), ID_MAPPERS::get);
-
-    public static final Codec<BiomeIdMapper> CODEC = new ReferenceOrDirectCodec<>(
-            REFERENCE_CODEC, BiomeIdMapper.Custom.CODEC, false);
-
+    private final MapRegistry<BiomeIdMapper> biomeIdMappers = new MapRegistry<>("Biome ID Mappers");
 
     public BiomeIdMapperManager() {
         super("biome_id_mappers");
@@ -31,7 +22,7 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
 
     @Override
     protected void reset() {
-        ID_MAPPERS.clear();
+        biomeIdMappers.clear();
     }
 
     @Override
@@ -39,15 +30,18 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
         for (var j : obj.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            var mapper = CODEC.decode(JsonOps.INSTANCE, json)
+            var mapper = BiomeIdMapper.CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Biome ID mapper with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
             try {
-                ID_MAPPERS.put(id.toString(), mapper);
+                biomeIdMappers.register(id, mapper);
             }catch (Exception e){
                 Polytone.LOGGER.warn("Found duplicate biome in biome id mapper {}", id);
             }
         }
     }
 
+    public Codec<BiomeIdMapper> byNameCodec() {
+        return biomeIdMappers;
+    }
 }

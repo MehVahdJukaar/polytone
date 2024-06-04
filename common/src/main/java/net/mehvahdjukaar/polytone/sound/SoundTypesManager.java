@@ -1,7 +1,5 @@
 package net.mehvahdjukaar.polytone.sound;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.mojang.serialization.Codec;
@@ -9,6 +7,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.Util;
@@ -32,23 +31,18 @@ import java.util.*;
 
 public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resources> {
 
-    private final Map<ResourceLocation, SoundEvent> customSoundEvents = new HashMap<>();
+    private final MapRegistry<SoundEvent> customSoundEvents = new MapRegistry<>("Custom Sound Events");
 
     // custom defined sound types
-    private final BiMap<ResourceLocation, SoundType> soundTypesIds = HashBiMap.create();
+    private final MapRegistry<SoundType> customSoundTypes = new MapRegistry<>("Custom Sound Types");
 
     public SoundTypesManager() {
         super("custom_sound_types", "sound_types");
     }
 
     @Nullable
-    public SoundType getCustom(ResourceLocation id) {
-        return soundTypesIds.get(id);
-    }
-
-    @Nullable
-    public ResourceLocation getCustomKey(SoundType object) {
-        return soundTypesIds.inverse().get(object);
+    private SoundType getCustom(ResourceLocation resourceLocation) {
+        return customSoundTypes.getValue(resourceLocation);
     }
 
     @Override
@@ -76,7 +70,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                 if (!customSoundEvents.containsKey(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
                     var event = registerSoundEvent(id);
                     ids.add(id);
-                    customSoundEvents.put(id, event);
+                    customSoundEvents.register(id, event);
                 }
             }
         }
@@ -96,7 +90,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Sound Type with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
 
-            soundTypesIds.put(id, soundType);
+            customSoundTypes.register(id, soundType);
         }
     }
 
@@ -111,7 +105,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
 
     @Override
     protected void reset() {
-        soundTypesIds.clear();
+        customSoundTypes.clear();
         customSoundEvents.clear();
     }
 
@@ -273,6 +267,8 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                         " Did you place it in 'assets/[your pack]/polytone/sound_types/' ?");
             },
             t -> DataResult.error(() -> "Encoding SoundTypes not supported"));
+
+
 
     public static final Codec<SoundType> DIRECT_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(

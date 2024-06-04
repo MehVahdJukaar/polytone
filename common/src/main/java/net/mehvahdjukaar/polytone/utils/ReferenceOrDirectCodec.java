@@ -7,6 +7,7 @@ import com.mojang.serialization.DynamicOps;
 
 import java.util.Objects;
 
+// Basically equivalent of RegistryFileCodec but for simple map "registries". Use MapRegistry
 public final class ReferenceOrDirectCodec<E> implements Codec<E> {
     private final Codec<E> reference;
     private final Codec<E> direct;
