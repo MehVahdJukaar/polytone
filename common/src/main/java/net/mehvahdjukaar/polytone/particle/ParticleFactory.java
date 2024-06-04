@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.*;
@@ -20,7 +21,7 @@ public interface ParticleFactory {
         return p == null ? DataResult.error(() -> "Unsupported Particle Type " + r) : DataResult.success(p);
     }, t -> DataResult.error(() -> "Encode not supported"));
 
-    Codec<ParticleFactory> CODEC = new ReferenceOrDirectCodec<>(CustomParticlesManager.REFERENCE_CODEC, FROM_TYPE_CODEC, true);
+    Codec<ParticleFactory> CODEC = new ReferenceOrDirectCodec<>(Polytone.CUSTOM_PARTICLES.byNameCodec(), FROM_TYPE_CODEC, true);
 
     @Nullable
     static ParticleFactory fromType(ParticleType<?> type) {

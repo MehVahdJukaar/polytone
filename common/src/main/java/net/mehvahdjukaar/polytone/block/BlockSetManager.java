@@ -29,7 +29,7 @@ public class BlockSetManager extends JsonPartialReloader {
         blockSetTypes.clear();
         //copy vanilla
         BlockSetType.values().forEach(type ->
-                blockSetTypes.put(new ResourceLocation(type.name()),
+                blockSetTypes.register(new ResourceLocation(type.name()),
                         new BlockSetTypeProvider.Vanilla(type)));
         counter = 0;
     }

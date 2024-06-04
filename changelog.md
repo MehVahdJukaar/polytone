@@ -1,2 +1,3 @@
-backported all recent changes
-improved creative tab modifiers. you can change icon and if scroll bar is there or not
+fixed tab removals being applied after additions
+fixed text color not being recolored properly 
+fixed biome modifiers and dimension modifiers not being applied on level reload

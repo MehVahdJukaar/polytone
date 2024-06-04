@@ -44,17 +44,8 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     @Override
     public void reset() {
         needsDynamicApplication = true;
-        Level level = Minecraft.getInstance().level;
-        if (level != null) {
-            for (var v : vanillaEffects.entrySet()) {
-                v.getValue().applyInplace(v.getKey());
-            }
-            //reset all
-        }
-        //if we don't have a level, biomes don't exist anymore, so we don't care
 
-        vanillaEffects.clear();
-
+        //Dimensions are NOT reloaded with world load. we need to reset vanilla stuff once we have a level
         //whatever happens, we always clear stuff to apply
         effectsToApply.clear();
         fogColormaps.clear();
@@ -159,9 +150,12 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     public void doApply(RegistryAccess registryAccess, boolean firstLogin) {
-        if (!needsDynamicApplication) return;
+        if (!firstLogin && !needsDynamicApplication) return;
         needsDynamicApplication = false;
-        if (firstLogin) vanillaEffects.clear();
+
+        for (var v : vanillaEffects.entrySet()) {
+            v.getValue().applyInplace(v.getKey());
+        }
 
         Registry<DimensionType> dimReg = registryAccess.registryOrThrow(Registries.DIMENSION_TYPE);
 

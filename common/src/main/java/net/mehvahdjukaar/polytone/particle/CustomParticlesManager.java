@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.particle;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
@@ -52,4 +53,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
     }
 
 
+    public Codec<CustomParticleType> byNameCodec() {
+        return customParticles;
+    }
 }

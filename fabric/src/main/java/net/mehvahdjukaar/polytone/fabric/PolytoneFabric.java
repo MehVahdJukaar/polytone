@@ -49,7 +49,7 @@ public class PolytoneFabric implements ClientModInitializer {
                         matrices.setIdentity();
                         matrices.translate(scaledWidth / 2F, scaledHeight / 2F, 500);
 
-                        ss.polytone$renderExtraSprites(matrices);
+                        ss.polytone$renderExtraSprites(graphics);
                         matrices.popPose();
                     });
                 }

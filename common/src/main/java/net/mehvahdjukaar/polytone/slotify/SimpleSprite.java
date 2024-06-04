@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
@@ -28,9 +29,9 @@ public record SimpleSprite(ResourceLocation texture, float x, float y, float wid
     ).apply(i, SimpleSprite::new));
 
 
-    public void render(PoseStack poseStack) {
+    public void render(GuiGraphics poseStack) {
         TextureAtlasSprite sprite = Minecraft.getInstance().getGuiSprites().getSprite(texture);
-        blit(poseStack.last().pose(), sprite.atlasLocation(), x, x + width, y, y + height, z,
+        blit(poseStack.pose().last().pose(), sprite.atlasLocation(), x, x + width, y, y + height, z,
                 sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1());
     }
 

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.slotify;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +41,7 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
         }
     }
 
-    public void renderSprites(PoseStack poseStack) {
+    public void renderSprites(GuiGraphics poseStack) {
         RenderSystem.enableDepthTest();
         this.sprites.forEach(r -> r.render(poseStack));
     }
