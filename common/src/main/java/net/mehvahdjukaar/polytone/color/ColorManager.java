@@ -11,8 +11,10 @@ import net.mehvahdjukaar.polytone.particle.BlockParticleExpression;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -253,6 +255,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     vanillaChatFormatting.put(text, text.getColor());
                 }
                 text.color = col;
+                TextColor tc = TextColor.fromLegacyFormat(text);
+                tc.value = col;
             }
         } else if (is(prop, 0, "palette")) {
             if (is(prop, 1, "block")) {
@@ -324,6 +328,14 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             color.textColor = e.getValue();
         }
         vanillaTextColors.clear();
+
+        //chat formatting
+        for (var e : vanillaChatFormatting.entrySet()) {
+            ChatFormatting text = e.getKey();
+            text.color = e.getValue();
+            TextColor tc = TextColor.fromLegacyFormat(text);
+            tc.value = e.getValue();
+        }
 
         //spawn eggs
 

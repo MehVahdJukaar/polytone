@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -29,7 +30,7 @@ public abstract class ScreenMixin implements SlotifyScreen {
     }
 
     @Override
-    public void polytone$renderExtraSprites(PoseStack poseStack) {
+    public void polytone$renderExtraSprites(GuiGraphics poseStack) {
         if (polytone$modifier != null) {
             polytone$modifier.renderSprites(poseStack);
         }

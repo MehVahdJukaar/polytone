@@ -38,6 +38,9 @@ accessible field net/minecraft/client/particle/Particle roll F
 accessible field net/minecraft/world/level/biome/Biome$ClimateSettings temperature F
 accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall F
 
+accessible field net/minecraft/network/chat/TextColor value I
+mutable field net/minecraft/network/chat/TextColor value I
+
 mutable field net/minecraft/world/item/DyeColor textureDiffuseColors [F
 accessible field net/minecraft/world/item/DyeColor textureDiffuseColors [F
 accessible field net/minecraft/world/item/DyeColor fireworkColor I

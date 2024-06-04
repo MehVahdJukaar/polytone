@@ -66,7 +66,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     }
 
     public void doApply(RegistryAccess registryAccess, boolean firstLogin) {
-        if (!needsDynamicApplication) return;
+        if (!firstLogin && !needsDynamicApplication) return;
         needsDynamicApplication = false;
         if (firstLogin) vanillaEffects.clear();
 

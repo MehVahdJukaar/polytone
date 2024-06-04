@@ -50,7 +50,7 @@ public class Colormap implements ColorResolver, BlockColor {
             IColormapNumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
             StrOpt.of(Codec.BOOL, "triangular", false).forGetter(c -> c.triangular),
             StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
-            StrOpt.of(BiomeIdMapperManager.CODEC, "biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
+            StrOpt.of(BiomeIdMapper.CODEC, "biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
             StrOpt.of(ResourceLocation.CODEC, "texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture))
     ).apply(i, Colormap::new));
 

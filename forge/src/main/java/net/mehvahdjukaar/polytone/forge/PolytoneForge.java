@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
@@ -57,10 +58,11 @@ public class PolytoneForge {
         SlotifyScreen ss = (SlotifyScreen) screen;
         if (ss.polytone$hasSprites()) {
 
-            PoseStack poseStack = event.getGuiGraphics().pose();
+            GuiGraphics graphics = event.getGuiGraphics();
+            PoseStack poseStack = graphics.pose();
             poseStack.pushPose();
             poseStack.translate(screen.width / 2F, screen.height / 2F, 500);
-            ss.polytone$renderExtraSprites(poseStack);
+            ss.polytone$renderExtraSprites(graphics);
             poseStack.popPose();
         }
     }

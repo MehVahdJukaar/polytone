@@ -67,15 +67,16 @@ public record CreativeTabModifier(
     }
 
     public CreativeTabModifier applyItemsAndAttributes(ItemToTabEvent event) {
+        for (var v : removals) {
+            event.removeItems(v);
+        }
+
         for (var v : additions) {
             if (v.before()) {
                 event.addBefore(v.predicate(), v.stack().toArray(ItemStack[]::new));
             } else {
                 event.addAfter(v.predicate(), v.stack().toArray(ItemStack[]::new));
             }
-        }
-        for (var v : removals) {
-            event.removeItems(v);
         }
 
         return applyAttributes(event.getTab());

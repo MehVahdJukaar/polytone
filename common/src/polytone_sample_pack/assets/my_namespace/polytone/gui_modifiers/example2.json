@@ -1,0 +1,44 @@
+{
+  "target_type": "menu_class",
+  "target": "net.minecraft.world.inventory.ChestMenu",
+  "slot_modifiers": [
+    {
+      "slots": "1->20",
+      "x_offset": 10,
+      "y_offset": 10,
+      "color": "#ff00ffff"
+    },
+    {
+      "slots": [9,5,7],
+      "x_offset": 20,
+      "y_offset": 7
+    }
+  ],
+  "special_offsets": {
+    "player": {
+      "x_offset": 22,
+      "y_offset": 0
+    }
+  },
+  "widget_modifiers": [
+    {
+      "x_offset": 5,
+      "target_x": 2,
+      "target_y": 2,
+      "target_message": "done",
+      "target_width": 4,
+      "width_increment": 4,
+      "target_class_name": "Button"
+    }
+  ],
+  "sprites": [
+    {
+      "x": -100,
+      "y": 20,
+      "z": 20,
+      "width": 200,
+      "height": 500,
+      "texture": "textures/block/stone.png"
+    }
+  ]
+}
