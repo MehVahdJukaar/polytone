@@ -1,23 +1,17 @@
 package net.mehvahdjukaar.polytone.sound;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.CsvUtils;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
-import net.mehvahdjukaar.polytone.utils.PartialReloader;
-import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.Block;
@@ -25,9 +19,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.*;
 
 public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resources> {
@@ -70,7 +61,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                 if (!customSoundEvents.contains(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
                     SoundEvent newSound = PlatStuff.registerSoundEvent(id);
                     customSoundEvents.add(id);
-                }else{
+                } else {
                     Polytone.LOGGER.error("Sound Event with id {} already exists! Ignoring.", id);
                 }
             }
@@ -236,7 +227,6 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                         " Did you place it in 'assets/[your pack]/polytone/sound_types/' ?");
             },
             t -> DataResult.error(() -> "Encoding SoundTypes not supported"));
-
 
 
     public static final Codec<SoundType> DIRECT_CODEC = RecordCodecBuilder.create(instance ->

@@ -6,7 +6,6 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -50,6 +49,8 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         vanillaTabs.clear();
         needsRefresh.addAll(modifiers.keySet());
         modifiers.clear();
+        //unregister here todo
+        customTabs.clear();
     }
 
     @Override
@@ -61,7 +62,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
                 if (!customTabs.contains(key) && !BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(key)) {
                     CreativeModeTab tab = PlatStuff.registerTab(id);
                     customTabs.add(key);
-                }else{
+                } else {
                     Polytone.LOGGER.error("Creative Tab with id {} already exists! Ignoring.", id);
                 }
             }
@@ -95,14 +96,14 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
             //same as rebuild content. Internally fires the events. Just rebuilds whats needed (old+new)
             for (var key : needsRefresh) {
-                 CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(key);
-                 if(tab != null) {
-                     tab.buildContents(CreativeModeTabs.CACHED_PARAMETERS);
-                     CreativeTabModifier mod = modifiers.get(key);
-                     if (mod != null && mod.search().orElse(false)) {
-                         tab.rebuildSearchTree();
-                     }
-                 }
+                CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(key);
+                if (tab != null) {
+                    tab.buildContents(CreativeModeTabs.CACHED_PARAMETERS);
+                    CreativeTabModifier mod = modifiers.get(key);
+                    if (mod != null && mod.search().orElse(false)) {
+                        tab.rebuildSearchTree();
+                    }
+                }
             }
 
             PlatStuff.sortTabs();
