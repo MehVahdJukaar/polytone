@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.forge;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.polytone.mixins.forge.BlockColorsAccessor;
 import net.mehvahdjukaar.polytone.mixins.forge.CreativeTabAccessor;
 import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeAccessor;
@@ -9,22 +11,29 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.Holder;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.common.CreativeModeTabRegistry;
+import net.neoforged.neoforge.common.world.BiomeModifier;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 
 import java.lang.reflect.Field;
@@ -85,6 +94,18 @@ public class PlatStuffImpl {
 
     }
 
+    public static void sortTabs() {
+        CreativeModeTabRegistry.sortTabs();
+    }
+
+    public static CreativeModeTab registerTab(ResourceLocation id) {
+        CreativeModeTab tab = CreativeModeTab.builder().title(Component.translatable(id.toString())).build();
+        ((MappedRegistry) BuiltInRegistries.CREATIVE_MODE_TAB).frozen = false;
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, id, tab);
+        BuiltInRegistries.CREATIVE_MODE_TAB.freeze();
+        return tab;
+    }
+
     public static CreativeTabModifier modifyTab(CreativeTabModifier mod, CreativeModeTab tab) {
         CreativeTabAccessor acc = (CreativeTabAccessor) tab;
         Component oldName = null;
@@ -101,7 +122,7 @@ public class PlatStuffImpl {
 
         Boolean oldSearch = null;
         Integer oldSearchWidth = null;
-        /*
+
         if (mod.search().isPresent()) {
             oldSearch = tab.hasSearchBar();
             acc.setHasSearchBar(mod.search().get());
@@ -109,8 +130,7 @@ public class PlatStuffImpl {
         if (mod.searchWidth().isPresent()) {
             oldSearchWidth = tab.getSearchBarWidth();
             acc.setSearchBarWidth(mod.searchWidth().get());
-        }*/
-
+        }
         Boolean oldCanScroll = null;
         if (mod.canScroll().isPresent()) {
             oldCanScroll = tab.canScroll();

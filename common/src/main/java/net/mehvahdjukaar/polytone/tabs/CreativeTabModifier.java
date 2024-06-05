@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.levelgen.structure.Structure;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,8 +34,8 @@ public record CreativeTabModifier(
 
     public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
             ItemStack.SINGLE_ITEM_CODEC.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
-            Codec.BOOL.optionalFieldOf("search").forGetter(CreativeTabModifier::search), //unused
-            Codec.INT.optionalFieldOf("search_width").forGetter(CreativeTabModifier::searchWidth),
+            Codec.BOOL.optionalFieldOf("search_bar").forGetter(CreativeTabModifier::search), //unused
+            Codec.INT.optionalFieldOf("search_bar_width").forGetter(CreativeTabModifier::searchWidth),
             Codec.BOOL.optionalFieldOf("can_scroll").forGetter(CreativeTabModifier::canScroll),
             Codec.BOOL.optionalFieldOf("show_title").forGetter(CreativeTabModifier::showTitle),
             ComponentSerialization.CODEC.optionalFieldOf("name").forGetter(CreativeTabModifier::name),
@@ -46,6 +47,7 @@ public record CreativeTabModifier(
             ItemAddition.CODEC.listOf().optionalFieldOf("additions", List.of()).forGetter(CreativeTabModifier::additions),
             TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(CreativeTabModifier::explicitTargets)
     ).apply(i, CreativeTabModifier::new));
+
 
     public CreativeTabModifier merge(CreativeTabModifier other) {
         return new CreativeTabModifier(
