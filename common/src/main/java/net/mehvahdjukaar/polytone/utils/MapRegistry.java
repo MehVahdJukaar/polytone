@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,10 +24,6 @@ public class MapRegistry<T> implements Codec<T> {
 
     public static <B> CodecMap<B> ofCodec(String name) {
         return new CodecMap<>(name);
-    }
-
-    public <E> Codec<E> dispatch(Function<? super E, ? extends T> type) {
-        return Codec.super.dispatch(type, c -> (Codec<E>) c);
     }
 
     public <B extends T> T register(ResourceLocation name, B value) {
@@ -89,18 +86,18 @@ public class MapRegistry<T> implements Codec<T> {
         this.map.clear();
     }
 
-    public static class CodecMap<T> extends MapRegistry<Codec<? extends T>> {
+    public static class CodecMap<T> extends MapRegistry<MapCodec<? extends T>> {
 
         public CodecMap(String name) {
             super(name);
         }
 
-        public <B extends T> Codec<B> register(ResourceLocation name, Codec<B> value) {
+        public <B extends T> MapCodec<B> register(ResourceLocation name, MapCodec<B> value) {
             super.register(name, value);
             return value;
         }
 
-        public <B extends T> Codec<B> register(String name, Codec<B> value) {
+        public <B extends T> MapCodec<B> register(String name, MapCodec<B> value) {
             return this.register(new ResourceLocation(name), value);
         }
     }

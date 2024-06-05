@@ -1,20 +1,18 @@
 package net.mehvahdjukaar.polytone.tabs;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.entity.animal.Cod;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -22,15 +20,14 @@ public interface ItemPredicate extends Predicate<ItemStack> {
 
     MapRegistry.CodecMap<ItemPredicate> TYPES = MapRegistry.ofCodec("Polytone Item Predicates");
 
-    Codec<ItemPredicate> CODEC = TYPES.dispatch("type",
-            ItemPredicate::getCodec, c->(MapCodec<? extends ItemPredicate>) c);
+    Codec<ItemPredicate> CODEC = TYPES.dispatch("type", ItemPredicate::getCodec, c -> c);
 
 
-    Codec<? extends ItemPredicate> getCodec();
+    MapCodec<? extends ItemPredicate> getCodec();
 
 
     True TRUE_PRED = new True();
-    Codec<True> TRUE = TYPES.register("true", Codec.unit(TRUE_PRED));
+    MapCodec<True> TRUE = TYPES.register("true", MapCodec.unit(TRUE_PRED));
 
     class True implements ItemPredicate {
 
@@ -40,14 +37,14 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         }
 
         @Override
-        public Codec<True> getCodec() {
+        public MapCodec<True> getCodec() {
             return TRUE;
         }
     }
 
-    Codec<And> AND = TYPES.register("and",
+    MapCodec<And> AND = TYPES.register("and",
             ItemPredicate.CODEC.listOf().fieldOf("predicates")
-                    .xmap(And::new, And::predicates).codec());
+                    .xmap(And::new, And::predicates));
 
     record And(List<ItemPredicate> predicates) implements ItemPredicate {
 
@@ -57,14 +54,14 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         }
 
         @Override
-        public Codec<? extends ItemPredicate> getCodec() {
+        public MapCodec<? extends ItemPredicate> getCodec() {
             return AND;
         }
     }
 
-    Codec<Or> OR = TYPES.register("or",
+    MapCodec<Or> OR = TYPES.register("or",
             ItemPredicate.CODEC.listOf().fieldOf("predicates")
-                    .xmap(Or::new, Or::predicates).codec());
+                    .xmap(Or::new, Or::predicates));
 
     record Or(List<ItemPredicate> predicates) implements ItemPredicate {
 
@@ -74,15 +71,15 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         }
 
         @Override
-        public Codec<Or> getCodec() {
+        public MapCodec<Or> getCodec() {
             return OR;
         }
 
     }
 
-    Codec<Not> NOT = TYPES.register("not",
+    MapCodec<Not> NOT = TYPES.register("not",
             ItemPredicate.CODEC.fieldOf("predicate")
-                    .xmap(Not::new, Not::predicate).codec());
+                    .xmap(Not::new, Not::predicate));
 
     record Not(ItemPredicate predicate) implements ItemPredicate {
 
@@ -92,15 +89,15 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         }
 
         @Override
-        public Codec<Not> getCodec() {
+        public MapCodec<Not> getCodec() {
             return NOT;
         }
     }
 
 
-    Codec<TagMatch> TAG_MATCH = TYPES.register("tag_match",
+    MapCodec<TagMatch> TAG_MATCH = TYPES.register("tag_match",
             TagKey.codec(Registries.ITEM).fieldOf("tag")
-                    .xmap(TagMatch::new, TagMatch::tag).codec());
+                    .xmap(TagMatch::new, TagMatch::tag));
 
     record TagMatch(TagKey<Item> tag) implements ItemPredicate {
 
@@ -110,14 +107,14 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         }
 
         @Override
-        public Codec<TagMatch> getCodec() {
+        public MapCodec<TagMatch> getCodec() {
             return TAG_MATCH;
         }
     }
 
-    Codec<ItemMatch> ITEM_MATCH = TYPES.register("items_match",
+    MapCodec<ItemMatch> ITEM_MATCH = TYPES.register("items_match",
             BuiltInRegistries.ITEM.byNameCodec().listOf().fieldOf("items")
-                    .xmap(ItemMatch::new, ItemMatch::items).codec());
+                    .xmap(ItemMatch::new, ItemMatch::items));
 
     record ItemMatch(List<Item> items) implements ItemPredicate {
 
@@ -127,14 +124,14 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         }
 
         @Override
-        public Codec<ItemMatch> getCodec() {
+        public MapCodec<ItemMatch> getCodec() {
             return ITEM_MATCH;
         }
     }
 
-    Codec<ItemStackMatch> ITEMSTACK_MATCH = TYPES.register("itemstack_match",
+    MapCodec<ItemStackMatch> ITEMSTACK_MATCH = TYPES.register("itemstack_match",
             ItemStack.SINGLE_ITEM_CODEC.fieldOf("itemstack")
-                    .xmap(ItemStackMatch::new, ItemStackMatch::items).codec());
+                    .xmap(ItemStackMatch::new, ItemStackMatch::items));
 
     record ItemStackMatch(ItemStack items) implements ItemPredicate {
 
@@ -144,15 +141,15 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         }
 
         @Override
-        public Codec<ItemStackMatch> getCodec() {
+        public MapCodec<ItemStackMatch> getCodec() {
             return ITEMSTACK_MATCH;
         }
     }
 
 
     Pattern TRUE_PATTERN = Pattern.compile(".*");
-    Codec<IDMatch> ID_MATCH = TYPES.register("id_match",
-            RecordCodecBuilder.create(i -> i.group(
+    MapCodec<IDMatch> ID_MATCH = TYPES.register("id_match",
+            RecordCodecBuilder.mapCodec(i -> i.group(
                     ExtraCodecs.PATTERN.optionalFieldOf("namespace", TRUE_PATTERN).forGetter(IDMatch::namespace),
                     ExtraCodecs.PATTERN.optionalFieldOf("path", TRUE_PATTERN).forGetter(IDMatch::path)
             ).apply(i, IDMatch::new)));
@@ -167,7 +164,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         }
 
         @Override
-        public Codec<IDMatch> getCodec() {
+        public MapCodec<IDMatch> getCodec() {
             return ID_MATCH;
         }
     }
