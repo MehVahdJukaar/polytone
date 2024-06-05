@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.fabric;
 import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
@@ -19,6 +20,7 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -29,6 +31,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -185,6 +188,17 @@ public class PlatStuffImpl {
                 List.of(),
                 List.of(),
                 Set.of());
+    }
+
+    public static void sortTabs() {
+    }
+
+    public static CreativeModeTab registerTab(ResourceLocation id) {
+        CreativeModeTab tab = FabricItemGroup.builder().title(Component.literal(id.toString())).build();
+        ((MappedRegistry) BuiltInRegistries.CREATIVE_MODE_TAB).frozen = false;
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, id, tab);
+        BuiltInRegistries.CREATIVE_MODE_TAB.freeze();
+        return tab;
     }
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,

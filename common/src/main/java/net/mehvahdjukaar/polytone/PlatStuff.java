@@ -71,4 +71,14 @@ public class PlatStuff {
     public static CreativeTabModifier modifyTab(CreativeTabModifier mod, CreativeModeTab tab) {
         throw new AssertionError();
     }
+
+    @ExpectPlatform
+    public static void sortTabs() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static CreativeModeTab registerTab(ResourceLocation id) {
+        throw new AssertionError();
+    }
 }

@@ -8,6 +8,7 @@ import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
@@ -31,7 +32,7 @@ import java.util.*;
 
 public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resources> {
 
-    private final MapRegistry<SoundEvent> customSoundEvents = new MapRegistry<>("Custom Sound Events");
+    private final Set<ResourceLocation> customSoundEvents = new HashSet<>();
 
     // custom defined sound types
     private final MapRegistry<SoundType> customSoundTypes = new MapRegistry<>("Custom Sound Types");
@@ -50,7 +51,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         var jsons = getJsonsInDirectories(resourceManager);
         this.checkConditions(jsons);
 
-        var types = gatherSoundEvents(resourceManager, Polytone.MOD_ID);
+        var types = CsvUtils.parseCsv(resourceManager, "sound_events");
 
         return new Resources(jsons, types);
     }
@@ -63,19 +64,20 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
 
         //custom sound events
 
-        List<ResourceLocation> ids = new ArrayList<>();
         for (var e : soundEvents.entrySet()) {
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
-                if (!customSoundEvents.containsKey(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
-                    var event = PlatStuff.registerSoundEvent(id);
-                    ids.add(id);
-                    customSoundEvents.register(id, event);
+                if (!customSoundEvents.contains(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
+                    SoundEvent newSound = PlatStuff.registerSoundEvent(id);
+                    customSoundEvents.add(id);
+                }else{
+                    Polytone.LOGGER.error("Sound Event with id {} already exists! Ignoring.", id);
                 }
             }
         }
-        if (!ids.isEmpty()) {
-            Polytone.LOGGER.info("Registered {} custom Sound Events from Resource Packs: {}", ids.size(), ids + ". Remember to add them to sounds.json!");
+
+        if (!customSoundEvents.isEmpty()) {
+            Polytone.LOGGER.info("Registered {} custom Sound Events from Resource Packs: {}", customSoundEvents.size(), customSoundEvents + ". Remember to add them to sounds.json!");
             //this is bad
             Minecraft.getInstance().getSoundManager().reload();
             //this entire thing is a bad idea
@@ -99,30 +101,6 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         customSoundTypes.clear();
         customSoundEvents.clear();
     }
-
-    public static Map<ResourceLocation, List<String>> gatherSoundEvents(ResourceManager resourceManager, String path) {
-        Map<ResourceLocation, List<String>> idList = new HashMap<>();
-        Map<ResourceLocation, List<Resource>> res = resourceManager.listResourceStacks(path, resourceLocation ->
-                resourceLocation.getPath().endsWith("sound_events.csv"));
-        for (var e : res.entrySet()) {
-            for (var r : e.getValue()) {
-                try (Reader reader = r.openAsReader()) {
-                    BufferedReader bufferedReader = new BufferedReader(reader);
-                    List<String> lines = bufferedReader.lines()
-                            .map(line -> line.split(",")) // Splitting by comma
-                            .flatMap(Arrays::stream)
-                            .map(String::trim)
-                            .filter(v -> ResourceLocation.tryParse(v) != null && !v.isEmpty())// Removing extra spaces
-                            .toList();
-                    if (!lines.isEmpty()) idList.put(e.getKey(), lines);
-                } catch (IllegalArgumentException | IOException | JsonParseException ex) {
-                    Polytone.LOGGER.error("Couldn't parse Custom Sound Events file {}:", e.getKey(), ex);
-                }
-            }
-        }
-        return idList;
-    }
-
 
     private static final Map<String, SoundType> SOUND_NAMES = Util.make(() -> {
         Map<String, SoundType> map = new HashMap<>();
