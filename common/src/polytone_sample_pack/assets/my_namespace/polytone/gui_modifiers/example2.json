@@ -36,9 +36,17 @@
       "x": -100,
       "y": 20,
       "z": 20,
-      "width": 200,
-      "height": 500,
-      "texture": "textures/block/stone.png"
+      "width": 50,
+      "height": 50,
+      "texture": "minecraft:textures/block/stone.png"
+    },
+    {
+      "x": -50,
+      "y": 20,
+      "z": 20,
+      "width": 50,
+      "height": 50,
+      "texture": "minecraft:icon/accessibility"
     }
   ]
 }
