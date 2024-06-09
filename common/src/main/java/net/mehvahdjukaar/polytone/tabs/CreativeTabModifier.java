@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.tabs;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -16,6 +17,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import static net.mehvahdjukaar.polytone.tabs.ExtraItemCodecs.ITEM_OR_STACK;
 
@@ -33,6 +35,10 @@ public record CreativeTabModifier(
         List<ItemPredicate> removals,
         List<ItemAddition> additions,
         Set<ResourceLocation> explicitTargets) implements ITargetProvider {
+
+    public static final Codec<Component> COMPONENT_CODEC = Codec.either(ExtraCodecs.COMPONENT, ExtraCodecs.FLAT_COMPONENT).xmap(
+            e -> e.map(Function.identity(), Function.identity()), Either::left
+    );
 
     public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
             ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
@@ -87,7 +93,6 @@ public record CreativeTabModifier(
 
     public CreativeTabModifier applyAttributes(ResourceKey<CreativeModeTab> key) {
         CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(key);
-
         return PlatStuff.modifyTab(this, tab);
     }
 
