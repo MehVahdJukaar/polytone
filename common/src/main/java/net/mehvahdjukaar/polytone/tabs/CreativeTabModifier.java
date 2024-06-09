@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.tabs;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -17,6 +18,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 public record CreativeTabModifier(
         Optional<ItemStack> icon,
@@ -33,13 +35,17 @@ public record CreativeTabModifier(
         List<ItemAddition> additions,
         Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
+    public static final Codec<Component> COMPONENT_CODEC = Codec.either(ExtraCodecs.COMPONENT, ExtraCodecs.FLAT_COMPONENT).xmap(
+            e -> e.map(Function.identity(), Function.identity()), Either::left
+    );
+
     public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            StrOpt.of(ExtraItemCodecs.ITEMSTACK, "icon").forGetter(CreativeTabModifier::icon),
+            StrOpt.of(ExtraItemCodecs.ITEM_OR_STACK, "icon").forGetter(CreativeTabModifier::icon),
             StrOpt.of(Codec.BOOL, "search_bar").forGetter(CreativeTabModifier::search), //unused
             StrOpt.of(Codec.INT, "search_bar_width").forGetter(CreativeTabModifier::searchWidth),
             StrOpt.of(Codec.BOOL, "can_scroll").forGetter(CreativeTabModifier::canScroll),
             StrOpt.of(Codec.BOOL, "show_title").forGetter(CreativeTabModifier::showTitle),
-            StrOpt.of(ExtraCodecs.COMPONENT, "name").forGetter(CreativeTabModifier::name),
+            StrOpt.of(COMPONENT_CODEC, "name").forGetter(CreativeTabModifier::name),
             StrOpt.of(ResourceLocation.CODEC, "background").forGetter(CreativeTabModifier::backGroundLocation),
             StrOpt.of(ResourceLocation.CODEC, "tabs_image").forGetter(CreativeTabModifier::tabsImage),
             StrOpt.of(ResourceLocation.CODEC.listOf(), "before_tabs").forGetter(CreativeTabModifier::beforeTabs),
@@ -86,7 +92,6 @@ public record CreativeTabModifier(
 
     public CreativeTabModifier applyAttributes(ResourceKey<CreativeModeTab> key) {
         CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(key);
-
         return PlatStuff.modifyTab(this, tab);
     }
 
