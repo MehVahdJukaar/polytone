@@ -6,7 +6,6 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -90,7 +89,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
     @Override
     protected void apply() {
-        if (!needsRefresh.isEmpty() && CreativeModeTabs.CACHED_PARAMETERS != null) {
+        if (CreativeModeTabs.CACHED_PARAMETERS != null) {
             //this only happens if they have already been built
 
             //same as rebuild content. Internally fires the events. Just rebuilds whats needed (old+new)
@@ -104,7 +103,9 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
                      }
                  }
             }
+        }
 
+        if (!needsRefresh.isEmpty() || !customTabs.isEmpty()) {
             PlatStuff.sortTabs();
         }
         needsRefresh.clear();

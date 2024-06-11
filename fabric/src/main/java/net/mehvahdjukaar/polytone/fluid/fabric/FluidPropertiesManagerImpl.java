@@ -2,8 +2,10 @@ package net.mehvahdjukaar.polytone.fluid.fabric;
 
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
+import net.fabricmc.fabric.mixin.itemgroup.ItemGroupsMixin;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.material.Fluid;
 
 public class FluidPropertiesManagerImpl {
