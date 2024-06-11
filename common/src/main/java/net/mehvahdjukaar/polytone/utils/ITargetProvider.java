@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -29,6 +30,7 @@ public interface ITargetProvider {
     }
 
 
+    @NotNull
     Set<ResourceLocation> explicitTargets();
 
     default Set<ResourceLocation> getTargetsKeys(ResourceLocation fileId) {

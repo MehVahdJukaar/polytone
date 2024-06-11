@@ -98,6 +98,11 @@ public record ArrayImage(int[][] pixels, int width, int height) {
                 // Creating or retrieving the Int2Object map for the key
                 groupedMap.computeIfAbsent(id.withPath(key), a -> new Group())
                         .put(index, e.getValue());
+            }else{
+                //no match.
+                Group group = new Group();
+                group.put(-1, e.getValue());
+                groupedMap.put(id, group);
             }
         }
         return groupedMap;

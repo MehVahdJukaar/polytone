@@ -1,1 +1,2 @@
-mode ports of recent fixes
+- polytone can now convert optifine fog0, fog1 and fog2 and sky0, sky1 and sky2 to the Dimension Effect Modifiers colormaps
+- Creative tab icons can now accept a single item id as string

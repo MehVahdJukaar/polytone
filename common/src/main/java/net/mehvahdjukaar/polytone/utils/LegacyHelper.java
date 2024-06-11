@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.StemBlock;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class LegacyHelper {
@@ -172,7 +173,7 @@ public class LegacyHelper {
 
 
     public static BlockPropertyModifier convertOFProperty(Properties properties, ResourceLocation id) {
-        Set<ResourceLocation> set = null;
+        Set<ResourceLocation> set;
         Colormap colormap;
         var targets = properties.getProperty("blocks");
         if (targets != null) {
@@ -189,8 +190,8 @@ public class LegacyHelper {
                     }).map(ResourceLocation::new)
                     .collect(Collectors.toSet());
             set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
+        } else set = Set.of();
 
-        }
         String format = properties.getProperty("format");
         Integer col = null;
         String singleColor = properties.getProperty("color");
@@ -353,6 +354,7 @@ public class LegacyHelper {
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation id = entry.getKey();
             BlockPropertyModifier modifier = entry.getValue();
+            if (!id.getNamespace().equals("minecraft")) continue;
             if (id.getPath().contains("water") || id.getPath().contains("lava")) {
                 filtered.put(id, modifier);
             }
@@ -360,6 +362,7 @@ public class LegacyHelper {
         for (var entry : textures.entrySet()) {
             ResourceLocation id = entry.getKey();
             ArrayImage modifier = entry.getValue();
+            if (!id.getNamespace().equals("minecraft")) continue;
             if (id.getPath().contains("water") || id.getPath().contains("lava")) {
                 filteredTextures.put(id, modifier);
             }
@@ -370,5 +373,32 @@ public class LegacyHelper {
         Polytone.FLUID_PROPERTIES.addConvertedBlockProperties(filtered, filteredTextures);
     }
 
+    public static void convertOfBlockToDimensionProperties(Map<ResourceLocation, BlockPropertyModifier> parsedModifiers,
+                                                           Map<ResourceLocation, ArrayImage> textures) {
+        Map<ResourceLocation, BlockPropertyModifier> filtered = new HashMap<>();
+        Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
+        Pattern fogP = Pattern.compile("minecraft:fog[0-2]");
+        Pattern skyP = Pattern.compile("minecraft:sky[0-2]");
+        for (var entry : parsedModifiers.entrySet()) {
+            ResourceLocation id = entry.getKey();
+            String stringId = id.toString();
+            BlockPropertyModifier modifier = entry.getValue();
+            if (fogP.matcher(stringId).matches() || skyP.matcher(stringId).matches()){
+                filtered.put(id, modifier);
+            }
+        }
+        for (var entry : textures.entrySet()) {
+            ResourceLocation id = entry.getKey();
+            String stringId = id.toString();
+            ArrayImage modifier = entry.getValue();
+            if (fogP.matcher(stringId).matches() || skyP.matcher(stringId).matches()){
+                filteredTextures.put(id, modifier);
+            }
+        }
+        textures.keySet().removeAll(filteredTextures.keySet());
+        parsedModifiers.keySet().removeAll(filtered.keySet());
 
+        Polytone.DIMENSION_EFFECTS.addConvertedBlockProperties(filtered, filteredTextures);
+
+    }
 }
