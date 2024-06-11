@@ -3,8 +3,10 @@ package net.mehvahdjukaar.polytone.dimension;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -21,10 +23,7 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DimensionEffectsManager extends JsonImgPartialReloader {
 
@@ -36,6 +35,8 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private final Map<DimensionType, Colormap> skyColormaps = new HashMap<>();
 
     private boolean needsDynamicApplication = true;
+
+    private final Map<ResourceLocation, DimensionEffectsModifier> extraMods = new HashMap<>();
 
     public DimensionEffectsManager() {
         super("dimension_modifiers", "dimension_effects");
@@ -50,6 +51,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         effectsToApply.clear();
         fogColormaps.clear();
         skyColormaps.clear();
+        extraMods.clear();
     }
 
 
@@ -60,8 +62,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, DimensionEffectsModifier> parsedModifiers = new HashMap<>();
-
+        Map<ResourceLocation, DimensionEffectsModifier> parsedModifiers = new HashMap<>(extraMods);
 
         for (var j : jsons.entrySet()) {
             JsonElement json = j.getValue();
@@ -96,13 +97,13 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             }
 
             // if sky is not defined BUT they have a valid texture create a colormap for it
-            if(textures.containsKey(id.withSuffix("_sky")) && sky == null){
+            if (textures.containsKey(id.withSuffix("_sky")) && sky == null) {
                 modifier = modifier.merge(DimensionEffectsModifier.ofSkyColor(Colormap.defTriangle()));
                 sky = modifier.getSkyColormap();
             }
 
             // if fog is not defined BUT they have a valid texture create a colormap for it
-            if(textures.containsKey(id.withSuffix("_fog")) && sky == null){
+            if (textures.containsKey(id.withSuffix("_fog")) && sky == null) {
                 modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.defTriangle()));
                 fog = modifier.getFogColormap();
             }
@@ -206,5 +207,40 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             int skyColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome); //quart coords to block coord
             return Vec3.fromRGB24(skyColor1);
         });
+    }
+
+    // fot OF fog and sky. shit code...
+    public void addConvertedBlockProperties(Map<ResourceLocation, BlockPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
+        String[] names = new String[]{"overworld", "the_nether", "the_end"};
+        for (int i = 0; i <= 2; i++) {
+            BlockColor skyCol;
+            BlockColor fogCol;
+            {
+                ResourceLocation skyKey = new ResourceLocation("sky" + i);
+                BlockPropertyModifier skyMod = modifiers.get(skyKey);
+                ArrayImage skyImage = textures.get(skyKey);
+
+                skyCol = skyMod != null ? skyMod.getColormap() : (skyImage == null ? null : Colormap.defTriangle());
+                if(skyCol != null){
+                    ColormapsManager.tryAcceptingTexture(textures, skyKey, skyCol, new HashSet<>(), true);
+                }
+            }
+            {
+                ResourceLocation fogKey = new ResourceLocation("fog" + i);
+                BlockPropertyModifier fogMod = modifiers.get(fogKey);
+                ArrayImage fogImage = textures.get(fogKey);
+
+                fogCol = fogMod != null ? fogMod.getColormap() : (fogImage == null ? null : Colormap.defTriangle());
+                if(fogCol != null){
+                    ColormapsManager.tryAcceptingTexture(textures, fogKey, fogCol, new HashSet<>(), true);
+                }
+            }
+            if(fogCol != null || skyCol != null){
+                var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                        Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(), Set.of());
+
+                extraMods.put(new ResourceLocation(names[i]), mod);
+            }
+        }
     }
 }

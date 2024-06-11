@@ -17,6 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -143,7 +144,7 @@ public class ParticleModifier implements ITargetProvider {
     }
 
     @Override
-    public Set<ResourceLocation> explicitTargets() {
+    public @NotNull Set<ResourceLocation> explicitTargets() {
         return explicitTargets;
     }
 

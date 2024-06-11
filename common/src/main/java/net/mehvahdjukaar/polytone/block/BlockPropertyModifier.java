@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -40,7 +41,7 @@ public record BlockPropertyModifier(
         Optional<List<ParticleEmitter>> particleEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
         Optional<BlockSetTypeProvider> blockSetType,
-        Set<ResourceLocation> explicitTargets,
+        @NotNull Set<ResourceLocation> explicitTargets,
         boolean tintHack) implements ITargetProvider {
 
     // Other has priority

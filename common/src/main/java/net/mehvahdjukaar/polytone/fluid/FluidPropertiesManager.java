@@ -32,7 +32,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     // fot OF lava and water. shit code...
     public void addConvertedBlockProperties(Map<ResourceLocation, BlockPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
         this.extraImages = textures;
-        extraModifiers = new HashMap<>();
+        this.extraModifiers = new HashMap<>();
         for (var v : modifiers.entrySet()) {
             var m = v.getValue();
             var c = m.tintGetter();
