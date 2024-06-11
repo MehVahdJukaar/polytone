@@ -191,6 +191,7 @@ public class PlatStuffImpl {
     }
 
     public static void sortTabs() {
+        CreativeModeTabs.validate();
     }
 
     public static CreativeModeTab registerTab(ResourceLocation id) {
