@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static net.mehvahdjukaar.polytone.tabs.ExtraItemCodecs.ITEM_OR_STACK;
+
 public record CreativeTabModifier(
         Optional<ItemStack> icon,
         Optional<Boolean> search,
@@ -33,7 +35,7 @@ public record CreativeTabModifier(
         Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
     public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            ItemStack.SINGLE_ITEM_CODEC.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
+            ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
             Codec.BOOL.optionalFieldOf("search_bar").forGetter(CreativeTabModifier::search), //unused
             Codec.INT.optionalFieldOf("search_bar_width").forGetter(CreativeTabModifier::searchWidth),
             Codec.BOOL.optionalFieldOf("can_scroll").forGetter(CreativeTabModifier::canScroll),

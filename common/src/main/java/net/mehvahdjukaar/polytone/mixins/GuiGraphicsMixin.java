@@ -13,7 +13,6 @@ public class GuiGraphicsMixin {
 
     @Inject(method = "blitSprite(Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V", at = @At("HEAD"), cancellable = true)
     public void polytone$modifyBlit(TextureAtlasSprite textureAtlasSprite, int x, int y, int offset, int width, int height, CallbackInfo ci) {
-        // Insert your code here
         if (Polytone.OVERLAY_MODIFIERS.maybeModifyBlit((GuiGraphics) (Object) this, textureAtlasSprite, x, y, offset, width, height)){
             ci.cancel();
         }
