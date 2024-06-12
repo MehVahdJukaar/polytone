@@ -110,7 +110,8 @@ public class Lightmap {
         float thunderLevel = level.getThunderLevel(partialTicks);
         float time = level.getTimeOfDay(partialTicks);
         long currentTime = System.currentTimeMillis();
-        float deltaTime = (currentTime - lastTime) / 1000.0F;
+        long deltaMillis = currentTime - lastTime;
+        float deltaTime = deltaMillis / 1000.0F;
         lastTime = currentTime;
         LocalPlayer player = minecraft.player;
         Options options = minecraft.options;
