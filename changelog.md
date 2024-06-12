@@ -1,1 +1,2 @@
-- Fixed custom creative tabs not sorting themselves properlty
+- fixed lightmap interpolation misbehaving when having low fps
+- lightmap interpolation time is now framerate independent
