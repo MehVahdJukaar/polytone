@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.lightmap;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
@@ -21,14 +20,14 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 public class Lightmap {
 
-    protected static final double DEFAULT_SKY_LERP = 0.5;
+    protected static final double DEFAULT_SKY_LERP = 0.1;
     protected static final double DEFAULT_TORCH_LERP = 0;
+    protected static final float DEFAULT_BASE_LIGHT = 0.04f;
 
 
     public static final Codec<Lightmap> DIRECT_CODEC = RecordCodecBuilder.create(instance ->
@@ -42,7 +41,8 @@ public class Lightmap {
                     doubleRange(0, 1).optionalFieldOf("sky_lerp_factor", DEFAULT_SKY_LERP)
                             .forGetter(l -> l.skyLerp),
                     doubleRange(0, 1).optionalFieldOf("torch_lerp_factor", DEFAULT_TORCH_LERP)
-                            .forGetter(l -> l.torchLerp)
+                            .forGetter(l -> l.torchLerp),
+                    StrOpt.of(Codec.FLOAT, "base_light", DEFAULT_BASE_LIGHT).forGetter(l -> l.baseLight)
             ).apply(instance, Lightmap::new));
 
     public static final Codec<Lightmap> CODEC = new ReferenceOrDirectCodec<>(Polytone.LIGHTMAPS.byNameCodec(), DIRECT_CODEC);
@@ -56,6 +56,7 @@ public class Lightmap {
     private final ILightmapNumberProvider skyGetter;
     private final ILightmapNumberProvider torchGetter;
     private final boolean hasLightningColumn;
+    private final float baseLight;
     private final double skyLerp;
     private final double torchLerp;
     private final ArrayImage[] textures = new ArrayImage[3];
@@ -63,19 +64,22 @@ public class Lightmap {
     private final float[][] lastSkyLine = new float[16][3];
     private final float[][] lastTorchLine = new float[16][3];
 
+    private long lastTime = 0;
 
     public Lightmap(ILightmapNumberProvider skyGetter, ILightmapNumberProvider torchGetter,
-                    boolean lightningColumn, double skyLerp, double torchLerp) {
+                    boolean lightningColumn, double skyLerp, double torchLerp, float baseLight) {
         this.skyGetter = skyGetter;
         this.torchGetter = torchGetter;
         this.hasLightningColumn = lightningColumn;
         this.skyLerp = skyLerp;
         this.torchLerp = torchLerp;
+        this.baseLight = baseLight;
     }
 
     //default impl
     public Lightmap() {
-        this(ILightmapNumberProvider.DEFAULT, ILightmapNumberProvider.RANDOM, true, DEFAULT_SKY_LERP, DEFAULT_TORCH_LERP);
+        this(ILightmapNumberProvider.DEFAULT, ILightmapNumberProvider.RANDOM, true,
+                DEFAULT_SKY_LERP, DEFAULT_TORCH_LERP, DEFAULT_BASE_LIGHT);
     }
 
     public void acceptImages(ArrayImage normal, ArrayImage rain, ArrayImage thunder) {
@@ -105,8 +109,9 @@ public class Lightmap {
         float rainLevel = level.getRainLevel(partialTicks);
         float thunderLevel = level.getThunderLevel(partialTicks);
         float time = level.getTimeOfDay(partialTicks);
-        float deltaTime = minecraft.getDeltaFrameTime();
-
+        long currentTime = System.currentTimeMillis();
+        float deltaTime = (currentTime - lastTime) / 1000.0F;
+        lastTime = currentTime;
         LocalPlayer player = minecraft.player;
         Options options = minecraft.options;
 
@@ -145,7 +150,7 @@ public class Lightmap {
 
 
         Vector3f lightGray = new Vector3f(0.75F, 0.75F, 0.75F);
-        float lightGrayAmount = 0.04F;
+        float lightGrayAmount = baseLight;
 
         ArrayImage image = selectImage(rainLevel, thunderLevel);
         float[][] torchLine = selectTorch(image, nightVisionScale, time, rainLevel, thunderLevel);
@@ -155,13 +160,13 @@ public class Lightmap {
 
         //lerp!
 
-        if (torchLine.length != 0 && lastTorchLine.length != 0 && torchLerp != 1) {
+        if (torchLine.length != 0 && lastTorchLine.length != 0 && torchLerp != 0) {
             float lerpDelta = 1 - (float) Math.pow(torchLerp, deltaTime);
-            lerpInplace(lastTorchLine, torchLine, deltaTime);
+            lerpInplace(lastTorchLine, torchLine, lerpDelta);
         }
-        if (skyLine.length != 0 && lastSkyLine.length != 0 && skyLerp != 1) {
+        if (skyLine.length != 0 && lastSkyLine.length != 0 && skyLerp != 0) {
             float lerpDelta = 1 - (float) Math.pow(skyLerp, deltaTime);
-            lerpInplace(lastSkyLine, skyLine, deltaTime);
+            lerpInplace(lastSkyLine, skyLine, lerpDelta);
         }
 
         for (int skyY = 0; skyY < 16; ++skyY) {
