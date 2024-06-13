@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -13,8 +12,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.levelgen.structure.Structure;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,7 +34,7 @@ public record CreativeTabModifier(
         List<ItemAddition> additions,
         Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
-    public static final Codec<Component> COMPONENT_CODEC = Codec.either(ExtraCodecs.COMPONENT, ExtraCodecs.FLAT_COMPONENT).xmap(
+    public static final Codec<Component> COMPONENT_CODEC = Codec.either(ComponentSerialization.CODEC, ComponentSerialization.FLAT_CODEC).xmap(
             e -> e.map(Function.identity(), Function.identity()), Either::left
     );
 
@@ -74,16 +73,28 @@ public record CreativeTabModifier(
         );
     }
 
-    public CreativeTabModifier applyItemsAndAttributes(ItemToTabEvent event) {
+    public CreativeTabModifier applyItemsAndAttributes(ItemToTabEvent event, RegistryAccess access) {
         for (var v : removals) {
             event.removeItems(v);
         }
 
         for (var v : additions) {
+            List<ItemStack> stacks = v.getItems(access);
+            if (stacks == null) continue;
+            if (v.inverse()) {
+                List<ItemStack> newList = new ArrayList<>();
+                var not = stacks.stream().map(ItemStack::getItem).toList();
+                for (var i : BuiltInRegistries.ITEM) {
+                    if (!not.contains(i)) {
+                        newList.add(i.getDefaultInstance());
+                    }
+                }
+                stacks = newList;
+            }
             if (v.before()) {
-                event.addBefore(v.predicate(), v.stack().toArray(ItemStack[]::new));
+                event.addBefore(v.predicate(), stacks.toArray(ItemStack[]::new));
             } else {
-                event.addAfter(v.predicate(), v.stack().toArray(ItemStack[]::new));
+                event.addAfter(v.predicate(), stacks.toArray(ItemStack[]::new));
             }
         }
 

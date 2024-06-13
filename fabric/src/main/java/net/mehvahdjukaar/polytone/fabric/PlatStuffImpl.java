@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.fabric;
 
 import com.google.common.base.Suppliers;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -15,12 +17,14 @@ import net.mehvahdjukaar.polytone.mixins.fabric.CreativeTabAccessor;
 import net.mehvahdjukaar.polytone.mixins.fabric.FabricItemGroupEntriesAccessor;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.core.WritableRegistry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -28,7 +32,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -200,6 +203,15 @@ public class PlatStuffImpl {
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, id, tab);
         BuiltInRegistries.CREATIVE_MODE_TAB.freeze();
         return tab;
+    }
+
+    public static RegistryAccess hackyGetRegistryAccess() {
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT &&
+                RenderSystem.isOnRenderThread()) {
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level != null) return level.registryAccess();
+        }
+        return null;
     }
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,

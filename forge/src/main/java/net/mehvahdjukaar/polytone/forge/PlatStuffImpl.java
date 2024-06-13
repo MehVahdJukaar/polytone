@@ -1,16 +1,20 @@
 package net.mehvahdjukaar.polytone.forge;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import cpw.mods.modlauncher.api.INameMappingService;
 import net.mehvahdjukaar.polytone.mixins.forge.CreativeTabAccessor;
 import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeAccessor;
 import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeInfoBiomeInfoAccessor;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -26,9 +30,12 @@ import net.minecraftforge.client.DimensionSpecialEffectsManager;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.common.CreativeModeTabRegistry;
 import net.minecraftforge.common.world.ModifiableBiomeInfo;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.DistExecutor;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
@@ -117,6 +124,16 @@ public class PlatStuffImpl {
     public static void sortTabs() {
         CreativeModeTabRegistry.sortTabs();
     }
+
+    public static RegistryAccess hackyGetRegistryAccess() {
+        if (FMLEnvironment.dist ==  Dist.CLIENT &&
+                RenderSystem.isOnRenderThread()) {
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level != null) return level.registryAccess();
+        }
+        return null;
+    }
+
 
     public static CreativeModeTab registerTab(ResourceLocation id) {
         CreativeModeTab tab = CreativeModeTab.builder().title(Component.translatable(id.toString())).build();

@@ -26,16 +26,30 @@ public abstract class PartialReloader<T> {
     protected Map<ResourceLocation, JsonElement> getJsonsInDirectories(ResourceManager resourceManager) {
         Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
         for (String name : names) {
-            scanDirectory(resourceManager, Polytone.MOD_ID + "/" + name, GSON, jsons);
+            Map<ResourceLocation, JsonElement> js = new HashMap<>();
+            scanDirectory(resourceManager, Polytone.MOD_ID + "/" + name, GSON, js);
+            greedyAddAll(js, jsons);
         }
         return jsons;
     }
 
+    private static <T> void greedyAddAll(Map<ResourceLocation, T> js, Map<ResourceLocation, T> jsons) {
+        for (var entry : js.entrySet()) {
+            var r = entry.getKey();
+            var j = entry.getValue();
+            if (jsons.containsKey(r)) {
+                Polytone.LOGGER.warn("Duplicate data file ignored with ID {}", r);
+            }
+            jsons.put(r, j);
+        }
+    }
 
     protected Map<ResourceLocation, ArrayImage> getImagesInDirectories(ResourceManager resourceManager) {
         Map<ResourceLocation, ArrayImage> images = new HashMap<>();
         for (String name : names) {
-            ArrayImage.scanDirectory(resourceManager, Polytone.MOD_ID + "/" + name, images);
+            Map<ResourceLocation, ArrayImage> im = new HashMap<>();
+            ArrayImage.scanDirectory(resourceManager, Polytone.MOD_ID + "/" + name, im);
+            greedyAddAll(im, images);
         }
         return images;
     }

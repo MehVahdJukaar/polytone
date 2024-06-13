@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -128,7 +129,8 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         var tab = event.getTab();
         var mod = modifiers.get(tab);
         if (mod != null) {
-            vanillaTabs.put(tab, mod.applyItemsAndAttributes(event));
+            RegistryAccess access = PlatStuff.hackyGetRegistryAccess();
+            if(access != null) vanillaTabs.put(tab, mod.applyItemsAndAttributes(event,access));
         }
     }
 

@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone;
 
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
