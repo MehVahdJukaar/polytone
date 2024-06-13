@@ -2,13 +2,11 @@ package net.mehvahdjukaar.polytone.lightmap;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -16,7 +14,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -38,19 +35,14 @@ public class Lightmap {
                             .forGetter(l -> l.torchGetter),
                     Codec.BOOL.optionalFieldOf("lightning_strike_columns", true)
                             .forGetter(l -> l.hasLightningColumn),
-                    doubleRange(0, 1).optionalFieldOf("sky_lerp_factor", DEFAULT_SKY_LERP)
+                    Codec.doubleRange(0, 1).optionalFieldOf("sky_lerp_factor", DEFAULT_SKY_LERP)
                             .forGetter(l -> l.skyLerp),
-                    doubleRange(0, 1).optionalFieldOf("torch_lerp_factor", DEFAULT_TORCH_LERP)
+                    Codec.doubleRange(0, 1).optionalFieldOf("torch_lerp_factor", DEFAULT_TORCH_LERP)
                             .forGetter(l -> l.torchLerp),
-                    StrOpt.of(Codec.FLOAT, "base_light", DEFAULT_BASE_LIGHT).forGetter(l -> l.baseLight)
+                    Codec.FLOAT.optionalFieldOf("base_light", DEFAULT_BASE_LIGHT).forGetter(l -> l.baseLight)
             ).apply(instance, Lightmap::new));
 
     public static final Codec<Lightmap> CODEC = new ReferenceOrDirectCodec<>(Polytone.LIGHTMAPS.byNameCodec(), DIRECT_CODEC);
-
-    public static Codec<Double> doubleRange(double min, double max) {
-        return Codec.DOUBLE.validate(d -> d.compareTo(min) >= 0 && d.compareTo(max) <= 0 ?
-                DataResult.success(d) : DataResult.error(() -> "Value must be within range [" + min + ";" + max + "]: " + d));
-    }
 
 
     private final ILightmapNumberProvider skyGetter;

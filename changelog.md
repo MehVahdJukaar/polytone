@@ -1,1 +1,1 @@
-improved creative tabs modifiers to accept a single item id too as icon
+mod will now accept duplicate files and throw a warning when it does

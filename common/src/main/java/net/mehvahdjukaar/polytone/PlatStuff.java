@@ -5,6 +5,7 @@ import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -73,5 +74,11 @@ public class PlatStuff {
     @ExpectPlatform
     public static CreativeModeTab registerTab(ResourceLocation id) {
         throw new AssertionError();
+    }
+
+
+    @ExpectPlatform
+    public static RegistryAccess hackyGetRegistryAccess() {
+        return null;
     }
 }
