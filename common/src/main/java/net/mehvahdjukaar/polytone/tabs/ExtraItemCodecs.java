@@ -2,14 +2,17 @@ package net.mehvahdjukaar.polytone.tabs;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 public class ExtraItemCodecs {
@@ -32,6 +35,6 @@ public class ExtraItemCodecs {
 
     public static final Codec<HolderSet<Item>> ITEM_SET = RegistryCodecs.homogeneousList(Registries.ITEM, true);
     public static final Codec<List<ItemStack>> ITEMSTACK_SET = Codec.either(
-            ITEMSTACK_OR_ITEMSTACK_LIST, ITEM_SET).xmap(e -> e.map(Function.identity(),
+            ITEMSTACK_OR_ITEMSTACK_LIST,ITEM_SET ).xmap(e -> e.map(Function.identity(),
             l -> l.stream().map(i -> i.value().getDefaultInstance()).toList()), Either::left);
 }

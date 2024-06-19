@@ -26,8 +26,8 @@ public record ItemAddition(Dynamic<?> dynamicStacks, boolean inverse, ItemPredic
     @Nullable
     public List<ItemStack> getItems(RegistryAccess access) {
         var res = genericStuff(dynamicStacks, access);
-        if (res.isSuccess()) {
-            return res.getOrThrow().getFirst();
+        if (res.result().isPresent()) {
+            return res.result().get().getFirst();
         }
         Polytone.LOGGER.error("Failed to decode item addition: {}", res.error());
         return null;

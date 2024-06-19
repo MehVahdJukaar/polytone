@@ -5,6 +5,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -34,7 +36,7 @@ public record CreativeTabModifier(
         List<ItemAddition> additions,
         Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
-    public static final Codec<Component> COMPONENT_CODEC = Codec.either(ComponentSerialization.CODEC, ComponentSerialization.FLAT_CODEC).xmap(
+    public static final Codec<Component> COMPONENT_CODEC = Codec.either(ExtraCodecs.COMPONENT, ExtraCodecs.FLAT_COMPONENT).xmap(
             e -> e.map(Function.identity(), Function.identity()), Either::left
     );
 

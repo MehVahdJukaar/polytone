@@ -1,2 +1,2 @@
-- fixed lightmap interpolation misbehaving when having low fps
-- lightmap interpolation time is now framerate independent
+- tab item additions supports HolderSets (you can type tags just like you can in most other vanilla data objects )
+- added "inverse" conditions to item additions 
