@@ -188,7 +188,7 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
     }
 
     private static int getStride() {
-        return DefaultVertexFormat.BLOCK.getIntegerSize();
+        return DefaultVertexFormat.BLOCK.getVertexSize();
     }
 
     private static final int POSITION = 0;

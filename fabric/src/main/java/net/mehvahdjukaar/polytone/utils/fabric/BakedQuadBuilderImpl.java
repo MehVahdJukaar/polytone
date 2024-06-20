@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.utils.fabric;
 
 import com.google.common.base.Preconditions;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
@@ -82,7 +81,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
 
     @Override
-    public BakedQuadBuilderImpl vertex(double x, double y, double z) {
+    public BakedQuadBuilderImpl addVertex(float x, float y, float z) {
         vertexIndex++;
         if (vertexIndex == 4) {
             vertexIndex = 0;
@@ -91,17 +90,17 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
             }
         }
         if (globalTransform != null) {
-            Vector4f v = globalTransform.transform(new Vector4f((float) x, (float) y, (float) z, 1.0F));
+            Vector4f v = globalTransform.transform(new Vector4f(x, y, z, 1.0F));
             inner.pos(vertexIndex, v.x(), v.y(), v.z());
             return this;
         }
-        inner.pos(vertexIndex, (float) x, (float) y, (float) z);
+        inner.pos(vertexIndex, x, y, z);
         return this;
     }
 
 
     @Override
-    public BakedQuadBuilderImpl normal(float x, float y, float z) {
+    public BakedQuadBuilderImpl setNormal(float x, float y, float z) {
         if (globalTransform != null) {
             Vector3f normal = normalTransf.transform(new Vector3f(x, y, z));
             normal.normalize();

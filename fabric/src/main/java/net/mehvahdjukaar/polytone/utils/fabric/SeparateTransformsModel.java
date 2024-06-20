@@ -67,16 +67,16 @@ public class SeparateTransformsModel extends BlockModel {
     }
 
     @Override
-    public BakedModel bake(ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter,
-                           ModelState modelState, ResourceLocation modelLocation) {
+    public BakedModel bake(ModelBaker baker, BlockModel blockModel, Function<Material, TextureAtlasSprite> spriteGetter,
+                           ModelState modelState, boolean bl) {
         boolean usesBlockLight = this.getGuiLight().lightLikeBlock();
 
         BakedModel base;
         if (baseModel.getRootModel() == ModelBakery.GENERATION_MARKER) {
             base = ITEM_MODEL_GENERATOR.generateBlockModel(spriteGetter, baseModel)
-                    .bake(baker, baseModel, spriteGetter, modelState, modelLocation, false);
+                    .bake(baker, baseModel, spriteGetter, modelState, bl);
         } else {
-            base = baseModel.bake(baker, spriteGetter, modelState, modelLocation);
+            base = baseModel.bake(baker, baseModel, spriteGetter, modelState, bl);
         }
 
         ImmutableMap.Builder<ItemDisplayContext, BakedModel> prespectives = ImmutableMap.builder();
@@ -85,9 +85,9 @@ public class SeparateTransformsModel extends BlockModel {
             BakedModel p;
             if (perspective.getRootModel() == ModelBakery.GENERATION_MARKER) {
                 p = ITEM_MODEL_GENERATOR.generateBlockModel(spriteGetter, perspective)
-                        .bake(baker, perspective, spriteGetter, modelState, modelLocation, false);
+                        .bake(baker, perspective, spriteGetter, modelState, false);
             } else {
-                p = perspective.bake(baker, spriteGetter, modelState, modelLocation);
+                p = perspective.bake(baker,perspective, spriteGetter, modelState, bl);
             }
             prespectives.put(entry.getKey(), p);
         }
