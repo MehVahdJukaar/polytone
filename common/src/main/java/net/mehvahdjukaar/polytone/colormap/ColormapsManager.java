@@ -77,14 +77,14 @@ public class ColormapsManager extends JsonImgPartialReloader {
     @Override
     public void reset() {
         colormaps.clear();
-        colormaps.register(new ResourceLocation("grass_color"), () -> GRASS_COLOR);
-        colormaps.register(new ResourceLocation("foliage_color"), () -> FOLIAGE_COLOR);
-        colormaps.register(new ResourceLocation("water_color"), () -> WATER_COLOR);
+        colormaps.register(ResourceLocation.tryParse("grass_color"), () -> GRASS_COLOR);
+        colormaps.register(ResourceLocation.tryParse("foliage_color"), () -> FOLIAGE_COLOR);
+        colormaps.register(ResourceLocation.tryParse("water_color"), () -> WATER_COLOR);
         //These create new incomplete ones every time
-        colormaps.register(new ResourceLocation("biome_sample"), Colormap::defSquare);
-        colormaps.register(new ResourceLocation("triangular_biome_sample"), Colormap::defTriangle);
-        colormaps.register(new ResourceLocation("fixed"), Colormap::fixed);
-        colormaps.register(new ResourceLocation("grid"), Colormap::biomeId);
+        colormaps.register(ResourceLocation.tryParse("biome_sample"), Colormap::defSquare);
+        colormaps.register(ResourceLocation.tryParse("triangular_biome_sample"), Colormap::defTriangle);
+        colormaps.register(ResourceLocation.tryParse("fixed"), Colormap::fixed);
+        colormaps.register(ResourceLocation.tryParse("grid"), Colormap::biomeId);
     }
 
     public void add(ResourceLocation id, Colormap colormap) {

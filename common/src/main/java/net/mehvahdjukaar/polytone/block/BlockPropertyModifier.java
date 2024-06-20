@@ -93,12 +93,12 @@ public record BlockPropertyModifier(
             block.soundType = soundType.get();
         }
 
-        Optional<BlockBehaviour.OffsetFunction> oldOffsetType = Optional.empty();
+        BlockBehaviour.OffsetFunction oldOffsetType = null;
         boolean hasOffset = false;
         if (offsetType.isPresent()) {
             oldOffsetType = block.defaultBlockState().offsetFunction;
             for (var s : block.getStateDefinition().getPossibleStates()) {
-                s.offsetFunction = offsetType;
+                s.offsetFunction = offsetType.get();
                 hasOffset = true;
             }
         }
@@ -153,7 +153,7 @@ public record BlockPropertyModifier(
         // returns old properties
         return new BlockPropertyModifier(Optional.ofNullable(oldColor), Optional.ofNullable(oldSound),
                 Optional.ofNullable(oldMapColor), Optional.ofNullable(oldClientLight),
-                Optional.empty(), oldOffsetType, Optional.ofNullable(oldType), Set.of(), false);
+                Optional.empty(),  Optional.ofNullable(oldOffsetType), Optional.ofNullable(oldType), Set.of(), false);
     }
 
 
@@ -208,7 +208,7 @@ public record BlockPropertyModifier(
 
         public BlockBehaviour.OffsetFunction getFunction() {
             var p = BlockBehaviour.Properties.of().offsetType(original);
-            return p.offsetFunction.orElse((blockState, blockGetter, blockPos) -> Vec3.ZERO);
+            return p.offsetFunction != null ? p.offsetFunction : ((blockState, blockGetter, blockPos) -> Vec3.ZERO);
         }
     }
 

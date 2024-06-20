@@ -6,6 +6,8 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -61,7 +63,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
                 if (!customTabs.contains(key) && !BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(key)) {
                     CreativeModeTab tab = PlatStuff.registerTab(id);
                     customTabs.add(key);
-                }else{
+                } else {
                     Polytone.LOGGER.error("Creative Tab with id {} already exists! Ignoring.", id);
                 }
             }
@@ -93,16 +95,21 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         if (CreativeModeTabs.CACHED_PARAMETERS != null) {
             //this only happens if they have already been built
 
+            List<CreativeModeTab> needsTreeUpdated = new ArrayList<>();
             //same as rebuild content. Internally fires the events. Just rebuilds whats needed (old+new)
             for (var key : needsRefresh) {
-                 CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(key);
-                 if(tab != null) {
-                     tab.buildContents(CreativeModeTabs.CACHED_PARAMETERS);
-                     CreativeTabModifier mod = modifiers.get(key);
-                     if (mod != null && mod.search().orElse(false)) {
-                         tab.rebuildSearchTree();
-                     }
-                 }
+                CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(key);
+                if (tab != null) {
+                    tab.buildContents(CreativeModeTabs.CACHED_PARAMETERS);
+                    CreativeTabModifier mod = modifiers.get(key);
+                    if (mod != null && mod.search().orElse(false)) {
+                        needsTreeUpdated.add(tab);
+                    }
+                }
+            }
+            ClientPacketListener connection = Minecraft.getInstance().getConnection();
+            if (!needsTreeUpdated.isEmpty() && connection != null) {
+                PlatStuff.updateSearchTrees(connection.searchTrees(), needsTreeUpdated);
             }
         }
 
@@ -127,7 +134,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         var mod = modifiers.get(tab);
         if (mod != null) {
             RegistryAccess access = PlatStuff.hackyGetRegistryAccess();
-            if(access != null) vanillaTabs.put(tab, mod.applyItemsAndAttributes(event,access));
+            if (access != null) vanillaTabs.put(tab, mod.applyItemsAndAttributes(event, access));
         }
     }
 

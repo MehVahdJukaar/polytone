@@ -133,7 +133,7 @@ public class LegacyHelper {
                         } catch (Exception ignored) {
                         }
                         return true;
-                    }).map(ResourceLocation::new)
+                    }).map(ResourceLocation::tryParse)
                     .collect(Collectors.toSet());
             set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
 
@@ -154,7 +154,7 @@ public class LegacyHelper {
             if (sourceTexture.isPresent()) {
 
                 // assumes id is minecraft. Not ideal.. too bad
-                ResourceLocation id = new ResourceLocation("none");
+                ResourceLocation id = ResourceLocation.tryParse("none");
                 String source = sourceTexture.get().replace("~/colormap/", id.getNamespace() + ":");
                 if (source.contains("./")) {
                     // resolve relative paths
@@ -163,7 +163,7 @@ public class LegacyHelper {
                     String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
                     source = source.replace("./", id.getNamespace() + ":" + directoryPath);
                 }
-                colormap.setExplicitTargetTexture(new ResourceLocation(source));
+                colormap.setExplicitTargetTexture(ResourceLocation.tryParse(source));
             }
         }
         return new BlockPropertyModifier(Optional.of(colormap),
@@ -187,7 +187,7 @@ public class LegacyHelper {
                         } catch (Exception ignored) {
                         }
                         return true;
-                    }).map(ResourceLocation::new)
+                    }).map(ResourceLocation::tryParse)
                     .collect(Collectors.toSet());
             set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
         } else set = Set.of();
@@ -221,7 +221,7 @@ public class LegacyHelper {
                     String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
                     source = (id.getNamespace() + ":" + directoryPath) + source.replace("./", "");
                 }
-                colormap.setExplicitTargetTexture(new ResourceLocation(source));
+                colormap.setExplicitTargetTexture(ResourceLocation.tryParse(source));
             }
         }
         return new BlockPropertyModifier(Optional.of(colormap),
@@ -242,7 +242,7 @@ public class LegacyHelper {
             Set<ResourceLocation> blockTargets = new HashSet<>();
             for (var name : special.getValue().split(" ")) {
                 if (name.isEmpty()) continue;
-                ResourceLocation blockId = new ResourceLocation(name);
+                ResourceLocation blockId = ResourceLocation.tryParse(name);
                 blockTargets.add(blockId);
                 forceBlockToHaveTintIndex(blockId);
             }
@@ -342,7 +342,7 @@ public class LegacyHelper {
     });
 
     private static ResourceKey<Biome> biomeResKey(String endBarrens) {
-        return ResourceKey.create(Registries.BIOME, new ResourceLocation(endBarrens));
+        return ResourceKey.create(Registries.BIOME, ResourceLocation.tryParse(endBarrens));
     }
 
 

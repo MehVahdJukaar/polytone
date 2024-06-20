@@ -21,6 +21,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
@@ -207,6 +208,11 @@ public class PlatStuffImpl {
             if (level != null) return level.registryAccess();
         }
         return null;
+    }
+
+    public static void updateSearchTrees(SessionSearchTrees sessionSearchTrees, List<CreativeModeTab> needsTreeUpdated) {
+        List<ItemStack> list = List.copyOf(CreativeModeTabs.searchTab().getDisplayItems());
+        sessionSearchTrees.updateCreativeTags(list);
     }
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,

@@ -39,10 +39,10 @@ public class XpOrbMixin {
     private static void polytone$changeColor(VertexConsumer consumer, PoseStack.Pose matrix, float x, float y, int red, int green, int blue, float texU, float texV, int packedLight, CallbackInfo ci) {
         if(polytone$specialColor != null){
             ci.cancel();
-            consumer.vertex(matrix, x, y, 0.0F).color(polytone$specialColor[0], polytone$specialColor[1],
+            consumer.addVertex(matrix, x, y, 0.0F).setColor(polytone$specialColor[0], polytone$specialColor[1],
                             polytone$specialColor[2], 0.5f)
-                    .uv(texU, texV).overlayCoords(OverlayTexture.NO_OVERLAY)
-                    .uv2(packedLight).normal(matrix, 0.0F, 1.0F, 0.0F).endVertex();
+                    .setUv(texU, texV).setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(packedLight).setNormal(matrix, 0.0F, 1.0F, 0.0F);
 
         }
     }

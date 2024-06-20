@@ -117,9 +117,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 if (param == null || param.equals("diffuse")) {
                     // save vanilla value
                     if (!vanillaDiffuseColors.containsKey(color)) {
-                        vanillaDiffuseColors.put(color, pack(color.textureDiffuseColors));
+                        vanillaDiffuseColors.put(color, color.textureDiffuseColor);
                     }
-                    color.textureDiffuseColors = unpack(col);
+                    color.textureDiffuseColor = col;
                 } else if (param.equals("firework")) {
                     // save vanilla value
                     if (!vanillaFireworkColors.containsKey(color)) {
@@ -137,7 +137,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         } else if (is(prop, 0, "particle")) {
             if (prop.length > 1) {
                 String s = prop[1];
-                ResourceLocation id = new ResourceLocation(s.replace("\\", ""));
+                ResourceLocation id = ResourceLocation.tryParse(s.replace("\\", ""));
                 try {
                     // turn from hex to decimal if it is a single number
                     int hex = parseHex(str);
@@ -148,7 +148,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             }
         } else if (is(prop, 0, "egg")) {
             if (prop.length > 2) {
-                ResourceLocation id = new ResourceLocation(prop[2].replace("\\", ""));
+                ResourceLocation id = ResourceLocation.tryParse(prop[2].replace("\\", ""));
                 Item item = BuiltInRegistries.ITEM.getOptional(id).orElse(null);
                 if (item == null) {
                     var entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
@@ -178,10 +178,11 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 }
             }
         } else if (is(prop, 0, "potion") || is(prop, 0, "effect")) {
-            ResourceLocation id = new ResourceLocation(prop[1].replace("\\", ""));
+            ResourceLocation id = ResourceLocation.parse(prop[1].replace("\\", ""));
             int col = parseHex(obj);
             if (id.getPath().equals("empty")) {
-                PotionContents.EMPTY_COLOR = col;
+                //TODO:
+               // PotionContents.EMPTY_COLOR = col;
             } else if (id.getPath().equals("water")) {
                 PotionContents.BASE_POTION_COLOR = col;
             } else {
@@ -253,7 +254,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             if (is(prop, 1, "block")) {
                 if (prop.length > 2 && obj instanceof String) {
                     String path = prop[2].replace("~/colormap/", colorPropFileId.getNamespace() + ":");
-                    Polytone.BLOCK_PROPERTIES.addSimpleColormap(new ResourceLocation(path), str);
+                    Polytone.BLOCK_PROPERTIES.addSimpleColormap(ResourceLocation.tryParse(path), str);
                 }
             }
         }
@@ -287,7 +288,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     @Override
     public void reset() {
-        PotionContents.EMPTY_COLOR = 16253176;
+        //TODO:
+        //PotionContents.EMPTY_COLOR = 16253176;
         PotionContents.BASE_POTION_COLOR = 3694022;
         xpBar = 8453920;
         xpOrbColor = null;
@@ -304,7 +306,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         // dye colors
         for (var e : vanillaDiffuseColors.entrySet()) {
             DyeColor color = e.getKey();
-            color.textureDiffuseColors = unpack(e.getValue());
+            color.textureDiffuseColor = e.getValue();
         }
         vanillaDiffuseColors.clear();
 
@@ -348,14 +350,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     public void regenSheepColors() {
-        Sheep.COLORARRAY_BY_COLOR = new EnumMap<>(DyeColor.class);
+        Sheep.COLOR_BY_DYE = new EnumMap<>(DyeColor.class);
         for (var d : DyeColor.values()) {
 
-            Sheep.COLORARRAY_BY_COLOR.put(d, SheepAccessor.invokeCreateSheepColor(d));
+            Sheep.COLOR_BY_DYE.put(d, SheepAccessor.invokeCreateSheepColor(d));
         }
-        for (var e : customSheepColors.entrySet()) {
-            Sheep.COLORARRAY_BY_COLOR.put(e.getKey(), unpack(e.getValue()));
-        }
+        Sheep.COLOR_BY_DYE.putAll(customSheepColors);
         customSheepColors.clear();
     }
 

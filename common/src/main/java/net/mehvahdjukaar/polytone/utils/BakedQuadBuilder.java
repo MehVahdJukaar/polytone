@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import java.util.function.Consumer;
 
@@ -55,8 +56,8 @@ public interface BakedQuadBuilder extends VertexConsumer {
 
 
     @Override
-    default BakedQuadBuilder vertex(Matrix4f matrix, float x, float y, float z) {
-        VertexConsumer.super.vertex(matrix, x, y, z);
+    default BakedQuadBuilder addVertex(Matrix4f matrix, float x, float y, float z) {
+        VertexConsumer.super.addVertex(matrix, x, y, z);
         return this;
     }
 

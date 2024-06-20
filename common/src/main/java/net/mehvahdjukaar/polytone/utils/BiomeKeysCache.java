@@ -10,7 +10,7 @@ import net.minecraft.world.level.biome.Biome;
 
 public class BiomeKeysCache {
 
-    private static final ResourceKey<Biome> PLAINS = ResourceKey.create(Registries.BIOME, new ResourceLocation("minecraft:plains"));
+    private static final ResourceKey<Biome> PLAINS = ResourceKey.create(Registries.BIOME, ResourceLocation.tryParse("minecraft:plains"));
 
     private static final Object2ObjectOpenHashMap<Biome, ResourceKey<Biome>> CACHE = new Object2ObjectOpenHashMap<>();
 

@@ -25,7 +25,7 @@ public class BiomeCompoundBlockColors implements BlockColor, ColorResolver {
     final Map<ResourceKey<Biome>, BlockColor> getters = new Object2ObjectOpenHashMap<>();
     final BlockColor defaultGetter;
 
-    protected static ResourceKey<Biome> DEFAULT_KEY = ResourceKey.create(Registries.BIOME, new ResourceLocation("default"));
+    protected static ResourceKey<Biome> DEFAULT_KEY = ResourceKey.create(Registries.BIOME, ResourceLocation.tryParse("default"));
     protected static final Codec<BiomeCompoundBlockColors> DIRECT_CODEC = validate(
             Codec.unboundedMap(ResourceLocation.CODEC.xmap(r -> ResourceKey.create(Registries.BIOME, r), ResourceKey::location), Colormap.CODEC)
                     .xmap(BiomeCompoundBlockColors::new, comp -> comp.getters),

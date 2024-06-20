@@ -1,8 +1,6 @@
 package net.mehvahdjukaar.polytone.forge;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.polytone.mixins.forge.BlockColorsAccessor;
 import net.mehvahdjukaar.polytone.mixins.forge.CreativeTabAccessor;
 import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeAccessor;
@@ -12,8 +10,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -22,30 +20,22 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.DistExecutor;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoader;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
-import net.neoforged.neoforge.common.world.BiomeModifier;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -61,7 +51,7 @@ public class PlatStuffImpl {
         Consumer<RegisterClientReloadListenersEvent> eventConsumer = (event) -> {
             event.registerReloadListener(listener.get());
         };
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(eventConsumer);
+        PolytoneForge.bus.addListener(eventConsumer);
     }
 
 
@@ -105,8 +95,15 @@ public class PlatStuffImpl {
         CreativeModeTabRegistry.sortTabs();
     }
 
+    private static void updateSearchTrees(SessionSearchTrees searchTrees, List<CreativeModeTab> needsTreeUpdated) {
+        needsTreeUpdated.forEach((tab) -> {
+            List<ItemStack> list = List.copyOf(tab.getDisplayItems());
+            searchTrees.updateCreativeTags(list, CreativeModeTabSearchRegistry.getTagSearchKey(tab));
+        });
+    }
+
     public static RegistryAccess hackyGetRegistryAccess() {
-        if (FMLEnvironment.dist ==  Dist.CLIENT &&
+        if (FMLEnvironment.dist == Dist.CLIENT &&
                 RenderSystem.isOnRenderThread()) {
             ClientLevel level = Minecraft.getInstance().level;
             if (level != null) return level.registryAccess();
@@ -168,7 +165,7 @@ public class PlatStuffImpl {
 
         ResourceLocation oldBackgroundLocation = null;
         if (mod.backGroundLocation().isPresent()) {
-            oldBackgroundLocation = tab.getBackgroundLocation();
+            oldBackgroundLocation = tab.getBackgroundTexture();
             acc.setBackgroundLocation(mod.backGroundLocation().get());
         }
 

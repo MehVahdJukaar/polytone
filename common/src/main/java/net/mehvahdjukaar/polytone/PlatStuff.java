@@ -4,6 +4,7 @@ import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 public class PlatStuff {
@@ -80,5 +82,10 @@ public class PlatStuff {
     @ExpectPlatform
     public static RegistryAccess hackyGetRegistryAccess() {
         return null;
+    }
+
+    @ExpectPlatform
+    public static void updateSearchTrees(SessionSearchTrees sessionSearchTrees, List<CreativeModeTab> needsTreeUpdated) {
+        throw new AssertionError();
     }
 }

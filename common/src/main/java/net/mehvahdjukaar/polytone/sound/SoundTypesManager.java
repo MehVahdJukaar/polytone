@@ -238,7 +238,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                 if (vanilla != null) return DataResult.success(vanilla);
                 ResourceLocation r = ResourceLocation.tryParse(s);
                 if (r != null) {
-                    var custom = Polytone.SOUND_TYPES.getCustom(new ResourceLocation(s));
+                    var custom = Polytone.SOUND_TYPES.getCustom(ResourceLocation.tryParse(s));
                     if (custom != null) return DataResult.success(custom);
                 }
                 return DataResult.error(() -> "Could not find any custom Sound Type with id " + r +

@@ -32,7 +32,7 @@ public class MapRegistry<T> implements Codec<T> {
     }
 
     public <B extends T> T register(String name, B value) {
-        this.register(new ResourceLocation(name), value);
+        this.register(ResourceLocation.tryParse(name), value);
         return value;
     }
 
@@ -43,7 +43,7 @@ public class MapRegistry<T> implements Codec<T> {
 
     @Nullable
     public T getValue(String name) {
-        return this.getValue(new ResourceLocation(name));
+        return this.getValue(ResourceLocation.tryParse(name));
     }
 
     @Nullable
@@ -98,7 +98,7 @@ public class MapRegistry<T> implements Codec<T> {
         }
 
         public <B extends T> MapCodec<B> register(String name, MapCodec<B> value) {
-            return this.register(new ResourceLocation(name), value);
+            return this.register(ResourceLocation.tryParse(name), value);
         }
     }
 }

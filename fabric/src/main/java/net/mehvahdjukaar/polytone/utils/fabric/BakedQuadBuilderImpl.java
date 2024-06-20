@@ -83,6 +83,13 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
     @Override
     public BakedQuadBuilderImpl vertex(double x, double y, double z) {
+        vertexIndex++;
+        if (vertexIndex == 4) {
+            vertexIndex = 0;
+            if (quadConsumer != null) {
+                quadConsumer.accept(this.build());
+            }
+        }
         if (globalTransform != null) {
             Vector4f v = globalTransform.transform(new Vector4f((float) x, (float) y, (float) z, 1.0F));
             inner.pos(vertexIndex, v.x(), v.y(), v.z());
@@ -107,32 +114,32 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
     }
 
     @Override
-    public BakedQuadBuilderImpl color(int rgba) {
+    public BakedQuadBuilderImpl setColor(int rgba) {
         inner.color(vertexIndex, rgba);
         return this;
     }
 
     @Override
-    public BakedQuadBuilderImpl color(int r, int g, int b, int a) {
-        return color(((a & 0xFF) << 24) |
+    public BakedQuadBuilderImpl setColor(int r, int g, int b, int a) {
+        return setColor(((a & 0xFF) << 24) |
                 ((b & 0xFF) << 16) |
                 ((g & 0xFF) << 8) |
                 (r & 0xFF));
     }
 
     @Override
-    public BakedQuadBuilderImpl uv(float u, float v) {
+    public BakedQuadBuilderImpl setUv(float u, float v) {
         inner.uv(vertexIndex, sprite.getU(u * 16), sprite.getV(v * 16));
         return this;
     }
 
     @Override
-    public BakedQuadBuilderImpl overlayCoords(int u, int v) {
+    public BakedQuadBuilderImpl setUv1(int u, int v) {
         return this;
     }
 
     @Override
-    public BakedQuadBuilderImpl uv2(int u, int v) {
+    public BakedQuadBuilderImpl setUv2(int u, int v) {
         inner.lightmap(vertexIndex, (u & 0xFFFF) | ((v & 0xFFFF) << 16));
         return this;
     }
@@ -141,25 +148,6 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
     public BakedQuadBuilderImpl lightEmission(int lightLevel) {
         inner.material(RendererAccess.INSTANCE.getRenderer().materialFinder().emissive(true).find());
         return this;
-    }
-
-    @Override
-    public void endVertex() {
-        vertexIndex++;
-        if (vertexIndex == 4) {
-            vertexIndex = 0;
-            if (quadConsumer != null) {
-                quadConsumer.accept(this.build());
-            }
-        }
-    }
-
-    @Override
-    public void defaultColor(int defaultR, int defaultG, int defaultB, int defaultA) {
-    }
-
-    @Override
-    public void unsetDefaultColor() {
     }
 
     @Override

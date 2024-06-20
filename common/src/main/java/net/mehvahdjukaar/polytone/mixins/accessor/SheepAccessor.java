@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface SheepAccessor {
 
     @Invoker()
-    static float[] invokeCreateSheepColor(DyeColor color) {
-        return new float[0];
+    static int invokeCreateSheepColor(DyeColor color) {
+        return 0;
     }
 }

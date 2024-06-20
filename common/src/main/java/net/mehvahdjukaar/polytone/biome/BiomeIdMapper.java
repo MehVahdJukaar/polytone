@@ -28,7 +28,7 @@ public interface BiomeIdMapper {
     record Custom(Map<ResourceKey<Biome>, Float> map, float textureSize) implements BiomeIdMapper {
 
         public Custom(Map<ResourceKey<Biome>, Float> map) {
-            this(map, map.getOrDefault(ResourceKey.create(Registries.BIOME, new ResourceLocation("texture_size")), 1f));
+            this(map, map.getOrDefault(ResourceKey.create(Registries.BIOME, ResourceLocation.withDefaultNamespace("texture_size")), 1f));
         }
 
         public static final Codec<Custom> CUSTOM_CODEC = Codec.unboundedMap(ResourceLocation.CODEC

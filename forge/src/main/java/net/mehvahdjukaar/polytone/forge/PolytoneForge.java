@@ -12,9 +12,9 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -33,15 +33,19 @@ import java.util.function.Predicate;
 @Mod(Polytone.MOD_ID)
 public class PolytoneForge {
 
-    public PolytoneForge() {
+    static IEventBus bus;
+
+    public PolytoneForge(IEventBus modBus) {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             Polytone.init(false, !FMLEnvironment.production);
 
             NeoForge.EVENT_BUS.register(this);
-            FMLJavaModLoadingContext.get().getModEventBus().addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
+           modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
         } else {
             Polytone.LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
+
+        bus = modBus;
     }
 
 
@@ -50,6 +54,7 @@ public class PolytoneForge {
         if (event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) {
             Polytone.onTagsReceived(event.getRegistryAccess());
         }
+        bus = null;
     }
 
     @SubscribeEvent

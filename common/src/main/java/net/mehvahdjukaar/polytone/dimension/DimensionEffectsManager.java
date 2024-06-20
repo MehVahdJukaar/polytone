@@ -216,7 +216,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             BlockColor skyCol;
             BlockColor fogCol;
             {
-                ResourceLocation skyKey = new ResourceLocation("sky" + i);
+                ResourceLocation skyKey = ResourceLocation.tryParse("sky" + i);
                 BlockPropertyModifier skyMod = modifiers.get(skyKey);
                 ArrayImage skyImage = textures.get(skyKey);
 
@@ -226,7 +226,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
                 }
             }
             {
-                ResourceLocation fogKey = new ResourceLocation("fog" + i);
+                ResourceLocation fogKey = ResourceLocation.tryParse("fog" + i);
                 BlockPropertyModifier fogMod = modifiers.get(fogKey);
                 ArrayImage fogImage = textures.get(fogKey);
 
@@ -239,7 +239,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
                 var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                         Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(), Set.of());
 
-                extraMods.put(new ResourceLocation(names[i]), mod);
+                extraMods.put(ResourceLocation.tryParse(names[i]), mod);
             }
         }
     }
