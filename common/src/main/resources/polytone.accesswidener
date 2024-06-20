@@ -143,8 +143,6 @@ mutable field net/minecraft/world/level/biome/BiomeSpecialEffects ambientAdditio
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects backgroundMusic Ljava/util/Optional;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects backgroundMusic Ljava/util/Optional;
 
-accessible field net/minecraft/world/item/alchemy/PotionContents EMPTY_COLOR I
-mutable field net/minecraft/world/item/alchemy/PotionContents EMPTY_COLOR I
 accessible field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
 mutable field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
 

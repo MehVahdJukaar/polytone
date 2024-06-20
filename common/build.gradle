@@ -15,9 +15,6 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
 
     implementation 'net.objecthunter:exp4j:0.4.8'
-
-    modImplementation ("curse.maven:curios-309927:4583413")
-
 }
 
 publishing {

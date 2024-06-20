@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import org.spongepowered.asm.mixin.Final;
@@ -19,14 +20,14 @@ public abstract class GameRendererMixin {
 
     @Inject(method = "render", at = @At(value = "NEW",
             target = "(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;)Lnet/minecraft/client/gui/GuiGraphics;"))
-    private void polytone$messWithGui(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo ci) {
+    private void polytone$messWithGui(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(true);
         lightTexture.turnOnLightLayer();
         Polytone.OVERLAY_MODIFIERS.onStartRenderingOverlay();
     }
 
     @Inject(method = "render", at = @At(value = "TAIL"))
-    private void polytone$resetGuiLightmap(float partialTicks, long nanoTime, boolean renderLevel, CallbackInfo ci) {
+    private void polytone$resetGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(false);
         lightTexture.turnOnLightLayer();
         Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();

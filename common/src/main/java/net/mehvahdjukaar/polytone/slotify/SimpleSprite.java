@@ -40,7 +40,7 @@ public record SimpleSprite(ResourceLocation texture, float x, float y, float wid
                             float blitOffset, float minU, float maxU, float minV, float maxV) {
         RenderSystem.setShaderTexture(0, atlasLoc);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);;
+        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);;
         bufferBuilder.addVertex(matrix, x1, y1, blitOffset).setUv(minU, minV);
         bufferBuilder.addVertex(matrix, x1, y2, blitOffset).setUv(minU, maxV);
         bufferBuilder.addVertex(matrix, x2, y2, blitOffset).setUv(maxU, maxV);
