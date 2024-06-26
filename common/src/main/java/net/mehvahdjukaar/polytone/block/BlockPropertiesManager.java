@@ -5,7 +5,7 @@ import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.colormap.IndexCompoundBlockColors;
+import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
@@ -109,7 +109,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             if (!modifier.hasColormap() && textures.containsKey(id)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
                 var text = textures.get(id);
-                IndexCompoundBlockColors defaultSampler = IndexCompoundBlockColors.createDefault(text.keySet(), true);
+                IndexCompoundColorGetter defaultSampler = IndexCompoundColorGetter.createDefault(text.keySet(), true);
                 modifier = modifier.merge(BlockPropertyModifier.ofBlockColor(defaultSampler));
             }
 
@@ -128,7 +128,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
             ArrayImage.Group image = entry.getValue();
 
-            IndexCompoundBlockColors tintMap = IndexCompoundBlockColors.createDefault(image.keySet(), true);
+            IndexCompoundColorGetter tintMap = IndexCompoundColorGetter.createDefault(image.keySet(), true);
             ColormapsManager.tryAcceptingTextureGroup(textures, id, tintMap, usedTextures, true);
 
             BlockPropertyModifier modifier = BlockPropertyModifier.ofBlockColor(tintMap);

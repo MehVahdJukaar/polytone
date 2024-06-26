@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -30,6 +31,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     private static final String POS_Y = "POS_Y";
     private static final String POS_Z = "POS_Z";
     private static final String BIOME_VALUE = "BIOME_VALUE";
+    private static final String DAMAGE = "DAMAGE";
 
     private static final String STATE_FUNC = "state_prop";
     private static final Function STATE_PROP = new Function(STATE_FUNC, 1) {
@@ -111,7 +113,8 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     }
 
     @Override
-    public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, BiomeIdMapper mapper) {
+    public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
+                          @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
         float result = 0;
         boolean needsToUnlock = false;
         try {
@@ -132,6 +135,12 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
             exp.setVariable(POS_X, pos != null ? pos.getX() : 0);
             exp.setVariable(POS_Y, pos != null ? pos.getY() : 0);
             exp.setVariable(POS_Z, pos != null ? pos.getZ() : 0);
+
+            if (stack != null) {
+                float damage = stack.getDamageValue() / (float) stack.getMaxDamage();
+                exp.setVariable(DAMAGE, damage);
+            } else exp.setVariable(DAMAGE, 0);
+
 
             // Evaluate the expression
             //this state hack won't even work as its multithreaded lmao

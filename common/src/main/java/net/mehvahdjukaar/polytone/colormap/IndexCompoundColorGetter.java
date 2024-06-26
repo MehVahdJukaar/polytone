@@ -6,7 +6,10 @@ import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -16,11 +19,18 @@ import java.util.Set;
 import java.util.function.Function;
 
 // basically a map of colormap to tint color
-public class IndexCompoundBlockColors implements BlockColor {
+public class IndexCompoundColorGetter implements IColorGetter {
 
-    final Int2ObjectMap<BlockColor> getters = new Int2ObjectArrayMap<>();
+    final Int2ObjectMap<IColorGetter> getters = new Int2ObjectArrayMap<>();
 
-    protected static final Codec<IndexCompoundBlockColors> DIRECT_CODEC = Codec.unboundedMap(Codec.STRING
+    private IndexCompoundColorGetter(Map<Integer, IColorGetter> map) {
+        getters.putAll(map);
+    }
+
+    private IndexCompoundColorGetter() {
+    }
+
+    protected static final Codec<IndexCompoundColorGetter> DIRECT_CODEC = Codec.unboundedMap(Codec.STRING
                                     .flatXmap(s -> {
                                         try {
                                             int i = Integer.parseInt(s);
@@ -30,29 +40,24 @@ public class IndexCompoundBlockColors implements BlockColor {
                                         }
                     }, i -> DataResult.success(String.valueOf(i))),
                             Colormap.CODEC)
-            .xmap(IndexCompoundBlockColors::new, comp -> comp.getters).validate(
+            .xmap(IndexCompoundColorGetter::new, comp -> comp.getters).validate(
                     c -> {
-                        if (c.getters.size() == 0) {
+                        if (c.getters.isEmpty()) {
                             return DataResult.error(() -> "Must have at least 1 tint getter");
                         }
                         return DataResult.success(c);
                     });
 
     // single or multiple
-    public static final Codec<BlockColor> CODEC = Codec.either(DIRECT_CODEC, Colormap.CODEC)
+    public static final Codec<IColorGetter> SINGLE_OR_MULTIPLE = Codec.either(DIRECT_CODEC, Colormap.CODEC)
             .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
 
-    private IndexCompoundBlockColors(Map<Integer, BlockColor> map) {
-        getters.putAll(map);
-    }
 
-    private IndexCompoundBlockColors() {
-    }
 
 
     // default biome sample vanilla implementation
-    public static IndexCompoundBlockColors createDefault(Set<Integer> tintIndexes, boolean triangular) {
-        var c = new IndexCompoundBlockColors();
+    public static IndexCompoundColorGetter createDefault(Set<Integer> tintIndexes, boolean triangular) {
+        var c = new IndexCompoundColorGetter();
         for (var i : tintIndexes) {
             c.getters.put(i.intValue(), triangular ? Colormap.defTriangle() : Colormap.defSquare());
         }
@@ -60,7 +65,7 @@ public class IndexCompoundBlockColors implements BlockColor {
     }
 
 
-    public Int2ObjectMap<BlockColor> getGetters() {
+    public Int2ObjectMap<IColorGetter> getGetters() {
         return getters;
     }
 
@@ -78,4 +83,16 @@ public class IndexCompoundBlockColors implements BlockColor {
     }
 
 
+    @Override
+    public int getColor(ItemStack itemStack, int i) {
+        ItemColor getter = getters.get(i);
+        if (getter == null) {
+            getter = getters.get(-1);
+        }
+        if (getter != null) {
+            return getter.getColor(itemStack, i);
+        }
+
+        return -1;
+    }
 }

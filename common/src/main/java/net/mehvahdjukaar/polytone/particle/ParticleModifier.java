@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.minecraft.client.color.block.BlockColor;
@@ -45,7 +46,7 @@ public class ParticleModifier implements ITargetProvider {
     @Nullable
     public final Filter filter;
     @Nullable
-    public final BlockColor colormap;
+    public final IColorGetter colormap;
     @Nullable
     public final ParticleExpression colorGetter;
     @Nullable
@@ -64,7 +65,7 @@ public class ParticleModifier implements ITargetProvider {
     public final ParticleExpression alphaGetter;
     public final Set<ResourceLocation> explicitTargets;
 
-    private ParticleModifier(Optional<Filter> filter, Optional<BlockColor> colormap,
+    private ParticleModifier(Optional<Filter> filter, Optional<IColorGetter> colormap,
                              Optional<ParticleExpression> color, Optional<ParticleExpression> life,
                              Optional<ParticleExpression> size, Optional<ParticleExpression> red,
                              Optional<ParticleExpression> green, Optional<ParticleExpression> blue,
@@ -75,7 +76,7 @@ public class ParticleModifier implements ITargetProvider {
                 alpha.orElse(null), speed.orElse(null), explicitTargets);
     }
 
-    public ParticleModifier(@Nullable Filter filter, @Nullable BlockColor colormap,
+    public ParticleModifier(@Nullable Filter filter, @Nullable IColorGetter colormap,
                             @Nullable ParticleExpression color, @Nullable ParticleExpression life,
                             @Nullable ParticleExpression size, @Nullable ParticleExpression red,
                             @Nullable ParticleExpression green, @Nullable ParticleExpression blue,

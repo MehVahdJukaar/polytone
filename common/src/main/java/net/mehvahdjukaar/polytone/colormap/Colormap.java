@@ -5,16 +5,15 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
-import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
@@ -25,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class Colormap implements ColorResolver, BlockColor {
+public class Colormap implements IColorGetter, ColorResolver {
 
     private final IColormapNumberProvider xGetter;
     private final IColormapNumberProvider yGetter;
@@ -53,16 +52,16 @@ public class Colormap implements ColorResolver, BlockColor {
             ResourceLocation.CODEC.optionalFieldOf("texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture))
     ).apply(i, Colormap::new));
 
-    protected static final Codec<BlockColor> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
+    protected static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
-    public static final Codec<BlockColor> COLORMAP_CODEC = Codec.either(SINGLE_COLOR_CODEC,
+    public static final Codec<IColorGetter> COLORMAP_CODEC = Codec.either((Codec<IColorGetter>)SINGLE_COLOR_CODEC,
                     new ReferenceOrDirectCodec<>(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC))
             .xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
 
 
     // single or biome compound
-    public static final Codec<BlockColor> CODEC = COLORMAP_CODEC;// Codec.either(BiomeCompoundBlockColors.DIRECT_CODEC, Colormap.COLORMAP_CODEC)
+    public static final Codec<IColorGetter> CODEC = COLORMAP_CODEC;// Codec.either(BiomeCompoundBlockColors.DIRECT_CODEC, Colormap.COLORMAP_CODEC)
     //  .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
@@ -159,12 +158,12 @@ public class Colormap implements ColorResolver, BlockColor {
             return level.getBlockTint(pos, this);
         }
         //else we sample normally
-        return sampleColor(state, pos, null);
+        return sampleColor(state, pos, null, null);
     }
 
-    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome) {
-        float temperature = Mth.clamp(xGetter.getValue(state, pos, biome, biomeMapper), 0, 1);
-        float humidity = Mth.clamp(yGetter.getValue(state, pos, biome, biomeMapper), 0, 1);
+    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        float temperature = Mth.clamp(xGetter.getValue(state, pos, biome, biomeMapper, item), 0, 1);
+        float humidity = Mth.clamp(yGetter.getValue(state, pos, biome, biomeMapper, item), 0, 1);
         return sample(humidity, temperature, defaultColor);
     }
 
@@ -174,7 +173,7 @@ public class Colormap implements ColorResolver, BlockColor {
         //this actually gets called when sodium is on as we cant define our own blend method
         Integer y = yHack.get();
         if (y == null) y = 0;
-        return this.sampleColor(stateHack.get(), BlockPos.containing(x, y, z), biome);
+        return this.sampleColor(stateHack.get(), BlockPos.containing(x, y, z), biome, null);
     }
 
     //calculate color blend. could just use vanilla impl tbh since we got above hack for sodium anyway
@@ -183,7 +182,7 @@ public class Colormap implements ColorResolver, BlockColor {
         int i = Minecraft.getInstance().options.biomeBlendRadius().get();
         BlockState state = stateHack.get();
         if (i == 0) {
-            return this.sampleColor(state, pos, level.getBiome(pos).value());
+            return this.sampleColor(state, pos, level.getBiome(pos).value(), null);
         } else {
             int j = (i * 2 + 1) * (i * 2 + 1);
             int k = 0;
@@ -194,7 +193,7 @@ public class Colormap implements ColorResolver, BlockColor {
             int n;
             for (BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos(); cursor3D.advance(); m += n & 255) {
                 mutableBlockPos.set(cursor3D.nextX(), cursor3D.nextY(), cursor3D.nextZ());
-                n = this.sampleColor(state, mutableBlockPos, level.getBiome(mutableBlockPos).value());
+                n = this.sampleColor(state, mutableBlockPos, level.getBiome(mutableBlockPos).value(), null);
                 k += (n & 16711680) >> 16;
                 l += (n & '\uff00') >> 8;
             }
@@ -215,5 +214,25 @@ public class Colormap implements ColorResolver, BlockColor {
         int h = (int) ((1.0 - textY) * (height - 1));
 
         return w >= width || h >= height ? defValue : image.pixels()[h][w];
+    }
+
+
+    //for items
+    @Override
+    public int getColor(ItemStack itemStack, int i) {
+        BlockPos pos = null;
+        Biome biome = null;
+        if (usesPos) {
+            var player = Minecraft.getInstance().player;
+            if (player == null) return defaultColor;
+            pos = player.blockPosition();
+            //we never ue blending. its overkill here
+            if (usesBiome) {
+                var level = Minecraft.getInstance().level;
+                if (level == null) return defaultColor;
+                biome = level.getBiome(pos).value();
+            }
+        }
+        return sampleColor(null, pos, biome, itemStack);
     }
 }
