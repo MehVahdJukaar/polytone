@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
@@ -190,7 +191,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
                 CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
                     var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();
                     //int fogColor = biome.getFogColor();
-                    int fogColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome); //quart coords to block coord
+                    int fogColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome, null); //quart coords to block coord
                     return Vec3.fromRGB24(fogColor1);
                 }), brightness);
     }
@@ -204,7 +205,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         return CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
             var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();
             //int skyColor = biome.getSkyColor();
-            int skyColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome); //quart coords to block coord
+            int skyColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome, null); //quart coords to block coord
             return Vec3.fromRGB24(skyColor1);
         });
     }
@@ -213,8 +214,8 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     public void addConvertedBlockProperties(Map<ResourceLocation, BlockPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
         String[] names = new String[]{"overworld", "the_nether", "the_end"};
         for (int i = 0; i <= 2; i++) {
-            BlockColor skyCol;
-            BlockColor fogCol;
+            IColorGetter skyCol;
+            IColorGetter fogCol;
             {
                 ResourceLocation skyKey = new ResourceLocation("sky" + i);
                 BlockPropertyModifier skyMod = modifiers.get(skyKey);

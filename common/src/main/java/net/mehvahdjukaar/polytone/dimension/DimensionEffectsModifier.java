@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
@@ -21,8 +22,8 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                                        Optional<DimensionSpecialEffects.SkyType> skyType,
                                        Optional<Boolean> forceBrightLightmap,
                                        Optional<Boolean> constantAmbientLight,
-                                       Optional<BlockColor> fogColor,
-                                       Optional<BlockColor> skyColor,
+                                       Optional<IColorGetter> fogColor,
+                                       Optional<IColorGetter> skyColor,
                                        Optional<Lightmap> lightmap,
                                        Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 

@@ -6,7 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
-import net.mehvahdjukaar.polytone.colormap.IndexCompoundBlockColors;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
+import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
@@ -160,7 +161,7 @@ public record BlockPropertyModifier(
 
     public static final Decoder<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    StrOpt.of(IndexCompoundBlockColors.CODEC, "colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundBlockColors c ? c : null))),
+                    StrOpt.of(IndexCompoundColorGetter.SINGLE_OR_MULTIPLE, "colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
                     //normal opt so it can fail when using modded sounds
                     SoundTypesManager.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
                     StrOpt.of(MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE),
@@ -186,8 +187,8 @@ public record BlockPropertyModifier(
     }
 
     @Nullable
-    public BlockColor getColormap() {
-        return tintGetter.orElse(null);
+    public IColorGetter getColormap() {
+        return (IColorGetter) tintGetter.orElse(null);
     }
 
     public enum OffsetTypeR implements StringRepresentable {

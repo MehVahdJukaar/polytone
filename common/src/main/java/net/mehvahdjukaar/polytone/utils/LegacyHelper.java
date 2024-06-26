@@ -75,7 +75,7 @@ public class LegacyHelper {
 
             // hardcoded special color stuff
             if (path.equals("stem") || path.equals("melon_stem") || path.equals("pumpkin_stem")) {
-                Colormap colormap = Colormap.simple((state, level, pos, m) -> state != null && state.hasProperty(StemBlock.AGE) ? state.getValue(StemBlock.AGE) / 7f : 0,
+                Colormap colormap = Colormap.simple((state, level, pos, m, i) -> state != null && state.hasProperty(StemBlock.AGE) ? state.getValue(StemBlock.AGE) / 7f : 0,
                         IColormapNumberProvider.ZERO);
 
                 List<Block> targets = new ArrayList<>();
@@ -90,7 +90,7 @@ public class LegacyHelper {
                 }
                 map.put(id, BlockPropertyModifier.coloringBlocks(colormap, targets));
             } else if (path.equals("redstone_wire")) {
-                Colormap colormap = Colormap.simple((state, level, pos, m) -> state != null ? state.getValue(RedStoneWireBlock.POWER) / 15f : 0,
+                Colormap colormap = Colormap.simple((state, level, pos, m, i) -> state != null ? state.getValue(RedStoneWireBlock.POWER) / 15f : 0,
                         IColormapNumberProvider.ZERO);
 
                 map.put(id, BlockPropertyModifier.coloringBlocks(colormap, Blocks.REDSTONE_WIRE));

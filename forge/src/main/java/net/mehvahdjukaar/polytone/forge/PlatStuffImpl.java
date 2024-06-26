@@ -9,6 +9,8 @@ import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.Holder;
@@ -22,6 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -60,12 +63,15 @@ public class PlatStuffImpl {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(eventConsumer);
     }
 
-    private static final Field f;
+    private static final Field blockColorsField;
+    private static final Field itemColorsField;
 
     static {
         try {
-            f = BlockColors.class.getDeclaredField("f_92571_");
-            f.setAccessible(true);
+            blockColorsField = BlockColors.class.getDeclaredField("f_92571_");
+            blockColorsField.setAccessible(true);
+            itemColorsField = ItemColors.class.getDeclaredField("f_92674_");
+            itemColorsField.setAccessible(true);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
@@ -73,7 +79,17 @@ public class PlatStuffImpl {
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         try {
-            return ((Map<Holder.Reference<Block>, BlockColor>) f.get(colors)).get(ForgeRegistries.BLOCKS.getDelegateOrThrow(block));
+            return ((Map<Holder.Reference<Block>, BlockColor>) blockColorsField.get(colors))
+                    .get(ForgeRegistries.BLOCKS.getDelegateOrThrow(block));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ItemColor getItemColor(ItemColors colors, Item block) {
+        try {
+            return ((Map<Holder.Reference<Item>, ItemColor>) itemColorsField.get(colors))
+                    .get(ForgeRegistries.ITEMS.getDelegateOrThrow(block));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -222,5 +238,6 @@ public class PlatStuffImpl {
 
 
     }
+
 
 }

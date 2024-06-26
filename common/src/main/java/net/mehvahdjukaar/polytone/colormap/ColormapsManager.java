@@ -21,19 +21,19 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     // Builtin colormaps
     //TODO: delegate to grass so we have quark compat
-    public static final BlockColor GRASS_COLOR = (s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor();
+    public static final IColorGetter GRASS_COLOR = new IColorGetter.OfBlock((s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor());
 
-    public static final BlockColor FOLIAGE_COLOR = (s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor();
+    public static final IColorGetter FOLIAGE_COLOR =  new IColorGetter.OfBlock((s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor());
 
-    public static final BlockColor WATER_COLOR = (s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000;
+    public static final IColorGetter WATER_COLOR =  new IColorGetter.OfBlock((s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000);
 
     // custom defined colormaps
-    private final MapRegistry<Supplier<BlockColor>> colormaps = new MapRegistry<>("Polytone Colormaps");
+    private final MapRegistry<Supplier<IColorGetter>> colormaps = new MapRegistry<>("Polytone Colormaps");
 
-    public Codec<BlockColor> byNameCodec() {
+    public Codec<IColorGetter> byNameCodec() {
         return colormaps.xmap(Supplier::get, s -> () -> s);
     }
 
@@ -97,7 +97,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     //helper methods
     public static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> availableTextures,
                                                 ResourceLocation defaultPath, BlockColor col, Set<ResourceLocation> usedTexture, boolean strict) {
-        if (col instanceof IndexCompoundBlockColors c) {
+        if (col instanceof IndexCompoundColorGetter c) {
             tryAcceptingTextureGroup(availableTextures, defaultPath, c, usedTexture, strict);
         } else if (col instanceof Colormap c) {
             tryAcceptingTextureGroup(availableTextures, defaultPath, c, usedTexture, strict);
@@ -113,7 +113,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
     private static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> textures,
-                                                 ResourceLocation id, IndexCompoundBlockColors colormap,
+                                                 ResourceLocation id, IndexCompoundColorGetter colormap,
                                                  Set<ResourceLocation> usedTextures, boolean strict) {
         var blockColorGetters = colormap.getGetters();
 

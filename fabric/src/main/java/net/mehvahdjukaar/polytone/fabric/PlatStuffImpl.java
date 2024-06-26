@@ -15,11 +15,14 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.fabric.BlockColorsAccessor;
 import net.mehvahdjukaar.polytone.mixins.fabric.CreativeTabAccessor;
 import net.mehvahdjukaar.polytone.mixins.fabric.FabricItemGroupEntriesAccessor;
+import net.mehvahdjukaar.polytone.mixins.fabric.ItemColorsAccessor;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.core.MappedRegistry;
@@ -36,6 +39,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -73,6 +77,11 @@ public class PlatStuffImpl {
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         return ((BlockColorsAccessor) colors).getBlockColors().byId(BuiltInRegistries.BLOCK.getId(block));
+    }
+
+    @org.jetbrains.annotations.Contract
+    public static ItemColor getItemColor(ItemColors colors, Item item) {
+        return ((ItemColorsAccessor) colors).getItemColors().byId(BuiltInRegistries.ITEM.getId(item));
     }
 
     public static SoundEvent registerSoundEvent(ResourceLocation id) {
@@ -214,6 +223,8 @@ public class PlatStuffImpl {
         }
         return null;
     }
+
+
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,
                                      FabricItemGroupEntries entries) implements ItemToTabEvent {
