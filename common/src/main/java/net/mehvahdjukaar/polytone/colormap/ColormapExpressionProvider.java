@@ -137,7 +137,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
             exp.setVariable(POS_Z, pos != null ? pos.getZ() : 0);
 
             if (stack != null) {
-                float damage = stack.getDamageValue() / (float) stack.getMaxDamage();
+                float damage = 1 - stack.getDamageValue() / (float) stack.getMaxDamage();
                 exp.setVariable(DAMAGE, damage);
             } else exp.setVariable(DAMAGE, 0);
 
