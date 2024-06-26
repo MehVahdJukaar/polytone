@@ -1,5 +1,14 @@
 {
   "cloud_level":70,
   "force_bright_lightmap": true,
-  "fog_colormap": "my_namespace:rainbow"
+  "fog_colormap": "my_namespace:rainbow",
+  "sky_colormap": {
+	  "x_axis": "biome_id",
+	  "y_axis": "0",
+	  "biome_id_mapper":{
+		  "plains": 1,
+		  "sparse_jungle":1,
+		  "texture_size": 8	
+	  }
+  }
 }
