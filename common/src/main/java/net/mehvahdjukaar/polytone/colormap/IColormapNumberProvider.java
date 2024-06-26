@@ -117,5 +117,10 @@ public interface IColormapNumberProvider {
         return (pos.getY() + rs.nextIntBetweenInclusive(-3, 3)) / 255f;
     });
 
+    IColormapNumberProvider DAMAGE = BUILTIN_PROVIDERS.register("damage", (state, pos, biome, m, item) -> {
+        if (item == null) return 0;
+        return 1 - item.getDamageValue() / (float) item.getMaxDamage();
+    });
+
 
 }

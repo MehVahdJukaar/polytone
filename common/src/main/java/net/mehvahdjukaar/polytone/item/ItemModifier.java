@@ -17,7 +17,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
@@ -62,6 +64,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             itemColors.register(tintGetter.get(), item);
         }
 
+        ((IPolytoneItem)item).polytone$setModifier();
 
         // returns old properties
         return new ItemModifier(
@@ -69,6 +72,11 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 Optional.empty(),
                 Optional.ofNullable(Rarity.fromVanilla(oldRarity)),
                 List.of(), Set.of());
+    }
+
+    @Nullable
+    public Integer getBarColor(ItemStack itemStack) {
+        return barColor.map(c -> c.getColor(itemStack, 0)).orElse(null);
     }
 
 

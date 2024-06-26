@@ -84,6 +84,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
         colormaps.register(new ResourceLocation("triangular_biome_sample"), Colormap::defTriangle);
         colormaps.register(new ResourceLocation("fixed"), Colormap::fixed);
         colormaps.register(new ResourceLocation("grid"), Colormap::biomeId);
+        colormaps.register(new ResourceLocation("damage"), Colormap::damage);
     }
 
     public void add(ResourceLocation id, Colormap colormap) {
