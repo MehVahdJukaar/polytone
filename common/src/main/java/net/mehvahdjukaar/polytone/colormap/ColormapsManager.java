@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -24,10 +25,10 @@ public class ColormapsManager extends JsonImgPartialReloader {
     public static final IColorGetter GRASS_COLOR = new IColorGetter.OfBlock((s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor());
 
-    public static final IColorGetter FOLIAGE_COLOR =  new IColorGetter.OfBlock((s, l, p, i) ->
+    public static final IColorGetter FOLIAGE_COLOR = new IColorGetter.OfBlock((s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor());
 
-    public static final IColorGetter WATER_COLOR =  new IColorGetter.OfBlock((s, l, p, i) ->
+    public static final IColorGetter WATER_COLOR = new IColorGetter.OfBlock((s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000);
 
     // custom defined colormaps
@@ -149,7 +150,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     public static void tryAcceptingTexture(Map<ResourceLocation, ArrayImage> availableTextures,
                                            ResourceLocation defaultPath,
-                                           Object col, Set<ResourceLocation> usedTexture, boolean strict) {
+                                           @Nullable Object col, Set<ResourceLocation> usedTexture, boolean strict) {
         if (col instanceof Colormap colormap) {
             ResourceLocation textureLoc = colormap.getTargetTexture(defaultPath);
             ArrayImage texture = availableTextures.get(textureLoc);

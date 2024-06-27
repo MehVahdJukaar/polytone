@@ -45,6 +45,11 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
         return new ItemModifier(Optional.of(colormap), Optional.empty(), Optional.empty(), List.of(), List.of(), java.util.Set.of());
     }
 
+    public static ItemModifier ofBarColor(Colormap colormap) {
+        return new ItemModifier(Optional.empty(), Optional.of(colormap),
+                Optional.empty(), List.of(), List.of(), java.util.Set.of());
+    }
+
     public ItemModifier merge(ItemModifier other) {
         return new ItemModifier(
                 this.tintGetter.isPresent() ? this.tintGetter : other.tintGetter,
@@ -91,11 +96,20 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
         return tintGetter.orElse(null);
     }
 
+    public ItemColor getBarColor() {
+        return barColor.orElse(null);
+    }
+
+    public boolean hasBarColor() {
+        return barColor.isPresent();
+    }
+
 
     public enum Rarity implements StringRepresentable {
         COMMON, UNCOMMON, RARE, EPIC;
 
         public static Rarity fromVanilla(net.minecraft.world.item.Rarity oldRarity) {
+            if (oldRarity == null) return null;
             return switch (oldRarity) {
                 case COMMON -> COMMON;
                 case UNCOMMON -> UNCOMMON;
@@ -119,12 +133,12 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
         }
     }
 
-    public void modifyTooltips(List<Component> tooltips){
+    public void modifyTooltips(List<Component> tooltips) {
         tooltips.removeIf(t -> removedTooltips.stream().anyMatch(p -> p.matcher(t.getString()).matches()));
         tooltips.addAll(this.tooltips);
     }
 
-    public boolean shouldAttachToItem(){
+    public boolean shouldAttachToItem() {
         return !tooltips.isEmpty() || !removedTooltips.isEmpty() || barColor.isPresent();
     }
 }

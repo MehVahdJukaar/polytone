@@ -98,13 +98,15 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             }
 
             // if sky is not defined BUT they have a valid texture create a colormap for it
-            if (textures.containsKey(id.withSuffix("_sky")) && sky == null) {
+            ResourceLocation skyId = id.withSuffix("_sky");
+            if (textures.containsKey(skyId) && sky == null) {
                 modifier = modifier.merge(DimensionEffectsModifier.ofSkyColor(Colormap.defTriangle()));
                 sky = modifier.getSkyColormap();
             }
 
             // if fog is not defined BUT they have a valid texture create a colormap for it
-            if (textures.containsKey(id.withSuffix("_fog")) && sky == null) {
+            ResourceLocation fogId = id.withSuffix("_fog");
+            if (textures.containsKey(fogId) && sky == null) {
                 modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.defTriangle()));
                 fog = modifier.getFogColormap();
             }
@@ -118,8 +120,8 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             }
 
             //try filling with standard textures paths, failing if they are not there
-            ColormapsManager.tryAcceptingTexture(textures, id.withSuffix("_fog"), fog, usedTextures, true);
-            ColormapsManager.tryAcceptingTexture(textures, id.withSuffix("_sky"), sky, usedTextures, true);
+            ColormapsManager.tryAcceptingTexture(textures, fogId, fog, usedTextures, true);
+            ColormapsManager.tryAcceptingTexture(textures, skyId, sky, usedTextures, true);
 
             addModifier(id, modifier);
         }
