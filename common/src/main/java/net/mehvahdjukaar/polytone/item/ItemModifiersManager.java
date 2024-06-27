@@ -64,7 +64,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
             //fill inline colormaps colormapTextures
             ColormapsManager.tryAcceptingTexture(textures, tintId, modifier.getTint(), usedTextures, true);
 
-            ColormapsManager.tryAcceptingTexture(textures, barId, modifier.barColor(), usedTextures, true);
+            ColormapsManager.tryAcceptingTexture(textures, barId, modifier.getBarColor(), usedTextures, true);
 
             addModifier(tintId, modifier);
         }
