@@ -148,7 +148,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     public static void tryAcceptingTexture(Map<ResourceLocation, ArrayImage> availableTextures,
                                            ResourceLocation defaultPath,
-                                           BlockColor col, Set<ResourceLocation> usedTexture, boolean strict) {
+                                           Object col, Set<ResourceLocation> usedTexture, boolean strict) {
         if (col instanceof Colormap colormap) {
             ResourceLocation textureLoc = colormap.getTargetTexture(defaultPath);
             ArrayImage texture = availableTextures.get(textureLoc);

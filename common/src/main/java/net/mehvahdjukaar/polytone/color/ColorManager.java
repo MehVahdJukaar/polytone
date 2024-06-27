@@ -11,7 +11,6 @@ import net.mehvahdjukaar.polytone.particle.BlockParticleExpression;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
@@ -262,7 +261,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             if (is(prop, 1, "block")) {
                 if (prop.length > 2 && obj instanceof String) {
                     String path = prop[2].replace("~/colormap/", colorPropFileId.getNamespace() + ":");
-                    Polytone.BLOCK_PROPERTIES.addSimpleColormap(new ResourceLocation(path), str);
+                    Polytone.BLOCK_MODIFIERS.addSimpleColormap(new ResourceLocation(path), str);
                 }
             }
         }

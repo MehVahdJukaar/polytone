@@ -168,7 +168,7 @@ public class LegacyHelper {
         }
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), set, false);
+                Optional.empty(),Optional.empty(), Optional.empty(), Optional.empty(), set, false);
     }
 
 
@@ -226,7 +226,7 @@ public class LegacyHelper {
         }
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), set, false);
+                Optional.empty(),Optional.empty(), Optional.empty(), Optional.empty(), set, false);
     }
 
     public static Map<ResourceLocation, BlockPropertyModifier> convertInlinedPalettes(
@@ -370,7 +370,7 @@ public class LegacyHelper {
         textures.keySet().removeAll(filteredTextures.keySet());
         parsedModifiers.keySet().removeAll(filtered.keySet());
 
-        Polytone.FLUID_PROPERTIES.addConvertedBlockProperties(filtered, filteredTextures);
+        Polytone.FLUID_MODIFIERS.addConvertedBlockProperties(filtered, filteredTextures);
     }
 
     public static void convertOfBlockToDimensionProperties(Map<ResourceLocation, BlockPropertyModifier> parsedModifiers,
@@ -398,7 +398,7 @@ public class LegacyHelper {
         textures.keySet().removeAll(filteredTextures.keySet());
         parsedModifiers.keySet().removeAll(filtered.keySet());
 
-        Polytone.DIMENSION_EFFECTS.addConvertedBlockProperties(filtered, filteredTextures);
+        Polytone.DIMENSION_MODIFIERS.addConvertedBlockProperties(filtered, filteredTextures);
 
     }
 }

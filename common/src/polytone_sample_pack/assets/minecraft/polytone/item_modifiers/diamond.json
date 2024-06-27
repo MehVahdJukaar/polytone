@@ -1,0 +1,23 @@
+{
+  "rarity": "epic",
+  "tooltips": [
+    {
+      "italic": true,
+      "color": "green",
+      "text": "Some Text"
+    },
+    {
+      "color": "gold",
+      "extra": [
+        {
+          "text": " More text",
+           "color": "red"
+        }
+      ],
+      "translate": "itemGroup.foodAndDrink"
+    }
+  ],
+  "removed_tooltips": [
+    "minecraft\\:[Dd]iamond"
+  ]
+}

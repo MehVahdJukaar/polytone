@@ -23,14 +23,14 @@ public abstract class ClientLevelMixin {
                                         Operation<Void> original) {
         original.call(instance, state, level, pos, random);
 
-        Polytone.BLOCK_PROPERTIES.maybeEmitParticle(instance, state, level, pos);
+        Polytone.BLOCK_MODIFIERS.maybeEmitParticle(instance, state, level, pos);
     }
 
     @WrapOperation(method = "getSkyColor", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/util/CubicSampler;gaussianSampleVec3(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/util/CubicSampler$Vec3Fetcher;)Lnet/minecraft/world/phys/Vec3;"))
     private Vec3 polytone$modifySkyColor(Vec3 center, CubicSampler.Vec3Fetcher fetcher,
                                          Operation<Vec3> original) {
-        Vec3 modified = Polytone.DIMENSION_EFFECTS.modifySkyColor(center, (ClientLevel) (Object) this);
+        Vec3 modified = Polytone.DIMENSION_MODIFIERS.modifySkyColor(center, (ClientLevel) (Object) this);
         if (modified != null) return modified;
         return original.call(center, fetcher);
     }

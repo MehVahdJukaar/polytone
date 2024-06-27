@@ -1,2 +1,7 @@
-- tab item additions supports HolderSets (you can type tags just like you can in most other vanilla data objects )
-- added "inverse" conditions to item additions 
+- Added Item Modifiers. These can:
+- Change item rarity
+- Change item tint getter (colormap)
+- Change durability bar color (via colormaps)
+- Add tooltip lines
+- Remove tooltip lines
+- Block Modifiers can now alter the RenderType of a block (fabric only as forge already has such a feature in the model json)

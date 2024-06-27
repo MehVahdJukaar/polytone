@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone;
 
-import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
@@ -9,6 +8,8 @@ import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
+import net.mehvahdjukaar.polytone.item.ItemModifier;
+import net.mehvahdjukaar.polytone.item.ItemModifiersManager;
 import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.particle.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
@@ -30,13 +31,14 @@ public class Polytone {
 
     public static final Logger LOGGER = LogManager.getLogger("Polytone");
 
-    public static final BlockPropertiesManager BLOCK_PROPERTIES = new BlockPropertiesManager();
-    public static final FluidPropertiesManager FLUID_PROPERTIES = new FluidPropertiesManager();
-    public static final BiomeEffectsManager BIOME_EFFECTS = new BiomeEffectsManager();
+    public static final BlockPropertiesManager BLOCK_MODIFIERS = new BlockPropertiesManager();
+    public static final FluidPropertiesManager FLUID_MODIFIERS = new FluidPropertiesManager();
+    public static final ItemModifiersManager ITEM_MODIFIERS = new ItemModifiersManager();
+    public static final BiomeEffectsManager BIOME_MODIFIERS = new BiomeEffectsManager();
     public static final ColormapsManager COLORMAPS = new ColormapsManager();
     public static final LightmapsManager LIGHTMAPS = new LightmapsManager();
     public static final BiomeIdMapperManager BIOME_ID_MAPPERS = new BiomeIdMapperManager();
-    public static final DimensionEffectsManager DIMENSION_EFFECTS = new DimensionEffectsManager();
+    public static final DimensionEffectsManager DIMENSION_MODIFIERS = new DimensionEffectsManager();
     public static final CustomParticlesManager CUSTOM_PARTICLES = new CustomParticlesManager();
     public static final ParticleModifiersManager PARTICLE_MODIFIERS = new ParticleModifiersManager();
     public static final SoundTypesManager SOUND_TYPES = new SoundTypesManager();
@@ -49,15 +51,19 @@ public class Polytone {
 
     public static boolean sodiumOn = false;
     public static boolean isDevEnv = false;
+    public static boolean isForge = false;
 
-    public static void init(boolean isSodiumOn, boolean devEnv) {
+    public static void init(boolean isSodiumOn, boolean devEnv, boolean forge) {
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
-                        SOUND_TYPES, CUSTOM_PARTICLES, BIOME_ID_MAPPERS, COLORMAPS, COLORS, BLOCK_SET, BLOCK_PROPERTIES, FLUID_PROPERTIES,
-                        BIOME_EFFECTS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_EFFECTS, PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,
+                        SOUND_TYPES, CUSTOM_PARTICLES, BIOME_ID_MAPPERS, COLORMAPS, COLORS,
+                        BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS,
+                        BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
+                        PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,
                         CREATIVE_TABS_MODIFIERS),
                 res("polytone_stuff"));
         sodiumOn = isSodiumOn;
         isDevEnv = devEnv;
+        isForge = forge;
         //TODO: rename effects, modifiers and properties to a common standard naming scheme
         //TODO: colormap for particles
         //SKY and fog
@@ -78,8 +84,8 @@ public class Polytone {
     }
 
     public static void onTagsReceived(RegistryAccess registryAccess) {
-        BIOME_EFFECTS.doApply(registryAccess, true);
-        DIMENSION_EFFECTS.doApply(registryAccess, true);
+        BIOME_MODIFIERS.doApply(registryAccess, true);
+        DIMENSION_MODIFIERS.doApply(registryAccess, true);
         BiomeKeysCache.clear();
     }
 
