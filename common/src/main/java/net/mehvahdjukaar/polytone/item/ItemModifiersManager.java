@@ -6,15 +6,15 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ItemModifiersManager extends JsonImgPartialReloader {
 
@@ -48,18 +48,25 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
-            ResourceLocation id = entry.getKey();
+            ResourceLocation tintId = entry.getKey();
             ItemModifier modifier = entry.getValue();
 
-            if (!modifier.hasTint() && textures.containsKey(id)) {
+            if (!modifier.hasTint() && textures.containsKey(tintId)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
                 modifier = modifier.merge(ItemModifier.ofItemColor(Colormap.defTriangle()));
             }
+            ResourceLocation barId = tintId.withSuffix("_bar");
+            if (!modifier.hasBarColor() && textures.containsKey(barId)) {
+                //if this map doesn't have a bar colormap defined, we set it to the default impl IF there's a texture it can use
+                modifier = modifier.merge(ItemModifier.ofBarColor(Colormap.damage()));
+            }
 
             //fill inline colormaps colormapTextures
-            ItemColor tint = modifier.getTint();
-            ColormapsManager.tryAcceptingTexture(textures, id, tint, usedTextures, true);
-            addModifier(id, modifier);
+            ColormapsManager.tryAcceptingTexture(textures, tintId, modifier.getTint(), usedTextures, true);
+
+            ColormapsManager.tryAcceptingTexture(textures, barId, modifier.barColor(), usedTextures, true);
+
+            addModifier(tintId, modifier);
         }
 
         // creates orphaned texture colormaps & properties
@@ -67,10 +74,15 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
-            Colormap defaultColormap = Colormap.defTriangle();
-            ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
-
-            addModifier(id, ItemModifier.ofItemColor(defaultColormap));
+            if(id.getPath().endsWith("_bar")){
+                Colormap defaultColormap = Colormap.damage();
+                ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
+                addModifier(id, ItemModifier.ofBarColor(defaultColormap));
+            }else {
+                Colormap defaultColormap = Colormap.defTriangle();
+                ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
+                addModifier(id, ItemModifier.ofItemColor(defaultColormap));
+            }
         }
     }
 

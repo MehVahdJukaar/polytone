@@ -4,10 +4,11 @@
   "compatibilityLevel": "JAVA_17",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "ItemMixin",
-    "ItemStackMixin"
+
   ],
   "client": [
+    "ItemMixin",
+    "ItemStackMixin",
     "AbstractContainerMenuMixin",
     "ClientLevelMixin",
     "ColorResolverMixin",

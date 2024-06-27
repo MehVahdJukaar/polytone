@@ -5,3 +5,4 @@
 - Add tooltip lines
 - Remove tooltip lines
 - Block Modifiers can now alter the RenderType of a block (fabric only as forge already has such a feature in the model json)
+- some fixes

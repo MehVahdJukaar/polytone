@@ -239,7 +239,7 @@ public class Colormap implements IColorGetter, ColorResolver {
                 false, Optional.of(Boolean.TRUE), Optional.empty(), Optional.empty());
     }
 
-    public static IColorGetter damage() {
+    public static Colormap damage() {
         return new Colormap(IColormapNumberProvider.DAMAGE, IColormapNumberProvider.ZERO, false);
     }
 }
