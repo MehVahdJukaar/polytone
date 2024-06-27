@@ -1,19 +1,14 @@
 package net.mehvahdjukaar.polytone.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.CreativeModeTab;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class PolytoneFabric implements ClientModInitializer {
 
@@ -22,7 +17,7 @@ public class PolytoneFabric implements ClientModInitializer {
         FabricLoader instance = FabricLoader.getInstance();
         boolean sodiumOn = instance.isModLoaded("sodium") || instance.isModLoaded("indium");
 
-        Polytone.init(sodiumOn, instance.isDevelopmentEnvironment());
+        Polytone.init(sodiumOn, instance.isDevelopmentEnvironment(), false);
 
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
             if (client) {
@@ -56,8 +51,14 @@ public class PolytoneFabric implements ClientModInitializer {
             }
         });
 
-    }
+        ItemTooltipCallback.EVENT.register((stack, context, lines) -> {
+            var modifier = ((IPolytoneItem) stack.getItem()).polytone$getModifier();
+            if (modifier != null) {
+                modifier.modifyTooltips(lines);
+            }
+        });
 
+    }
 
 
 }

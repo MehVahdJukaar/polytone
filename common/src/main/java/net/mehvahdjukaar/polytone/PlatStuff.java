@@ -8,6 +8,7 @@ import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -90,7 +91,18 @@ public class PlatStuff {
 
     @ExpectPlatform
     public static RegistryAccess hackyGetRegistryAccess() {
-        return null;
+        throw new AssertionError();
+
+    }
+
+    @ExpectPlatform
+    public static RenderType getRenderType(Block block) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static void setRenderType(Block block, RenderType renderType){
+        throw new AssertionError();
     }
 
     @ExpectPlatform

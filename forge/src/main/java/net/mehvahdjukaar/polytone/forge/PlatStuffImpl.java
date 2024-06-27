@@ -14,6 +14,9 @@ import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -217,6 +220,13 @@ public class PlatStuffImpl {
         );
 
 
+    }
+
+    public static RenderType getRenderType(Block block) {
+        return null;
+    }
+
+    public static void setRenderType(Block block, RenderType renderType) {
     }
 
 

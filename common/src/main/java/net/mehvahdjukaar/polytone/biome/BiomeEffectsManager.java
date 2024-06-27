@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -114,7 +113,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     //hack
     public void addAllWaterColors(Registry<Biome> biomeReg) {
         if (Polytone.sodiumOn) { //TODO:is this needed with embeddium?
-            var water = Polytone.FLUID_PROPERTIES.getModifier(Fluids.WATER);
+            var water = Polytone.FLUID_MODIFIERS.getModifier(Fluids.WATER);
             if (water != null) {
                 for (var e : biomeReg.entrySet()) {
                     var id = e.getKey().location();

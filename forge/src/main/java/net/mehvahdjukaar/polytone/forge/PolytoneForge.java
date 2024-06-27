@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.forge;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,6 +16,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -37,7 +39,7 @@ public class PolytoneForge {
 
     public PolytoneForge(IEventBus modBus) {
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            Polytone.init(false, !FMLEnvironment.production);
+            Polytone.init(false, !FMLEnvironment.production, true);
 
             NeoForge.EVENT_BUS.register(this);
            modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
@@ -48,6 +50,13 @@ public class PolytoneForge {
         bus = modBus;
     }
 
+    @SubscribeEvent
+    public void onTooltip(ItemTooltipEvent tooltipEvent) {
+        var mod = ((IPolytoneItem) tooltipEvent.getItemStack().getItem()).polytone$getModifier();
+        if (mod != null) {
+            mod.modifyTooltips(tooltipEvent.getToolTip());
+        }
+    }
 
     @SubscribeEvent
     public void onTagSync(TagsUpdatedEvent event) {

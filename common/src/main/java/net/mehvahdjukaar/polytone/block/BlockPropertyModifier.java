@@ -11,6 +11,7 @@ import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -38,6 +39,7 @@ public record BlockPropertyModifier(
         //Optional<Object> spawnParticlesOnBreak,
         //Optional<Boolean> viewBlocking,
         //Optional<Object> emissiveRendering,
+        Optional<RenderType> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
         Optional<List<ParticleEmitter>> particleEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
@@ -55,6 +57,7 @@ public record BlockPropertyModifier(
                 //other.spawnParticlesOnBreak().isPresent() ? other.spawnParticlesOnBreak() : this.spawnParticlesOnBreak(),
                 // other.viewBlocking().isPresent() ? other.viewBlocking() : this.viewBlocking(),
                 //other.emissiveRendering().isPresent() ? other.emissiveRendering() : this.emissiveRendering(),
+                other.renderType().isPresent() ? other.renderType() : this.renderType(),
                 other.clientLight.isPresent() ? other.clientLight : this.clientLight,
                 other.particleEmitters.isPresent() ? other.particleEmitters : this.particleEmitters,
                 other.offsetType().isPresent() ? other.offsetType() : this.offsetType(),
@@ -67,7 +70,7 @@ public record BlockPropertyModifier(
     public static BlockPropertyModifier ofBlockColor(BlockColor colormap) {
         return new BlockPropertyModifier(Optional.of(colormap),
                 java.util.Optional.empty(), java.util.Optional.empty(),
-                java.util.Optional.empty(), Optional.empty(),
+                java.util.Optional.empty(), java.util.Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Set.of(), false);
     }
 
@@ -82,7 +85,7 @@ public record BlockPropertyModifier(
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
         return new BlockPropertyModifier(Optional.of(colormap),
                 java.util.Optional.empty(), java.util.Optional.empty(),
-                java.util.Optional.empty(), Optional.empty(),
+                java.util.Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), blocks, false);
     }
 
@@ -146,14 +149,19 @@ public record BlockPropertyModifier(
                 ppb.type = blockSetType.get().getOrCreate(ppb.type, soundType);
             }
         }
-
         if (tintHack) {
             Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
         }
 
+        RenderType oldRenderType = null;
+        if (renderType.isPresent() && !Polytone.isForge) {
+            oldRenderType = renderType.get().fromVanilla(PlatStuff.getRenderType(block));
+            PlatStuff.setRenderType(block, renderType.get().toVanilla());
+        }
+
         // returns old properties
         return new BlockPropertyModifier(Optional.ofNullable(oldColor), Optional.ofNullable(oldSound),
-                Optional.ofNullable(oldMapColor), Optional.ofNullable(oldClientLight),
+                Optional.ofNullable(oldMapColor), Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
                 Optional.empty(),  Optional.ofNullable(oldOffsetType), Optional.ofNullable(oldType), Set.of(), false);
     }
 
@@ -169,6 +177,7 @@ public record BlockPropertyModifier(
                     //Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(c -> c.spawnParticlesOnBreak.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
                     // Codec.BOOL.optionalFieldOf("view_blocking").forGetter(ClientBlockProperties::viewBlocking),
                     //Codec.BOOL.optionalFieldOf("emissive_rendering").forGetter(c -> c.emissiveRendering.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
+                    StrOpt.of(StringRepresentable.fromEnum(RenderType::values), "render_type").forGetter(BlockPropertyModifier::renderType),
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
                     ParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
@@ -214,4 +223,29 @@ public record BlockPropertyModifier(
     }
 
 
+    private enum RenderType implements StringRepresentable {
+        SOLID,
+        CUTOUT,
+        TRANSLUCENT;
+
+        @Override
+        public String getSerializedName() {
+            return this.name().toLowerCase(Locale.ROOT);
+        }
+
+        net.minecraft.client.renderer.RenderType toVanilla() {
+            return switch (this) {
+                case SOLID -> net.minecraft.client.renderer.RenderType.solid();
+                case CUTOUT -> net.minecraft.client.renderer.RenderType.cutout();
+                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
+            };
+        }
+
+        RenderType fromVanilla(net.minecraft.client.renderer.RenderType type) {
+            if (net.minecraft.client.renderer.RenderType.solid() == type) return SOLID;
+            if (net.minecraft.client.renderer.RenderType.cutout() == type) return CUTOUT;
+            if (net.minecraft.client.renderer.RenderType.translucent() == type) return TRANSLUCENT;
+            throw new IllegalStateException("Unexpected value: " + type);
+        }
+    }
 }

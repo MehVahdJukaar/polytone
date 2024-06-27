@@ -19,7 +19,7 @@ public abstract class FogRendererMixin {
     private static Vec3 polytone$modifyFogColor(Vec3 center, CubicSampler.Vec3Fetcher fetcher,
                                        Operation<Vec3> original, @Local ClientLevel level,
                                        @Local(ordinal = 4) float lightLevel) {
-        Vec3 modified = Polytone.DIMENSION_EFFECTS.modifyFogColor(center, level, lightLevel);
+        Vec3 modified = Polytone.DIMENSION_MODIFIERS.modifyFogColor(center, level, lightLevel);
         if (modified != null) return modified;
         return original.call(center, fetcher);
     }

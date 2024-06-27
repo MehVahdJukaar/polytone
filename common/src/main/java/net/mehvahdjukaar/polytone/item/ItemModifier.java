@@ -9,7 +9,6 @@ import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.network.chat.Component;
@@ -18,34 +17,41 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Optional<IColorGetter> barColor,
                            Optional<Rarity> rarity,
                            List<Component> tooltips,
+                           List<Pattern> removedTooltips,
                            Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
     public static final Codec<ItemModifier> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             StrOpt.of(IndexCompoundColorGetter.SINGLE_OR_MULTIPLE, "colormap").forGetter(b -> (Optional<IColorGetter>) b.tintGetter),
-            StrOpt.of( Colormap.CODEC, "bar_color").forGetter(ItemModifier::barColor),
+            StrOpt.of(Colormap.CODEC, "bar_color").forGetter(ItemModifier::barColor),
             StrOpt.of(StringRepresentable.fromEnum(Rarity::values), "rarity").forGetter(ItemModifier::rarity),
             StrOpt.of(ExtraCodecs.COMPONENT.listOf(), "tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
-            StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(ItemModifier::explicitTargets)
+            StrOpt.of(ExtraCodecs.PATTERN.listOf(), "removed_tooltips", List.of()).forGetter(ItemModifier::removedTooltips),
+            StrOpt.of(TARGET_CODEC, "targets", java.util.Set.of()).forGetter(ItemModifier::explicitTargets)
     ).apply(instance, ItemModifier::new));
+
+    public static ItemModifier ofItemColor(Colormap colormap) {
+        return new ItemModifier(Optional.of(colormap), Optional.empty(), Optional.empty(), List.of(), List.of(), java.util.Set.of());
+    }
 
     public ItemModifier merge(ItemModifier other) {
         return new ItemModifier(
                 this.tintGetter.isPresent() ? this.tintGetter : other.tintGetter,
                 this.barColor.isPresent() ? this.barColor : other.barColor,
                 this.rarity.isPresent() ? this.rarity : other.rarity,
-                this.tooltips.isEmpty() ? other.tooltips : this.tooltips,
+                mergeList(this.tooltips, other.tooltips),
+                mergeList(this.removedTooltips, other.removedTooltips),
                 mergeSet(this.explicitTargets, other.explicitTargets)
         );
     }
@@ -64,19 +70,25 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             itemColors.register(tintGetter.get(), item);
         }
 
-        ((IPolytoneItem)item).polytone$setModifier();
-
         // returns old properties
         return new ItemModifier(
                 Optional.ofNullable(oldColor),
                 Optional.empty(),
                 Optional.ofNullable(Rarity.fromVanilla(oldRarity)),
-                List.of(), Set.of());
+                List.of(), List.of(), Set.of());
     }
 
     @Nullable
     public Integer getBarColor(ItemStack itemStack) {
         return barColor.map(c -> c.getColor(itemStack, 0)).orElse(null);
+    }
+
+    public boolean hasTint() {
+        return tintGetter.isPresent();
+    }
+
+    public ItemColor getTint() {
+        return tintGetter.orElse(null);
     }
 
 
@@ -105,5 +117,14 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 case EPIC -> net.minecraft.world.item.Rarity.EPIC;
             };
         }
+    }
+
+    public void modifyTooltips(List<Component> tooltips){
+        tooltips.removeIf(t -> removedTooltips.stream().anyMatch(p -> p.matcher(t.getString()).matches()));
+        tooltips.addAll(this.tooltips);
+    }
+
+    public boolean shouldAttachToItem(){
+        return !tooltips.isEmpty() || !removedTooltips.isEmpty() || barColor.isPresent();
     }
 }

@@ -1,1 +1,7 @@
-mod will now accept duplicate files and throw a warning when it does
+- Added Item Modifiers. These can:
+- Change item rarity
+- Change item tint getter (colormap)
+- Change durability bar color (via colormaps)
+- Add tooltip lines
+- Remove tooltip lines
+- Block Modifiers can now alter the RenderType of a block (fabric only as forge already has such a feature in the model json)

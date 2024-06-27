@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.fabric;
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -26,6 +27,8 @@ import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -221,6 +224,15 @@ public class PlatStuffImpl {
     public static void updateSearchTrees(SessionSearchTrees sessionSearchTrees, List<CreativeModeTab> needsTreeUpdated) {
         List<ItemStack> list = List.copyOf(CreativeModeTabs.searchTab().getDisplayItems());
         sessionSearchTrees.updateCreativeTags(list);
+    }
+
+
+    public static RenderType getRenderType(Block block) {
+        return ItemBlockRenderTypes.getChunkRenderType(block.defaultBlockState());
+    }
+
+    public static void setRenderType(Block block, RenderType renderType) {
+        BlockRenderLayerMap.INSTANCE.putBlock(block, renderType);
     }
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,
