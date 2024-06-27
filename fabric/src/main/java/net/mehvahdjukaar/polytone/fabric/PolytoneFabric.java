@@ -51,7 +51,7 @@ public class PolytoneFabric implements ClientModInitializer {
             }
         });
 
-        ItemTooltipCallback.EVENT.register((stack, context, lines) -> {
+        ItemTooltipCallback.EVENT.register((stack, c, context, lines) -> {
             var modifier = ((IPolytoneItem) stack.getItem()).polytone$getModifier();
             if (modifier != null) {
                 modifier.modifyTooltips(lines);

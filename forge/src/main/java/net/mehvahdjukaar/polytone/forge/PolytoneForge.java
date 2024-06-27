@@ -16,12 +16,12 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,6 +38,7 @@ public class PolytoneForge {
     static IEventBus bus;
 
     public PolytoneForge(IEventBus modBus) {
+        bus = modBus;
         if (FMLEnvironment.dist == Dist.CLIENT) {
             Polytone.init(false, !FMLEnvironment.production, true);
 
@@ -47,7 +48,6 @@ public class PolytoneForge {
             Polytone.LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
 
-        bus = modBus;
     }
 
     @SubscribeEvent

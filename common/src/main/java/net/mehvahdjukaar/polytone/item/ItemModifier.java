@@ -6,8 +6,8 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
+import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
@@ -33,12 +33,12 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
     public static final Codec<ItemModifier> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            StrOpt.of(IndexCompoundColorGetter.SINGLE_OR_MULTIPLE, "colormap").forGetter(b -> (Optional<IColorGetter>) b.tintGetter),
-            StrOpt.of(Colormap.CODEC, "bar_color").forGetter(ItemModifier::barColor),
-            StrOpt.of(StringRepresentable.fromEnum(Rarity::values), "rarity").forGetter(ItemModifier::rarity),
-            StrOpt.of(ExtraCodecs.COMPONENT.listOf(), "tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
-            StrOpt.of(ExtraCodecs.PATTERN.listOf(), "removed_tooltips", List.of()).forGetter(ItemModifier::removedTooltips),
-            StrOpt.of(TARGET_CODEC, "targets", java.util.Set.of()).forGetter(ItemModifier::explicitTargets)
+            IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> (Optional<IColorGetter>) b.tintGetter),
+            Colormap.CODEC.optionalFieldOf("bar_color").forGetter(ItemModifier::barColor),
+            StringRepresentable.fromEnum(Rarity::values).optionalFieldOf("rarity").forGetter(ItemModifier::rarity),
+            CreativeTabModifier.COMPONENT_CODEC.listOf().optionalFieldOf("tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
+            ExtraCodecs.PATTERN.listOf().optionalFieldOf("removed_tooltips", List.of()).forGetter(ItemModifier::removedTooltips),
+            TARGET_CODEC.optionalFieldOf("targets", java.util.Set.of()).forGetter(ItemModifier::explicitTargets)
     ).apply(instance, ItemModifier::new));
 
     public static ItemModifier ofItemColor(Colormap colormap) {
@@ -63,10 +63,12 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
 
     public ItemModifier apply(Item item) {
         net.minecraft.world.item.Rarity oldRarity = null;
+        /*
         if (rarity.isPresent()) {
-            oldRarity = item.getRarity(item.getDefaultInstance());
+            item.components()
+            oldRarity = item.components().() item.getDefaultInstance());
             item.rarity = rarity.get().toVanilla();
-        }
+        }*/ //TODO: add back
 
         ItemColor oldColor = null;
         if (tintGetter.isPresent()) {

@@ -1,7 +1,5 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
-import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.core.IdMapper;

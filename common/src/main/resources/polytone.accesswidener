@@ -145,8 +145,6 @@ mutable field net/minecraft/world/level/biome/BiomeSpecialEffects backgroundMusi
 
 accessible field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
 mutable field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
-accessible field net/minecraft/world/item/Item rarity Lnet/minecraft/world/item/Rarity;
-mutable field net/minecraft/world/item/Item rarity Lnet/minecraft/world/item/Rarity;
 accessible field net/minecraft/client/Minecraft itemColors Lnet/minecraft/client/color/item/ItemColors;
 
 accessible field net/minecraft/client/resources/model/ModelBakery ITEM_MODEL_GENERATOR Lnet/minecraft/client/renderer/block/model/ItemModelGenerator;

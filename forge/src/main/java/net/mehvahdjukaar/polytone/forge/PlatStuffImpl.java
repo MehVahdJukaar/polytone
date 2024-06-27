@@ -1,10 +1,7 @@
 package net.mehvahdjukaar.polytone.forge;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.mehvahdjukaar.polytone.mixins.forge.BlockColorsAccessor;
-import net.mehvahdjukaar.polytone.mixins.forge.CreativeTabAccessor;
-import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeAccessor;
-import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeInfoBiomeInfoAccessor;
+import net.mehvahdjukaar.polytone.mixins.forge.*;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -14,9 +11,7 @@ import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -63,23 +58,11 @@ public class PlatStuffImpl {
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         return ((BlockColorsAccessor) colors).getBlockColors().get(block);
-        try {
-            return ((Map<Holder.Reference<Block>, BlockColor>) blockColorsField.get(colors))
-                    .get(ForgeRegistries.BLOCKS.getDelegateOrThrow(block));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
-    public static ItemColor getItemColor(ItemColors colors, Item block) {
-        try {
-            return ((Map<Holder.Reference<Item>, ItemColor>) itemColorsField.get(colors))
-                    .get(ForgeRegistries.ITEMS.getDelegateOrThrow(block));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public static ItemColor getItemColor(ItemColors colors, Item item) {
+        return ((ItemColorsAccessor) colors).getItemColors().get(item);
     }
-
 
     public static String maybeRemapName(String s) {
         return s;
@@ -187,7 +170,7 @@ public class PlatStuffImpl {
         ResourceLocation oldBackgroundLocation = null;
         if (mod.backGroundLocation().isPresent()) {
             oldBackgroundLocation = tab.getBackgroundTexture();
-            acc.setBackgroundLocation(mod.backGroundLocation().get());
+            acc.setBackgroundTexture(mod.backGroundLocation().get());
         }
 
 

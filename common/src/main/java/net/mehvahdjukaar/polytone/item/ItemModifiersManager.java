@@ -5,6 +5,7 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -37,13 +38,13 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
 
         for (var j : jsons.entrySet()) {
             JsonElement json = j.getValue();
-            ResourceLocation id = j.getKey();
+            ResourceLocation location = j.getKey();
 
             ItemModifier modifier = ItemModifier.CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Item Modifier with json id {} - error: {}", id, errorMsg))
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Item Modifier with json id " + location + "\n error: " + errorMsg))
                     .getFirst();
 
-            parsedModifiers.put(id, modifier);
+            parsedModifiers.put(location, modifier);
         }
 
         // add all modifiers (with or without texture)

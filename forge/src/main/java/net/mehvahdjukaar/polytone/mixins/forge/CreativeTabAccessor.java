@@ -30,8 +30,8 @@ public interface CreativeTabAccessor {
     @Accessor("tabsImage")
     void setTabsImage(ResourceLocation tabsImage);
 
-    @Accessor("backgroundLocation")
-    void setBackgroundLocation(ResourceLocation back);
+    @Accessor("backgroundTexture")
+    void setBackgroundTexture(ResourceLocation back);
 
     @Mutable
     @Accessor("tabsBefore")

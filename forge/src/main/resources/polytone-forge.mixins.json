@@ -6,11 +6,12 @@
   "mixins": [
   ],
   "client": [
-    "CreativeTabAccessor",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
+    "CreativeTabAccessor",
     "CurioInventoryScreenMixin",
     "InventoryScreenMixin",
+    "ItemColorsAccessor",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor"
   ],
