@@ -11,7 +11,6 @@ import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -168,7 +167,7 @@ public record BlockPropertyModifier(
 
     public static final Decoder<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    StrOpt.of(IndexCompoundColorGetter.SINGLE_OR_MULTIPLE, "colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
+                    IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
                     //normal opt so it can fail when using modded sounds
                     SoundTypesManager.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
                     MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE).optionalFieldOf(
@@ -177,7 +176,7 @@ public record BlockPropertyModifier(
                     //Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(c -> c.spawnParticlesOnBreak.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
                     // Codec.BOOL.optionalFieldOf("view_blocking").forGetter(ClientBlockProperties::viewBlocking),
                     //Codec.BOOL.optionalFieldOf("emissive_rendering").forGetter(c -> c.emissiveRendering.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
-                    StrOpt.of(StringRepresentable.fromEnum(RenderType::values), "render_type").forGetter(BlockPropertyModifier::renderType),
+                    StringRepresentable.fromEnum(RenderType::values).optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
                     ParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
@@ -226,6 +225,8 @@ public record BlockPropertyModifier(
     private enum RenderType implements StringRepresentable {
         SOLID,
         CUTOUT,
+        CUTOUT_MIPPED,
+        TRIPWIRE,
         TRANSLUCENT;
 
         @Override
@@ -236,6 +237,8 @@ public record BlockPropertyModifier(
         net.minecraft.client.renderer.RenderType toVanilla() {
             return switch (this) {
                 case SOLID -> net.minecraft.client.renderer.RenderType.solid();
+                case CUTOUT_MIPPED -> net.minecraft.client.renderer.RenderType.cutoutMipped();
+                case TRIPWIRE -> net.minecraft.client.renderer.RenderType.tripwire();
                 case CUTOUT -> net.minecraft.client.renderer.RenderType.cutout();
                 case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
             };
@@ -244,8 +247,10 @@ public record BlockPropertyModifier(
         RenderType fromVanilla(net.minecraft.client.renderer.RenderType type) {
             if (net.minecraft.client.renderer.RenderType.solid() == type) return SOLID;
             if (net.minecraft.client.renderer.RenderType.cutout() == type) return CUTOUT;
+            if (net.minecraft.client.renderer.RenderType.cutoutMipped() == type) return CUTOUT_MIPPED;
+            if (net.minecraft.client.renderer.RenderType.tripwire() == type) return TRIPWIRE;
             if (net.minecraft.client.renderer.RenderType.translucent() == type) return TRANSLUCENT;
-            throw new IllegalStateException("Unexpected value: " + type);
+            throw new IllegalStateException("Unknown render type value: " + type);
         }
     }
 }

@@ -1,8 +1,1 @@
-- Added Item Modifiers. These can:
-- Change item rarity
-- Change item tint getter (colormap)
-- Change durability bar color (via colormaps)
-- Add tooltip lines
-- Remove tooltip lines
-- Block Modifiers can now alter the RenderType of a block (fabric only as forge already has such a feature in the model json)
-- some fixes
+ fabric render types now accept cutout_mipped and tripwire, making up all the ones that can be found in chunk buffer
