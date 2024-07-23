@@ -1,13 +1,11 @@
 package net.mehvahdjukaar.polytone.dimension;
 
 import com.google.gson.JsonElement;
+import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -24,7 +22,10 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class DimensionEffectsManager extends JsonImgPartialReloader {
 
@@ -93,21 +94,21 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             // just 1 colormap defined
             if (textures.containsKey(id) && fog == null && sky == null) {
                 //if this map doesn't have any colormaps but has a texture we give it fog color
-                modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.defTriangle()));
+                modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.createDefTriangle()));
                 fog = modifier.getFogColormap();
             }
 
             // if sky is not defined BUT they have a valid texture create a colormap for it
             ResourceLocation skyId = id.withSuffix("_sky");
             if (textures.containsKey(skyId) && sky == null) {
-                modifier = modifier.merge(DimensionEffectsModifier.ofSkyColor(Colormap.defTriangle()));
+                modifier = modifier.merge(DimensionEffectsModifier.ofSkyColor(Colormap.createDefTriangle()));
                 sky = modifier.getSkyColormap();
             }
 
             // if fog is not defined BUT they have a valid texture create a colormap for it
             ResourceLocation fogId = id.withSuffix("_fog");
             if (textures.containsKey(fogId) && sky == null) {
-                modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.defTriangle()));
+                modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.createDefTriangle()));
                 fog = modifier.getFogColormap();
             }
 
@@ -131,7 +132,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
-            Colormap defaultColormap = Colormap.defTriangle();
+            Colormap defaultColormap = Colormap.createDefTriangle();
             ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
             addModifier(id, DimensionEffectsModifier.ofFogColor(defaultColormap));
@@ -198,6 +199,16 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
                 }), brightness);
     }
 
+    public void modifyFogMagicNumber(float renderDistanceChunks, LocalFloatRef distance) {
+        //no more random sky seam!
+        float c = 0.25f;
+        float b = c + (1-c) * renderDistanceChunks / 32.0F;
+        b = 1.0F - (float)Math.pow(b, 0.25);
+        float a = 1 * renderDistanceChunks / 32.0F;
+        a = 1.0F - (float) Math.pow(a, 0.25);
+        distance.set(b);
+    }
+
     @Nullable
     public Vec3 modifySkyColor(Vec3 center, ClientLevel level) {
         Colormap colormap = this.skyColormaps.get(level.dimensionType());
@@ -212,38 +223,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         });
     }
 
-    // fot OF fog and sky. shit code...
-    public void addConvertedBlockProperties(Map<ResourceLocation, BlockPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
-        String[] names = new String[]{"overworld", "the_nether", "the_end"};
-        for (int i = 0; i <= 2; i++) {
-            IColorGetter skyCol;
-            IColorGetter fogCol;
-            {
-                ResourceLocation skyKey = new ResourceLocation("sky" + i);
-                BlockPropertyModifier skyMod = modifiers.get(skyKey);
-                ArrayImage skyImage = textures.get(skyKey);
 
-                skyCol = skyMod != null ? skyMod.getColormap() : (skyImage == null ? null : Colormap.defTriangle());
-                if(skyCol != null){
-                    ColormapsManager.tryAcceptingTexture(textures, skyKey, skyCol, new HashSet<>(), true);
-                }
-            }
-            {
-                ResourceLocation fogKey = new ResourceLocation("fog" + i);
-                BlockPropertyModifier fogMod = modifiers.get(fogKey);
-                ArrayImage fogImage = textures.get(fogKey);
-
-                fogCol = fogMod != null ? fogMod.getColormap() : (fogImage == null ? null : Colormap.defTriangle());
-                if(fogCol != null){
-                    ColormapsManager.tryAcceptingTexture(textures, fogKey, fogCol, new HashSet<>(), true);
-                }
-            }
-            if(fogCol != null || skyCol != null){
-                var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                        Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(), Set.of());
-
-                extraMods.put(new ResourceLocation(names[i]), mod);
-            }
-        }
+    public void addConvertedBlockProperties(Map<ResourceLocation, DimensionEffectsModifier> converted) {
+        extraMods.clear();
+        extraMods.putAll(converted);
     }
 }

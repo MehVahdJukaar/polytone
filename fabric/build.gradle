@@ -35,7 +35,7 @@ dependencies {
     //modImplementation("maven.modrinth:sodium:mc1.20.3-0.5.6")
 
     modImplementation ("curse.maven:continuity-531351:4779473")
-    modImplementation ("curse.maven:embeddium-908741:5352283")
+    modImplementation ("curse.maven:embeddium-908741:5522040")
 
 }
 

@@ -6,7 +6,9 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
@@ -19,6 +21,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
+import org.joml.Vector3f;
 
 import java.util.function.Supplier;
 
@@ -108,5 +111,15 @@ public class PlatStuff {
     @ExpectPlatform
     public static void setRenderType(Block block, RenderType renderType){
         throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX, int skyY, Vector3f combined) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static float compatACModifyGamma(float partialTicks, float gamma) {
+     throw new AssertionError();
     }
 }

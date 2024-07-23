@@ -18,7 +18,7 @@ public abstract class AbstractContainerMenuMixin {
             ordinal = 0),
             require = 1)
     public void interact(Slot slot, CallbackInfoReturnable<Slot> cir,
-                         @Local LocalRef<Slot> mutableSlot) {
+                         @Local(argsOnly = true) LocalRef<Slot> mutableSlot) {
         Polytone.SLOTIFY.maybeModifySlot((AbstractContainerMenu) (Object) this, slot);
     }
 }

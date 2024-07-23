@@ -4,18 +4,18 @@
   "compatibilityLevel": "JAVA_17",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-
   ],
   "client": [
-    "ItemMixin",
-    "ItemStackMixin",
     "AbstractContainerMenuMixin",
     "ClientLevelMixin",
     "ColorResolverMixin",
     "FogRendererMixin",
     "GameRendererMixin",
     "GuiMixin",
+    "ItemMixin",
+    "ItemStackMixin",
     "LightTextureMixin",
+    "MinecraftMixin",
     "ModelBlockRendererMixin",
     "ParticleEngineMixin",
     "PotionUtilsMixin",

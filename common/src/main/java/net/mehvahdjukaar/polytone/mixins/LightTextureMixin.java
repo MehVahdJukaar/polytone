@@ -14,9 +14,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(LightTexture.class)
+@Mixin(value = LightTexture.class, priority = -201) //so we load before alex caves
 public abstract class LightTextureMixin {
 
     @Shadow
@@ -34,14 +33,27 @@ public abstract class LightTextureMixin {
     @Shadow
     private float blockLightRedFlicker;
 
-    @Inject(method = "updateLightTexture", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/multiplayer/ClientLevel;getSkyDarken(F)F",
-            shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILHARD,
-            cancellable = true)
-    public void polytone$modifyLightTexture(float partialTicks, CallbackInfo ci, ClientLevel clientLevel) {
-        if (Polytone.LIGHTMAPS.maybeModifyLightTexture((LightTexture) (Object) this, lightPixels, lightTexture,
-                minecraft, clientLevel, blockLightRedFlicker, partialTicks)) {
-            ci.cancel();
+    @Shadow
+    private boolean updateLightTexture;
+
+    //needs to be same as alexcaves
+    @Inject(
+            method = "updateLightTexture(F)V",
+            cancellable = true,
+            at = @At(value = "HEAD")
+    )
+    private void polytone$modifyLightTexture(float partialTicks, CallbackInfo ci) {
+        if (this.updateLightTexture) {
+            ClientLevel clientlevel = this.minecraft.level;
+            if (clientlevel != null) {
+                this.minecraft.getProfiler().push("lightTex");
+                if (Polytone.LIGHTMAPS.maybeModifyLightTexture((LightTexture) (Object) this, lightPixels, lightTexture,
+                        minecraft, clientlevel, blockLightRedFlicker, partialTicks)) {
+                    this.updateLightTexture = false;
+                    ci.cancel();
+                }
+                this.minecraft.getProfiler().pop();
+            }
         }
     }
 

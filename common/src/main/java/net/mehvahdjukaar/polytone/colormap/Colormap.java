@@ -36,6 +36,8 @@ public class Colormap implements IColorGetter, ColorResolver {
     private final boolean usesPos;
     private final boolean usesState;
 
+    public boolean inlined = true;
+
     private Integer defaultColor;
     private ArrayImage image = null;
     private ResourceLocation explicitTargetTexture = null; //explicit target
@@ -84,7 +86,6 @@ public class Colormap implements IColorGetter, ColorResolver {
         this(Optional.empty(), xGetter, yGetter, triangular, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
-
     public void acceptTexture(ArrayImage image) {
         this.image = image;
         if (defaultColor == null) {
@@ -100,7 +101,7 @@ public class Colormap implements IColorGetter, ColorResolver {
         return explicitTargetTexture;
     }
 
-    protected ResourceLocation getTargetTexture(ResourceLocation def) {
+    public ResourceLocation getTargetTexture(ResourceLocation def) {
         return explicitTargetTexture != null ? explicitTargetTexture : def;
     }
 
@@ -203,7 +204,6 @@ public class Colormap implements IColorGetter, ColorResolver {
     }
 
 
-
     //factories
 
 
@@ -212,7 +212,7 @@ public class Colormap implements IColorGetter, ColorResolver {
         return new Colormap(xGetter, yGetter, false);
     }
 
-    public static Colormap fixed() {
+    public static Colormap createFixed() {
         return new Colormap(Optional.empty(), IColormapNumberProvider.ZERO,
                 IColormapNumberProvider.ZERO, false, Optional.empty(), Optional.empty(), Optional.empty());
     }
@@ -224,22 +224,22 @@ public class Colormap implements IColorGetter, ColorResolver {
         return c;
     }
 
-    public static Colormap defSquare() {
+    public static Colormap createDefSquare() {
         return new Colormap(IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, false);
     }
 
-    public static Colormap defTriangle() {
+    public static Colormap createDefTriangle() {
         return new Colormap(IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, true);
     }
 
-    public static Colormap biomeId() {
+    public static Colormap createBiomeId() {
         return new Colormap(Optional.empty(),
                 IColormapNumberProvider.BIOME_ID,
                 IColormapNumberProvider.Y_LEVEL,
                 false, Optional.of(Boolean.TRUE), Optional.empty(), Optional.empty());
     }
 
-    public static Colormap damage() {
+    public static Colormap createDamage() {
         return new Colormap(IColormapNumberProvider.DAMAGE, IColormapNumberProvider.ZERO, false);
     }
 }

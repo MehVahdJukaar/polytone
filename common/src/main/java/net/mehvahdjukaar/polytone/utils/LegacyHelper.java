@@ -9,7 +9,11 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
+import net.mehvahdjukaar.polytone.dimension.DimensionEffectsModifier;
+import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -47,16 +51,20 @@ public class LegacyHelper {
         List<ResourceLocation> toRemove = new ArrayList<>();
         for (var entry : map.entrySet()) {
             ResourceLocation id = entry.getKey();
-            String path = id.getPath();
-            String newPath = PATHS.get(path);
-            if (newPath != null) {
-                toUpdate.put(id.withPath(newPath), entry.getValue());
+            ResourceLocation newPath = convertPath(id);
+            if (!newPath.equals(id)) {
+                toUpdate.put(newPath, entry.getValue());
                 toRemove.add(id);
             }
         }
         toRemove.forEach(map.keySet()::remove);
         map.putAll(toUpdate);
         return map;
+    }
+
+    public static ResourceLocation convertPath(ResourceLocation id) {
+        String path = PATHS.get(id.getPath());
+        return path == null ? id : id.withPath(path);
     }
 
 
@@ -140,12 +148,12 @@ public class LegacyHelper {
         }
         Integer col = singleColor.orElse(null);
         if ("fixed".equals(format)) {
-            colormap = Colormap.fixed();
+            colormap = Colormap.createFixed();
         } else if ("grid".equals(format)) {
-            colormap = Colormap.biomeId();
+            colormap = Colormap.createBiomeId();
             //variance and y offset are ignored. todo: add
         } else {
-            colormap = Colormap.defTriangle();
+            colormap = Colormap.createDefTriangle();
         }
         if (col != null) {
             int[][] matrix = {{col}};
@@ -168,7 +176,7 @@ public class LegacyHelper {
         }
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(),Optional.empty(), Optional.empty(), Optional.empty(), set, false);
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), set, false);
     }
 
 
@@ -199,12 +207,12 @@ public class LegacyHelper {
             col = Integer.parseInt(singleColor, 16);
         }
         if ("fixed".equals(format)) {
-            colormap = Colormap.fixed();
+            colormap = Colormap.createFixed();
         } else if ("grid".equals(format)) {
-            colormap = Colormap.biomeId();
+            colormap = Colormap.createBiomeId();
             //variance and y offset are ignored. todo: add
         } else {
-            colormap = Colormap.defTriangle();
+            colormap = Colormap.createDefTriangle();
         }
         if (col != null) {
             int[][] matrix = {{col}};
@@ -226,7 +234,7 @@ public class LegacyHelper {
         }
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(),Optional.empty(), Optional.empty(), Optional.empty(), set, false);
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), set, false);
     }
 
     public static Map<ResourceLocation, BlockPropertyModifier> convertInlinedPalettes(
@@ -236,7 +244,7 @@ public class LegacyHelper {
         int k = 0;
         for (var special : inlineColormaps.entrySet()) {
             ResourceLocation texturePath = special.getKey();
-            Colormap colormap = Colormap.defTriangle();
+            Colormap colormap = Colormap.createDefTriangle();
             colormap.setExplicitTargetTexture(texturePath);
 
             Set<ResourceLocation> blockTargets = new HashSet<>();
@@ -349,41 +357,69 @@ public class LegacyHelper {
     public static void convertOfBlockToFluidProp(Map<ResourceLocation, BlockPropertyModifier> parsedModifiers,
                                                  Map<ResourceLocation, ArrayImage> textures) {
 
-        Map<ResourceLocation, BlockPropertyModifier> filtered = new HashMap<>();
+        Map<ResourceLocation, BlockPropertyModifier> fluid = new HashMap<>();
+        Map<ResourceLocation, BlockPropertyModifier> fog = new HashMap<>();
+        Map<ResourceLocation, FluidPropertyModifier> converted = new HashMap<>();
         Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation id = entry.getKey();
             BlockPropertyModifier modifier = entry.getValue();
-            if (!id.getNamespace().equals("minecraft")) continue;
-            if (id.getPath().contains("water") || id.getPath().contains("lava")) {
-                filtered.put(id, modifier);
-            }
-        }
-        for (var entry : textures.entrySet()) {
-            ResourceLocation id = entry.getKey();
-            ArrayImage modifier = entry.getValue();
-            if (!id.getNamespace().equals("minecraft")) continue;
-            if (id.getPath().contains("water") || id.getPath().contains("lava")) {
-                filteredTextures.put(id, modifier);
-            }
-        }
-        textures.keySet().removeAll(filteredTextures.keySet());
-        parsedModifiers.keySet().removeAll(filtered.keySet());
+            var colormap = modifier.getColormap();
+            if (colormap instanceof Colormap c) {
+                if (!id.getNamespace().equals("minecraft")) continue;
+                String path = id.getPath();
+                if (path.contains("water") || path.contains("lava")) {
 
-        Polytone.FLUID_MODIFIERS.addConvertedBlockProperties(filtered, filteredTextures);
+                    if (path.endsWith("_fog")) fog.put(id, modifier);
+                    else fluid.put(id, modifier);
+
+                    ResourceLocation targetTexture = c.getTargetTexture(id);
+                    //uglyyy
+                    c.setExplicitTargetTexture(LegacyHelper.convertPath(targetTexture));
+                    if (textures.containsKey(targetTexture)) {
+                        filteredTextures.put(targetTexture, textures.get(targetTexture));
+                    }
+                }
+            }
+        }
+        for (var v : textures.entrySet()) {
+            ResourceLocation id = v.getKey();
+            if (id.getNamespace().equals("minecraft") && (id.getPath().contains("water") || id.getPath().contains("lava"))) {
+                filteredTextures.put(id, v.getValue());
+            }
+        }
+
+        textures.keySet().removeAll(filteredTextures.keySet());
+        parsedModifiers.keySet().removeAll(fluid.keySet());
+
+        for (var f : fluid.entrySet()) {
+            // ignore targets as those are block targets anyways
+            BlockPropertyModifier mod = f.getValue();
+            ResourceLocation id = f.getKey();
+            Set<ResourceLocation> targets = new HashSet<>(mod.explicitTargets());
+            targets.add(id.withPrefix("flowing_"));
+            FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
+                    Optional.ofNullable(fog.get(id.withSuffix("_fog")))
+                            .map(BlockPropertyModifier::getColormap),
+                    targets);
+            converted.put(id, modifier);
+
+        }
+
+        Polytone.FLUID_MODIFIERS.addConvertedBlockProperties(converted, filteredTextures);
     }
 
     public static void convertOfBlockToDimensionProperties(Map<ResourceLocation, BlockPropertyModifier> parsedModifiers,
                                                            Map<ResourceLocation, ArrayImage> textures) {
         Map<ResourceLocation, BlockPropertyModifier> filtered = new HashMap<>();
         Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
-        Pattern fogP = Pattern.compile("minecraft:fog[0-2]");
-        Pattern skyP = Pattern.compile("minecraft:sky[0-2]");
+        Pattern fogP = Pattern.compile("minecraft:fogcolor[0-2]");
+        Pattern skyP = Pattern.compile("minecraft:skycolor[0-2]");
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation id = entry.getKey();
             String stringId = id.toString();
             BlockPropertyModifier modifier = entry.getValue();
-            if (fogP.matcher(stringId).matches() || skyP.matcher(stringId).matches()){
+            if (fogP.matcher(stringId).matches() || skyP.matcher(stringId).matches()) {
                 filtered.put(id, modifier);
             }
         }
@@ -391,14 +427,51 @@ public class LegacyHelper {
             ResourceLocation id = entry.getKey();
             String stringId = id.toString();
             ArrayImage modifier = entry.getValue();
-            if (fogP.matcher(stringId).matches() || skyP.matcher(stringId).matches()){
+            if (fogP.matcher(stringId).matches() || skyP.matcher(stringId).matches()) {
                 filteredTextures.put(id, modifier);
             }
         }
         textures.keySet().removeAll(filteredTextures.keySet());
         parsedModifiers.keySet().removeAll(filtered.keySet());
 
-        Polytone.DIMENSION_MODIFIERS.addConvertedBlockProperties(filtered, filteredTextures);
+        addConvertedBlockProperties(filtered, filteredTextures);
 
+    }
+
+    // fot OF fog and sky. shit code...
+    private static void addConvertedBlockProperties(Map<ResourceLocation, BlockPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
+        String[] names = new String[]{"overworld", "the_nether", "the_end"};
+        Map<ResourceLocation, DimensionEffectsModifier> converted = new HashMap<>();
+        for (int i = 0; i <= 2; i++) {
+            IColorGetter skyCol;
+            IColorGetter fogCol;
+            {
+                ResourceLocation skyKey = new ResourceLocation("skycolor" + i);
+                BlockPropertyModifier skyMod = modifiers.get(skyKey);
+                ArrayImage skyImage = textures.get(skyKey);
+
+                skyCol = skyMod != null ? skyMod.getColormap() : (skyImage == null ? null : Colormap.createDefTriangle());
+                if (skyCol != null) {
+                    ColormapsManager.tryAcceptingTexture(textures, skyKey, skyCol, new HashSet<>(), true);
+                }
+            }
+            {
+                ResourceLocation fogKey = new ResourceLocation("fogcolor" + i);
+                BlockPropertyModifier fogMod = modifiers.get(fogKey);
+                ArrayImage fogImage = textures.get(fogKey);
+
+                fogCol = fogMod != null ? fogMod.getColormap() : (fogImage == null ? null : Colormap.createDefTriangle());
+                if (fogCol != null) {
+                    ColormapsManager.tryAcceptingTexture(textures, fogKey, fogCol, new HashSet<>(), true);
+                }
+            }
+            if (fogCol != null || skyCol != null) {
+                var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                        Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(), Set.of());
+
+                converted.put(new ResourceLocation(names[i]), mod);
+            }
+        }
+        Polytone.DIMENSION_MODIFIERS.addConvertedBlockProperties(converted);
     }
 }

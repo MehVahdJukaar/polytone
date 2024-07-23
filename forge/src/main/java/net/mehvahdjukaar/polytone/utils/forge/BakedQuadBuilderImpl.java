@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.utils.forge;
 
 import com.google.common.base.Preconditions;
 import net.mehvahdjukaar.polytone.utils.BakedQuadBuilder;
+import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
@@ -41,6 +42,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
         this.globalTransform = transformation;// == null ? null : new Matrix4f(new Matrix3f(transformation)); //gets rid of translation
         this.sprite = sprite;
         inner.setShade(true);
+
         inner.setHasAmbientOcclusion(true);
         inner.setSprite(sprite);
         this.normalTransf = transformation == null ? null :

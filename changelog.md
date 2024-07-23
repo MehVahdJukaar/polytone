@@ -1,8 +1,6 @@
-- Added Item Modifiers. These can:
-- Change item rarity
-- Change item tint getter (colormap)
-- Change durability bar color (via colormaps)
-- Add tooltip lines
-- Remove tooltip lines
-- Block Modifiers can now alter the RenderType of a block (fabric only as forge already has such a feature in the model json)
-- some fixes
+- added alex caves compat for lightmaps
+- added a dedicated polytone log file at /logs/polytone.log
+- changed resource reload toast when its caused by polytone
+- improved logging for colormaps missing textures
+- fabric now has support for fog fluid colors
+- converted optifine fluid properties will be applied to flowing fluids aswell on fabric

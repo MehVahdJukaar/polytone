@@ -30,17 +30,9 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     private Map<ResourceLocation, ArrayImage> extraImages;
 
     // fot OF lava and water. shit code...
-    public void addConvertedBlockProperties(Map<ResourceLocation, BlockPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
+    public void addConvertedBlockProperties(Map<ResourceLocation, FluidPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
         this.extraImages = textures;
-        this.extraModifiers = new HashMap<>();
-        for (var v : modifiers.entrySet()) {
-            var m = v.getValue();
-            var c = m.tintGetter();
-            if (c.isPresent()) {
-                // ignore targets as those are block targets anyways
-                extraModifiers.put(v.getKey(), new FluidPropertyModifier((Optional<BlockColor>) c, Optional.empty(), m.explicitTargets()));
-            }
-        }
+        this.extraModifiers =  modifiers;
     }
 
     @Override
@@ -97,7 +89,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
             if (!modifier.hasColormap() && textures.containsKey(id)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
-                modifier = modifier.merge(FluidPropertyModifier.ofBlockColor(Colormap.defTriangle()));
+                modifier = modifier.merge(FluidPropertyModifier.ofBlockColor(Colormap.createDefTriangle()));
             }
 
             //fill inline colormaps colormapTextures
@@ -111,7 +103,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
-            Colormap defaultColormap = Colormap.defTriangle();
+            Colormap defaultColormap = Colormap.createDefTriangle();
             ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
             addModifier(id, new FluidPropertyModifier(Optional.of(defaultColormap),

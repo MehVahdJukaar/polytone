@@ -225,6 +225,8 @@ public record BlockPropertyModifier(
     private enum RenderType implements StringRepresentable {
         SOLID,
         CUTOUT,
+        CUTOUT_MIPPED,
+        TRIPWIRE,
         TRANSLUCENT;
 
         @Override
@@ -235,6 +237,8 @@ public record BlockPropertyModifier(
         net.minecraft.client.renderer.RenderType toVanilla() {
             return switch (this) {
                 case SOLID -> net.minecraft.client.renderer.RenderType.solid();
+                case CUTOUT_MIPPED -> net.minecraft.client.renderer.RenderType.cutoutMipped();
+                case TRIPWIRE -> net.minecraft.client.renderer.RenderType.tripwire();
                 case CUTOUT -> net.minecraft.client.renderer.RenderType.cutout();
                 case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
             };
@@ -243,8 +247,10 @@ public record BlockPropertyModifier(
         RenderType fromVanilla(net.minecraft.client.renderer.RenderType type) {
             if (net.minecraft.client.renderer.RenderType.solid() == type) return SOLID;
             if (net.minecraft.client.renderer.RenderType.cutout() == type) return CUTOUT;
+            if (net.minecraft.client.renderer.RenderType.cutoutMipped() == type) return CUTOUT_MIPPED;
+            if (net.minecraft.client.renderer.RenderType.tripwire() == type) return TRIPWIRE;
             if (net.minecraft.client.renderer.RenderType.translucent() == type) return TRANSLUCENT;
-            throw new IllegalStateException("Unexpected value: " + type);
+            throw new IllegalStateException("Unknown render type value: " + type);
         }
     }
 }

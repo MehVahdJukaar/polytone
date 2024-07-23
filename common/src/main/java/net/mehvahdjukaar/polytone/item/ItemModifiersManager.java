@@ -6,7 +6,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
-import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -53,12 +52,12 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
 
             if (!modifier.hasTint() && textures.containsKey(tintId)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
-                modifier = modifier.merge(ItemModifier.ofItemColor(Colormap.defTriangle()));
+                modifier = modifier.merge(ItemModifier.ofItemColor(Colormap.createDefTriangle()));
             }
             ResourceLocation barId = tintId.withSuffix("_bar");
             if (!modifier.hasBarColor() && textures.containsKey(barId)) {
                 //if this map doesn't have a bar colormap defined, we set it to the default impl IF there's a texture it can use
-                modifier = modifier.merge(ItemModifier.ofBarColor(Colormap.damage()));
+                modifier = modifier.merge(ItemModifier.ofBarColor(Colormap.createDamage()));
             }
 
             //fill inline colormaps colormapTextures
@@ -75,11 +74,11 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
             if(id.getPath().endsWith("_bar")){
-                Colormap defaultColormap = Colormap.damage();
+                Colormap defaultColormap = Colormap.createDamage();
                 ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
                 addModifier(id, ItemModifier.ofBarColor(defaultColormap));
             }else {
-                Colormap defaultColormap = Colormap.defTriangle();
+                Colormap defaultColormap = Colormap.createDefTriangle();
                 ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
                 addModifier(id, ItemModifier.ofItemColor(defaultColormap));
             }

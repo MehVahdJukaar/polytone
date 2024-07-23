@@ -13,7 +13,6 @@ import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
@@ -36,13 +35,14 @@ import net.minecraftforge.client.DimensionSpecialEffectsManager;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.common.CreativeModeTabRegistry;
 import net.minecraftforge.common.world.ModifiableBiomeInfo;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
+import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -143,7 +143,7 @@ public class PlatStuffImpl {
     }
 
     public static RegistryAccess hackyGetRegistryAccess() {
-        if (FMLEnvironment.dist ==  Dist.CLIENT &&
+        if (FMLEnvironment.dist == Dist.CLIENT &&
                 RenderSystem.isOnRenderThread()) {
             ClientLevel level = Minecraft.getInstance().level;
             if (level != null) return level.registryAccess();
@@ -246,6 +246,21 @@ public class PlatStuffImpl {
     }
 
     public static void setRenderType(Block block, RenderType renderType) {
+    }
+
+    private static final boolean AC = ModList.get().isLoaded("alexscaves");
+
+
+    public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX, int skyY, Vector3f combined) {
+        //INSERTION BY AC...
+        if (AC) AlexsCavesCompat.applyACLightingColors(level, combined);
+
+        level.effects().adjustLightmapColors(level, partialTicks, skyDarken, skyLight, flicker, torchX, skyY, combined);
+    }
+
+
+    public static float compatACModifyGamma(float partialTicks, float gamma) {
+        return AC ? AlexsCavesCompat.modifyGamma(partialTicks, gamma) : gamma;
     }
 
 

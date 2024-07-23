@@ -6,11 +6,12 @@
   "mixins": [
   ],
   "client": [
-    "CreativeTabAccessor",
-    "FabricItemGroupEntriesAccessor",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "BlockModelDeserializerMixin",
+    "CreativeTabAccessor",
+    "FabricItemGroupEntriesAccessor",
+    "FogFluidRendererMixin",
     "InventoryScreenMixin",
     "ModelHackMixin"
   ],

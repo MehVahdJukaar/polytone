@@ -29,11 +29,11 @@ public record ParticleEmitter(
 
     public static final Codec<ParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
             ParticleFactory.CODEC.fieldOf("particle").forGetter(ParticleEmitter::factory),
-            BlockParticleExpression.CODEC.fieldOf("chance").forGetter(ParticleEmitter::chance),
+            BlockParticleExpression.CODEC.optionalFieldOf("chance", BlockParticleExpression.ONE).forGetter(ParticleEmitter::chance),
             StrOpt.of(BlockParticleExpression.CODEC, "count", BlockParticleExpression.ONE).forGetter(ParticleEmitter::count),
-            BlockParticleExpression.CODEC.fieldOf("x").forGetter(ParticleEmitter::x),
-            BlockParticleExpression.CODEC.fieldOf("y").forGetter(ParticleEmitter::y),
-            BlockParticleExpression.CODEC.fieldOf("z").forGetter(ParticleEmitter::z),
+            BlockParticleExpression.CODEC.optionalFieldOf("x", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::x),
+            BlockParticleExpression.CODEC.optionalFieldOf("y", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::y),
+            BlockParticleExpression.CODEC.optionalFieldOf("z", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::z),
             StrOpt.of(BlockParticleExpression.CODEC, "dx", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dx),
             StrOpt.of(BlockParticleExpression.CODEC, "dy", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dy),
             StrOpt.of(BlockParticleExpression.CODEC, "dz", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dz),
