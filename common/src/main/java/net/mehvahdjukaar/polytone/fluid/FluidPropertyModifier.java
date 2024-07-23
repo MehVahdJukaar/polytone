@@ -17,7 +17,7 @@ public record FluidPropertyModifier(Optional<? extends BlockColor> colormap, Opt
 
     public static final Decoder<FluidPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Colormap.CODEC.optionalFieldOf("colormap").forGetter(c->(Optional<IColorGetter>) c.colormap),
+                    Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> (Optional<IColorGetter>) c.colormap),
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(FluidPropertyModifier::fogColormap),
                     TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(FluidPropertyModifier::explicitTargets)
             ).apply(instance, FluidPropertyModifier::new));
@@ -34,6 +34,7 @@ public record FluidPropertyModifier(Optional<? extends BlockColor> colormap, Opt
     public static FluidPropertyModifier ofBlockColor(BlockColor colormap) {
         return new FluidPropertyModifier(Optional.of(colormap), Optional.empty(), Set.of());
     }
+
     @Nullable
     public BlockColor getTint() {
         return colormap.orElse(null);

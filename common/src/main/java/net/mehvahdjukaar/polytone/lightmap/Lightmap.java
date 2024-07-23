@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.lightmap;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
@@ -121,6 +122,9 @@ public class Lightmap {
         float darknessSubtract = instance.calculateDarknessScale(player, darknessGamma, partialTicks) * darknessEffect;
 
         float gamma = (options.gamma().get()).floatValue();
+        //INSERTION BY AC
+        gamma = PlatStuff.compatACModifyGamma(partialTicks, gamma);
+
         float gammaAmount = Math.max(0.0F, gamma - darknessGamma);
 
         float waterVision = player.getWaterVision();
@@ -203,6 +207,8 @@ public class Lightmap {
                     Vector3f discolored = (new Vector3f(combined)).mul(0.7F, 0.6F, 0.6F);
                     combined.lerp(discolored, darkenWorldAmount);
                 }
+
+                PlatStuff.adjustLightmapColors(level, partialTicks, skyDarken, skyLightIntensity, flicker, torchX, skyY, combined);
 
                 if (nightVisionScale > 0.0F && (image == null || image.height() < 32)) {
                     float maxVal = Math.max(combined.x(), Math.max(combined.y(), combined.z()));

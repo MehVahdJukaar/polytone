@@ -35,14 +35,34 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
             c.reset();
         }
 
+
         for (int i = 0; i < object.size(); i++) {
             PartialReloader<?> c = children.get(i);
-            processTyped(c, object.get(i));
+            try {
+                processTyped(c, object.get(i));
+            } catch (Exception e) {
+                String message = c + " failed to parse some resources";
+                Polytone.logException(e, message);
+                Polytone.iMessedUp = true;
+
+                Polytone.LOGGER.error(message);
+                throw e;
+            }
         }
 
         for (var c : children) {
-            c.apply();
+            try {
+                c.apply();
+            } catch (Exception e) {
+                String message = c + " failed to apply some resources";
+                Polytone.logException(e, message);
+                Polytone.iMessedUp = true;
+
+                Polytone.LOGGER.error(message);
+                throw e;
+            }
         }
+
         Polytone.LOGGER.info("Reloaded Polytone Resources in {} ms", stopwatch.elapsed().toMillis());
     }
 
@@ -50,4 +70,5 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
     private <T> void processTyped(PartialReloader<T> reloader, Object object) {
         reloader.process((T) object);
     }
+
 }

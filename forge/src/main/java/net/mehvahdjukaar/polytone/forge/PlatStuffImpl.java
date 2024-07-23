@@ -212,5 +212,20 @@ public class PlatStuffImpl {
     public static void setRenderType(Block block, RenderType renderType) {
     }
 
+    private static final boolean AC = ModList.get().isLoaded("alexscaves");
+
+
+    public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX, int skyY, Vector3f combined) {
+        //INSERTION BY AC...
+        if (AC) AlexsCavesCompat.applyACLightingColors(level, combined);
+
+        level.effects().adjustLightmapColors(level, partialTicks, skyDarken, skyLight, flicker, torchX, skyY, combined);
+    }
+
+
+    public static float compatACModifyGamma(float partialTicks, float gamma) {
+        return AC ? AlexsCavesCompat.modifyGamma(partialTicks, gamma) : gamma;
+    }
+
 
 }

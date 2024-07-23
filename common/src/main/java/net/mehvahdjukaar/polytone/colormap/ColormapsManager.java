@@ -56,8 +56,10 @@ public class ColormapsManager extends JsonImgPartialReloader {
             Colormap colormap = Colormap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Colormap with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
-
+colormap.inlined = false;
             tryAcceptingTexture(textures, id, colormap, usedTextures, true);
+
+
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, colormap);
         }
@@ -68,7 +70,8 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
         for (var t : textures.entrySet()) {
             ResourceLocation id = t.getKey();
-            Colormap defaultColormap = Colormap.defTriangle();
+            Colormap defaultColormap = Colormap.createDefTriangle();
+            defaultColormap.inlined = false;
             tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, defaultColormap);
@@ -82,11 +85,11 @@ public class ColormapsManager extends JsonImgPartialReloader {
         colormaps.register(ResourceLocation.tryParse("foliage_color"), () -> FOLIAGE_COLOR);
         colormaps.register(ResourceLocation.tryParse("water_color"), () -> WATER_COLOR);
         //These create new incomplete ones every time
-        colormaps.register(ResourceLocation.tryParse("biome_sample"), Colormap::defSquare);
-        colormaps.register(ResourceLocation.tryParse("triangular_biome_sample"), Colormap::defTriangle);
-        colormaps.register(ResourceLocation.tryParse("fixed"), Colormap::fixed);
-        colormaps.register(ResourceLocation.tryParse("grid"), Colormap::biomeId);
-        colormaps.register(ResourceLocation.tryParse("damage"), Colormap::damage);
+        colormaps.register(ResourceLocation.tryParse("biome_sample"), Colormap::createDefSquare);
+        colormaps.register(ResourceLocation.tryParse("triangular_biome_sample"), Colormap::createDefTriangle);
+        colormaps.register(ResourceLocation.tryParse("fixed"), Colormap::createFixed);
+        colormaps.register(ResourceLocation.tryParse("grid"), Colormap::createBiomeId);
+        colormaps.register(ResourceLocation.tryParse("damage"), Colormap::createDamage);
     }
 
     public void add(ResourceLocation id, Colormap colormap) {
@@ -158,9 +161,12 @@ public class ColormapsManager extends JsonImgPartialReloader {
         }
     }
 
-    private static void tryAcceptingTexture(ArrayImage selectedTexture, ResourceLocation textureLoc, Colormap colormap,
+    private static void tryAcceptingTexture(@Nullable ArrayImage selectedTexture, ResourceLocation textureLoc, Colormap colormap,
                                             Set<ResourceLocation> usedTexture, boolean strict) {
         if (colormap.hasTexture()) return; //we already are filled
+        //hack. for inlined this will be the parent modifier id.
+        String colormapName = colormap.inlined ? "Inlined Colormap from modifier " + textureLoc.toString() : "Colormap at " + textureLoc.toString();
+
         if (selectedTexture != null) {
             usedTexture.add(textureLoc);
             colormap.acceptTexture(selectedTexture);
@@ -173,7 +179,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
                 Polytone.LOGGER.error("Could not resolve explicit texture at location {}.png. Skipping", explTarget);
             }
             if (strict) {
-            throw new IllegalStateException("Could not find any colormap texture .png associated with path " + textureLoc);
+            throw new IllegalStateException("Could not find any colormap texture .png associated with path " + textureLoc + " for colormap '" + colormapName +"'");
             }
         }
     }

@@ -11,6 +11,7 @@
     "BlockModelDeserializerMixin",
     "CreativeTabAccessor",
     "FabricItemGroupEntriesAccessor",
+    "FogFluidRendererMixin",
     "InventoryScreenMixin",
     "ItemColorsAccessor",
     "ModelHackMixin"

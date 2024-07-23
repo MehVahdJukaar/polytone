@@ -4,7 +4,6 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-
   ],
   "client": [
     "GuiGraphicsMixin",
@@ -16,7 +15,10 @@
     "FogRendererMixin",
     "GameRendererMixin",
     "GuiMixin",
+    "ItemMixin",
+    "ItemStackMixin",
     "LightTextureMixin",
+    "MinecraftMixin",
     "ModelBlockRendererMixin",
     "ParticleEngineMixin",
     "ScreenMixin",

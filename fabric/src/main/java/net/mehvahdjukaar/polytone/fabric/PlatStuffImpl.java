@@ -48,6 +48,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -234,6 +235,14 @@ public class PlatStuffImpl {
     public static void setRenderType(Block block, RenderType renderType) {
         BlockRenderLayerMap.INSTANCE.putBlock(block, renderType);
     }
+
+    public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX, int skyY, Vector3f combined) {
+    }
+
+    public static float compatACModifyGamma(float partialTicks, float gamma) {
+        return gamma;
+    }
+
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,
                                      FabricItemGroupEntries entries) implements ItemToTabEvent {

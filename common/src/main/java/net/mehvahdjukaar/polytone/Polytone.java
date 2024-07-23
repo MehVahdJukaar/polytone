@@ -8,7 +8,6 @@ import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
-import net.mehvahdjukaar.polytone.item.ItemModifier;
 import net.mehvahdjukaar.polytone.item.ItemModifiersManager;
 import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.particle.CustomParticlesManager;
@@ -24,7 +23,19 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.config.Configuration;
 import org.spongepowered.asm.mixin.MixinEnvironment;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 public class Polytone {
     public static final String MOD_ID = "polytone";
@@ -48,6 +59,8 @@ public class Polytone {
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
+
+    public static boolean iMessedUp = false;
 
     public static boolean sodiumOn = false;
     public static boolean isDevEnv = false;
@@ -95,4 +108,33 @@ public class Polytone {
     }
 
 
+    public static void logException(Exception e, String message) {
+        // Find the Log4j logging directory
+        String logDir = getLog4jDirectory().orElse(Paths.get("logs").toAbsolutePath().toString());
+
+        // Create the full path for the new log file
+        String logFilePath = Paths.get(logDir, "polytone.log").toString();
+
+        // Write the exception to the new log file
+        try (PrintWriter writer = new PrintWriter(new FileWriter(logFilePath, false))) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String timestamp = LocalDateTime.now().format(formatter);
+            writer.println("[" + timestamp + "] " + message + ". Check lines below to see where the error was:");
+            e.printStackTrace(writer);
+        } catch (IOException ioException) {
+            LOGGER.error("Failed to log onto polytone.log", ioException);
+        }
+    }
+
+    private static Optional<String> getLog4jDirectory() {
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+        return config.getAppenders().values().stream()
+                .filter(appender -> appender instanceof FileAppender)
+                .map(appender -> ((FileAppender) appender).getFileName())
+                .map(Paths::get)
+                .map(Path::getParent)
+                .map(Path::toString)
+                .findFirst();
+    }
 }

@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,11 @@ public abstract class PartialReloader<T> {
 
     protected PartialReloader(String... name) {
         this.names = name;
+    }
+
+    @Override
+    public String toString() {
+        return StringUtils.capitalize(names[0].replace("_", " ") + " Reloader");
     }
 
     protected Map<ResourceLocation, JsonElement> getJsonsInDirectories(ResourceManager resourceManager) {

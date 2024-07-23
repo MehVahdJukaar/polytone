@@ -12,7 +12,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -37,8 +36,6 @@ public class FluidPropertiesManagerImpl {
         if (!(ext instanceof FluidExtensionWrapper)) {
             FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, colormap));
         }
-        //create wrapped one
-        FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, colormap));
     }
 
     public static void clearSpecial() {
@@ -53,7 +50,7 @@ public class FluidPropertiesManagerImpl {
         return null;
     }
 
-    private record FluidExtensionWrapper(IClientFluidTypeExtensions instance,
+    private record FluidExtensionWrapper(IClientFluidTypeExtensions existingProperties,
                                          FluidPropertyModifier modifier) implements IClientFluidTypeExtensions {
 
 
@@ -63,7 +60,7 @@ public class FluidPropertiesManagerImpl {
             if (col != null) {
                 return col.getColor(null, null, null, -1) | 0xff000000;
             }
-            return instance.getTintColor();
+            return existingProperties.getTintColor();
         }
 
         @Override
@@ -72,7 +69,7 @@ public class FluidPropertiesManagerImpl {
             if (col != null) {
                 return col.getColor(null, null, null, -1) | 0xff000000;
             }
-            return instance.getTintColor();
+            return existingProperties.getTintColor();
         }
 
         @Override
@@ -81,32 +78,32 @@ public class FluidPropertiesManagerImpl {
             if (col != null) {
                 return col.getColor(state.createLegacyBlock(), getter, pos, -1) | 0xff000000;
             }
-            return instance.getTintColor();
+            return existingProperties.getTintColor();
         }
 
         @Override
         public ResourceLocation getStillTexture() {
-            return instance.getStillTexture();
+            return existingProperties.getStillTexture();
         }
 
         @Override
         public ResourceLocation getFlowingTexture() {
-            return instance.getFlowingTexture();
+            return existingProperties.getFlowingTexture();
         }
 
         @Override
         public @Nullable ResourceLocation getOverlayTexture() {
-            return instance.getOverlayTexture();
+            return existingProperties.getOverlayTexture();
         }
 
         @Override
         public @Nullable ResourceLocation getRenderOverlayTexture(Minecraft mc) {
-            return instance.getRenderOverlayTexture(mc);
+            return existingProperties.getRenderOverlayTexture(mc);
         }
 
         @Override
         public void renderOverlay(Minecraft mc, PoseStack poseStack) {
-            instance.renderOverlay(mc, poseStack);
+            existingProperties.renderOverlay(mc, poseStack);
         }
 
         @Override
@@ -115,42 +112,42 @@ public class FluidPropertiesManagerImpl {
             if (col != null) {
                 return new Vector3f(ColorUtils.unpack(col.getColor(null, level, null, -1)));
             }
-            return instance.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
+            return existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
         }
 
         @Override
         public void modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, float nearDistance, float farDistance, FogShape shape) {
-            instance.modifyFogRender(camera, mode, renderDistance, partialTick, nearDistance, farDistance, shape);
+            existingProperties.modifyFogRender(camera, mode, renderDistance, partialTick, nearDistance, farDistance, shape);
         }
 
         @Override
         public ResourceLocation getStillTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            return instance.getStillTexture(state, getter, pos);
+            return existingProperties.getStillTexture(state, getter, pos);
         }
 
         @Override
         public ResourceLocation getFlowingTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            return instance.getFlowingTexture(state, getter, pos);
+            return existingProperties.getFlowingTexture(state, getter, pos);
         }
 
         @Override
         public ResourceLocation getOverlayTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            return instance.getOverlayTexture(state, getter, pos);
+            return existingProperties.getOverlayTexture(state, getter, pos);
         }
 
         @Override
         public ResourceLocation getStillTexture(FluidStack stack) {
-            return instance.getStillTexture(stack);
+            return existingProperties.getStillTexture(stack);
         }
 
         @Override
         public ResourceLocation getOverlayTexture(FluidStack stack) {
-            return instance.getOverlayTexture(stack);
+            return existingProperties.getOverlayTexture(stack);
         }
 
         @Override
         public ResourceLocation getFlowingTexture(FluidStack stack) {
-            return instance.getFlowingTexture(stack);
+            return existingProperties.getFlowingTexture(stack);
         }
     }
 }

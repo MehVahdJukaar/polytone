@@ -59,7 +59,7 @@ public class IndexCompoundColorGetter implements IColorGetter {
     public static IndexCompoundColorGetter createDefault(Set<Integer> tintIndexes, boolean triangular) {
         var c = new IndexCompoundColorGetter();
         for (var i : tintIndexes) {
-            c.getters.put(i.intValue(), triangular ? Colormap.defTriangle() : Colormap.defSquare());
+            c.getters.put(i.intValue(), triangular ? Colormap.createDefTriangle() : Colormap.createDefSquare());
         }
         return c;
     }
