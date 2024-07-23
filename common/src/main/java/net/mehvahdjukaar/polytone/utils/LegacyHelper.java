@@ -446,7 +446,7 @@ public class LegacyHelper {
             IColorGetter skyCol;
             IColorGetter fogCol;
             {
-                ResourceLocation skyKey = new ResourceLocation("skycolor" + i);
+                ResourceLocation skyKey = ResourceLocation.tryParse("skycolor" + i);
                 BlockPropertyModifier skyMod = modifiers.get(skyKey);
                 ArrayImage skyImage = textures.get(skyKey);
 
@@ -456,7 +456,7 @@ public class LegacyHelper {
                 }
             }
             {
-                ResourceLocation fogKey = new ResourceLocation("fogcolor" + i);
+                ResourceLocation fogKey = ResourceLocation.tryParse("fogcolor" + i);
                 BlockPropertyModifier fogMod = modifiers.get(fogKey);
                 ArrayImage fogImage = textures.get(fogKey);
 
@@ -469,7 +469,7 @@ public class LegacyHelper {
                 var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                         Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(), Set.of());
 
-                converted.put(new ResourceLocation(names[i]), mod);
+                converted.put(ResourceLocation.tryParse(names[i]), mod);
             }
         }
         Polytone.DIMENSION_MODIFIERS.addConvertedBlockProperties(converted);

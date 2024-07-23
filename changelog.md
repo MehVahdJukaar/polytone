@@ -1,3 +1,4 @@
+- updated to work on new neoforge
 - added alex caves compat for lightmaps
 - added a dedicated polytone log file at /logs/polytone.log
 - changed resource reload toast when its caused by polytone

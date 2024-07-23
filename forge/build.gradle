@@ -126,9 +126,9 @@ dependencies {
 
     modCompileOnly ("curse.maven:curios-309927:4960344")
 
-    modImplementation("curse.maven:alexs-caves-924854:4806837")
-    modImplementation("curse.maven:citadel-331936:4786380")
-    modImplementation ("org.embeddedt:embeddium-1.20.1:0.3.26-beta.21+mc1.20.1")
+    modCompileOnly("curse.maven:alexs-caves-924854:4806837")
+    modCompileOnly("curse.maven:citadel-331936:4786380")
+    modCompileOnly ("org.embeddedt:embeddium-1.20.1:0.3.26-beta.21+mc1.20.1")
 
 
     implementation 'org.jetbrains:annotations:22.0.0'

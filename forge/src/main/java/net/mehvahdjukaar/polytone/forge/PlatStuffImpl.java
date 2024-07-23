@@ -35,6 +35,7 @@ import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.Optional;
@@ -215,9 +216,10 @@ public class PlatStuffImpl {
     private static final boolean AC = ModList.get().isLoaded("alexscaves");
 
 
-    public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX, int skyY, Vector3f combined) {
+    public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX,
+                                            int skyY, Vector3f combined) {
         //INSERTION BY AC...
-        if (AC) AlexsCavesCompat.applyACLightingColors(level, combined);
+        if (AC) AlexsCavesCompat.applyACLightingColors(level, combined, partialTicks);
 
         level.effects().adjustLightmapColors(level, partialTicks, skyDarken, skyLight, flicker, torchX, skyY, combined);
     }

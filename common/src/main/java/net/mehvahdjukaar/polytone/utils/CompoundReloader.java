@@ -35,7 +35,6 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
             c.reset();
         }
 
-
         for (int i = 0; i < object.size(); i++) {
             PartialReloader<?> c = children.get(i);
             try {

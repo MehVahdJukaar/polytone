@@ -18,10 +18,10 @@ public class AlexsCavesCompat {
         return gamma;
     }
 
-    public static void applyACLightingColors(ClientLevel level, Vector3f combined) {
+    public static void applyACLightingColors(ClientLevel level, Vector3f combined, float partialTicks) {
         if (!level.effects().forceBrightLightmap()) {
             Vec3 in = new Vec3(combined);
-            Vec3 to = ClientProxy.lastBiomeLightColorPrev.add(ClientProxy.lastBiomeLightColor.subtract(ClientProxy.lastBiomeLightColorPrev).scale(Minecraft.getInstance().getFrameTime()));
+            Vec3 to = ClientProxy.lastBiomeLightColorPrev.add(ClientProxy.lastBiomeLightColor.subtract(ClientProxy.lastBiomeLightColorPrev).scale(partialTicks));
             combined.set(to.x * in.x, to.y * in.y, to.z * in.z);
         }
     }

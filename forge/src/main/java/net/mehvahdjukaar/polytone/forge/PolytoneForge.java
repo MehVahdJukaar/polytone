@@ -1,7 +1,5 @@
 package net.mehvahdjukaar.polytone.forge;
 
-import com.github.alexmodguy.alexscaves.mixin.client.LightTextureMixin;
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
@@ -9,7 +7,6 @@ import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +24,6 @@ import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -45,7 +41,7 @@ public class PolytoneForge {
             Polytone.init(false, !FMLEnvironment.production, true);
 
             NeoForge.EVENT_BUS.register(this);
-           modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
+            modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
         } else {
             Polytone.LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
@@ -102,54 +98,50 @@ public class PolytoneForge {
 
         @Override
         public void removeItems(Predicate<ItemStack> target) {
-            var iter = event.getEntries().iterator();
-            while (iter.hasNext()) {
-                var e = iter.next();
-                if (target.test(e.getKey())) {
-                    iter.remove();
-                }
-            }
+            event.getParentEntries().removeIf(target);
+            event.getSearchEntries().removeIf(target);
         }
 
         @Override
         public void addItems(@Nullable Predicate<ItemStack> target, boolean after, List<ItemStack> items) {
-
             if (target == null) {
                 event.acceptAll(items);
             } else {
-
-                var entries = event.getEntries();
-                ItemStack lastValid = null;
-
-
-                for (var e : entries) {
-                    ItemStack item = e.getKey();
-
-                    if (!item.isItemEnabled(event.getFlags())) continue;
-
-                    boolean isValid = target.test(item);
-                    if (after && lastValid != null && !isValid) {
-                        var rev = Lists.reverse(new ArrayList<>(items));
-                        for (var ni : rev) {
-                            entries.putAfter(lastValid, ni, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                        }
-                        return;
+                if (after) {
+                    ItemStack last = findLast(event, target);
+                    for (int j = items.size(); j > 0; j--) {
+                        event.insertAfter(last, items.get(j - 1), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                     }
-
-                    if (isValid) {
-                        lastValid = item;
+                } else {
+                    ItemStack first = findFirst(event, target);
+                    for (var s : items) {
+                        event.insertBefore(first, s, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                     }
-
-                    if (!after && isValid) {
-                        items.forEach(ni -> entries.putBefore(item, ni, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
-                        return;
-                    }
-                }
-                //add at the end if it fails
-                for (var ni : items) {
-                    entries.put(ni, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                 }
             }
+        }
+
+        private ItemStack findFirst(BuildCreativeModeTabContentsEvent event, Predicate<ItemStack> target) {
+            for (var s : event.getParentEntries()) {
+                if (target.test(s)) {
+                    return s;
+                }
+            }
+            return ItemStack.EMPTY;
+        }
+
+        private ItemStack findLast(BuildCreativeModeTabContentsEvent event, Predicate<ItemStack> target) {
+            boolean foundOne = false;
+            ItemStack previous = ItemStack.EMPTY;
+            for (var s : event.getParentEntries()) {
+                if (target.test(s)) {
+                    foundOne = true;
+                    previous = s;
+                } else {
+                    if (foundOne) return previous;
+                }
+            }
+            return ItemStack.EMPTY;
         }
     }
 }
