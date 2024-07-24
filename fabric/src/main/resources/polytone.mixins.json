@@ -2,19 +2,20 @@
   "minVersion": "0.8",
   "required": true,
   "compatibilityLevel": "JAVA_17",
-  "package": "net.mehvahdjukaar.polytone.mixins.forge",
+  "package": "net.mehvahdjukaar.polytone.mixins.fabric",
   "mixins": [
-    "IClientFluidTypeExtensionsMixin"
   ],
   "client": [
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
+    "BlockModelDeserializerMixin",
     "CreativeTabAccessor",
-    "CurioInventoryScreenMixin",
+    "FabricItemGroupEntriesAccessor",
+    "FogFluidRendererMixin",
+    "GuiGraphicsMixin",
     "InventoryScreenMixin",
     "ItemColorsAccessor",
-    "ModifiableBiomeAccessor",
-    "ModifiableBiomeInfoBiomeInfoAccessor"
+    "ModelHackMixin"
   ],
   "injectors": {
     "defaultRequire": 1

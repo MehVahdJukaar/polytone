@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +28,8 @@ public class LightmapsManager extends JsonImgPartialReloader {
     public static final ResourceLocation GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
 
     private final MapRegistry<Lightmap> lightmaps = new MapRegistry<>("Lightmaps");
+    //TODO:
+    private final Map<ResourceKey<Biome>, Lightmap> biomeLightmaps = new HashMap<>();
 
     private ResourceKey<Level> lastDimension = null;
     private Lightmap currentLightmap = null;

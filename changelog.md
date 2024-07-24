@@ -1,7 +1,1 @@
-- updated to work on new neoforge
-- added alex caves compat for lightmaps
-- added a dedicated polytone log file at /logs/polytone.log
-- changed resource reload toast when its caused by polytone
-- improved logging for colormaps missing textures
-- fabric now has support for fog fluid colors
-- converted optifine fluid properties will be applied to flowing fluids aswell on fabric
+- fixed a crash on neoforge
