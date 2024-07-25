@@ -19,7 +19,11 @@ import net.mehvahdjukaar.polytone.tabs.CreativeTabsModifiersManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -97,9 +101,19 @@ public class Polytone {
     }
 
     public static void onTagsReceived(RegistryAccess registryAccess) {
-        BIOME_MODIFIERS.processAndApplyWithLevel(registryAccess, true);
-        DIMENSION_MODIFIERS.doApply(registryAccess, true);
-        BiomeKeysCache.clear();
+        try {
+            BIOME_MODIFIERS.processAndApplyWithLevel(registryAccess, true);
+            DIMENSION_MODIFIERS.doApply(registryAccess, true);
+            BiomeKeysCache.clear();
+        } catch (RuntimeException e) {
+            Polytone.LOGGER.error("Failed to apply some Polytone modifiers on world load", e);
+
+            ToastComponent toastComponent = Minecraft.getInstance().getToasts();
+            SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
+                    Component.translatable("toast.polytone.lazy_load_fail"),
+                    Component.translatable("toast.polytone.load_fail"));
+        }
+
     }
 
     public static void onLevelUnload() {
