@@ -1,14 +1,19 @@
 package net.mehvahdjukaar.polytone.biome;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -29,18 +34,46 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         super("biome_modifiers", "biome_effects");
     }
 
+    private final Map<ResourceLocation, JsonElement> lazyJsons = new HashMap<>();
+
     @Override
-    public void process(Map<ResourceLocation, JsonElement> biomesJsons) {
-        for (var j : biomesJsons.entrySet()) {
+    public void process(Map<ResourceLocation, JsonElement> biomesJsons, DynamicOps<JsonElement> ops) {
+        lazyJsons.clear();
+        lazyJsons.putAll(biomesJsons);
+
+        Level level = Minecraft.getInstance().level;
+        if (level != null) {
+            try {
+                processAndApplyWithLevel(level.registryAccess(), false);
+            } catch (RuntimeException e) {
+                Polytone.LOGGER.error("Failed to apply biome effects on world load", e);
+
+                ToastComponent toastComponent = Minecraft.getInstance().getToasts();
+                SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
+                        Component.translatable("toast.polytone.lazy_load_fail"),
+                        Component.translatable("toast.polytone.load_fail"));
+            }
+        }
+        //else apply as soon as we load a level
+    }
+
+    // we need registry ops here since special effects use registry stuff...
+    public void processAndApplyWithLevel(RegistryAccess access, boolean firstLogin) {
+        for (var j : lazyJsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
 
-            BiomeEffectModifier effect = BiomeEffectModifier.CODEC.decode(JsonOps.INSTANCE, json)
+            BiomeEffectModifier effect = BiomeEffectModifier.CODEC.decode(
+                            RegistryOps.create(JsonOps.INSTANCE, access), json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Biome Special Effect with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 
             addEffect(id, effect);
+
         }
+        lazyJsons.clear();
+
+        applyWithLevel(access, firstLogin);
     }
 
     private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod) {
@@ -58,15 +91,11 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     @Override
     public void apply() {
-        Level level = Minecraft.getInstance().level;
-        if (level != null) {
-            doApply(level.registryAccess(), false);
-        }
-        //else apply as soon as we load a level
     }
 
-    public void doApply(RegistryAccess registryAccess, boolean firstLogin) {
+    private void applyWithLevel(RegistryAccess registryAccess, boolean firstLogin) {
         if (!firstLogin && !needsDynamicApplication) return;
+
         needsDynamicApplication = false;
         if (firstLogin) vanillaEffects.clear();
 
@@ -75,6 +104,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         addAllWaterColors(biomeReg);
 
         for (var v : effectsToApply.entrySet()) {
+
             ResourceLocation biomeId = v.getKey();
             BiomeEffectModifier modifier = v.getValue();
             var biome = biomeReg.getOptional(biomeId);

@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.tabs;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -56,7 +57,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     }
 
     @Override
-    protected void process(Resources resources) {
+    protected void process(Resources resources, DynamicOps<JsonElement> ops) {
         for (var e : resources.extraTabs.entrySet()) {
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
@@ -79,7 +80,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            CreativeTabModifier modifier = CreativeTabModifier.CODEC.decode(JsonOps.INSTANCE, json)
+            CreativeTabModifier modifier = CreativeTabModifier.CODEC.decode(ops, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Creative Mode Tab Modifier with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 

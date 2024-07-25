@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
@@ -46,11 +47,11 @@ public class CustomParticlesManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void process(Map<ResourceLocation, JsonElement> obj) {
+    protected void process(Map<ResourceLocation, JsonElement> obj, DynamicOps<JsonElement> ops) {
         for (var j : obj.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            CustomParticleFactory type = CUSTOM_OR_SEMI_CUSTOM_CODEC.decode(JsonOps.INSTANCE, json)
+            CustomParticleFactory type = CUSTOM_OR_SEMI_CUSTOM_CODEC.decode(ops, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Custom Particle Type with json id {} - error: {}",
                             id, errorMsg)).getFirst();
             type.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));

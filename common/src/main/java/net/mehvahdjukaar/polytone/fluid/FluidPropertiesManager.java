@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.fluid;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -56,7 +57,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
     //TODO: this is a mess. Improve
     @Override
-    public void process(Resources resources) {
+    public void process(Resources resources, DynamicOps<JsonElement> ops) {
         var jsons = resources.jsons();
         var textures = resources.textures();
 
@@ -70,7 +71,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            FluidPropertyModifier modifier = FluidPropertyModifier.CODEC.decode(JsonOps.INSTANCE, json)
+            FluidPropertyModifier modifier = FluidPropertyModifier.CODEC.decode(ops, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Fluid Modifier with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 

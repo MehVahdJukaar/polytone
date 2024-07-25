@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.slotify;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -53,13 +54,13 @@ public class GuiModifierManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void process(Map<ResourceLocation, JsonElement> object) {
+    protected void process(Map<ResourceLocation, JsonElement> object, DynamicOps<JsonElement> ops) {
 
         List<GuiModifier> allModifiers = new ArrayList<>();
         for (var entry : object.entrySet()) {
             var json = entry.getValue();
             var id = entry.getKey();
-            GuiModifier modifier = GuiModifier.CODEC.decode(JsonOps.INSTANCE, json)
+            GuiModifier modifier = GuiModifier.CODEC.decode(ops, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode GUI Modifier with json res {} - error: {}",
                             id, errorMsg)).getFirst();
             allModifiers.add(modifier);

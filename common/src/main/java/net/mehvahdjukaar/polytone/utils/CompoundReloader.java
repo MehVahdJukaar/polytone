@@ -1,7 +1,9 @@
 package net.mehvahdjukaar.polytone.utils;
 
 import com.google.common.base.Stopwatch;
+import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -68,7 +70,8 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
     @SuppressWarnings("all")
     private <T> void processTyped(PartialReloader<T> reloader, Object object) {
-        reloader.process((T) object);
+        //jea... we cant use registry ops here theres no level yet
+        reloader.process((T) object, JsonOps.INSTANCE);
     }
 
 }

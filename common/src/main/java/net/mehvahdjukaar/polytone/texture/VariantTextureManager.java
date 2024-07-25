@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.texture;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -42,12 +43,12 @@ public class VariantTextureManager extends JsonPartialReloader {
     }
 
     @Override
-    public void process(Map<ResourceLocation, JsonElement> jsonElementMap) {
+    public void process(Map<ResourceLocation, JsonElement> jsonElementMap, DynamicOps<JsonElement> ops) {
 
         for (var j : jsonElementMap.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            VariantTexture variant = VariantTexture.CODEC.decode(JsonOps.INSTANCE, json)
+            VariantTexture variant = VariantTexture.CODEC.decode(ops, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Variant Texture with json res {} - error: {}",
                             id, errorMsg)).getFirst();
             addVariant(id, variant);

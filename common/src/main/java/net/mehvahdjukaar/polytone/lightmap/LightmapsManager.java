@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.lightmap;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -54,7 +55,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    public void process(Resources resources) {
+    public void process(Resources resources, DynamicOps<JsonElement> ops) {
         var images = resources.textures();
         var jsons = resources.jsons();
         lastDimension = null;
@@ -88,7 +89,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
             JsonElement j = jsons.remove(location);
             Lightmap lightmap;
             if (j != null) {
-                lightmap = Lightmap.DIRECT_CODEC.decode(JsonOps.INSTANCE, j)
+                lightmap = Lightmap.DIRECT_CODEC.decode(ops, j)
                         .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Lightmap with json id {} - error: {}", location, errorMsg))
                         .getFirst();
 

@@ -1,3 +1,4 @@
 {
-  "toast.polytone.load_fail": "Check logs/polytone.log"
+  "toast.polytone.load_fail": "Check logs/polytone.log",
+  "toast.polytone.lazy_load_fail": "Polytone Lazy resource reload failed"
 }

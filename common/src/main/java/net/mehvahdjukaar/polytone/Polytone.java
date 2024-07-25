@@ -97,7 +97,7 @@ public class Polytone {
     }
 
     public static void onTagsReceived(RegistryAccess registryAccess) {
-        BIOME_MODIFIERS.doApply(registryAccess, true);
+        BIOME_MODIFIERS.processAndApplyWithLevel(registryAccess, true);
         DIMENSION_MODIFIERS.doApply(registryAccess, true);
         BiomeKeysCache.clear();
     }
