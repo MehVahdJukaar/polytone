@@ -68,7 +68,7 @@ subprojects {
                 releaseType = 'release'
                 addGameVersion minecraft_version
 
-                if (modLoader == "forge") {
+                if (modLoader == "neoforge") {
                     addGameVersion("NeoForge")
                 } else addGameVersion modLoader.capitalize()
 
