@@ -23,7 +23,7 @@ public abstract class FogRendererMixin {
     private static Vec3 polytone$modifyFogColor(Vec3 center, CubicSampler.Vec3Fetcher fetcher,
                                                 Operation<Vec3> original, @Local(argsOnly = true) ClientLevel level,
                                                 @Local(argsOnly = true) int renderDistanceChunks,
-                                                @Local(ordinal = 4) float lightLevel,
+                                                @Local(ordinal = 6) float lightLevel,
                                                 @Local(ordinal = 2) LocalFloatRef distance) {
       //  Polytone.DIMENSION_MODIFIERS. modifyFogMagicNumber((float) renderDistanceChunks, distance);
 
