@@ -1,1 +1,1 @@
-- fixed a crash on neoforge
+- fixed an issue with dimension modifiers fog colors using wrong parameter for brightness value

@@ -32,6 +32,5 @@
   },
   "conflicts": {
     "sodium": "*"
-  },
-  "accessWidener" : "${mod_id}.accesswidener"
+  }
 }

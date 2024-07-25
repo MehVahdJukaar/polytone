@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -188,13 +189,14 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     public Vec3 modifyFogColor(Vec3 center, ClientLevel level, float brightness) {
         Colormap colormap = this.fogColormaps.get(level.dimensionType());
         if (colormap == null) return null;
-
         BiomeManager biomeManager = level.getBiomeManager();
         return level.effects().getBrightnessDependentFogColor(
                 CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
                     var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();
+                    // will override all biome modifiers ones
                     //int fogColor = biome.getFogColor();
-                    int fogColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome, null); //quart coords to block coord
+                    int fogColor1 = colormap.sampleColor(null,
+                            BlockPos.containing(qx * 4, qy * 4, qz * 4), biome, null); //quart coords to block coord
                     return Vec3.fromRGB24(fogColor1);
                 }), brightness);
     }
