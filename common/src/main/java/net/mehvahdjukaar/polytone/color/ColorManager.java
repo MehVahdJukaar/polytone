@@ -1,7 +1,9 @@
 package net.mehvahdjukaar.polytone.color;
 
 import com.google.common.collect.Lists;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -15,6 +17,7 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.animal.Sheep;
@@ -71,7 +74,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
 
     @Override
-    protected void process(Map<ResourceLocation, Properties> map) {
+    protected void process(Map<ResourceLocation, Properties> map, DynamicOps<JsonElement> ops) {
         //iterate from the lowest priority to highest
         var keySet = new ArrayList<>(map.keySet());
         Lists.reverse(keySet);
@@ -118,7 +121,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     if (!vanillaDiffuseColors.containsKey(color)) {
                         vanillaDiffuseColors.put(color, color.textureDiffuseColor);
                     }
-                    color.textureDiffuseColor = col;
+                    color.textureDiffuseColor = FastColor.ARGB32.opaque(col);
                 } else if (param.equals("firework")) {
                     // save vanilla value
                     if (!vanillaFireworkColors.containsKey(color)) {

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.block;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
@@ -35,11 +36,11 @@ public class BlockSetManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void process(Map<ResourceLocation, JsonElement> jsons) {
+    protected void process(Map<ResourceLocation, JsonElement> jsons, DynamicOps<JsonElement> ops) {
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            BlockSetTypeProvider type = BlockSetTypeProvider.CODEC.decode(JsonOps.INSTANCE, json)
+            BlockSetTypeProvider type = BlockSetTypeProvider.CODEC.decode(ops, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Block Set Type with json id " + id + " - error: " + errorMsg
                     )).getFirst();
             blockSetTypes.register(id, type);

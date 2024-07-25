@@ -3,6 +3,8 @@ package net.mehvahdjukaar.polytone.utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.ResourceLocation;
@@ -68,7 +70,7 @@ public abstract class PartialReloader<T> {
 
     protected abstract void reset();
 
-    protected abstract void process(T obj);
+    protected abstract void process(T obj, DynamicOps<JsonElement> ops);
 
     protected void apply() {
     }

@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.color.MapColorHelper;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
+import net.mehvahdjukaar.polytone.sound.PolytoneSoundType;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.minecraft.client.Minecraft;
@@ -169,7 +170,7 @@ public record BlockPropertyModifier(
             instance.group(
                     IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
                     //normal opt so it can fail when using modded sounds
-                    SoundTypesManager.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
+                    PolytoneSoundType.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
                     MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE).optionalFieldOf(
                             "map_color").forGetter(BlockPropertyModifier::mapColor),
                     // Codec.BOOL.optionalFieldOf("can_occlude").forGetter(ClientBlockProperties::canOcclude),

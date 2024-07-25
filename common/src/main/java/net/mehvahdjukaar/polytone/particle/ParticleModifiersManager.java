@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.particle.Particle;
@@ -30,12 +31,12 @@ public class ParticleModifiersManager extends JsonPartialReloader {
     }
 
     @Override
-    public void process(Map<ResourceLocation, JsonElement> jsons) {
+    public void process(Map<ResourceLocation, JsonElement> jsons, DynamicOps<JsonElement> ops) {
 
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            ParticleModifier modifier = ParticleModifier.CODEC.decode(JsonOps.INSTANCE, json)
+            ParticleModifier modifier = ParticleModifier.CODEC.decode(ops, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Particle Modifier with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
             addModifier(id, modifier);

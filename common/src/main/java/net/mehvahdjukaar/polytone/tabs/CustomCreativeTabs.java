@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.tabs;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.resources.ResourceLocation;
 
@@ -13,7 +14,7 @@ public class CustomCreativeTabs extends JsonPartialReloader {
     }
 
     @Override
-    protected void process(Map<ResourceLocation, JsonElement> obj) {
+    protected void process(Map<ResourceLocation, JsonElement> obj, DynamicOps<JsonElement> ops) {
 
     }
 }

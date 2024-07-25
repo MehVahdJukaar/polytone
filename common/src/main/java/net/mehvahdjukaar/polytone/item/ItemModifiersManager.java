@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.item;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
@@ -27,7 +28,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
     }
 
     @Override
-    public void process(Resources resources) {
+    public void process(Resources resources, DynamicOps<JsonElement> ops) {
         var jsons = resources.jsons();
         var textures = resources.textures();
 
@@ -39,7 +40,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
             JsonElement json = j.getValue();
             ResourceLocation location = j.getKey();
 
-            ItemModifier modifier = ItemModifier.CODEC.decode(JsonOps.INSTANCE, json)
+            ItemModifier modifier = ItemModifier.CODEC.decode(ops, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Item Modifier with json id " + location + "\n error: " + errorMsg))
                     .getFirst();
 

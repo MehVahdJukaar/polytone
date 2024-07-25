@@ -1,1 +1,2 @@
-- fixed an issue with dimension modifiers fog colors using wrong parameter for brightness value
+- fixed biome modifiers ambient and music sounds not decoding properly
+- fixed color diffuse color having alpha set to 0

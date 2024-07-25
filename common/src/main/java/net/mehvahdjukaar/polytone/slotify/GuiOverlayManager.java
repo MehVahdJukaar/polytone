@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.slotify;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
@@ -31,12 +32,12 @@ public class GuiOverlayManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void process(Map<ResourceLocation, JsonElement> obj) {
+    protected void process(Map<ResourceLocation, JsonElement> obj, DynamicOps<JsonElement> ops) {
         for (var j : obj.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
 
-            BlitModifier effect = BlitModifier.CODEC.decode(JsonOps.INSTANCE, json)
+            BlitModifier effect = BlitModifier.CODEC.decode(ops, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Overlay Modifier with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
 

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.dimension;
 
 import com.google.gson.JsonElement;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
@@ -59,7 +60,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
 
     @Override
-    protected void process(Resources resources) {
+    protected void process(Resources resources, DynamicOps<JsonElement> ops) {
         var jsons = resources.jsons();
         var textures = resources.textures();
 
@@ -71,7 +72,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            DimensionEffectsModifier modifier = DimensionEffectsModifier.CODEC.decode(JsonOps.INSTANCE, json)
+            DimensionEffectsModifier modifier = DimensionEffectsModifier.CODEC.decode(ops, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Dimension Effects with json id " + id + " - error: " + errorMsg))
                     .getFirst();
 

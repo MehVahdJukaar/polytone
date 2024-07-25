@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.colormap;
 
+import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
@@ -43,7 +45,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    public void process(Resources resources) {
+    public void process(Resources resources, DynamicOps<JsonElement> ops) {
         var jsons = resources.jsons();
         var textures = resources.textures();
 
@@ -53,7 +55,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
             var json = j.getValue();
             var id = j.getKey();
 
-            Colormap colormap = Colormap.DIRECT_CODEC.decode(JsonOps.INSTANCE, json)
+            Colormap colormap = Colormap.DIRECT_CODEC.decode(ops, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Colormap with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
 colormap.inlined = false;

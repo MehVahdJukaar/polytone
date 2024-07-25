@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.block;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -68,7 +69,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
     @Override
-    public void process(Resources resources) {
+    public void process(Resources resources, DynamicOps<JsonElement> ops) {
 
         var jsons = resources.jsons();
         var textures = ArrayImage.groupTextures(resources.textures());
@@ -88,7 +89,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             ResourceLocation id = j.getKey();
 
 
-            BlockPropertyModifier prop = BlockPropertyModifier.CODEC.decode(JsonOps.INSTANCE, json)
+            BlockPropertyModifier prop = BlockPropertyModifier.CODEC.decode(ops, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Client Block Property with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
 
