@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.tabs;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
@@ -71,7 +70,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         }
 
         if (!customTabs.isEmpty()) {
-            Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add them to sounds.json!");
+            Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add items to them!");
         }
 
         var jsons = resources.tabsModifiers;
@@ -93,6 +92,16 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
     @Override
     protected void apply() {
+        if (Minecraft.getInstance().level != null && !needsRefresh.isEmpty()) {
+            CreativeModeTabs.CACHED_PARAMETERS = null;
+            //forces reload on next open screen
+            needsRefresh.clear();
+        }
+        if(true)return;
+
+        //not used. optimized code but can cause issues
+
+        // we must rebuild everything because cache parameter could be from another world
         if (CreativeModeTabs.CACHED_PARAMETERS != null) {
             //this only happens if they have already been built
 
@@ -101,6 +110,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             for (var key : needsRefresh) {
                 CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(key);
                 if (tab != null) {
+
                     tab.buildContents(CreativeModeTabs.CACHED_PARAMETERS);
                     CreativeTabModifier mod = modifiers.get(key);
                     if (mod != null && mod.search().orElse(false)) {

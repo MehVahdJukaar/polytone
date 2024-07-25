@@ -43,16 +43,8 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
         Level level = Minecraft.getInstance().level;
         if (level != null) {
-            try {
-                processAndApplyWithLevel(level.registryAccess(), false);
-            } catch (RuntimeException e) {
-                Polytone.LOGGER.error("Failed to apply biome effects on world load", e);
+            processAndApplyWithLevel(level.registryAccess(), false);
 
-                ToastComponent toastComponent = Minecraft.getInstance().getToasts();
-                SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
-                        Component.translatable("toast.polytone.lazy_load_fail"),
-                        Component.translatable("toast.polytone.load_fail"));
-            }
         }
         //else apply as soon as we load a level
     }
