@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.mixins.accessor.ParticleEngineAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
@@ -52,8 +53,8 @@ public class SemiCustomParticleType implements CustomParticleFactory {
     private void init() {
 
         hasBeenInit = true;
-        copyProvider = Minecraft.getInstance().particleEngine
-                .providers.get(BuiltInRegistries.PARTICLE_TYPE.getId(type));
+        copyProvider = ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine)
+                .invokeProviders().get(BuiltInRegistries.PARTICLE_TYPE.getId(type));
         if (copyProvider != null) {
             try {
                 copyProvider = cloneProvider(copyProvider, spriteSet);

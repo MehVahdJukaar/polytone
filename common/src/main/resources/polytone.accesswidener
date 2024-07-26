@@ -54,8 +54,6 @@ accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedT
 accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture uploadFrame (III)V
 accessible field net/minecraft/client/renderer/texture/SpriteContents$FrameInfo time I
 
-accessible field net/minecraft/client/particle/ParticleEngine providers Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
-
 mutable field net/minecraft/world/item/DyeColor textureDiffuseColors [F
 accessible field net/minecraft/world/item/DyeColor textureDiffuseColors [F
 accessible field net/minecraft/world/item/DyeColor fireworkColor I

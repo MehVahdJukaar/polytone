@@ -109,7 +109,7 @@ public class Polytone {
             Polytone.LOGGER.error("Failed to apply some Polytone modifiers on world load", e);
 
             ToastComponent toastComponent = Minecraft.getInstance().getToasts();
-            SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
+            SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastIds.PACK_LOAD_FAILURE,
                     Component.translatable("toast.polytone.lazy_load_fail"),
                     Component.translatable("toast.polytone.load_fail"));
         }
