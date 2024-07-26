@@ -86,6 +86,7 @@ public class MapRegistry<T> implements Codec<T> {
         this.map.clear();
     }
 
+
     public static class CodecMap<T> extends MapRegistry<MapCodec<? extends T>> {
 
         public CodecMap(String name) {

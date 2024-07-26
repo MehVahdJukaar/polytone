@@ -16,12 +16,13 @@ public interface ParticleFactory {
                         @Nullable BlockState state);
 
 
-    Codec<ParticleFactory> FROM_TYPE_CODEC = BuiltInRegistries.PARTICLE_TYPE.byNameCodec().flatXmap(r -> {
+    Codec<ParticleFactory> EXISTING_TYPE_CODEC = BuiltInRegistries.PARTICLE_TYPE.byNameCodec().flatXmap(r -> {
         var p = ParticleFactory.fromType(r);
         return p == null ? DataResult.error(() -> "Unsupported Particle Type " + r) : DataResult.success(p);
     }, t -> DataResult.error(() -> "Encode not supported"));
 
-    Codec<ParticleFactory> CODEC = new ReferenceOrDirectCodec<>(Polytone.CUSTOM_PARTICLES.byNameCodec(), FROM_TYPE_CODEC, true);
+    Codec<ParticleFactory> CODEC = new ReferenceOrDirectCodec<>(Polytone.CUSTOM_PARTICLES.byNameCodec(),
+            EXISTING_TYPE_CODEC, true);
 
     @Nullable
     static ParticleFactory fromType(ParticleType<?> type) {
