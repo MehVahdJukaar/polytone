@@ -41,6 +41,21 @@ accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall 
 accessible field net/minecraft/network/chat/TextColor value I
 mutable field net/minecraft/network/chat/TextColor value I
 
+# texture stuff
+accessible class net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
+accessible class net/minecraft/client/renderer/texture/SpriteContents$InterpolationData
+accessible class net/minecraft/client/renderer/texture/SpriteContents$FrameInfo
+accessible field net/minecraft/client/renderer/texture/SpriteContents byMipLevel [Lcom/mojang/blaze3d/platform/NativeImage;
+accessible field net/minecraft/client/renderer/texture/SpriteContents$FrameInfo index I
+accessible field net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture frames Ljava/util/List;
+accessible method net/minecraft/client/renderer/texture/SpriteContents upload (IIII[Lcom/mojang/blaze3d/platform/NativeImage;)V
+accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameX (I)I
+accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameY (I)I
+accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture uploadFrame (III)V
+accessible field net/minecraft/client/renderer/texture/SpriteContents$FrameInfo time I
+
+accessible field net/minecraft/client/particle/ParticleEngine providers Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+
 mutable field net/minecraft/world/item/DyeColor textureDiffuseColors [F
 accessible field net/minecraft/world/item/DyeColor textureDiffuseColors [F
 accessible field net/minecraft/world/item/DyeColor fireworkColor I

@@ -7,6 +7,9 @@
   ],
   "client": [
     "AbstractContainerMenuMixin",
+    "AnimatedTextureMixin",
+    "AnimationMetadataSectionMixin",
+    "AnimationMetadataSectionSerializerMixin",
     "ClientLevelMixin",
     "ColorResolverMixin",
     "FogRendererMixin",
@@ -20,6 +23,7 @@
     "ParticleEngineMixin",
     "PotionUtilsMixin",
     "ScreenMixin",
+    "SpriteContentsMixin",
     "VariantDeserializerMixin",
     "XpOrbMixin",
     "accessor.BiomeAccessor",

@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 import java.util.Optional;
 
-public class CustomParticleType implements ParticleFactory {
+public class CustomParticleType implements CustomParticleFactory {
 
     private final RenderType renderType;
     private final @Nullable Initializer initializer;
@@ -27,6 +27,7 @@ public class CustomParticleType implements ParticleFactory {
         this.initializer = initializer;
         this.ticker = ticker;
     }
+
 
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
             StrOpt.of(RenderType.CODEC, "render_type", RenderType.OPAQUE)
@@ -60,6 +61,7 @@ public class CustomParticleType implements ParticleFactory {
         }
     }
 
+    @Override
     public void setSpriteSet(ParticleEngine.MutableSpriteSet mutableSpriteSet) {
         this.spriteSet = mutableSpriteSet;
     }

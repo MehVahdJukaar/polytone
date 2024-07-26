@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.particle;
 
 import com.google.gson.JsonElement;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -12,10 +13,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.Map;
+import java.util.function.Function;
 
 public class CustomParticlesManager extends JsonPartialReloader {
 
-    public final MapRegistry<CustomParticleType> customParticles = new MapRegistry<>("Custom Particles");
+    public final MapRegistry<CustomParticleFactory> customParticles = new MapRegistry<>("Custom Particles");
+
+    public static final Codec<CustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = Codec.either(CustomParticleType.CODEC, SemiCustomParticleType.CODEC)
+            .xmap(e -> e.map(Function.identity(), Function.identity()),
+                    p -> p instanceof CustomParticleType c ? Either.left(c) : Either.right((SemiCustomParticleType) p));
 
     public CustomParticlesManager() {
         super("custom_particles");
@@ -44,7 +50,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
         for (var j : obj.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            var type = CustomParticleType.CODEC.decode(JsonOps.INSTANCE, json)
+            CustomParticleFactory type = CUSTOM_OR_SEMI_CUSTOM_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Custom Particle Type with json id {} - error: {}",
                             id, errorMsg)).getFirst();
             type.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
@@ -54,7 +60,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
     }
 
 
-    public Codec<CustomParticleType> byNameCodec() {
+    public Codec<CustomParticleFactory> byNameCodec() {
         return customParticles;
     }
 }

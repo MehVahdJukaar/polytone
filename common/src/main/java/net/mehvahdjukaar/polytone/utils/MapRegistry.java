@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import net.mehvahdjukaar.polytone.particle.CustomParticleType;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -88,6 +89,7 @@ public class MapRegistry<T> implements Codec<T> {
     public void clear() {
         this.map.clear();
     }
+
 
     public static class CodecMap<T> extends MapRegistry<Codec<? extends T>> {
 
