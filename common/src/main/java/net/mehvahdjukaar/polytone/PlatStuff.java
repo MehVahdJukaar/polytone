@@ -8,11 +8,13 @@ import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
+import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -121,6 +123,11 @@ public class PlatStuff {
 
     @ExpectPlatform
     public static void updateSearchTrees(SessionSearchTrees sessionSearchTrees, List<CreativeModeTab> needsTreeUpdated) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
         throw new AssertionError();
     }
 }
