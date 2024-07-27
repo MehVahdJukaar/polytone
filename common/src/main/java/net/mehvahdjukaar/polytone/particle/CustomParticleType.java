@@ -159,6 +159,9 @@ public class CustomParticleType implements CustomParticleFactory {
                     this.zd = this.ticker.dz.get(this, level);
                 }
             }
+            if(this.x == this.xo && this.y == this.yo && this.z == this.zo && hasPhysics){
+                this.remove();
+            }
         }
 
         @Override
