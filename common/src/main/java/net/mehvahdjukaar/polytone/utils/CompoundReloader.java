@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.utils;
 import com.google.common.base.Stopwatch;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.resources.RegistryOps;
+import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -44,6 +44,19 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
                 processTyped(c, object.get(i));
             } catch (Exception e) {
                 String message = c + " failed to parse some resources";
+                Polytone.logException(e, message);
+                Polytone.iMessedUp = true;
+
+                Polytone.LOGGER.error(message);
+                throw e;
+            }
+        }
+
+        if (Minecraft.getInstance().level != null) {
+            try {
+                LazyHolderSet.initializeAll(Minecraft.getInstance().level.registryAccess());
+            } catch (Exception e) {
+                String message = "failed to parse some resources";
                 Polytone.logException(e, message);
                 Polytone.iMessedUp = true;
 

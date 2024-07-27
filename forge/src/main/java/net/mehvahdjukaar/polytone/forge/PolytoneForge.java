@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.forge;
 
-import com.github.alexmodguy.alexscaves.mixin.client.LightTextureMixin;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -9,12 +8,15 @@ import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.material.FogType;
+import net.minecraft.world.phys.Vec2;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.TagsUpdatedEvent;
@@ -75,6 +77,18 @@ public class PolytoneForge {
             poseStack.translate(screen.width / 2F, screen.height / 2F, 500);
             ss.polytone$renderExtraSprites(graphics);
             poseStack.popPose();
+        }
+    }
+
+
+    @SubscribeEvent
+    public void fogEvent(ViewportEvent.RenderFog fogEvent) {
+        if (fogEvent.getType() != FogType.NONE || fogEvent.getMode() != FogRenderer.FogMode.FOG_TERRAIN) return;
+        Vec2 targetFog = Polytone.BIOME_MODIFIERS.modifyFogParameters(fogEvent.getNearPlaneDistance(), fogEvent.getFarPlaneDistance());
+        if (targetFog != null) {
+            fogEvent.setNearPlaneDistance(targetFog.x);
+            fogEvent.setFarPlaneDistance(targetFog.y);
+            fogEvent.setCanceled(true);
         }
     }
 

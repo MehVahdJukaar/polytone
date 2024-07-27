@@ -28,7 +28,6 @@ public class CustomParticleType implements CustomParticleFactory {
         this.ticker = ticker;
     }
 
-
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
             StrOpt.of(RenderType.CODEC, "render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),

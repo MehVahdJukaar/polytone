@@ -1,7 +1,9 @@
 {
-	"fog_color": 5645941,
-    "grass_color": 5645941,
-    "foliage_color": 5645941,
-	"water_color": 5645941,
-    "water_fog_color": 5645941
+  "fog_color": 5645941,
+  "grass_color": 5645941,
+  "foliage_color": 5645941,
+  "water_color": 5645941,
+  "water_fog_color": 5645941,
+  "fog_start": 0.5,
+  "fog_end": 1
 }

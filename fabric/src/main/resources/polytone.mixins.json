@@ -12,6 +12,7 @@
     "CreativeTabAccessor",
     "FabricItemGroupEntriesAccessor",
     "FogFluidRendererMixin",
+    "FogRendererMixin2",
     "InventoryScreenMixin",
     "ModelHackMixin"
   ],

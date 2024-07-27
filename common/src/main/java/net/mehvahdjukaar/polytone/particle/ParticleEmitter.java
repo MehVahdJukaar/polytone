@@ -2,17 +2,21 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Locale;
+import java.util.Optional;
 
 public record ParticleEmitter(
         ParticleFactory factory,
@@ -24,6 +28,7 @@ public record ParticleEmitter(
         BlockParticleExpression dx,
         BlockParticleExpression dy,
         BlockParticleExpression dz,
+        Optional<LazyHolderSet<Biome>> biomes,
         SpawnLocation spawnLocation
 ) {
 
@@ -34,16 +39,21 @@ public record ParticleEmitter(
             BlockParticleExpression.CODEC.optionalFieldOf("x", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::x),
             BlockParticleExpression.CODEC.optionalFieldOf("y", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::y),
             BlockParticleExpression.CODEC.optionalFieldOf("z", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::z),
-            StrOpt.of(BlockParticleExpression.CODEC, "dx", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dx),
-            StrOpt.of(BlockParticleExpression.CODEC, "dy", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dy),
-            StrOpt.of(BlockParticleExpression.CODEC, "dz", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dz),
-            StrOpt.of(SpawnLocation.CODEC, "spawn_location", SpawnLocation.CENTER).forGetter(ParticleEmitter::spawnLocation)
+            BlockParticleExpression.CODEC.optionalFieldOf("dx", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dx),
+            BlockParticleExpression.CODEC.optionalFieldOf("dy", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dy),
+            BlockParticleExpression.CODEC.optionalFieldOf("dz", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dz),
+            LazyHolderSet.codec(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleEmitter::biomes),
+            SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(ParticleEmitter::spawnLocation)
     ).apply(i, ParticleEmitter::new));
 
 
     public void tick(Level level, BlockPos pos, BlockState state) {
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance) {
+            if (biomes.isPresent()) {
+                var biome = level.getBiome(pos);
+                if (!biomes.get().contains(biome)) return;
+            }
             for (int i = 0; i < count.getValue(level, pos, state); i++) {
                 factory.createParticle((ClientLevel) level,
                         pos.getX() + x.getValue(level, pos, state),
