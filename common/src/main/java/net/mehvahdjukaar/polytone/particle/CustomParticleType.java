@@ -230,7 +230,7 @@ public class CustomParticleType implements CustomParticleFactory {
         }
     }
 
-    private record Initializer(@Nullable BlockParticleExpression size,
+   public record Initializer(@Nullable BlockParticleExpression size,
                                @Nullable BlockParticleExpression lifetime,
                                @Nullable BlockParticleExpression red,
                                @Nullable BlockParticleExpression green,
@@ -240,7 +240,7 @@ public class CustomParticleType implements CustomParticleFactory {
                                @Nullable BlockParticleExpression friction,
                                boolean hasPhysics) {
 
-        private static final Codec<Initializer> CODEC = RecordCodecBuilder.create(i -> i.group(
+        public static final Codec<Initializer> CODEC = RecordCodecBuilder.create(i -> i.group(
                 StrOpt.of(BlockParticleExpression.CODEC, "size").forGetter(p -> Optional.ofNullable(p.size)),
                 StrOpt.of(BlockParticleExpression.CODEC, "lifetime").forGetter(p -> Optional.ofNullable(p.lifetime)),
                 StrOpt.of(BlockParticleExpression.CODEC, "red").forGetter(p -> Optional.ofNullable(p.red)),
