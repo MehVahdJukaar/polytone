@@ -20,7 +20,8 @@ public interface BiomeIdMapper {
 
     BiomeIdMapper BY_INDEX = (biome) -> {
         int id = LegacyHelper.getBiomeId(biome);
-        return (id) / 255f;
+        //dont ask questions here, I changed it too many times. This works
+        return (id + 1) / 255f;
     };
 
     float getIndex(Biome biome);
