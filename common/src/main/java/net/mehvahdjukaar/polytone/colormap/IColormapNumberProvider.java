@@ -113,8 +113,9 @@ public interface IColormapNumberProvider {
     IColormapNumberProvider Y_LEVEL = BUILTIN_PROVIDERS.register("y_level", (state, pos, biome, m, item) -> {
         if (pos == null) return 64;
         // some builtin variance just because
+        // 0-128 RANGE. no clue what that darn mod did but this is good enough. People shouldn't use this anyway
         RandomSource rs = RandomSource.create(pos.asLong());
-        return (pos.getY() + rs.nextIntBetweenInclusive(-3, 3)) / 255f;
+        return (pos.getY() + rs.nextIntBetweenInclusive(-3, 3)) / 128F;
     });
 
     IColormapNumberProvider DAMAGE = BUILTIN_PROVIDERS.register("item_damage", (state, pos, biome, m, item) -> {
