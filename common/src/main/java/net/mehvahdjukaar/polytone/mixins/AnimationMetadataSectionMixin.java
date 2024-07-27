@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.texture.DayTimeTexture;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -9,6 +10,8 @@ import org.spongepowered.asm.mixin.Unique;
 public class AnimationMetadataSectionMixin implements DayTimeTexture {
     @Unique
     private boolean polytone$usesWorldTime = false;
+    @Unique
+    private int polytone$dayDuration = SharedConstants.TICKS_PER_GAME_DAY;
 
     @Override
     public boolean polytone$usesDayTime() {
@@ -18,5 +21,15 @@ public class AnimationMetadataSectionMixin implements DayTimeTexture {
     @Override
     public void polytone$setUsesDayTime(boolean usesWorldTime) {
         this.polytone$usesWorldTime = usesWorldTime;
+    }
+
+    @Override
+    public int polytone$getDayDuration() {
+        return polytone$dayDuration;
+    }
+
+    @Override
+    public void polytone$setDayDuration(int duration) {
+        this.polytone$dayDuration = duration;
     }
 }

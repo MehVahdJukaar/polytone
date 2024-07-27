@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -9,7 +10,6 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -45,15 +45,15 @@ public class SemiCustomParticleType implements CustomParticleFactory {
         }
 
         if (copyProvider != null) {
-            ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) type), world, x, y, z, xSpeed, ySpeed, zSpeed);
+            var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) type), world, x, y, z, xSpeed, ySpeed, zSpeed);
+            Minecraft.getInstance().particleEngine.add(particle);
         }
     }
 
     private void init() {
 
         hasBeenInit = true;
-        copyProvider = Minecraft.getInstance().particleEngine
-                .providers.get(BuiltInRegistries.PARTICLE_TYPE.getId(type));
+        copyProvider = PlatStuff.getParticleProvider(type);
         if (copyProvider != null) {
             try {
                 copyProvider = cloneProvider(copyProvider, spriteSet);

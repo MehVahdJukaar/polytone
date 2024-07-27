@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.SpriteTicker;
@@ -17,12 +18,15 @@ public class DayTimeTextureTicker implements SpriteTicker {
     private final InterpolationData interpolationData;
     private final float animationScaleFactor;
     private final TreeMap<Float, Integer> frameMap = new TreeMap<>();
+    private final int dayDuration;
 
     private int lastFrameIndex = 0;
 
     public DayTimeTextureTicker(SpriteContents.AnimatedTexture animationInfo,
-                                SpriteContents spriteContents, boolean interpolateFrames) {
+                                SpriteContents spriteContents, boolean interpolateFrames,
+                                int dayDuration) {
         this.animationInfo = animationInfo;
+        this.dayDuration = dayDuration;
         if (interpolateFrames) {
             this.interpolationData = new InterpolationData(spriteContents);
         } else {
@@ -48,8 +52,8 @@ public class DayTimeTextureTicker implements SpriteTicker {
     public void tickAndUpload(int x, int y) {
         Level level = Minecraft.getInstance().level;
         if (level == null) return;
-        long dayTime = level.dayTime() % 24000L;
-        float delta = dayTime / 24000.0F;
+        long dayTime = level.dayTime() % SharedConstants.TICKS_PER_GAME_DAY;
+        float delta = dayTime / (float) SharedConstants.TICKS_PER_GAME_DAY;
         // Calculate the current frame based on the day cycle
         var currentFrame = frameMap.floorEntry(delta);
 

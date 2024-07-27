@@ -114,6 +114,11 @@ public class CustomParticleType implements CustomParticleFactory {
         public void tick() {
             this.setSpriteFromAge(spriteSet);
             super.tick();
+            //TODO: check for anu block collision. also check this on my mods
+            if (this.hasPhysics && this.stoppedByCollision) {
+                this.remove();
+                return;
+            }
             if (this.ticker != null) {
                 if (this.ticker.roll != null) {
                     this.oRoll = this.roll;

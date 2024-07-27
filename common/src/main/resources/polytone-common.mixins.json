@@ -6,8 +6,6 @@
   "mixins": [
   ],
   "client": [
-    "ItemMixin",
-    "ItemStackMixin",
     "AbstractContainerMenuMixin",
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
@@ -27,7 +25,6 @@
     "SpriteContentsMixin",
     "VariantDeserializerMixin",
     "XpOrbMixin",
-    "accessor.DustParticleOptionAccessor",
     "accessor.BiomeAccessor",
     "accessor.DustParticleOptionAccessor",
     "accessor.SheepAccessor"

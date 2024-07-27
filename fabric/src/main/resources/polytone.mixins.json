@@ -15,7 +15,8 @@
     "GuiGraphicsMixin",
     "InventoryScreenMixin",
     "ItemColorsAccessor",
-    "ModelHackMixin"
+    "ModelHackMixin",
+    "ParticleEngineAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

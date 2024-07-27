@@ -1,1 +1,2 @@
-- fixed an issue with custom creative tabs
+- added copy_from parameter for custom particle type, allowing to copy vanilla ones
+- added day time dependant animated textures

@@ -13,10 +13,7 @@ import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.mixins.fabric.BlockColorsAccessor;
-import net.mehvahdjukaar.polytone.mixins.fabric.CreativeTabAccessor;
-import net.mehvahdjukaar.polytone.mixins.fabric.FabricItemGroupEntriesAccessor;
-import net.mehvahdjukaar.polytone.mixins.fabric.ItemColorsAccessor;
+import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.minecraft.client.Minecraft;
@@ -26,12 +23,14 @@ import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
+import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -241,6 +240,11 @@ public class PlatStuffImpl {
 
     public static float compatACModifyGamma(float partialTicks, float gamma) {
         return gamma;
+    }
+
+    public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
+        return ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine)
+                .getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getId(type));
     }
 
 

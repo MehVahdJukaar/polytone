@@ -44,8 +44,6 @@ accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall 
 accessible field net/minecraft/network/chat/TextColor value I
 mutable field net/minecraft/network/chat/TextColor value I
 
-accessible field net/minecraft/world/item/DyeColor textureDiffuseColor I
-mutable field net/minecraft/world/item/DyeColor textureDiffuseColor I
 # texture stuff
 accessible class net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
 accessible class net/minecraft/client/renderer/texture/SpriteContents$InterpolationData
@@ -59,10 +57,8 @@ accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedT
 accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture uploadFrame (III)V
 accessible field net/minecraft/client/renderer/texture/SpriteContents$FrameInfo time I
 
-accessible field net/minecraft/client/particle/ParticleEngine providers Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+accessible field net/minecraft/client/particle/Particle stoppedByCollision Z
 
-mutable field net/minecraft/world/item/DyeColor textureDiffuseColors [F
-accessible field net/minecraft/world/item/DyeColor textureDiffuseColors [F
 accessible field net/minecraft/world/item/DyeColor fireworkColor I
 mutable field net/minecraft/world/item/DyeColor fireworkColor I
 mutable field net/minecraft/world/item/DyeColor textColor I
@@ -72,6 +68,8 @@ mutable field net/minecraft/core/particles/DustParticleOptions REDSTONE_PARTICLE
 
 accessible field net/minecraft/world/level/block/RedStoneWireBlock COLORS [Lnet/minecraft/world/phys/Vec3;
 mutable field net/minecraft/world/level/block/RedStoneWireBlock COLORS [Lnet/minecraft/world/phys/Vec3;
+accessible field net/minecraft/world/item/DyeColor textureDiffuseColor I
+mutable field net/minecraft/world/item/DyeColor textureDiffuseColor I
 
 accessible field net/minecraft/client/particle/Particle xd D
 accessible field net/minecraft/client/particle/Particle yd D

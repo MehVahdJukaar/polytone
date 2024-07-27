@@ -6,16 +6,17 @@
   "mixins": [
   ],
   "client": [
-    "IClientFluidTypeExtensionsMixin",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "CreativeTabAccessor",
     "CurioInventoryScreenMixin",
     "GuiGraphicsMixin",
+    "IClientFluidTypeExtensionsMixin",
     "InventoryScreenMixin",
     "ItemColorsAccessor",
     "ModifiableBiomeAccessor",
-    "ModifiableBiomeInfoBiomeInfoAccessor"
+    "ModifiableBiomeInfoBiomeInfoAccessor",
+    "ParticleEngineAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

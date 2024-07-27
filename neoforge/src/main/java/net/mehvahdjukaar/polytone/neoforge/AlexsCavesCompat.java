@@ -1,9 +1,8 @@
-package net.mehvahdjukaar.polytone.forge;
+package net.mehvahdjukaar.polytone.neoforge;
 
 import com.github.alexmodguy.alexscaves.client.ClientProxy;
-import com.github.alexmodguy.alexscaves.mixin.client.LightTextureMixin;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;

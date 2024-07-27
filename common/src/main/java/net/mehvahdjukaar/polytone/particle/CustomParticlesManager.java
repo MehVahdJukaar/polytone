@@ -19,9 +19,9 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     public final MapRegistry<CustomParticleFactory> customParticles = new MapRegistry<>("Custom Particles");
 
-    public static final Codec<CustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = Codec.either(CustomParticleType.CODEC, SemiCustomParticleType.CODEC)
+    public static final Codec<CustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = Codec.either(SemiCustomParticleType.CODEC, CustomParticleType.CODEC)
             .xmap(e -> e.map(Function.identity(), Function.identity()),
-                    p -> p instanceof CustomParticleType c ? Either.left(c) : Either.right((SemiCustomParticleType) p));
+                    p -> p instanceof CustomParticleType c ? Either.right(c) : Either.left((SemiCustomParticleType) p));
 
     public CustomParticlesManager() {
         super("custom_particles");

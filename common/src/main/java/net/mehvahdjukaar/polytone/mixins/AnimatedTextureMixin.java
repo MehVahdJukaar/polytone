@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.texture.DayTimeTexture;
 import net.mehvahdjukaar.polytone.texture.DayTimeTextureTicker;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.SpriteTicker;
 import org.spongepowered.asm.mixin.Final;
@@ -22,22 +23,25 @@ public abstract class AnimatedTextureMixin implements DayTimeTexture {
     @Final
     SpriteContents field_28469;
     @Unique
-    private boolean polytone$usesWorldTime = false;
+    private boolean polytone$usesDayTime = false;
+    @Unique
+    private int polytone$dayDuration = SharedConstants.TICKS_PER_GAME_DAY;
 
     @Override
     public boolean polytone$usesDayTime() {
-        return polytone$usesWorldTime;
+        return polytone$usesDayTime;
     }
 
     @Override
     public void polytone$setUsesDayTime(boolean usesWorldTime) {
-        this.polytone$usesWorldTime = usesWorldTime;
+        this.polytone$usesDayTime = usesWorldTime;
     }
 
     @Inject(method = "createTicker", at = @At("HEAD"), cancellable = true)
     public void polytone$modifyTicker(CallbackInfoReturnable<SpriteTicker> cir) {
-        if (polytone$usesWorldTime) {
-            var t = new DayTimeTextureTicker((SpriteContents.AnimatedTexture) (Object) this, this.field_28469, this.interpolateFrames);
+        if (polytone$usesDayTime) {
+            var t = new DayTimeTextureTicker((SpriteContents.AnimatedTexture) (Object) this, this.field_28469,
+                    this.interpolateFrames, this.polytone$dayDuration);
             cir.setReturnValue(t);
         }
     }

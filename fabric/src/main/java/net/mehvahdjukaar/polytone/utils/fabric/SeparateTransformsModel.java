@@ -35,7 +35,7 @@ public class SeparateTransformsModel extends BlockModel {
     @Nullable
     public static BlockModel readModel(String loader, JsonDeserializationContext context,
                                        JsonObject jsonobject, BlockModel original) {
-        if (loader.equals("forge:separate_transforms")) {
+        if (loader.equals("neoforge:separate_transforms")) {
             BlockModel baseModel = context.deserialize(GsonHelper.getAsJsonObject(jsonobject,
                     "base"), BlockModel.class);
 

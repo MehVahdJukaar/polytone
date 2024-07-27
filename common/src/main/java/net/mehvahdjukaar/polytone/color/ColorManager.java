@@ -119,7 +119,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 if (param == null || param.equals("diffuse")) {
                     // save vanilla value
                     if (!vanillaDiffuseColors.containsKey(color)) {
-                        vanillaDiffuseColors.put(color, color.textureDiffuseColor);
+                        vanillaDiffuseColors.put(color, color.getTextureDiffuseColor());
                     }
                     color.textureDiffuseColor = FastColor.ARGB32.opaque(col);
                 } else if (param.equals("firework")) {
