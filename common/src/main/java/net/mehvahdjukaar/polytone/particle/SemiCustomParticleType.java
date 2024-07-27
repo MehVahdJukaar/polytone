@@ -4,10 +4,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -16,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 
 public class SemiCustomParticleType implements CustomParticleFactory {
 
@@ -23,14 +26,17 @@ public class SemiCustomParticleType implements CustomParticleFactory {
     private ParticleProvider<?> copyProvider = null;
     private boolean hasBeenInit = false;
     private ParticleEngine.MutableSpriteSet spriteSet = null;
+    private final @Nullable CustomParticleType.Initializer initializer;
 
-    public SemiCustomParticleType(ParticleType<?> type) {
+    public SemiCustomParticleType(ParticleType<?> type, Optional<CustomParticleType.Initializer> initializer) {
         this.type = type;
+        this.initializer = initializer.orElse(null);
     }
 
     public static final Codec<SemiCustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("copy_from").forGetter(c -> c.type)
-    ).apply(i, SemiCustomParticleType::new));
+            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("copy_from").forGetter(c -> c.type),
+            StrOpt.of(CustomParticleType.Initializer.CODEC, "initializer").forGetter(c -> Optional.ofNullable(c.initializer))
+            ).apply(i, SemiCustomParticleType::new));
 
 
     @Override
@@ -39,13 +45,39 @@ public class SemiCustomParticleType implements CustomParticleFactory {
     }
 
     @Override
-    public void createParticle(ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, @Nullable BlockState state) {
+    public void createParticle(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, @Nullable BlockState state) {
         if (!hasBeenInit) {
             init();
         }
 
         if (copyProvider != null) {
-            var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) type), world, x, y, z, xSpeed, ySpeed, zSpeed);
+            var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) type), level, x, y, z, xSpeed, ySpeed, zSpeed);
+
+            //initialize
+            if (initializer != null && particle != null) {
+                BlockPos pos = BlockPos.containing(x, y, z);
+                if (initializer.roll() != null) {
+                    particle.roll = (float) initializer.roll().getValue(level, pos, state);
+                }
+                if (initializer.size() != null) {
+                    particle.scale((float) initializer.size().getValue(level, pos, state));
+                }
+                if (initializer.red() != null) {
+                    particle.rCol = (float) initializer.red().getValue(level, pos, state);
+                }
+                if (initializer.green() != null) {
+                    particle.gCol = (float) initializer.green().getValue(level, pos, state);
+                }
+                if (initializer.blue() != null) {
+                    particle.bCol = (float) initializer.blue().getValue(level, pos, state);
+                }
+                if (initializer.alpha() != null) {
+                    particle.alpha = (float) initializer.alpha().getValue(level, pos, state);
+                }
+                if (initializer.lifetime() != null) {
+                    particle.setLifetime((int) initializer.lifetime().getValue(level, pos, state));
+                }
+            }
             Minecraft.getInstance().particleEngine.add(particle);
         }
     }
