@@ -1,1 +1,2 @@
-fixed a forge issue
+- un "fixed" code for legacy grid colormap parsing that was aparently shifted. Old code was correct.
+- Apologies for the version spam but this is important as people would complain otherwise
