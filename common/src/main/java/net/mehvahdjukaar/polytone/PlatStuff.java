@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -122,5 +123,10 @@ public class PlatStuff {
     @ExpectPlatform
     public static float compatACModifyGamma(float partialTicks, float gamma) {
      throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
+        throw new AssertionError();
     }
 }
