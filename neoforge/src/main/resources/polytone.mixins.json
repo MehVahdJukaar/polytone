@@ -2,7 +2,7 @@
   "minVersion": "0.8",
   "required": true,
   "compatibilityLevel": "JAVA_21",
-  "package": "net.mehvahdjukaar.polytone.mixins.forge",
+  "package": "net.mehvahdjukaar.polytone.mixins.neoforge",
   "mixins": [
   ],
   "client": [

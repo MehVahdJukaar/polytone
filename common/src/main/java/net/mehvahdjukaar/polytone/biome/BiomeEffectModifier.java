@@ -1,15 +1,17 @@
 package net.mehvahdjukaar.polytone.biome;
 
-import com.mojang.datafixers.util.Function12;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.biome.*;
+import net.minecraft.world.phys.Vec2;
 
 import java.util.Optional;
 import java.util.Set;
@@ -23,6 +25,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Optional<AmbientMoodSettings> ambientMoodSettings,
                                   Optional<AmbientAdditionsSettings> ambientAdditionsSettings,
                                   Optional<Music> backgroundMusic,
+                                  Optional<Float> fogStart, Optional<Float> fogEnd,
                                   Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
@@ -38,6 +41,8 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
             AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
             Music.CODEC.optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
+            Codec.FLOAT.optionalFieldOf("fog_start").forGetter(BiomeEffectModifier::fogStart),
+            Codec.FLOAT.optionalFieldOf("fog_end").forGetter(BiomeEffectModifier::fogEnd),
             TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(BiomeEffectModifier::explicitTargets)
     ).apply(instance, BiomeEffectModifier::new));
 
@@ -45,6 +50,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         return new BiomeEffectModifier(Optional.empty(), Optional.of(waterColor),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Set.of());
     }
 
@@ -63,6 +69,8 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                 other.ambientMoodSettings().isPresent() ? other.ambientMoodSettings() : this.ambientMoodSettings(),
                 other.ambientAdditionsSettings().isPresent() ? other.ambientAdditionsSettings() : this.ambientAdditionsSettings(),
                 other.backgroundMusic().isPresent() ? other.backgroundMusic() : this.backgroundMusic(),
+                other.fogStart().isPresent() ? other.fogStart() : this.fogStart(),
+                other.fogEnd().isPresent() ? other.fogEnd() : this.fogEnd(),
                 mergeSet(explicitTargets, other.explicitTargets)
         );
     }
@@ -71,32 +79,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
     public BiomeSpecialEffects apply(Biome biome) {
         //on forge this will get the modified ones if they exist
         BiomeSpecialEffects effects = biome.getSpecialEffects();
-        var builder = new BiomeSpecialEffects.Builder();
-
-        int newFog = effects.getFogColor();
-        if (fogColor.isPresent()) {
-            newFog = fogColor.get();
-        }
-        builder.fogColor(newFog);
-
-        int newWaterColor = effects.getWaterColor();
-        if (waterColor.isPresent()) {
-            newWaterColor = waterColor.get();
-        }
-        builder.waterColor(newWaterColor);
-
-        int newWaterFogColor = effects.getWaterFogColor();
-        if (waterFogColor.isPresent()) {
-            newWaterFogColor = waterFogColor.get();
-        }
-        builder.waterFogColor(newWaterFogColor);
-
-
-        int newSkyColor = effects.getSkyColor();
-        if (skyColor.isPresent()) {
-            newSkyColor = skyColor.get();
-        }
-        builder.skyColor(newSkyColor);
+        var builder = getBuilder(effects);
 
         Optional<Integer> newFoliageColorOverride = effects.getFoliageColorOverride();
         if (foliageColorOverride.isPresent()) {
@@ -159,6 +142,36 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         return copy;
     }
 
+    private BiomeSpecialEffects.Builder getBuilder(BiomeSpecialEffects effects) {
+        var builder = new BiomeSpecialEffects.Builder();
+
+        int newFog = effects.getFogColor();
+        if (fogColor.isPresent()) {
+            newFog = fogColor.get();
+        }
+        builder.fogColor(newFog);
+
+        int newWaterColor = effects.getWaterColor();
+        if (waterColor.isPresent()) {
+            newWaterColor = waterColor.get();
+        }
+        builder.waterColor(newWaterColor);
+
+        int newWaterFogColor = effects.getWaterFogColor();
+        if (waterFogColor.isPresent()) {
+            newWaterFogColor = waterFogColor.get();
+        }
+        builder.waterFogColor(newWaterFogColor);
+
+
+        int newSkyColor = effects.getSkyColor();
+        if (skyColor.isPresent()) {
+            newSkyColor = skyColor.get();
+        }
+        builder.skyColor(newSkyColor);
+        return builder;
+    }
+
     private BiomeSpecialEffects copy(BiomeSpecialEffects effects) {
         var builder = new BiomeSpecialEffects.Builder();
         builder.fogColor(effects.getFogColor());
@@ -200,5 +213,13 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         oldEffects.ambientMoodSettings = newEffects.getAmbientMoodSettings();
         oldEffects.ambientAdditionsSettings = newEffects.getAmbientAdditionsSettings();
         oldEffects.backgroundMusic = newEffects.getBackgroundMusic();
+    }
+
+    public boolean modifyFogParameter() {
+        return fogStart.isPresent() || fogEnd.isPresent();
+    }
+
+    public Vec2 modifyFogParameters() {
+        return new Vec2(fogStart.orElse(1f), fogEnd.orElse(1f));
     }
 }

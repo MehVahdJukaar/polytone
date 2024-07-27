@@ -1,9 +1,8 @@
-package net.mehvahdjukaar.polytone.mixins.forge;
+package net.mehvahdjukaar.polytone.mixins.neoforge;
 
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.biome.Biome;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 

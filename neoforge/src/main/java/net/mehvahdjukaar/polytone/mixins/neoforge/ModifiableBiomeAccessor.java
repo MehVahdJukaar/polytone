@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.mixins.forge;
+package net.mehvahdjukaar.polytone.mixins.neoforge;
 
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import org.spongepowered.asm.mixin.Mixin;

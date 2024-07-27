@@ -1,6 +1,6 @@
-package net.mehvahdjukaar.polytone.mixins.forge;
+package net.mehvahdjukaar.polytone.mixins.neoforge;
 
-import net.mehvahdjukaar.polytone.fluid.forge.FluidPropertiesManagerImpl;
+import net.mehvahdjukaar.polytone.fluid.neoforge.FluidPropertiesManagerImpl;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidType;
 import org.spongepowered.asm.mixin.Mixin;

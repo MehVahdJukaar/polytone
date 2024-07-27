@@ -1,9 +1,8 @@
-package net.mehvahdjukaar.polytone.utils.forge;
+package net.mehvahdjukaar.polytone.utils.neoforge;
 
 import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.utils.BakedQuadBuilder;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;

@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.mixins.forge;
+package net.mehvahdjukaar.polytone.mixins.neoforge;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

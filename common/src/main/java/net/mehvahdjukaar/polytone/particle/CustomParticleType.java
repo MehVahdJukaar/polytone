@@ -27,7 +27,6 @@ public class CustomParticleType implements CustomParticleFactory {
         this.ticker = ticker;
     }
 
-
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
             RenderType.CODEC.optionalFieldOf("render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
@@ -114,11 +113,7 @@ public class CustomParticleType implements CustomParticleFactory {
         public void tick() {
             this.setSpriteFromAge(spriteSet);
             super.tick();
-            //TODO: check for anu block collision. also check this on my mods
-            if (this.hasPhysics && this.stoppedByCollision) {
-                this.remove();
-                return;
-            }
+
             if (this.ticker != null) {
                 if (this.ticker.roll != null) {
                     this.oRoll = this.roll;
@@ -160,6 +155,10 @@ public class CustomParticleType implements CustomParticleFactory {
                 }
             }
             if(this.x == this.xo && this.y == this.yo && this.z == this.zo && hasPhysics){
+                this.remove();
+            }
+            //TODO: check for anu block collision. also check this on my mods
+            if (this.hasPhysics && this.stoppedByCollision) {
                 this.remove();
             }
         }

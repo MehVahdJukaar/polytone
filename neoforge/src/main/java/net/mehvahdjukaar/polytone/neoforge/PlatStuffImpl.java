@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.neoforge;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.mehvahdjukaar.polytone.mixins.forge.*;
+import net.mehvahdjukaar.polytone.mixins.neoforge.*;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;

@@ -1,2 +1,2 @@
-- added copy_from parameter for custom particle type, allowing to copy vanilla ones
-- added day time dependant animated textures
+- Added a biomes filter to particle emitters
+- Biome modifiers can now alter fog shape
