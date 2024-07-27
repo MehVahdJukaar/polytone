@@ -5,6 +5,7 @@ import cpw.mods.modlauncher.api.INameMappingService;
 import net.mehvahdjukaar.polytone.mixins.forge.CreativeTabAccessor;
 import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeAccessor;
 import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeInfoBiomeInfoAccessor;
+import net.mehvahdjukaar.polytone.mixins.forge.ParticleEngineAccessor;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -12,12 +13,16 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -261,6 +266,11 @@ public class PlatStuffImpl {
 
     public static float compatACModifyGamma(float partialTicks, float gamma) {
         return AC ? AlexsCavesCompat.modifyGamma(partialTicks, gamma) : gamma;
+    }
+
+    public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
+       return  ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).getProviders()
+                .get(BuiltInRegistries.PARTICLE_TYPE.getKey(type));
     }
 
 

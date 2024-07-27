@@ -6,12 +6,13 @@
   "mixins": [
   ],
   "client": [
-    "CreativeTabAccessor",
     "AbstractContainerScreenMixin",
+    "CreativeTabAccessor",
     "CurioInventoryScreenMixin",
     "InventoryScreenMixin",
     "ModifiableBiomeAccessor",
-    "ModifiableBiomeInfoBiomeInfoAccessor"
+    "ModifiableBiomeInfoBiomeInfoAccessor",
+    "ParticleEngineAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
