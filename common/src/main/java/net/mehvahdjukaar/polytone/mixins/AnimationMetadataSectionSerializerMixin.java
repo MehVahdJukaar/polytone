@@ -16,8 +16,13 @@ public class AnimationMetadataSectionSerializerMixin {
     @ModifyReturnValue(method = "fromJson(Lcom/google/gson/JsonObject;)Lnet/minecraft/client/resources/metadata/animation/AnimationMetadataSection;", at = @At("RETURN"))
     public AnimationMetadataSection polytone$addWorldTimeTextureData(AnimationMetadataSection original,
                                                                      JsonObject json) {
-        if (GsonHelper.getAsBoolean(json, "use_day_time", false)) {
-            ((DayTimeTexture) original).polytone$setUsesDayTime(true);
+        DayTimeTexture.Mode mode = DayTimeTexture.Mode.get(json.get("mode"));
+        if (mode != null) {
+            ((DayTimeTexture) original).polytone$setMode(mode);
+        }
+
+        if (json.has("day_duration")) {
+            ((DayTimeTexture) original).polytone$setDayDuration(GsonHelper.getAsInt(json, "day_duration"));
         }
         return original;
     }

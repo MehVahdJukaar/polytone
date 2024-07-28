@@ -1,6 +1,6 @@
 {
   "animation": {
-    "mode": "day_time",
+    "mode": "weather",
     "interpolate": true
   }
 }

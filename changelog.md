@@ -1,2 +1,2 @@
-- Added a biomes filter to particle emitters
-- Biome modifiers can now alter fog shape
+- fixed an issue with colormap samplers having some floating point rounding errors
+- added weather dependant animated textures

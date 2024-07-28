@@ -25,7 +25,7 @@ public abstract class ModelBlockRendererMixin {
                                              float brightness0, float brightness1, float brightness2, float brightness3,
                                              int lightmap0, int lightmap1, int lightmap2, int lightmap3,
                                              int packedOverlay, CallbackInfo ci,
-                                             @Local LocalRef<BakedQuad> mutableQuad) {
+                                             @Local(argsOnly = true) LocalRef<BakedQuad> mutableQuad) {
         BakedQuad newQuad = Polytone.VARIANT_TEXTURES.maybeModify(quad, level, state, pos);
 
         if (newQuad != null){

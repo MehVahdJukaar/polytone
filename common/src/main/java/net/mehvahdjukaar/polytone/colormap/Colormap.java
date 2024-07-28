@@ -177,8 +177,9 @@ public class Colormap implements IColorGetter, ColorResolver {
         int width = image.width();
         int height = image.height();
 
-        int w = (int) ((1.0 - textX) * (width - 1));
-        int h = (int) ((1.0 - textY) * (height - 1));
+        //gets rid of floating point errors for biome id map stuff
+        int w = (int) Math.round((1.0 - textX) * (width - 1));
+        int h = (int) Math.round((1.0 - textY) * (height - 1));
 
         return w >= width || h >= height ? defValue : image.pixels()[h][w];
     }
