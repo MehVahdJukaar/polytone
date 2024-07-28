@@ -16,7 +16,7 @@ public record PolytoneFluidRenderHandlerWrapper(FluidRenderHandler instance,
                                                 FluidPropertyModifier modifier) implements FluidRenderHandler {
     @Override
     public TextureAtlasSprite[] getFluidSprites(@Nullable BlockAndTintGetter view, @Nullable BlockPos pos, FluidState state) {
-        return instance.getFluidSprites(view, pos, state);
+         return instance.getFluidSprites(view, pos, state);
     }
 
     @Override

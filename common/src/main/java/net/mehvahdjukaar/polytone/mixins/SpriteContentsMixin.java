@@ -15,8 +15,11 @@ public class SpriteContentsMixin {
     @ModifyReturnValue(method = "createAnimatedTexture", at = @At("RETURN"))
     public SpriteContents.AnimatedTexture polytone$addWorldTimeTextureData(SpriteContents.AnimatedTexture original,
                                                                            @Local(argsOnly = true) AnimationMetadataSection metadata) {
-        if (((DayTimeTexture) metadata).polytone$usesDayTime()) {
-            ((DayTimeTexture) original).polytone$setUsesDayTime(true);
+        if(original != null) {
+            ((DayTimeTexture) original).polytone$setMode(
+                    ((DayTimeTexture) metadata).polytone$getMode());
+            ((DayTimeTexture) original).polytone$setDayDuration(
+                    ((DayTimeTexture) metadata).polytone$getDayDuration());
         }
         return original;
     }

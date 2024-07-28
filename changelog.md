@@ -1,2 +1,2 @@
-- un "fixed" code for legacy grid colormap parsing that was aparently shifted. Old code was correct.
-- Apologies for the version spam but this is important as people would complain otherwise
+- fixed an issue with colormap samplers having some floating point rounding errors
+- added weather dependant animated textures

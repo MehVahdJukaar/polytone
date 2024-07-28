@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.SpriteTicker;
@@ -19,14 +18,16 @@ public class DayTimeTextureTicker implements SpriteTicker {
     private final float animationScaleFactor;
     private final TreeMap<Float, Integer> frameMap = new TreeMap<>();
     private final int dayDuration;
+    private final DayTimeTexture.Mode mode;
 
     private int lastFrameIndex = 0;
 
     public DayTimeTextureTicker(SpriteContents.AnimatedTexture animationInfo,
                                 SpriteContents spriteContents, boolean interpolateFrames,
-                                int dayDuration) {
+                                int dayDuration, DayTimeTexture.Mode mode) {
         this.animationInfo = animationInfo;
         this.dayDuration = dayDuration;
+        this.mode = mode;
         if (interpolateFrames) {
             this.interpolationData = new InterpolationData(spriteContents);
         } else {
@@ -50,16 +51,12 @@ public class DayTimeTextureTicker implements SpriteTicker {
 
     @Override
     public void tickAndUpload(int x, int y) {
-        Level level = Minecraft.getInstance().level;
-        if (level == null) return;
-        long dayTime = level.dayTime() % SharedConstants.TICKS_PER_GAME_DAY;
-        float delta = dayTime / (float) SharedConstants.TICKS_PER_GAME_DAY;
+        Float delta = getDelta();
+        if (delta == null) return;
         // Calculate the current frame based on the day cycle
         var currentFrame = frameMap.floorEntry(delta);
 
-        if(currentFrame == null){
-            int aa = 1;
-        }
+
         Integer frameOrdinal = currentFrame.getValue();
         var frames = this.animationInfo.frames;
         SpriteContents.FrameInfo frameInfo = frames.get(frameOrdinal);
@@ -81,6 +78,20 @@ public class DayTimeTextureTicker implements SpriteTicker {
             }
         }
         lastFrameIndex = frameInfo.index;
+    }
+
+    private @Nullable Float getDelta() {
+        Level level = Minecraft.getInstance().level;
+        if (level == null) return null;
+
+        if (mode == DayTimeTexture.Mode.WEATHER) {
+            float partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
+            float max = level.isThundering() ? 2 / 3f : 1 / 3f;
+            return level.getRainLevel(partialTicks) * max + 1 / 6; //needs to fall in between those 2 so we dont get interpolation as this stuff doesnt loop back
+        }
+
+        long dayTime = level.dayTime() % dayDuration;
+        return dayTime / (float) dayDuration;
     }
 
     @Override

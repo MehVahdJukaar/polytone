@@ -28,7 +28,7 @@ dependencies {
 
     implementation include( 'net.objecthunter:exp4j:0.4.8')
 
-    //modRuntimeOnly("maven.modrinth:sodium:mc1.20.3-0.5.7")
+    modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.5.11")
     modImplementation "curse.maven:continuity-531351:5425853"
 }
 

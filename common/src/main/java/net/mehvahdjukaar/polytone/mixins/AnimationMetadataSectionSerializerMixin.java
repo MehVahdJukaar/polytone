@@ -6,7 +6,6 @@ import net.mehvahdjukaar.polytone.texture.DayTimeTexture;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSectionSerializer;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -17,9 +16,11 @@ public class AnimationMetadataSectionSerializerMixin {
     @ModifyReturnValue(method = "fromJson(Lcom/google/gson/JsonObject;)Lnet/minecraft/client/resources/metadata/animation/AnimationMetadataSection;", at = @At("RETURN"))
     public AnimationMetadataSection polytone$addWorldTimeTextureData(AnimationMetadataSection original,
                                                                      JsonObject json) {
-        if (GsonHelper.getAsBoolean(json, "use_day_time", false)) {
-            ((DayTimeTexture) original).polytone$setUsesDayTime(true);
+        DayTimeTexture.Mode mode = DayTimeTexture.Mode.get(json.get("mode"));
+        if (mode != null) {
+            ((DayTimeTexture) original).polytone$setMode(mode);
         }
+
         if (json.has("day_duration")) {
             ((DayTimeTexture) original).polytone$setDayDuration(GsonHelper.getAsInt(json, "day_duration"));
         }
