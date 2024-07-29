@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
@@ -23,6 +24,7 @@ public class BlockParticleExpression {
     private final String unparsed;
 
     private final boolean hasTime;
+    private final boolean hasRain;
     private final boolean hasX;
     private final boolean hasY;
     private final boolean hasZ;
@@ -32,6 +34,7 @@ public class BlockParticleExpression {
     private static final String POS_X = "POS_X";
     private static final String POS_Y = "POS_Y";
     private static final String POS_Z = "POS_Z";
+    private static final String RAIN = "RAIN";
     private static final String STATE_FUNC = "state_prop";
     private static final Function STATE_PROP = new Function(STATE_FUNC, 1) {
         @Override
@@ -72,12 +75,12 @@ public class BlockParticleExpression {
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
-                .variables(TIME, POS_X, POS_Y, POS_Z)
+                .variables(TIME, POS_X, POS_Y, POS_Z, RAIN)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
 
-    public BlockParticleExpression(String expression){
+    public BlockParticleExpression(String expression) {
         this(createExpression(expression), expression);
     }
 
@@ -89,6 +92,7 @@ public class BlockParticleExpression {
         this.hasY = unparsed.contains(POS_Y);
         this.hasZ = unparsed.contains(POS_Z);
         this.hasState = unparsed.contains(STATE_FUNC);
+        this.hasRain = unparsed.contains(RAIN);
     }
 
     public double getValue(Vec3 pos, float time) {
@@ -96,6 +100,7 @@ public class BlockParticleExpression {
         if (hasX) expression.setVariable(POS_X, pos.x);
         if (hasY) expression.setVariable(POS_Y, pos.y);
         if (hasZ) expression.setVariable(POS_Z, pos.z);
+        if (hasRain) expression.setVariable(RAIN, Minecraft.getInstance().level.getRainLevel(1));
         return expression.evaluate();
     }
 
@@ -104,6 +109,7 @@ public class BlockParticleExpression {
         if (hasX) expression.setVariable(POS_X, pos.getX());
         if (hasY) expression.setVariable(POS_Y, pos.getY());
         if (hasZ) expression.setVariable(POS_Z, pos.getZ());
+        if (hasRain) expression.setVariable(RAIN, level.getRainLevel(1));
         if (hasState) STATE_HACK.set(state);
         return expression.evaluate();
     }

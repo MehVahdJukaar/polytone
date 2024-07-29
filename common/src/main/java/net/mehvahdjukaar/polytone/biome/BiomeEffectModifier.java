@@ -1,9 +1,12 @@
 package net.mehvahdjukaar.polytone.biome;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.mehvahdjukaar.polytone.utils.Weather;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
@@ -11,11 +14,14 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.biome.*;
 import net.minecraft.world.phys.Vec2;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> waterColor,
                                   Optional<Integer> waterFogColor, Optional<Integer> skyColor,
@@ -26,7 +32,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Optional<AmbientMoodSettings> ambientMoodSettings,
                                   Optional<AmbientAdditionsSettings> ambientAdditionsSettings,
                                   Optional<Music> backgroundMusic,
-                                  Optional<Float> fogStart, Optional<Float> fogEnd,
+                                  Optional<FogParam> fogStart, Optional<FogParam> fogEnd,
                                   Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
@@ -42,8 +48,8 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
             AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
             Music.CODEC.optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
-            Codec.FLOAT.optionalFieldOf("fog_start").forGetter(BiomeEffectModifier::fogStart),
-            Codec.FLOAT.optionalFieldOf("fog_end").forGetter(BiomeEffectModifier::fogEnd),
+            FogParam.CODEC.optionalFieldOf("fog_start").forGetter(BiomeEffectModifier::fogStart),
+            FogParam.CODEC.optionalFieldOf("fog_end").forGetter(BiomeEffectModifier::fogEnd),
             TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(BiomeEffectModifier::explicitTargets)
     ).apply(instance, BiomeEffectModifier::new));
 
@@ -221,6 +227,31 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
     }
 
     public Vec2 modifyFogParameters() {
-        return new Vec2(fogStart.orElse(1f), fogEnd.orElse(1f));
+        return new Vec2(fogStart.map(FogParam::get).orElse(1f), fogEnd.map(FogParam::get).orElse(1f));
     }
+
+    public interface FogParam {
+        float get();
+
+        Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> () -> f, FogParam::get);
+        Codec<FogParam> CODEC = Codec.either(
+                SIMPLE_CODEC,
+                Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
+                        .xmap(FogMap::new, FogMap::map).codec()
+        ).xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
+    }
+
+    private static final FogParam ONE = () -> 1f;
+
+    public record FogMap(Map<Weather, FogParam> map) implements FogParam {
+
+        @Override
+        public float get() {
+            ClientLevel level = Minecraft.getInstance().level;
+            Weather w = Weather.get(level);
+            return map.getOrDefault(w, ONE).get();
+        }
+    }
+
+
 }

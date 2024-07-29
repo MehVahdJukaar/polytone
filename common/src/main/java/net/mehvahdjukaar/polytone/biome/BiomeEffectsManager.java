@@ -7,8 +7,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -170,8 +168,9 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     private static float lastFogStart = 1;
     private static float lastFogEnd = 1;
+
     @Nullable
-    public Vec2 modifyFogParameters( float fogNearPlane, float fogFarPlane) {
+    public Vec2 modifyFogParameters(float fogNearPlane, float fogFarPlane) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null) return null;
@@ -181,10 +180,10 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         var fogMod = fogParametersModifiers.get(biome.value());
         Vec2 targetFog = null;
         if (fogMod != null) {
-            targetFog = new Vec2(6, 1);// fogMod.modifyFogParameters();
+            targetFog = fogMod.modifyFogParameters();
         }
 
-        if(targetFog == null && (Mth.abs(lastFogStart - 1)>0.02f || Mth.abs(lastFogEnd - 1) > 0.02f)){
+        if (targetFog == null && (Mth.abs(lastFogStart - 1) > 0.02f || Mth.abs(lastFogEnd - 1) > 0.02f)) {
             targetFog = new Vec2(1, 1);
         }
         if (targetFog != null) {
