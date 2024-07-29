@@ -1,2 +1,2 @@
-- fixed an issue with colormap samplers having some floating point rounding errors
-- added weather dependant animated textures
+- biome modifiers can change fog on a per weather basis
+- added RAIN prameter to block emitters particle expressions
