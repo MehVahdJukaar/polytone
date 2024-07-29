@@ -23,9 +23,9 @@ public abstract class AnimatedTextureMixin implements DayTimeTexture {
     @Final
     SpriteContents field_28469;
     @Unique
-    private Mode polytone$mode = Mode.GAME_TIME;
+    private Mode polytone$mode = Mode.VANILLA;
     @Unique
-    private int polytone$dayDuration = SharedConstants.TICKS_PER_GAME_DAY;
+    private int polytone$dayDuration = 0;
 
     @Override
     public Mode polytone$getMode() {
@@ -35,21 +35,26 @@ public abstract class AnimatedTextureMixin implements DayTimeTexture {
     @Override
     public void polytone$setMode(Mode mode) {
         this.polytone$mode = mode;
+        if (mode == Mode.DAY_TIME) {
+            polytone$dayDuration = SharedConstants.TICKS_PER_GAME_DAY;
+        } else if (mode == Mode.GAME_TIME) {
+            polytone$dayDuration = 30;
+        }
     }
 
     @Override
-    public void polytone$setDayDuration(int duration) {
+    public void polytone$setTimeCycleDuration(int duration) {
         this.polytone$dayDuration = duration;
     }
 
     @Override
-    public int polytone$getDayDuration() {
+    public int polytone$getTimeCycleDuration() {
         return polytone$dayDuration;
     }
 
     @Inject(method = "createTicker", at = @At("HEAD"), cancellable = true)
     public void polytone$modifyTicker(CallbackInfoReturnable<SpriteTicker> cir) {
-        if (polytone$mode != Mode.GAME_TIME) {
+        if (polytone$mode != Mode.VANILLA) {
             var t = new DayTimeTextureTicker((SpriteContents.AnimatedTexture) (Object) this, this.field_28469,
                     this.interpolateFrames, this.polytone$dayDuration, this.polytone$mode);
             cir.setReturnValue(t);

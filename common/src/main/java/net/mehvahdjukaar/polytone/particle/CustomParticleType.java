@@ -2,11 +2,15 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +25,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private final @Nullable Ticker ticker;
     private transient SpriteSet spriteSet;
 
-    public CustomParticleType(RenderType renderType, @Nullable Initializer initializer, @Nullable Ticker ticker) {
+    private CustomParticleType(RenderType renderType, @Nullable Initializer initializer, @Nullable Ticker ticker) {
         this.renderType = renderType;
         this.initializer = initializer;
         this.ticker = ticker;
@@ -98,6 +102,10 @@ public class CustomParticleType implements CustomParticleFactory {
                 if (initializer.alpha != null) {
                     this.alpha = (float) initializer.alpha.getValue(level, pos, state);
                 }
+                if (initializer.colormap != null) {
+                    float[] unpack = ColorUtils.unpack(initializer.colormap.getColor(state, level, pos, 0));
+                    this.setColor(unpack[0], unpack[1], unpack[2]);
+                }
                 if (initializer.lifetime != null) {
                     this.lifetime = (int) initializer.lifetime.getValue(level, pos, state);
                 }
@@ -135,6 +143,11 @@ public class CustomParticleType implements CustomParticleFactory {
                 if (this.ticker.alpha != null) {
                     this.alpha = (float) this.ticker.alpha.get(this, level);
                 }
+                if (this.ticker.colormap != null) {
+                    BlockPos pos = BlockPos.containing(x, y, z);
+                    float[] unpack = ColorUtils.unpack(this.ticker.colormap.getColor(null, level, pos, 0));
+                    this.setColor(unpack[0], unpack[1], unpack[2]);
+                }
                 if (this.ticker.x != null) {
                     this.x = this.ticker.x.get(this, level);
                 }
@@ -154,7 +167,7 @@ public class CustomParticleType implements CustomParticleFactory {
                     this.zd = this.ticker.dz.get(this, level);
                 }
             }
-            if(this.x == this.xo && this.y == this.yo && this.z == this.zo && hasPhysics){
+            if (this.x == this.xo && this.y == this.yo && this.z == this.zo && hasPhysics) {
                 this.remove();
             }
             //TODO: check for anu block collision. also check this on my mods
@@ -201,7 +214,8 @@ public class CustomParticleType implements CustomParticleFactory {
                           @Nullable ParticleExpression size,
                           @Nullable ParticleExpression red, @Nullable ParticleExpression green,
                           @Nullable ParticleExpression blue, @Nullable ParticleExpression alpha,
-                          @Nullable ParticleExpression roll) {
+                          @Nullable ParticleExpression roll,
+                          @Nullable IColorGetter colormap) {
 
         private static final Codec<Ticker> CODEC = RecordCodecBuilder.create(i -> i.group(
                 ParticleExpression.CODEC.optionalFieldOf("x").forGetter(p -> Optional.ofNullable(p.x)),
@@ -215,7 +229,8 @@ public class CustomParticleType implements CustomParticleFactory {
                 ParticleExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.green)),
                 ParticleExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blue)),
                 ParticleExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
-                ParticleExpression.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.alpha))
+                ParticleExpression.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.alpha)),
+                Colormap.CODEC.optionalFieldOf("colormap").forGetter(p -> Optional.ofNullable(p.colormap))
         ).apply(i, Ticker::new));
 
         private Ticker(Optional<ParticleExpression> x, Optional<ParticleExpression> y,
@@ -223,25 +238,28 @@ public class CustomParticleType implements CustomParticleFactory {
                        Optional<ParticleExpression> dy, Optional<ParticleExpression> dz,
                        Optional<ParticleExpression> size, Optional<ParticleExpression> red,
                        Optional<ParticleExpression> green, Optional<ParticleExpression> blue,
-                       Optional<ParticleExpression> alpha, Optional<ParticleExpression> roll) {
+                       Optional<ParticleExpression> alpha, Optional<ParticleExpression> roll,
+                       Optional<IColorGetter> colormap) {
             this(x.orElse(null), y.orElse(null),
                     z.orElse(null), dx.orElse(null),
                     dy.orElse(null), dz.orElse(null),
                     size.orElse(null), red.orElse(null),
                     green.orElse(null), blue.orElse(null),
-                    alpha.orElse(null), roll.orElse(null));
+                    alpha.orElse(null), roll.orElse(null),
+                    colormap.orElse(null));
         }
     }
 
-   public record Initializer(@Nullable BlockParticleExpression size,
-                               @Nullable BlockParticleExpression lifetime,
-                               @Nullable BlockParticleExpression red,
-                               @Nullable BlockParticleExpression green,
-                               @Nullable BlockParticleExpression blue,
-                               @Nullable BlockParticleExpression alpha,
-                               @Nullable BlockParticleExpression roll,
-                               @Nullable BlockParticleExpression friction,
-                               boolean hasPhysics) {
+    public record Initializer(@Nullable BlockParticleExpression size,
+                              @Nullable BlockParticleExpression lifetime,
+                              @Nullable BlockParticleExpression red,
+                              @Nullable BlockParticleExpression green,
+                              @Nullable BlockParticleExpression blue,
+                              @Nullable BlockParticleExpression alpha,
+                              @Nullable BlockParticleExpression roll,
+                              @Nullable BlockParticleExpression friction,
+                              @Nullable IColorGetter colormap,
+                              boolean hasPhysics) {
 
         public static final Codec<Initializer> CODEC = RecordCodecBuilder.create(i -> i.group(
                 BlockParticleExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.size)),
@@ -252,6 +270,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 BlockParticleExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
                 BlockParticleExpression.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.roll)),
                 BlockParticleExpression.CODEC.optionalFieldOf("friction").forGetter(p -> Optional.ofNullable(p.friction)),
+                Colormap.CODEC.optionalFieldOf("colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
                 Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(p -> p.hasPhysics)
         ).apply(i, Initializer::new));
 
@@ -259,10 +278,11 @@ public class CustomParticleType implements CustomParticleFactory {
                             Optional<BlockParticleExpression> red, Optional<BlockParticleExpression> green,
                             Optional<BlockParticleExpression> blue, Optional<BlockParticleExpression> alpha,
                             Optional<BlockParticleExpression> roll,
-                            Optional<BlockParticleExpression> friction, boolean hasPhysics) {
+                            Optional<BlockParticleExpression> friction,
+                            Optional<IColorGetter> colormap, boolean hasPhysics) {
             this(size.orElse(null), lifetime.orElse(null), red.orElse(null),
                     green.orElse(null), blue.orElse(null), alpha.orElse(null),
-                    roll.orElse(null), friction.orElse(null), hasPhysics);
+                    roll.orElse(null), friction.orElse(null), colormap.orElse(null), hasPhysics);
         }
     }
 }

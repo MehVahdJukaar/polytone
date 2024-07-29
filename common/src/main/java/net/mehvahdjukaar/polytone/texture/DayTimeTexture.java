@@ -12,12 +12,12 @@ public interface DayTimeTexture {
 
     void polytone$setMode(Mode mode);
 
-    int polytone$getDayDuration();
+    int polytone$getTimeCycleDuration();
 
-    void polytone$setDayDuration(int duration);
+    void polytone$setTimeCycleDuration(int duration);
 
     enum Mode implements StringRepresentable {
-        GAME_TIME, DAY_TIME, WEATHER;
+        VANILLA, GAME_TIME, DAY_TIME, WEATHER;
 
         @Override
         public String getSerializedName() {
@@ -28,7 +28,7 @@ public interface DayTimeTexture {
             try {
                 return valueOf(name.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException e) {
-                return GAME_TIME;
+                return VANILLA;
             }
         }
 
@@ -36,7 +36,7 @@ public interface DayTimeTexture {
             if (json != null && json.isJsonPrimitive()) {
                 return byName(json.getAsString());
             } else {
-                return GAME_TIME;
+                return VANILLA;
             }
         }
     }
