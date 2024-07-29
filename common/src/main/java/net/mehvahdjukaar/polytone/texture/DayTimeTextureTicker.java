@@ -17,7 +17,7 @@ public class DayTimeTextureTicker implements SpriteTicker {
     private final InterpolationData interpolationData;
     private final float animationScaleFactor;
     private final TreeMap<Float, Integer> frameMap = new TreeMap<>();
-    private final int dayDuration;
+    private final int timeCycleDuration;
     private final DayTimeTexture.Mode mode;
 
     private int lastFrameIndex = 0;
@@ -26,7 +26,7 @@ public class DayTimeTextureTicker implements SpriteTicker {
                                 SpriteContents spriteContents, boolean interpolateFrames,
                                 int dayDuration, DayTimeTexture.Mode mode) {
         this.animationInfo = animationInfo;
-        this.dayDuration = dayDuration;
+        this.timeCycleDuration = dayDuration;
         this.mode = mode;
         if (interpolateFrames) {
             this.interpolationData = new InterpolationData(spriteContents);
@@ -88,10 +88,13 @@ public class DayTimeTextureTicker implements SpriteTicker {
             float partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
             float max = level.isThundering() ? 2 / 3f : 1 / 3f;
             return level.getRainLevel(partialTicks) * max + 1 / 6; //needs to fall in between those 2 so we dont get interpolation as this stuff doesnt loop back
+        }else if(mode == DayTimeTexture.Mode.GAME_TIME){
+            long gameTime = level.getGameTime() % timeCycleDuration;
+            return gameTime / (float) timeCycleDuration;
         }
 
-        long dayTime = level.dayTime() % dayDuration;
-        return dayTime / (float) dayDuration;
+        long dayTime = level.dayTime() % timeCycleDuration;
+        return dayTime / (float) timeCycleDuration;
     }
 
     @Override

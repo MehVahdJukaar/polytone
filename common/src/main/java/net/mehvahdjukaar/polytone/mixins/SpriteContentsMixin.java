@@ -18,8 +18,8 @@ public class SpriteContentsMixin {
         if(original != null) {
             ((DayTimeTexture) original).polytone$setMode(
                     ((DayTimeTexture) metadata).polytone$getMode());
-            ((DayTimeTexture) original).polytone$setDayDuration(
-                    ((DayTimeTexture) metadata).polytone$getDayDuration());
+            ((DayTimeTexture) original).polytone$setTimeCycleDuration(
+                    ((DayTimeTexture) metadata).polytone$getTimeCycleDuration());
         }
         return original;
     }

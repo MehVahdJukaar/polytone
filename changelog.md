@@ -1,2 +1,4 @@
 - biome modifiers can change fog on a per weather basis
-- added RAIN prameter to block emitters particle expressions
+- added RAIN parameter to block emitters particle expressions
+- animated textures can now support game_time. Season stuff??
+- custom particle types can now use colormaps

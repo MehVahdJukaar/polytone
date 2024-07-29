@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(AnimationMetadataSection.class)
 public class AnimationMetadataSectionMixin implements DayTimeTexture {
     @Unique
-    private Mode polytone$mode = Mode.GAME_TIME;
+    private Mode polytone$mode = Mode.VANILLA;
     @Unique
     private int polytone$dayDuration = SharedConstants.TICKS_PER_GAME_DAY;
 
@@ -24,12 +24,12 @@ public class AnimationMetadataSectionMixin implements DayTimeTexture {
     }
 
     @Override
-    public int polytone$getDayDuration() {
+    public int polytone$getTimeCycleDuration() {
         return polytone$dayDuration;
     }
 
     @Override
-    public void polytone$setDayDuration(int duration) {
+    public void polytone$setTimeCycleDuration(int duration) {
         this.polytone$dayDuration = duration;
     }
 }

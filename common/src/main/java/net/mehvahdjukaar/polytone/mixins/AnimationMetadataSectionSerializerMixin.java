@@ -21,8 +21,8 @@ public class AnimationMetadataSectionSerializerMixin {
             ((DayTimeTexture) original).polytone$setMode(mode);
         }
 
-        if (json.has("day_duration")) {
-            ((DayTimeTexture) original).polytone$setDayDuration(GsonHelper.getAsInt(json, "day_duration"));
+        if (json.has("time_cycle_duration")) {
+            ((DayTimeTexture) original).polytone$setTimeCycleDuration(GsonHelper.getAsInt(json, "time_cycle_duration"));
         }
         return original;
     }
