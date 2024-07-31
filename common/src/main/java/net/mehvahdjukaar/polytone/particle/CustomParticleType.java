@@ -38,12 +38,12 @@ public class CustomParticleType implements CustomParticleFactory {
             Ticker.CODEC.optionalFieldOf("ticker").forGetter(c -> Optional.ofNullable(c.ticker))
     ).apply(i, CustomParticleType::new));
 
-    public CustomParticleType(RenderType renderType, Optional<Initializer> initializer,
+    private CustomParticleType(RenderType renderType, Optional<Initializer> initializer,
                               Optional<Ticker> ticker) {
         this(renderType, initializer.orElse(null), ticker.orElse(null));
     }
 
-    public RenderType getRenderType() {
+    private RenderType getRenderType() {
         return renderType;
     }
 

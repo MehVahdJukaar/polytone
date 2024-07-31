@@ -73,7 +73,7 @@ public class Polytone {
 
     public static void init(boolean isSodiumOn, boolean devEnv, boolean forge) {
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
-                        SOUND_TYPES, CUSTOM_PARTICLES, BIOME_ID_MAPPERS, COLORMAPS, COLORS,
+                        SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                         BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS,
                         BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
                         PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,
