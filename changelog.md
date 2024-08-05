@@ -1,3 +1,2 @@
-- fixed particle emitters crash
-- block modifiers can set the block occlusion properties and break particle emissions with "can_occlude" and "spawn_particles_on_break" properties
-- polytone will now search for a "force_tint" line in OF colormaps. If there and set to false it will NOT force all target blocks to have tint index of 0
+fixed biome sample colormap type requiring a blockstate making it not work on particle providers
+fixed non biome blend colormap that use biome not working

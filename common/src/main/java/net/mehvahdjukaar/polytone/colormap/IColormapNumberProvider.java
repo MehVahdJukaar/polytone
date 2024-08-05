@@ -79,7 +79,7 @@ public interface IColormapNumberProvider {
     IColormapNumberProvider LEGACY_TEMPERATURE = BUILTIN_PROVIDERS.register("legacy_temperature", new IColormapNumberProvider() {
         @Override
         public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
-                             @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+                              @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
             return biome == null ? 0 : biome.getTemperature(pos);
         }
 
@@ -92,7 +92,7 @@ public interface IColormapNumberProvider {
     IColormapNumberProvider DOWNFALL = BUILTIN_PROVIDERS.register("downfall", new IColormapNumberProvider() {
         @Override
         public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
-                             @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+                              @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
             return biome == null ? 0 : getClimateSettings(biome).downfall;
         }
 
@@ -104,24 +104,62 @@ public interface IColormapNumberProvider {
 
     // grid format
     IColormapNumberProvider BIOME_ID = BUILTIN_PROVIDERS.register("biome_id",
-            (state, pos, biome, mapper, item) -> {
-                // texture is flipped...
-                return 1 - mapper.getIndex(biome);
-            });
+            new IColormapNumberProvider() {
+                @Override
+                public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+                    return 1 - mapper.getIndex(biome);
+                }
+
+                @Override
+                public boolean usesState() {
+                    return false;
+                }
+            }
+    );
 
 
-    IColormapNumberProvider Y_LEVEL = BUILTIN_PROVIDERS.register("y_level", (state, pos, biome, m, item) -> {
-        if (pos == null) return 64;
-        // some builtin variance just because
-        // 0-128 RANGE. no clue what that darn mod did but this is good enough. People shouldn't use this anyway
-        RandomSource rs = RandomSource.create(pos.asLong());
-        return (pos.getY() + rs.nextIntBetweenInclusive(-3, 3)) / 128F;
+    IColormapNumberProvider Y_LEVEL = BUILTIN_PROVIDERS.register("y_level", new IColormapNumberProvider() {
+        @Override
+        public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+            if (pos == null) return 64;
+            // some builtin variance just because
+            // 0-128 RANGE. no clue what that darn mod did but this is good enough. People shouldn't use this anyway
+            RandomSource rs = RandomSource.create(pos.asLong());
+            return (pos.getY() + rs.nextIntBetweenInclusive(-3, 3)) / 128F;
+        }
+
+        @Override
+        public boolean usesBiome() {
+            return false;
+        }
+
+        @Override
+        public boolean usesState() {
+            return false;
+        }
     });
 
-    IColormapNumberProvider DAMAGE = BUILTIN_PROVIDERS.register("item_damage", (state, pos, biome, m, item) -> {
-        if (item == null) return 0;
-        return 1 - item.getDamageValue() / (float) item.getMaxDamage();
+
+    IColormapNumberProvider DAMAGE = BUILTIN_PROVIDERS.register("item_damage", new IColormapNumberProvider() {
+        @Override
+        public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+            if (stack == null) return 0;
+            return 1 - stack.getDamageValue() / (float) stack.getMaxDamage();
+        }
+
+        @Override
+        public boolean usesBiome() {
+            return false;
+        }
+
+        @Override
+        public boolean usesPos() {
+            return false;
+        }
+
+        @Override
+        public boolean usesState() {
+            return false;
+        }
     });
-
-
 }
