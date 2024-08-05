@@ -10,7 +10,6 @@ import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.resources.ResourceLocation;
@@ -18,8 +17,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -122,12 +121,17 @@ public class Colormap implements IColorGetter, ColorResolver {
         if (hasBiomeBlend) {
             // ask the world to calculate color with blend using this.
             // this will intern call calculateBlendedColor which will call getColor/sampleColor
-            stateHack.set(state); //pass blockstate arg like this
+            stateHack.set(state); //pass block state arg like this
             yHack.set(pos != null ? pos.getY() : 0);
             return level.getBlockTint(pos, this);
         }
         //else we sample normally
-        return sampleColor(state, pos, null, null);
+        Biome biome = null;
+        if (usesBiome && level instanceof LevelReader l) {
+            biome = l.getBiome(pos).value();
+        }
+
+        return sampleColor(state, pos, biome, null);
     }
 
     public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
