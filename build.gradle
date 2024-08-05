@@ -5,11 +5,16 @@ plugins {
     id 'io.github.juuxel.loom-vineflower' version '1.11.0' apply false
     id "com.matthewprenger.cursegradle" version "1.4.0"
     id "com.modrinth.minotaur" version "2.+"
+    id "com.github.breadmoirai.github-release" version "2.4.1"
 }
 
 
 architectury {
     minecraft = minecraft_version
+}
+
+repositories{
+    mavenCentral()
 }
 
 subprojects {
@@ -101,6 +106,8 @@ allprojects {
             dirs 'mods'
         }
 
+        mavenCentral()
+
         mavenLocal()
 
         maven { url "https://maven.parchmentmc.org" }
@@ -143,4 +150,38 @@ allprojects {
     java {
         withSourcesJar()
     }
+}
+
+githubRelease {
+    token = project.findProperty("github.token") ?: System.getenv("GITHUB_TOKEN")
+    owner = 'MehVahdJukaar'
+    repo = 'polytone'
+    tagName = 'latest'
+    releaseName = 'Sample Pack'
+    body = 'Polytone Sample Pack'
+    draft = false
+    prerelease = false
+    overwrite = true
+}
+
+task zipFolder(type: Zip) {
+    from 'polytone_sample_pack'
+    destinationDirectory = file('./')
+    archiveFileName = 'polytone_sample_pack.zip'
+
+    doLast {
+        def zipFile = file('polytone_sample_pack.zip')
+        if (zipFile.exists()) {
+            // Upload the release using the GitHub plugin's `releaseAssets` feature
+            def releaseTask = tasks.named('githubRelease').get()
+            releaseTask.releaseAssets = zipFile
+        } else {
+            throw new GradleException("ZIP file not found: ${zipFile}")
+        }
+    }
+}
+
+task uploadRelease {
+    dependsOn zipFolder
+    dependsOn tasks.named('githubRelease').get()
 }

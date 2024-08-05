@@ -46,6 +46,7 @@ public class LazyHolderSet<T> implements HolderSet<T> {
     public LazyHolderSet(Dynamic<?> json, ResourceKey<? extends Registry<T>> registry) {
         this.json = (JsonElement) json.getValue();
         this.registry = registry;
+        TO_INITIALIZE.add(this);
     }
 
     private void setup(DynamicOps<JsonElement> ops) {

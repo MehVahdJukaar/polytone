@@ -106,6 +106,7 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @Contract
     @ExpectPlatform
     public static void setRenderType(Block block, RenderType renderType){
         throw new AssertionError();

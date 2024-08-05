@@ -121,12 +121,14 @@ public class LegacyHelper {
             ColorUtils.CODEC.optionalFieldOf("color").forGetter(c -> Optional.empty()),
             Codec.STRING.xmap(Integer::parseInt, String::valueOf).optionalFieldOf("yVariance").forGetter(c -> Optional.empty()),
             Codec.STRING.xmap(Integer::parseInt, String::valueOf).optionalFieldOf("yoffset").forGetter(c -> Optional.empty()),
-            Codec.STRING.optionalFieldOf("source").forGetter(c -> Optional.empty())
+            Codec.STRING.optionalFieldOf("source").forGetter(c -> Optional.empty()),
+            Codec.BOOL.optionalFieldOf("force_tint", true).forGetter(c -> true)
     ).apply(i, LegacyHelper::decodeOFPropertyJson));
 
     private static BlockPropertyModifier decodeOFPropertyJson(String format, List<String> targets,
                                                               Optional<Integer> singleColor, Optional<Integer> yVariance,
-                                                              Optional<Integer> yoffset, Optional<String> sourceTexture) {
+                                                              Optional<Integer> yoffset, Optional<String> sourceTexture,
+                                                              boolean forceTint) {
 
         Set<ResourceLocation> set = null;
         Colormap colormap;
@@ -143,7 +145,7 @@ public class LegacyHelper {
                         return true;
                     }).map(ResourceLocation::tryParse)
                     .collect(Collectors.toSet());
-            set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
+            if (forceTint) set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
 
         }
         Integer col = singleColor.orElse(null);
@@ -171,11 +173,13 @@ public class LegacyHelper {
                     String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
                     source = source.replace("./", id.getNamespace() + ":" + directoryPath);
                 }
-                colormap.setExplicitTargetTexture(ResourceLocation.tryParse(source));
+                colormap.setExplicitTargetTexture(ResourceLocation.parse(source));
             }
         }
         return new BlockPropertyModifier(Optional.of(colormap),
-                Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(),
+                Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), set, false);
     }
 
@@ -183,6 +187,7 @@ public class LegacyHelper {
     public static BlockPropertyModifier convertOFProperty(Properties properties, ResourceLocation id) {
         Set<ResourceLocation> set;
         Colormap colormap;
+        boolean forceTint = Boolean.parseBoolean(properties.getProperty("force_tint", "true"));
         var targets = properties.getProperty("blocks");
         if (targets != null) {
             set = Arrays.stream(targets.split(" "))
@@ -197,7 +202,7 @@ public class LegacyHelper {
                         return true;
                     }).map(ResourceLocation::tryParse)
                     .collect(Collectors.toSet());
-            set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
+            if (forceTint) set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
         } else set = Set.of();
 
         String format = properties.getProperty("format");
@@ -229,12 +234,15 @@ public class LegacyHelper {
                     String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
                     source = (id.getNamespace() + ":" + directoryPath) + source.replace("./", "");
                 }
-                colormap.setExplicitTargetTexture(ResourceLocation.tryParse(source));
+                colormap.setExplicitTargetTexture(ResourceLocation.parse(source));
             }
         }
         return new BlockPropertyModifier(Optional.of(colormap),
+                Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(),
+                Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), set, false);
+                Optional.empty(), set, false);
     }
 
     public static Map<ResourceLocation, BlockPropertyModifier> convertInlinedPalettes(
