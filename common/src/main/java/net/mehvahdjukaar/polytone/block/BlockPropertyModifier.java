@@ -10,7 +10,6 @@ import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.PolytoneSoundType;
-import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
@@ -36,9 +35,8 @@ public record BlockPropertyModifier(
         Optional<? extends BlockColor> tintGetter,
         Optional<SoundType> soundType,
         Optional<Function<BlockState, MapColor>> mapColor,
-        //Optional<Boolean> canOcclude,
-        //Optional<Object> spawnParticlesOnBreak,
-        //Optional<Boolean> viewBlocking,
+        Optional<Boolean> canOcclude,
+        Optional<Boolean> spawnParticlesOnBreak,
         //Optional<Object> emissiveRendering,
         Optional<RenderType> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
@@ -54,9 +52,8 @@ public record BlockPropertyModifier(
                 other.tintGetter.isPresent() ? other.tintGetter() : this.tintGetter(),
                 other.soundType().isPresent() ? other.soundType() : this.soundType(),
                 other.mapColor.isPresent() ? other.mapColor() : this.mapColor(),
-                //other.canOcclude().isPresent() ? other.canOcclude() : this.canOcclude(),
-                //other.spawnParticlesOnBreak().isPresent() ? other.spawnParticlesOnBreak() : this.spawnParticlesOnBreak(),
-                // other.viewBlocking().isPresent() ? other.viewBlocking() : this.viewBlocking(),
+                other.canOcclude().isPresent() ? other.canOcclude() : this.canOcclude(),
+                other.spawnParticlesOnBreak().isPresent() ? other.spawnParticlesOnBreak() : this.spawnParticlesOnBreak(),
                 //other.emissiveRendering().isPresent() ? other.emissiveRendering() : this.emissiveRendering(),
                 other.renderType().isPresent() ? other.renderType() : this.renderType(),
                 other.clientLight.isPresent() ? other.clientLight : this.clientLight,
@@ -70,7 +67,8 @@ public record BlockPropertyModifier(
 
     public static BlockPropertyModifier ofBlockColor(BlockColor colormap) {
         return new BlockPropertyModifier(Optional.of(colormap),
-                java.util.Optional.empty(), java.util.Optional.empty(),
+                Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), java.util.Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Set.of(), false);
     }
@@ -85,7 +83,8 @@ public record BlockPropertyModifier(
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
         return new BlockPropertyModifier(Optional.of(colormap),
-                java.util.Optional.empty(), java.util.Optional.empty(),
+                Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), blocks, false);
     }
@@ -117,6 +116,25 @@ public record BlockPropertyModifier(
                 s.mapColor = block.properties.mapColor.apply(s);
             }
         }
+
+        Boolean oldCanOcclude = null;
+        if (canOcclude.isPresent()) {
+            oldCanOcclude = block.properties.canOcclude;
+            block.properties.canOcclude = canOcclude.get();
+            for (var s : block.getStateDefinition().getPossibleStates()) {
+                s.canOcclude = canOcclude.get();
+            }
+        }
+
+        Boolean oldSpawnParticlesOnBreak = null;
+        if (spawnParticlesOnBreak.isPresent()) {
+            oldSpawnParticlesOnBreak = block.properties.spawnTerrainParticles;
+            block.properties.spawnTerrainParticles = spawnParticlesOnBreak.get();
+            for (var s : block.getStateDefinition().getPossibleStates()) {
+                s.spawnTerrainParticles = block.properties.spawnTerrainParticles;
+            }
+        }
+
 
         ToIntFunction<BlockState> oldClientLight = null;
         if (clientLight.isPresent()) {
@@ -162,7 +180,8 @@ public record BlockPropertyModifier(
 
         // returns old properties
         return new BlockPropertyModifier(Optional.ofNullable(oldColor), Optional.ofNullable(oldSound),
-                Optional.ofNullable(oldMapColor), Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
+                Optional.ofNullable(oldMapColor),
+                Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak), Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
                 Optional.empty(), oldOffsetType, Optional.ofNullable(oldType), Set.of(), false);
     }
 
@@ -174,9 +193,8 @@ public record BlockPropertyModifier(
                     PolytoneSoundType.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
                     StrOpt.of(MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE),
                             "map_color").forGetter(BlockPropertyModifier::mapColor),
-                    // Codec.BOOL.optionalFieldOf("can_occlude").forGetter(ClientBlockProperties::canOcclude),
-                    //Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(c -> c.spawnParticlesOnBreak.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
-                    // Codec.BOOL.optionalFieldOf("view_blocking").forGetter(ClientBlockProperties::viewBlocking),
+                    Codec.BOOL.optionalFieldOf("can_occlude").forGetter(BlockPropertyModifier::canOcclude),
+                    Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(BlockPropertyModifier::spawnParticlesOnBreak),
                     //Codec.BOOL.optionalFieldOf("emissive_rendering").forGetter(c -> c.emissiveRendering.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
                     StrOpt.of(StringRepresentable.fromEnum(RenderType::values), "render_type").forGetter(BlockPropertyModifier::renderType),
                     StrOpt.of(Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0),

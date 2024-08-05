@@ -117,8 +117,9 @@ public class GuiModifierManager extends JsonPartialReloader {
             }
 
         }
-        Polytone.LOGGER.info("Loaded GUI modifiers for: " + slotsByMenuId.keySet() + " " +
-                slotsByClass.keySet() + " " + byMenuId.keySet() + " " + byClass.keySet());
+        if(!slotsByMenuId.isEmpty() || !slotsByClass.isEmpty() || !slotsByTitle.isEmpty()) {
+            Polytone.LOGGER.info("Loaded GUI modifiers for: {} {} {} {}", slotsByMenuId.keySet(), slotsByClass.keySet(), byMenuId.keySet(), byClass.keySet());
+        }
     }
 
     private static void unwrapSlots(GuiModifier mod, Int2ObjectArrayMap<SlotModifier> map) {

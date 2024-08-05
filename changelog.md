@@ -1,1 +1,3 @@
-- fixed colormaps loading after custom particle types, making them not usable there
+- fixed particle emitters crash
+- block modifiers can set the block occlusion properties and break particle emissions with "can_occlude" and "spawn_particles_on_break" properties
+- polytone will now search for a "force_tint" line in OF colormaps. If there and set to false it will NOT force all target blocks to have tint index of 0
