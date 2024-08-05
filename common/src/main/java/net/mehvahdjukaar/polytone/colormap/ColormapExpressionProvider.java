@@ -6,9 +6,11 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -32,6 +34,8 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     private static final String POS_Z = "POS_Z";
     private static final String BIOME_VALUE = "BIOME_VALUE";
     private static final String DAMAGE = "DAMAGE";
+    private static final String TIME = "TIME";
+    private static final String RAIN = "RAIN";
 
     private static final String STATE_FUNC = "state_prop";
     private static final Function STATE_PROP = new Function(STATE_FUNC, 1) {
@@ -74,7 +78,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(ExpressionUtils.removeHex(s))
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
-                .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z, BIOME_VALUE)
+                .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z, BIOME_VALUE, TIME, RAIN)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
@@ -135,6 +139,10 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
             exp.setVariable(POS_X, pos != null ? pos.getX() : 0);
             exp.setVariable(POS_Y, pos != null ? pos.getY() : 0);
             exp.setVariable(POS_Z, pos != null ? pos.getZ() : 0);
+
+            Level level = Minecraft.getInstance().level;
+            exp.setVariable(TIME, level.getDayTime());
+            exp.setVariable(RAIN, level.getRainLevel(1));
 
             if (stack != null) {
                 float damage = 1 - stack.getDamageValue() / (float) stack.getMaxDamage();
