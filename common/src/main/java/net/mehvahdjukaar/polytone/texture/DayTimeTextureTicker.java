@@ -86,8 +86,10 @@ public class DayTimeTextureTicker implements SpriteTicker {
 
         if (mode == DayTimeTexture.Mode.WEATHER) {
             float partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
-            float max = level.isThundering() ? 2 / 3f : 1 / 3f;
-            return level.getRainLevel(partialTicks) * max + 1 / 6; //needs to fall in between those 2 so we dont get interpolation as this stuff doesnt loop back
+            float thunder = level.getThunderLevel(partialTicks) * 1 / 3f;
+            float rain = level.getRainLevel(partialTicks) * 1 / 3f;
+            return rain + thunder + 1 / 6;
+            //needs to fall in between those 2 so we dont get interpolation as this stuff doesnt loop back
         }else if(mode == DayTimeTexture.Mode.GAME_TIME){
             long gameTime = level.getGameTime() % timeCycleDuration;
             return gameTime / (float) timeCycleDuration;

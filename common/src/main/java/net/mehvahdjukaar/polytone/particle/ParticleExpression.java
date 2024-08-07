@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.util.Mth;
@@ -29,9 +30,12 @@ public class ParticleExpression {
     private static final String ALPHA = "ALPHA";
     private static final String SIZE = "SIZE";
     private static final String LIFE = "LIFETIME";
-    private static final String GAMETIME = "GAMETIME";
     private static final String AGE = "AGE";
     private static final String ROLL = "ROLL";
+
+    private static final String DAY_TIME = "DAY_TIME";
+    private static final String TIME = "TIME";
+    private static final String RAIN = "RAIN";
 
 
     public static final Codec<ParticleExpression> CODEC = Codec.STRING.flatXmap(s -> {
@@ -43,10 +47,17 @@ public class ParticleExpression {
         }
     }, javaxExpression -> DataResult.success(javaxExpression.unparsed));
 
+    private final boolean hasTime;
+    private final boolean hasRain;
+    private final boolean hasDayTime;
 
     public ParticleExpression(Expression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
+
+        this.hasTime = unparsed.contains(TIME);
+        this.hasRain = unparsed.contains(RAIN);
+        this.hasDayTime = unparsed.contains(DAY_TIME);
     }
 
     public static ParticleExpression parse(String s) {
@@ -56,7 +67,8 @@ public class ParticleExpression {
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(ExpressionUtils.removeHex(s))
                 .functions(ExpressionUtils.defFunc())
-                .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, GAMETIME, ROLL, AGE)
+                .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, ROLL, AGE,
+                        TIME, RAIN, DAY_TIME)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
@@ -80,9 +92,12 @@ public class ParticleExpression {
         expression.setVariable(DX, particle.x);
         expression.setVariable(DX, particle.y);
         expression.setVariable(DX, particle.z);
-        expression.setVariable(GAMETIME, level.getGameTime());
         expression.setVariable(AGE, particle.age);
         expression.setVariable(ROLL, particle.roll);
+
+        if (hasTime) expression.setVariable(TIME, ClientFrameTicker.getGameTime());
+        if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+        if (hasDayTime) expression.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
 
         return expression.evaluate();
     }

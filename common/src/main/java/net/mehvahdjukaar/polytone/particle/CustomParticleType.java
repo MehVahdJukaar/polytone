@@ -10,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +38,7 @@ public class CustomParticleType implements CustomParticleFactory {
     ).apply(i, CustomParticleType::new));
 
     private CustomParticleType(RenderType renderType, Optional<Initializer> initializer,
-                              Optional<Ticker> ticker) {
+                               Optional<Ticker> ticker) {
         this(renderType, initializer.orElse(null), ticker.orElse(null));
     }
 
@@ -107,7 +106,7 @@ public class CustomParticleType implements CustomParticleFactory {
                     this.setColor(unpack[0], unpack[1], unpack[2]);
                 }
                 if (initializer.lifetime != null) {
-                    this.lifetime = (int) initializer.lifetime.getValue(level, pos, state);
+                    this.lifetime = (int) Math.max(1, initializer.lifetime.getValue(level, pos, state));
                 }
                 if (initializer.friction != null) {
                     this.friction = (float) initializer.friction.getValue(level, pos, state);
@@ -115,6 +114,14 @@ public class CustomParticleType implements CustomParticleFactory {
                 this.hasPhysics = initializer.hasPhysics;
             }
             this.setSpriteFromAge(spriteSet);
+
+            // some people might want this
+            if (this.ticker != null && this.ticker.removeIf != null) {
+                if (this.ticker.removeIf.get(this, level) > 0) {
+                    this.remove();
+                    this.alpha = 0;
+                }
+            }
         }
 
         @Override
@@ -166,10 +173,17 @@ public class CustomParticleType implements CustomParticleFactory {
                 if (this.ticker.dz != null) {
                     this.zd = this.ticker.dz.get(this, level);
                 }
+
+                if (this.ticker.removeIf != null) {
+                    if (this.ticker.removeIf.get(this, level) > 0) {
+                        this.remove();
+                    }
+                }
             }
             if (this.x == this.xo && this.y == this.yo && this.z == this.zo && hasPhysics) {
                 this.remove();
             }
+
             //TODO: check for anu block collision. also check this on my mods
             if (this.hasPhysics && this.stoppedByCollision) {
                 this.remove();
@@ -215,6 +229,7 @@ public class CustomParticleType implements CustomParticleFactory {
                           @Nullable ParticleExpression red, @Nullable ParticleExpression green,
                           @Nullable ParticleExpression blue, @Nullable ParticleExpression alpha,
                           @Nullable ParticleExpression roll,
+                          @Nullable ParticleExpression removeIf,
                           @Nullable IColorGetter colormap) {
 
         private static final Codec<Ticker> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -230,6 +245,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 ParticleExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blue)),
                 ParticleExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
                 ParticleExpression.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.alpha)),
+                ParticleExpression.CODEC.optionalFieldOf("remove_condition").forGetter(p -> Optional.ofNullable(p.removeIf)),
                 Colormap.CODEC.optionalFieldOf("colormap").forGetter(p -> Optional.ofNullable(p.colormap))
         ).apply(i, Ticker::new));
 
@@ -239,6 +255,7 @@ public class CustomParticleType implements CustomParticleFactory {
                        Optional<ParticleExpression> size, Optional<ParticleExpression> red,
                        Optional<ParticleExpression> green, Optional<ParticleExpression> blue,
                        Optional<ParticleExpression> alpha, Optional<ParticleExpression> roll,
+                       Optional<ParticleExpression> removeIf,
                        Optional<IColorGetter> colormap) {
             this(x.orElse(null), y.orElse(null),
                     z.orElse(null), dx.orElse(null),
@@ -246,6 +263,7 @@ public class CustomParticleType implements CustomParticleFactory {
                     size.orElse(null), red.orElse(null),
                     green.orElse(null), blue.orElse(null),
                     alpha.orElse(null), roll.orElse(null),
+                    alpha.orElse(null),
                     colormap.orElse(null));
         }
     }

@@ -32,6 +32,9 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
     @Override
     protected void apply(List<Object> object, ResourceManager resourceManager, ProfilerFiller profiler) {
+        // clear existing lazy holder sets
+        LazyHolderSet.clearAll();
+
         Stopwatch stopwatch = Stopwatch.createStarted();
         for (var c : children) {
             c.reset();

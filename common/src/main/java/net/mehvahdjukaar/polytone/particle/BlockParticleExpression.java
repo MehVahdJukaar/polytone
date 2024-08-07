@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.minecraft.client.Minecraft;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
@@ -29,12 +29,16 @@ public class BlockParticleExpression {
     private final boolean hasY;
     private final boolean hasZ;
     private final boolean hasState;
+    private final boolean hasDayTime;
 
-    private static final String TIME = "TIME";
     private static final String POS_X = "POS_X";
     private static final String POS_Y = "POS_Y";
     private static final String POS_Z = "POS_Z";
+
     private static final String RAIN = "RAIN";
+    private static final String TIME = "TIME";
+    private static final String DAY_TIME = "DAY_TIME";
+
     private static final String STATE_FUNC = "state_prop";
     private static final Function STATE_PROP = new Function(STATE_FUNC, 1) {
         @Override
@@ -93,23 +97,26 @@ public class BlockParticleExpression {
         this.hasZ = unparsed.contains(POS_Z);
         this.hasState = unparsed.contains(STATE_FUNC);
         this.hasRain = unparsed.contains(RAIN);
+        this.hasDayTime = unparsed.contains(DAY_TIME);
     }
 
-    public double getValue(Vec3 pos, float time) {
-        if (hasTime) expression.setVariable(TIME, time);
+    public double getValue(Vec3 pos, float entityTime) {
         if (hasX) expression.setVariable(POS_X, pos.x);
         if (hasY) expression.setVariable(POS_Y, pos.y);
         if (hasZ) expression.setVariable(POS_Z, pos.z);
-        if (hasRain) expression.setVariable(RAIN, Minecraft.getInstance().level.getRainLevel(1));
+        if (hasTime) expression.setVariable(TIME, entityTime);
+        if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+        if (hasDayTime) expression.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
         return expression.evaluate();
     }
 
     public double getValue(Level level, BlockPos pos, BlockState state) {
-        if (hasTime) expression.setVariable(TIME, level.getGameTime());
         if (hasX) expression.setVariable(POS_X, pos.getX());
         if (hasY) expression.setVariable(POS_Y, pos.getY());
         if (hasZ) expression.setVariable(POS_Z, pos.getZ());
-        if (hasRain) expression.setVariable(RAIN, level.getRainLevel(1));
+        if (hasTime) expression.setVariable(TIME, ClientFrameTicker.getGameTime());
+        if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+        if (hasDayTime) expression.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
         if (hasState) STATE_HACK.set(state);
         return expression.evaluate();
     }
