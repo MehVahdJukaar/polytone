@@ -1,2 +1,4 @@
-fixed biome sample colormap type requiring a blockstate making it not work on particle providers
-fixed non biome blend colormap that use biome not working
+- more expressions can now use the variables TIME, DAY_TIME and RAIN
+- GAMETIME has been renamed to TIME in block particle expressions
+- RAIN variable will return 0 for clear, 0.5 for rain and 1 for thunder
+- fixed an issue related to reloading stuff when changing world and tags

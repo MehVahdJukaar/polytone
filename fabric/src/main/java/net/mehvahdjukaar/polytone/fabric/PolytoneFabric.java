@@ -8,9 +8,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
-import net.mehvahdjukaar.polytone.mixins.FogRendererMixin;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 
 public class PolytoneFabric implements ClientModInitializer {
 
@@ -25,6 +25,9 @@ public class PolytoneFabric implements ClientModInitializer {
             if (client) {
                 Polytone.onTagsReceived(registries);
             }
+        });
+        WorldRenderEvents.START.register((context) -> {
+            ClientFrameTicker.onRenderTick(context.gameRenderer().getMinecraft());
         });
 
         /*

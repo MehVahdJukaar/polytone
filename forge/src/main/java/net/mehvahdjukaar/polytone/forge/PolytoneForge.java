@@ -6,6 +6,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.FogRenderer;
@@ -48,6 +50,11 @@ public class PolytoneForge {
         } else {
             Polytone.LOGGER.warn("Slotify has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
+    }
+
+    @SubscribeEvent
+    public void onRender(RenderFrameEvent.Pre onRender) {
+        ClientFrameTicker.onRenderTick(Minecraft.getInstance());
     }
 
     @SubscribeEvent

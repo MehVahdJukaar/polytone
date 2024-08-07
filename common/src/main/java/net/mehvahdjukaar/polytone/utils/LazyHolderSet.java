@@ -18,14 +18,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+//needed because resource packs are loaded way before data packs
 public class LazyHolderSet<T> implements HolderSet<T> {
     private static final List<LazyHolderSet<?>> TO_INITIALIZE = new ArrayList<>();
 
     public static void initializeAll(RegistryAccess registryAccess) {
         DynamicOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
         for (LazyHolderSet<?> lazy : TO_INITIALIZE) {
-            lazy.setup(ops);
+            lazy.rePopulate(ops);
         }
+        //dont clear. we need to re populate on each reload
+    }
+
+    public static void clearAll() {
         TO_INITIALIZE.clear();
     }
 
@@ -51,11 +56,10 @@ public class LazyHolderSet<T> implements HolderSet<T> {
         TO_INITIALIZE.add(this);
     }
 
-    private void setup(DynamicOps<JsonElement> ops) {
-        if (this.instance == null && this.json != null) {
+    private void rePopulate(DynamicOps<JsonElement> ops) {
+        if (this.json != null) {
             this.instance = RegistryCodecs.homogeneousList(registry, false)
                     .decode(ops, this.json).getOrThrow(false, Polytone.LOGGER::error).getFirst();
-            this.json = null;
         }
     }
 
