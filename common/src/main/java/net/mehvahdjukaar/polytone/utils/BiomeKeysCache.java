@@ -19,8 +19,14 @@ public class BiomeKeysCache {
         if (k == null) {
             Level level = Minecraft.getInstance().level;
             if (level == null) return PLAINS;
-            return CACHE.computeIfAbsent(biome, b -> level.registryAccess().registryOrThrow(Registries.BIOME)
-                    .getResourceKey(biome).get());
+            return CACHE.computeIfAbsent(biome, b ->
+            {
+                var biomeKey = level.registryAccess().registryOrThrow(Registries.BIOME).getResourceKey(biome);
+                if (biomeKey.isEmpty()) {
+                    throw new IllegalStateException("Failed to get biome key for biome: " + biome + " This means that biome registry returned an empty key for it. How is this possible? Was it not registered?");
+                }
+                return biomeKey.get();
+            });
         }
         return k;
     }
