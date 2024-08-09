@@ -1,8 +1,8 @@
-- custom particles, custom tabs and custom sounds will now ACTUALLY be properly registered and unregistered to vanilla registries
-- this means you can use your custom particles and sounds anywhere (client side)
-- fixed creative tab items removal being broken on neoforge
-- added a "custom" expression and "CUSTOM" variable to Custom Particle Types
-- fixed DAY_TIME variable not working in some expressions
-- fixed some misc issues with custom particles
-- added a "habitat" variable to custom particles. values are "liquid", "air", "any"
-- fixed custom sound types not working
+added block sound emitters. params are:
+- sound: the sound to play
+- volume: the volume of the sound
+- pitch: the pitch of the sound
+- x, y, z: the position of the sound emitter
+- biomes
+- source : sound source
+- distance_delay

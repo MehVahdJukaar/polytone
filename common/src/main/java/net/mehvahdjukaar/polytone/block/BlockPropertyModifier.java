@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.color.MapColorHelper;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
+import net.mehvahdjukaar.polytone.sound.BlockSoundEmitter;
 import net.mehvahdjukaar.polytone.sound.PolytoneSoundType;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.minecraft.client.Minecraft;
@@ -40,6 +41,7 @@ public record BlockPropertyModifier(
         Optional<RenderType> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
         Optional<List<ParticleEmitter>> particleEmitters,
+        Optional<List<BlockSoundEmitter>> soundEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
         Optional<BlockSetTypeProvider> blockSetType,
         @NotNull Set<ResourceLocation> explicitTargets,
@@ -57,6 +59,7 @@ public record BlockPropertyModifier(
                 other.renderType().isPresent() ? other.renderType() : this.renderType(),
                 other.clientLight.isPresent() ? other.clientLight : this.clientLight,
                 other.particleEmitters.isPresent() ? other.particleEmitters : this.particleEmitters,
+                other.soundEmitters.isPresent() ? other.soundEmitters : this.soundEmitters,
                 other.offsetType().isPresent() ? other.offsetType() : this.offsetType(),
                 other.blockSetType().isPresent() ? other.blockSetType() : this.blockSetType(),
                 mergeSet(other.explicitTargets, this.explicitTargets),
@@ -69,7 +72,7 @@ public record BlockPropertyModifier(
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), java.util.Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Set.of(), false);
+                Optional.empty(), Optional.empty(), Optional.empty(), Set.of(), false);
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
@@ -85,7 +88,7 @@ public record BlockPropertyModifier(
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), blocks, false);
+                Optional.empty(), Optional.empty() ,Optional.empty(), blocks, false);
     }
 
     // returns the old ones
@@ -182,7 +185,7 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),
                 Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
-                Optional.empty(), Optional.ofNullable(oldOffsetType), Optional.ofNullable(oldType), Set.of(), false);
+                Optional.empty(), Optional.empty(),  Optional.ofNullable(oldOffsetType), Optional.ofNullable(oldType), Set.of(), false);
     }
 
 
@@ -200,6 +203,7 @@ public record BlockPropertyModifier(
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
                     ParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
+                    BlockSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters").forGetter(BlockPropertyModifier::soundEmitters),
                     OffsetTypeR.CODEC.xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
                             .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
                     BlockSetTypeProvider.CODEC.optionalFieldOf("block_set_type").forGetter(BlockPropertyModifier::blockSetType),

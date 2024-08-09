@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,28 +23,28 @@ import java.util.Optional;
 
 public record ParticleEmitter(
         ParticleType<?> particleType,
-        BlockParticleExpression chance,
-        BlockParticleExpression count,
-        BlockParticleExpression x,
-        BlockParticleExpression y,
-        BlockParticleExpression z,
-        BlockParticleExpression dx,
-        BlockParticleExpression dy,
-        BlockParticleExpression dz,
+        BlockContextExpression chance,
+        BlockContextExpression count,
+        BlockContextExpression x,
+        BlockContextExpression y,
+        BlockContextExpression z,
+        BlockContextExpression dx,
+        BlockContextExpression dy,
+        BlockContextExpression dz,
         Optional<LazyHolderSet<Biome>> biomes,
         SpawnLocation spawnLocation
-) {
+) implements BlockClientTickable {
 
     public static final Codec<ParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
             BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("particle").forGetter(ParticleEmitter::particleType),
-            BlockParticleExpression.CODEC.optionalFieldOf("chance", BlockParticleExpression.ONE).forGetter(ParticleEmitter::chance),
-            BlockParticleExpression.CODEC.optionalFieldOf("count", BlockParticleExpression.ONE).forGetter(ParticleEmitter::count),
-            BlockParticleExpression.CODEC.optionalFieldOf("x", BlockParticleExpression.PARTICLE_RAND).forGetter(ParticleEmitter::x),
-            BlockParticleExpression.CODEC.optionalFieldOf("y", BlockParticleExpression.PARTICLE_RAND).forGetter(ParticleEmitter::y),
-            BlockParticleExpression.CODEC.optionalFieldOf("z", BlockParticleExpression.PARTICLE_RAND).forGetter(ParticleEmitter::z),
-            BlockParticleExpression.CODEC.optionalFieldOf("dx", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dx),
-            BlockParticleExpression.CODEC.optionalFieldOf("dy", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dy),
-            BlockParticleExpression.CODEC.optionalFieldOf("dz", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dz),
+            BlockContextExpression.CODEC.optionalFieldOf("chance", BlockContextExpression.ONE).forGetter(ParticleEmitter::chance),
+            BlockContextExpression.CODEC.optionalFieldOf("count", BlockContextExpression.ONE).forGetter(ParticleEmitter::count),
+            BlockContextExpression.CODEC.optionalFieldOf("x", BlockContextExpression.PARTICLE_RAND).forGetter(ParticleEmitter::x),
+            BlockContextExpression.CODEC.optionalFieldOf("y", BlockContextExpression.PARTICLE_RAND).forGetter(ParticleEmitter::y),
+            BlockContextExpression.CODEC.optionalFieldOf("z", BlockContextExpression.PARTICLE_RAND).forGetter(ParticleEmitter::z),
+            BlockContextExpression.CODEC.optionalFieldOf("dx", BlockContextExpression.ZERO).forGetter(ParticleEmitter::dx),
+            BlockContextExpression.CODEC.optionalFieldOf("dy", BlockContextExpression.ZERO).forGetter(ParticleEmitter::dy),
+            BlockContextExpression.CODEC.optionalFieldOf("dz", BlockContextExpression.ZERO).forGetter(ParticleEmitter::dz),
             LazyHolderSet.codec(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleEmitter::biomes),
             SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(ParticleEmitter::spawnLocation)
     ).apply(i, ParticleEmitter::new));

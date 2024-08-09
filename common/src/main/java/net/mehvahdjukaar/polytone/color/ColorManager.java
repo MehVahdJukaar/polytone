@@ -9,7 +9,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
-import net.mehvahdjukaar.polytone.particle.BlockParticleExpression;
+import net.mehvahdjukaar.polytone.particle.BlockContextExpression;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
@@ -34,9 +34,6 @@ import org.joml.Vector3f;
 import java.util.*;
 import java.util.function.Function;
 
-import static net.mehvahdjukaar.polytone.utils.ColorUtils.pack;
-import static net.mehvahdjukaar.polytone.utils.ColorUtils.unpack;
-
 public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     private final Object2IntMap<MapColor> vanillaMapColors = new Object2IntOpenHashMap<>();
@@ -52,13 +49,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     protected final List<Vec3> originalRedstoneWireColors = Arrays.stream(RedStoneWireBlock.COLORS).toList();
 
     @Nullable
-    private BlockParticleExpression xpOrbColor;
+    private BlockContextExpression xpOrbColor;
     @Nullable
-    private BlockParticleExpression xpOrbColorR;
+    private BlockContextExpression xpOrbColorR;
     @Nullable
-    private BlockParticleExpression xpOrbColorG;
+    private BlockContextExpression xpOrbColorG;
     @Nullable
-    private BlockParticleExpression xpOrbColorB;
+    private BlockContextExpression xpOrbColorB;
 
     private int xpBar = 8453920;
 
@@ -205,13 +202,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
         } else if (is(prop, 0, "xporb")) {
             if (is(prop, 1, "color")) {
-                xpOrbColor = new BlockParticleExpression(str);
+                xpOrbColor = new BlockContextExpression(str);
             } else if (is(prop, 1, "red")) {
-                xpOrbColorR = new BlockParticleExpression(str);
+                xpOrbColorR = new BlockContextExpression(str);
             } else if (is(prop, 1, "green")) {
-                xpOrbColorG = new BlockParticleExpression(str);
+                xpOrbColorG = new BlockContextExpression(str);
             } else if (is(prop, 1, "blue")) {
-                xpOrbColorB = new BlockParticleExpression(str);
+                xpOrbColorB = new BlockContextExpression(str);
             }
 
         } else if (is(prop, 0, "redstone")) {

@@ -17,7 +17,7 @@ import net.objecthunter.exp4j.function.Function;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockParticleExpression {
+public class BlockContextExpression {
 
 
     private final Expression expression;
@@ -67,9 +67,9 @@ public class BlockParticleExpression {
 
     private static final ThreadLocal<BlockState> STATE_HACK = new ThreadLocal<>();
 
-    public static final Codec<BlockParticleExpression> CODEC = Codec.STRING.flatXmap(s -> {
+    public static final Codec<BlockContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
-            return DataResult.success(new BlockParticleExpression(s));
+            return DataResult.success(new BlockContextExpression(s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
@@ -79,16 +79,16 @@ public class BlockParticleExpression {
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(ExpressionUtils.removeHex(s))
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
-                .variables(TIME, POS_X, POS_Y, POS_Z, RAIN, DAY_TIME)
+                .variables( POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, TIME)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
 
-    public BlockParticleExpression(String expression) {
+    public BlockContextExpression(String expression) {
         this(createExpression(expression), expression);
     }
 
-    public BlockParticleExpression(Expression expression, String unparsed) {
+    public BlockContextExpression(Expression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
         this.hasTime = unparsed.contains(TIME);
@@ -121,7 +121,7 @@ public class BlockParticleExpression {
         return expression.evaluate();
     }
 
-    public static final BlockParticleExpression ZERO = new BlockParticleExpression("0");
-    public static final BlockParticleExpression ONE = new BlockParticleExpression("1");
-    public static final BlockParticleExpression PARTICLE_RAND= new BlockParticleExpression("(rand() * 2.0 - 1.0) * 0.4");
+    public static final BlockContextExpression ZERO = new BlockContextExpression("0");
+    public static final BlockContextExpression ONE = new BlockContextExpression("1");
+    public static final BlockContextExpression PARTICLE_RAND= new BlockContextExpression("(rand() * 2.0 - 1.0) * 0.4");
 }
