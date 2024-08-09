@@ -10,12 +10,15 @@ import net.mehvahdjukaar.polytone.particle.CustomParticleType;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
 public class MapRegistry<T> implements Codec<T> {
     private final BiMap<ResourceLocation, T> map = HashBiMap.create();
+    private final List<ResourceLocation> orderedKeys = new ArrayList<>();
     private final String name;
 
     public MapRegistry(String name) {
@@ -32,12 +35,20 @@ public class MapRegistry<T> implements Codec<T> {
 
     public <B extends T> T register(ResourceLocation name, B value) {
         this.map.put(name, value);
+        if(!orderedKeys.contains(name)){
+            orderedKeys.add(name);
+        }
         return value;
     }
 
     public <B extends T> T register(String name, B value) {
         this.register(new ResourceLocation(name), value);
         return value;
+    }
+
+    public void unregister(ResourceLocation name){
+        this.map.remove(name);
+        this.orderedKeys.remove(name);
     }
 
     @Nullable
@@ -57,6 +68,10 @@ public class MapRegistry<T> implements Codec<T> {
 
     public Set<ResourceLocation> keySet() {
         return this.map.keySet();
+    }
+
+    public List<ResourceLocation> orderedKeys(){
+        return orderedKeys;
     }
 
     public Set<T> getValues() {
@@ -87,6 +102,7 @@ public class MapRegistry<T> implements Codec<T> {
     }
 
     public void clear() {
+        this.orderedKeys.clear();
         this.map.clear();
     }
 

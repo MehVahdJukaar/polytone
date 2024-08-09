@@ -5,13 +5,15 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +21,8 @@ import java.util.Locale;
 import java.util.Optional;
 
 public class CustomParticleType implements CustomParticleFactory {
+
+    private static BlockState STATE_HACK = Blocks.AIR.defaultBlockState();
 
     private final RenderType renderType;
     private final @Nullable Initializer initializer;
@@ -43,23 +47,21 @@ public class CustomParticleType implements CustomParticleFactory {
         this(renderType, initializer.orElse(null), ticker.orElse(null));
     }
 
+    public static void setStateHack(BlockState state) {
+        STATE_HACK = state;
+    }
+
     private RenderType getRenderType() {
         return renderType;
     }
 
     @Override
-    public void createParticle(ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                               @Nullable BlockState state) {
-        Minecraft mc = Minecraft.getInstance();
-        Camera camera = mc.gameRenderer.getMainCamera();
-        if (camera.getPosition().distanceToSqr(x, y, z) < 1024.0) {
-            if (spriteSet != null) {
-                Particle particle = new Instance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this);
-                mc.particleEngine.add(particle);
-
-            } else {
-                throw new IllegalStateException("Sprite set not set for custom particle type");
-            }
+    public Particle createParticle(SimpleParticleType type, ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
+                                   @Nullable BlockState state) {
+        if (spriteSet != null) {
+            return new Instance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this);
+        } else {
+            throw new IllegalStateException("Sprite set not set for custom particle type");
         }
     }
 
@@ -73,11 +75,24 @@ public class CustomParticleType implements CustomParticleFactory {
         private final ParticleRenderType renderType;
         private final @Nullable Ticker ticker;
         private final SpriteSet spriteSet;
+        private final Habitat habitat;
         private float oQuadSize;
+        private double custom;
 
         protected Instance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                            @Nullable BlockState state, CustomParticleType type) {
             super(level, x, y, z, xSpeed, ySpeed, zSpeed);
+
+            //for normal particles since its simple particle types (so that they can be ued in biomes) we can pass extra params
+            if (state == null) state = STATE_HACK;
+
+            // remove randomness
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.xd = xSpeed;
+            this.yd = ySpeed;
+            this.zd = zSpeed;
             this.renderType = type.renderType.get();
             this.ticker = type.ticker;
             this.spriteSet = type.spriteSet;
@@ -112,7 +127,13 @@ public class CustomParticleType implements CustomParticleFactory {
                 if (initializer.friction != null) {
                     this.friction = (float) initializer.friction.getValue(level, pos, state);
                 }
+                if (initializer.custom != null) {
+                    initializer.custom.getValue(level, pos, state);
+                }
                 this.hasPhysics = initializer.hasPhysics;
+                this.habitat = initializer.habitat;
+            } else {
+                this.habitat = Habitat.ANY;
             }
             this.setSpriteFromAge(spriteSet);
 
@@ -123,6 +144,10 @@ public class CustomParticleType implements CustomParticleFactory {
                     this.alpha = 0;
                 }
             }
+        }
+
+        public double getCustom() {
+            return custom;
         }
 
         @Override
@@ -173,7 +198,9 @@ public class CustomParticleType implements CustomParticleFactory {
                 if (this.ticker.dz != null) {
                     this.zd = this.ticker.dz.get(this, level);
                 }
-
+                if (this.ticker.custom != null) {
+                    this.custom = this.ticker.custom.get(this, level);
+                }
                 if (this.ticker.removeIf != null) {
                     if (this.ticker.removeIf.get(this, level) > 0) {
                         this.remove();
@@ -184,9 +211,19 @@ public class CustomParticleType implements CustomParticleFactory {
                 this.remove();
             }
 
-            //TODO: check for anu block collision. also check this on my mods
+            //TODO: check for any block collision. also check this on my mods
             if (this.hasPhysics && this.stoppedByCollision) {
                 this.remove();
+            }
+
+            if (habitat != Habitat.ANY) {
+                BlockState state = level.getBlockState(BlockPos.containing(x, y, z));
+                if (habitat == Habitat.LIQUID && !state.getFluidState().isEmpty()) {
+                    this.remove();
+                }
+                if (habitat == Habitat.AIR && !state.isAir()) {
+                    this.remove();
+                }
             }
         }
 
@@ -214,9 +251,9 @@ public class CustomParticleType implements CustomParticleFactory {
         public ParticleRenderType get() {
             return switch (this) {
                 case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
-                default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
                 case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
                 case CUSTOM -> ParticleRenderType.CUSTOM;
+                default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
             };
         }
     }
@@ -229,6 +266,7 @@ public class CustomParticleType implements CustomParticleFactory {
                           @Nullable ParticleExpression red, @Nullable ParticleExpression green,
                           @Nullable ParticleExpression blue, @Nullable ParticleExpression alpha,
                           @Nullable ParticleExpression roll,
+                          @Nullable ParticleExpression custom,
                           @Nullable ParticleExpression removeIf,
                           @Nullable IColorGetter colormap) {
 
@@ -244,7 +282,8 @@ public class CustomParticleType implements CustomParticleFactory {
                 StrOpt.of(ParticleExpression.CODEC, "green").forGetter(p -> Optional.ofNullable(p.green)),
                 StrOpt.of(ParticleExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.blue)),
                 StrOpt.of(ParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
-                StrOpt.of(ParticleExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.alpha)),
+                StrOpt.of(ParticleExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.roll)),
+                ParticleExpression.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom)),
                 StrOpt.of(ParticleExpression.CODEC, "remove_condition").forGetter(p -> Optional.ofNullable(p.removeIf)),
                 StrOpt.of(Colormap.CODEC, "colormap").forGetter(p -> Optional.ofNullable(p.colormap))
         ).apply(i, Ticker::new));
@@ -255,6 +294,7 @@ public class CustomParticleType implements CustomParticleFactory {
                        Optional<ParticleExpression> size, Optional<ParticleExpression> red,
                        Optional<ParticleExpression> green, Optional<ParticleExpression> blue,
                        Optional<ParticleExpression> alpha, Optional<ParticleExpression> roll,
+                       Optional<ParticleExpression> custom,
                        Optional<ParticleExpression> removeIf,
                        Optional<IColorGetter> colormap) {
             this(x.orElse(null), y.orElse(null),
@@ -263,7 +303,7 @@ public class CustomParticleType implements CustomParticleFactory {
                     size.orElse(null), red.orElse(null),
                     green.orElse(null), blue.orElse(null),
                     alpha.orElse(null), roll.orElse(null),
-                    alpha.orElse(null),
+                    custom.orElse(null), removeIf.orElse(null),
                     colormap.orElse(null));
         }
     }
@@ -276,8 +316,9 @@ public class CustomParticleType implements CustomParticleFactory {
                               @Nullable BlockParticleExpression alpha,
                               @Nullable BlockParticleExpression roll,
                               @Nullable BlockParticleExpression friction,
+                              @Nullable BlockParticleExpression custom,
                               @Nullable IColorGetter colormap,
-                              boolean hasPhysics) {
+                              Habitat habitat, boolean hasPhysics) {
 
         public static final Codec<Initializer> CODEC = RecordCodecBuilder.create(i -> i.group(
                 StrOpt.of(BlockParticleExpression.CODEC, "size").forGetter(p -> Optional.ofNullable(p.size)),
@@ -288,7 +329,9 @@ public class CustomParticleType implements CustomParticleFactory {
                 StrOpt.of(BlockParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
                 StrOpt.of(BlockParticleExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.roll)),
                 StrOpt.of(BlockParticleExpression.CODEC, "friction").forGetter(p -> Optional.ofNullable(p.friction)),
+                BlockParticleExpression.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom)),
                 StrOpt.of(Colormap.CODEC, "colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
+                Habitat.CODEC.optionalFieldOf("habitat", Habitat.ANY).forGetter(p -> p.habitat),
                 StrOpt.of(Codec.BOOL, "has_physics", true).forGetter(p -> p.hasPhysics)
         ).apply(i, Initializer::new));
 
@@ -297,10 +340,24 @@ public class CustomParticleType implements CustomParticleFactory {
                             Optional<BlockParticleExpression> blue, Optional<BlockParticleExpression> alpha,
                             Optional<BlockParticleExpression> roll,
                             Optional<BlockParticleExpression> friction,
-                            Optional<IColorGetter> colormap, boolean hasPhysics) {
+                            Optional<BlockParticleExpression> custom,
+                            Optional<IColorGetter> colormap, Habitat habitat, boolean hasPhysics) {
             this(size.orElse(null), lifetime.orElse(null), red.orElse(null),
                     green.orElse(null), blue.orElse(null), alpha.orElse(null),
-                    roll.orElse(null), friction.orElse(null), colormap.orElse(null), hasPhysics);
+                    roll.orElse(null), friction.orElse(null),
+                    custom.orElse(null), colormap.orElse(null),
+                    habitat, hasPhysics);
+        }
+    }
+
+    private enum Habitat implements StringRepresentable {
+        LIQUID, AIR, ANY;
+
+        private static final Codec<Habitat> CODEC = StringRepresentable.fromEnum(Habitat::values);
+
+        @Override
+        public String getSerializedName() {
+            return this.name().toLowerCase(Locale.ROOT);
         }
     }
 }

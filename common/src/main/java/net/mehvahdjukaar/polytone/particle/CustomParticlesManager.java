@@ -4,12 +4,15 @@ import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -30,6 +33,10 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     @Override
     protected void reset() {
+        for(var id : customParticles.orderedKeys()){
+            PlatStuff.unregisterParticleProvider(id);
+            PlatStuff.unregisterDynamic(BuiltInRegistries.PARTICLE_TYPE, id);
+        }
         customParticles.clear();
     }
 
@@ -48,6 +55,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     @Override
     protected void process(Map<ResourceLocation, JsonElement> obj, DynamicOps<JsonElement> ops) {
+
         for (var j : obj.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
@@ -60,6 +68,18 @@ public class CustomParticlesManager extends JsonPartialReloader {
         }
     }
 
+    @Override
+    protected void apply() {
+        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
+
+        for(var id : customParticles.orderedKeys()) {
+            SimpleParticleType type = PlatStuff.makeParticleType();
+            PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
+
+            particleEngine.register(type,customParticles.getValue(id));
+        }
+
+    }
 
     public Codec<CustomParticleFactory> byNameCodec() {
         return customParticles;

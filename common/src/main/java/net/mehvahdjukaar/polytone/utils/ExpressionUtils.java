@@ -16,7 +16,14 @@ public class ExpressionUtils {
     private static final Function RAND = new Function("rand", 0) {
         @Override
         public double apply(double... args) {
-            return RANDOM_SOURCE.nextFloat();
+            return RANDOM_SOURCE.nextDouble();
+        }
+    };
+
+    private static final Function GAUSSIAN = new Function("gaussian", 0) {
+        @Override
+        public double apply(double... args) {
+            return RANDOM_SOURCE.nextGaussian();
         }
     };
 
@@ -180,7 +187,7 @@ public class ExpressionUtils {
 
     public static Function[] defFunc(Function... others) {
         return Stream.concat(
-                Stream.of(ATAN2, RAND, STEP, SMOOTHSTEP, MAX, MIN, LERP, RED, GREEN, BLUE, ALPHA, COLOR),
+                Stream.of(ATAN2, RAND, GAUSSIAN, STEP, SMOOTHSTEP, MAX, MIN, LERP, RED, GREEN, BLUE, ALPHA, COLOR),
                 Stream.of(others)
         ).toArray(Function[]::new);
     }
@@ -191,5 +198,27 @@ public class ExpressionUtils {
                 Stream.of(EQUALS, GREATER, LESS, GREATER_EQUAL, LESS_EQUAL, FACTORIAL),
                 Stream.of(others)
         ).toArray(Operator[]::new);
+    }
+
+    private static final Pattern HEX_PATTERN = Pattern.compile("(?:#|0x)[0-9a-fA-F]+");
+
+    public static String removeHex(String s) {
+        // Create a Matcher object
+        Matcher matcher = HEX_PATTERN.matcher(s);
+
+        // StringBuffer to build the modified expression
+        StringBuilder sb = new StringBuilder();
+
+        // Iterate through the matches and replace each with its decimal equivalent
+        while (matcher.find()) {
+            String hexString = matcher.group().replace("#", "").replace("0x", ""); // Remove the prefix
+            long decimalValue = Long.parseLong(hexString, 16);
+            matcher.appendReplacement(sb, Long.toString(decimalValue));
+        }
+
+        // Append the remaining part of the original expression
+        matcher.appendTail(sb);
+
+        return sb.toString();
     }
 }

@@ -30,6 +30,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -39,8 +41,9 @@ import java.util.function.Predicate;
 /**
  * Author: MehVahdJukaar
  */
-@Mod(Polytone.MOD_ID)
+@Mod("polytone")
 public class PolytoneForge {
+    public static final Logger LOGGER = LogManager.getLogger("Polytone");
 
     public PolytoneForge() {
         if (FMLEnvironment.dist == Dist.CLIENT) {
@@ -49,7 +52,7 @@ public class PolytoneForge {
             MinecraftForge.EVENT_BUS.register(this);
             FMLJavaModLoadingContext.get().getModEventBus().addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
         } else {
-            Polytone.LOGGER.warn("Slotify has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
+            LOGGER.warn("Slotify has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
     }
 

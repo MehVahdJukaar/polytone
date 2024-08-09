@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.colormap;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
@@ -8,7 +7,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 // basically a map of colormap to tint color
 public class IndexCompoundColorGetter implements IColorGetter {
@@ -49,10 +46,8 @@ public class IndexCompoundColorGetter implements IColorGetter {
             });
 
     // single or multiple
-    public static final Codec<IColorGetter> SINGLE_OR_MULTIPLE = Codec.either(DIRECT_CODEC, Colormap.CODEC)
-            .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
-
-
+    public static final Codec<IColorGetter> SINGLE_OR_MULTIPLE = Codec.withAlternative(Colormap.CODEC, DIRECT_CODEC,
+            iColorGetter -> iColorGetter);
 
     // default biome sample vanilla implementation
     public static IndexCompoundColorGetter createDefault(Set<Integer> tintIndexes, boolean triangular) {

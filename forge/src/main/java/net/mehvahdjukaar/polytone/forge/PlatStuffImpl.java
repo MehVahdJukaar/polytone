@@ -15,6 +15,7 @@ import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
@@ -22,7 +23,9 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -82,6 +85,15 @@ public class PlatStuffImpl {
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void unregisterParticleProvider(ResourceLocation id) {
+        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
+        ((ParticleEngineAccessor) particleEngine).getProviders().remove(id);
+    }
+
+    public static SimpleParticleType makeParticleType() {
+        return new SimpleParticleType(false);
     }
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {

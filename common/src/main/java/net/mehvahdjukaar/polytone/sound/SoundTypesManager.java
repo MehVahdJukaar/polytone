@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -22,7 +22,7 @@ import java.util.*;
 
 public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resources> {
 
-    private final Set<ResourceLocation> customSoundEvents = new HashSet<>();
+    private final List<ResourceLocation> customSoundEvents = new ArrayList<>();
 
     // custom defined sound types
     private final MapRegistry<SoundType> customSoundTypes = new MapRegistry<>("Custom Sound Types");
@@ -58,7 +58,8 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
                 if (!customSoundEvents.contains(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
-                    SoundEvent newSound = PlatStuff.registerSoundEvent(id);
+                    SoundEvent newSound = PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id,
+                            SoundEvent.createVariableRangeEvent(id));
                     customSoundEvents.add(id);
                 } else {
                     Polytone.LOGGER.error("Sound Event with id {} already exists! Ignoring.", id);
@@ -88,11 +89,10 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
 
     @Override
     protected void reset() {
+        PlatStuff.unregisterAllDynamic(BuiltInRegistries.SOUND_EVENT, customSoundEvents);
         customSoundTypes.clear();
         customSoundEvents.clear();
     }
-
-
 
 
     public record Resources(Map<ResourceLocation, JsonElement> soundTypes,

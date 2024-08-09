@@ -234,11 +234,12 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         float get();
 
         Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> () -> f, FogParam::get);
-        Codec<FogParam> CODEC = Codec.either(
+        Codec<FogParam> CODEC = Codec.withAlternative(
                 SIMPLE_CODEC,
                 Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
-                        .xmap(FogMap::new, FogMap::map).codec()
-        ).xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
+                        .xmap(FogMap::new, FogMap::map).codec(),
+                fogMap -> fogMap
+        );
     }
 
     private static final FogParam ONE = () -> 1f;

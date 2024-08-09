@@ -2,9 +2,9 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.util.Mth;
@@ -32,6 +32,7 @@ public class ParticleExpression {
     private static final String LIFE = "LIFETIME";
     private static final String AGE = "AGE";
     private static final String ROLL = "ROLL";
+    private static final String CUSTOM = "CUSTOM";
 
     private static final String DAY_TIME = "DAY_TIME";
     private static final String TIME = "TIME";
@@ -50,6 +51,7 @@ public class ParticleExpression {
     private final boolean hasTime;
     private final boolean hasRain;
     private final boolean hasDayTime;
+    private final boolean hasCustom;
 
     public ParticleExpression(Expression expression, String unparsed) {
         this.expression = expression;
@@ -58,6 +60,7 @@ public class ParticleExpression {
         this.hasTime = unparsed.contains(TIME);
         this.hasRain = unparsed.contains(RAIN);
         this.hasDayTime = unparsed.contains(DAY_TIME);
+        this.hasCustom = unparsed.contains(CUSTOM);
     }
 
     public static ParticleExpression parse(String s) {
@@ -68,7 +71,7 @@ public class ParticleExpression {
         return new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc())
                 .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, ROLL, AGE,
-                        TIME, RAIN, DAY_TIME)
+                        CUSTOM, TIME, RAIN, DAY_TIME)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
@@ -94,6 +97,8 @@ public class ParticleExpression {
         expression.setVariable(DX, particle.z);
         expression.setVariable(AGE, particle.age);
         expression.setVariable(ROLL, particle.roll);
+        if (hasCustom && particle instanceof CustomParticleType.Instance i)
+            expression.setVariable(CUSTOM, i.getCustom());
 
         if (hasTime) expression.setVariable(TIME, ClientFrameTicker.getGameTime());
         if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());

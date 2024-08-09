@@ -28,7 +28,8 @@ public abstract class ParticleEngineMixin {
     protected ClientLevel level;
 
     @ModifyReturnValue(method = "makeParticle", at = @At("RETURN"))
-    public @Nullable <T extends ParticleOptions> Particle polytone$applyModifiers(@Nullable Particle original, @Local T particleData){
+    public @Nullable <T extends ParticleOptions> Particle polytone$applyModifiers(@Nullable Particle original,
+                                                                                  @Local(argsOnly = true) T particleData){
         Polytone.PARTICLE_MODIFIERS.maybeModify( particleData, this.level, original);
         return original;
     }

@@ -79,7 +79,7 @@ public class BlockParticleExpression {
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
-                .variables(TIME, POS_X, POS_Y, POS_Z, RAIN)
+                .variables(TIME, POS_X, POS_Y, POS_Z, RAIN, DAY_TIME)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
@@ -123,4 +123,5 @@ public class BlockParticleExpression {
 
     public static final BlockParticleExpression ZERO = new BlockParticleExpression("0");
     public static final BlockParticleExpression ONE = new BlockParticleExpression("1");
+    public static final BlockParticleExpression PARTICLE_RAND= new BlockParticleExpression("(rand() * 2.0 - 1.0) * 0.4");
 }

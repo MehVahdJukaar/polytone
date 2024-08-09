@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.SpriteTicker;
@@ -85,18 +86,16 @@ public class DayTimeTextureTicker implements SpriteTicker {
         if (level == null) return null;
 
         if (mode == DayTimeTexture.Mode.WEATHER) {
-            float partialTicks = Minecraft.getInstance().getFrameTime();
-            float thunder = level.getThunderLevel(partialTicks) * 1 / 3f;
-            float rain = level.getRainLevel(partialTicks) * 1 / 3f;
-            return rain + thunder + 1 / 6;
+            float rainAndThunder = ClientFrameTicker.getRainAndThunder() * 2 / 3f;
+            return rainAndThunder + 1 / 6;
             //needs to fall in between those 2 so we dont get interpolation as this stuff doesnt loop back
         }else if(mode == DayTimeTexture.Mode.GAME_TIME){
-            long gameTime = level.getGameTime() % timeCycleDuration;
-            return gameTime / (float) timeCycleDuration;
+            double gameTime = level.getDayTime() % timeCycleDuration;
+            return (float) (gameTime / timeCycleDuration);
+        }else {
+            double dayTime = ClientFrameTicker.getDayTime() % timeCycleDuration;
+            return (float) (dayTime / timeCycleDuration);
         }
-
-        long dayTime = level.dayTime() % timeCycleDuration;
-        return dayTime / (float) timeCycleDuration;
     }
 
     @Override
