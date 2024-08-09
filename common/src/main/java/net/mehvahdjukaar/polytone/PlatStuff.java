@@ -101,7 +101,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static CreativeModeTab registerTab(ResourceLocation id) {
+    public static CreativeModeTab createCreativeTab(ResourceLocation id) {
         throw new AssertionError();
     }
 

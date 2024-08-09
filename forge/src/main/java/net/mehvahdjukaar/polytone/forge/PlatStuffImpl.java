@@ -169,12 +169,8 @@ public class PlatStuffImpl {
     }
 
 
-    public static CreativeModeTab registerTab(ResourceLocation id) {
-        CreativeModeTab tab = CreativeModeTab.builder().title(Component.translatable(id.toString())).build();
-        ((MappedRegistry) BuiltInRegistries.CREATIVE_MODE_TAB).frozen = false;
-        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, id, tab);
-        BuiltInRegistries.CREATIVE_MODE_TAB.freeze();
-        return tab;
+    public static CreativeModeTab createCreativeTab(ResourceLocation id) {
+        return CreativeModeTab.builder().title(Component.translatable(id.toString())).build();
     }
 
     public static CreativeTabModifier modifyTab(CreativeTabModifier mod, CreativeModeTab tab) {
