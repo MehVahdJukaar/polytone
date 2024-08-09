@@ -9,7 +9,6 @@ import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -20,7 +19,7 @@ import java.util.function.Function;
 
 public class CustomParticlesManager extends JsonPartialReloader {
 
-    public final MapRegistry<CustomParticleFactory> customParticles = new MapRegistry<>("Custom Particles");
+    public final MapRegistry<CustomParticleFactory> customParticleFactories = new MapRegistry<>("Custom Particles");
 
     public static final Codec<CustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = Codec.either(SemiCustomParticleType.CODEC, CustomParticleType.CODEC)
             .xmap(e -> e.map(Function.identity(), Function.identity()),
@@ -32,17 +31,17 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     @Override
     protected void reset() {
-        for(var id : customParticles.orderedKeys()){
+        for (var id : customParticleFactories.orderedKeys()) {
             PlatStuff.unregisterParticleProvider(id);
             PlatStuff.unregisterDynamic(BuiltInRegistries.PARTICLE_TYPE, id);
         }
-        customParticles.clear();
+        customParticleFactories.clear();
     }
 
     // not ideal
     public void addSpriteSets(ResourceManager resourceManager) {
         ParticleEngine engine = Minecraft.getInstance().particleEngine;
-        for (var v : customParticles.keySet()) {
+        for (var v : customParticleFactories.keySet()) {
             engine.spriteSets.remove(v);
         }
         var jsons = this.getJsonsInDirectories(resourceManager);
@@ -54,33 +53,26 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     @Override
     protected void process(Map<ResourceLocation, JsonElement> obj, DynamicOps<JsonElement> ops) {
+        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
 
         for (var j : obj.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            CustomParticleFactory type = CUSTOM_OR_SEMI_CUSTOM_CODEC.decode(ops, json)
+            CustomParticleFactory factory = CUSTOM_OR_SEMI_CUSTOM_CODEC.decode(ops, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
-            type.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
+            factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
-            customParticles.register(id, type);
-        }
-    }
+            customParticleFactories.register(id, factory);
 
-    @Override
-    protected void apply() {
-        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
-
-        for(var id : customParticles.orderedKeys()) {
             SimpleParticleType type = PlatStuff.makeParticleType();
             PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
 
-            particleEngine.register(type,customParticles.getValue(id));
+            particleEngine.register(type, factory);
         }
-
     }
 
     public Codec<CustomParticleFactory> byNameCodec() {
-        return customParticles;
+        return customParticleFactories;
     }
 }

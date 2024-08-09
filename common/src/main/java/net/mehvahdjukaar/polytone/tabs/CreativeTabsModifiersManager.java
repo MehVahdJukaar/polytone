@@ -16,13 +16,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.DyeColor;
 
 import java.util.*;
 
 public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsModifiersManager.Resources> {
 
-    private final Set<ResourceKey<CreativeModeTab>> customTabs = new HashSet<>();
+    private final List<ResourceKey<CreativeModeTab>> customTabs = new ArrayList<>();
 
     private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> modifiers = new HashMap<>();
     private final Set<ResourceKey<CreativeModeTab>> needsRefresh = new HashSet<>();
@@ -47,6 +46,10 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
     @Override
     protected void reset() {
+        for(var id : customTabs){
+            PlatStuff.unregisterDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id.location());
+        }
+        customTabs.clear();
         for (var e : vanillaTabs.entrySet()) {
             e.getValue().applyAttributes(e.getKey());
         }
@@ -62,7 +65,8 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
                 ResourceLocation id = e.getKey().withPath(s);
                 ResourceKey<CreativeModeTab> key = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id);
                 if (!customTabs.contains(key) && !BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(key)) {
-                    CreativeModeTab tab = PlatStuff.registerTab(id);
+                    CreativeModeTab tab = PlatStuff.createCreativeTab(id);
+                    PlatStuff.registerDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id, tab);
                     customTabs.add(key);
                 } else {
                     Polytone.LOGGER.error("Creative Tab with id {} already exists! Ignoring.", id);
@@ -98,7 +102,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             //forces reload on next open screen
             needsRefresh.clear();
         }
-        if(true)return;
+        if (true) return;
 
         //not used. optimized code but can cause issues
 

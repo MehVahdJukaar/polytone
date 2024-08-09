@@ -24,11 +24,12 @@
       "dz": "0"
     },
     {
-      "chance": "0.1",
+      "chance": "0.6",
       "particle": "my_namespace:fancy_star",
       "x": "rand()",
       "y": "1.2",
-      "z": "rand()"
+      "z": "rand()",
+      "dy": "0.01"
     }
   ]
 }

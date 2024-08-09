@@ -218,10 +218,10 @@ public class CustomParticleType implements CustomParticleFactory {
             if (habitat != Habitat.ANY) {
                 BlockState state = level.getBlockState(BlockPos.containing(x, y, z));
                 if (habitat == Habitat.LIQUID && !state.getFluidState().isEmpty()) {
-                    this.remove();
+                    //this.remove();
                 }
                 if (habitat == Habitat.AIR && !state.isAir()) {
-                    this.remove();
+                  //  this.remove();
                 }
             }
         }

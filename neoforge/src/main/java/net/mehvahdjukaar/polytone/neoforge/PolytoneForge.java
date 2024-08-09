@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.neoforge;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
+import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
@@ -125,8 +126,9 @@ public class PolytoneForge {
 
         @Override
         public void removeItems(Predicate<ItemStack> target) {
-            event.getParentEntries().removeIf(target);
-            event.getSearchEntries().removeIf(target);
+            BuildCreativeModeTabContentsEventAccessor acc = ((BuildCreativeModeTabContentsEventAccessor) (Object) event);
+            acc.getParentEntries().removeIf(target);
+            acc.getSearchEntries().removeIf(target);
         }
 
         @Override
@@ -136,11 +138,17 @@ public class PolytoneForge {
             } else {
                 if (after) {
                     ItemStack last = findLast(event, target);
+                    if (last.isEmpty()) {
+                        return;
+                    }
                     for (int j = items.size(); j > 0; j--) {
                         event.insertAfter(last, items.get(j - 1), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                     }
                 } else {
                     ItemStack first = findFirst(event, target);
+                    if (first.isEmpty()) {
+                        return;
+                    }
                     for (var s : items) {
                         event.insertBefore(first, s, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                     }
@@ -154,6 +162,7 @@ public class PolytoneForge {
                     return s;
                 }
             }
+            Polytone.LOGGER.error("Could not find target item in creative tab {}", event.getTab());
             return ItemStack.EMPTY;
         }
 
@@ -168,7 +177,7 @@ public class PolytoneForge {
                     if (foundOne) return previous;
                 }
             }
-            return ItemStack.EMPTY;
+            return previous;
         }
     }
 }

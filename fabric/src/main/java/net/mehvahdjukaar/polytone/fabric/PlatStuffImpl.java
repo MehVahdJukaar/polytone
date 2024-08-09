@@ -208,12 +208,8 @@ public class PlatStuffImpl {
         CreativeModeTabs.validate();
     }
 
-    public static CreativeModeTab registerTab(ResourceLocation id) {
-        CreativeModeTab tab = FabricItemGroup.builder().title(Component.literal(id.toString())).build();
-        ((MappedRegistry) BuiltInRegistries.CREATIVE_MODE_TAB).frozen = false;
-        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, id, tab);
-        BuiltInRegistries.CREATIVE_MODE_TAB.freeze();
-        return tab;
+    public static CreativeModeTab createCreativeTab(ResourceLocation id) {
+        return FabricItemGroup.builder().title(Component.literal(id.toString())).build();
     }
 
     public static RegistryAccess hackyGetRegistryAccess() {
