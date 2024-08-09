@@ -1,4 +1,8 @@
-- more expressions can now use the variables TIME, DAY_TIME and RAIN
-- GAMETIME has been renamed to TIME in block particle expressions
-- RAIN variable will return 0 for clear, 0.5 for rain and 1 for thunder
-- fixed an issue related to reloading stuff when changing world and tags
+- custom particles, custom tabs and custom sounds will now ACTUALLY be properly registered and unregistered to vanilla registries
+- this means you can use your custom particles and sounds anywhere (client side)
+- fixed creative tab items removal being broken on neoforge
+- added a "custom" expression and "CUSTOM" variable to Custom Particle Types
+- fixed DAY_TIME variable not working in some expressions
+- fixed some misc issues with custom particles
+- added a "habitat" variable to custom particles. values are "liquid", "air", "any"
+- fixed custom sound types not working
