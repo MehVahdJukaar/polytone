@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,17 +23,17 @@ import java.util.Optional;
 
 public record ParticleEmitter(
         ParticleType<?> particleType,
-        BlockParticleExpression chance,
-        BlockParticleExpression count,
-        BlockParticleExpression x,
-        BlockParticleExpression y,
-        BlockParticleExpression z,
-        BlockParticleExpression dx,
-        BlockParticleExpression dy,
-        BlockParticleExpression dz,
+        BlockContextExpression chance,
+        BlockContextExpression count,
+        BlockContextExpression x,
+        BlockContextExpression y,
+        BlockContextExpression z,
+        BlockContextExpression dx,
+        BlockContextExpression dy,
+        BlockContextExpression dz,
         Optional<LazyHolderSet<Biome>> biomes,
         SpawnLocation spawnLocation
-) {
+) implements BlockClientTickable {
 
     public static final Codec<ParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
             BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("particle").forGetter(ParticleEmitter::particleType),

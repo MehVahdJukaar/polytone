@@ -2,12 +2,10 @@ package net.mehvahdjukaar.polytone.block;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
-import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
@@ -31,7 +29,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
     // Block ID to modifier
     private final Map<Block, BlockPropertyModifier> modifiers = new HashMap<>();
-    private final Map<Block, List<ParticleEmitter>> particleEmitters = new Object2ObjectOpenHashMap<>();
+    private final Map<Block, List<? extends BlockClientTickable>> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
 
     public BlockPropertiesManager() {
         super("block_modifiers", "block_properties");
@@ -153,7 +151,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         vanillaProperties.clear();
         modifiers.clear();
         optifineColormapsToBlocks.clear();
-        particleEmitters.clear();
+        particleAndSoundEmitters.clear();
     }
 
     @Override
@@ -165,7 +163,10 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             vanillaProperties.put(target, value.apply(target));
 
             var particle = value.particleEmitters();
-            particle.ifPresent(emitters -> particleEmitters.put(target, emitters));
+            particle.ifPresent(emitters -> particleAndSoundEmitters.put(target, emitters));
+
+            var sound = value.soundEmitters();
+            sound.ifPresent(emitters -> particleAndSoundEmitters.put(target, emitters));
         }
         if (!vanillaProperties.isEmpty()) {
             Polytone.LOGGER.info("Applied {} Custom Block Properties", vanillaProperties.size());
@@ -182,7 +183,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
     public void maybeEmitParticle(Block block, BlockState state, Level level, BlockPos pos) {
-        var m = particleEmitters.get(block);
+        var m = particleAndSoundEmitters.get(block);
         if (m != null) {
             for (var p : m) {
                 p.tick(level, pos, state);

@@ -308,15 +308,15 @@ public class CustomParticleType implements CustomParticleFactory {
         }
     }
 
-    public record Initializer(@Nullable BlockParticleExpression size,
-                              @Nullable BlockParticleExpression lifetime,
-                              @Nullable BlockParticleExpression red,
-                              @Nullable BlockParticleExpression green,
-                              @Nullable BlockParticleExpression blue,
-                              @Nullable BlockParticleExpression alpha,
-                              @Nullable BlockParticleExpression roll,
-                              @Nullable BlockParticleExpression friction,
-                              @Nullable BlockParticleExpression custom,
+    public record Initializer(@Nullable BlockContextExpression size,
+                              @Nullable BlockContextExpression lifetime,
+                              @Nullable BlockContextExpression red,
+                              @Nullable BlockContextExpression green,
+                              @Nullable BlockContextExpression blue,
+                              @Nullable BlockContextExpression alpha,
+                              @Nullable BlockContextExpression roll,
+                              @Nullable BlockContextExpression friction,
+                              @Nullable BlockContextExpression custom,
                               @Nullable IColorGetter colormap,
                               Habitat habitat, boolean hasPhysics) {
 
@@ -335,12 +335,12 @@ public class CustomParticleType implements CustomParticleFactory {
                 StrOpt.of(Codec.BOOL, "has_physics", true).forGetter(p -> p.hasPhysics)
         ).apply(i, Initializer::new));
 
-        private Initializer(Optional<BlockParticleExpression> size, Optional<BlockParticleExpression> lifetime,
-                            Optional<BlockParticleExpression> red, Optional<BlockParticleExpression> green,
-                            Optional<BlockParticleExpression> blue, Optional<BlockParticleExpression> alpha,
-                            Optional<BlockParticleExpression> roll,
-                            Optional<BlockParticleExpression> friction,
-                            Optional<BlockParticleExpression> custom,
+        private Initializer(Optional<BlockContextExpression> size, Optional<BlockContextExpression> lifetime,
+                            Optional<BlockContextExpression> red, Optional<BlockContextExpression> green,
+                            Optional<BlockContextExpression> blue, Optional<BlockContextExpression> alpha,
+                            Optional<BlockContextExpression> roll,
+                            Optional<BlockContextExpression> friction,
+                            Optional<BlockContextExpression> custom,
                             Optional<IColorGetter> colormap, Habitat habitat, boolean hasPhysics) {
             this(size.orElse(null), lifetime.orElse(null), red.orElse(null),
                     green.orElse(null), blue.orElse(null), alpha.orElse(null),
