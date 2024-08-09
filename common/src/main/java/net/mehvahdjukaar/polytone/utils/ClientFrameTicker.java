@@ -12,7 +12,7 @@ public class ClientFrameTicker {
     public static void onRenderTick(Minecraft mc) {
         Level level = mc.level;
         if (level == null) return;
-        float partialTicks = mc.getTimer().getGameTimeDeltaPartialTick(false);
+        float partialTicks = mc.getFrameTime();
 
         time = level.getGameTime() + partialTicks;
         dayTime = level.getDayTime() + partialTicks;

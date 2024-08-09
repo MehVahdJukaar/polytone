@@ -15,10 +15,10 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockState
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase lightEmission I
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase canOcclude Z
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase canOcclude Z
-accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties spawnTerrainParticles Z
-mutable field net/minecraft/world/level/block/state/BlockBehaviour$Properties spawnTerrainParticles Z
-accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase spawnTerrainParticles Z
-mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase spawnTerrainParticles Z
+accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties spawnParticlesOnBreak Z
+mutable field net/minecraft/world/level/block/state/BlockBehaviour$Properties spawnParticlesOnBreak Z
+accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase spawnParticlesOnBreak Z
+mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase spawnParticlesOnBreak Z
 
 accessible field net/minecraft/world/item/CreativeModeTabs CACHED_PARAMETERS Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;
 
@@ -117,6 +117,8 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour dynamicSha
 mutable field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
 
 accessible field net/minecraft/core/MappedRegistry frozen Z
+
+accessible field net/minecraft/client/particle/Particle stoppedByCollision Z
 
 accessible method net/minecraft/world/level/biome/Biome getTemperature (Lnet/minecraft/core/BlockPos;)F
 

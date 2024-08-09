@@ -128,10 +128,10 @@ public record BlockPropertyModifier(
 
         Boolean oldSpawnParticlesOnBreak = null;
         if (spawnParticlesOnBreak.isPresent()) {
-            oldSpawnParticlesOnBreak = block.properties.spawnTerrainParticles;
-            block.properties.spawnTerrainParticles = spawnParticlesOnBreak.get();
+            oldSpawnParticlesOnBreak = block.properties.spawnParticlesOnBreak;
+            block.properties.spawnParticlesOnBreak = spawnParticlesOnBreak.get();
             for (var s : block.getStateDefinition().getPossibleStates()) {
-                s.spawnTerrainParticles = block.properties.spawnTerrainParticles;
+                s.spawnParticlesOnBreak = block.properties.spawnParticlesOnBreak;
             }
         }
 

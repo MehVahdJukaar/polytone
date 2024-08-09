@@ -22,6 +22,7 @@ import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.TagsUpdatedEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -53,8 +54,9 @@ public class PolytoneForge {
     }
 
     @SubscribeEvent
-    public void onRender(RenderFrameEvent.Pre onRender) {
-        ClientFrameTicker.onRenderTick(Minecraft.getInstance());
+    public void onRender(TickEvent.RenderTickEvent onRender) {
+        if (onRender.phase == TickEvent.Phase.START)
+            ClientFrameTicker.onRenderTick(Minecraft.getInstance());
     }
 
     @SubscribeEvent
