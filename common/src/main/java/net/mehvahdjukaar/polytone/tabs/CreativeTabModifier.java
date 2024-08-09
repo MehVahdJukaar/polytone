@@ -37,9 +37,8 @@ public record CreativeTabModifier(
         List<ItemAddition> additions,
         Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
-    public static final Codec<Component> COMPONENT_CODEC = Codec.either(ComponentSerialization.CODEC, ComponentSerialization.FLAT_CODEC).xmap(
-            e -> e.map(Function.identity(), Function.identity()), Either::left
-    );
+    public static final Codec<Component> COMPONENT_CODEC = Codec.withAlternative(ComponentSerialization.CODEC, ComponentSerialization.FLAT_CODEC,
+            Function.identity());
 
     public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
             ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),

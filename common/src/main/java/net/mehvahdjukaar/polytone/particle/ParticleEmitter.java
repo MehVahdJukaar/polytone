@@ -2,10 +2,12 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.*;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -13,12 +15,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Optional;
 
 public record ParticleEmitter(
-        ParticleFactory factory,
+        ParticleType<?> particleType,
         BlockParticleExpression chance,
         BlockParticleExpression count,
         BlockParticleExpression x,
@@ -32,12 +35,12 @@ public record ParticleEmitter(
 ) {
 
     public static final Codec<ParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
-            ParticleFactory.CODEC.fieldOf("particle").forGetter(ParticleEmitter::factory),
+            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("particle").forGetter(ParticleEmitter::particleType),
             BlockParticleExpression.CODEC.optionalFieldOf("chance", BlockParticleExpression.ONE).forGetter(ParticleEmitter::chance),
             BlockParticleExpression.CODEC.optionalFieldOf("count", BlockParticleExpression.ONE).forGetter(ParticleEmitter::count),
-            BlockParticleExpression.CODEC.optionalFieldOf("x", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::x),
-            BlockParticleExpression.CODEC.optionalFieldOf("y", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::y),
-            BlockParticleExpression.CODEC.optionalFieldOf("z", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::z),
+            BlockParticleExpression.CODEC.optionalFieldOf("x", BlockParticleExpression.PARTICLE_RAND).forGetter(ParticleEmitter::x),
+            BlockParticleExpression.CODEC.optionalFieldOf("y", BlockParticleExpression.PARTICLE_RAND).forGetter(ParticleEmitter::y),
+            BlockParticleExpression.CODEC.optionalFieldOf("z", BlockParticleExpression.PARTICLE_RAND).forGetter(ParticleEmitter::z),
             BlockParticleExpression.CODEC.optionalFieldOf("dx", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dx),
             BlockParticleExpression.CODEC.optionalFieldOf("dy", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dy),
             BlockParticleExpression.CODEC.optionalFieldOf("dz", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dz),
@@ -54,17 +57,36 @@ public record ParticleEmitter(
                 if (!biomes.get().contains(biome)) return;
             }
             for (int i = 0; i < count.getValue(level, pos, state); i++) {
-                factory.createParticle((ClientLevel) level,
+                CustomParticleType.setStateHack(state);
+
+                ParticleOptions po = getParticleOptions(state);
+                if (po == null) return;
+                level.addParticle(po,
                         pos.getX() + x.getValue(level, pos, state),
                         pos.getY() + y.getValue(level, pos, state),
                         pos.getZ() + z.getValue(level, pos, state),
                         dx.getValue(level, pos, state),
                         dy.getValue(level, pos, state),
-                        dz.getValue(level, pos, state),
-                        state
+                        dz.getValue(level, pos, state)
                 );
             }
         }
+    }
+
+    private @Nullable ParticleOptions getParticleOptions(BlockState state) {
+        ParticleOptions po;
+
+        if (particleType instanceof SimpleParticleType st) {
+            po = st;
+        } else if (particleType == ParticleTypes.BLOCK || particleType == ParticleTypes.FALLING_DUST || particleType == ParticleTypes.BLOCK_MARKER || particleType == ParticleTypes.DUST_PILLAR) {
+            po = new BlockParticleOption((ParticleType<BlockParticleOption>) particleType, state);
+        } else if (particleType == ParticleTypes.ITEM) {
+            po = new ItemParticleOption((ParticleType<ItemParticleOption>) particleType, state.getBlock().asItem().getDefaultInstance());
+        } else {
+            Polytone.LOGGER.error("Unsupported particle type: {}", particleType);
+            return null;
+        }
+        return po;
     }
 
     public enum SpawnLocation {

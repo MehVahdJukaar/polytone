@@ -8,13 +8,17 @@ import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.core.Holder;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -108,7 +112,7 @@ public class PlatStuff {
 
     @Contract
     @ExpectPlatform
-    public static void setRenderType(Block block, RenderType renderType){
+    public static void setRenderType(Block block, RenderType renderType) {
         throw new AssertionError();
     }
 
@@ -119,7 +123,7 @@ public class PlatStuff {
 
     @ExpectPlatform
     public static float compatACModifyGamma(float partialTicks, float gamma) {
-     throw new AssertionError();
+        throw new AssertionError();
     }
 
     @ExpectPlatform
@@ -131,4 +135,59 @@ public class PlatStuff {
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
         throw new AssertionError();
     }
+
+    @ExpectPlatform
+    public static void unregisterParticleProvider(ResourceLocation id) {
+        throw new AssertionError();
+    }
+
+    public static <T> T registerDynamic(Registry<T> reg, ResourceLocation id, T o) {
+        if (reg.containsKey(id)) {
+            throw new RuntimeException("Tried to register object with id " + id + " to registry " + reg + " but it already exists");
+        }
+        ((MappedRegistry) reg).frozen = false;
+        Registry.register(reg, id, o);
+        reg.freeze();
+
+        return o;
+    }
+
+    public static <T> void unregisterDynamic(Registry<T> reg, ResourceLocation id) {
+        ((MappedRegistry) reg).frozen = false;
+        unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
+        reg.freeze();
+
+    }
+
+    private static <T> Holder.Reference<T> unRegister(MappedRegistry<T> reg, ResourceKey<T> key) {
+
+        Holder.Reference<T> reference = reg.byKey.remove(key);
+
+        if (reference != null) {
+            T value = reference.value();
+
+            reg.byLocation.remove(key.location());
+            reg.byValue.remove(value);
+            reg.byId.remove(reference);
+            reg.toId.removeInt(reg.toId.getInt(value));
+            reg.registrationInfos.remove(key);
+        } else {
+            int aa = 1;
+        }
+        return reference;
+    }
+
+    public static void unregisterAllDynamic(Registry<?> soundEvent, List<ResourceLocation> customSoundEvents) {
+        for(int j = customSoundEvents.size() - 1; j >= 0; --j) {
+            ResourceLocation id = customSoundEvents.get(j);
+            unregisterDynamic(soundEvent, id);
+        }
+    }
+
+    @ExpectPlatform
+    public static SimpleParticleType makeParticleType() {
+        throw new AssertionError();
+    }
+
+
 }

@@ -29,6 +29,8 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -37,8 +39,9 @@ import java.util.function.Predicate;
 /**
  * Author: MehVahdJukaar
  */
-@Mod(Polytone.MOD_ID)
+@Mod("polytone")
 public class PolytoneForge {
+    public static final Logger LOGGER = LogManager.getLogger("Polytone");
 
     static IEventBus bus;
 
@@ -50,7 +53,7 @@ public class PolytoneForge {
             NeoForge.EVENT_BUS.register(this);
             modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
         } else {
-            Polytone.LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
+            LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
 
     }

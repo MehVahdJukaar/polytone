@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
@@ -23,6 +24,7 @@ import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -30,7 +32,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -247,6 +251,16 @@ public class PlatStuffImpl {
                 .getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getId(type));
     }
 
+    public static SimpleParticleType makeParticleType() {
+        return FabricParticleTypes.simple();
+    }
+
+    public static void unregisterParticleProvider(ResourceLocation id) {
+        var type = BuiltInRegistries.PARTICLE_TYPE.get(id);
+        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
+        ((ParticleEngineAccessor) particleEngine)
+                .getProviders().remove(BuiltInRegistries.PARTICLE_TYPE.getId(type));
+    }
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,
                                      FabricItemGroupEntries entries) implements ItemToTabEvent {

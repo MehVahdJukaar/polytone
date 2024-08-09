@@ -4,13 +4,14 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -21,19 +22,19 @@ import java.util.Optional;
 
 public class SemiCustomParticleType implements CustomParticleFactory {
 
-    private final ParticleType<?> type;
+    private final ParticleType<?> copyType;
     private ParticleProvider<?> copyProvider = null;
     private boolean hasBeenInit = false;
     private ParticleEngine.MutableSpriteSet spriteSet = null;
     private final @Nullable CustomParticleType.Initializer initializer;
 
     public SemiCustomParticleType(ParticleType<?> type, Optional<CustomParticleType.Initializer> initializer) {
-        this.type = type;
+        this.copyType = type;
         this.initializer = initializer.orElse(null);
     }
 
     public static final Codec<SemiCustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("copy_from").forGetter(c -> c.type),
+            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("copy_from").forGetter(c -> c.copyType),
             CustomParticleType.Initializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer))
             ).apply(i, SemiCustomParticleType::new));
 
@@ -44,13 +45,14 @@ public class SemiCustomParticleType implements CustomParticleFactory {
     }
 
     @Override
-    public void createParticle(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, @Nullable BlockState state) {
+    public Particle createParticle(SimpleParticleType t, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
+                                   @Nullable BlockState state) {
         if (!hasBeenInit) {
             init();
         }
 
         if (copyProvider != null) {
-            var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) type), level, x, y, z, xSpeed, ySpeed, zSpeed);
+            var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) copyType), level, x, y, z, xSpeed, ySpeed, zSpeed);
 
             //initialize
             if (initializer != null && particle != null) {
@@ -77,14 +79,15 @@ public class SemiCustomParticleType implements CustomParticleFactory {
                     particle.setLifetime((int) initializer.lifetime().getValue(level, pos, state));
                 }
             }
-            Minecraft.getInstance().particleEngine.add(particle);
+            return particle;
         }
+        return null;
     }
 
     private void init() {
 
         hasBeenInit = true;
-        copyProvider = PlatStuff.getParticleProvider(type);
+        copyProvider = PlatStuff.getParticleProvider(copyType);
         if (copyProvider != null) {
             try {
                 copyProvider = cloneProvider(copyProvider, spriteSet);
@@ -92,7 +95,7 @@ public class SemiCustomParticleType implements CustomParticleFactory {
                 Polytone.LOGGER.error("Failed to clone particle provider. Not supported. Try using a different particle type", e);
             }
         } else {
-            Polytone.LOGGER.error("Failed to find particle provider for particle type {}", type);
+            Polytone.LOGGER.error("Failed to find particle provider for particle type {}", copyType);
         }
 
     }

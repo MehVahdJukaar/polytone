@@ -2,14 +2,12 @@ package net.mehvahdjukaar.polytone.sound;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -21,7 +19,7 @@ import java.util.*;
 
 public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resources> {
 
-    private final Set<ResourceLocation> customSoundEvents = new HashSet<>();
+    private final List<ResourceLocation> customSoundEvents = new ArrayList<>();
 
     // custom defined sound types
     private final MapRegistry<SoundType> customSoundTypes = new MapRegistry<>("Custom Sound Types");
@@ -57,9 +55,10 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
                 if (!customSoundEvents.contains(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
-                    SoundEvent newSound = registerSoundEvent(id);
+                    SoundEvent newSound = PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id,
+                            SoundEvent.createVariableRangeEvent(id));
                     customSoundEvents.add(id);
-                }else{
+                } else {
                     Polytone.LOGGER.error("Sound Event with id {} already exists! Ignoring.", id);
                 }
             }
@@ -85,22 +84,12 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         }
     }
 
-    public static SoundEvent registerSoundEvent(ResourceLocation id) {
-        SoundEvent sound = SoundEvent.createVariableRangeEvent(id);
-        ((MappedRegistry) BuiltInRegistries.SOUND_EVENT).frozen = false;
-        Registry.register(BuiltInRegistries.SOUND_EVENT, id, sound);
-        BuiltInRegistries.SOUND_EVENT.freeze();
-
-        return sound;
-    }
-
     @Override
     protected void reset() {
+        PlatStuff.unregisterAllDynamic(BuiltInRegistries.SOUND_EVENT, customSoundEvents);
         customSoundTypes.clear();
         customSoundEvents.clear();
     }
-
-
 
 
     public record Resources(Map<ResourceLocation, JsonElement> soundTypes,

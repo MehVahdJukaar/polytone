@@ -5,8 +5,8 @@ import net.minecraft.world.level.Level;
 
 public class ClientFrameTicker {
 
-    private static float time;
-    private static float dayTime;
+    private static double time;
+    private static double dayTime;
     private static float rainAndThunder;
 
     public static void onRenderTick(Minecraft mc) {
@@ -23,11 +23,11 @@ public class ClientFrameTicker {
         return rainAndThunder;
     }
 
-    public static float getDayTime() {
+    public static double getDayTime() {
         return dayTime;
     }
 
-    public static float getGameTime() {
+    public static double getGameTime() {
         return time;
     }
 }

@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.colormap;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -58,9 +57,9 @@ public class Colormap implements IColorGetter, ColorResolver {
     protected static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
-    public static final Codec<IColorGetter> COLORMAP_CODEC = Codec.either(SINGLE_COLOR_CODEC,
-                    new ReferenceOrDirectCodec<>(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC))
-            .xmap(e -> e.map(Function.identity(), Function.identity()), Either::left);
+    public static final Codec<IColorGetter> COLORMAP_CODEC = Codec.withAlternative(SINGLE_COLOR_CODEC,
+            new ReferenceOrDirectCodec<>(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
+            Function.identity());
 
 
     // single or biome compound

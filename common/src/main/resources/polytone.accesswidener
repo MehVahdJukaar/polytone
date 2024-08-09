@@ -121,7 +121,16 @@ accessible field net/minecraft/client/renderer/chunk/RenderChunkRegion level Lne
 accessible field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
 mutable field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
 
+# reg hacks
+accessible field net/minecraft/core/MappedRegistry byLocation Ljava/util/Map;
+accessible field net/minecraft/core/MappedRegistry byKey Ljava/util/Map;
+accessible field net/minecraft/core/MappedRegistry byValue Ljava/util/Map;
+accessible field net/minecraft/core/MappedRegistry byId Lit/unimi/dsi/fastutil/objects/ObjectList;
+accessible field net/minecraft/core/MappedRegistry toId Lit/unimi/dsi/fastutil/objects/Reference2IntMap;
+accessible field net/minecraft/core/MappedRegistry registrationInfos Ljava/util/Map;
 accessible field net/minecraft/core/MappedRegistry frozen Z
+
+accessible method net/minecraft/client/particle/ParticleEngine register (Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/client/particle/ParticleProvider;)V
 
 accessible method net/minecraft/world/level/biome/Biome getTemperature (Lnet/minecraft/core/BlockPos;)F
 
