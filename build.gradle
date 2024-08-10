@@ -1,6 +1,6 @@
 plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
-    id "dev.architectury.loom" version "1.6-SNAPSHOT" apply false
+    id "dev.architectury.loom" version "1.7-SNAPSHOT" apply false
     id 'io.github.juuxel.loom-quiltflower' version '1.7.1' apply false
     id 'io.github.juuxel.loom-vineflower' version '1.11.0' apply false
     id "com.matthewprenger.cursegradle" version "1.4.0"
@@ -43,11 +43,13 @@ subprojects {
     var changelogFile = rootProject.file("changelog.md")
     var changelogText = changelogFile.exists() ? changelogFile.text : ""
 
+    def versions = valid_versions.split(",") as List
+
     if (env.MODRINTH_TOKEN) {
         modrinth {
             projectId = rootProject.mod_id
             uploadFile = tasks.remapJar
-            gameVersions = [minecraft_version]
+            gameVersions = versions
             if (modLoader == "forge") {
                 loaders = ["neoforge"]
             } else loaders = [modLoader]
@@ -71,7 +73,9 @@ subprojects {
                 id = project_id
                 changelog = changelogText
                 releaseType = 'release'
-                addGameVersion minecraft_version
+                for(v in versions) {
+                    addGameVersion v
+                }
 
                 if (modLoader == "neoforge") {
                     addGameVersion("NeoForge")
