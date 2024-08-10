@@ -34,16 +34,16 @@ public record ParticleEmitter(
 
     public static final Codec<ParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
             ParticleFactory.CODEC.fieldOf("particle").forGetter(ParticleEmitter::factory),
-            BlockParticleExpression.CODEC.optionalFieldOf("chance", BlockParticleExpression.ONE).forGetter(ParticleEmitter::chance),
+            StrOpt.of(BlockParticleExpression.CODEC,"chance", BlockParticleExpression.ONE).forGetter(ParticleEmitter::chance),
             StrOpt.of(BlockParticleExpression.CODEC, "count", BlockParticleExpression.ONE).forGetter(ParticleEmitter::count),
-            BlockParticleExpression.CODEC.optionalFieldOf("x", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::x),
-            BlockParticleExpression.CODEC.optionalFieldOf("y", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::y),
-            BlockParticleExpression.CODEC.optionalFieldOf("z", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::z),
-            BlockParticleExpression.CODEC.optionalFieldOf("dx", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dx),
-            BlockParticleExpression.CODEC.optionalFieldOf("dy", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dy),
-            BlockParticleExpression.CODEC.optionalFieldOf("dz", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dz),
-            LazyHolderSet.codec(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleEmitter::biomes),
-            SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(ParticleEmitter::spawnLocation)
+            StrOpt.of(BlockParticleExpression.CODEC,"x", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::x),
+            StrOpt.of(BlockParticleExpression.CODEC,"y", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::y),
+            StrOpt.of(BlockParticleExpression.CODEC,"z", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::z),
+            StrOpt.of(BlockParticleExpression.CODEC,"dx", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dx),
+            StrOpt.of(BlockParticleExpression.CODEC,"dy", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dy),
+            StrOpt.of(BlockParticleExpression.CODEC,"dz", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dz),
+            StrOpt.of(LazyHolderSet.codec(Registries.BIOME),"biomes").forGetter(ParticleEmitter::biomes),
+            StrOpt.of(SpawnLocation.CODEC,"spawn_location", SpawnLocation.CENTER).forGetter(ParticleEmitter::spawnLocation)
     ).apply(i, ParticleEmitter::new));
 
 

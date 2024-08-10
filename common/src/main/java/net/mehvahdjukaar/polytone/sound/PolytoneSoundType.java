@@ -5,6 +5,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -153,8 +154,8 @@ public class PolytoneSoundType extends SoundType {
     // you can inline sound events here aswell
     public static final Codec<PolytoneSoundType> DIRECT_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Codec.FLOAT.optionalFieldOf("volume", 1f).forGetter(SoundType::getVolume),
-                    Codec.FLOAT.optionalFieldOf("pitch", 1f).forGetter(SoundType::getPitch),
+                    StrOpt.of(Codec.FLOAT,"volume", 1f).forGetter(SoundType::getVolume),
+                    StrOpt.of(Codec.FLOAT,"pitch", 1f).forGetter(SoundType::getPitch),
                     SoundEvent.CODEC.fieldOf("break_sound").forGetter(s->s.breakSoundHolder),
                     SoundEvent.CODEC.fieldOf("step_sound").forGetter(s->s.stepSoundHolder),
                     SoundEvent.CODEC.fieldOf("place_sound").forGetter(s->s.placeSoundHolder),

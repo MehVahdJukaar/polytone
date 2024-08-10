@@ -41,7 +41,7 @@ public class Lightmap {
                             .forGetter(l -> l.skyLerp),
                     StrOpt.of(Codec.doubleRange(0, 1), "torch_lerp_factor", DEFAULT_TORCH_LERP)
                             .forGetter(l -> l.torchLerp),
-                    Codec.FLOAT.optionalFieldOf("base_light", DEFAULT_BASE_LIGHT).forGetter(l -> l.baseLight)
+                    StrOpt.of(Codec.FLOAT, "base_light", DEFAULT_BASE_LIGHT).forGetter(l -> l.baseLight)
             ).apply(instance, Lightmap::new));
 
     public static final Codec<Lightmap> CODEC = new ReferenceOrDirectCodec<>(Polytone.LIGHTMAPS.byNameCodec(), DIRECT_CODEC);

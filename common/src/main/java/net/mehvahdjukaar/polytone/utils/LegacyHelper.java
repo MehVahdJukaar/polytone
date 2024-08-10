@@ -122,7 +122,7 @@ public class LegacyHelper {
             StrOpt.of(Codec.STRING.xmap(Integer::parseInt, String::valueOf), "yVariance").forGetter(c -> Optional.empty()),
             StrOpt.of(Codec.STRING.xmap(Integer::parseInt, String::valueOf), "yoffset").forGetter(c -> Optional.empty()),
             StrOpt.of(Codec.STRING, "source").forGetter(c -> Optional.empty()),
-            Codec.BOOL.optionalFieldOf("force_tint", true).forGetter(c -> true)
+            StrOpt.of(Codec.BOOL,"force_tint", true).forGetter(c -> true)
     ).apply(i, LegacyHelper::decodeOFPropertyJson));
 
     private static BlockPropertyModifier decodeOFPropertyJson(String format, List<String> targets,

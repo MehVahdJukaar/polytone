@@ -245,8 +245,8 @@ public class CustomParticleType implements CustomParticleFactory {
                 StrOpt.of(ParticleExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.blue)),
                 StrOpt.of(ParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
                 StrOpt.of(ParticleExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.alpha)),
-                ParticleExpression.CODEC.optionalFieldOf("remove_condition").forGetter(p -> Optional.ofNullable(p.removeIf)),
-                Colormap.CODEC.optionalFieldOf("colormap").forGetter(p -> Optional.ofNullable(p.colormap))
+                StrOpt.of(ParticleExpression.CODEC, "remove_condition").forGetter(p -> Optional.ofNullable(p.removeIf)),
+                StrOpt.of(Colormap.CODEC, "colormap").forGetter(p -> Optional.ofNullable(p.colormap))
         ).apply(i, Ticker::new));
 
         private Ticker(Optional<ParticleExpression> x, Optional<ParticleExpression> y,
@@ -288,8 +288,8 @@ public class CustomParticleType implements CustomParticleFactory {
                 StrOpt.of(BlockParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
                 StrOpt.of(BlockParticleExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.roll)),
                 StrOpt.of(BlockParticleExpression.CODEC, "friction").forGetter(p -> Optional.ofNullable(p.friction)),
-                Colormap.CODEC.optionalFieldOf("colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
-                Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(p -> p.hasPhysics)
+                StrOpt.of(Colormap.CODEC, "colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
+                StrOpt.of(Codec.BOOL, "has_physics", true).forGetter(p -> p.hasPhysics)
         ).apply(i, Initializer::new));
 
         private Initializer(Optional<BlockParticleExpression> size, Optional<BlockParticleExpression> lifetime,

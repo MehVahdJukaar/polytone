@@ -36,21 +36,21 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-            Codec.INT.optionalFieldOf("fog_color").forGetter(BiomeEffectModifier::fogColor),
-            Codec.INT.optionalFieldOf("water_color").forGetter(BiomeEffectModifier::waterColor),
-            Codec.INT.optionalFieldOf("water_fog_color").forGetter(BiomeEffectModifier::waterFogColor),
-            Codec.INT.optionalFieldOf("sky_color").forGetter(BiomeEffectModifier::skyColor),
-            Codec.INT.optionalFieldOf("foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
-            Codec.INT.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
-            BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
-            AmbientParticleSettings.CODEC.optionalFieldOf("particle").forGetter(BiomeEffectModifier::ambientParticleSettings),
-            SoundEvent.CODEC.optionalFieldOf("ambient_sound").forGetter(BiomeEffectModifier::ambientLoopSoundEvent),
-            AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
-            AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
-            Music.CODEC.optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
-            FogParam.CODEC.optionalFieldOf("fog_start").forGetter(BiomeEffectModifier::fogStart),
-            FogParam.CODEC.optionalFieldOf("fog_end").forGetter(BiomeEffectModifier::fogEnd),
-            TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(BiomeEffectModifier::explicitTargets)
+            StrOpt.of(Codec.INT,"fog_color").forGetter(BiomeEffectModifier::fogColor),
+            StrOpt.of(Codec.INT,"water_color").forGetter(BiomeEffectModifier::waterColor),
+            StrOpt.of(Codec.INT,"water_fog_color").forGetter(BiomeEffectModifier::waterFogColor),
+            StrOpt.of(Codec.INT,"sky_color").forGetter(BiomeEffectModifier::skyColor),
+            StrOpt.of(Codec.INT,"foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
+            StrOpt.of(Codec.INT,"grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
+            StrOpt.of(BiomeSpecialEffects.GrassColorModifier.CODEC,"grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
+            StrOpt.of(AmbientParticleSettings.CODEC,"particle").forGetter(BiomeEffectModifier::ambientParticleSettings),
+            StrOpt.of(SoundEvent.CODEC,"ambient_sound").forGetter(BiomeEffectModifier::ambientLoopSoundEvent),
+            StrOpt.of(AmbientMoodSettings.CODEC,"mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
+            StrOpt.of(AmbientAdditionsSettings.CODEC,"additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
+            StrOpt.of(Music.CODEC,"music").forGetter(BiomeEffectModifier::backgroundMusic),
+            StrOpt.of(FogParam.CODEC,"fog_start").forGetter(BiomeEffectModifier::fogStart),
+            StrOpt.of(FogParam.CODEC,"fog_end").forGetter(BiomeEffectModifier::fogEnd),
+            StrOpt.of(TARGET_CODEC,"targets", Set.of()).forGetter(BiomeEffectModifier::explicitTargets)
     ).apply(instance, BiomeEffectModifier::new));
 
     public static BiomeEffectModifier ofWaterColor(int waterColor) {

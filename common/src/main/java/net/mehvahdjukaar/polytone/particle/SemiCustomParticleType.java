@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.Minecraft;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
@@ -35,8 +34,8 @@ public class SemiCustomParticleType implements CustomParticleFactory {
 
     public static final Codec<SemiCustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
             BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("copy_from").forGetter(c -> c.type),
-            CustomParticleType.Initializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer))
-            ).apply(i, SemiCustomParticleType::new));
+            StrOpt.of(CustomParticleType.Initializer.CODEC, "initializer").forGetter(c -> Optional.ofNullable(c.initializer))
+    ).apply(i, SemiCustomParticleType::new));
 
 
     @Override

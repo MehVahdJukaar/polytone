@@ -190,11 +190,11 @@ public record BlockPropertyModifier(
             instance.group(
                     StrOpt.of(IndexCompoundColorGetter.SINGLE_OR_MULTIPLE, "colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
                     //normal opt so it can fail when using modded sounds
-                    PolytoneSoundType.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
+                    StrOpt.of(PolytoneSoundType.CODEC, "sound_type").forGetter(BlockPropertyModifier::soundType),
                     StrOpt.of(MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE),
                             "map_color").forGetter(BlockPropertyModifier::mapColor),
-                    Codec.BOOL.optionalFieldOf("can_occlude").forGetter(BlockPropertyModifier::canOcclude),
-                    Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(BlockPropertyModifier::spawnParticlesOnBreak),
+                    StrOpt.of(Codec.BOOL, "can_occlude").forGetter(BlockPropertyModifier::canOcclude),
+                    StrOpt.of(Codec.BOOL, "spawn_particles_on_break").forGetter(BlockPropertyModifier::spawnParticlesOnBreak),
                     //Codec.BOOL.optionalFieldOf("emissive_rendering").forGetter(c -> c.emissiveRendering.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
                     StrOpt.of(StringRepresentable.fromEnum(RenderType::values), "render_type").forGetter(BlockPropertyModifier::renderType),
                     StrOpt.of(Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0),

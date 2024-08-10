@@ -81,7 +81,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             ResourceLocation id = j.getKey();
 
             CreativeTabModifier modifier = CreativeTabModifier.CODEC.decode(ops, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Creative Mode Tab Modifier with json id {} - error: {}", id, errorMsg))
+                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.error("Could not decode Creative Mode Tab Modifier with json id {} - error: {}", id, errorMsg))
                     .getFirst();
 
             addModifier(id, modifier);
