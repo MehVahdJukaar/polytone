@@ -12,7 +12,7 @@ import net.minecraft.world.level.Level;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
-public class ParticleExpression {
+public class ParticleContentExpression {
     private final Expression expression;
     private final String unparsed;
 
@@ -39,10 +39,10 @@ public class ParticleExpression {
     private static final String RAIN = "RAIN";
 
 
-    public static final Codec<ParticleExpression> CODEC = Codec.STRING.flatXmap(s -> {
+    public static final Codec<ParticleContentExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
             Expression compiled = createExpression(s);
-            return DataResult.success(new ParticleExpression(compiled, s));
+            return DataResult.success(new ParticleContentExpression(compiled, s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
@@ -53,7 +53,12 @@ public class ParticleExpression {
     private final boolean hasDayTime;
     private final boolean hasCustom;
 
-    public ParticleExpression(Expression expression, String unparsed) {
+
+    public ParticleContentExpression(String expression) {
+        this(createExpression(expression), expression);
+    }
+
+    public ParticleContentExpression(Expression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
 
@@ -63,8 +68,8 @@ public class ParticleExpression {
         this.hasCustom = unparsed.contains(CUSTOM);
     }
 
-    public static ParticleExpression parse(String s) {
-        return new ParticleExpression(createExpression(s), s);
+    public static ParticleContentExpression parse(String s) {
+        return new ParticleContentExpression(createExpression(s), s);
     }
 
     private static Expression createExpression(String s) {
@@ -77,7 +82,7 @@ public class ParticleExpression {
     }
 
 
-    public double get(Particle particle, Level level) {
+    public double getValue(Particle particle, Level level) {
         expression.setVariable(LIFE, particle.getLifetime());
 
         int pack = ColorUtils.pack(particle.rCol, particle.gCol, particle.bCol);
@@ -107,4 +112,7 @@ public class ParticleExpression {
         return expression.evaluate();
     }
 
+    public static final ParticleContentExpression ZERO = new ParticleContentExpression("0");
+    public static final ParticleContentExpression ONE = new ParticleContentExpression("1");
+    public static final ParticleContentExpression PARTICLE_RAND= new ParticleContentExpression("(rand() * 2.0 - 1.0) * 0.4");
 }

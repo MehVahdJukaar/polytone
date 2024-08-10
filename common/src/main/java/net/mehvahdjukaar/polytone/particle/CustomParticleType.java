@@ -2,8 +2,10 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
+import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -17,6 +19,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -27,24 +31,31 @@ public class CustomParticleType implements CustomParticleFactory {
     private final RenderType renderType;
     private final @Nullable Initializer initializer;
     private final @Nullable Ticker ticker;
+    private final List<ParticleSoundEmitter> sounds;
+    private final List<ParticleParticleEmitter> particles;
     private transient SpriteSet spriteSet;
 
-    private CustomParticleType(RenderType renderType, @Nullable Initializer initializer, @Nullable Ticker ticker) {
+    private CustomParticleType(RenderType renderType, @Nullable Initializer initializer, @Nullable Ticker ticker,
+                               List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
         this.renderType = renderType;
         this.initializer = initializer;
         this.ticker = ticker;
+        this.sounds = sounds;
+        this.particles = particles;
     }
 
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
             StrOpt.of(RenderType.CODEC, "render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
             StrOpt.of(Initializer.CODEC, "initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
-            StrOpt.of(Ticker.CODEC, "ticker").forGetter(c -> Optional.ofNullable(c.ticker))
+            StrOpt.of(Ticker.CODEC, "ticker").forGetter(c -> Optional.ofNullable(c.ticker)),
+            ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
+            ParticleParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.particles)
     ).apply(i, CustomParticleType::new));
 
     private CustomParticleType(RenderType renderType, Optional<Initializer> initializer,
-                               Optional<Ticker> ticker) {
-        this(renderType, initializer.orElse(null), ticker.orElse(null));
+                               Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
+        this(renderType, initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
 
     public static void setStateHack(BlockState state) {
@@ -76,13 +87,16 @@ public class CustomParticleType implements CustomParticleFactory {
         private final @Nullable Ticker ticker;
         private final SpriteSet spriteSet;
         private final Habitat habitat;
+        private final List<ParticleTickable> tickables;
         private float oQuadSize;
         private double custom;
 
         protected Instance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                            @Nullable BlockState state, CustomParticleType type) {
             super(level, x, y, z, xSpeed, ySpeed, zSpeed);
-
+            this.tickables = new ArrayList<>();
+            this.tickables.addAll(type.sounds);
+            this.tickables.addAll(type.particles);
             //for normal particles since its simple particle types (so that they can be ued in biomes) we can pass extra params
             if (state == null) state = STATE_HACK;
 
@@ -139,7 +153,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
             // some people might want this
             if (this.ticker != null && this.ticker.removeIf != null) {
-                if (this.ticker.removeIf.get(this, level) > 0) {
+                if (this.ticker.removeIf.getValue(this, level) > 0) {
                     this.remove();
                     this.alpha = 0;
                 }
@@ -157,23 +171,23 @@ public class CustomParticleType implements CustomParticleFactory {
             if (this.ticker != null) {
                 if (this.ticker.roll != null) {
                     this.oRoll = this.roll;
-                    this.roll = (float) this.ticker.roll.get(this, level);
+                    this.roll = (float) this.ticker.roll.getValue(this, level);
                 }
                 if (this.ticker.size != null) {
                     this.oQuadSize = this.quadSize;
-                    this.quadSize = (float) this.ticker.size.get(this, level);
+                    this.quadSize = (float) this.ticker.size.getValue(this, level);
                 }
                 if (this.ticker.red != null) {
-                    this.rCol = (float) this.ticker.red.get(this, level);
+                    this.rCol = (float) this.ticker.red.getValue(this, level);
                 }
                 if (this.ticker.green != null) {
-                    this.gCol = (float) this.ticker.green.get(this, level);
+                    this.gCol = (float) this.ticker.green.getValue(this, level);
                 }
                 if (this.ticker.blue != null) {
-                    this.bCol = (float) this.ticker.blue.get(this, level);
+                    this.bCol = (float) this.ticker.blue.getValue(this, level);
                 }
                 if (this.ticker.alpha != null) {
-                    this.alpha = (float) this.ticker.alpha.get(this, level);
+                    this.alpha = (float) this.ticker.alpha.getValue(this, level);
                 }
                 if (this.ticker.colormap != null) {
                     BlockPos pos = BlockPos.containing(x, y, z);
@@ -181,28 +195,28 @@ public class CustomParticleType implements CustomParticleFactory {
                     this.setColor(unpack[0], unpack[1], unpack[2]);
                 }
                 if (this.ticker.x != null) {
-                    this.x = this.ticker.x.get(this, level);
+                    this.x = this.ticker.x.getValue(this, level);
                 }
                 if (this.ticker.y != null) {
-                    this.y = this.ticker.y.get(this, level);
+                    this.y = this.ticker.y.getValue(this, level);
                 }
                 if (this.ticker.z != null) {
-                    this.z = this.ticker.z.get(this, level);
+                    this.z = this.ticker.z.getValue(this, level);
                 }
                 if (this.ticker.dx != null) {
-                    this.xd = this.ticker.dx.get(this, level);
+                    this.xd = this.ticker.dx.getValue(this, level);
                 }
                 if (this.ticker.dy != null) {
-                    this.yd = this.ticker.dy.get(this, level);
+                    this.yd = this.ticker.dy.getValue(this, level);
                 }
                 if (this.ticker.dz != null) {
-                    this.zd = this.ticker.dz.get(this, level);
+                    this.zd = this.ticker.dz.getValue(this, level);
                 }
                 if (this.ticker.custom != null) {
-                    this.custom = this.ticker.custom.get(this, level);
+                    this.custom = this.ticker.custom.getValue(this, level);
                 }
                 if (this.ticker.removeIf != null) {
-                    if (this.ticker.removeIf.get(this, level) > 0) {
+                    if (this.ticker.removeIf.getValue(this, level) > 0) {
                         this.remove();
                     }
                 }
@@ -219,10 +233,15 @@ public class CustomParticleType implements CustomParticleFactory {
             if (habitat != Habitat.ANY) {
                 BlockState state = level.getBlockState(BlockPos.containing(x, y, z));
                 if (habitat == Habitat.LIQUID && !state.getFluidState().isEmpty()) {
-                    //this.remove();
+                    this.remove();
                 }
                 if (habitat == Habitat.AIR && !state.isAir()) {
-                  //  this.remove();
+                    this.remove();
+                }
+            }
+            if (!this.removed) {
+                for (ParticleTickable tickable : this.tickables) {
+                    tickable.tick(this, level);
                 }
             }
         }
@@ -258,16 +277,16 @@ public class CustomParticleType implements CustomParticleFactory {
         }
     }
 
-    private record Ticker(@Nullable ParticleExpression x, @Nullable ParticleExpression y,
-                          @Nullable ParticleExpression z,
-                          @Nullable ParticleExpression dx, @Nullable ParticleExpression dy,
-                          @Nullable ParticleExpression dz,
-                          @Nullable ParticleExpression size,
-                          @Nullable ParticleExpression red, @Nullable ParticleExpression green,
-                          @Nullable ParticleExpression blue, @Nullable ParticleExpression alpha,
-                          @Nullable ParticleExpression roll,
-                          @Nullable ParticleExpression custom,
-                          @Nullable ParticleExpression removeIf,
+    private record Ticker(@Nullable ParticleContentExpression x, @Nullable ParticleContentExpression y,
+                          @Nullable ParticleContentExpression z,
+                          @Nullable ParticleContentExpression dx, @Nullable ParticleContentExpression dy,
+                          @Nullable ParticleContentExpression dz,
+                          @Nullable ParticleContentExpression size,
+                          @Nullable ParticleContentExpression red, @Nullable ParticleContentExpression green,
+                          @Nullable ParticleContentExpression blue, @Nullable ParticleContentExpression alpha,
+                          @Nullable ParticleContentExpression roll,
+                          @Nullable ParticleContentExpression custom,
+                          @Nullable ParticleContentExpression removeIf,
                           @Nullable IColorGetter colormap) {
 
         private static final Codec<Ticker> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -288,14 +307,14 @@ public class CustomParticleType implements CustomParticleFactory {
                 StrOpt.of(Colormap.CODEC, "colormap").forGetter(p -> Optional.ofNullable(p.colormap))
         ).apply(i, Ticker::new));
 
-        private Ticker(Optional<ParticleExpression> x, Optional<ParticleExpression> y,
-                       Optional<ParticleExpression> z, Optional<ParticleExpression> dx,
-                       Optional<ParticleExpression> dy, Optional<ParticleExpression> dz,
-                       Optional<ParticleExpression> size, Optional<ParticleExpression> red,
-                       Optional<ParticleExpression> green, Optional<ParticleExpression> blue,
-                       Optional<ParticleExpression> alpha, Optional<ParticleExpression> roll,
-                       Optional<ParticleExpression> custom,
-                       Optional<ParticleExpression> removeIf,
+        private Ticker(Optional<ParticleContentExpression> x, Optional<ParticleContentExpression> y,
+                       Optional<ParticleContentExpression> z, Optional<ParticleContentExpression> dx,
+                       Optional<ParticleContentExpression> dy, Optional<ParticleContentExpression> dz,
+                       Optional<ParticleContentExpression> size, Optional<ParticleContentExpression> red,
+                       Optional<ParticleContentExpression> green, Optional<ParticleContentExpression> blue,
+                       Optional<ParticleContentExpression> alpha, Optional<ParticleContentExpression> roll,
+                       Optional<ParticleContentExpression> custom,
+                       Optional<ParticleContentExpression> removeIf,
                        Optional<IColorGetter> colormap) {
             this(x.orElse(null), y.orElse(null),
                     z.orElse(null), dx.orElse(null),

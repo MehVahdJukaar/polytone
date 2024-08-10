@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 import java.util.Optional;
 
-public record ParticleEmitter(
+public record BlockParticleEmitter(
         ParticleType<?> particleType,
         BlockContextExpression chance,
         BlockContextExpression count,
@@ -35,21 +36,22 @@ public record ParticleEmitter(
         SpawnLocation spawnLocation
 ) implements BlockClientTickable {
 
-    public static final Codec<ParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("particle").forGetter(ParticleEmitter::particleType),
-            StrOpt.of(BlockParticleExpression.CODEC,"chance", BlockParticleExpression.ONE).forGetter(ParticleEmitter::chance),
-            StrOpt.of(BlockParticleExpression.CODEC, "count", BlockParticleExpression.ONE).forGetter(ParticleEmitter::count),
-            StrOpt.of(BlockParticleExpression.CODEC,"x", BlockParticleExpression.PARTICLE_RAND).forGetter(ParticleEmitter::x),
-            StrOpt.of(BlockParticleExpression.CODEC,"y", BlockParticleExpression.PARTICLE_RAND).forGetter(ParticleEmitter::y),
-            StrOpt.of(BlockParticleExpression.CODEC,"z", BlockParticleExpression.PARTICLE_RAND).forGetter(ParticleEmitter::z),
-            StrOpt.of(BlockParticleExpression.CODEC,"dx", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dx),
-            StrOpt.of(BlockParticleExpression.CODEC,"dy", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dy),
-            StrOpt.of(BlockParticleExpression.CODEC,"dz", BlockParticleExpression.ZERO).forGetter(ParticleEmitter::dz),
-            StrOpt.of(LazyHolderSet.codec(Registries.BIOME),"biomes").forGetter(ParticleEmitter::biomes),
-            StrOpt.of(SpawnLocation.CODEC,"spawn_location", SpawnLocation.CENTER).forGetter(ParticleEmitter::spawnLocation)
-    ).apply(i, ParticleEmitter::new));
+    public static final Codec<BlockParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
+            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("particle").forGetter(BlockParticleEmitter::particleType),
+            StrOpt.of(BlockParticleExpression.CODEC,"chance", BlockParticleExpression.ONE).forGetter(BlockParticleEmitter::chance),
+            StrOpt.of(BlockParticleExpression.CODEC, "count", BlockParticleExpression.ONE).forGetter(BlockParticleEmitter::count),
+            StrOpt.of(BlockParticleExpression.CODEC,"x", BlockParticleExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::x),
+            StrOpt.of(BlockParticleExpression.CODEC,"y", BlockParticleExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::y),
+            StrOpt.of(BlockParticleExpression.CODEC,"z", BlockParticleExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::z),
+            StrOpt.of(BlockParticleExpression.CODEC,"dx", BlockParticleExpression.ZERO).forGetter(BlockParticleEmitter::dx),
+            StrOpt.of(BlockParticleExpression.CODEC,"dy", BlockParticleExpression.ZERO).forGetter(BlockParticleEmitter::dy),
+            StrOpt.of(BlockParticleExpression.CODEC,"dz", BlockParticleExpression.ZERO).forGetter(BlockParticleEmitter::dz),
+            StrOpt.of(LazyHolderSet.codec(Registries.BIOME),"biomes").forGetter(BlockParticleEmitter::biomes),
+            StrOpt.of(SpawnLocation.CODEC,"spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation)
+    ).apply(i, BlockParticleEmitter::new));
 
 
+    @Override
     public void tick(Level level, BlockPos pos, BlockState state) {
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance) {

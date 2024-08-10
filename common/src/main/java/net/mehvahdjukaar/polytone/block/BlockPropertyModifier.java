@@ -8,7 +8,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
-import net.mehvahdjukaar.polytone.particle.ParticleEmitter;
+import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.BlockSoundEmitter;
 import net.mehvahdjukaar.polytone.sound.PolytoneSoundType;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
@@ -41,7 +41,7 @@ public record BlockPropertyModifier(
         //Optional<Object> emissiveRendering,
         Optional<RenderType> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
-        Optional<List<ParticleEmitter>> particleEmitters,
+        Optional<List<BlockParticleEmitter>> particleEmitters,
         Optional<List<BlockSoundEmitter>> soundEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
         Optional<BlockSetTypeProvider> blockSetType,
@@ -202,7 +202,7 @@ public record BlockPropertyModifier(
                     StringRepresentable.fromEnum(RenderType::values).optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
-                    ParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
+                    BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
                     BlockSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters").forGetter(BlockPropertyModifier::soundEmitters),
                     OffsetTypeR.CODEC.xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
                             .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),

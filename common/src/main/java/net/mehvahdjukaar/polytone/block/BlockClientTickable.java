@@ -6,6 +6,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public interface BlockClientTickable {
 
-    void tick(Level level, BlockPos pos, BlockState state)
+    void tick(Level level, BlockPos pos, BlockState state);
 
 }
