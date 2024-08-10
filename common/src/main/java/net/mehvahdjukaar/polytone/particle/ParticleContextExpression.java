@@ -12,7 +12,7 @@ import net.minecraft.world.level.Level;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
-public class ParticleContentExpression {
+public class ParticleContextExpression {
     private final Expression expression;
     private final String unparsed;
 
@@ -39,10 +39,10 @@ public class ParticleContentExpression {
     private static final String RAIN = "RAIN";
 
 
-    public static final Codec<ParticleContentExpression> CODEC = Codec.STRING.flatXmap(s -> {
+    public static final Codec<ParticleContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
             Expression compiled = createExpression(s);
-            return DataResult.success(new ParticleContentExpression(compiled, s));
+            return DataResult.success(new ParticleContextExpression(compiled, s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
@@ -54,11 +54,11 @@ public class ParticleContentExpression {
     private final boolean hasCustom;
 
 
-    public ParticleContentExpression(String expression) {
+    public ParticleContextExpression(String expression) {
         this(createExpression(expression), expression);
     }
 
-    public ParticleContentExpression(Expression expression, String unparsed) {
+    public ParticleContextExpression(Expression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
 
@@ -68,8 +68,8 @@ public class ParticleContentExpression {
         this.hasCustom = unparsed.contains(CUSTOM);
     }
 
-    public static ParticleContentExpression parse(String s) {
-        return new ParticleContentExpression(createExpression(s), s);
+    public static ParticleContextExpression parse(String s) {
+        return new ParticleContextExpression(createExpression(s), s);
     }
 
     private static Expression createExpression(String s) {
@@ -112,7 +112,7 @@ public class ParticleContentExpression {
         return expression.evaluate();
     }
 
-    public static final ParticleContentExpression ZERO = new ParticleContentExpression("0");
-    public static final ParticleContentExpression ONE = new ParticleContentExpression("1");
-    public static final ParticleContentExpression PARTICLE_RAND= new ParticleContentExpression("(rand() * 2.0 - 1.0) * 0.4");
+    public static final ParticleContextExpression ZERO = new ParticleContextExpression("0");
+    public static final ParticleContextExpression ONE = new ParticleContextExpression("1");
+    public static final ParticleContextExpression PARTICLE_RAND= new ParticleContextExpression("(rand() * 2.0 - 1.0) * 0.4");
 }

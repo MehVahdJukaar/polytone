@@ -4,6 +4,9 @@ import com.google.gson.JsonElement;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
+import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
@@ -35,8 +38,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     private final Map<ResourceLocation, DimensionEffectsModifier> vanillaEffects = new HashMap<>();
 
-    private final Map<DimensionType, Colormap> fogColormaps = new HashMap<>();
-    private final Map<DimensionType, Colormap> skyColormaps = new HashMap<>();
+    private final Object2ObjectMap<DimensionType, Colormap> fogColormaps = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, Colormap> skyColormaps = new Object2ObjectArrayMap<>();
+    private final Object2BooleanArrayMap<DimensionType> cancelWeatherDarken = new Object2BooleanArrayMap<>();
 
     private boolean needsDynamicApplication = true;
 
@@ -55,6 +59,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         effectsToApply.clear();
         fogColormaps.clear();
         skyColormaps.clear();
+        cancelWeatherDarken.clear();
         extraMods.clear();
     }
 
@@ -179,6 +184,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             if (modifier.getSkyColormap() instanceof Colormap c) {
                 skyColormaps.put(dimReg.get(dimensionId), c);
             }
+            if (modifier.noWeatherFogDarken()) {
+                cancelWeatherDarken.put(dimReg.get(dimensionId), true);
+            }
         }
         if (!vanillaEffects.isEmpty())
             Polytone.LOGGER.info("Applied {} Custom Dimension Effects Properties", vanillaEffects.size());
@@ -226,8 +234,14 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         });
     }
 
+    public boolean shouldCancelWeatherDarken(ClientLevel level) {
+        return this.cancelWeatherDarken.getOrDefault(level.dimensionType(), false);
+    }
+
     public void addConvertedBlockProperties(Map<ResourceLocation, DimensionEffectsModifier> converted) {
         extraMods.clear();
         extraMods.putAll(converted);
     }
+
+
 }

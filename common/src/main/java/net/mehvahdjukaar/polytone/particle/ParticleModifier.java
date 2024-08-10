@@ -29,46 +29,46 @@ public class ParticleModifier implements ITargetProvider {
     public static final Codec<ParticleModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             Filter.CODEC.optionalFieldOf("filter").forGetter(p -> Optional.ofNullable(p.filter)),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
-            ParticleContentExpression.CODEC.optionalFieldOf("color").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContentExpression.CODEC.optionalFieldOf("life").forGetter(p -> Optional.ofNullable(p.lifeGetter)),
-            ParticleContentExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContentExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContentExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContentExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContentExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContentExpression.CODEC.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
+            ParticleContextExpression.CODEC.optionalFieldOf("color").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContextExpression.CODEC.optionalFieldOf("life").forGetter(p -> Optional.ofNullable(p.lifeGetter)),
+            ParticleContextExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContextExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContextExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContextExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContextExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContextExpression.CODEC.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
             TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(p -> p.explicitTargets)
 
     ).apply(instance, ParticleModifier::new));
 
 
     @Nullable
-    public final Filter filter;
+    private final Filter filter;
     @Nullable
     public final IColorGetter colormap;
     @Nullable
-    public final ParticleContentExpression colorGetter;
+    public final ParticleContextExpression colorGetter;
     @Nullable
-    public final ParticleContentExpression lifeGetter;
+    public final ParticleContextExpression lifeGetter;
     @Nullable
-    public final ParticleContentExpression sizeGetter;
+    public final ParticleContextExpression sizeGetter;
     @Nullable
-    public final ParticleContentExpression speedGetter;
+    public final ParticleContextExpression speedGetter;
     @Nullable
-    public final ParticleContentExpression redGetter;
+    public final ParticleContextExpression redGetter;
     @Nullable
-    public final ParticleContentExpression blueGetter;
+    public final ParticleContextExpression blueGetter;
     @Nullable
-    public final ParticleContentExpression greenGetter;
+    public final ParticleContextExpression greenGetter;
     @Nullable
-    public final ParticleContentExpression alphaGetter;
+    public final ParticleContextExpression alphaGetter;
     public final Set<ResourceLocation> explicitTargets;
 
     private ParticleModifier(Optional<Filter> filter, Optional<IColorGetter> colormap,
-                             Optional<ParticleContentExpression> color, Optional<ParticleContentExpression> life,
-                             Optional<ParticleContentExpression> size, Optional<ParticleContentExpression> red,
-                             Optional<ParticleContentExpression> green, Optional<ParticleContentExpression> blue,
-                             Optional<ParticleContentExpression> alpha, Optional<ParticleContentExpression> speed,
+                             Optional<ParticleContextExpression> color, Optional<ParticleContextExpression> life,
+                             Optional<ParticleContextExpression> size, Optional<ParticleContextExpression> red,
+                             Optional<ParticleContextExpression> green, Optional<ParticleContextExpression> blue,
+                             Optional<ParticleContextExpression> alpha, Optional<ParticleContextExpression> speed,
                              Set<ResourceLocation> explicitTargets) {
         this(filter.orElse(null), colormap.orElse(null), color.orElse(null), life.orElse(null), size.orElse(null),
                 red.orElse(null), green.orElse(null), blue.orElse(null),
@@ -76,10 +76,10 @@ public class ParticleModifier implements ITargetProvider {
     }
 
     public ParticleModifier(@Nullable Filter filter, @Nullable IColorGetter colormap,
-                            @Nullable ParticleContentExpression color, @Nullable ParticleContentExpression life,
-                            @Nullable ParticleContentExpression size, @Nullable ParticleContentExpression red,
-                            @Nullable ParticleContentExpression green, @Nullable ParticleContentExpression blue,
-                            @Nullable ParticleContentExpression alpha, @Nullable ParticleContentExpression speed,
+                            @Nullable ParticleContextExpression color, @Nullable ParticleContextExpression life,
+                            @Nullable ParticleContextExpression size, @Nullable ParticleContextExpression red,
+                            @Nullable ParticleContextExpression green, @Nullable ParticleContextExpression blue,
+                            @Nullable ParticleContextExpression alpha, @Nullable ParticleContextExpression speed,
                             Set<ResourceLocation> explicitTargets) {
         this.colorGetter = color;
         this.lifeGetter = life;
@@ -95,7 +95,7 @@ public class ParticleModifier implements ITargetProvider {
     }
 
     public static ParticleModifier ofColor(String color) {
-        ParticleContentExpression expression = ParticleContentExpression.parse(color);
+        ParticleContextExpression expression = ParticleContextExpression.parse(color);
         return new ParticleModifier(null, null, expression, null, null, null, null,
                 null, null, null, Set.of());
     }

@@ -1,2 +1,4 @@
 - added particle sound emitters
 - added particle particle emitters
+- added SKY_LIGHT and BLOCK_LIGHT variables to Block Expressions
+- added no_weather_fog_darken option in dimension modifiers
