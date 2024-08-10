@@ -11,6 +11,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Blocks;
@@ -68,7 +70,8 @@ public class CustomParticleType implements CustomParticleFactory {
     public Particle createParticle(SimpleParticleType type, ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                                    @Nullable BlockState state) {
         if (spriteSet != null) {
-            return new Instance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this);
+            return new Instance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this,
+                    BuiltInRegistries.PARTICLE_TYPE.getKey(type));
         } else {
             throw new IllegalStateException("Sprite set not set for custom particle type");
         }
@@ -89,12 +92,15 @@ public class CustomParticleType implements CustomParticleFactory {
         private float oQuadSize;
         private double custom;
 
+        private ResourceLocation name;
+
         protected Instance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                           @Nullable BlockState state, CustomParticleType type) {
+                           @Nullable BlockState state, CustomParticleType customType, ResourceLocation typeId) {
             super(level, x, y, z, xSpeed, ySpeed, zSpeed);
+            this.name = typeId;
             this.tickables = new ArrayList<>();
-            this.tickables.addAll(type.sounds);
-            this.tickables.addAll(type.particles);
+            this.tickables.addAll(customType.sounds);
+            this.tickables.addAll(customType.particles);
             //for normal particles since its simple particle types (so that they can be ued in biomes) we can pass extra params
             if (state == null) state = STATE_HACK;
 
@@ -105,17 +111,17 @@ public class CustomParticleType implements CustomParticleFactory {
             this.xd = xSpeed;
             this.yd = ySpeed;
             this.zd = zSpeed;
-            this.renderType = type.renderType.get();
-            this.ticker = type.ticker;
-            this.spriteSet = type.spriteSet;
-            Initializer initializer = type.initializer;
+            this.renderType = customType.renderType.get();
+            this.ticker = customType.ticker;
+            this.spriteSet = customType.spriteSet;
+            Initializer initializer = customType.initializer;
             if (initializer != null) {
                 BlockPos pos = BlockPos.containing(x, y, z);
                 if (initializer.roll != null) {
                     this.roll = (float) initializer.roll.getValue(level, pos, state);
                 }
                 if (initializer.size != null) {
-                    this.scale((float) initializer.size.getValue(level, pos, state));
+                    this.quadSize = ((float) initializer.size.getValue(level, pos, state));
                 }
                 if (initializer.red != null) {
                     this.rCol = (float) initializer.red.getValue(level, pos, state);
@@ -147,6 +153,8 @@ public class CustomParticleType implements CustomParticleFactory {
             } else {
                 this.habitat = Habitat.ANY;
             }
+            this.oQuadSize = quadSize;
+
             this.setSpriteFromAge(spriteSet);
 
             // some people might want this
@@ -166,7 +174,6 @@ public class CustomParticleType implements CustomParticleFactory {
         public void tick() {
             this.setSpriteFromAge(spriteSet);
             super.tick();
-
             if (this.ticker != null) {
                 if (this.ticker.roll != null) {
                     this.oRoll = this.roll;
@@ -220,7 +227,7 @@ public class CustomParticleType implements CustomParticleFactory {
                     }
                 }
             }
-            if (this.x == this.xo && this.y == this.yo && this.z == this.zo && hasPhysics) {
+            if (this.age > 1 && this.x == this.xo && this.y == this.yo && this.z == this.zo && hasPhysics) {
                 this.remove();
             }
 
@@ -254,13 +261,14 @@ public class CustomParticleType implements CustomParticleFactory {
         public ParticleRenderType getRenderType() {
             return renderType;
         }
+
     }
 
     private enum RenderType {
         TERRAIN,
         OPAQUE,
         TRANSLUCENT,
-        CUSTOM;
+        INVISIBLE;
 
         public static final Codec<RenderType> CODEC = Codec.STRING.xmap(
                 a -> valueOf(a.toUpperCase()), e -> e.name().toLowerCase(Locale.ROOT)
@@ -270,7 +278,7 @@ public class CustomParticleType implements CustomParticleFactory {
             return switch (this) {
                 case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
                 case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
-                case CUSTOM -> ParticleRenderType.CUSTOM;
+                case INVISIBLE -> ParticleRenderType.NO_RENDER;
                 default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
             };
         }

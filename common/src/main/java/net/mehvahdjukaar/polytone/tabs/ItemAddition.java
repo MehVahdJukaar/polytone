@@ -16,7 +16,7 @@ import java.util.List;
 public record ItemAddition(List<ItemStack> items, boolean inverse, ItemPredicate predicate, boolean before) {
 
     public static final Codec<ItemAddition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            ExtraItemCodecs.ITEMSTACK_SET.fieldOf("items").forGetter(ItemAddition::items),
+            ExtraItemCodecs.ITEMSTACK_OR_ITEMSTACK_LIST.fieldOf("items").forGetter(ItemAddition::items),
             Codec.BOOL.optionalFieldOf("inverse", false).forGetter(ItemAddition::inverse),
             ItemPredicate.CODEC.optionalFieldOf("predicate",  ItemPredicate.TRUE_PRED).forGetter(ItemAddition::predicate),
             Codec.BOOL.optionalFieldOf("before", false).forGetter(ItemAddition::before)

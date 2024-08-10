@@ -19,9 +19,4 @@ public class ExtraItemCodecs {
 
     public static final Codec<List<ItemStack>> ITEMSTACK_OR_ITEMSTACK_LIST = Codec.withAlternative(ITEM_OR_STACK.listOf(), ITEM_OR_STACK,
             List::of);
-
-    public static final Codec<LazyHolderSet<Item>> ITEM_SET = LazyHolderSet.codec(Registries.ITEM);
-    public static final Codec<List<ItemStack>> ITEMSTACK_SET = Codec.either(
-            ITEMSTACK_OR_ITEMSTACK_LIST, ITEM_SET).xmap(e -> e.map(Function.identity(),
-            l -> l.stream().map(i -> i.value().getDefaultInstance()).toList()), Either::left);
 }

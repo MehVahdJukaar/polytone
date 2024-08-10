@@ -64,7 +64,7 @@ public record BlockParticleEmitter(
 
                 ParticleOptions po = getParticleOptions(state);
                 if (po == null) return;
-                level.addParticle(po,
+                level.addAlwaysVisibleParticle(po,
                         pos.getX() + x.getValue(level, pos, state),
                         pos.getY() + y.getValue(level, pos, state),
                         pos.getZ() + z.getValue(level, pos, state),

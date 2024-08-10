@@ -86,7 +86,8 @@ public class MapRegistry<T> implements Codec<T> {
         return ResourceLocation.CODEC.decode(ops, json).flatMap(pair -> {
             ResourceLocation id = pair.getFirst();
             T value = this.getValue(id);
-            return value == null ? DataResult.error(() -> "Could not find any entry with key '" + id + "' in registry [" + name + "] \n Known keys: " + this.keySet()) :
+            return value == null ? DataResult.error(() ->
+                    "Could not find any entry with key '" + id + "' in registry [" + name + "] \n Known keys: " + this.keySet()) :
                     DataResult.success(Pair.of(value, pair.getSecond()));
         });
     }

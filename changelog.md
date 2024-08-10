@@ -1,4 +1,3 @@
-- added particle sound emitters
-- added particle particle emitters
-- added SKY_LIGHT and BLOCK_LIGHT variables to Block Expressions
-- added no_weather_fog_darken option in dimension modifiers
+fixed an issue with custom tabs
+fixed custom particles size initialization being slightly wrong
+physics particles wont depsawn on first tick if not moving
