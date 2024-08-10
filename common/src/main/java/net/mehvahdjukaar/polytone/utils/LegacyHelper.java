@@ -180,7 +180,7 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(),
-                Optional.empty(), Optional.empty(),Optional.empty(), Optional.empty(), Optional.empty(), set, false);
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), set, false);
     }
 
 
@@ -475,7 +475,7 @@ public class LegacyHelper {
             }
             if (fogCol != null || skyCol != null) {
                 var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                        Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(), Set.of());
+                        Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), false, Optional.empty(), Set.of());
 
                 converted.put(new ResourceLocation(names[i]), mod);
             }

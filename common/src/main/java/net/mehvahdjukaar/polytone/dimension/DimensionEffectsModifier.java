@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.Optional;
 import java.util.Set;
 
+
 public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                                        Optional<Boolean> hasGround,
                                        Optional<DimensionSpecialEffects.SkyType> skyType,
@@ -24,6 +25,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                                        Optional<Boolean> constantAmbientLight,
                                        Optional<IColorGetter> fogColor,
                                        Optional<IColorGetter> skyColor,
+                                       boolean noWeatherFogDarken,
                                        Optional<Lightmap> lightmap,
                                        Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
@@ -39,18 +41,21 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                     StrOpt.of(Codec.BOOL, "constant_ambient_light").forGetter(DimensionEffectsModifier::constantAmbientLight),
                     StrOpt.of(Colormap.CODEC, "fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
                     StrOpt.of(Colormap.CODEC, "sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
+                    Codec.BOOL.optionalFieldOf("no_weather_fog_darken", false).forGetter(DimensionEffectsModifier::noWeatherFogDarken),
                     StrOpt.of(Polytone.LIGHTMAPS.byNameCodec(), "lightmap").forGetter(DimensionEffectsModifier::lightmap), //Just references for now
                     StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(DimensionEffectsModifier::explicitTargets)
             ).apply(instance, DimensionEffectsModifier::new));
 
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty(), Set.of());
+                Optional.empty(), Optional.of(colormap), Optional.empty(),
+                 false, Optional.empty(), Set.of());
     }
 
     public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(), Set.of());
+                Optional.empty(), Optional.empty(), Optional.of(colormap),
+               false, Optional.empty(), Set.of());
     }
 
 
@@ -63,6 +68,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                 other.constantAmbientLight.isPresent() ? other.constantAmbientLight : this.constantAmbientLight,
                 other.fogColor.isPresent() ? other.fogColor : this.fogColor,
                 other.skyColor.isPresent() ? other.skyColor : this.skyColor,
+                other.noWeatherFogDarken  | this.noWeatherFogDarken,
                 other.lightmap.isPresent() ? other.lightmap : this.lightmap,
                 mergeSet(other.explicitTargets, this.explicitTargets)
         );
@@ -104,7 +110,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
             effects.constantAmbientLight = this.constantAmbientLight.get();
         }
         return new DimensionEffectsModifier(oldCloud, oldGround, oldSky, oldBright, oldAmbient,
-                Optional.empty(), Optional.empty(), Optional.empty(), Set.of());
+                Optional.empty(), Optional.empty(), false, Optional.empty(), Set.of());
     }
 
 }

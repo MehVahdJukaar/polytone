@@ -277,16 +277,16 @@ public class CustomParticleType implements CustomParticleFactory {
         }
     }
 
-    private record Ticker(@Nullable ParticleContentExpression x, @Nullable ParticleContentExpression y,
-                          @Nullable ParticleContentExpression z,
-                          @Nullable ParticleContentExpression dx, @Nullable ParticleContentExpression dy,
-                          @Nullable ParticleContentExpression dz,
-                          @Nullable ParticleContentExpression size,
-                          @Nullable ParticleContentExpression red, @Nullable ParticleContentExpression green,
-                          @Nullable ParticleContentExpression blue, @Nullable ParticleContentExpression alpha,
-                          @Nullable ParticleContentExpression roll,
-                          @Nullable ParticleContentExpression custom,
-                          @Nullable ParticleContentExpression removeIf,
+    private record Ticker(@Nullable ParticleContextExpression x, @Nullable ParticleContextExpression y,
+                          @Nullable ParticleContextExpression z,
+                          @Nullable ParticleContextExpression dx, @Nullable ParticleContextExpression dy,
+                          @Nullable ParticleContextExpression dz,
+                          @Nullable ParticleContextExpression size,
+                          @Nullable ParticleContextExpression red, @Nullable ParticleContextExpression green,
+                          @Nullable ParticleContextExpression blue, @Nullable ParticleContextExpression alpha,
+                          @Nullable ParticleContextExpression roll,
+                          @Nullable ParticleContextExpression custom,
+                          @Nullable ParticleContextExpression removeIf,
                           @Nullable IColorGetter colormap) {
 
         private static final Codec<Ticker> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -302,19 +302,19 @@ public class CustomParticleType implements CustomParticleFactory {
                 StrOpt.of(ParticleExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.blue)),
                 StrOpt.of(ParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
                 StrOpt.of(ParticleExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.roll)),
-                ParticleExpression.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom)),
+                StrOpt.of(ParticleExpression.CODEC, "custom").forGetter(p -> Optional.ofNullable(p.custom)),
                 StrOpt.of(ParticleExpression.CODEC, "remove_condition").forGetter(p -> Optional.ofNullable(p.removeIf)),
                 StrOpt.of(Colormap.CODEC, "colormap").forGetter(p -> Optional.ofNullable(p.colormap))
         ).apply(i, Ticker::new));
 
-        private Ticker(Optional<ParticleContentExpression> x, Optional<ParticleContentExpression> y,
-                       Optional<ParticleContentExpression> z, Optional<ParticleContentExpression> dx,
-                       Optional<ParticleContentExpression> dy, Optional<ParticleContentExpression> dz,
-                       Optional<ParticleContentExpression> size, Optional<ParticleContentExpression> red,
-                       Optional<ParticleContentExpression> green, Optional<ParticleContentExpression> blue,
-                       Optional<ParticleContentExpression> alpha, Optional<ParticleContentExpression> roll,
-                       Optional<ParticleContentExpression> custom,
-                       Optional<ParticleContentExpression> removeIf,
+        private Ticker(Optional<ParticleContextExpression> x, Optional<ParticleContextExpression> y,
+                       Optional<ParticleContextExpression> z, Optional<ParticleContextExpression> dx,
+                       Optional<ParticleContextExpression> dy, Optional<ParticleContextExpression> dz,
+                       Optional<ParticleContextExpression> size, Optional<ParticleContextExpression> red,
+                       Optional<ParticleContextExpression> green, Optional<ParticleContextExpression> blue,
+                       Optional<ParticleContextExpression> alpha, Optional<ParticleContextExpression> roll,
+                       Optional<ParticleContextExpression> custom,
+                       Optional<ParticleContextExpression> removeIf,
                        Optional<IColorGetter> colormap) {
             this(x.orElse(null), y.orElse(null),
                     z.orElse(null), dx.orElse(null),
