@@ -156,11 +156,11 @@ public class PolytoneSoundType extends SoundType {
             instance.group(
                     StrOpt.of(Codec.FLOAT,"volume", 1f).forGetter(SoundType::getVolume),
                     StrOpt.of(Codec.FLOAT,"pitch", 1f).forGetter(SoundType::getPitch),
-                    SoundEvent.CODEC.fieldOf("break_sound").forGetter(s->s.breakSoundHolder),
-                    SoundEvent.CODEC.fieldOf("step_sound").forGetter(s->s.stepSoundHolder),
-                    SoundEvent.CODEC.fieldOf("place_sound").forGetter(s->s.placeSoundHolder),
-                    SoundEvent.CODEC.fieldOf("hit_sound").forGetter(s->s.hitSoundHolder),
-                    SoundEvent.CODEC.fieldOf("fall_sound").forGetter(s->s.fallSoundHolder)
+                    BuiltInRegistries.SOUND_EVENT.holderByNameCodec().fieldOf("break_sound").forGetter(s->s.breakSoundHolder),
+                    BuiltInRegistries.SOUND_EVENT.holderByNameCodec().fieldOf("step_sound").forGetter(s->s.stepSoundHolder),
+                    BuiltInRegistries.SOUND_EVENT.holderByNameCodec().fieldOf("place_sound").forGetter(s->s.placeSoundHolder),
+                    BuiltInRegistries.SOUND_EVENT.holderByNameCodec().fieldOf("hit_sound").forGetter(s->s.hitSoundHolder),
+                    BuiltInRegistries.SOUND_EVENT.holderByNameCodec().fieldOf("fall_sound").forGetter(s->s.fallSoundHolder)
             ).apply(instance, PolytoneSoundType::new));
 
     public static final Codec<SoundType> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_OR_COPY_CODEC, DIRECT_CODEC);
