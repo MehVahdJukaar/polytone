@@ -33,6 +33,9 @@ import org.joml.Vector3f;
 import java.util.*;
 import java.util.function.Function;
 
+import static net.mehvahdjukaar.polytone.utils.ColorUtils.pack;
+import static net.mehvahdjukaar.polytone.utils.ColorUtils.unpack;
+
 public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     private final Object2IntMap<MapColor> vanillaMapColors = new Object2IntOpenHashMap<>();
@@ -225,7 +228,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 int code = Integer.parseInt(ind);
                 if (code < RedStoneWireBlock.COLORS.length) {
                     int col = parseHex(obj);
-                    var rgb = ColorUtils.unpack(col);
+                    var rgb = unpack(col);
                     RedStoneWireBlock.COLORS[code] = new Vec3(rgb[0], rgb[1], rgb[2]);
                     if (code == 15) {
                         Vector3f maxPower = new Vector3f(rgb[0], rgb[1], rgb[2]);
@@ -373,7 +376,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         Vec3 position = orb.position();
         if (xpOrbColor != null) {
             int color = (int) xpOrbColor.getValue(position, time);
-            return ColorUtils.unpack(color);
+            return unpack(color);
         }
         if (xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         float r = 0;

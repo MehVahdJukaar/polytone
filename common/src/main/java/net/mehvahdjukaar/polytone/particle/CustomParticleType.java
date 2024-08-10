@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -290,20 +291,20 @@ public class CustomParticleType implements CustomParticleFactory {
                           @Nullable IColorGetter colormap) {
 
         private static final Codec<Ticker> CODEC = RecordCodecBuilder.create(i -> i.group(
-                StrOpt.of(ParticleExpression.CODEC, "x").forGetter(p -> Optional.ofNullable(p.x)),
-                StrOpt.of(ParticleExpression.CODEC, "y").forGetter(p -> Optional.ofNullable(p.y)),
-                StrOpt.of(ParticleExpression.CODEC, "z").forGetter(p -> Optional.ofNullable(p.z)),
-                StrOpt.of(ParticleExpression.CODEC, "dx").forGetter(p -> Optional.ofNullable(p.dx)),
-                StrOpt.of(ParticleExpression.CODEC, "dy").forGetter(p -> Optional.ofNullable(p.dy)),
-                StrOpt.of(ParticleExpression.CODEC, "dz").forGetter(p -> Optional.ofNullable(p.dz)),
-                StrOpt.of(ParticleExpression.CODEC, "size").forGetter(p -> Optional.ofNullable(p.size)),
-                StrOpt.of(ParticleExpression.CODEC, "red").forGetter(p -> Optional.ofNullable(p.red)),
-                StrOpt.of(ParticleExpression.CODEC, "green").forGetter(p -> Optional.ofNullable(p.green)),
-                StrOpt.of(ParticleExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.blue)),
-                StrOpt.of(ParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
-                StrOpt.of(ParticleExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.roll)),
-                StrOpt.of(ParticleExpression.CODEC, "custom").forGetter(p -> Optional.ofNullable(p.custom)),
-                StrOpt.of(ParticleExpression.CODEC, "remove_condition").forGetter(p -> Optional.ofNullable(p.removeIf)),
+                StrOpt.of(ParticleContextExpression.CODEC, "x").forGetter(p -> Optional.ofNullable(p.x)),
+                StrOpt.of(ParticleContextExpression.CODEC, "y").forGetter(p -> Optional.ofNullable(p.y)),
+                StrOpt.of(ParticleContextExpression.CODEC, "z").forGetter(p -> Optional.ofNullable(p.z)),
+                StrOpt.of(ParticleContextExpression.CODEC, "dx").forGetter(p -> Optional.ofNullable(p.dx)),
+                StrOpt.of(ParticleContextExpression.CODEC, "dy").forGetter(p -> Optional.ofNullable(p.dy)),
+                StrOpt.of(ParticleContextExpression.CODEC, "dz").forGetter(p -> Optional.ofNullable(p.dz)),
+                StrOpt.of(ParticleContextExpression.CODEC, "size").forGetter(p -> Optional.ofNullable(p.size)),
+                StrOpt.of(ParticleContextExpression.CODEC, "red").forGetter(p -> Optional.ofNullable(p.red)),
+                StrOpt.of(ParticleContextExpression.CODEC, "green").forGetter(p -> Optional.ofNullable(p.green)),
+                StrOpt.of(ParticleContextExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.blue)),
+                StrOpt.of(ParticleContextExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
+                StrOpt.of(ParticleContextExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.roll)),
+                StrOpt.of(ParticleContextExpression.CODEC, "custom").forGetter(p -> Optional.ofNullable(p.custom)),
+                StrOpt.of(ParticleContextExpression.CODEC, "remove_condition").forGetter(p -> Optional.ofNullable(p.removeIf)),
                 StrOpt.of(Colormap.CODEC, "colormap").forGetter(p -> Optional.ofNullable(p.colormap))
         ).apply(i, Ticker::new));
 
@@ -340,15 +341,15 @@ public class CustomParticleType implements CustomParticleFactory {
                               Habitat habitat, boolean hasPhysics) {
 
         public static final Codec<Initializer> CODEC = RecordCodecBuilder.create(i -> i.group(
-                StrOpt.of(BlockParticleExpression.CODEC, "size").forGetter(p -> Optional.ofNullable(p.size)),
-                StrOpt.of(BlockParticleExpression.CODEC, "lifetime").forGetter(p -> Optional.ofNullable(p.lifetime)),
-                StrOpt.of(BlockParticleExpression.CODEC, "red").forGetter(p -> Optional.ofNullable(p.red)),
-                StrOpt.of(BlockParticleExpression.CODEC, "green").forGetter(p -> Optional.ofNullable(p.green)),
-                StrOpt.of(BlockParticleExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.blue)),
-                StrOpt.of(BlockParticleExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
-                StrOpt.of(BlockParticleExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.roll)),
-                StrOpt.of(BlockParticleExpression.CODEC, "friction").forGetter(p -> Optional.ofNullable(p.friction)),
-                BlockParticleExpression.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom)),
+                StrOpt.of(BlockContextExpression.CODEC, "size").forGetter(p -> Optional.ofNullable(p.size)),
+                StrOpt.of(BlockContextExpression.CODEC, "lifetime").forGetter(p -> Optional.ofNullable(p.lifetime)),
+                StrOpt.of(BlockContextExpression.CODEC, "red").forGetter(p -> Optional.ofNullable(p.red)),
+                StrOpt.of(BlockContextExpression.CODEC, "green").forGetter(p -> Optional.ofNullable(p.green)),
+                StrOpt.of(BlockContextExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.blue)),
+                StrOpt.of(BlockContextExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
+                StrOpt.of(BlockContextExpression.CODEC, "roll").forGetter(p -> Optional.ofNullable(p.roll)),
+                StrOpt.of(BlockContextExpression.CODEC, "friction").forGetter(p -> Optional.ofNullable(p.friction)),
+                BlockContextExpression.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom)),
                 StrOpt.of(Colormap.CODEC, "colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
                 Habitat.CODEC.optionalFieldOf("habitat", Habitat.ANY).forGetter(p -> p.habitat),
                 StrOpt.of(Codec.BOOL, "has_physics", true).forGetter(p -> p.hasPhysics)

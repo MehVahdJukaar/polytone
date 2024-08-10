@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.*;
@@ -38,14 +39,14 @@ public record BlockParticleEmitter(
 
     public static final Codec<BlockParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
             BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("particle").forGetter(BlockParticleEmitter::particleType),
-            StrOpt.of(BlockParticleExpression.CODEC,"chance", BlockParticleExpression.ONE).forGetter(BlockParticleEmitter::chance),
-            StrOpt.of(BlockParticleExpression.CODEC, "count", BlockParticleExpression.ONE).forGetter(BlockParticleEmitter::count),
-            StrOpt.of(BlockParticleExpression.CODEC,"x", BlockParticleExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::x),
-            StrOpt.of(BlockParticleExpression.CODEC,"y", BlockParticleExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::y),
-            StrOpt.of(BlockParticleExpression.CODEC,"z", BlockParticleExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::z),
-            StrOpt.of(BlockParticleExpression.CODEC,"dx", BlockParticleExpression.ZERO).forGetter(BlockParticleEmitter::dx),
-            StrOpt.of(BlockParticleExpression.CODEC,"dy", BlockParticleExpression.ZERO).forGetter(BlockParticleEmitter::dy),
-            StrOpt.of(BlockParticleExpression.CODEC,"dz", BlockParticleExpression.ZERO).forGetter(BlockParticleEmitter::dz),
+            StrOpt.of(BlockContextExpression.CODEC,"chance", BlockContextExpression.ONE).forGetter(BlockParticleEmitter::chance),
+            StrOpt.of(BlockContextExpression.CODEC, "count", BlockContextExpression.ONE).forGetter(BlockParticleEmitter::count),
+            StrOpt.of(BlockContextExpression.CODEC,"x", BlockContextExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::x),
+            StrOpt.of(BlockContextExpression.CODEC,"y", BlockContextExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::y),
+            StrOpt.of(BlockContextExpression.CODEC,"z", BlockContextExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::z),
+            StrOpt.of(BlockContextExpression.CODEC,"dx", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dx),
+            StrOpt.of(BlockContextExpression.CODEC,"dy", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dy),
+            StrOpt.of(BlockContextExpression.CODEC,"dz", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dz),
             StrOpt.of(LazyHolderSet.codec(Registries.BIOME),"biomes").forGetter(BlockParticleEmitter::biomes),
             StrOpt.of(SpawnLocation.CODEC,"spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation)
     ).apply(i, BlockParticleEmitter::new));
@@ -81,7 +82,7 @@ public record BlockParticleEmitter(
 
         if (particleType instanceof SimpleParticleType st) {
             po = st;
-        } else if (particleType == ParticleTypes.BLOCK || particleType == ParticleTypes.FALLING_DUST || particleType == ParticleTypes.BLOCK_MARKER || particleType == ParticleTypes.DUST_PILLAR) {
+        } else if (particleType == ParticleTypes.BLOCK || particleType == ParticleTypes.FALLING_DUST || particleType == ParticleTypes.BLOCK_MARKER) {
             po = new BlockParticleOption((ParticleType<BlockParticleOption>) particleType, state);
         } else if (particleType == ParticleTypes.ITEM) {
             po = new ItemParticleOption((ParticleType<ItemParticleOption>) particleType, state.getBlock().asItem().getDefaultInstance());

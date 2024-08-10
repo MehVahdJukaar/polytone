@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 
@@ -28,8 +29,8 @@ public record ParticleParticleEmitter(
 ) implements ParticleTickable {
 
     public static final Codec<ParticleParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BuiltInRegistries.PARTICLE_TYPE.byNameCodec()
-                    .validate(pt -> {
+            ExtraCodecs.validate(BuiltInRegistries.PARTICLE_TYPE.byNameCodec(),
+                    pt -> {
                         if (pt instanceof SimpleParticleType) return DataResult.success(pt);
                         else return DataResult.error(() -> "Unsupported particle type: " + pt);
                     }).xmap(pt -> (SimpleParticleType) pt, pt -> pt)

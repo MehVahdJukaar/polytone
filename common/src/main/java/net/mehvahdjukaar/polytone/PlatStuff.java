@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 public class PlatStuff {
@@ -173,7 +174,6 @@ public class PlatStuff {
             reg.byValue.remove(value);
             reg.byId.remove(reference);
             reg.toId.removeInt(reg.toId.getInt(value));
-            reg.registrationInfos.remove(key);
         } else {
             int aa = 1;
         }

@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.*;
 import net.minecraft.world.phys.Vec2;
 
@@ -234,12 +235,12 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         float get();
 
         Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> () -> f, FogParam::get);
-        Codec<FogParam> CODEC = Codec.withAlternative(
+        Codec<FogParam> CODEC = Codec.either(
                 SIMPLE_CODEC,
                 Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
-                        .xmap(FogMap::new, FogMap::map).codec(),
-                fogMap -> fogMap
-        );
+                        .xmap(FogMap::new, FogMap::map).codec())
+                .xmap(e -> e.map(fogParam -> fogParam, fogMap -> fogMap), Either::left);
+
     }
 
     private static final FogParam ONE = () -> 1f;

@@ -89,7 +89,7 @@ public record BlockPropertyModifier(
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty() ,Optional.empty(), blocks, false);
+                Optional.empty(), Optional.empty(), Optional.empty(), blocks, false);
     }
 
     // returns the old ones
@@ -185,7 +185,8 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.ofNullable(oldColor), Optional.ofNullable(oldSound),
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak), Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
-                Optional.empty(), oldOffsetType, Optional.ofNullable(oldType), Set.of(), false);
+                Optional.empty(), Optional.empty(),
+                oldOffsetType, Optional.ofNullable(oldType), Set.of(), false);
     }
 
 
@@ -204,7 +205,7 @@ public record BlockPropertyModifier(
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
                     BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
                     BlockSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters").forGetter(BlockPropertyModifier::soundEmitters),
-                    OffsetTypeR.CODEC.xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
+                    StringRepresentable.fromEnum(OffsetTypeR::values).xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
                             .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
                     BlockSetTypeProvider.CODEC.optionalFieldOf("block_set_type").forGetter(BlockPropertyModifier::blockSetType),
                     TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(BlockPropertyModifier::explicitTargets),

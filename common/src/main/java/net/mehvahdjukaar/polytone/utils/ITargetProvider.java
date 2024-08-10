@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.Registry;
@@ -10,8 +11,9 @@ import java.util.*;
 
 public interface ITargetProvider {
 
-    Codec<Set<ResourceLocation>> TARGET_CODEC = Codec.withAlternative(ResourceLocation.CODEC.listOf(), ResourceLocation.CODEC,
-            List::of).xmap(Set::copyOf, List::copyOf);
+    Codec<Set<ResourceLocation>> TARGET_CODEC = Codec.either(ResourceLocation.CODEC.listOf(), ResourceLocation.CODEC)
+            .xmap(e -> e.map(fogParam -> fogParam, List::of), Either::left)
+            .xmap(Set::copyOf, List::copyOf);
 
 
     default <T> Set<T> mergeSet(Set<T> first, Set<T> second) {

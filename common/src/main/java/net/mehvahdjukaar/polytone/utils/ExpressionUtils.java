@@ -6,6 +6,8 @@ import net.minecraft.util.RandomSource;
 import net.objecthunter.exp4j.function.Function;
 import net.objecthunter.exp4j.operator.Operator;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class ExpressionUtils {
