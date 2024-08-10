@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 import java.util.Optional;
 
-public record ParticleEmitter(
+public record BlockParticleEmitter(
         ParticleType<?> particleType,
         BlockContextExpression chance,
         BlockContextExpression count,
@@ -35,21 +36,22 @@ public record ParticleEmitter(
         SpawnLocation spawnLocation
 ) implements BlockClientTickable {
 
-    public static final Codec<ParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("particle").forGetter(ParticleEmitter::particleType),
-            BlockContextExpression.CODEC.optionalFieldOf("chance", BlockContextExpression.ONE).forGetter(ParticleEmitter::chance),
-            BlockContextExpression.CODEC.optionalFieldOf("count", BlockContextExpression.ONE).forGetter(ParticleEmitter::count),
-            BlockContextExpression.CODEC.optionalFieldOf("x", BlockContextExpression.PARTICLE_RAND).forGetter(ParticleEmitter::x),
-            BlockContextExpression.CODEC.optionalFieldOf("y", BlockContextExpression.PARTICLE_RAND).forGetter(ParticleEmitter::y),
-            BlockContextExpression.CODEC.optionalFieldOf("z", BlockContextExpression.PARTICLE_RAND).forGetter(ParticleEmitter::z),
-            BlockContextExpression.CODEC.optionalFieldOf("dx", BlockContextExpression.ZERO).forGetter(ParticleEmitter::dx),
-            BlockContextExpression.CODEC.optionalFieldOf("dy", BlockContextExpression.ZERO).forGetter(ParticleEmitter::dy),
-            BlockContextExpression.CODEC.optionalFieldOf("dz", BlockContextExpression.ZERO).forGetter(ParticleEmitter::dz),
-            LazyHolderSet.codec(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleEmitter::biomes),
-            SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(ParticleEmitter::spawnLocation)
-    ).apply(i, ParticleEmitter::new));
+    public static final Codec<BlockParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
+            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("particle").forGetter(BlockParticleEmitter::particleType),
+            BlockContextExpression.CODEC.optionalFieldOf("chance", BlockContextExpression.ONE).forGetter(BlockParticleEmitter::chance),
+            BlockContextExpression.CODEC.optionalFieldOf("count", BlockContextExpression.ONE).forGetter(BlockParticleEmitter::count),
+            BlockContextExpression.CODEC.optionalFieldOf("x", BlockContextExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::x),
+            BlockContextExpression.CODEC.optionalFieldOf("y", BlockContextExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::y),
+            BlockContextExpression.CODEC.optionalFieldOf("z", BlockContextExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::z),
+            BlockContextExpression.CODEC.optionalFieldOf("dx", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dx),
+            BlockContextExpression.CODEC.optionalFieldOf("dy", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dy),
+            BlockContextExpression.CODEC.optionalFieldOf("dz", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dz),
+            LazyHolderSet.codec(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
+            SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation)
+    ).apply(i, BlockParticleEmitter::new));
 
 
+    @Override
     public void tick(Level level, BlockPos pos, BlockState state) {
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance) {

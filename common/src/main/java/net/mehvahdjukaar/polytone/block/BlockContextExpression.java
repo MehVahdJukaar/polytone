@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.particle;
+package net.mehvahdjukaar.polytone.block;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.Vec3;
@@ -30,6 +31,8 @@ public class BlockContextExpression {
     private final boolean hasZ;
     private final boolean hasState;
     private final boolean hasDayTime;
+    private final boolean hasSkyLight;
+    private final boolean hasBlockLight;
 
     private static final String POS_X = "POS_X";
     private static final String POS_Y = "POS_Y";
@@ -38,6 +41,9 @@ public class BlockContextExpression {
     private static final String RAIN = "RAIN";
     private static final String TIME = "TIME";
     private static final String DAY_TIME = "DAY_TIME";
+    private static final String BLOCK_LIGHT = "BLOCK_LIGHT";
+    private static final String SKY_LIGHT = "SKY_LIGHT";
+
 
     private static final String STATE_FUNC = "state_prop";
     private static final Function STATE_PROP = new Function(STATE_FUNC, 1) {
@@ -79,7 +85,7 @@ public class BlockContextExpression {
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(ExpressionUtils.removeHex(s))
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
-                .variables( POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, TIME)
+                .variables( POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, TIME, BLOCK_LIGHT, SKY_LIGHT)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
@@ -98,8 +104,11 @@ public class BlockContextExpression {
         this.hasState = unparsed.contains(STATE_FUNC);
         this.hasRain = unparsed.contains(RAIN);
         this.hasDayTime = unparsed.contains(DAY_TIME);
+        this.hasSkyLight = unparsed.contains(SKY_LIGHT);
+        this.hasBlockLight = unparsed.contains(BLOCK_LIGHT);
     }
 
+    //TODO: turn into entity context expression
     public double getValue(Vec3 pos, float entityTime) {
         if (hasX) expression.setVariable(POS_X, pos.x);
         if (hasY) expression.setVariable(POS_Y, pos.y);
@@ -107,6 +116,7 @@ public class BlockContextExpression {
         if (hasTime) expression.setVariable(TIME, entityTime);
         if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
         if (hasDayTime) expression.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
+
         return expression.evaluate();
     }
 
@@ -117,6 +127,8 @@ public class BlockContextExpression {
         if (hasTime) expression.setVariable(TIME, ClientFrameTicker.getGameTime());
         if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
         if (hasDayTime) expression.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
+        if (hasSkyLight) expression.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, pos));
+        if (hasBlockLight) expression.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, pos));
         if (hasState) STATE_HACK.set(state);
         return expression.evaluate();
     }

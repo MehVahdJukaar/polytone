@@ -6,7 +6,6 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -30,14 +29,14 @@ public class ParticleModifier implements ITargetProvider {
     public static final Codec<ParticleModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             Filter.CODEC.optionalFieldOf("filter").forGetter(p -> Optional.ofNullable(p.filter)),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
-            ParticleExpression.CODEC.optionalFieldOf("color").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleExpression.CODEC.optionalFieldOf("life").forGetter(p -> Optional.ofNullable(p.lifeGetter)),
-            ParticleExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleExpression.CODEC.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
+            ParticleContentExpression.CODEC.optionalFieldOf("color").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContentExpression.CODEC.optionalFieldOf("life").forGetter(p -> Optional.ofNullable(p.lifeGetter)),
+            ParticleContentExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContentExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContentExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContentExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContentExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
+            ParticleContentExpression.CODEC.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
             TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(p -> p.explicitTargets)
 
     ).apply(instance, ParticleModifier::new));
@@ -48,28 +47,28 @@ public class ParticleModifier implements ITargetProvider {
     @Nullable
     public final IColorGetter colormap;
     @Nullable
-    public final ParticleExpression colorGetter;
+    public final ParticleContentExpression colorGetter;
     @Nullable
-    public final ParticleExpression lifeGetter;
+    public final ParticleContentExpression lifeGetter;
     @Nullable
-    public final ParticleExpression sizeGetter;
+    public final ParticleContentExpression sizeGetter;
     @Nullable
-    public final ParticleExpression speedGetter;
+    public final ParticleContentExpression speedGetter;
     @Nullable
-    public final ParticleExpression redGetter;
+    public final ParticleContentExpression redGetter;
     @Nullable
-    public final ParticleExpression blueGetter;
+    public final ParticleContentExpression blueGetter;
     @Nullable
-    public final ParticleExpression greenGetter;
+    public final ParticleContentExpression greenGetter;
     @Nullable
-    public final ParticleExpression alphaGetter;
+    public final ParticleContentExpression alphaGetter;
     public final Set<ResourceLocation> explicitTargets;
 
     private ParticleModifier(Optional<Filter> filter, Optional<IColorGetter> colormap,
-                             Optional<ParticleExpression> color, Optional<ParticleExpression> life,
-                             Optional<ParticleExpression> size, Optional<ParticleExpression> red,
-                             Optional<ParticleExpression> green, Optional<ParticleExpression> blue,
-                             Optional<ParticleExpression> alpha, Optional<ParticleExpression> speed,
+                             Optional<ParticleContentExpression> color, Optional<ParticleContentExpression> life,
+                             Optional<ParticleContentExpression> size, Optional<ParticleContentExpression> red,
+                             Optional<ParticleContentExpression> green, Optional<ParticleContentExpression> blue,
+                             Optional<ParticleContentExpression> alpha, Optional<ParticleContentExpression> speed,
                              Set<ResourceLocation> explicitTargets) {
         this(filter.orElse(null), colormap.orElse(null), color.orElse(null), life.orElse(null), size.orElse(null),
                 red.orElse(null), green.orElse(null), blue.orElse(null),
@@ -77,10 +76,10 @@ public class ParticleModifier implements ITargetProvider {
     }
 
     public ParticleModifier(@Nullable Filter filter, @Nullable IColorGetter colormap,
-                            @Nullable ParticleExpression color, @Nullable ParticleExpression life,
-                            @Nullable ParticleExpression size, @Nullable ParticleExpression red,
-                            @Nullable ParticleExpression green, @Nullable ParticleExpression blue,
-                            @Nullable ParticleExpression alpha, @Nullable ParticleExpression speed,
+                            @Nullable ParticleContentExpression color, @Nullable ParticleContentExpression life,
+                            @Nullable ParticleContentExpression size, @Nullable ParticleContentExpression red,
+                            @Nullable ParticleContentExpression green, @Nullable ParticleContentExpression blue,
+                            @Nullable ParticleContentExpression alpha, @Nullable ParticleContentExpression speed,
                             Set<ResourceLocation> explicitTargets) {
         this.colorGetter = color;
         this.lifeGetter = life;
@@ -96,7 +95,7 @@ public class ParticleModifier implements ITargetProvider {
     }
 
     public static ParticleModifier ofColor(String color) {
-        ParticleExpression expression = ParticleExpression.parse(color);
+        ParticleContentExpression expression = ParticleContentExpression.parse(color);
         return new ParticleModifier(null, null, expression, null, null, null, null,
                 null, null, null, Set.of());
     }
@@ -107,7 +106,7 @@ public class ParticleModifier implements ITargetProvider {
             if (!filter.test(options)) return;
         }
         if (colorGetter != null) {
-            float[] unpack = ColorUtils.unpack((int) colorGetter.get(particle, level));
+            float[] unpack = ColorUtils.unpack((int) colorGetter.getValue(particle, level));
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (colormap != null) {
@@ -119,28 +118,28 @@ public class ParticleModifier implements ITargetProvider {
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (lifeGetter != null) {
-            particle.setLifetime((int) lifeGetter.get(particle, level));
+            particle.setLifetime((int) lifeGetter.getValue(particle, level));
         }
         if (sizeGetter != null) {
-            particle.scale((float) sizeGetter.get(particle, level));
+            particle.scale((float) sizeGetter.getValue(particle, level));
         }
         if (redGetter != null) {
-            particle.rCol = (float) redGetter.get(particle, level);
+            particle.rCol = (float) redGetter.getValue(particle, level);
         }
         if (greenGetter != null) {
-            particle.gCol = (float) greenGetter.get(particle, level);
+            particle.gCol = (float) greenGetter.getValue(particle, level);
         }
         if (blueGetter != null) {
-            particle.bCol = (float) blueGetter.get(particle, level);
+            particle.bCol = (float) blueGetter.getValue(particle, level);
         }
         if (speedGetter != null) {
-            double speed = speedGetter.get(particle, level);
+            double speed = speedGetter.getValue(particle, level);
             particle.xd *= speed;
             particle.yd *= speed;
             particle.zd *= speed;
         }
         if (alphaGetter != null) {
-            particle.alpha = (float) alphaGetter.get(particle, level);
+            particle.alpha = (float) alphaGetter.getValue(particle, level);
         }
     }
 

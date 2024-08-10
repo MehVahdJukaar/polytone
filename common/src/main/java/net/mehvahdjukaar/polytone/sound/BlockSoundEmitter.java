@@ -4,7 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
-import net.mehvahdjukaar.polytone.particle.BlockContextExpression;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.block.BlockSetTypeProvider;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -49,6 +50,7 @@ public record BlockSoundEmitter(
     ).apply(i, BlockSoundEmitter::new));
 
 
+    @Override
     public void tick(Level level, BlockPos pos, BlockState state) {
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance) {
