@@ -5,14 +5,16 @@ import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.minecraft.server.MinecraftServer;
 
-public class PolytoneFabric implements ClientModInitializer {
+public class PolytoneFabric implements ClientModInitializer  {
 
     @Override
     public void onInitializeClient() {
@@ -63,7 +65,13 @@ public class PolytoneFabric implements ClientModInitializer {
             }
         });
 
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            currentServer = server;
+        });
+
     }
 
 
+
+    public static MinecraftServer currentServer;
 }

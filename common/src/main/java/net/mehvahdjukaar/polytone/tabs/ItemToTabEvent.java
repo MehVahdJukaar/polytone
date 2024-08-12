@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.tabs;
 
 
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -55,6 +56,7 @@ public interface ItemToTabEvent {
     default void addBefore(Predicate<ItemStack> target, ItemStack... items) {
         addItems(target, false, java.util.List.of(items));
     }
+
 
 }
 

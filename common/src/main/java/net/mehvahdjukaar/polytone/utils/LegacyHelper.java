@@ -258,7 +258,7 @@ public class LegacyHelper {
             Set<ResourceLocation> blockTargets = new HashSet<>();
             for (var name : special.getValue().split(" ")) {
                 if (name.isEmpty()) continue;
-                ResourceLocation blockId = new ResourceLocation(name);
+                ResourceLocation blockId = ResourceLocation.tryParse(name);
                 blockTargets.add(blockId);
                 forceBlockToHaveTintIndex(blockId);
             }
@@ -454,7 +454,7 @@ public class LegacyHelper {
             IColorGetter skyCol;
             IColorGetter fogCol;
             {
-                ResourceLocation skyKey = new ResourceLocation("skycolor" + i);
+                ResourceLocation skyKey = ResourceLocation.tryParse("skycolor" + i);
                 BlockPropertyModifier skyMod = modifiers.get(skyKey);
                 ArrayImage skyImage = textures.get(skyKey);
 
@@ -475,7 +475,8 @@ public class LegacyHelper {
             }
             if (fogCol != null || skyCol != null) {
                 var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                        Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), false, Optional.empty(), Set.of());
+                        Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol),
+                        false,false, Optional.empty(), Set.of());
 
                 converted.put(new ResourceLocation(names[i]), mod);
             }

@@ -130,7 +130,7 @@ public class PolytoneSoundType extends SoundType {
     public static final Codec<SoundType> REFERENCE_OR_COPY_CODEC = Codec.STRING.flatXmap(s -> {
                 if (s.startsWith("copy(")) {
                     String target = s.replace("copy(", "").replace(")", "");
-                    ResourceLocation r = ResourceLocation.tryParse(target);
+                    ResourceLocation r = ResourceLocation.parse(target);
                     if (r == null) {
                         return DataResult.error(() -> "Invalid string for Sound Type Copy function: " + s + ". Expected 'copy([some_mod]:[some_block])'");
                     }
@@ -141,9 +141,9 @@ public class PolytoneSoundType extends SoundType {
                 }
                 var vanilla = SOUND_NAMES.get(s);
                 if (vanilla != null) return DataResult.success(vanilla);
-                ResourceLocation r = ResourceLocation.tryParse(s);
+                ResourceLocation r = ResourceLocation.parse(s);
                 if (r != null) {
-                    var custom = Polytone.SOUND_TYPES.getCustomSoundType(ResourceLocation.tryParse(s));
+                    var custom = Polytone.SOUND_TYPES.getCustomSoundType(ResourceLocation.parse(s));
                     if (custom != null) return DataResult.success(custom);
                 }
                 return DataResult.error(() -> "Could not find any custom Sound Type with id " + r +
