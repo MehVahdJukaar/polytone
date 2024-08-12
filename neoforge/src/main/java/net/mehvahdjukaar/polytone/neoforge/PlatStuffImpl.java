@@ -40,6 +40,7 @@ import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.joml.Vector3f;
 
 import java.util.List;
@@ -244,4 +245,7 @@ public class PlatStuffImpl {
     }
 
 
+    public static RegistryAccess getServerRegistryAccess(){
+        return ServerLifecycleHooks.getCurrentServer().registryAccess();
+    }
 }

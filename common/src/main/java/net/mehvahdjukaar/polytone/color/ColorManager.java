@@ -136,7 +136,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         } else if (is(prop, 0, "particle")) {
             if (prop.length > 1) {
                 String s = prop[1];
-                ResourceLocation id = ResourceLocation.tryParse(s.replace("\\", ""));
+                ResourceLocation id = ResourceLocation.parse(s.replace("\\", ""));
                 try {
                     // turn from hex to decimal if it is a single number
                     int hex = parseHex(str);
@@ -147,7 +147,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             }
         } else if (is(prop, 0, "egg")) {
             if (prop.length > 2) {
-                ResourceLocation id = ResourceLocation.tryParse(prop[2].replace("\\", ""));
+                ResourceLocation id = ResourceLocation.parse(prop[2].replace("\\", ""));
                 Item item = BuiltInRegistries.ITEM.getOptional(id).orElse(null);
                 if (item == null) {
                     var entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
@@ -253,7 +253,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             if (is(prop, 1, "block")) {
                 if (prop.length > 2 && obj instanceof String) {
                     String path = prop[2].replace("~/colormap/", colorPropFileId.getNamespace() + ":");
-                    Polytone.BLOCK_MODIFIERS.addSimpleColormap(ResourceLocation.tryParse(path), str);
+                    Polytone.BLOCK_MODIFIERS.addSimpleColormap(ResourceLocation.parse(path), str);
                 }
             }
         }

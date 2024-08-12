@@ -32,7 +32,7 @@ public abstract class FogRendererMixin {
     @ModifyExpressionValue(method = "setupColor", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"))
     private static float polytone$modifyRainFog(float original, @Local(argsOnly = true) ClientLevel level) {
-        if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelWeatherDarken(level)) {
+        if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelFogWeatherDarken(level)) {
             return 0;
         }
         return original;
@@ -41,7 +41,7 @@ public abstract class FogRendererMixin {
     @ModifyExpressionValue(method = "setupColor", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F"))
     private static float polytone$modifyThunderFog(float original, @Local(argsOnly = true) ClientLevel level) {
-        if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelWeatherDarken(level)) {
+        if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelFogWeatherDarken(level)) {
             return 0;
         }
         return original;

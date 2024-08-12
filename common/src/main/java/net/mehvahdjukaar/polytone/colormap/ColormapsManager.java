@@ -83,15 +83,15 @@ colormap.inlined = false;
     @Override
     public void reset() {
         colormaps.clear();
-        colormaps.register(ResourceLocation.tryParse("grass_color"), () -> GRASS_COLOR);
-        colormaps.register(ResourceLocation.tryParse("foliage_color"), () -> FOLIAGE_COLOR);
-        colormaps.register(ResourceLocation.tryParse("water_color"), () -> WATER_COLOR);
+        colormaps.register(ResourceLocation.parse("grass_color"), () -> GRASS_COLOR);
+        colormaps.register(ResourceLocation.parse("foliage_color"), () -> FOLIAGE_COLOR);
+        colormaps.register(ResourceLocation.parse("water_color"), () -> WATER_COLOR);
         //These create new incomplete ones every time
-        colormaps.register(ResourceLocation.tryParse("biome_sample"), Colormap::createDefSquare);
-        colormaps.register(ResourceLocation.tryParse("triangular_biome_sample"), Colormap::createDefTriangle);
-        colormaps.register(ResourceLocation.tryParse("fixed"), Colormap::createFixed);
-        colormaps.register(ResourceLocation.tryParse("grid"), Colormap::createBiomeId);
-        colormaps.register(ResourceLocation.tryParse("damage"), Colormap::createDamage);
+        colormaps.register(ResourceLocation.parse("biome_sample"), Colormap::createDefSquare);
+        colormaps.register(ResourceLocation.parse("triangular_biome_sample"), Colormap::createDefTriangle);
+        colormaps.register(ResourceLocation.parse("fixed"), Colormap::createFixed);
+        colormaps.register(ResourceLocation.parse("grid"), Colormap::createBiomeId);
+        colormaps.register(ResourceLocation.parse("damage"), Colormap::createDamage);
     }
 
     public void add(ResourceLocation id, Colormap colormap) {

@@ -37,7 +37,7 @@ public class GuiModifierManager extends JsonPartialReloader {
     public final Map<String, ScreenModifier> byTitle = new HashMap<>();
 
 
-    private static final ResourceLocation INVENTORY = ResourceLocation.tryParse("inventory");
+    private static final ResourceLocation INVENTORY = ResourceLocation.parse("inventory");
 
     public GuiModifierManager() {
         super("gui_modifiers");
@@ -91,7 +91,7 @@ public class GuiModifierManager extends JsonPartialReloader {
 
 
             } else if (mod.targetsMenuId()) {
-                ResourceLocation menuId = ResourceLocation.tryParse(mod.target());
+                ResourceLocation menuId = ResourceLocation.parse(mod.target());
                 boolean isInventory = menuId.equals(INVENTORY);
                 Optional<MenuType<?>> menu = BuiltInRegistries.MENU.getOptional(menuId);
 

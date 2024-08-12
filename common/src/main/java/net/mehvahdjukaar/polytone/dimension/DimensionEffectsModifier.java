@@ -25,6 +25,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                                        Optional<IColorGetter> fogColor,
                                        Optional<IColorGetter> skyColor,
                                        boolean noWeatherFogDarken,
+                                       boolean noWeatherSkyDarken,
                                        Optional<Lightmap> lightmap,
                                        Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
@@ -41,6 +42,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
                     Colormap.CODEC.optionalFieldOf("sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
                     Codec.BOOL.optionalFieldOf("no_weather_fog_darken", false).forGetter(DimensionEffectsModifier::noWeatherFogDarken),
+                    Codec.BOOL.optionalFieldOf("no_weather_sky_darken", false).forGetter(DimensionEffectsModifier::noWeatherSkyDarken),
                     Polytone.LIGHTMAPS.byNameCodec().optionalFieldOf("lightmap").forGetter(DimensionEffectsModifier::lightmap),
                     TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(DimensionEffectsModifier::explicitTargets)
             ).apply(instance, DimensionEffectsModifier::new));
@@ -48,13 +50,13 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.of(colormap), Optional.empty(),
-                 false, Optional.empty(), Set.of());
+                false, false, Optional.empty(), Set.of());
     }
 
     public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.of(colormap),
-               false, Optional.empty(), Set.of());
+                false, false, Optional.empty(), Set.of());
     }
 
 
@@ -67,7 +69,8 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                 other.constantAmbientLight.isPresent() ? other.constantAmbientLight : this.constantAmbientLight,
                 other.fogColor.isPresent() ? other.fogColor : this.fogColor,
                 other.skyColor.isPresent() ? other.skyColor : this.skyColor,
-                other.noWeatherFogDarken  | this.noWeatherFogDarken,
+                other.noWeatherFogDarken | this.noWeatherFogDarken,
+                other.noWeatherSkyDarken | this.noWeatherSkyDarken,
                 other.lightmap.isPresent() ? other.lightmap : this.lightmap,
                 mergeSet(other.explicitTargets, this.explicitTargets)
         );
@@ -109,7 +112,8 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
             effects.constantAmbientLight = this.constantAmbientLight.get();
         }
         return new DimensionEffectsModifier(oldCloud, oldGround, oldSky, oldBright, oldAmbient,
-                Optional.empty(), Optional.empty(), false, Optional.empty(), Set.of());
+                Optional.empty(), Optional.empty(),
+                false, false, Optional.empty(), Set.of());
     }
 
 }

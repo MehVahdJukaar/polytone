@@ -29,10 +29,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -286,5 +283,9 @@ public class PlatStuffImpl {
             acc.getSearchTabStacks().removeIf(target);
         }
 
+    }
+
+    public static RegistryAccess getServerRegistryAccess(){
+        return PolytoneFabric.currentServer.registryAccess();
     }
 }

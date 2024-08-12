@@ -164,7 +164,7 @@ public class LegacyHelper {
             if (sourceTexture.isPresent()) {
 
                 // assumes id is minecraft. Not ideal.. too bad
-                ResourceLocation id = ResourceLocation.tryParse("none");
+                ResourceLocation id = ResourceLocation.parse("none");
                 String source = sourceTexture.get().replace("~/colormap/", id.getNamespace() + ":");
                 if (source.contains("./")) {
                     // resolve relative paths
@@ -258,7 +258,7 @@ public class LegacyHelper {
             Set<ResourceLocation> blockTargets = new HashSet<>();
             for (var name : special.getValue().split(" ")) {
                 if (name.isEmpty()) continue;
-                ResourceLocation blockId = ResourceLocation.tryParse(name);
+                ResourceLocation blockId = ResourceLocation.parse(name);
                 blockTargets.add(blockId);
                 forceBlockToHaveTintIndex(blockId);
             }
@@ -358,7 +358,7 @@ public class LegacyHelper {
     });
 
     private static ResourceKey<Biome> biomeResKey(String endBarrens) {
-        return ResourceKey.create(Registries.BIOME, ResourceLocation.tryParse(endBarrens));
+        return ResourceKey.create(Registries.BIOME, ResourceLocation.parse(endBarrens));
     }
 
 
@@ -454,7 +454,7 @@ public class LegacyHelper {
             IColorGetter skyCol;
             IColorGetter fogCol;
             {
-                ResourceLocation skyKey = ResourceLocation.tryParse("skycolor" + i);
+                ResourceLocation skyKey = ResourceLocation.parse("skycolor" + i);
                 BlockPropertyModifier skyMod = modifiers.get(skyKey);
                 ArrayImage skyImage = textures.get(skyKey);
 
@@ -464,7 +464,7 @@ public class LegacyHelper {
                 }
             }
             {
-                ResourceLocation fogKey = ResourceLocation.tryParse("fogcolor" + i);
+                ResourceLocation fogKey = ResourceLocation.parse("fogcolor" + i);
                 BlockPropertyModifier fogMod = modifiers.get(fogKey);
                 ArrayImage fogImage = textures.get(fogKey);
 
@@ -475,9 +475,10 @@ public class LegacyHelper {
             }
             if (fogCol != null || skyCol != null) {
                 var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                        Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), false, Optional.empty(), Set.of());
+                        Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol),
+                        false,false, Optional.empty(), Set.of());
 
-                converted.put(ResourceLocation.tryParse(names[i]), mod);
+                converted.put(ResourceLocation.parse(names[i]), mod);
             }
         }
         Polytone.DIMENSION_MODIFIERS.addConvertedBlockProperties(converted);

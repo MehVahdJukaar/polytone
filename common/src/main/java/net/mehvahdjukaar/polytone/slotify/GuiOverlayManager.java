@@ -87,8 +87,8 @@ public class GuiOverlayManager extends JsonPartialReloader {
         for (var h : Gui.HeartType.values()) {
             if (h != Gui.HeartType.CONTAINER && h != Gui.HeartType.NORMAL) {
                 String name = h.name().toLowerCase(Locale.ROOT);
-                ResourceLocation fullRes = ResourceLocation.tryParse("textures/gui/sprites/polytone/heart/container_" + name + "_full.png");
-                ResourceLocation halfRes = ResourceLocation.tryParse("textures/gui/sprites/polytone/heart/container_" + name + "_half.png");
+                ResourceLocation fullRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_full.png");
+                ResourceLocation halfRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_half.png");
                 if (manager.getResource(fullRes).isPresent() && manager.getResource(halfRes).isPresent()) {
                     ResourceLocation fullBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_full_blinking.png");
                     var fullBlinking = manager.getResource(fullBlinkingRes);
