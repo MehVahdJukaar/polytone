@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -33,29 +34,32 @@ public class CustomParticleType implements CustomParticleFactory {
     private final @Nullable Ticker ticker;
     private final List<ParticleSoundEmitter> sounds;
     private final List<ParticleParticleEmitter> particles;
+    private final int lightLevel;
     private transient SpriteSet spriteSet;
 
-    private CustomParticleType(RenderType renderType, @Nullable Initializer initializer, @Nullable Ticker ticker,
+    private CustomParticleType(RenderType renderType, int light, @Nullable Initializer initializer, @Nullable Ticker ticker,
                                List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
         this.renderType = renderType;
         this.initializer = initializer;
         this.ticker = ticker;
         this.sounds = sounds;
         this.particles = particles;
+        this.lightLevel = light;
     }
 
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
             RenderType.CODEC.optionalFieldOf("render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
+            Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Initializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
             Ticker.CODEC.optionalFieldOf("ticker").forGetter(c -> Optional.ofNullable(c.ticker)),
             ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
             ParticleParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.particles)
     ).apply(i, CustomParticleType::new));
 
-    private CustomParticleType(RenderType renderType, Optional<Initializer> initializer,
+    private CustomParticleType(RenderType renderType, int light, Optional<Initializer> initializer,
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
-        this(renderType, initializer.orElse(null), ticker.orElse(null), sounds, particles);
+        this(renderType, light, initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
 
     public static void setStateHack(BlockState state) {
@@ -89,6 +93,7 @@ public class CustomParticleType implements CustomParticleFactory {
         private final SpriteSet spriteSet;
         private final Habitat habitat;
         private final List<ParticleTickable> tickables;
+        private final int light;
         private float oQuadSize;
         private double custom;
 
@@ -98,6 +103,7 @@ public class CustomParticleType implements CustomParticleFactory {
                            @Nullable BlockState state, CustomParticleType customType, ResourceLocation typeId) {
             super(level, x, y, z, xSpeed, ySpeed, zSpeed);
             this.name = typeId;
+            this.light = customType.lightLevel;
             this.tickables = new ArrayList<>();
             this.tickables.addAll(customType.sounds);
             this.tickables.addAll(customType.particles);
@@ -168,6 +174,18 @@ public class CustomParticleType implements CustomParticleFactory {
 
         public double getCustom() {
             return custom;
+        }
+
+        @Override
+        protected int getLightColor(float partialTick) {
+            int total = super.getLightColor(partialTick);
+            if (this.light > 0) {
+                int sky = LightTexture.sky(total);
+                int block = LightTexture.block(total);
+                block = Math.max(block, light);
+                return LightTexture.pack(block, sky);
+            }
+            return total;
         }
 
         @Override
@@ -268,6 +286,7 @@ public class CustomParticleType implements CustomParticleFactory {
         TERRAIN,
         OPAQUE,
         TRANSLUCENT,
+        LIT,
         INVISIBLE;
 
         public static final Codec<RenderType> CODEC = Codec.STRING.xmap(
@@ -278,6 +297,7 @@ public class CustomParticleType implements CustomParticleFactory {
             return switch (this) {
                 case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
                 case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+                case LIT -> ParticleRenderType.PARTICLE_SHEET_LIT;
                 case INVISIBLE -> ParticleRenderType.NO_RENDER;
                 default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
             };
