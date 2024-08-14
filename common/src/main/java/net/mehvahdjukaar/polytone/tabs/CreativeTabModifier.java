@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.RegistryAccess;
@@ -105,6 +106,9 @@ public record CreativeTabModifier(
 
     public CreativeTabModifier applyAttributes(ResourceKey<CreativeModeTab> key) {
         CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(key);
+        if (tab == null) {
+            Polytone.LOGGER.error("Could not find creative mode tab with ID {}. What?", key);
+        }
         return PlatStuff.modifyTab(this, tab);
     }
 

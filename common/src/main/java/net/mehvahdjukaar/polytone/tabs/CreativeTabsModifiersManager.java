@@ -147,7 +147,11 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         var mod = modifiers.get(tab);
         if (mod != null) {
             RegistryAccess access = PlatStuff.hackyGetRegistryAccess();
-            if(access != null) vanillaTabs.put(tab, mod.applyItemsAndAttributes(event,access));
+            if (access != null) {
+                CreativeTabModifier v = mod.applyItemsAndAttributes(event, access);
+                //dont add custom tabs here!
+                if (!customTabs.contains(tab)) vanillaTabs.put(tab, v);
+            }
         }
     }
 
