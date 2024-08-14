@@ -110,6 +110,7 @@ public class BlockContextExpression {
 
     //TODO: turn into entity context expression
     public double getValue(Vec3 pos, float entityTime) {
+        ExpressionUtils.randomizeRandom();
         if (hasX) expression.setVariable(POS_X, pos.x);
         if (hasY) expression.setVariable(POS_Y, pos.y);
         if (hasZ) expression.setVariable(POS_Z, pos.z);
@@ -121,6 +122,7 @@ public class BlockContextExpression {
     }
 
     public double getValue(Level level, BlockPos pos, BlockState state) {
+        ExpressionUtils.seedRandom(pos.hashCode() * pos.asLong());
         if (hasX) expression.setVariable(POS_X, pos.getX());
         if (hasY) expression.setVariable(POS_Y, pos.getY());
         if (hasZ) expression.setVariable(POS_Z, pos.getZ());

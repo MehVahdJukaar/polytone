@@ -1,2 +1,7 @@
-fixed a rare concurrency issue
-added light_level to particle types and lit render type
+- fixed 3 builtin colormaps having a 0 alpha channel when used on items
+- fixed sound emitters cancelling particle emitters
+- changed a bit particle types json syntax to be more organized
+- particles with physics will now check for collision with nearby solid blocks before spawning
+- made custom particles bounding box smaller
+- fixed colormap random not being seeded off current block pos
+- changed "y_level" default sampler behavior a bit

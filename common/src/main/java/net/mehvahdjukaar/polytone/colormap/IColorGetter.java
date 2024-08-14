@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
@@ -26,7 +25,7 @@ public interface IColorGetter extends BlockColor, ItemColor {
             if (world == null) return -1;
             BlockPos pos = mc.player.blockPosition();
             BlockState state = world.getBlockState(pos);
-            return bc.getColor(state, world, pos, i);
+            return bc.getColor(state, world, pos, i) | 0xff000000;
         }
     }
 

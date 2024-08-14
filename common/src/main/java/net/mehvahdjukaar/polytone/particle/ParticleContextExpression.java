@@ -109,6 +109,7 @@ public class ParticleContextExpression {
         if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
         if (hasDayTime) expression.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
 
+        ExpressionUtils.randomizeRandom();
         return expression.evaluate();
     }
 

@@ -11,12 +11,15 @@ import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -35,7 +38,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
     public static final Codec<ItemModifier> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> (Optional<IColorGetter>) b.tintGetter),
             Colormap.CODEC.optionalFieldOf("bar_color").forGetter(ItemModifier::barColor),
-            StringRepresentable.fromEnum(Rarity::values).optionalFieldOf("rarity").forGetter(ItemModifier::rarity),
+            Rarity.CODEC.optionalFieldOf("rarity").forGetter(ItemModifier::rarity),
             CreativeTabModifier.COMPONENT_CODEC.listOf().optionalFieldOf("tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
             ExtraCodecs.PATTERN.listOf().optionalFieldOf("removed_tooltips", List.of()).forGetter(ItemModifier::removedTooltips),
             TARGET_CODEC.optionalFieldOf("targets", java.util.Set.of()).forGetter(ItemModifier::explicitTargets)
@@ -62,14 +65,14 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
     }
 
     public ItemModifier apply(Item item) {
-        net.minecraft.world.item.Rarity oldRarity = null;
-        /*
-        if (rarity.isPresent()) {
-            item.components()
-            oldRarity = item.components().() item.getDefaultInstance());
-            item.rarity = rarity.get().toVanilla();
-        }*/ //TODO: add back
+        Rarity oldRarity = null;
 
+        if (rarity.isPresent()) {
+            oldRarity = item.components().get(DataComponents.RARITY);
+            if (item.components() instanceof DataComponentMap.Builder.SimpleMap sm) {
+                sm.map().put(DataComponents.RARITY, rarity.get());
+            }
+        }
         ItemColor oldColor = null;
         if (tintGetter.isPresent()) {
             ItemColors itemColors = Minecraft.getInstance().itemColors;
@@ -81,7 +84,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
         return new ItemModifier(
                 Optional.ofNullable(oldColor),
                 Optional.empty(),
-                Optional.ofNullable(Rarity.fromVanilla(oldRarity)),
+                Optional.ofNullable(oldRarity),
                 List.of(), List.of(), Set.of());
     }
 
@@ -104,35 +107,6 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
 
     public boolean hasBarColor() {
         return barColor.isPresent();
-    }
-
-
-    public enum Rarity implements StringRepresentable {
-        COMMON, UNCOMMON, RARE, EPIC;
-
-        public static Rarity fromVanilla(net.minecraft.world.item.Rarity oldRarity) {
-            if (oldRarity == null) return null;
-            return switch (oldRarity) {
-                case COMMON -> COMMON;
-                case UNCOMMON -> UNCOMMON;
-                case RARE -> RARE;
-                case EPIC -> EPIC;
-            };
-        }
-
-        @Override
-        public String getSerializedName() {
-            return name().toLowerCase(Locale.ROOT);
-        }
-
-        public net.minecraft.world.item.Rarity toVanilla() {
-            return switch (this) {
-                case COMMON -> net.minecraft.world.item.Rarity.COMMON;
-                case UNCOMMON -> net.minecraft.world.item.Rarity.UNCOMMON;
-                case RARE -> net.minecraft.world.item.Rarity.RARE;
-                case EPIC -> net.minecraft.world.item.Rarity.EPIC;
-            };
-        }
     }
 
     public void modifyTooltips(List<Component> tooltips) {

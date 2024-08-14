@@ -4,16 +4,21 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
@@ -26,17 +31,24 @@ public class SemiCustomParticleType implements CustomParticleFactory {
     private ParticleProvider<?> copyProvider = null;
     private boolean hasBeenInit = false;
     private ParticleEngine.MutableSpriteSet spriteSet = null;
-    private final @Nullable CustomParticleType.Initializer initializer;
+    private final @Nullable ParticleInitializer initializer;
+    private final boolean hasPhysics;
+    private final @Nullable IColorGetter colormap;
 
-    public SemiCustomParticleType(ParticleType<?> type, Optional<CustomParticleType.Initializer> initializer) {
+    public SemiCustomParticleType(ParticleType<?> type, Optional<ParticleInitializer> initializer,
+                                  boolean hasPhysics, Optional<IColorGetter> colorGetter) {
         this.copyType = type;
+        this.hasPhysics = hasPhysics;
+        this.colormap = colorGetter.orElse(null);
         this.initializer = initializer.orElse(null);
     }
 
     public static final Codec<SemiCustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
             BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("copy_from").forGetter(c -> c.copyType),
-            CustomParticleType.Initializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer))
-            ).apply(i, SemiCustomParticleType::new));
+            ParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
+            Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
+            Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap))
+    ).apply(i, SemiCustomParticleType::new));
 
 
     @Override
@@ -54,31 +66,33 @@ public class SemiCustomParticleType implements CustomParticleFactory {
         if (copyProvider != null) {
             var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) copyType), level, x, y, z, xSpeed, ySpeed, zSpeed);
 
+            BlockPos pos = BlockPos.containing(x, y, z);
+
             //initialize
-            if (initializer != null && particle != null) {
-                BlockPos pos = BlockPos.containing(x, y, z);
-                if (initializer.roll() != null) {
-                    particle.roll = (float) initializer.roll().getValue(level, pos, state);
+            if (initializer != null && particle instanceof SingleQuadParticle sp) {
+                initializer.initialize(sp, level, state, pos);
+            }
+
+            if (particle != null) {
+                particle.hasPhysics = this.hasPhysics;
+
+                if (this.colormap != null) {
+                    float[] unpack = ColorUtils.unpack(this.colormap.getColor(state, level, pos, 0));
+                    particle.setColor(unpack[0], unpack[1], unpack[2]);
                 }
-                if (initializer.size() != null) {
-                    particle.scale((float) initializer.size().getValue(level, pos, state));
-                }
-                if (initializer.red() != null) {
-                    particle.rCol = (float) initializer.red().getValue(level, pos, state);
-                }
-                if (initializer.green() != null) {
-                    particle.gCol = (float) initializer.green().getValue(level, pos, state);
-                }
-                if (initializer.blue() != null) {
-                    particle.bCol = (float) initializer.blue().getValue(level, pos, state);
-                }
-                if (initializer.alpha() != null) {
-                    particle.alpha = (float) initializer.alpha().getValue(level, pos, state);
-                }
-                if (initializer.lifetime() != null) {
-                    particle.setLifetime((int) initializer.lifetime().getValue(level, pos, state));
+
+                if (this.hasPhysics) {
+                    for (VoxelShape voxelShape : level.getBlockCollisions(null, particle.getBoundingBox())) {
+                        if (!voxelShape.isEmpty()) {
+                            return null;
+                        }
+                    }
                 }
             }
+
+
+
+
             return particle;
         }
         return null;
