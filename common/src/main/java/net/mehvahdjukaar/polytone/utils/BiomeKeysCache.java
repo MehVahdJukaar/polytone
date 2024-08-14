@@ -7,8 +7,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import org.jetbrains.annotations.NotNull;
 
 public class BiomeKeysCache {
 
@@ -17,7 +19,7 @@ public class BiomeKeysCache {
     private static final ThreadLocal<Object2ObjectOpenHashMap<Biome, ResourceKey<Biome>>> CACHE =
             ThreadLocal.withInitial(Object2ObjectOpenHashMap::new);
 
-    public static ResourceKey<Biome> get(Biome biome) {
+    public static ResourceKey<Biome> get(@NotNull Biome biome) {
         var k = CACHE.get().get(biome);
         if (k == null) {
             Level level = Minecraft.getInstance().level;

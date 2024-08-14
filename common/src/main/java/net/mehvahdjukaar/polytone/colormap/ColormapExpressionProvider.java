@@ -168,6 +168,8 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
             //this state hack won't even work as its multithreaded lmao
 
             STATE_HACK.set(state);
+            if (pos != null) ExpressionUtils.seedRandom(pos.hashCode() * pos.asLong());
+            else ExpressionUtils.randomizeRandom();
             result = (float) exp.evaluate();
             STATE_HACK.remove();
 

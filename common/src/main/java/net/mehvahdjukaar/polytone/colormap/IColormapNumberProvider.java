@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.minecraft.client.color.block.BlockTintCache;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -107,6 +108,7 @@ public interface IColormapNumberProvider {
             new IColormapNumberProvider() {
                 @Override
                 public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+                    if (biome == null) return 0;
                     return 1 - mapper.getIndex(biome);
                 }
 
@@ -124,8 +126,9 @@ public interface IColormapNumberProvider {
             if (pos == null) return 64;
             // some builtin variance just because
             // 0-128 RANGE. no clue what that darn mod did but this is good enough. People shouldn't use this anyway
-            RandomSource rs = RandomSource.create(pos.asLong());
-            return (pos.getY() + rs.nextIntBetweenInclusive(-3, 3)) / 128F;
+            RandomSource rs = RandomSource.create(pos.hashCode() * pos.asLong());
+            float yVariance = 4;
+            return (pos.getY() + 64 + yVariance * (rs.nextFloat() - 0.5f)) / 256f;
         }
 
         @Override

@@ -29,7 +29,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
     // Block ID to modifier
     private final Map<Block, BlockPropertyModifier> modifiers = new HashMap<>();
-    private final Map<Block, List<? extends BlockClientTickable>> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
+    private final Map<Block, List<BlockClientTickable>> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
 
     public BlockPropertiesManager() {
         super("block_modifiers", "block_properties");
@@ -163,10 +163,12 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             vanillaProperties.put(target, value.apply(target));
 
             var particle = value.particleEmitters();
-            particle.ifPresent(emitters -> particleAndSoundEmitters.put(target, emitters));
+            particle.ifPresent(emitters -> particleAndSoundEmitters.computeIfAbsent(target, t -> new ArrayList<>())
+                    .addAll(emitters));
 
             var sound = value.soundEmitters();
-            sound.ifPresent(emitters -> particleAndSoundEmitters.put(target, emitters));
+            sound.ifPresent(emitters -> particleAndSoundEmitters.computeIfAbsent(target, t -> new ArrayList<>())
+                    .addAll(emitters));
         }
         if (!vanillaProperties.isEmpty()) {
             Polytone.LOGGER.info("Applied {} Custom Block Properties", vanillaProperties.size());

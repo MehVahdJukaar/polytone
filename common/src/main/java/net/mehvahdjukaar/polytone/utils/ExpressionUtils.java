@@ -14,10 +14,12 @@ public class ExpressionUtils {
 
     private static final RandomSource RANDOM_SOURCE = RandomSource.createNewThreadLocalInstance();
 
+private static final ThreadLocal<Long> LAST_SEED = new ThreadLocal<>();
 
     private static final Function RAND = new Function("rand", 0) {
         @Override
         public double apply(double... args) {
+            RANDOM_SOURCE.setSeed(LAST_SEED.get());
             return RANDOM_SOURCE.nextDouble();
         }
     };
@@ -25,6 +27,7 @@ public class ExpressionUtils {
     private static final Function GAUSSIAN = new Function("gaussian", 0) {
         @Override
         public double apply(double... args) {
+            RANDOM_SOURCE.setSeed(LAST_SEED.get());
             return RANDOM_SOURCE.nextGaussian();
         }
     };
@@ -223,4 +226,15 @@ public class ExpressionUtils {
 
         return sb.toString();
     }
+
+    public static void seedRandom(long seed) {
+        LAST_SEED.set(seed);
+    }
+
+    public static void randomizeRandom() {
+        seedRandom(SECONDARY.nextLong());
+    }
+
+    private static final RandomSource SECONDARY = RandomSource.createNewThreadLocalInstance();
+
 }
