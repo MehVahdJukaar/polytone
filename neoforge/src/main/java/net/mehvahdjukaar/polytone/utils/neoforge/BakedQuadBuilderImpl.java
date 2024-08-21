@@ -49,6 +49,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
     @Override
     public BakedQuad build() {
+
         Preconditions.checkNotNull(output, "vertex data has not been fully filled");
         if (emissivity != 0) {
             QuadTransformers.settingEmissivity(emissivity).processInPlace(output);

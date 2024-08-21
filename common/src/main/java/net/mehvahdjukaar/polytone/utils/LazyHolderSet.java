@@ -44,9 +44,10 @@ public class LazyHolderSet<T> implements HolderSet<T> {
 
     }
 
-    private JsonElement json;
-    private HolderSet<T> instance;
+    private final JsonElement json;
     private final ResourceKey<? extends Registry<T>> registry;
+    private HolderSet<T> instance;
+
 
     public LazyHolderSet(Dynamic<?> json, ResourceKey<? extends Registry<T>> registry) {
         this.json = (JsonElement) json.getValue();
@@ -55,10 +56,8 @@ public class LazyHolderSet<T> implements HolderSet<T> {
     }
 
     private void rePopulate(DynamicOps<JsonElement> ops) {
-        if (this.json != null) {
-            this.instance = RegistryCodecs.homogeneousList(registry, false)
-                    .decode(ops, this.json).getOrThrow().getFirst();
-        }
+        this.instance = RegistryCodecs.homogeneousList(registry, false)
+                .decode(ops, this.json).getOrThrow().getFirst();
     }
 
     @Override
