@@ -67,11 +67,10 @@ public class Polytone {
 
     public static boolean iMessedUp = false;
 
-    public static boolean sodiumOn = false;
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
 
-    public static void init(boolean isSodiumOn, boolean devEnv, boolean forge) {
+    public static void init( boolean devEnv, boolean forge) {
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
                         SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                         BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS,
@@ -79,7 +78,6 @@ public class Polytone {
                         PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,
                         CREATIVE_TABS_MODIFIERS),
                 res("polytone_stuff"));
-        sodiumOn = isSodiumOn;
         isDevEnv = devEnv;
         isForge = forge;
 

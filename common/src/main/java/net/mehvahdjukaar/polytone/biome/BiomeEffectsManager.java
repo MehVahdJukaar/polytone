@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
@@ -97,7 +96,6 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
 
         Registry<Biome> biomeReg = registryAccess.registry(Registries.BIOME).get();
-        addAllWaterColors(biomeReg);
 
         for (var v : effectsToApply.entrySet()) {
 
@@ -140,29 +138,6 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         effectsToApply.clear();
 
         fogParametersModifiers.clear();
-    }
-
-
-    //hack
-    public void addAllWaterColors(Registry<Biome> biomeReg) {
-        if (Polytone.sodiumOn) { //TODO:is this needed with embeddium?
-            var water = Polytone.FLUID_MODIFIERS.getModifier(Fluids.WATER);
-            if (water != null) {
-                for (var e : biomeReg.entrySet()) {
-                    var id = e.getKey().location();
-                    var b = e.getValue();
-                    var original = effectsToApply.get(id);
-                    if (original == null || original.waterColor().isEmpty()) {
-                        if (water.getTint() instanceof Colormap cl) {
-                            var col = cl.getColor(b, 0, 0);
-                            var dummy = BiomeEffectModifier.ofWaterColor(col);
-                            addEffect(id, dummy);
-                        }
-                    }
-                }
-            }
-        }
-
     }
 
 

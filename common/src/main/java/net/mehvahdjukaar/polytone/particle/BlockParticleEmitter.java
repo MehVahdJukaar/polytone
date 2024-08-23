@@ -16,6 +16,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +34,7 @@ public record BlockParticleEmitter(
         BlockContextExpression dx,
         BlockContextExpression dy,
         BlockContextExpression dz,
+        RuleTest predicate,
         Optional<LazyHolderSet<Biome>> biomes,
         SpawnLocation spawnLocation
 ) implements BlockClientTickable {
@@ -46,6 +49,7 @@ public record BlockParticleEmitter(
             BlockContextExpression.CODEC.optionalFieldOf("dx", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dx),
             BlockContextExpression.CODEC.optionalFieldOf("dy", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dy),
             BlockContextExpression.CODEC.optionalFieldOf("dz", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dz),
+            RuleTest.CODEC.optionalFieldOf("state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
             LazyHolderSet.codec(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
             SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation)
     ).apply(i, BlockParticleEmitter::new));
@@ -53,8 +57,9 @@ public record BlockParticleEmitter(
 
     @Override
     public void tick(Level level, BlockPos pos, BlockState state) {
+
         double spawnChance = chance.getValue(level, pos, state);
-        if (level.random.nextFloat() < spawnChance) {
+        if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(pos);
                 if (!biomes.get().contains(biome)) return;

@@ -165,4 +165,5 @@ public interface IColormapNumberProvider {
             return false;
         }
     });
+
 }

@@ -206,7 +206,7 @@ task zipFolder(type: Zip) {
     }
 }
 
-task uploadRelease {
+task uplodRelease {
     dependsOn zipFolder
     dependsOn tasks.named('githubRelease').get()
 }

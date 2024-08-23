@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
@@ -15,15 +16,18 @@ import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsModifier;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.StemBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -83,8 +87,22 @@ public class LegacyHelper {
 
             // hardcoded special color stuff
             if (path.equals("stem") || path.equals("melon_stem") || path.equals("pumpkin_stem")) {
-                Colormap colormap = Colormap.simple((state, level, pos, m, i) -> state != null && state.hasProperty(StemBlock.AGE) ? state.getValue(StemBlock.AGE) / 7f : 0,
-                        IColormapNumberProvider.ZERO);
+                Colormap colormap = Colormap.simple(new IColormapNumberProvider() {
+                    @Override
+                    public float getValue(BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
+                        return state != null && state.hasProperty(StemBlock.AGE) ? state.getValue(StemBlock.AGE) / 7f : 0;
+                    }
+
+                    @Override
+                    public boolean usesBiome() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean usesPos() {
+                        return false;
+                    }
+                }, IColormapNumberProvider.ZERO);
 
                 List<Block> targets = new ArrayList<>();
                 // so stem maps to both
@@ -98,8 +116,22 @@ public class LegacyHelper {
                 }
                 map.put(id, BlockPropertyModifier.coloringBlocks(colormap, targets));
             } else if (path.equals("redstone_wire")) {
-                Colormap colormap = Colormap.simple((state, level, pos, m, i) -> state != null ? state.getValue(RedStoneWireBlock.POWER) / 15f : 0,
-                        IColormapNumberProvider.ZERO);
+                Colormap colormap = Colormap.simple(new IColormapNumberProvider() {
+                    @Override
+                    public float getValue(BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
+                        return state != null ? state.getValue(RedStoneWireBlock.POWER) / 15f : 0;
+                    }
+
+                    @Override
+                    public boolean usesBiome() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean usesPos() {
+                        return false;
+                    }
+                }, IColormapNumberProvider.ZERO);
 
                 map.put(id, BlockPropertyModifier.coloringBlocks(colormap, Blocks.REDSTONE_WIRE));
             } else if (prop != null) {
@@ -476,7 +508,7 @@ public class LegacyHelper {
             if (fogCol != null || skyCol != null) {
                 var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                         Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol),
-                        false,false, Optional.empty(), Set.of());
+                        false, false, Optional.empty(), Set.of());
 
                 converted.put(ResourceLocation.parse(names[i]), mod);
             }

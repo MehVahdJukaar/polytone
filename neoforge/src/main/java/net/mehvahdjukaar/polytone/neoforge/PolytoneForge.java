@@ -49,7 +49,7 @@ public class PolytoneForge {
     public PolytoneForge(IEventBus modBus) {
         bus = modBus;
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            Polytone.init(false, !FMLEnvironment.production, true);
+            Polytone.init(!FMLEnvironment.production, true);
 
             NeoForge.EVENT_BUS.register(this);
             modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);

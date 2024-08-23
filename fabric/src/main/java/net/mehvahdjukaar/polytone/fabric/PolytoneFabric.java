@@ -19,9 +19,8 @@ public class PolytoneFabric implements ClientModInitializer  {
     @Override
     public void onInitializeClient() {
         FabricLoader instance = FabricLoader.getInstance();
-        boolean sodiumOn = instance.isModLoaded("sodium") || instance.isModLoaded("indium");
 
-        Polytone.init(sodiumOn, instance.isDevelopmentEnvironment(), false);
+        Polytone.init(instance.isDevelopmentEnvironment(), false);
 
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
             if (client) {
