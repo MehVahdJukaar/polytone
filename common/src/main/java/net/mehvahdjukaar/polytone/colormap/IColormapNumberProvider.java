@@ -128,7 +128,7 @@ public interface IColormapNumberProvider {
             // 0-128 RANGE. no clue what that darn mod did but this is good enough. People shouldn't use this anyway
             RandomSource rs = RandomSource.create(pos.hashCode() * pos.asLong());
             float yVariance = 4;
-            return (pos.getY() + 64 + yVariance * (rs.nextFloat() - 0.5f)) / 256f;
+            return 1- ((pos.getY() + 64 + yVariance * (rs.nextFloat() - 0.5f)) / 256f);
         }
 
         @Override
