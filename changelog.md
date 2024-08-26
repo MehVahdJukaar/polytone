@@ -1,1 +1,1 @@
-removed some hack to get biome watercolor working on sodium since its new version has fixed the bug that made it required
+you can now change leash texture
