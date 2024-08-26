@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
@@ -27,6 +28,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                                        Optional<IColorGetter> skyColor,
                                        boolean noWeatherFogDarken,
                                        boolean noWeatherSkyDarken,
+                                       Optional<ColormapExpressionProvider> cloudHeight,
                                        Optional<Lightmap> lightmap,
                                        Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
@@ -49,15 +51,15 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
             ).apply(instance, DimensionEffectsModifier::new));
 
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
-        return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.of(colormap), Optional.empty(),
-                false, false, Optional.empty(), Set.of());
+        return new DimensionEffectsModifier(java.util.Optional.empty(), java.util.Optional.empty(), java.util.Optional.empty(), java.util.Optional.empty(),
+                java.util.Optional.empty(), Optional.of(colormap), java.util.Optional.empty(),
+                false, false, java.util.Optional.empty(), Set.of());
     }
 
     public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
-        return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.of(colormap),
-                false, false, Optional.empty(), Set.of());
+        return new DimensionEffectsModifier(java.util.Optional.empty(), java.util.Optional.empty(), java.util.Optional.empty(), java.util.Optional.empty(),
+                java.util.Optional.empty(), java.util.Optional.empty(), Optional.of(colormap),
+                false, false, java.util.Optional.empty(), Set.of());
     }
 
 
