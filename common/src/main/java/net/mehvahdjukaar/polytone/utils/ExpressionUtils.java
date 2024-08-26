@@ -110,7 +110,7 @@ private static final ThreadLocal<Long> LAST_SEED = new ThreadLocal<>();
         }
     };
 
-    private static final Function LERP = new Function("min", 3) {
+    private static final Function LERP = new Function("lerp", 3) {
         @Override
         public double apply(double... args) {
             return Mth.lerp(args[0], args[1], args[2]);

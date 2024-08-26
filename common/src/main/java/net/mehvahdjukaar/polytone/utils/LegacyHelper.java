@@ -421,8 +421,8 @@ public class LegacyHelper {
                                                            Map<ResourceLocation, ArrayImage> textures) {
         Map<ResourceLocation, BlockPropertyModifier> filtered = new HashMap<>();
         Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
-        Pattern fogP = Pattern.compile("minecraft:fogcolor[0-2]");
-        Pattern skyP = Pattern.compile("minecraft:skycolor[0-2]");
+        Pattern fogP = Pattern.compile("minecraft:fog[0-2]");
+        Pattern skyP = Pattern.compile("minecraft:sky[0-2]");
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation id = entry.getKey();
             String stringId = id.toString();
@@ -454,7 +454,7 @@ public class LegacyHelper {
             IColorGetter skyCol;
             IColorGetter fogCol;
             {
-                ResourceLocation skyKey = ResourceLocation.tryParse("skycolor" + i);
+                ResourceLocation skyKey = ResourceLocation.tryParse("sky" + i);
                 BlockPropertyModifier skyMod = modifiers.get(skyKey);
                 ArrayImage skyImage = textures.get(skyKey);
 
@@ -464,7 +464,7 @@ public class LegacyHelper {
                 }
             }
             {
-                ResourceLocation fogKey = new ResourceLocation("fogcolor" + i);
+                ResourceLocation fogKey = new ResourceLocation("fog" + i);
                 BlockPropertyModifier fogMod = modifiers.get(fogKey);
                 ArrayImage fogImage = textures.get(fogKey);
 
