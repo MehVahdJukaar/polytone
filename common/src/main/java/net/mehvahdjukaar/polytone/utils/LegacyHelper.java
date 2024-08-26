@@ -119,7 +119,7 @@ public class LegacyHelper {
                 Colormap colormap = Colormap.simple(new IColormapNumberProvider() {
                     @Override
                     public float getValue(BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
-                        return state != null ? state.getValue(RedStoneWireBlock.POWER) / 15f : 0;
+                        return state != null ? (1-state.getValue(RedStoneWireBlock.POWER) / 15f) : 1;
                     }
 
                     @Override
