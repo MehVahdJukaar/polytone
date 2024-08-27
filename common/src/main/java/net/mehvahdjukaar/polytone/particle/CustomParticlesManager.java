@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
@@ -69,6 +70,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
             PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
 
             particleEngine.register(type, factory);
+            Polytone.LOGGER.info("Registered Custom Particle {}", id);
         }
     }
 

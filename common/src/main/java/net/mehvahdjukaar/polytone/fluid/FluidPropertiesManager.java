@@ -113,6 +113,13 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     @Override
+    protected void apply() {
+        super.apply();
+        if (!modifiers.isEmpty())
+            Polytone.LOGGER.info("Applied {} Fluid Modifiers", modifiers.size());
+    }
+
+    @Override
     protected void reset() {
         modifiers.clear();
         clearSpecial();

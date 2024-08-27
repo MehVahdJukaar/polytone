@@ -171,7 +171,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                     .addAll(emitters));
         }
         if (!vanillaProperties.isEmpty()) {
-            Polytone.LOGGER.info("Applied {} Custom Block Properties", vanillaProperties.size());
+            Polytone.LOGGER.info("Applied {} Block Modifiers", vanillaProperties.size());
         }
         //clear as we dont need the anymore
         modifiers.clear();

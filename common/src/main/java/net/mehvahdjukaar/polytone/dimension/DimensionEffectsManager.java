@@ -10,6 +10,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -199,7 +200,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             }
         }
         if (!vanillaEffects.isEmpty())
-            Polytone.LOGGER.info("Applied {} Custom Dimension Effects Properties", vanillaEffects.size());
+            Polytone.LOGGER.info("Applied {} Dimension Modifiers", vanillaEffects.size());
         //we don't clear effects to apply because we need to re apply on world reload
 
     }
@@ -248,8 +249,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     public Float modifyCloudHeight(ClientLevel level) {
         ColormapExpressionProvider height = this.cloudFunctions.get(level.dimensionType());
         if (height == null) return null;
-        float v = height.getValue(null, null, null, null, null);
-        if (v == -1) {
+        BlockPos pos = ClientFrameTicker.getCameraPos();
+        float v = height.getValue(null, pos, null, null, null);
+        if (v >= 10000) {
             return Float.NaN;
         }
         return v;

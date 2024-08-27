@@ -107,11 +107,15 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
         for (var e : modifiers.entrySet()) {
             Item target = e.getKey();
 
-            ItemModifier value = e.getValue();
-            vanillaProperties.put(target, value.apply(target));
+            ItemModifier modifier = e.getValue();
+            vanillaProperties.put(target, modifier.apply(target));
 
-            if (value.shouldAttachToItem()) {
-                ((IPolytoneItem) e.getKey()).polytone$setModifier(value);
+            if (modifier.shouldAttachToItem()) {
+                ((IPolytoneItem) e.getKey()).polytone$setModifier(modifier);
+            }
+
+            if(!modifier.customModels().isEmpty()){
+                Polytone.ITEM_MODELS.addModel(target, modifier.customModels());
             }
         }
         if (!vanillaProperties.isEmpty()) {

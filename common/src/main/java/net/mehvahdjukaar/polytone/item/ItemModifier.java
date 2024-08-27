@@ -31,6 +31,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Optional<Rarity> rarity,
                            List<Component> tooltips,
                            List<Pattern> removedTooltips,
+                           List<ItemModelOverride> customModels,
                            Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
     public static final Codec<ItemModifier> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -39,16 +40,18 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             Rarity.CODEC.optionalFieldOf("rarity").forGetter(ItemModifier::rarity),
             CreativeTabModifier.COMPONENT_CODEC.listOf().optionalFieldOf("tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
             ExtraCodecs.PATTERN.listOf().optionalFieldOf("removed_tooltips", List.of()).forGetter(ItemModifier::removedTooltips),
+            ItemModelOverride.CODEC.listOf().optionalFieldOf("custom_models", List.of()).forGetter(ItemModifier::customModels),
             TARGET_CODEC.optionalFieldOf("targets", java.util.Set.of()).forGetter(ItemModifier::explicitTargets)
     ).apply(instance, ItemModifier::new));
 
     public static ItemModifier ofItemColor(Colormap colormap) {
-        return new ItemModifier(Optional.of(colormap), Optional.empty(), Optional.empty(), List.of(), List.of(), java.util.Set.of());
+        return new ItemModifier(Optional.of(colormap), Optional.empty(), Optional.empty(), List.of(),
+                List.of(), List.of(), Set.of());
     }
 
     public static ItemModifier ofBarColor(Colormap colormap) {
         return new ItemModifier(Optional.empty(), Optional.of(colormap),
-                Optional.empty(), List.of(), List.of(), java.util.Set.of());
+                Optional.empty(), List.of(), List.of(), List.of(), Set.of());
     }
 
     public ItemModifier merge(ItemModifier other) {
@@ -58,6 +61,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 this.rarity.isPresent() ? this.rarity : other.rarity,
                 mergeList(this.tooltips, other.tooltips),
                 mergeList(this.removedTooltips, other.removedTooltips),
+                mergeList(this.customModels, other.customModels),
                 mergeSet(this.explicitTargets, other.explicitTargets)
         );
     }
@@ -86,7 +90,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 Optional.ofNullable(oldColor),
                 Optional.empty(),
                 Optional.ofNullable(oldRarity),
-                List.of(), List.of(), Set.of());
+                List.of(), List.of(), List.of(), Set.of());
     }
 
     @Nullable

@@ -36,13 +36,14 @@ public class PolytoneFabric implements ClientModInitializer {
         ModelLoadingPlugin.register((pluginContext) ->
                 pluginContext.addModels(Polytone.ITEM_MODELS.getExtraModels()));
 
-        /*
+
         ModelLoadingPlugin.register(pluginContext -> {
+            pluginContext.
            pluginContext.modifyModelAfterBake().register((model, context) -> {
-               Polytone.VARIANT_TEXTURES.maybeModifyModel(model, context.id());
+               //Polytone.VARIANT_TEXTURES.maybeModifyModel(model, context.id());
                return model;
            });
-        });*/
+        });
 
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {
