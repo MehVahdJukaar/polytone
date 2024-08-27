@@ -67,7 +67,7 @@ public class PolytoneForge {
         Polytone.ITEM_MODELS.getExtraModels().forEach(e->{
             event.register(ModelResourceLocation.standalone(e));
         });
-        //event.register(ModelResourceLocation.standalone(ResourceLocation.tryParse("minecraft:item/test")));
+        event.register(ModelResourceLocation.standalone(ResourceLocation.tryParse("minecraft:item/test")));
     }
 
     @SubscribeEvent
