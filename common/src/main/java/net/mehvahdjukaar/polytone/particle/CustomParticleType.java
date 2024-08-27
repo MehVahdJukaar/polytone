@@ -17,6 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,11 +39,12 @@ public class CustomParticleType implements CustomParticleFactory {
     private final int lightLevel;
     private final LiquidAffinity liquidAffinity;
     private final boolean hasPhysics;
+    private final boolean killOnContact;
     private final @Nullable IColorGetter colormap;
 
     private transient SpriteSet spriteSet;
 
-    private CustomParticleType(RenderType renderType, int light, boolean hasPhysics,
+    private CustomParticleType(RenderType renderType, int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
                                List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
@@ -53,6 +55,7 @@ public class CustomParticleType implements CustomParticleFactory {
         this.particles = particles;
         this.lightLevel = light;
         this.hasPhysics = hasPhysics;
+        this.killOnContact = killOnContact;
         this.liquidAffinity = liquidAffinity;
         this.colormap = colormap;
     }
@@ -62,6 +65,7 @@ public class CustomParticleType implements CustomParticleFactory {
                     .forGetter(CustomParticleType::getRenderType),
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
+            Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
             LiquidAffinity.CODEC.optionalFieldOf("liquid_affinity", LiquidAffinity.ANY).forGetter(c -> c.liquidAffinity),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap)),
             ParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
@@ -70,11 +74,11 @@ public class CustomParticleType implements CustomParticleFactory {
             ParticleParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.particles)
     ).apply(i, CustomParticleType::new));
 
-    private CustomParticleType(RenderType renderType, int light, boolean hasPhysics,
+    private CustomParticleType(RenderType renderType, int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                Optional<ParticleInitializer> initializer,
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
-        this(renderType, light, hasPhysics, liquidAffinity, colormap.orElse(null), initializer.orElse(null), ticker.orElse(null), sounds, particles);
+        this(renderType, light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null), initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
 
 
@@ -130,6 +134,7 @@ public class CustomParticleType implements CustomParticleFactory {
         protected final int light;
         protected float oQuadSize;
         protected double custom;
+        protected boolean killOnContact;
 
         private ResourceLocation name;
 
@@ -139,6 +144,7 @@ public class CustomParticleType implements CustomParticleFactory {
             this.setSize(0.1f, 0.1f);
             this.name = typeId;
             this.light = customType.lightLevel;
+            this.killOnContact = customType.killOnContact;
             this.colormap = customType.colormap;
             this.tickables = new ArrayList<>();
             this.tickables.addAll(customType.sounds);
@@ -224,6 +230,22 @@ public class CustomParticleType implements CustomParticleFactory {
             if (!this.removed) {
                 for (ParticleTickable tickable : this.tickables) {
                     tickable.tick(this, level);
+                }
+            }
+        }
+
+        @Override
+        public void move(double x, double y, double z) {
+            super.move(x, y, z);
+            if (this.killOnContact && this.age > 1) {
+                Vec3 myPos = new Vec3(this.x, this.y, this.z);
+                Vec3 wantedPos = new Vec3(this.xo + x, this.yo + y, this.zo + z);
+                if (myPos.distanceToSqr(wantedPos) > 0.000001) {
+                    // collided with any block. pop. It fragile
+                    this.remove();
+                    this.xd = 0;
+                    this.yd = 0;
+                    this.zd = 0;
                 }
             }
         }

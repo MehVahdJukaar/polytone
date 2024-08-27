@@ -29,6 +29,8 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -57,6 +59,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -288,4 +291,10 @@ public class PlatStuffImpl {
     public static RegistryAccess getServerRegistryAccess(){
         return PolytoneFabric.currentServer.registryAccess();
     }
+
+    public static BakedModel getBakedModel(ResourceLocation model) {
+       var mm = Minecraft.getInstance().getModelManager();
+            return ((ModelManagerAccessor) mm).getBakedRegistry().getOrDefault(model, mm.getMissingModel());
+    }
+
 }

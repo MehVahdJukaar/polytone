@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.utils;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
 public class ClientFrameTicker {
@@ -8,6 +9,7 @@ public class ClientFrameTicker {
     private static double time;
     private static double dayTime;
     private static float rainAndThunder;
+    private static BlockPos cameaPos;
 
     public static void onRenderTick(Minecraft mc) {
         Level level = mc.level;
@@ -17,6 +19,8 @@ public class ClientFrameTicker {
         time = level.getGameTime() + partialTicks;
         dayTime = level.getDayTime() + partialTicks;
         rainAndThunder = level.getRainLevel(partialTicks) * 0.5f + level.getThunderLevel(partialTicks) * 0.5f;
+
+        cameaPos = mc.gameRenderer.getMainCamera().getBlockPosition();
     }
 
     public static float getRainAndThunder() {
@@ -29,5 +33,9 @@ public class ClientFrameTicker {
 
     public static double getGameTime() {
         return time;
+    }
+
+    public static BlockPos getCameraPos() {
+        return cameaPos;
     }
 }

@@ -11,7 +11,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.FogType;
@@ -22,6 +24,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
@@ -53,10 +56,18 @@ public class PolytoneForge {
 
             NeoForge.EVENT_BUS.register(this);
             modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
+            modBus.addListener(this::addAdditionalModels);
         } else {
             LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
 
+    }
+
+    public void addAdditionalModels(ModelEvent.RegisterAdditional event){
+        Polytone.ITEM_MODELS.getExtraModels().forEach(e->{
+            event.register(ModelResourceLocation.standalone(e));
+        });
+        //event.register(ModelResourceLocation.standalone(ResourceLocation.tryParse("minecraft:item/test")));
     }
 
     @SubscribeEvent

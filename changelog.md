@@ -1,1 +1,5 @@
-you can now change leash texture
+- fixed item modifiers altering other existing items components
+- added CIM, custom item models. Very experimental and format will change
+- added kill on contact property to custom particles
+- dimension modifiers cloud level can now use a math expression
+- fog start and end biome modifiers parameters can now use a math expression

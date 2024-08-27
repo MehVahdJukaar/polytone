@@ -1,5 +1,6 @@
 accessWidener   v2  named
 
+
 mutable field net/minecraft/world/level/material/MapColor col I
 mutable field net/minecraft/world/level/block/state/BlockBehaviour soundType Lnet/minecraft/world/level/block/SoundType;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour soundType Lnet/minecraft/world/level/block/SoundType;
@@ -53,7 +54,9 @@ accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall 
 accessible field net/minecraft/network/chat/TextColor value I
 mutable field net/minecraft/network/chat/TextColor value I
 
-accessible class net/minecraft/core/component/DataComponentMap$Builder$SimpleMap
+accessible field net/minecraft/world/item/Item$Properties COMPONENT_INTERNER Lcom/google/common/collect/Interner;
+accessible field net/minecraft/world/item/Item components Lnet/minecraft/core/component/DataComponentMap;
+mutable field net/minecraft/world/item/Item components Lnet/minecraft/core/component/DataComponentMap;
 
 # texture stuff
 accessible class net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
@@ -115,6 +118,14 @@ accessible method net/minecraft/client/renderer/LightTexture getDarknessGamma (F
 accessible method net/minecraft/client/renderer/LightTexture calculateDarknessScale (Lnet/minecraft/world/entity/LivingEntity;FF)F
 accessible method net/minecraft/client/renderer/LightTexture notGamma (F)F
 
+
+accessible field net/minecraft/client/resources/model/ModelBakery ITEM_MODEL_GENERATOR Lnet/minecraft/client/renderer/block/model/ItemModelGenerator;
+
+
+#ok
+
+
+
 accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;ILnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
 
 accessible field net/minecraft/ChatFormatting color Ljava/lang/Integer;
@@ -137,6 +148,7 @@ accessible field net/minecraft/core/MappedRegistry toId Lit/unimi/dsi/fastutil/o
 accessible field net/minecraft/core/MappedRegistry registrationInfos Ljava/util/Map;
 accessible field net/minecraft/core/MappedRegistry frozen Z
 
+
 accessible method net/minecraft/client/particle/ParticleEngine register (Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/client/particle/ParticleProvider;)V
 
 accessible method net/minecraft/world/level/biome/Biome getTemperature (Lnet/minecraft/core/BlockPos;)F
@@ -154,6 +166,12 @@ mutable field net/minecraft/client/renderer/DimensionSpecialEffects constantAmbi
 
 
 
+
+accessible field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
+mutable field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
+accessible field net/minecraft/client/Minecraft itemColors Lnet/minecraft/client/color/item/ItemColors;
+
+
 # freaking forge field to method...mutable
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects fogColor I
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects fogColor I
@@ -163,6 +181,7 @@ accessible field net/minecraft/world/level/biome/BiomeSpecialEffects waterFogCol
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects waterFogColor I
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects skyColor I
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects skyColor I
+
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects foliageColorOverride Ljava/util/Optional;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects foliageColorOverride Ljava/util/Optional;
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorOverride Ljava/util/Optional;
@@ -170,18 +189,16 @@ mutable field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorOver
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorModifier Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorModifier Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects ambientParticleSettings Ljava/util/Optional;
+
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects ambientParticleSettings Ljava/util/Optional;
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects ambientLoopSoundEvent Ljava/util/Optional;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects ambientLoopSoundEvent Ljava/util/Optional;
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects ambientMoodSettings Ljava/util/Optional;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects ambientMoodSettings Ljava/util/Optional;
+
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects ambientAdditionsSettings Ljava/util/Optional;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects ambientAdditionsSettings Ljava/util/Optional;
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects backgroundMusic Ljava/util/Optional;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects backgroundMusic Ljava/util/Optional;
 
-accessible field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
-mutable field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
-accessible field net/minecraft/client/Minecraft itemColors Lnet/minecraft/client/color/item/ItemColors;
 
-accessible field net/minecraft/client/resources/model/ModelBakery ITEM_MODEL_GENERATOR Lnet/minecraft/client/renderer/block/model/ItemModelGenerator;

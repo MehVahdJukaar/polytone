@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
@@ -14,7 +15,9 @@ import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.server.MinecraftServer;
 
-public class PolytoneFabric implements ClientModInitializer  {
+import java.util.Objects;
+
+public class PolytoneFabric implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
@@ -27,9 +30,11 @@ public class PolytoneFabric implements ClientModInitializer  {
                 Polytone.onTagsReceived(registries);
             }
         });
-        WorldRenderEvents.START.register((context) -> {
-            ClientFrameTicker.onRenderTick(context.gameRenderer().getMinecraft());
-        });
+        WorldRenderEvents.START.register((context) ->
+                ClientFrameTicker.onRenderTick(context.gameRenderer().getMinecraft()));
+
+        ModelLoadingPlugin.register((pluginContext) ->
+                pluginContext.addModels(Polytone.ITEM_MODELS.getExtraModels()));
 
         /*
         ModelLoadingPlugin.register(pluginContext -> {
@@ -69,7 +74,6 @@ public class PolytoneFabric implements ClientModInitializer  {
         });
 
     }
-
 
 
     public static MinecraftServer currentServer;

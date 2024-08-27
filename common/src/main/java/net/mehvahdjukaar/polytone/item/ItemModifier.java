@@ -16,14 +16,12 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -68,10 +66,13 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
         Rarity oldRarity = null;
 
         if (rarity.isPresent()) {
-            oldRarity = item.components().get(DataComponents.RARITY);
-            if (item.components() instanceof DataComponentMap.Builder.SimpleMap sm) {
-                sm.map().put(DataComponents.RARITY, rarity.get());
-            }
+            DataComponentMap components = item.components();
+            oldRarity = components.get(DataComponents.RARITY);
+            // we must create a new instance as these are immutable and could use one shared by other items
+            DataComponentMap.Builder builder = DataComponentMap.builder();
+            builder.addAll(components);
+            builder.set(DataComponents.RARITY, rarity.get());
+            item.components = Item.Properties.COMPONENT_INTERNER.intern(builder.build());
         }
         ItemColor oldColor = null;
         if (tintGetter.isPresent()) {

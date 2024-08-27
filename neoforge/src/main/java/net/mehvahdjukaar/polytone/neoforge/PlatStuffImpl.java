@@ -14,6 +14,8 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -37,6 +39,7 @@ import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
@@ -247,5 +250,9 @@ public class PlatStuffImpl {
 
     public static RegistryAccess getServerRegistryAccess(){
         return ServerLifecycleHooks.getCurrentServer().registryAccess();
+    }
+
+    public static BakedModel getBakedModel(ResourceLocation id) {
+        return Minecraft.getInstance().getModelManager().getModel(ModelResourceLocation.standalone(id));
     }
 }

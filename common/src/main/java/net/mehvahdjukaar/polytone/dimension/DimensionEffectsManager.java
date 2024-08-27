@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
@@ -38,6 +39,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     private final Object2ObjectMap<DimensionType, Colormap> fogColormaps = new Object2ObjectArrayMap<>();
     private final Object2ObjectMap<DimensionType, Colormap> skyColormaps = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, ColormapExpressionProvider> cloudFunctions = new Object2ObjectArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelFogWeatherDarken = new Object2BooleanArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelSkyWeatherDarken = new Object2BooleanArrayMap<>();
 
@@ -60,6 +62,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         skyColormaps.clear();
         cancelFogWeatherDarken.clear();
         cancelSkyWeatherDarken.clear();
+        cloudFunctions.clear();
         extraMods.clear();
     }
 
@@ -178,17 +181,21 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
             vanillaEffects.put(dimensionId, old);
 
+            DimensionType dim = dimReg.get(dimensionId);
             if (modifier.getFogColormap() instanceof Colormap c) {
-                fogColormaps.put(dimReg.get(dimensionId), c);
+                fogColormaps.put(dim, c);
             }
             if (modifier.getSkyColormap() instanceof Colormap c) {
-                skyColormaps.put(dimReg.get(dimensionId), c);
+                skyColormaps.put(dim, c);
             }
             if (modifier.noWeatherFogDarken()) {
-                cancelFogWeatherDarken.put(dimReg.get(dimensionId), true);
+                cancelFogWeatherDarken.put(dim, true);
             }
-            if (modifier.noWeatherSkyDarken()){
-                cancelSkyWeatherDarken.put(dimReg.get(dimensionId), true);
+            if (modifier.noWeatherSkyDarken()) {
+                cancelSkyWeatherDarken.put(dim, true);
+            }
+            if (modifier.cloudLevel().isPresent() && modifier.cloudLevel().get().right().isPresent()) {
+                cloudFunctions.put(dim, modifier.cloudLevel().get().right().get());
             }
         }
         if (!vanillaEffects.isEmpty())
@@ -235,6 +242,17 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             int skyColor1 = colormap.sampleColor(null, BlockPos.containing(qx * 4, qy * 4, qz * 4), biome, null); //quart coords to block coord
             return Vec3.fromRGB24(skyColor1);
         });
+    }
+
+    @Nullable
+    public Float modifyCloudHeight(ClientLevel level) {
+        ColormapExpressionProvider height = this.cloudFunctions.get(level.dimensionType());
+        if (height == null) return null;
+        float v = height.getValue(null, null, null, null, null);
+        if (v == -1) {
+            return Float.NaN;
+        }
+        return v;
     }
 
     public boolean shouldCancelFogWeatherDarken(Level level) {
