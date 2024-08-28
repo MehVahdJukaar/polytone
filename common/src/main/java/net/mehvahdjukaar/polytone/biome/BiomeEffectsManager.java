@@ -144,7 +144,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     private static float lastFogEnd = 1;
 
     @Nullable
-    public Vec2 modifyFogParameters(float fogNearPlane, float fogFarPlane) {
+    public Vec2 modifyFogParameters(float originalNearPlane, float originalFarPlane) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null) return null;
@@ -168,9 +168,9 @@ public class BiomeEffectsManager extends JsonPartialReloader {
             lastFogStart = Mth.lerp(interpolationFactor, lastFogStart, targetFog.x);
             lastFogEnd = Mth.lerp(interpolationFactor, lastFogEnd, targetFog.y);
             //fogEvent.scaleNearPlaneDistance(1);
-            float distance = fogFarPlane - fogNearPlane;
+            float distance = originalFarPlane - originalNearPlane;
 
-            return new Vec2((fogFarPlane - distance * lastFogStart) * lastFogEnd, fogFarPlane * lastFogEnd);
+            return new Vec2((originalFarPlane - distance * lastFogStart) * lastFogEnd, originalFarPlane * lastFogEnd);
         }
 
         return null;
