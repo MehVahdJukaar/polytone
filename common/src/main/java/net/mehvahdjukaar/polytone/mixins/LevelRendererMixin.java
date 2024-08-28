@@ -16,7 +16,9 @@ public class LevelRendererMixin {
     @Nullable
     private ClientLevel level;
 
-    @ModifyExpressionValue(method = "renderClouds", at = @At(value = "INVOKE",
+    @ModifyExpressionValue(method = "renderClouds",
+            require = 0,
+            at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getCloudHeight()F"))
     private float polytone$modifyCloudHeight(float original) {
         Float f = Polytone.DIMENSION_MODIFIERS.modifyCloudHeight(this.level);

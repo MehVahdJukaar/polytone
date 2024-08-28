@@ -1,1 +1,1 @@
-Improved CIM system. its not mainly controlled by item modifiers but sing eindividual model overrides can be added in their own folder too
+hotfix for biome modifier issue
