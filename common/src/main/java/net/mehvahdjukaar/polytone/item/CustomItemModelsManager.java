@@ -6,6 +6,7 @@ import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.resources.model.BakedModel;
@@ -19,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class CustomItemModelsManager extends JsonImgPartialReloader {
+public class CustomItemModelsManager extends PartialReloader<Object> {
 
 
     private final Map<Item, ItemModelOverrideList> itemModels = new Object2ObjectOpenHashMap<>();
@@ -32,7 +33,18 @@ public class CustomItemModelsManager extends JsonImgPartialReloader {
     }
 
     @Override
+    protected Object prepare(ResourceManager resourceManager) {
+        return new Object();
+    }
+
+    @Override
     protected void reset() {
+
+    }
+
+    @Override
+    protected void process(Object obj, DynamicOps<JsonElement> ops) {
+
     }
 
     public void earlyProcess(ResourceManager resourceManager) {
@@ -71,11 +83,6 @@ public class CustomItemModelsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void process(Resources resources, DynamicOps<JsonElement> ops) {
-
-    }
-
-    @Override
     protected void apply() {
         super.apply();
         int allModels = 0;
@@ -87,6 +94,7 @@ public class CustomItemModelsManager extends JsonImgPartialReloader {
 
     @Nullable
     public BakedModel getOverride(ItemStack itemStack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+        //TODO: ad entity and level predicates
         ItemModelOverrideList list = this.itemModels.get(itemStack.getItem());
         if (list == null) return null;
         return list.getModel(itemStack, level, entity, seed);

@@ -122,8 +122,8 @@ dependencies {
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive = false }
 
-    implementation include( 'net.objecthunter:exp4j:0.4.8')
-    forgeRuntimeLibrary ( 'net.objecthunter:exp4j:0.4.8')
+    implementation include( "net.objecthunter:exp4j:${exp4j_version}")
+    forgeRuntimeLibrary ( "net.objecthunter:exp4j:${exp4j_version}")
 
     modCompileOnly ("curse.maven:curios-continuation-1037991:5546342")
     modCompileOnly ("curse.maven:embeddium-908741:5630163")

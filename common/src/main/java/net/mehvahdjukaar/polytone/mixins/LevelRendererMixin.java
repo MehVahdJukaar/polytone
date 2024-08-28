@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.dimension.DimensionEffectsModifier;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import org.jetbrains.annotations.Nullable;

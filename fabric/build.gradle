@@ -26,7 +26,7 @@ dependencies {
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 
-    implementation include( 'net.objecthunter:exp4j:0.4.8')
+    implementation include( "net.objecthunter:exp4j:${exp4j_version}")
 
     modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
     modImplementation "curse.maven:continuity-531351:5425853"

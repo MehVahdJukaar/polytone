@@ -17,7 +17,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
 
@@ -171,7 +170,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
             //fogEvent.scaleNearPlaneDistance(1);
             float distance = fogFarPlane - fogNearPlane;
 
-            return new Vec2(fogFarPlane - distance * lastFogStart, fogFarPlane * lastFogEnd);
+            return new Vec2((fogFarPlane - distance * lastFogStart) * lastFogEnd, fogFarPlane * lastFogEnd);
         }
 
         return null;
