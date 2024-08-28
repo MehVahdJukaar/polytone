@@ -263,16 +263,14 @@ public class CustomParticleType implements CustomParticleFactory {
 
     }
 
-    private enum RenderType {
+    private enum RenderType implements StringRepresentable {
         TERRAIN,
         OPAQUE,
         TRANSLUCENT,
         LIT,
         INVISIBLE;
 
-        public static final Codec<RenderType> CODEC = Codec.STRING.xmap(
-                a -> valueOf(a.toUpperCase()), e -> e.name().toLowerCase(Locale.ROOT)
-        );
+        public static final Codec<RenderType> CODEC = StringRepresentable.fromEnum(RenderType::values);
 
         public ParticleRenderType get() {
             return switch (this) {
@@ -282,6 +280,11 @@ public class CustomParticleType implements CustomParticleFactory {
                 case INVISIBLE -> ParticleRenderType.NO_RENDER;
                 default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
             };
+        }
+
+        @Override
+        public String getSerializedName() {
+            return this.name().toLowerCase(Locale.ROOT);
         }
     }
 

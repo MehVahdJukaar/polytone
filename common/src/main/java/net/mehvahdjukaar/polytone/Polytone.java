@@ -20,10 +20,14 @@ import net.mehvahdjukaar.polytone.tabs.CreativeTabsModifiersManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
+import net.mehvahdjukaar.polytone.utils.GenericDirectorySpriteSource;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
+import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -83,16 +87,7 @@ public class Polytone {
         isDevEnv = devEnv;
         isForge = forge;
 
-        //TODO: colormap for particles
-
-//TODO: colormap for paritcles? also register particlesproeprly, a registry removal stuff and also day time and weather chedk for emitters
-
-        //exp color
-        //biome lightmap
-
-        if (isDevEnv) {// force all mixins to load in dev
-            MixinEnvironment.getCurrentEnvironment().audit();
-        }
+        GenericDirectorySpriteSource.init();
     }
 
     public static ResourceLocation res(String name) {

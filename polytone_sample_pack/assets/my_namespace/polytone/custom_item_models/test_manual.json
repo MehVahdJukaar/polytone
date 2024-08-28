@@ -1,0 +1,7 @@
+{
+  "item": "minecraft:gold_ingot",
+  "model": "my_namespace:item/test_manual",
+  "components": {
+    "minecraft:custom_name": "\"plankify\""
+  }
+}

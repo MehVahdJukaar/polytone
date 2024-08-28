@@ -6,16 +6,18 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.mehvahdjukaar.polytone.utils.Weather;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.biome.*;
 import net.minecraft.world.phys.Vec2;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -231,12 +233,11 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
 
         Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> () -> f, FogParam::get);
         Codec<FogParam> CODEC = Codec.withAlternative(
-                SIMPLE_CODEC,
+                Codec.withAlternative(SIMPLE_CODEC, FogMap.CODEC),
                 ColormapExpressionProvider.CODEC.xmap(
                         FogExpression::new,
                         fogMap -> fogMap.map
-                ),
-                fogMap -> fogMap
+                )
         );
     }
 
@@ -248,6 +249,18 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             return map.getValue(null, pos, null, null, null);
         }
     }
+
+    public record FogMap(Map<Weather, FogParam> map) implements FogParam {
+
+        @Override
+        public float get() {
+            ClientLevel level = Minecraft.getInstance().level;
+            Weather w = Weather.get(level);
+            return map.getOrDefault(w, ONE).get();
+        }
+    }
+
+    public static final FogParam ONE = () -> 1;
 
 
 }

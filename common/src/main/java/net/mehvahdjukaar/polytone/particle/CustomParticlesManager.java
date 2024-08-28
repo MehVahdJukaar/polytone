@@ -57,20 +57,24 @@ public class CustomParticlesManager extends JsonPartialReloader {
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
 
         for (var j : obj.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
-            CustomParticleFactory factory = CUSTOM_OR_SEMI_CUSTOM_CODEC.decode(ops, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
-                    .getFirst();
-            factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
+            try {
+                var json = j.getValue();
+                var id = j.getKey();
+                CustomParticleFactory factory = CUSTOM_OR_SEMI_CUSTOM_CODEC.decode(ops, json)
+                        .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
+                        .getFirst();
+                factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
-            customParticleFactories.register(id, factory);
+                customParticleFactories.register(id, factory);
 
-            SimpleParticleType type = PlatStuff.makeParticleType();
-            PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
+                SimpleParticleType type = PlatStuff.makeParticleType();
+                PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
 
-            particleEngine.register(type, factory);
-            Polytone.LOGGER.info("Registered Custom Particle {}", id);
+                particleEngine.register(type, factory);
+                Polytone.LOGGER.info("Registered Custom Particle {}", id);
+            }catch (Exception e){
+                Polytone.LOGGER.error("!!!!!!!!!!!! Failed to load Custom Particle {}", j.getKey(), e);
+            }
         }
     }
 

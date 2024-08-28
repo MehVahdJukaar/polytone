@@ -13,6 +13,7 @@ import net.mehvahdjukaar.polytone.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.Objects;
@@ -35,15 +36,6 @@ public class PolytoneFabric implements ClientModInitializer {
 
         ModelLoadingPlugin.register((pluginContext) ->
                 pluginContext.addModels(Polytone.ITEM_MODELS.getExtraModels()));
-
-
-        ModelLoadingPlugin.register(pluginContext -> {
-            pluginContext.
-           pluginContext.modifyModelAfterBake().register((model, context) -> {
-               //Polytone.VARIANT_TEXTURES.maybeModifyModel(model, context.id());
-               return model;
-           });
-        });
 
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {

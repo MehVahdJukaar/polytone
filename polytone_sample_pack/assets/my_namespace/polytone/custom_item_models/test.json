@@ -1,0 +1,7 @@
+{
+  "item": "minecraft:emerald",
+  "model": "generated",
+  "components": {
+    "minecraft:custom_name": "\"test\""
+  }
+}

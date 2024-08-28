@@ -1,0 +1,9 @@
+{
+  "sources": [
+    {
+      "type": "polytone_generic_directory",
+      "source": "polytone/custom_item_models",
+      "prefix": "polytone/custom_item_models/"
+    }
+  ]
+}

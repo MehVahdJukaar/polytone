@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.item;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.component.DataComponentMap;
@@ -26,7 +27,8 @@ public class ItemModelOverrideList {
         this.keys.clear();
         this.overrides.clear();
         for (ItemModelOverride entry : this.entries) {
-            this.overrides.put(new Key(entry.getComponents()), entry.fetchModel());
+            this.overrides.put(new Key(entry.components().stream()
+                    .toArray(TypedDataComponent<?>[]::new)),  PlatStuff.getBakedModel(entry.model()));
         }
 
         for (var map : this.overrides.keySet()) {
@@ -58,10 +60,6 @@ public class ItemModelOverrideList {
             key[i++] = components.getTyped(type);
         }
         return this.overrides.get(new Key(key));
-    }
-
-    public Set<ResourceLocation> getAllModelPaths() {
-        return this.entries.stream().map(ItemModelOverride::model).collect(Collectors.toSet());
     }
 
     public int size() {
