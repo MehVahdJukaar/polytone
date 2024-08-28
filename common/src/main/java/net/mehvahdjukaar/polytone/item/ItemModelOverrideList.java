@@ -13,10 +13,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class ItemModelOverrideList {
 
@@ -32,7 +35,7 @@ public class ItemModelOverrideList {
         // trident : count 1
         // key: name, enchant, count
         this.overrides.clear();
-        this.overrides.overridesAcceptEntries(this.entries);
+        this.overrides.acceptEntries(this.entries);
         this.populated = true;
         this.entries.clear();
     }
@@ -68,33 +71,22 @@ public class ItemModelOverrideList {
     }
 
 
-    public static class PropertiesSearchTrie extends SearchTrie<TypedDataComponent<?>, ResourceLocation> {
+    public static class PropertiesSearchTrie extends SearchTrie<Object, ResourceLocation> {
 
         private final List<DataComponentType<?>> orderedKeys = new ArrayList<>();
+        private boolean hasCount = false;
 
         @Override
         public void clear() {
             super.clear();
-            orderedKeys.clear();
+            this.orderedKeys.clear();
+            this.hasCount = false;
         }
 
-        protected Collection<ResourceLocation> search(TypedDataComponent<?>... types) {
-            // Initialize a list of null values with the size of orderedKeys
-            List<TypedDataComponent<?>> paths = new ArrayList<>(Collections.nCopies(this.orderedKeys.size(), null));
-
-            // Create a map for quick lookup of types by their class
-            Map<DataComponentType<?>, TypedDataComponent<?>> typeMap = Arrays.stream(types)
-                    .collect(Collectors.toMap(TypedDataComponent::type, t -> t));
-
-            // Fill in the result list based on orderedKeys
-            for (int i = 0; i < this.orderedKeys.size(); i++) {
-                DataComponentType<?> keyType = this.orderedKeys.get(i);
-                TypedDataComponent<?> component = typeMap.get(keyType);
-                paths.set(i, component);
-            }
-
-            // Return the result as a collection
-            return search(paths);
+        public ResourceLocation get(ItemStack stack) {
+            //TODO:
+            return   this.search(this.makePath(stack))
+                    .stream().findFirst().get();
         }
 
         protected List<Object> makePath(ItemStack stack) {
@@ -102,34 +94,36 @@ public class ItemModelOverrideList {
             if (components.isEmpty()) return Collections.emptyList();
 
             List<Object> key = new ArrayList<>(this.orderedKeys.size());
+            if (this.hasCount) key.add(stack.getCount());
             for (DataComponentType<?> type : this.orderedKeys) {
                 key.add(components.getTyped(type));
             }
             return key;
         }
 
-        public void overridesAcceptEntries(List<ItemModelOverride> entries) {
+        public void acceptEntries(List<ItemModelOverride> entries) {
             FrequencyOrderedCollection<DataComponentType<?>> keyFrequencies = new FrequencyOrderedCollection<>();
             for (ItemModelOverride entry : entries) {
+                if (entry.hasStackCount()) this.hasCount = true;
                 for (var component : entry.components()) {
                     keyFrequencies.add(component.type());
                 }
             }
             // assumes keys with more values will be more common. actually inverse to minimize space
-            this.orderedKeys.addAll(keyFrequencies.stream().toList().reversed());
+            this.orderedKeys.addAll(keyFrequencies.stream().toList());
 
             for (ItemModelOverride entry : entries) {
-                List<TypedDataComponent<?>> key = new ArrayList<>(this.orderedKeys.size());
+                List<Object> key = new ArrayList<>();
+                if (hasCount) key.add(entry.stackCount());
                 for (DataComponentType<?> type : this.orderedKeys) {
                     key.add(entry.components().getTyped(type));
                 }
-                this.insert(key, entry.model());
+                this.insert(key, (entry.model()));
             }
 
         }
 
     }
-
 
     public static void testTrie() {
         PropertiesSearchTrie trie = new PropertiesSearchTrie();
@@ -231,7 +225,7 @@ public class ItemModelOverrideList {
         ));
 
         // Insert all test data into the trie
-        trie.overridesAcceptEntries(list);
+        trie.acceptEntries(list);
 
         // Print the trie structure
         System.out.println("Trie structure after insertions:");
@@ -246,7 +240,9 @@ public class ItemModelOverrideList {
 
         //System.out.println("this works " + directSearch);
 
-        var indirectSearch = trie.search(staff, yellow);
+        ItemStack s = Items.DIAMOND.getDefaultInstance();
+        s.set(staff.type(), staff.value());
+        var indirectSearch = trie.get(s);
 
         System.out.println("this doesnt work " + indirectSearch);
 

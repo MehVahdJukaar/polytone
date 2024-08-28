@@ -72,6 +72,7 @@ public class SearchTrie<K, O> {
     protected static class TrieNode<K, O> {
         Map<K, TrieNode<K, O>> children = new HashMap<>();
         List<O> objects = new ArrayList<>();
+        int keySkip = 0;
 
         public TrieNode() {
         }
@@ -90,6 +91,7 @@ public class SearchTrie<K, O> {
     }
 
     private void printNode(TrieNode<K, O> node, String prefix, Object nodeName, boolean isTail) {
+        if(nodeName == null) nodeName = "*";
         if (!node.objects.isEmpty()) {
             System.out.println(prefix + (isTail ? "\\--- " : "|--- ") + nodeName + " " + node.objects);
         } else {

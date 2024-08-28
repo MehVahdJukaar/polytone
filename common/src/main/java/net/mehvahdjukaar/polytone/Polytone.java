@@ -19,10 +19,7 @@ import net.mehvahdjukaar.polytone.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabsModifiersManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
-import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
-import net.mehvahdjukaar.polytone.utils.CompoundReloader;
-import net.mehvahdjukaar.polytone.utils.GenericDirectorySpriteSource;
-import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
+import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
@@ -87,6 +84,7 @@ public class Polytone {
                 res("polytone_stuff"));
         isDevEnv = devEnv;
         isForge = forge;
+
         ItemModelOverrideList.testTrie();
         GenericDirectorySpriteSource.init();
     }
