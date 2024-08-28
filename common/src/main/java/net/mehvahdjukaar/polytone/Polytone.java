@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
 import net.mehvahdjukaar.polytone.item.CustomItemModelsManager;
+import net.mehvahdjukaar.polytone.item.ItemModelOverrideList;
 import net.mehvahdjukaar.polytone.item.ItemModifiersManager;
 import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.particle.CustomParticlesManager;
@@ -86,7 +87,7 @@ public class Polytone {
                 res("polytone_stuff"));
         isDevEnv = devEnv;
         isForge = forge;
-
+        ItemModelOverrideList.testTrie();
         GenericDirectorySpriteSource.init();
     }
 
