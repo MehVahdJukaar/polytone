@@ -1,7 +1,8 @@
 package net.mehvahdjukaar.polytone.item;
 
+import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.utils.DepthSearchTrie;
 import net.mehvahdjukaar.polytone.utils.FrequencyOrderedCollection;
-import net.mehvahdjukaar.polytone.utils.SearchTrie;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.component.DataComponentMap;
@@ -18,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 public class ItemModelOverrideList {
@@ -52,18 +52,7 @@ public class ItemModelOverrideList {
     @Nullable
     public BakedModel getModel(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
         if (!populated) this.populateModels();
-        DataComponentMap components = stack.getComponents();
-        if (components.isEmpty()) return null;
-        return null;
-
-        /*
-        TypedDataComponent<?>[] key = new TypedDataComponent<?>[this.orderedKeys.size()];
-        int i = 0;
-        for (DataComponentType<?> type : this.orderedKeys) {
-            key[i++] = components.getTyped(type);
-        }
-        return this.overrides.get(new Key(key));
-        */
+        return this.overrides.search(stack);
     }
 
     public int size() {
@@ -71,40 +60,43 @@ public class ItemModelOverrideList {
     }
 
 
-    public static class PropertiesSearchTrie extends SearchTrie<Object, ResourceLocation> {
+    public static class PropertiesSearchTrie extends DepthSearchTrie<Object, Object, BakedModel, ItemStack> {
 
         private final List<DataComponentType<?>> orderedKeys = new ArrayList<>();
-        private boolean hasCount = false;
 
         @Override
         public void clear() {
             super.clear();
             this.orderedKeys.clear();
-            this.hasCount = false;
         }
 
-        public ResourceLocation get(ItemStack stack) {
-            //TODO:
-            return   this.search(this.makePath(stack))
-                    .stream().findFirst().get();
-        }
 
-        protected List<Object> makePath(ItemStack stack) {
-            DataComponentMap components = stack.getComponents();
-            if (components.isEmpty()) return Collections.emptyList();
-
-            List<Object> key = new ArrayList<>(this.orderedKeys.size());
-            if (this.hasCount) key.add(stack.getCount());
-            for (DataComponentType<?> type : this.orderedKeys) {
-                key.add(components.getTyped(type));
+        @Override
+        protected Object getKeyOfType(Object folder) {
+            if (folder instanceof TypedDataComponent<?> t) {
+                return t.type();
             }
-            return key;
+            if (folder instanceof Integer) {
+                return Integer.class;
+            }
+            return folder;
+        }
+
+        @Override
+        protected Object getKeyFromType(Object type, ItemStack stack) {
+            if (type instanceof DataComponentType<?> t) {
+                return stack.getComponents().getTyped(t);
+            } else if (type == Integer.class) {
+                return stack.getCount();
+            }
+            return null;
         }
 
         public void acceptEntries(List<ItemModelOverride> entries) {
+            boolean hasCount = false;
             FrequencyOrderedCollection<DataComponentType<?>> keyFrequencies = new FrequencyOrderedCollection<>();
             for (ItemModelOverride entry : entries) {
-                if (entry.hasStackCount()) this.hasCount = true;
+                if (entry.hasStackCount()) hasCount = true;
                 for (var component : entry.components()) {
                     keyFrequencies.add(component.type());
                 }
@@ -118,14 +110,14 @@ public class ItemModelOverrideList {
                 for (DataComponentType<?> type : this.orderedKeys) {
                     key.add(entry.components().getTyped(type));
                 }
-                this.insert(key, (entry.model()));
+                this.insert(key, PlatStuff.getBakedModel(entry.model()));
             }
-
         }
 
     }
 
     public static void testTrie() {
+        if (true) return;
         PropertiesSearchTrie trie = new PropertiesSearchTrie();
 
         // Define test cases with different combinations of key-value pairs
@@ -212,6 +204,13 @@ public class ItemModelOverrideList {
 
         list.add(ItemModelOverride.of(
                 DataComponentMap.builder()
+                        .set(DataComponents.CUSTOM_NAME, Component.literal("sword"))
+                        .build(),
+                ResourceLocation.tryParse("blue_sword_test")
+        ));
+
+        list.add(ItemModelOverride.of(
+                DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("helmet"))
                         .build(),
                 ResourceLocation.tryParse("helmet")
@@ -227,14 +226,23 @@ public class ItemModelOverrideList {
         // Insert all test data into the trie
         trie.acceptEntries(list);
 
+
         // Print the trie structure
         System.out.println("Trie structure after insertions:");
         trie.printTrie();
 
+        trie.optimizeTree();
+
+        trie.printTrie();
+
         TypedDataComponent<DyeColor> red = new TypedDataComponent<>(DataComponents.BASE_COLOR, DyeColor.RED);
+        //blue
+        TypedDataComponent<DyeColor> blue = new TypedDataComponent<>(DataComponents.BASE_COLOR, DyeColor.BLUE);
         TypedDataComponent<DyeColor> yellow = new TypedDataComponent<>(DataComponents.BASE_COLOR, DyeColor.YELLOW);
         TypedDataComponent<Integer> one = new TypedDataComponent<>(DataComponents.MAX_STACK_SIZE, 1);
         TypedDataComponent<Component> staff = new TypedDataComponent<>(DataComponents.CUSTOM_NAME, Component.literal("staff"));
+        TypedDataComponent<Component> spear = new TypedDataComponent<>(DataComponents.CUSTOM_NAME, Component.literal("spear"));
+        TypedDataComponent<Component> sword = new TypedDataComponent<>(DataComponents.CUSTOM_NAME, Component.literal("sword"));
 
         //var directSearch = trie.search(staff);
 
@@ -242,9 +250,26 @@ public class ItemModelOverrideList {
 
         ItemStack s = Items.DIAMOND.getDefaultInstance();
         s.set(staff.type(), staff.value());
-        var indirectSearch = trie.get(s);
+        //var indirectSearch = trie.get(s);
+        s.set(one.type(), one.value());
 
-        System.out.println("this doesnt work " + indirectSearch);
+        var search2 = trie.search(s);
+
+        s.set(spear.type(), spear.value());
+        var search3 = trie.search(s);
+
+        ItemStack ss = Items.EMERALD.getDefaultInstance();
+        ss.set(sword.type(), sword.value());
+        var normalSword = trie.search(ss);
+
+        s.set(sword.type(), sword.value());
+        s.set(one.type(), one.value());
+        var otherSpear = trie.search(s);
+
+        s.set(blue.type(), blue.value());
+        var blueSpear = trie.search(s);
+
+        System.out.println("this work " + search2);
 
     }
 

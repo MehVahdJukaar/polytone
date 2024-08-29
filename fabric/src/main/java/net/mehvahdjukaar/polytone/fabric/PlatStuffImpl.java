@@ -30,7 +30,7 @@ import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -53,13 +53,9 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -288,13 +284,16 @@ public class PlatStuffImpl {
 
     }
 
-    public static RegistryAccess getServerRegistryAccess(){
+    public static RegistryAccess getServerRegistryAccess() {
         return PolytoneFabric.currentServer.registryAccess();
     }
 
     public static BakedModel getBakedModel(ResourceLocation model) {
-       var mm = Minecraft.getInstance().getModelManager();
-            return ((ModelManagerAccessor) mm).getBakedRegistry().getOrDefault(model, mm.getMissingModel());
+        ModelResourceLocation id = new ModelResourceLocation(model, "fabric_resource");
+        ModelResourceLocation id2 = new ModelResourceLocation(model, "inventory");
+        var mm = Minecraft.getInstance().getModelManager();
+        Map<ModelResourceLocation, BakedModel> reg = ((ModelManagerAccessor) mm).getBakedRegistry();
+        return reg.getOrDefault(id, reg.getOrDefault(id2, mm.getMissingModel()));
     }
 
 }
