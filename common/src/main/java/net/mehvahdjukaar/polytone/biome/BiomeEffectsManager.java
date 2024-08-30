@@ -42,17 +42,12 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     public void process(Map<ResourceLocation, JsonElement> biomesJsons, DynamicOps<JsonElement> ops) {
         lazyJsons.clear();
         lazyJsons.putAll(biomesJsons);
-
-        Level level = Minecraft.getInstance().level;
-        if (level != null) {
-            processAndApplyWithLevel(level.registryAccess(), false);
-
-        }
         //else apply as soon as we load a level
     }
 
     // we need registry ops here since special effects use registry stuff...
-    public void processAndApplyWithLevel(RegistryAccess access, boolean firstLogin) {
+    @Override
+    public void applyWithLevel(RegistryAccess access, boolean firstLogin) {
         for (var j : lazyJsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
@@ -67,7 +62,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         }
         lazyJsons.clear();
 
-        applyWithLevel(access, firstLogin);
+        doApplyWithLevel(access, firstLogin);
     }
 
     private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod) {
@@ -87,7 +82,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     public void apply() {
     }
 
-    private void applyWithLevel(RegistryAccess registryAccess, boolean firstLogin) {
+    private void doApplyWithLevel(RegistryAccess registryAccess, boolean firstLogin) {
         if (!firstLogin && !needsDynamicApplication) return;
 
         needsDynamicApplication = false;

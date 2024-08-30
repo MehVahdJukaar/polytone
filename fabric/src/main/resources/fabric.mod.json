@@ -28,6 +28,7 @@
     "minecraft": ">=${minecraft_min_version} <${minecraft_max_version}"
   },
   "breaks": {
-    "slotify": "*"
+    "slotify": "*",
+    "sodium": "<=0.5.11"
   }
 }

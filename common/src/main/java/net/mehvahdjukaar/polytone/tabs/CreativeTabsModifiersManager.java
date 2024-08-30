@@ -86,14 +86,11 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         lazyJsons.clear();
         lazyJsons.putAll(resources.tabsModifiers);
 
-        Level level = Minecraft.getInstance().level;
-        if (level != null) {
-            processAndApplyWithLevel(level.registryAccess(), false);
-        }
         //else apply as soon as we load a level
     }
 
-    public void processAndApplyWithLevel(RegistryAccess access, boolean firstLogin) {
+    @Override
+    protected void applyWithLevel(RegistryAccess access, boolean firstLogin) {
         var ops = RegistryOps.create(JsonOps.INSTANCE, access);
         for (var j : lazyJsons.entrySet()) {
 

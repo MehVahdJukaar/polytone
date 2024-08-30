@@ -59,6 +59,12 @@ public class ItemModelOverrideList {
         return entries.size();
     }
 
+    public void decodeLazyComponents() {
+        for (ItemModelOverride entry : this.entries) {
+            entry.getComponents();
+        }
+    }
+
 
     public static class PropertiesSearchTrie extends DepthSearchTrie<Object, Object, ItemModelOverride, ItemStack> {
 
@@ -112,8 +118,8 @@ public class ItemModelOverrideList {
             boolean hasCount = false;
             FrequencyOrderedCollection<DataComponentType<?>> keyFrequencies = new FrequencyOrderedCollection<>();
             for (ItemModelOverride entry : entries) {
-                if (entry.hasStackCount()) hasCount = true;
-                for (var component : entry.components()) {
+                if (entry.stackCount() != null) hasCount = true;
+                for (var component : entry.getComponents()) {
                     keyFrequencies.add(component.type());
                 }
             }
@@ -124,7 +130,7 @@ public class ItemModelOverrideList {
                 List<Object> key = new ArrayList<>();
                 if (hasCount) key.add(entry.stackCount());
                 for (DataComponentType<?> type : this.orderedKeys) {
-                    key.add(entry.components().getTyped(type));
+                    key.add(entry.getComponents().getTyped(type));
                 }
                 this.insert(key, entry);
             }
@@ -140,21 +146,21 @@ public class ItemModelOverrideList {
         List<ItemModelOverride> list = new ArrayList<>();
 
         // Test data with single key-value pairs
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("staff"))
                         .build(),
                 ResourceLocation.tryParse("staff")
         ));
 
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.MAX_STACK_SIZE, 1)
                         .build(),
                 ResourceLocation.tryParse("shield")
         ));
 
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.BASE_COLOR, DyeColor.BLACK)
                         .build(),
@@ -162,7 +168,7 @@ public class ItemModelOverrideList {
         ));
 
         // Combinations of key-value pairs
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("spear"))
                         .set(DataComponents.MAX_STACK_SIZE, 1)
@@ -170,7 +176,7 @@ public class ItemModelOverrideList {
                 ResourceLocation.tryParse("spear")
         ));
 
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.BASE_COLOR, DyeColor.BLACK)
                         .set(DataComponents.MAX_STACK_SIZE, 2)
@@ -178,7 +184,7 @@ public class ItemModelOverrideList {
                 ResourceLocation.tryParse("flag")
         ));
 
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("axe"))
                         .set(DataComponents.MAX_STACK_SIZE, 3)
@@ -186,14 +192,14 @@ public class ItemModelOverrideList {
                 ResourceLocation.tryParse("axe")
         ));
 
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("pickaxe"))
                         .build(),
                 ResourceLocation.tryParse("pickaxe")
         ));
 
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("gun"))
                         .build(),
@@ -201,7 +207,7 @@ public class ItemModelOverrideList {
         ));
 
         // Additional combinations with variations
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.BASE_COLOR, DyeColor.RED)
                         .set(DataComponents.MAX_STACK_SIZE, 5)
@@ -209,7 +215,7 @@ public class ItemModelOverrideList {
                 ResourceLocation.tryParse("red_flag")
         ));
 
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("sword"))
                         .set(DataComponents.MAX_STACK_SIZE, 1)
@@ -218,21 +224,21 @@ public class ItemModelOverrideList {
                 ResourceLocation.tryParse("blue_sword")
         ));
 
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("sword"))
                         .build(),
                 ResourceLocation.tryParse("blue_sword_test")
         ));
 
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("helmet"))
                         .build(),
                 ResourceLocation.tryParse("helmet")
         ));
 
-        list.add(ItemModelOverride.of(
+        list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.BASE_COLOR, DyeColor.GREEN)
                         .build(),

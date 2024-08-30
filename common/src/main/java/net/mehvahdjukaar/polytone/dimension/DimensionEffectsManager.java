@@ -157,15 +157,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    public void apply() {
-        Level level = Minecraft.getInstance().level;
-        if (level != null) {
-            doApply(level.registryAccess(), false);
-        }
-        //else apply as soon as we load a level
-    }
-
-    public void doApply(RegistryAccess registryAccess, boolean firstLogin) {
+    protected void applyWithLevel(RegistryAccess registryAccess, boolean firstLogin) {
         if (!firstLogin && !needsDynamicApplication) return;
         needsDynamicApplication = false;
 

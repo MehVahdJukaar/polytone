@@ -4,9 +4,11 @@ import com.google.common.base.Stopwatch;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
     @Override
     protected void apply(List<Object> object, ResourceManager resourceManager, ProfilerFiller profiler) {
+        Level level = Minecraft.getInstance().level;
         // clear existing lazy holder sets
         LazyHolderSet.clearAll();
 
@@ -70,6 +73,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         for (var c : children) {
             try {
                 c.apply();
+                if(level != null) c.applyWithLevel(level.registryAccess(), false);
             } catch (Exception e) {
                 String message = c + " failed to apply some resources";
                 Polytone.logException(e, message);
@@ -89,4 +93,9 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         reloader.process((T) object, JsonOps.INSTANCE);
     }
 
+    public void applyOnLevelLoad(RegistryAccess registryAccess, boolean firstLogin){
+        for (var c : children) {
+            c.applyWithLevel(registryAccess, firstLogin);
+        }
+    }
 }

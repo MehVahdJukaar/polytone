@@ -19,13 +19,13 @@ import net.mehvahdjukaar.polytone.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabsModifiersManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
-import net.mehvahdjukaar.polytone.utils.*;
+import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
+import net.mehvahdjukaar.polytone.utils.CompoundReloader;
+import net.mehvahdjukaar.polytone.utils.GenericDirectorySpriteSource;
+import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
-import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -34,7 +34,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
-import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -50,6 +49,7 @@ public class Polytone {
 
     public static final Logger LOGGER = LogManager.getLogger("Polytone");
 
+    private static CompoundReloader COMPOUND_RELOADER;
     public static final BlockPropertiesManager BLOCK_MODIFIERS = new BlockPropertiesManager();
     public static final FluidPropertiesManager FLUID_MODIFIERS = new FluidPropertiesManager();
     public static final ItemModifiersManager ITEM_MODIFIERS = new ItemModifiersManager();
@@ -75,12 +75,13 @@ public class Polytone {
     public static boolean isForge = false;
 
     public static void init(boolean devEnv, boolean forge) {
-        PlatStuff.addClientReloadListener(() -> new CompoundReloader(
-                        SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
-                        BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
-                        BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
-                        PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,
-                        CREATIVE_TABS_MODIFIERS),
+        COMPOUND_RELOADER = new CompoundReloader(
+                SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
+                BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
+                BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
+                PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,
+                CREATIVE_TABS_MODIFIERS);
+        PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         isDevEnv = devEnv;
         isForge = forge;
@@ -96,9 +97,7 @@ public class Polytone {
 
     public static void onTagsReceived(RegistryAccess registryAccess) {
         try {
-            CREATIVE_TABS_MODIFIERS.processAndApplyWithLevel(registryAccess, true);
-            BIOME_MODIFIERS.processAndApplyWithLevel(registryAccess, true);
-            DIMENSION_MODIFIERS.doApply(registryAccess, true);
+            COMPOUND_RELOADER.applyOnLevelLoad(registryAccess, true);
             BiomeKeysCache.clear();
             LazyHolderSet.initializeAll(registryAccess);
         } catch (RuntimeException e) {
