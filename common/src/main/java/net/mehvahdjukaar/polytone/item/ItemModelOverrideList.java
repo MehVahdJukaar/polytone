@@ -52,7 +52,7 @@ public class ItemModelOverrideList {
     @Nullable
     public BakedModel getModel(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
         if (!populated) this.populateModels();
-        return this.overrides.search(stack);
+        return this.overrides.searchModel(stack);
     }
 
     public int size() {
@@ -60,7 +60,7 @@ public class ItemModelOverrideList {
     }
 
 
-    public static class PropertiesSearchTrie extends DepthSearchTrie<Object, Object, BakedModel, ItemStack> {
+    public static class PropertiesSearchTrie extends DepthSearchTrie<Object, Object, ItemModelOverride, ItemStack> {
 
         private final List<DataComponentType<?>> orderedKeys = new ArrayList<>();
 
@@ -68,6 +68,22 @@ public class ItemModelOverrideList {
         public void clear() {
             super.clear();
             this.orderedKeys.clear();
+        }
+
+        public BakedModel searchModel(ItemStack stack) {
+            var list = this.search(stack);
+            if (list.isEmpty()) return PlatStuff.getBakedModel(ResourceLocation.tryParse("a"));
+            if (list.size() == 1) return PlatStuff.getBakedModel(list.get(0).model());
+            var customName = stack.get(DataComponents.CUSTOM_NAME);
+            if (customName != null) {
+                for (var model : list) {
+                    var pattern = model.pattern();
+                    if (pattern != null && pattern.matcher(customName.getString()).matches()) {
+                        return PlatStuff.getBakedModel(model.model());
+                    }
+                }
+            }
+            return PlatStuff.getBakedModel(list.get(0).model());
         }
 
 
@@ -110,7 +126,7 @@ public class ItemModelOverrideList {
                 for (DataComponentType<?> type : this.orderedKeys) {
                     key.add(entry.components().getTyped(type));
                 }
-                this.insert(key, PlatStuff.getBakedModel(entry.model()));
+                this.insert(key, entry);
             }
         }
 

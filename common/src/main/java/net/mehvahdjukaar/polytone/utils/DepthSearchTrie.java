@@ -33,7 +33,8 @@ public abstract class DepthSearchTrie<K, KT, O, I> {
         }
 
         // Add the object to the final node
-        current.object = object;
+        if(current.object == null) current.object = new ArrayList<>();
+        current.object.add(object);
     }
 
     protected abstract KT getKeyOfType(K folder);
@@ -49,14 +50,14 @@ public abstract class DepthSearchTrie<K, KT, O, I> {
         return true;
     }
 
-    public O search(List<K> paths) {
+    public List<O> search(List<K> paths) {
         TrieNode<K, KT, O> current = getNode(paths);
         if (current == null) return null;
         // Once at the target node, collect all objects from this node and its children
         return current.object;
     }
 
-    public O search(I valueHolder) {
+    public List<O> search(I valueHolder) {
         TrieNode<K, KT, O> current = getNode(valueHolder);
         if (current == null) return null;
         // Once at the target node, collect all objects from this node and its children
@@ -106,7 +107,7 @@ public abstract class DepthSearchTrie<K, KT, O, I> {
 
     protected static class TrieNode<K, KT, O> {
         Map<K, TrieNode<K, KT, O>> children = new HashMap<>();
-        O object;
+        List<O> object;
         KT type = null;
     }
 

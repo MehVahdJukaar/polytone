@@ -292,6 +292,7 @@ public class PlatStuffImpl {
         ModelResourceLocation id = new ModelResourceLocation(model, "fabric_resource");
         ModelResourceLocation id2 = new ModelResourceLocation(model, "inventory");
         var mm = Minecraft.getInstance().getModelManager();
+
         Map<ModelResourceLocation, BakedModel> reg = ((ModelManagerAccessor) mm).getBakedRegistry();
         return reg.getOrDefault(id, reg.getOrDefault(id2, mm.getMissingModel()));
     }

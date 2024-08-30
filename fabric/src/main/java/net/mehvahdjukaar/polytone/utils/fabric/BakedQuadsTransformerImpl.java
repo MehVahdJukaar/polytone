@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.mehvahdjukaar.polytone.utils.BakedQuadBuilder;
 import net.mehvahdjukaar.polytone.utils.BakedQuadsTransformer;
 import net.mehvahdjukaar.polytone.utils.fabric.BakedQuadBuilderImpl;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;

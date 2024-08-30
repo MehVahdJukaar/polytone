@@ -17,6 +17,8 @@ public class ModelManagerMixin {
 
     @Inject(method = "method_45895", at = @At("HEAD"))
     private static void polytone$loadCustomItemModels(ResourceManager resourceManager, CallbackInfoReturnable<Map> cir) {
+        Polytone.ITEM_MODIFIERS.earlyProcess(resourceManager);
         Polytone.ITEM_MODELS.earlyProcess(resourceManager);
+        System.out.println("Polytone: computed custom item models from "+ Thread.currentThread());
     }
 }

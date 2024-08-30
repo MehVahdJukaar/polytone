@@ -2,20 +2,24 @@ package net.mehvahdjukaar.polytone.tabs;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.level.Level;
 
 import java.util.*;
 
@@ -28,6 +32,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
     private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> vanillaTabs = new HashMap<>();
 
+    private final Map<ResourceLocation, JsonElement> lazyJsons = new HashMap<>();
 
     public CreativeTabsModifiersManager() {
         super("creative_tab_modifiers");
@@ -78,8 +83,20 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add items to them!");
         }
 
-        var jsons = resources.tabsModifiers;
-        for (var j : jsons.entrySet()) {
+        lazyJsons.clear();
+        lazyJsons.putAll(resources.tabsModifiers);
+
+        Level level = Minecraft.getInstance().level;
+        if (level != null) {
+            processAndApplyWithLevel(level.registryAccess(), false);
+        }
+        //else apply as soon as we load a level
+    }
+
+    public void processAndApplyWithLevel(RegistryAccess access, boolean firstLogin) {
+        var ops = RegistryOps.create(JsonOps.INSTANCE, access);
+        for (var j : lazyJsons.entrySet()) {
+
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
@@ -92,8 +109,8 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         if (!modifiers.isEmpty()) {
             needsRefresh.addAll(modifiers.keySet());
         }
+        apply();
     }
-
 
     @Override
     protected void apply() {
@@ -102,37 +119,6 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             //forces reload on next open screen
             needsRefresh.clear();
         }
-        if (true) return;
-
-        //not used. optimized code but can cause issues
-
-        // we must rebuild everything because cache parameter could be from another world
-        if (CreativeModeTabs.CACHED_PARAMETERS != null) {
-            //this only happens if they have already been built
-
-            List<CreativeModeTab> needsTreeUpdated = new ArrayList<>();
-            //same as rebuild content. Internally fires the events. Just rebuilds whats needed (old+new)
-            for (var key : needsRefresh) {
-                CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(key);
-                if (tab != null) {
-
-                    tab.buildContents(CreativeModeTabs.CACHED_PARAMETERS);
-                    CreativeTabModifier mod = modifiers.get(key);
-                    if (mod != null && mod.search().orElse(false)) {
-                        needsTreeUpdated.add(tab);
-                    }
-                }
-            }
-            ClientPacketListener connection = Minecraft.getInstance().getConnection();
-            if (!needsTreeUpdated.isEmpty() && connection != null) {
-                PlatStuff.updateSearchTrees(connection.searchTrees(), needsTreeUpdated);
-            }
-        }
-
-        if (!needsRefresh.isEmpty() || !customTabs.isEmpty()) {
-            PlatStuff.sortTabs();
-        }
-        needsRefresh.clear();
     }
 
 
@@ -157,6 +143,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             }
         }
     }
+
 
     public record Resources(Map<ResourceLocation, JsonElement> tabsModifiers,
                             Map<ResourceLocation, List<String>> extraTabs) {

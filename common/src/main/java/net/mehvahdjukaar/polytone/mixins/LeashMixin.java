@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(EntityRenderer.class)
+@Mixin(value = EntityRenderer.class, priority = 1300)
 public class LeashMixin {
 
     @Inject(method = "addVertexPair", at = @At("HEAD"), cancellable = true)
