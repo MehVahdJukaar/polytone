@@ -57,6 +57,7 @@ public abstract class DepthSearchTrie<K, KT, O, I> {
         return current.object;
     }
 
+    @Nullable
     public List<O> search(I valueHolder) {
         TrieNode<K, KT, O> current = getNode(valueHolder);
         if (current == null) return null;

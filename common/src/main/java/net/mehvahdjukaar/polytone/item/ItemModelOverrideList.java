@@ -5,6 +5,7 @@ import net.mehvahdjukaar.polytone.utils.DepthSearchTrie;
 import net.mehvahdjukaar.polytone.utils.FrequencyOrderedCollection;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -29,13 +30,13 @@ public class ItemModelOverrideList {
     private boolean populated = false;
 
     // initialize
-    private void populateModels() {
+    public void populateModels(RegistryAccess registryAccess) {
         // staff : name "staff", enchant "fire
         // spear : name "sprear"
         // trident : count 1
         // key: name, enchant, count
         this.overrides.clear();
-        this.overrides.acceptEntries(this.entries);
+        this.overrides.acceptEntries(this.entries, registryAccess);
         this.populated = true;
         this.entries.clear();
     }
@@ -51,20 +52,13 @@ public class ItemModelOverrideList {
 
     @Nullable
     public BakedModel getModel(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-        if (!populated) this.populateModels();
+        if (!populated) return null;
         return this.overrides.searchModel(stack);
     }
 
     public int size() {
         return entries.size();
     }
-
-    public void decodeLazyComponents() {
-        for (ItemModelOverride entry : this.entries) {
-            entry.getComponents();
-        }
-    }
-
 
     public static class PropertiesSearchTrie extends DepthSearchTrie<Object, Object, ItemModelOverride, ItemStack> {
 
@@ -78,7 +72,9 @@ public class ItemModelOverrideList {
 
         public BakedModel searchModel(ItemStack stack) {
             var list = this.search(stack);
-            if (list.isEmpty()) return PlatStuff.getBakedModel(ResourceLocation.tryParse("a"));
+            if (list == null || list.isEmpty()){
+                return null;
+            }
             if (list.size() == 1) return PlatStuff.getBakedModel(list.get(0).model());
             var customName = stack.get(DataComponents.CUSTOM_NAME);
             if (customName != null) {
@@ -114,12 +110,12 @@ public class ItemModelOverrideList {
             return null;
         }
 
-        public void acceptEntries(List<ItemModelOverride> entries) {
+        public void acceptEntries(List<ItemModelOverride> entries, RegistryAccess registryAccess) {
             boolean hasCount = false;
             FrequencyOrderedCollection<DataComponentType<?>> keyFrequencies = new FrequencyOrderedCollection<>();
             for (ItemModelOverride entry : entries) {
                 if (entry.stackCount() != null) hasCount = true;
-                for (var component : entry.getComponents()) {
+                for (var component : entry.getComponents(registryAccess)) {
                     keyFrequencies.add(component.type());
                 }
             }
@@ -130,7 +126,7 @@ public class ItemModelOverrideList {
                 List<Object> key = new ArrayList<>();
                 if (hasCount) key.add(entry.stackCount());
                 for (DataComponentType<?> type : this.orderedKeys) {
-                    key.add(entry.getComponents().getTyped(type));
+                    key.add(entry.getComponents(registryAccess).getTyped(type));
                 }
                 this.insert(key, entry);
             }
@@ -246,7 +242,7 @@ public class ItemModelOverrideList {
         ));
 
         // Insert all test data into the trie
-        trie.acceptEntries(list);
+        //trie.acceptEntries(list);
 
 
         // Print the trie structure

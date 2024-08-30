@@ -108,7 +108,7 @@ public class CustomItemModelsManager extends PartialReloader<Object> {
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean firstLogin) {
         for (var list : this.itemModels.values()) {
-            list.decodeLazyComponents();
+            list.populateModels(access);
         }
     }
 
@@ -122,7 +122,7 @@ public class CustomItemModelsManager extends PartialReloader<Object> {
     }
 
     public Set<ResourceLocation> getExtraModels() {
-        System.out.println("Polytone: fetched custom item models from " + Thread.currentThread());
+        Polytone.LOGGER.info("Polytone: fetched custom item models from thread {}", Thread.currentThread());
         return extraModels;
     }
 

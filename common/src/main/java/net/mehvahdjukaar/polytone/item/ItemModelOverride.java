@@ -6,6 +6,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -21,7 +22,7 @@ public class ItemModelOverride {
     protected ResourceLocation model;
     protected DataComponentMap decodedComponents;
 
-    Codec<ItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<ItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.PASSTHROUGH.fieldOf("components").forGetter(o -> o.lazyComponent),
             ResourceLocation.CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
@@ -44,17 +45,16 @@ public class ItemModelOverride {
     }
 
 
-    public DataComponentMap getComponents() {
+    public DataComponentMap getComponents(RegistryAccess registryAccess) {
         if (this.decodedComponents == null) {
-            this.decodedComponents = runCodec(this.lazyComponent);
+            this.decodedComponents = runCodec(registryAccess, this.lazyComponent);
         }
         return this.decodedComponents;
     }
 
-    private static <T> DataComponentMap runCodec(Dynamic<T> dynamic) {
-        var ra = Minecraft.getInstance().level.registryAccess();
+    private static <T> DataComponentMap runCodec(RegistryAccess ra, Dynamic<T> dynamic) {
         DynamicOps<T> ops = RegistryOps.create(dynamic.getOps(), ra);
-        return DataComponentMap.CODEC.decode(ops, dynamic.cast(ops))
+        return DataComponentMap.CODEC.decode(ops, dynamic.getValue())
                 .result().orElseThrow(() -> new JsonParseException("Failed to decode components map"))
                 .getFirst();
     }

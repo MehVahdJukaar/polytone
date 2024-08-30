@@ -1,2 +1,1 @@
-- fixed some CIM models not loading
-- creative tab modifiers now load on level load. This allows them to work properly with datapck components such as encahntments
+fixed another issue with custom entity models
