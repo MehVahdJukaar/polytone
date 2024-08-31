@@ -1,1 +1,1 @@
-fixed another issue with custom entity models
+- custom entity models can now use the 'expression' and 'entity_tag' fields for further filtering.

@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
@@ -40,7 +41,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     private final Object2ObjectMap<DimensionType, Colormap> fogColormaps = new Object2ObjectArrayMap<>();
     private final Object2ObjectMap<DimensionType, Colormap> skyColormaps = new Object2ObjectArrayMap<>();
-    private final Object2ObjectMap<DimensionType, ColormapExpressionProvider> cloudFunctions = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, BlockContextExpression> cloudFunctions = new Object2ObjectArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelFogWeatherDarken = new Object2BooleanArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelSkyWeatherDarken = new Object2BooleanArrayMap<>();
 
@@ -239,14 +240,14 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     @Nullable
     public Float modifyCloudHeight(ClientLevel level) {
-        ColormapExpressionProvider height = this.cloudFunctions.get(level.dimensionType());
+        BlockContextExpression height = this.cloudFunctions.get(level.dimensionType());
         if (height == null) return null;
         BlockPos pos = ClientFrameTicker.getCameraPos();
-        float v = height.getValue(null, pos, null, null, null);
+        double v = height.getValue(null, pos, null);
         if (v >= 10000) {
             return Float.NaN;
         }
-        return v;
+        return (float) v;
     }
 
     public boolean shouldCancelFogWeatherDarken(Level level) {

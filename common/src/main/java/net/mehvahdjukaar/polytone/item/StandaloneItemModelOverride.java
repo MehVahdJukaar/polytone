@@ -3,7 +3,9 @@ package net.mehvahdjukaar.polytone.item;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
@@ -18,7 +20,9 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
             Codec.PASSTHROUGH.fieldOf("components").forGetter(i -> i.lazyComponent),
             ResourceLocation.CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
-            ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.pattern())),
+            ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
+            CompoundTag.CODEC.optionalFieldOf("entity_tag").forGetter(i -> Optional.ofNullable(i.entityTag)),
+            ColormapExpressionProvider.CODEC.optionalFieldOf("expression").forGetter(i -> Optional.ofNullable(i.expression)),
             BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(StandaloneItemModelOverride::getTarget)
     ).apply(instance, StandaloneItemModelOverride::new));
 
@@ -26,8 +30,10 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
     private final boolean autoModel;
 
     public StandaloneItemModelOverride(Dynamic<?> components, ResourceLocation model,
-                                       Optional<Integer> stackCount, Optional<Pattern> pattern, Item target) {
-        super(components, model, stackCount, pattern);
+                                       Optional<Integer> stackCount, Optional<Pattern> pattern,
+                                       Optional<CompoundTag> entityTag, Optional<ColormapExpressionProvider> expression,
+                                       Item target) {
+        super(components, model, stackCount, pattern, entityTag, expression);
         this.item = target;
         this.autoModel = model.toString().equals("minecraft:generated");
     }

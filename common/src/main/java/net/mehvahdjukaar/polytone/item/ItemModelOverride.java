@@ -5,20 +5,36 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.client.Minecraft;
+import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class ItemModelOverride {
+    @Nullable
     protected final Dynamic<?> lazyComponent;
+    @Nullable
     protected final Integer stackCount;
+    @Nullable
     protected final Pattern pattern;
+    @Nullable
+    protected final CompoundTag entityTag;
+    @Nullable
+    protected final ColormapExpressionProvider expression;
     protected ResourceLocation model;
     protected DataComponentMap decodedComponents;
 
@@ -26,14 +42,19 @@ public class ItemModelOverride {
             Codec.PASSTHROUGH.fieldOf("components").forGetter(o -> o.lazyComponent),
             ResourceLocation.CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
-            ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.pattern()))
+            ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
+            CompoundTag.CODEC.optionalFieldOf("entity_tag").forGetter(i -> Optional.ofNullable(i.entityTag)),
+            ColormapExpressionProvider.CODEC.optionalFieldOf("expression").forGetter(i -> Optional.ofNullable(i.expression))
     ).apply(instance, ItemModelOverride::new));
 
-    public ItemModelOverride(Dynamic<?> lazyComponent, ResourceLocation model, Optional<Integer> stackCount, Optional<Pattern> pattern) {
+    public ItemModelOverride(Dynamic<?> lazyComponent, ResourceLocation model, Optional<Integer> stackCount,
+                             Optional<Pattern> pattern, Optional<CompoundTag> entityTag, Optional<ColormapExpressionProvider> expression) {
         this.lazyComponent = lazyComponent;
         this.model = model;
         this.stackCount = stackCount.orElse(null);
         this.pattern = pattern.orElse(null);
+        this.entityTag = entityTag.orElse(null);
+        this.expression = expression.orElse(null);
     }
 
     public ItemModelOverride(DataComponentMap map, ResourceLocation model) {
@@ -42,11 +63,12 @@ public class ItemModelOverride {
         this.stackCount = null;
         this.pattern = null;
         this.decodedComponents = map;
+        this.entityTag = null;
+        this.expression = null;
     }
 
-
     public DataComponentMap getComponents(RegistryAccess registryAccess) {
-        if (this.decodedComponents == null) {
+        if (this.decodedComponents == null && this.lazyComponent != null) {
             this.decodedComponents = runCodec(registryAccess, this.lazyComponent);
         }
         return this.decodedComponents;
@@ -63,13 +85,49 @@ public class ItemModelOverride {
         return this.model;
     }
 
+    @Nullable
     public Integer stackCount() {
         return this.stackCount;
     }
 
-    public Pattern pattern() {
+    @Nullable
+    public Pattern namePattern() {
         return this.pattern;
     }
 
+    @Nullable
+    public CompoundTag entityTag() {
+        return this.entityTag;
+    }
 
+
+    public boolean matchesPredicate(ItemStack stack, @Nullable Level level, @Nullable Supplier<CompoundTag> entityTagGetter,
+                                    @Nullable Component customName) {
+        if (this.pattern != null && customName != null) {
+            if (!this.pattern.matcher(customName.getString()).matches()) return false;
+        }
+        if (this.entityTag != null && entityTagGetter != null) {
+            CompoundTag tag = entityTagGetter.get();
+            if (!containsTag(tag, this.entityTag)) return false;
+        }
+        if (this.expression != null) {
+            BlockPos pos = ClientFrameTicker.getCameraPos();
+            if (this.expression.getValue(null, pos, null, null, stack) == 0) return false;
+        }
+
+        return false;
+    }
+
+    private boolean containsTag(CompoundTag tagToMatch, CompoundTag entityTag) {
+        for (String key : tagToMatch.getAllKeys()) {
+            Tag t = entityTag.get(key);
+            if (t == null) return false;
+            if (t instanceof CompoundTag ct) {
+                CompoundTag compound = tagToMatch.getCompound(key);
+                if (compound.isEmpty()) return false;
+                if (!containsTag(compound, ct)) return false;
+            } else if (!t.equals(entityTag.get(key))) return false;
+        }
+        return true;
+    }
 }

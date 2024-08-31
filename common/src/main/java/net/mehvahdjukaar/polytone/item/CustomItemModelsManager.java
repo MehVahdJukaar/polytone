@@ -6,7 +6,6 @@ import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.RegistryAccess;
@@ -15,6 +14,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.Nullable;
 
@@ -113,9 +113,8 @@ public class CustomItemModelsManager extends PartialReloader<Object> {
     }
 
     @Nullable
-    public BakedModel getOverride(ItemStack itemStack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+    public BakedModel getOverride(ItemStack itemStack, @Nullable Level level, @Nullable LivingEntity entity, int seed) {
         if (level == null) return null;
-        //TODO: ad entity and level predicates
         ItemModelOverrideList list = this.itemModels.get(itemStack.getItem());
         if (list == null) return null;
         return list.getModel(itemStack, level, entity, seed);

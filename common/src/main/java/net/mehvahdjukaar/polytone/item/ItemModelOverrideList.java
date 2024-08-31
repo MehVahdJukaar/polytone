@@ -1,26 +1,30 @@
 package net.mehvahdjukaar.polytone.item;
 
+import com.google.common.base.Suppliers;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.utils.DepthSearchTrie;
 import net.mehvahdjukaar.polytone.utils.FrequencyOrderedCollection;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.TypedDataComponent;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class ItemModelOverrideList {
 
@@ -51,9 +55,9 @@ public class ItemModelOverrideList {
 
 
     @Nullable
-    public BakedModel getModel(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+    public BakedModel getModel(ItemStack stack, @Nullable Level level, @Nullable LivingEntity entity, int seed) {
         if (!populated) return null;
-        return this.overrides.searchModel(stack);
+        return this.overrides.searchModel(stack, level, entity);
     }
 
     public int size() {
@@ -70,24 +74,23 @@ public class ItemModelOverrideList {
             this.orderedKeys.clear();
         }
 
-        public BakedModel searchModel(ItemStack stack) {
+        public BakedModel searchModel(ItemStack stack, @Nullable Level level, @Nullable Entity entity) {
             var list = this.search(stack);
-            if (list == null || list.isEmpty()){
+            if (list == null || list.isEmpty()) {
                 return null;
             }
-            if (list.size() == 1) return PlatStuff.getBakedModel(list.get(0).model());
             var customName = stack.get(DataComponents.CUSTOM_NAME);
             if (customName != null) {
-                for (var model : list) {
-                    var pattern = model.pattern();
-                    if (pattern != null && pattern.matcher(customName.getString()).matches()) {
-                        return PlatStuff.getBakedModel(model.model());
+                for (var modelOverride : list) {
+                    Supplier<CompoundTag> entityTagSupplier = entity == null ? null :
+                            Suppliers.memoize(() -> entity.saveWithoutId(new CompoundTag()));
+                    if (modelOverride.matchesPredicate(stack, level, entityTagSupplier, customName)) {
+                        return PlatStuff.getBakedModel(modelOverride.model());
                     }
                 }
             }
-            return PlatStuff.getBakedModel(list.get(0).model());
+            return null;
         }
-
 
         @Override
         protected Object getKeyOfType(Object folder) {

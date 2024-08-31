@@ -1,8 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,7 +17,7 @@ public class ItemOverridesMixin {
 
     @Inject(method = "getModel", at = @At("HEAD"), cancellable = true)
     private void resolve(ItemStack stack, Level level, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir) {
-        var newModel = Polytone.ITEM_MODELS.getOverride(stack, (ClientLevel) level, entity, seed);
+        var newModel = Polytone.ITEM_MODELS.getOverride(stack,  level, entity, seed);
         if (newModel != null) {
             cir.setReturnValue(newModel);
             cir.cancel();

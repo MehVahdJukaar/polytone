@@ -21,18 +21,6 @@ import java.util.List;
 public class BlockContextExpression {
 
 
-    private final Expression expression;
-    private final String unparsed;
-
-    private final boolean hasTime;
-    private final boolean hasRain;
-    private final boolean hasX;
-    private final boolean hasY;
-    private final boolean hasZ;
-    private final boolean hasState;
-    private final boolean hasDayTime;
-    private final boolean hasSkyLight;
-    private final boolean hasBlockLight;
 
     private static final String POS_X = "POS_X";
     private static final String POS_Y = "POS_Y";
@@ -41,6 +29,7 @@ public class BlockContextExpression {
     private static final String RAIN = "RAIN";
     private static final String TIME = "TIME";
     private static final String DAY_TIME = "DAY_TIME";
+
     private static final String BLOCK_LIGHT = "BLOCK_LIGHT";
     private static final String SKY_LIGHT = "SKY_LIGHT";
 
@@ -89,6 +78,20 @@ public class BlockContextExpression {
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
+
+    private final Expression expression;
+    private final String unparsed;
+
+    private final boolean hasTime;
+    private final boolean hasRain;
+    private final boolean hasX;
+    private final boolean hasY;
+    private final boolean hasZ;
+    private final boolean hasState;
+    private final boolean hasDayTime;
+    private final boolean hasSkyLight;
+    private final boolean hasBlockLight;
+
 
     public BlockContextExpression(String expression) {
         this(createExpression(expression), expression);
