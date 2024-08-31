@@ -80,13 +80,11 @@ public class ItemModelOverrideList {
                 return null;
             }
             var customName = stack.get(DataComponents.CUSTOM_NAME);
-            if (customName != null) {
-                for (var modelOverride : list) {
-                    Supplier<CompoundTag> entityTagSupplier = entity == null ? null :
-                            Suppliers.memoize(() -> entity.saveWithoutId(new CompoundTag()));
-                    if (modelOverride.matchesPredicate(stack, level, entityTagSupplier, customName)) {
-                        return PlatStuff.getBakedModel(modelOverride.model());
-                    }
+            for (var modelOverride : list) {
+                Supplier<CompoundTag> entityTagSupplier = entity == null ? null :
+                        Suppliers.memoize(() -> entity.saveWithoutId(new CompoundTag()));
+                if (modelOverride.matchesPredicate(stack, level, entityTagSupplier, customName)) {
+                    return PlatStuff.getBakedModel(modelOverride.model());
                 }
             }
             return null;

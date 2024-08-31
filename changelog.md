@@ -1,1 +1,1 @@
-- custom entity models can now use the 'expression' and 'entity_tag' fields for further filtering.
+fixed a CIM predicate matching conditon being inverted causing matching to not work in some cases

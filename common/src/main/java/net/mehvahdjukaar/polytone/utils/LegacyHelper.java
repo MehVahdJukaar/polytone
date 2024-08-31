@@ -486,7 +486,7 @@ public class LegacyHelper {
             IColorGetter skyCol;
             IColorGetter fogCol;
             {
-                ResourceLocation skyKey = ResourceLocation.parse("skycolor" + i);
+                ResourceLocation skyKey = ResourceLocation.parse("sky" + i);
                 BlockPropertyModifier skyMod = modifiers.get(skyKey);
                 ArrayImage skyImage = textures.get(skyKey);
 
@@ -496,7 +496,7 @@ public class LegacyHelper {
                 }
             }
             {
-                ResourceLocation fogKey = ResourceLocation.parse("fogcolor" + i);
+                ResourceLocation fogKey = ResourceLocation.parse("fog" + i);
                 BlockPropertyModifier fogMod = modifiers.get(fogKey);
                 ArrayImage fogImage = textures.get(fogKey);
 

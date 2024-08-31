@@ -115,7 +115,7 @@ public class ItemModelOverride {
             if (this.expression.getValue(null, pos, null, null, stack) == 0) return false;
         }
 
-        return false;
+        return true;
     }
 
     private boolean containsTag(CompoundTag tagToMatch, CompoundTag entityTag) {
