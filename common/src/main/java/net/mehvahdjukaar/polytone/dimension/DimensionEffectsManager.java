@@ -24,6 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CubicSampler;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -243,7 +244,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         BlockContextExpression height = this.cloudFunctions.get(level.dimensionType());
         if (height == null) return null;
         BlockPos pos = ClientFrameTicker.getCameraPos();
-        double v = height.getValue(null, pos, null);
+        double v = height.getValue(level, pos, Blocks.AIR.defaultBlockState());
         if (v >= 10000) {
             return Float.NaN;
         }

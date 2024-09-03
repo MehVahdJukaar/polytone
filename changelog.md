@@ -1,1 +1,2 @@
-fixed a CIM predicate matching conditon being inverted causing matching to not work in some cases
+- added more rotation modes for particls
+- biome modifiers expressions can use more variables

@@ -3,19 +3,19 @@ package net.mehvahdjukaar.polytone.biome;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.Weather;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.*;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec2;
 
 import java.util.Map;
@@ -225,42 +225,41 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         return fogStart.isPresent() || fogEnd.isPresent();
     }
 
-    public Vec2 modifyFogParameters() {
-        return new Vec2(fogStart.map(FogParam::get).orElse(1f), fogEnd.map(FogParam::get).orElse(1f));
+    public Vec2 modifyFogParameters(Level level) {
+        return new Vec2(fogStart.map(f -> f.get(level)).orElse(1f), fogEnd.map(f -> f.get(level)).orElse(1f));
     }
 
     public interface FogParam {
-        float get();
+        float get(Level level);
 
-        Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> () -> f, FogParam::get);
+        Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> (l) -> f, fogParam -> fogParam.get(null));
         Codec<FogParam> CODEC = Codec.withAlternative(
                 Codec.withAlternative(SIMPLE_CODEC,
                         Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
                                 .xmap(FogMap::new, FogMap::map).codec()
                 ),
-                ColormapExpressionProvider.CODEC.xmap(
+                BlockContextExpression.CODEC.xmap(
                         FogExpression::new,
                         fogMap -> fogMap.map
                 )
         );
     }
 
-    public record FogExpression(ColormapExpressionProvider map) implements FogParam {
+    public record FogExpression(BlockContextExpression map) implements FogParam {
 
         @Override
-        public float get() {
+        public float get(Level level) {
             BlockPos pos = ClientFrameTicker.getCameraPos();
-            return map.getValue(null, pos, null, null, null);
+            return (float) map.getValue(level, pos, Blocks.AIR.defaultBlockState());
         }
     }
 
     public record FogMap(Map<Weather, FogParam> map) implements FogParam {
 
         @Override
-        public float get() {
-            ClientLevel level = Minecraft.getInstance().level;
+        public float get(Level level) {
             Weather w = Weather.get(level);
-            return map.getOrDefault(w, () -> 1).get();
+            return map.getOrDefault(w, (l) -> 1).get(level);
         }
     }
 

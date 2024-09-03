@@ -149,7 +149,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         var fogMod = fogParametersModifiers.get(biome.value());
         Vec2 targetFog = null;
         if (fogMod != null) {
-            targetFog = fogMod.modifyFogParameters();
+            targetFog = fogMod.modifyFogParameters(level);
         }
 
         if (targetFog == null && (Mth.abs(lastFogStart - 1) > 0.02f || Mth.abs(lastFogEnd - 1) > 0.02f)) {

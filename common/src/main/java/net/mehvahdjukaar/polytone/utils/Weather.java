@@ -3,12 +3,13 @@ package net.mehvahdjukaar.polytone.utils;
 import com.mojang.serialization.Codec;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.Level;
 
 public enum Weather implements StringRepresentable {
     CLEAR, RAIN, THUNDER;
 
 
-    public static Weather get(ClientLevel level) {
+    public static Weather get(Level level) {
         if (level != null && level.isRaining()) {
             return level.isThundering() ? THUNDER : RAIN;
         }

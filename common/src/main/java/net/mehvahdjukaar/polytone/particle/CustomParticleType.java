@@ -1,11 +1,13 @@
 package net.mehvahdjukaar.polytone.particle;
 
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
+import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
@@ -20,6 +22,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,10 +45,11 @@ public class CustomParticleType implements CustomParticleFactory {
     private final boolean hasPhysics;
     private final boolean killOnContact;
     private final @Nullable IColorGetter colormap;
+    private final RotationMode rotationMode;
 
     private transient SpriteSet spriteSet;
 
-    private CustomParticleType(RenderType renderType, int light, boolean hasPhysics, boolean killOnContact,
+    private CustomParticleType(RenderType renderType, RotationMode rotationMode, int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
                                List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
@@ -58,11 +63,13 @@ public class CustomParticleType implements CustomParticleFactory {
         this.killOnContact = killOnContact;
         this.liquidAffinity = liquidAffinity;
         this.colormap = colormap;
+        this.rotationMode = rotationMode;
     }
 
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
             RenderType.CODEC.optionalFieldOf("render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
+            RotationMode.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationMode),
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
             Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
@@ -74,11 +81,11 @@ public class CustomParticleType implements CustomParticleFactory {
             ParticleParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.particles)
     ).apply(i, CustomParticleType::new));
 
-    private CustomParticleType(RenderType renderType, int light, boolean hasPhysics, boolean killOnContact,
+    private CustomParticleType(RenderType renderType, RotationMode rotationMode, int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                Optional<ParticleInitializer> initializer,
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
-        this(renderType, light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null), initializer.orElse(null), ticker.orElse(null), sounds, particles);
+        this(renderType, rotationMode, light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null), initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
 
 
@@ -126,6 +133,7 @@ public class CustomParticleType implements CustomParticleFactory {
     public static class Instance extends TextureSheetParticle {
 
         protected final ParticleRenderType renderType;
+        protected final RotationMode rotationMode;
         protected final @Nullable Ticker ticker;
         protected final SpriteSet spriteSet;
         protected final LiquidAffinity liquidAffinity;
@@ -144,6 +152,7 @@ public class CustomParticleType implements CustomParticleFactory {
             this.setSize(0.1f, 0.1f);
             this.name = typeId;
             this.light = customType.lightLevel;
+            this.rotationMode = customType.rotationMode;
             this.killOnContact = customType.killOnContact;
             this.colormap = customType.colormap;
             this.tickables = new ArrayList<>();
@@ -186,6 +195,17 @@ public class CustomParticleType implements CustomParticleFactory {
         }
 
         @Override
+        public void render(VertexConsumer buffer, Camera camera, float partialTicks) {
+            Quaternionf quaternionf = new Quaternionf();
+            this.rotationMode.setRotation(this, quaternionf, camera, partialTicks);
+            if (this.roll != 0.0F) {
+                quaternionf.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
+            }
+
+            this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
+        }
+
+        @Override
         protected int getLightColor(float partialTick) {
             int total = super.getLightColor(partialTick);
             if (this.light > 0) {
@@ -204,6 +224,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
             if (this.ticker != null) {
                 this.ticker.tick(this, level);
+                this.setSize(quadSize, quadSize); //TODO: check
             }
 
             if (this.colormap != null) {
@@ -290,15 +311,15 @@ public class CustomParticleType implements CustomParticleFactory {
 
     //TODO: merge this and particle modifier
     protected record Ticker(@Nullable ParticleContextExpression x, @Nullable ParticleContextExpression y,
-                          @Nullable ParticleContextExpression z,
-                          @Nullable ParticleContextExpression dx, @Nullable ParticleContextExpression dy,
-                          @Nullable ParticleContextExpression dz,
-                          @Nullable ParticleContextExpression size,
-                          @Nullable ParticleContextExpression red, @Nullable ParticleContextExpression green,
-                          @Nullable ParticleContextExpression blue, @Nullable ParticleContextExpression alpha,
-                          @Nullable ParticleContextExpression roll,
-                          @Nullable ParticleContextExpression custom,
-                          @Nullable ParticleContextExpression removeIf) {
+                            @Nullable ParticleContextExpression z,
+                            @Nullable ParticleContextExpression dx, @Nullable ParticleContextExpression dy,
+                            @Nullable ParticleContextExpression dz,
+                            @Nullable ParticleContextExpression size,
+                            @Nullable ParticleContextExpression red, @Nullable ParticleContextExpression green,
+                            @Nullable ParticleContextExpression blue, @Nullable ParticleContextExpression alpha,
+                            @Nullable ParticleContextExpression roll,
+                            @Nullable ParticleContextExpression custom,
+                            @Nullable ParticleContextExpression removeIf) {
 
         private static final Codec<Ticker> CODEC = RecordCodecBuilder.create(i -> i.group(
                 ParticleContextExpression.CODEC.optionalFieldOf("x").forGetter(p -> Optional.ofNullable(p.x)),
@@ -395,6 +416,53 @@ public class CustomParticleType implements CustomParticleFactory {
         public String getSerializedName() {
             return this.name().toLowerCase(Locale.ROOT);
         }
+    }
+
+    protected enum RotationMode implements StringRepresentable {
+        LOOK_AT_XYZ, LOOK_AT_Y, MOVEMENT_ALIGNED;
+
+        private static final Codec<RotationMode> CODEC = StringRepresentable.fromEnum(RotationMode::values);
+
+        @Override
+        public String getSerializedName() {
+            return this.name().toLowerCase(Locale.ROOT);
+        }
+
+        public void setRotation(SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks) {
+            switch (this) {
+                case LOOK_AT_XYZ ->
+                        SingleQuadParticle.FacingCameraMode.LOOKAT_XYZ.setRotation(quaternionf, camera, partialTicks);
+                case LOOK_AT_Y ->
+                        SingleQuadParticle.FacingCameraMode.LOOKAT_Y.setRotation(quaternionf, camera, partialTicks);
+                case MOVEMENT_ALIGNED -> {
+                    Vec3 dir = new Vec3(particle.xd, particle.yd, particle.zd).normalize();
+
+                    Vec3 cameraLook = new Vec3(camera.getLookVector());
+                    Vec3 cross = dir.cross(cameraLook);
+
+                    double pitch = getPitch(dir);
+                    double yaw = getYaw(dir);
+
+                    Vector3f dirUp = new Vector3f(0, 1, 0).rotate(quaternionf);
+                    float roll = dirUp.angleSigned(cross.toVector3f(), dir.toVector3f());
+
+                    quaternionf.rotateY((float) (-Mth.DEG_TO_RAD * yaw));
+
+                    quaternionf.rotateX((float) (Mth.DEG_TO_RAD * (pitch - 90)));
+                    quaternionf.rotateY(-roll - Mth.HALF_PI);
+                }
+            }
+        }
+    }
+
+    // in degrees. Opposite of Vec3.fromRotation
+    public static double getPitch(Vec3 vec3) {
+        return -Math.toDegrees(Math.asin(vec3.y));
+    }
+
+    // in degrees
+    public static double getYaw(Vec3 vec3) {
+        return Math.toDegrees(Math.atan2(-vec3.x, vec3.z));
     }
 }
 
