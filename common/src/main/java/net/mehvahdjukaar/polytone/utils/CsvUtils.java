@@ -29,7 +29,7 @@ public class CsvUtils {
                             .map(line -> line.split(",")) // Splitting by comma
                             .flatMap(Arrays::stream)
                             .map(String::trim)
-                            .filter(v -> ResourceLocation.parse(v) != null && !v.isEmpty())// Removing extra spaces
+                            .filter(v -> ResourceLocation.tryParse(v) != null && !v.isEmpty())// Removing extra spaces
                             .toList();
                     if (!lines.isEmpty()) idList.put(e.getKey(), lines);
                 } catch (IllegalArgumentException | IOException | JsonParseException ex) {

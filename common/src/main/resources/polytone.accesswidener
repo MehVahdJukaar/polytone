@@ -51,8 +51,6 @@ accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall 
 accessible field net/minecraft/network/chat/TextColor value I
 mutable field net/minecraft/network/chat/TextColor value I
 
-accessible class net/minecraft/core/component/DataComponentMap$Builder$SimpleMap
-
 # texture stuff
 accessible class net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
 accessible class net/minecraft/client/renderer/texture/SpriteContents$InterpolationData

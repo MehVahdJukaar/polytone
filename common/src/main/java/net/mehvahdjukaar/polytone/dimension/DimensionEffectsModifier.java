@@ -1,12 +1,13 @@
 package net.mehvahdjukaar.polytone.dimension;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
-import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
@@ -19,7 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 
 
-public record DimensionEffectsModifier(Optional<Float> cloudLevel,
+public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpression>> cloudLevel,
                                        Optional<Boolean> hasGround,
                                        Optional<DimensionSpecialEffects.SkyType> skyType,
                                        Optional<Boolean> forceBrightLightmap,
@@ -28,7 +29,6 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                                        Optional<IColorGetter> skyColor,
                                        boolean noWeatherFogDarken,
                                        boolean noWeatherSkyDarken,
-                                       Optional<ColormapExpressionProvider> cloudHeight,
                                        Optional<Lightmap> lightmap,
                                        Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
@@ -37,7 +37,7 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
 
     public static final Decoder<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    StrOpt.of(Codec.FLOAT, "cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
+                    StrOpt.of(Codec.either(Codec.FLOAT, BlockContextExpression.CODEC), "cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
                     StrOpt.of(Codec.BOOL, "has_ground").forGetter(DimensionEffectsModifier::hasGround),
                     StrOpt.of(SKY_TYPE_CODEC, "sky_type").forGetter(DimensionEffectsModifier::skyType),
                     StrOpt.of(Codec.BOOL, "force_bright_lightmap").forGetter(DimensionEffectsModifier::forceBrightLightmap),
@@ -46,20 +46,20 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
                     StrOpt.of(Colormap.CODEC, "sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
                     StrOpt.of(Codec.BOOL, "no_weather_fog_darken", false).forGetter(DimensionEffectsModifier::noWeatherFogDarken),
                     StrOpt.of(Codec.BOOL, "no_weather_sky_darken", false).forGetter(DimensionEffectsModifier::noWeatherSkyDarken),
-                    StrOpt.of(Polytone.LIGHTMAPS.byNameCodec(), "lightmap").forGetter(DimensionEffectsModifier::lightmap), //Just references for now
+                    StrOpt.of(Polytone.LIGHTMAPS.byNameCodec(), "lightmap").forGetter(DimensionEffectsModifier::lightmap),
                     StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(DimensionEffectsModifier::explicitTargets)
             ).apply(instance, DimensionEffectsModifier::new));
 
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
-        return new DimensionEffectsModifier(java.util.Optional.empty(), java.util.Optional.empty(), java.util.Optional.empty(), java.util.Optional.empty(),
-                java.util.Optional.empty(), Optional.of(colormap), java.util.Optional.empty(),
-                false, false, java.util.Optional.empty(), Set.of());
+        return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.of(colormap), Optional.empty(),
+                false, false, Optional.empty(), Set.of());
     }
 
     public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
-        return new DimensionEffectsModifier(java.util.Optional.empty(), java.util.Optional.empty(), java.util.Optional.empty(), java.util.Optional.empty(),
-                java.util.Optional.empty(), java.util.Optional.empty(), Optional.of(colormap),
-                false, false, java.util.Optional.empty(), Set.of());
+        return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.of(colormap),
+                false, false, Optional.empty(), Set.of());
     }
 
 
@@ -89,10 +89,10 @@ public record DimensionEffectsModifier(Optional<Float> cloudLevel,
 
     public DimensionEffectsModifier applyInplace(ResourceLocation dimensionId) {
         DimensionSpecialEffects effects = PlatStuff.getDimensionEffects(dimensionId);
-        Optional<Float> oldCloud = Optional.empty();
-        if (this.cloudLevel.isPresent()) {
-            oldCloud = Optional.of(effects.cloudLevel);
-            effects.cloudLevel = this.cloudLevel.get();
+        Optional<Either<Float, BlockContextExpression>> oldCloud = Optional.empty();
+        if (this.cloudLevel.isPresent() && this.cloudLevel.get().left().isPresent()) {
+            oldCloud = Optional.of(Either.left(effects.cloudLevel));
+            effects.cloudLevel = this.cloudLevel.get().left().get();
         }
         Optional<Boolean> oldGround = Optional.empty();
         if (this.hasGround.isPresent()) {
