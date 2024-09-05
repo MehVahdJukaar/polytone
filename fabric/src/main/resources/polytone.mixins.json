@@ -14,7 +14,8 @@
     "FogFluidRendererMixin",
     "FogRendererMixin2",
     "InventoryScreenMixin",
-    "ModelHackMixin"
+    "ModelHackMixin",
+    "ParticleEngineAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
