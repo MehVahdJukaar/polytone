@@ -224,7 +224,6 @@ public class CustomParticleType implements CustomParticleFactory {
 
             if (this.ticker != null) {
                 this.ticker.tick(this, level);
-                this.setSize(quadSize, quadSize); //TODO: check
             }
 
             if (this.colormap != null) {

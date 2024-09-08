@@ -1,2 +1,2 @@
-- added more rotation modes for particls
-- biome modifiers expressions can use more variables
+- particle initializers can now set hitbox size.
+- added new target type that allows targeting more targets at once. Syntax is "\*" for all entries or "some_mod_id:\*" to just target all entries with a given mod ID

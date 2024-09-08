@@ -1,17 +1,37 @@
 package net.mehvahdjukaar.polytone.utils;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public interface ITargetProvider {
 
-    Codec<Set<ResourceLocation>> TARGET_CODEC = Codec.withAlternative(ResourceLocation.CODEC.listOf(), ResourceLocation.CODEC,
-            List::of).xmap(Set::copyOf, List::copyOf);
+    String WILDCARD_PLACEHOLDER = "all";
+    ResourceLocation ALL_WILDCARD = Polytone.res(WILDCARD_PLACEHOLDER);
+    Pattern WILDCARD_PATTERN = Pattern.compile("(^.*):\\*");
+
+    Codec<ResourceLocation> WILDCARD_CODEC = Codec.STRING.flatXmap(s -> {
+        Matcher matcher = WILDCARD_PATTERN.matcher(s);
+        if (matcher.matches()) {
+            return DataResult.success(
+                    ResourceLocation.fromNamespaceAndPath(matcher.group(0), WILDCARD_PLACEHOLDER));
+        }
+        if (s.equals("*")) return DataResult.success(ALL_WILDCARD);
+        return DataResult.error(() -> "Wildcard target must be '*'. Was: " + s);
+    }, s -> DataResult.success(s.toString()));
+
+    Codec<Set<ResourceLocation>> TARGET_CODEC = Codec.withAlternative(ResourceLocation.CODEC.listOf(),
+                    Codec.withAlternative(ResourceLocation.CODEC, WILDCARD_CODEC),
+                    List::of).
+            xmap(Set::copyOf, List::copyOf);
 
 
     default <T> Set<T> mergeSet(Set<T> first, Set<T> second) {
@@ -40,7 +60,7 @@ public interface ITargetProvider {
 
     default <T> Set<T> getTargets(ResourceLocation fileId, Registry<T> registry) {
         Set<T> set = new HashSet<>();
-        var explTargets = this.explicitTargets();
+        Set<ResourceLocation> explTargets = this.explicitTargets();
         Optional<T> implicitTarget = registry.getOptional(fileId);
         if (!explTargets.isEmpty()) {
             if (implicitTarget.isPresent() && !explTargets.contains(fileId)) {
@@ -48,6 +68,14 @@ public interface ITargetProvider {
                         "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", explTargets, fileId);
             }
             for (var explicitId : explTargets) {
+
+                if (explicitId.getPath().equals(WILDCARD_PLACEHOLDER)) {
+                    if (explicitId.equals(ALL_WILDCARD)) {
+                        return registry.stream().collect(Collectors.toSet());
+                    }
+                    return registry.entrySet().stream().filter(e -> e.getKey().location().getNamespace()
+                            .equals(explicitId.getNamespace())).map(Map.Entry::getValue).collect(Collectors.toSet());
+                }
                 Optional<T> target = registry.getOptional(explicitId);
                 target.ifPresent(set::add);
             }
