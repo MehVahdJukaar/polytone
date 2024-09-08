@@ -4,19 +4,20 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.Weather;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.utils.Weather;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.*;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec2;
 
 import java.util.Map;
@@ -37,21 +38,21 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Set<ResourceLocation> explicitTargets) implements ITargetProvider {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-            StrOpt.of(Codec.INT,"fog_color").forGetter(BiomeEffectModifier::fogColor),
-            StrOpt.of(Codec.INT,"water_color").forGetter(BiomeEffectModifier::waterColor),
-            StrOpt.of(Codec.INT,"water_fog_color").forGetter(BiomeEffectModifier::waterFogColor),
-            StrOpt.of(Codec.INT,"sky_color").forGetter(BiomeEffectModifier::skyColor),
-            StrOpt.of(Codec.INT,"foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
-            StrOpt.of(Codec.INT,"grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
-            StrOpt.of(BiomeSpecialEffects.GrassColorModifier.CODEC,"grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
-            StrOpt.of(AmbientParticleSettings.CODEC,"particle").forGetter(BiomeEffectModifier::ambientParticleSettings),
-            StrOpt.of(SoundEvent.CODEC,"ambient_sound").forGetter(BiomeEffectModifier::ambientLoopSoundEvent),
-            StrOpt.of(AmbientMoodSettings.CODEC,"mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
-            StrOpt.of(AmbientAdditionsSettings.CODEC,"additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
-            StrOpt.of(Music.CODEC,"music").forGetter(BiomeEffectModifier::backgroundMusic),
-            StrOpt.of(FogParam.CODEC,"fog_start").forGetter(BiomeEffectModifier::fogStart),
-            StrOpt.of(FogParam.CODEC,"fog_end").forGetter(BiomeEffectModifier::fogEnd),
-            StrOpt.of(TARGET_CODEC,"targets", Set.of()).forGetter(BiomeEffectModifier::explicitTargets)
+            StrOpt.of(Codec.INT, "fog_color").forGetter(BiomeEffectModifier::fogColor),
+            StrOpt.of(Codec.INT, "water_color").forGetter(BiomeEffectModifier::waterColor),
+            StrOpt.of(Codec.INT, "water_fog_color").forGetter(BiomeEffectModifier::waterFogColor),
+            StrOpt.of(Codec.INT, "sky_color").forGetter(BiomeEffectModifier::skyColor),
+            StrOpt.of(Codec.INT, "foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
+            StrOpt.of(Codec.INT, "grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
+            StrOpt.of(BiomeSpecialEffects.GrassColorModifier.CODEC, "grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
+            StrOpt.of(AmbientParticleSettings.CODEC, "particle").forGetter(BiomeEffectModifier::ambientParticleSettings),
+            StrOpt.of(SoundEvent.CODEC, "ambient_sound").forGetter(BiomeEffectModifier::ambientLoopSoundEvent),
+            StrOpt.of(AmbientMoodSettings.CODEC, "mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
+            StrOpt.of(AmbientAdditionsSettings.CODEC, "additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
+            StrOpt.of(Music.CODEC, "music").forGetter(BiomeEffectModifier::backgroundMusic),
+            StrOpt.of(FogParam.CODEC, "fog_start").forGetter(BiomeEffectModifier::fogStart),
+            StrOpt.of(FogParam.CODEC, "fog_end").forGetter(BiomeEffectModifier::fogEnd),
+            StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(BiomeEffectModifier::explicitTargets)
     ).apply(instance, BiomeEffectModifier::new));
 
     public static BiomeEffectModifier ofWaterColor(int waterColor) {
@@ -227,33 +228,62 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         return fogStart.isPresent() || fogEnd.isPresent();
     }
 
-    public Vec2 modifyFogParameters() {
-        return new Vec2(fogStart.map(FogParam::get).orElse(1f), fogEnd.map(FogParam::get).orElse(1f));
+    public Vec2 modifyFogParameters(Level level) {
+        return new Vec2(fogStart.map(f -> f.get(level)).orElse(1f), fogEnd.map(f -> f.get(level)).orElse(1f));
     }
 
     public interface FogParam {
-        float get();
+        float get(Level level);
 
-        Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> () -> f, FogParam::get);
-        Codec<FogParam> CODEC = Codec.either(
-                SIMPLE_CODEC,
-                Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
-                        .xmap(FogMap::new, FogMap::map).codec())
-                .xmap(e -> e.map(fogParam -> fogParam, fogMap -> fogMap), Either::left);
-
+        Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> (l) -> f, fogParam -> fogParam.get(null));
+        Codec<FogParam> CODEC = withAlternative(
+                withAlternative(SIMPLE_CODEC,
+                        Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
+                                .xmap(FogMap::new, FogMap::map).codec()
+                ),
+                BlockContextExpression.CODEC.xmap(
+                        FogExpression::new,
+                        fogMap -> fogMap.map
+                )
+        );
     }
 
-    private static final FogParam ONE = () -> 1f;
+    public record FogExpression(BlockContextExpression map) implements FogParam {
+
+        @Override
+        public float get(Level level) {
+            BlockPos pos = ClientFrameTicker.getCameraPos();
+            return (float) map.getValue(level, pos, Blocks.AIR.defaultBlockState());
+        }
+    }
 
     public record FogMap(Map<Weather, FogParam> map) implements FogParam {
 
         @Override
-        public float get() {
-            ClientLevel level = Minecraft.getInstance().level;
+        public float get(Level level) {
             Weather w = Weather.get(level);
-            return map.getOrDefault(w, ONE).get();
+            return map.getOrDefault(w, (l) -> 1).get(level);
         }
     }
 
+    static <T> Codec<T> withAlternative(final Codec<T> primary, final Codec<? extends T> alternative) {
+        return Codec.either(
+                primary,
+                alternative
+        ).xmap(
+                e -> e.map(Function.identity(), Function.identity()),
+                Either::left
+        );
+    }
+
+    static <T, U> Codec<T> withAlternative(final Codec<T> primary, final Codec<U> alternative, final Function<U, T> converter) {
+        return Codec.either(
+                primary,
+                alternative
+        ).xmap(
+                either -> either.map(v -> v, converter),
+                Either::left
+        );
+    }
 
 }

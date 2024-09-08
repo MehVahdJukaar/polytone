@@ -3,8 +3,8 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.mixins.accessor.ParticleAccessor;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,6 +20,7 @@ public record ParticleInitializer(@Nullable BlockContextExpression size,
                                   @Nullable BlockContextExpression alpha,
                                   @Nullable BlockContextExpression roll,
                                   @Nullable BlockContextExpression friction,
+                                  @Nullable BlockContextExpression hitboxSize,
                                   @Nullable BlockContextExpression custom) {
 
     public static final Codec<ParticleInitializer> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -31,6 +32,7 @@ public record ParticleInitializer(@Nullable BlockContextExpression size,
             BlockContextExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
             BlockContextExpression.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.roll)),
             BlockContextExpression.CODEC.optionalFieldOf("friction").forGetter(p -> Optional.ofNullable(p.friction)),
+            BlockContextExpression.CODEC.optionalFieldOf("hitboxSize").forGetter(p -> Optional.ofNullable(p.hitboxSize)),
             BlockContextExpression.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom))
     ).apply(i, ParticleInitializer::new));
 
@@ -39,10 +41,12 @@ public record ParticleInitializer(@Nullable BlockContextExpression size,
                                 Optional<BlockContextExpression> blue, Optional<BlockContextExpression> alpha,
                                 Optional<BlockContextExpression> roll,
                                 Optional<BlockContextExpression> friction,
+                                Optional<BlockContextExpression> hitboxSize,
                                 Optional<BlockContextExpression> custom) {
         this(size.orElse(null), lifetime.orElse(null), red.orElse(null),
                 green.orElse(null), blue.orElse(null), alpha.orElse(null),
                 roll.orElse(null), friction.orElse(null),
+                hitboxSize.orElse(null),
                 custom.orElse(null));
     }
 
@@ -73,6 +77,11 @@ public record ParticleInitializer(@Nullable BlockContextExpression size,
         }
         if (this.custom != null && particle instanceof CustomParticleType.Instance ci) {
             ci.custom = this.custom.getValue(level, pos, state);
+        }
+        if (this.hitboxSize != null) {
+
+            float hitbox = (float) this.hitboxSize.getValue(level, pos, state);
+            ((ParticleAccessor) particle).invokeSetSize(hitbox, hitbox);
         }
     }
 }
