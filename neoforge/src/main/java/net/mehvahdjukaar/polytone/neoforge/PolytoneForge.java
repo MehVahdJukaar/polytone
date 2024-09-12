@@ -35,6 +35,7 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -77,6 +78,11 @@ public class PolytoneForge {
         Polytone.ITEM_MODELS.getExtraModels().forEach(e -> {
             event.register(ModelResourceLocation.standalone(e));
         });
+    }
+
+    @SubscribeEvent
+    public void onTick(LevelTickEvent.Pre event) {
+        ClientFrameTicker.onTick(event.getLevel());
     }
 
     @SubscribeEvent
