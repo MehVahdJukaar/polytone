@@ -14,6 +14,7 @@ import net.minecraft.world.phys.Vec3;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,7 +122,7 @@ public class BlockContextExpression {
         return expression.evaluate();
     }
 
-    public double getValue(Level level, BlockPos pos, BlockState state) {
+    public double getValue(Level level, @NotNull BlockPos pos, BlockState state) {
         ExpressionUtils.seedRandom(pos.hashCode() * pos.asLong());
         if (hasX) expression.setVariable(POS_X, pos.getX());
         if (hasY) expression.setVariable(POS_Y, pos.getY());

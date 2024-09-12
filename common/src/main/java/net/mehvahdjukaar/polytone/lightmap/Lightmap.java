@@ -211,10 +211,10 @@ public class Lightmap {
 
                 PlatStuff.adjustLightmapColors(level, partialTicks, skyDarken, skyLightIntensity, flicker, torchX, skyY, combined);
 
-                if (nightVisionScale > 0.0F && (image == null || image.height() < 32)) {
+                if (nightVisionScale > 0.0F && (image == null || image.height() <= 32)) {
                     float maxVal = Math.max(combined.x(), Math.max(combined.y(), combined.z()));
                     if (maxVal < 1.0F) {
-                        float percentage = 1.0F / maxVal;
+w                        float percentage = 1.0F / maxVal;
                         Vector3f discolored = (new Vector3f(combined)).mul(percentage);
                         combined.lerp(discolored, nightVisionScale);
                     }

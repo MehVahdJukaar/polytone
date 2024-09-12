@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
@@ -37,6 +38,10 @@ public class ParticleContextExpression {
     private static final String DAY_TIME = "DAY_TIME";
     private static final String TIME = "TIME";
     private static final String RAIN = "RAIN";
+    private static final String SKY_LIGHT = "SKY_LIGHT";
+    private static final String BLOCK_LIGHT = "BLOCK_LIGHT";
+    private static final String TEMPERATURE = "TEMPERATURE";
+    private static final String DOWNFALL = "DOWNFALL";
 
 
     public static final Codec<ParticleContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
@@ -52,6 +57,10 @@ public class ParticleContextExpression {
     private final boolean hasRain;
     private final boolean hasDayTime;
     private final boolean hasCustom;
+    private final boolean hasSkyLight;
+    private final boolean hasBlockLight;
+    private final boolean hasTemperature;
+    private final boolean hasDownfall;
 
 
     public ParticleContextExpression(String expression) {
@@ -66,6 +75,10 @@ public class ParticleContextExpression {
         this.hasRain = unparsed.contains(RAIN);
         this.hasDayTime = unparsed.contains(DAY_TIME);
         this.hasCustom = unparsed.contains(CUSTOM);
+        this.hasSkyLight = unparsed.contains(SKY_LIGHT);
+        this.hasBlockLight = unparsed.contains(BLOCK_LIGHT);
+        this.hasTemperature = unparsed.contains(TEMPERATURE);
+        this.hasDownfall = unparsed.contains(DOWNFALL);
     }
 
     public static ParticleContextExpression parse(String s) {
@@ -76,7 +89,7 @@ public class ParticleContextExpression {
         return new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc())
                 .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, ROLL, AGE,
-                        CUSTOM, TIME, RAIN, DAY_TIME)
+                        CUSTOM, TIME, RAIN, DAY_TIME, SKY_LIGHT, BLOCK_LIGHT, DOWNFALL, TEMPERATURE)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
@@ -108,6 +121,10 @@ public class ParticleContextExpression {
         if (hasTime) expression.setVariable(TIME, ClientFrameTicker.getGameTime());
         if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
         if (hasDayTime) expression.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
+        if (hasSkyLight) expression.setVariable(SKY_LIGHT, ClientFrameTicker.getSkyLight());
+        if (hasBlockLight) expression.setVariable(BLOCK_LIGHT, ClientFrameTicker.getBlockLight());
+        if (hasTemperature) expression.setVariable(TEMPERATURE, ClientFrameTicker.getTemperature());
+        if (hasDownfall) expression.setVariable(DOWNFALL, ClientFrameTicker.getDownfall());
 
         ExpressionUtils.randomizeRandom();
         return expression.evaluate();
