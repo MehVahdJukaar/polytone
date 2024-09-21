@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
@@ -15,12 +17,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ItemRenderer.class)
 public class ItemOverridesMixin {
 
-    @Inject(method = "getModel", at = @At("HEAD"), cancellable = true)
-    private void resolve(ItemStack stack, Level level, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir) {
+    @Inject(method = "getModel", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/resources/model/BakedModel;getOverrides()Lnet/minecraft/client/renderer/block/model/ItemOverrides;"))
+    private void resolve(ItemStack stack, Level level, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir,
+                         @Local LocalRef<BakedModel> bakedModelLocalRef) {
         var newModel = Polytone.ITEM_MODELS.getOverride(stack,  level, entity, seed);
         if (newModel != null) {
-            cir.setReturnValue(newModel);
-            cir.cancel();
+            bakedModelLocalRef.set(newModel);
         }
     }
 

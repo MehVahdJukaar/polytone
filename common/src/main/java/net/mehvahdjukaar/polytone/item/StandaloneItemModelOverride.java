@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -23,6 +24,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
             CompoundTag.CODEC.optionalFieldOf("entity_tag").forGetter(i -> Optional.ofNullable(i.entityTag)),
             ColormapExpressionProvider.CODEC.optionalFieldOf("expression").forGetter(i -> Optional.ofNullable(i.expression)),
+            ItemModelOverride.ITEM_PREDICATE_CODEC.optionalFieldOf("predicates", Map.of()).forGetter(i -> i.predicates),
             BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(StandaloneItemModelOverride::getTarget)
     ).apply(instance, StandaloneItemModelOverride::new));
 
@@ -32,8 +34,9 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
     public StandaloneItemModelOverride(Dynamic<?> components, ResourceLocation model,
                                        Optional<Integer> stackCount, Optional<Pattern> pattern,
                                        Optional<CompoundTag> entityTag, Optional<ColormapExpressionProvider> expression,
+                                       Map<ResourceLocation, Float> predicates,
                                        Item target) {
-        super(components, model, stackCount, pattern, entityTag, expression);
+        super(components, model, stackCount, pattern, entityTag, expression, predicates);
         this.item = target;
         this.autoModel = model.toString().equals("minecraft:generated");
     }

@@ -7,6 +7,8 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.minecraft.client.renderer.block.model.ItemOverride;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentMap;
@@ -20,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -35,8 +38,11 @@ public class ItemModelOverride {
     protected final CompoundTag entityTag;
     @Nullable
     protected final ColormapExpressionProvider expression;
+    protected final Map<ResourceLocation, Float> predicates; //TODO: add or remove
     protected ResourceLocation model;
     protected DataComponentMap decodedComponents;
+
+    protected static final Codec<Map<ResourceLocation, Float>> ITEM_PREDICATE_CODEC = Codec.unboundedMap(ResourceLocation.CODEC, Codec.FLOAT);
 
     public static final Codec<ItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.PASSTHROUGH.fieldOf("components").forGetter(o -> o.lazyComponent),
@@ -44,17 +50,20 @@ public class ItemModelOverride {
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
             CompoundTag.CODEC.optionalFieldOf("entity_tag").forGetter(i -> Optional.ofNullable(i.entityTag)),
-            ColormapExpressionProvider.CODEC.optionalFieldOf("expression").forGetter(i -> Optional.ofNullable(i.expression))
+            ColormapExpressionProvider.CODEC.optionalFieldOf("expression").forGetter(i -> Optional.ofNullable(i.expression)),
+            ITEM_PREDICATE_CODEC.optionalFieldOf("predicates", Map.of()).forGetter(i -> i.predicates)
     ).apply(instance, ItemModelOverride::new));
 
     public ItemModelOverride(Dynamic<?> lazyComponent, ResourceLocation model, Optional<Integer> stackCount,
-                             Optional<Pattern> pattern, Optional<CompoundTag> entityTag, Optional<ColormapExpressionProvider> expression) {
+                             Optional<Pattern> pattern, Optional<CompoundTag> entityTag,
+                             Optional<ColormapExpressionProvider> expression, Map<ResourceLocation, Float> predicates) {
         this.lazyComponent = lazyComponent;
         this.model = model;
         this.stackCount = stackCount.orElse(null);
         this.pattern = pattern.orElse(null);
         this.entityTag = entityTag.orElse(null);
         this.expression = expression.orElse(null);
+        this.predicates = predicates;
     }
 
     public ItemModelOverride(DataComponentMap map, ResourceLocation model) {
@@ -65,7 +74,9 @@ public class ItemModelOverride {
         this.decodedComponents = map;
         this.entityTag = null;
         this.expression = null;
+        this.predicates = Map.of();
     }
+
 
     public DataComponentMap getComponents(RegistryAccess registryAccess) {
         if (this.decodedComponents == null && this.lazyComponent != null) {
@@ -130,4 +141,5 @@ public class ItemModelOverride {
         }
         return true;
     }
+
 }

@@ -213,7 +213,7 @@ public class Lightmap {
                 if (nightVisionScale > 0.0F && (image == null || image.height() <= 32)) {
                     float maxVal = Math.max(combined.x(), Math.max(combined.y(), combined.z()));
                     if (maxVal < 1.0F) {
-w                        float percentage = 1.0F / maxVal;
+                        float percentage = 1.0F / maxVal;
                         Vector3f discolored = (new Vector3f(combined)).mul(percentage);
                         combined.lerp(discolored, nightVisionScale);
                     }
