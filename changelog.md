@@ -1,2 +1,3 @@
-- fixed lightmaps not applying night vision
-- fixed an issue with particle expressions
+- added world border colors
+- fixed CIM being overwritten by moels overrides such as the ones bow has. You can now change those as normal
+- added simple texts to gui modifiers

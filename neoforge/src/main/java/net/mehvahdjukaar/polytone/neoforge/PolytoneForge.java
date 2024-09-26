@@ -116,7 +116,7 @@ public class PolytoneForge {
             PoseStack poseStack = graphics.pose();
             poseStack.pushPose();
             poseStack.translate(screen.width / 2F, screen.height / 2F, 500);
-            ss.polytone$renderExtraSprites(graphics);
+            ss.polytone$renderExtraSprites(graphics, event.getMouseX(),event.getMouseY(), event.getPartialTick());
             poseStack.popPose();
         }
     }

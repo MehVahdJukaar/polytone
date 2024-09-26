@@ -21,15 +21,17 @@ public record GuiModifier(Type type, String target,
                           int titleX, int titleY, int labelX, int labelY,
                           @Nullable Integer titleColor, @Nullable Integer labelColor,
                           List<SimpleSprite> sprites,
+                          List<SimpleText> textList,
                           List<WidgetModifier> widgetModifiers,
                           Map<String, SpecialOffset> specialOffsets) {
 
     public GuiModifier(Type type, String target, List<SlotModifier> slotModifiers, int titleX, int titleY, int labelX, int labelY,
                        Optional<Integer> titleColor, Optional< Integer> labelColor,
-                       List<SimpleSprite> sprites, List<WidgetModifier> widgetModifiers,
+                       List<SimpleSprite> sprites, List<SimpleText> textList,
+                       List<WidgetModifier> widgetModifiers,
                        Map<String, SpecialOffset> specialOffsets) {
         this(type, target, slotModifiers, titleX, titleY, labelX, labelY,
-                titleColor.orElse(null), labelColor.orElse(null), sprites, widgetModifiers, specialOffsets);
+                titleColor.orElse(null), labelColor.orElse(null), sprites, textList, widgetModifiers, specialOffsets);
     }
 
 
@@ -57,6 +59,7 @@ public record GuiModifier(Type type, String target,
                     ColorUtils.CODEC.optionalFieldOf("title_color").forGetter(g->Optional.ofNullable(g.titleColor)),
                     ColorUtils.CODEC.optionalFieldOf("label_color").forGetter(g->Optional.ofNullable(g.labelColor)),
                     SimpleSprite.CODEC.listOf().optionalFieldOf("sprites", List.of()).forGetter(GuiModifier::sprites),
+                    SimpleText.CODEC.listOf().optionalFieldOf("texts", List.of()).forGetter(GuiModifier::textList),
                     WidgetModifier.CODEC.listOf().optionalFieldOf("widget_modifiers", List.of()).forGetter(GuiModifier::widgetModifiers),
                     Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC).optionalFieldOf("special_offsets", Map.of()).forGetter(GuiModifier::specialOffsets)
 

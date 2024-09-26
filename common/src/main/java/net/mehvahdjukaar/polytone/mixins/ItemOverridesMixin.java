@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ItemOverridesMixin {
 
     @Inject(method = "getModel", at = @At(value = "INVOKE",
+            shift = At.Shift.BEFORE,
             target = "Lnet/minecraft/client/resources/model/BakedModel;getOverrides()Lnet/minecraft/client/renderer/block/model/ItemOverrides;"))
     private void resolve(ItemStack stack, Level level, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir,
                          @Local LocalRef<BakedModel> bakedModelLocalRef) {

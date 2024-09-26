@@ -7,16 +7,12 @@ import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
-import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.LeashKnotRenderer;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
@@ -30,6 +26,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.border.BorderStatus;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +45,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private final Object2IntMap<SpawnEggItem> vanillaEggsBackgrounds = new Object2IntOpenHashMap<>();
     private final Object2IntMap<SpawnEggItem> vanillaEggsHighlight = new Object2IntOpenHashMap<>();
     private final Object2IntMap<MobEffect> vanillaEffectColors = new Object2IntOpenHashMap<>();
+    private final EnumMap<BorderStatus, Integer> vanillaBorderStatus = new EnumMap<>(BorderStatus.class);
 
     private final Map<DyeColor, Integer> customSheepColors = new EnumMap<>(DyeColor.class);
     protected final List<Vec3> originalRedstoneWireColors = Arrays.stream(RedStoneWireBlock.COLORS).toList();
@@ -137,17 +135,28 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     color.textColor = col;
                 }
             } else Polytone.LOGGER.warn("Unknown DyeColor with name {}", name);
-        } else if (is(prop, 0, "particle")) {
-            if (prop.length > 1) {
-                String s = prop[1];
-                ResourceLocation id = ResourceLocation.parse(s.replace("\\", ""));
-                try {
-                    // turn from hex to decimal if it is a single number
-                    int hex = parseHex(str);
-                    Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, String.valueOf(hex));
-                } catch (Exception e) {
-                    Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, str);
+        } else if (is(prop, 0, "particle") && prop.length > 1) {
+            String s = prop[1];
+            ResourceLocation id = ResourceLocation.parse(s.replace("\\", ""));
+            try {
+                // turn from hex to decimal if it is a single number
+                int hex = parseHex(str);
+                Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, String.valueOf(hex));
+            } catch (Exception e) {
+                Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, str);
+            }
+        } else if (is(prop, 0, "world_border") && prop.length > 1) {
+            String name = get(prop, 1);
+            try {
+                BorderStatus status = BorderStatus.valueOf(name.toLowerCase(Locale.ROOT));
+                int col = parseHex(obj);
+                // save vanilla value
+                if (!vanillaBorderStatus.containsKey(status)) {
+                    vanillaBorderStatus.put(status, status.getColor());
                 }
+                status.color = col;
+            } catch (Exception ignored) {
+                Polytone.LOGGER.warn("Unknown BorderStatus with name {}", name);
             }
         } else if (is(prop, 0, "egg")) {
             if (prop.length > 2) {
@@ -176,7 +185,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                         }
                         spawnEggItem.highlightColor = col;
                     }
-                } else{
+                } else {
                     Polytone.LOGGER.warn("Unknown or invalid Spawn Egg Item with name {}", id);
                 }
             }
@@ -185,7 +194,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             int col = parseHex(obj);
             if (id.getPath().equals("empty")) {
                 //TODO:
-               // PotionContents.EMPTY_COLOR = col;
+                // PotionContents.EMPTY_COLOR = col;
             } else if (id.getPath().equals("water")) {
                 PotionContents.BASE_POTION_COLOR = col;
             } else {
@@ -201,7 +210,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             String name = get(prop, 1);
             DyeColor color = DyeColor.byName(name, null);
             if (color != null) {
-                int col = parseHex(obj);
+                int col = FastColor.ARGB32.opaque(parseHex(obj));
                 customSheepColors.put(color, col);
             } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
         } else if (is(prop, 0, "xporb")) {

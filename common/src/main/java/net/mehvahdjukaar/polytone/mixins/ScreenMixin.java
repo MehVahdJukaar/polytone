@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
@@ -30,15 +29,15 @@ public abstract class ScreenMixin implements SlotifyScreen {
     }
 
     @Override
-    public void polytone$renderExtraSprites(GuiGraphics poseStack) {
+    public void polytone$renderExtraSprites(GuiGraphics poseStack, int mouseX, int mouseY, float partialTicks) {
         if (polytone$modifier != null) {
-            polytone$modifier.renderSprites(poseStack);
+            polytone$modifier.renderExtrs(poseStack, mouseX, mouseY, partialTicks);
         }
     }
 
     @Override
     public boolean polytone$hasSprites() {
-        return polytone$modifier != null && !polytone$modifier.sprites().isEmpty();
+        return polytone$modifier != null && !polytone$modifier.extraRenderables().isEmpty();
     }
 
     @Override

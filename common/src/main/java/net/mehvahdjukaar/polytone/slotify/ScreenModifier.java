@@ -1,9 +1,9 @@
 package net.mehvahdjukaar.polytone.slotify;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -12,20 +12,22 @@ import java.util.Map;
 
 public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
                              @Nullable Integer titleColor, @Nullable Integer labelColor,
-                             List<SimpleSprite> sprites,
+                             List<Renderable> extraRenderables,
                              List<WidgetModifier> widgetModifiers,
                              Map<String, SpecialOffset> specialOffsets) {
 
-    public ScreenModifier(GuiModifier original) {
-        this(original.titleX(), original.titleY(), original.labelX(), original.labelY(),
+    public static ScreenModifier fromGuiMod(GuiModifier original) {
+        List<Renderable> lis = new ArrayList<>(original.sprites());
+        lis.addAll(original.textList());
+        return new ScreenModifier(original.titleX(), original.titleY(), original.labelX(), original.labelY(),
                 original.titleColor(), original.labelColor(),
-                new ArrayList<>(original.sprites()),
+                lis,
                 new ArrayList<>(original.widgetModifiers()),
                 Map.copyOf(original.specialOffsets()));
     }
 
     public ScreenModifier merge(ScreenModifier other) {
-        this.sprites.addAll(other.sprites);
+        this.extraRenderables.addAll(other.extraRenderables);
         this.specialOffsets.putAll(other.specialOffsets);
         return this;
     }
@@ -41,8 +43,8 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
         }
     }
 
-    public void renderSprites(GuiGraphics poseStack) {
+    public void renderExtrs(GuiGraphics poseStack, int mouseX, int mouseY, float partialTicks) {
         RenderSystem.enableDepthTest();
-        this.sprites.forEach(r -> r.render(poseStack));
+        this.extraRenderables.forEach(r -> r.render(poseStack, mouseX, mouseY, partialTicks));
     }
 }

@@ -6,6 +6,8 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.minecraft.client.particle.DripParticle;
+import net.minecraft.client.particle.LavaParticle;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;

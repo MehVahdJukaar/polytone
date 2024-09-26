@@ -41,7 +41,6 @@ public class ParticleModifier implements ITargetProvider {
 
     ).apply(instance, ParticleModifier::new));
 
-
     @Nullable
     private final Filter filter;
     @Nullable

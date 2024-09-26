@@ -51,6 +51,9 @@ accessible field net/minecraft/client/particle/Particle age I
 accessible field net/minecraft/client/particle/SingleQuadParticle quadSize F
 accessible field net/minecraft/client/particle/Particle roll F
 
+accessible field net/minecraft/world/level/border/BorderStatus color I
+mutable field net/minecraft/world/level/border/BorderStatus color I
+
 accessible field net/minecraft/world/level/biome/Biome$ClimateSettings temperature F
 accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall F
 

@@ -14,10 +14,7 @@ import net.mehvahdjukaar.polytone.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.server.MinecraftServer;
-
-import java.util.Objects;
 
 public class PolytoneFabric implements ClientModInitializer {
 
@@ -47,7 +44,7 @@ public class PolytoneFabric implements ClientModInitializer {
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {
                 ScreenModifier guiModifier = Polytone.SLOTIFY.getGuiModifier(screen);
-                if (guiModifier != null && !guiModifier.sprites().isEmpty()) {
+                if (guiModifier != null && !guiModifier.extraRenderables().isEmpty()) {
                     ScreenEvents.afterRender(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) -> {
 
                         var matrices = graphics.pose();
@@ -55,7 +52,7 @@ public class PolytoneFabric implements ClientModInitializer {
                         matrices.setIdentity();
                         matrices.translate(scaledWidth / 2F, scaledHeight / 2F, 500);
 
-                        ss.polytone$renderExtraSprites(graphics);
+                        ss.polytone$renderExtraSprites(graphics, mouseX, mouseY, tickDelta);
                         matrices.popPose();
                     });
                 }
