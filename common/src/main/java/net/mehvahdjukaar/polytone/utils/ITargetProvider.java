@@ -21,8 +21,10 @@ public interface ITargetProvider {
     Codec<ResourceLocation> WILDCARD_CODEC = Codec.STRING.flatXmap(s -> {
         Matcher matcher = WILDCARD_PATTERN.matcher(s);
         if (matcher.matches()) {
-            return DataResult.success(
-                    ResourceLocation.fromNamespaceAndPath(matcher.group(0), WILDCARD_PLACEHOLDER));
+            String group = matcher.group(1);
+            if(group != null)
+                 return DataResult.success(
+                    ResourceLocation.fromNamespaceAndPath(group, WILDCARD_PLACEHOLDER));
         }
         if (s.equals("*")) return DataResult.success(ALL_WILDCARD);
         return DataResult.error(() -> "Wildcard target must be '*'. Was: " + s);
