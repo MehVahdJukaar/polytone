@@ -4,11 +4,13 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -17,6 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,7 +60,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Biome Special Effect with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
 
-            addEffect(id, effect);
+            addEffect(id, effect, access);
 
         }
         lazyJsons.clear();
@@ -65,16 +68,10 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         doApplyWithLevel(access, firstLogin);
     }
 
-    private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod) {
-        var explTargets = mod.explicitTargets();
-        if (!explTargets.isEmpty()) {
-            for (var explicitId : explTargets) {
-                effectsToApply.merge(explicitId, mod, BiomeEffectModifier::merge);
-            }
-        }
-        //no explicit targets. use its own ID instead
-        else {
-            effectsToApply.merge(pathId, mod, BiomeEffectModifier::merge);
+    private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod,RegistryAccess access) {
+        Registry<Biome> registry = access.registryOrThrow(Registries.BIOME);
+        for (var biome : mod.getTargets(pathId, registry)) {
+            effectsToApply.merge(registry.getKey(biome), mod, BiomeEffectModifier::merge);
         }
     }
 

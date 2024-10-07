@@ -1,3 +1,1 @@
-- added world border colors
-- fixed CIM being overwritten by moels overrides such as the ones bow has. You can now change those as normal
-- added simple texts to gui modifiers
+wildcards can be used in target arrays

@@ -4,6 +4,8 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.biome.BiomeEffectModifier;
+import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
