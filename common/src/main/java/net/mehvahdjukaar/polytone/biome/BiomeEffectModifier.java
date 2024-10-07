@@ -5,10 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.utils.ITargetProvider;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.mehvahdjukaar.polytone.utils.Weather;
+import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
@@ -236,8 +233,8 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         float get(Level level);
 
         Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> (l) -> f, fogParam -> fogParam.get(null));
-        Codec<FogParam> CODEC = withAlternative(
-                withAlternative(SIMPLE_CODEC,
+        Codec<FogParam> CODEC =CodecUtil. withAlternative(
+                CodecUtil. withAlternative(SIMPLE_CODEC,
                         Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
                                 .xmap(FogMap::new, FogMap::map).codec()
                 ),
@@ -266,24 +263,5 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         }
     }
 
-    static <T> Codec<T> withAlternative(final Codec<T> primary, final Codec<? extends T> alternative) {
-        return Codec.either(
-                primary,
-                alternative
-        ).xmap(
-                e -> e.map(Function.identity(), Function.identity()),
-                Either::left
-        );
-    }
-
-    static <T, U> Codec<T> withAlternative(final Codec<T> primary, final Codec<U> alternative, final Function<U, T> converter) {
-        return Codec.either(
-                primary,
-                alternative
-        ).xmap(
-                either -> either.map(v -> v, converter),
-                Either::left
-        );
-    }
 
 }

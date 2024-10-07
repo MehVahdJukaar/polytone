@@ -63,6 +63,13 @@ public class PolytoneForge {
     }
 
     @SubscribeEvent
+    public void onTick(TickEvent.LevelTickEvent event) {
+        if(event.phase == TickEvent.Phase.START) {
+            ClientFrameTicker.onTick(event.level);
+        }
+    }
+
+    @SubscribeEvent
     public void onTooltip(ItemTooltipEvent tooltipEvent) {
         var mod = ((IPolytoneItem) tooltipEvent.getItemStack().getItem()).polytone$getModifier();
         if (mod != null) {

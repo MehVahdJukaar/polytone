@@ -74,20 +74,6 @@ public class PlatStuffImpl {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(eventConsumer);
     }
 
-    private static final Field blockColorsField;
-    private static final Field itemColorsField;
-
-    static {
-        try {
-            blockColorsField = BlockColors.class.getDeclaredField("f_92571_");
-            blockColorsField.setAccessible(true);
-            itemColorsField = ItemColors.class.getDeclaredField("f_92674_");
-            itemColorsField.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static void unregisterParticleProvider(ResourceLocation id) {
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
         ((ParticleEngineAccessor) particleEngine).getProviders().remove(id);
@@ -99,7 +85,7 @@ public class PlatStuffImpl {
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         try {
-            return ((Map<Holder.Reference<Block>, BlockColor>) blockColorsField.get(colors))
+            return colors.blockColors
                     .get(ForgeRegistries.BLOCKS.getDelegateOrThrow(block));
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -108,7 +94,7 @@ public class PlatStuffImpl {
 
     public static ItemColor getItemColor(ItemColors colors, Item block) {
         try {
-            return ((Map<Holder.Reference<Item>, ItemColor>) itemColorsField.get(colors))
+            return colors.itemColors
                     .get(ForgeRegistries.ITEMS.getDelegateOrThrow(block));
         } catch (Exception e) {
             throw new RuntimeException(e);

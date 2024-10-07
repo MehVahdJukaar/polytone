@@ -1,2 +1,1 @@
-- backported some fixes
-- fixed a crash on fabric due to custom particles
+backported more (minor) stuff

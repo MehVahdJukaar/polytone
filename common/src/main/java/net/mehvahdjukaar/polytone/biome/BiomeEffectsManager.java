@@ -94,7 +94,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
 
         Registry<Biome> biomeReg = registryAccess.registry(Registries.BIOME).get();
-        addAllWaterColors(biomeReg);
+        addAllWaterColors(biomeReg, registryAccess);
 
         for (var v : effectsToApply.entrySet()) {
 
@@ -141,7 +141,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
 
     //hack
-    public void addAllWaterColors(Registry<Biome> biomeReg) {
+    public void addAllWaterColors(Registry<Biome> biomeReg, RegistryAccess registryAccess) {
         if (Polytone.sodiumOn) { //TODO:is this needed with embeddium?
             var water = Polytone.FLUID_MODIFIERS.getModifier(Fluids.WATER);
             if (water != null) {
@@ -153,7 +153,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
                         if (water.getTint() instanceof Colormap cl) {
                             var col = cl.getColor(b, 0, 0);
                             var dummy = BiomeEffectModifier.ofWaterColor(col);
-                            addEffect(id, dummy);
+                            addEffect(id, dummy, registryAccess);
                         }
                     }
                 }
@@ -177,7 +177,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         var fogMod = fogParametersModifiers.get(biome.value());
         Vec2 targetFog = null;
         if (fogMod != null) {
-            targetFog = fogMod.modifyFogParameters();
+            targetFog = fogMod.modifyFogParameters(level);
         }
 
         if (targetFog == null && (Mth.abs(lastFogStart - 1) > 0.02f || Mth.abs(lastFogEnd - 1) > 0.02f)) {
