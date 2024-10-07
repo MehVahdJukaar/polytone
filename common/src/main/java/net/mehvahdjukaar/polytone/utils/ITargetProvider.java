@@ -30,10 +30,10 @@ public interface ITargetProvider {
         return DataResult.error(() -> "Wildcard target must be '*'. Was: " + s);
     }, s -> DataResult.success(s.toString()));
 
-    Codec<Set<ResourceLocation>> TARGET_CODEC = Codec.withAlternative(ResourceLocation.CODEC.listOf(),
-                    Codec.withAlternative(ResourceLocation.CODEC, WILDCARD_CODEC),
-                    List::of).
-            xmap(Set::copyOf, List::copyOf);
+    Codec<ResourceLocation> WILDCARD_OR_RES = Codec.withAlternative(ResourceLocation.CODEC, WILDCARD_CODEC);
+
+    Codec<Set<ResourceLocation>> TARGET_CODEC = Codec.withAlternative(WILDCARD_OR_RES.listOf(), WILDCARD_OR_RES,
+                    List::of).xmap(Set::copyOf, List::copyOf);
 
 
     default <T> Set<T> mergeSet(Set<T> first, Set<T> second) {
