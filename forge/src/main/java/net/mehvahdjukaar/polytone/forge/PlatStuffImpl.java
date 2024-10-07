@@ -2,10 +2,7 @@ package net.mehvahdjukaar.polytone.forge;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import cpw.mods.modlauncher.api.INameMappingService;
-import net.mehvahdjukaar.polytone.mixins.forge.CreativeTabAccessor;
-import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeAccessor;
-import net.mehvahdjukaar.polytone.mixins.forge.ModifiableBiomeInfoBiomeInfoAccessor;
-import net.mehvahdjukaar.polytone.mixins.forge.ParticleEngineAccessor;
+import net.mehvahdjukaar.polytone.mixins.forge.*;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -85,7 +82,7 @@ public class PlatStuffImpl {
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         try {
-            return colors.blockColors
+            return ((BlockColorsAccessor)colors).getBlockColors()
                     .get(ForgeRegistries.BLOCKS.getDelegateOrThrow(block));
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -94,7 +91,7 @@ public class PlatStuffImpl {
 
     public static ItemColor getItemColor(ItemColors colors, Item block) {
         try {
-            return colors.itemColors
+            return ((ItemColorsAccessor)colors).getItemColors()
                     .get(ForgeRegistries.ITEMS.getDelegateOrThrow(block));
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -10,9 +10,6 @@ accessible field net/minecraft/client/particle/Particle friction F
 accessible field net/minecraft/client/particle/Particle oRoll F
 accessible field net/minecraft/client/particle/Particle hasPhysics Z
 
-accessible field net/minecraft/client/color/block/BlockColors blockColors Ljava/util/Map;
-accessible field net/minecraft/client/color/item/ItemColors itemColors Ljava/util/Map;
-
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Ljava/util/Optional;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Ljava/util/Optional;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour properties Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;

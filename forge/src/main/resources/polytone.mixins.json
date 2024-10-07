@@ -7,9 +7,11 @@
   ],
   "client": [
     "AbstractContainerScreenMixin",
+    "BlockColorsAccessor",
     "CreativeTabAccessor",
     "CurioInventoryScreenMixin",
     "InventoryScreenMixin",
+    "ItemColorsAccessor",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
     "ParticleEngineAccessor"
