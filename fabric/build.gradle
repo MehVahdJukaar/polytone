@@ -28,8 +28,8 @@ dependencies {
 
     implementation include( "net.objecthunter:exp4j:${exp4j_version}")
 
-    modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
-    modImplementation "curse.maven:continuity-531351:5425853"
+   // modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
+    //modImplementation "curse.maven:continuity-531351:5425853"
 
    // modImplementation "curse.maven:distant-horizons-508933:5474798"
 }

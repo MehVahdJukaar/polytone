@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.fluid.fabric;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
+import net.fabricmc.fabric.impl.client.rendering.fluid.FluidRenderingImpl;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -26,11 +27,6 @@ public record PolytoneFluidRenderHandlerWrapper(FluidRenderHandler instance,
             return col.getColor(state.createLegacyBlock(), view, pos, -1);
         }
         return instance.getFluidColor(view, pos, state);
-    }
-
-    @Override
-    public void renderFluid(BlockPos pos, BlockAndTintGetter world, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState) {
-        instance.renderFluid(pos, world, vertexConsumer, blockState, fluidState);
     }
 
     @Override
