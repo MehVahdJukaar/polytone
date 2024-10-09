@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.fluid.fabric;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
+import net.fabricmc.fabric.impl.client.rendering.fluid.FluidRenderingImpl;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
@@ -36,11 +37,6 @@ public record PolytoneFluidRenderHandlerWrapper(FluidRenderHandler instance,
 
         }
         return instance.getFluidColor(view, pos, state);
-    }
-
-    @Override
-    public void renderFluid(BlockPos pos, BlockAndTintGetter world, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState) {
-        instance.renderFluid(pos, world, vertexConsumer, blockState, fluidState);
     }
 
     @Override
