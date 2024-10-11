@@ -42,8 +42,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
         }
         customParticleFactories.clear();
         for(var v : overwrittenVanillaProviders.entrySet()){
-            Minecraft.getInstance().particleEngine
-                    .providers.put(BuiltInRegistries.PARTICLE_TYPE.getId(v.getKey()), v.getValue());
+           PlatStuff.setParticleProvider(v.getKey(), v.getValue());
         }
         overwrittenVanillaProviders.clear();
     }
@@ -77,7 +76,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
                 if (BuiltInRegistries.PARTICLE_TYPE.get(id) != null) {
                     ParticleType oldType = BuiltInRegistries.PARTICLE_TYPE.get(id);
                     Polytone.LOGGER.info("Overriding particle with id {}", id);
-                    var oldFactory = particleEngine.providers.get(BuiltInRegistries.PARTICLE_TYPE.getId(oldType));
+                    var oldFactory = PlatStuff.getParticleProvider(oldType);
                     overwrittenVanillaProviders.put(oldType, oldFactory);
                     //override vanilla particle
                     try {

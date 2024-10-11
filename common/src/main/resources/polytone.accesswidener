@@ -14,7 +14,6 @@ accessible field net/minecraft/client/particle/Particle friction F
 accessible field net/minecraft/client/particle/Particle oRoll F
 accessible field net/minecraft/client/particle/Particle hasPhysics Z
 
-accessible field net/minecraft/client/particle/ParticleEngine providers Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
 
 accessible method net/minecraft/client/renderer/texture/atlas/SpriteSources register (Ljava/lang/String;Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/client/renderer/texture/atlas/SpriteSourceType;
 
