@@ -9,7 +9,6 @@ import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.AshParticle;
 import net.minecraft.client.particle.CherryParticle;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
@@ -17,7 +16,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceKey;
@@ -145,6 +143,7 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+
     public static <T> T registerDynamic(Registry<T> reg, ResourceLocation id, T o) {
         if (reg.containsKey(id)) {
             throw new RuntimeException("Tried to register object with id " + id + " to registry " + reg + " but it already exists");
@@ -181,7 +180,7 @@ public class PlatStuff {
     }
 
     public static void unregisterAllDynamic(Registry<?> soundEvent, List<ResourceLocation> customSoundEvents) {
-        for(int j = customSoundEvents.size() - 1; j >= 0; --j) {
+        for (int j = customSoundEvents.size() - 1; j >= 0; --j) {
             ResourceLocation id = customSoundEvents.get(j);
             unregisterDynamic(soundEvent, id);
         }
@@ -193,7 +192,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static RegistryAccess getServerRegistryAccess(){
+    public static RegistryAccess getServerRegistryAccess() {
         throw new AssertionError();
     }
 
