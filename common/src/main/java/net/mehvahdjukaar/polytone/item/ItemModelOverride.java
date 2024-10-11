@@ -7,11 +7,10 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.minecraft.client.renderer.block.model.ItemOverride;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -19,6 +18,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,9 +38,9 @@ public class ItemModelOverride {
     protected final CompoundTag entityTag;
     @Nullable
     protected final ColormapExpressionProvider expression;
-    protected final Map<ResourceLocation, Float> predicates; //TODO: add or remove
     protected ResourceLocation model;
     protected DataComponentMap decodedComponents;
+    protected Map<DataComponentType<?>, CompoundTag> nbtMatchers;
 
     protected static final Codec<Map<ResourceLocation, Float>> ITEM_PREDICATE_CODEC = Codec.unboundedMap(ResourceLocation.CODEC, Codec.FLOAT);
 
@@ -49,21 +49,22 @@ public class ItemModelOverride {
             ResourceLocation.CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
-            CompoundTag.CODEC.optionalFieldOf("entity_tag").forGetter(i -> Optional.ofNullable(i.entityTag)),
+            CompoundTag.CODEC.optionalFieldOf("entity_nbt").forGetter(i -> Optional.ofNullable(i.entityTag)),
             ColormapExpressionProvider.CODEC.optionalFieldOf("expression").forGetter(i -> Optional.ofNullable(i.expression)),
-            ITEM_PREDICATE_CODEC.optionalFieldOf("predicates", Map.of()).forGetter(i -> i.predicates)
+            Codec.unboundedMap(DataComponentType.CODEC, CompoundTag.CODEC).optionalFieldOf("item_nbt_components", Map.of()).forGetter(i -> i.nbtMatchers)
     ).apply(instance, ItemModelOverride::new));
 
     public ItemModelOverride(Dynamic<?> lazyComponent, ResourceLocation model, Optional<Integer> stackCount,
                              Optional<Pattern> pattern, Optional<CompoundTag> entityTag,
-                             Optional<ColormapExpressionProvider> expression, Map<ResourceLocation, Float> predicates) {
+                             Optional<ColormapExpressionProvider> expression,
+                             Map<DataComponentType<?>,CompoundTag> nbtMatchers) {
         this.lazyComponent = lazyComponent;
         this.model = model;
         this.stackCount = stackCount.orElse(null);
         this.pattern = pattern.orElse(null);
         this.entityTag = entityTag.orElse(null);
         this.expression = expression.orElse(null);
-        this.predicates = predicates;
+        this.nbtMatchers = nbtMatchers;
     }
 
     public ItemModelOverride(DataComponentMap map, ResourceLocation model) {
@@ -74,7 +75,6 @@ public class ItemModelOverride {
         this.decodedComponents = map;
         this.entityTag = null;
         this.expression = null;
-        this.predicates = Map.of();
     }
 
 
@@ -117,6 +117,7 @@ public class ItemModelOverride {
         if (this.pattern != null && customName != null) {
             if (!this.pattern.matcher(customName.getString()).matches()) return false;
         }
+
         if (this.entityTag != null && entityTagGetter != null) {
             CompoundTag tag = entityTagGetter.get();
             if (!containsTag(tag, this.entityTag)) return false;
@@ -126,10 +127,18 @@ public class ItemModelOverride {
             if (this.expression.getValue(null, pos, null, null, stack) == 0) return false;
         }
 
+        for (var m : this.nbtMatchers.entrySet()) {
+            var type = m.getKey();
+            var c = stack.get(type);
+            if (c instanceof CustomData d) {
+                if (!containsTag(d.getUnsafe(), m.getValue())) return false;
+            }
+        }
+
         return true;
     }
 
-    private boolean containsTag(CompoundTag tagToMatch, CompoundTag entityTag) {
+    private static boolean containsTag(CompoundTag tagToMatch, CompoundTag entityTag) {
         for (String key : tagToMatch.getAllKeys()) {
             Tag t = entityTag.get(key);
             if (t == null) return false;
