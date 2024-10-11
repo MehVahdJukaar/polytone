@@ -71,6 +71,11 @@ public class PlatStuffImpl {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(eventConsumer);
     }
 
+    public static void setParticleProvider(ParticleType<?> type, ParticleProvider<?> provider) {
+        ParticleEngineAccessor engine = (ParticleEngineAccessor) Minecraft.getInstance().particleEngine;
+        engine.getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getKey(type), provider);
+    }
+
     public static void unregisterParticleProvider(ResourceLocation id) {
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
         ((ParticleEngineAccessor) particleEngine).getProviders().remove(id);

@@ -138,6 +138,12 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @Contract
+    @ExpectPlatform
+    public static void setParticleProvider(ParticleType<?> type, ParticleProvider<?> provider) {
+        throw new AssertionError();
+    }
+
     @ExpectPlatform
     public static void unregisterParticleProvider(ResourceLocation id) {
         throw new AssertionError();

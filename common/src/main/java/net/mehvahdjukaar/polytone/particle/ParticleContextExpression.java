@@ -2,10 +2,10 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.util.Mth;
@@ -33,6 +33,7 @@ public class ParticleContextExpression {
     private static final String LIFE = "LIFETIME";
     private static final String AGE = "AGE";
     private static final String ROLL = "ROLL";
+    private static final String DISTANCE_SQUARED = "DISTANCE_SQUARED";
     private static final String CUSTOM = "CUSTOM";
 
     private static final String DAY_TIME = "DAY_TIME";
@@ -61,6 +62,7 @@ public class ParticleContextExpression {
     private final boolean hasBlockLight;
     private final boolean hasTemperature;
     private final boolean hasDownfall;
+    private final boolean hasDistance;
 
 
     public ParticleContextExpression(String expression) {
@@ -79,6 +81,7 @@ public class ParticleContextExpression {
         this.hasBlockLight = unparsed.contains(BLOCK_LIGHT);
         this.hasTemperature = unparsed.contains(TEMPERATURE);
         this.hasDownfall = unparsed.contains(DOWNFALL);
+        this.hasDistance = unparsed.contains(DISTANCE_SQUARED);
     }
 
     public static ParticleContextExpression parse(String s) {
@@ -89,7 +92,7 @@ public class ParticleContextExpression {
         return new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc())
                 .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, ROLL, AGE,
-                        CUSTOM, TIME, RAIN, DAY_TIME, SKY_LIGHT, BLOCK_LIGHT, DOWNFALL, TEMPERATURE)
+                        CUSTOM, TIME, RAIN, DAY_TIME, SKY_LIGHT, BLOCK_LIGHT, DOWNFALL, TEMPERATURE, DISTANCE_SQUARED)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
@@ -125,6 +128,13 @@ public class ParticleContextExpression {
         if (hasBlockLight) expression.setVariable(BLOCK_LIGHT, ClientFrameTicker.getBlockLight());
         if (hasTemperature) expression.setVariable(TEMPERATURE, ClientFrameTicker.getTemperature());
         if (hasDownfall) expression.setVariable(DOWNFALL, ClientFrameTicker.getDownfall());
+        if (hasDistance) {
+            var e = Minecraft.getInstance().getCameraEntity();
+            double x = particle.x - e.getX();
+            double y = particle.y - e.getY();
+            double z = particle.z - e.getZ();
+            expression.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+        }
 
         ExpressionUtils.randomizeRandom();
         return expression.evaluate();
@@ -132,5 +142,5 @@ public class ParticleContextExpression {
 
     public static final ParticleContextExpression ZERO = new ParticleContextExpression("0");
     public static final ParticleContextExpression ONE = new ParticleContextExpression("1");
-    public static final ParticleContextExpression PARTICLE_RAND= new ParticleContextExpression("(rand() * 2.0 - 1.0) * 0.4");
+    public static final ParticleContextExpression PARTICLE_RAND = new ParticleContextExpression("(rand() * 2.0 - 1.0) * 0.4");
 }

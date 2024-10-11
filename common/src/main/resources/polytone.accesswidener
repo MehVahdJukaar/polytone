@@ -10,7 +10,6 @@ accessible field net/minecraft/client/particle/Particle friction F
 accessible field net/minecraft/client/particle/Particle oRoll F
 accessible field net/minecraft/client/particle/Particle hasPhysics Z
 
-accessible field net/minecraft/client/particle/ParticleEngine providers Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
 
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Ljava/util/Optional;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Ljava/util/Optional;

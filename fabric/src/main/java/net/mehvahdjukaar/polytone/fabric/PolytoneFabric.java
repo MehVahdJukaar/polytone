@@ -9,6 +9,8 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.impl.lib.tinyremapper.IMappingProvider;
+import net.fabricmc.loader.impl.lib.tinyremapper.TinyRemapper;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;

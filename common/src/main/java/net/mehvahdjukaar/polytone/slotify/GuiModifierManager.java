@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.inventory.LecternScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -20,6 +21,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.level.material.Fluids;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -55,8 +57,8 @@ public class GuiModifierManager extends JsonPartialReloader {
 
     @Override
     protected void process(Map<ResourceLocation, JsonElement> object, DynamicOps<JsonElement> ops) {
-
         List<GuiModifier> allModifiers = new ArrayList<>();
+
         for (var entry : object.entrySet()) {
             var json = entry.getValue();
             var id = entry.getKey();

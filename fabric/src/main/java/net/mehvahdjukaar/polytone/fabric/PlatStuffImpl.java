@@ -101,7 +101,6 @@ public class PlatStuffImpl {
 
     public static String maybeRemapName(String s) {
         return FabricLoader.getInstance().getMappingResolver().mapClassName("official", s);
-
     }
 
     @org.jetbrains.annotations.Contract
@@ -244,6 +243,11 @@ public class PlatStuffImpl {
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
         return  ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).getProviders()
                 .get(BuiltInRegistries.PARTICLE_TYPE.getId(type));
+    }
+
+    public static void setParticleProvider(ParticleType<?> type, ParticleProvider<?> provider) {
+        ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine)
+                .getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getId(type), provider);
     }
 
     public static SimpleParticleType makeParticleType() {
