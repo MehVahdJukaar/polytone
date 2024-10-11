@@ -10,17 +10,21 @@ import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 public class CustomParticlesManager extends JsonPartialReloader {
 
     public final MapRegistry<CustomParticleFactory> customParticleFactories = new MapRegistry<>("Custom Particles");
+    private final Map<ParticleType<?>, ParticleProvider<?>> overwrittenVanillaProviders = new HashMap<>();
 
     public static final Codec<CustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = Codec.either(SemiCustomParticleType.CODEC, CustomParticleType.CODEC)
             .xmap(e -> e.map(Function.identity(), Function.identity()),
@@ -37,6 +41,11 @@ public class CustomParticlesManager extends JsonPartialReloader {
             PlatStuff.unregisterDynamic(BuiltInRegistries.PARTICLE_TYPE, id);
         }
         customParticleFactories.clear();
+        for(var v : overwrittenVanillaProviders.entrySet()){
+            Minecraft.getInstance().particleEngine
+                    .providers.put(BuiltInRegistries.PARTICLE_TYPE.getId(v.getKey()), v.getValue());
+        }
+        overwrittenVanillaProviders.clear();
     }
 
     // not ideal
@@ -65,14 +74,28 @@ public class CustomParticlesManager extends JsonPartialReloader {
                         .getFirst();
                 factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
-                customParticleFactories.register(id, factory);
+                if (BuiltInRegistries.PARTICLE_TYPE.get(id) != null) {
+                    ParticleType oldType = BuiltInRegistries.PARTICLE_TYPE.get(id);
+                    Polytone.LOGGER.info("Overriding particle with id {}", id);
+                    var oldFactory = particleEngine.providers.get(BuiltInRegistries.PARTICLE_TYPE.getId(oldType));
+                    overwrittenVanillaProviders.put(oldType, oldFactory);
+                    //override vanilla particle
+                    try {
+                        particleEngine.register(oldType, factory);
+                    }catch (Exception e){
+                        Polytone.LOGGER.error("Can't override existing particle with ID {}. Particle type not supported", id, e);
+                    }
+                    continue;
+                } else {
+                    SimpleParticleType type = PlatStuff.makeParticleType();
+                    PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
+                    particleEngine.register(type, factory);
+                    customParticleFactories.register(id, factory);
+                }
 
-                SimpleParticleType type = PlatStuff.makeParticleType();
-                PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
 
-                particleEngine.register(type, factory);
                 Polytone.LOGGER.info("Registered Custom Particle {}", id);
-            }catch (Exception e){
+            } catch (Exception e) {
                 Polytone.LOGGER.error("!!!!!!!!!!!! Failed to load Custom Particle {}", j.getKey(), e);
             }
         }
