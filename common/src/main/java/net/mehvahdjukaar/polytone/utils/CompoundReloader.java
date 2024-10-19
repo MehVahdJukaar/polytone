@@ -86,7 +86,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
     @SuppressWarnings("all")
     private <T> void processTyped(PartialReloader<T> reloader, Object object) {
-        //jea... we cant use registry ops here theres no level yet
+        //yea... we cant use registry ops here theres no level yet
         reloader.process((T) object, JsonOps.INSTANCE);
     }
 
