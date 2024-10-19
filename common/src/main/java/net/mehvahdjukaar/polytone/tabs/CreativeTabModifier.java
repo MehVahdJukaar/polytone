@@ -68,8 +68,8 @@ public record CreativeTabModifier(
                 name.isPresent() ? name : other.name,
                 backGroundLocation.isPresent() ? backGroundLocation : other.backGroundLocation,
                 tabsImage.isPresent() ? tabsImage : other.tabsImage,
-                beforeTabs.isPresent() ? beforeTabs : other.beforeTabs,
-                afterTabs.isPresent() ? afterTabs : other.afterTabs,
+                beforeTabs.isPresent() ? beforeTabs.map(List::copyOf) : other.beforeTabs.map(List::copyOf),
+                afterTabs.isPresent() ? afterTabs.map(List::copyOf) : other.afterTabs.map(List::copyOf),
                 mergeList(removals, other.removals),
                 mergeList(additions, other.additions),
                 mergeSet(explicitTargets, other.explicitTargets)

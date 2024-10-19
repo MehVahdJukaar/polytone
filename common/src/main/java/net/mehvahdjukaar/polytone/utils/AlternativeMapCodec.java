@@ -10,10 +10,12 @@ import java.util.stream.Stream;
 public final class AlternativeMapCodec<A> extends MapCodec<A> {
     private final MapCodec<A> first;
     private final MapCodec<A> second;
+    private final A defaultValue;
 
-    public AlternativeMapCodec(MapCodec<A> first, MapCodec<A> second) {
+    public AlternativeMapCodec(MapCodec<A> first, MapCodec<A> second, A defaultValue) {
         this.first = first;
         this.second = second;
+        this.defaultValue = defaultValue;
     }
 
     @Override
@@ -34,6 +36,9 @@ public final class AlternativeMapCodec<A> extends MapCodec<A> {
         }
         if (secondRead.hasResultOrPartial()) {
             return secondRead;
+        }
+        if (defaultValue != null) {
+            return DataResult.success(defaultValue);
         }
         return DataResult.error(() -> "Failed to parse either. First: " + firstRead.error().orElseThrow().message() + "; Second: " + secondRead.error().orElseThrow().message());
 
@@ -66,11 +71,14 @@ public final class AlternativeMapCodec<A> extends MapCodec<A> {
     }
 
     public static <B> MapCodec<Optional<B>> optionalAlias(Codec<B> codec, String primaryName, String alias) {
-        return new AlternativeMapCodec<>(codec.optionalFieldOf(primaryName), codec.optionalFieldOf(alias));
+        //first lenient so we can go to second
+        return new AlternativeMapCodec<>(codec.fieldOf(primaryName).xmap(Optional::of, Optional::get),
+                codec.fieldOf(alias).xmap(Optional::of, Optional::get),
+                Optional.empty());
     }
 
     public static <B> MapCodec<B> alias(Codec<B> codec, String primaryName, String alias) {
-        return new AlternativeMapCodec<>(codec.fieldOf(primaryName), codec.fieldOf(alias));
+        return new AlternativeMapCodec<>(codec.fieldOf(primaryName), codec.fieldOf(alias), null);
     }
 
 }
