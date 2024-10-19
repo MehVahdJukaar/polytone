@@ -1,2 +1,2 @@
-you can now overwite vanilla particles entirely with custom particle types
-added DISTANCE_SQUARED variable to particle expressions
+- added "look_up" particle render mode
+- fog params are now called "fog_radius" and "fog_fade"

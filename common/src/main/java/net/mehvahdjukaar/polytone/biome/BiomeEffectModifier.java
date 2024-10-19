@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.utils.AlternativeMapCodec;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.Weather;
@@ -47,8 +48,8 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
             AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
             Music.CODEC.optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
-            FogParam.CODEC.optionalFieldOf("fog_start").forGetter(BiomeEffectModifier::fogStart),
-            FogParam.CODEC.optionalFieldOf("fog_end").forGetter(BiomeEffectModifier::fogEnd),
+            AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start").forGetter(BiomeEffectModifier::fogStart),
+            AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end").forGetter(BiomeEffectModifier::fogEnd),
             TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(BiomeEffectModifier::explicitTargets)
     ).apply(instance, BiomeEffectModifier::new));
 
@@ -226,7 +227,8 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
     }
 
     public Vec2 modifyFogParameters(Level level) {
-        return new Vec2(fogStart.map(f -> f.get(level)).orElse(1f), fogEnd.map(f -> f.get(level)).orElse(1f));
+        return new Vec2(fogStart.map(f -> f.get(level)).orElse(1f),
+                fogEnd.map(f -> f.get(level)).orElse(1f));
     }
 
     public interface FogParam {

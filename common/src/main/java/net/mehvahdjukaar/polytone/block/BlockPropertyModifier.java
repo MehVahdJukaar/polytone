@@ -46,7 +46,7 @@ public record BlockPropertyModifier(
         Optional<BlockSetTypeProvider> blockSetType,
         @NotNull Set<ResourceLocation> explicitTargets,
         boolean tintHack) implements ITargetProvider {
-
+//TODO: add is soid for occlusion
     // Other has priority
     public BlockPropertyModifier merge(BlockPropertyModifier other) {
         return new BlockPropertyModifier(

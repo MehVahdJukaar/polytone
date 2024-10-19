@@ -4,13 +4,11 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -19,7 +17,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
 
@@ -132,8 +129,8 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     }
 
 
-    private static float lastFogStart = 1;
-    private static float lastFogEnd = 1;
+    private static float lastFogDistanceMult = 1;
+    private static float lastFogEndMult = 1;
 
     @Nullable
     public Vec2 modifyFogParameters(float originalNearPlane, float originalFarPlane) {
@@ -144,25 +141,25 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
         Holder<Biome> biome = level.getBiome(player.blockPosition());
         var fogMod = fogParametersModifiers.get(biome.value());
-        Vec2 targetFog = null;
+        Vec2 fogScalars = null;
         if (fogMod != null) {
-            targetFog = fogMod.modifyFogParameters(level);
+            fogScalars = fogMod.modifyFogParameters(level);
         }
 
-        if (targetFog == null && (Mth.abs(lastFogStart - 1) > 0.02f || Mth.abs(lastFogEnd - 1) > 0.02f)) {
-            targetFog = new Vec2(1, 1);
+        if (fogScalars == null && (Mth.abs(lastFogDistanceMult - 1) > 0.02f || Mth.abs(lastFogEndMult - 1) > 0.02f)) {
+            fogScalars = new Vec2(1, 1);
         }
-        if (targetFog != null) {
+        if (fogScalars != null) {
             float deltaTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks(); // Get time since last frame
             float interpolationFactor = deltaTime * 0.1f;
 
-            // Interpolate towards the targetFog values
-            lastFogStart = Mth.lerp(interpolationFactor, lastFogStart, targetFog.x);
-            lastFogEnd = Mth.lerp(interpolationFactor, lastFogEnd, targetFog.y);
+            // Interpolate towards the fogScalars values
+            lastFogDistanceMult = Mth.lerp(interpolationFactor, lastFogDistanceMult, fogScalars.x);
+            lastFogEndMult = Mth.lerp(interpolationFactor, lastFogEndMult, fogScalars.y);
             //fogEvent.scaleNearPlaneDistance(1);
             float distance = originalFarPlane - originalNearPlane;
 
-            return new Vec2((originalFarPlane - distance * lastFogStart) * lastFogEnd, originalFarPlane * lastFogEnd);
+            return new Vec2((originalFarPlane - distance * lastFogDistanceMult) * lastFogEndMult, originalFarPlane * lastFogEndMult);
         }
 
         return null;

@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +25,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
             CompoundTag.CODEC.optionalFieldOf("entity_tag").forGetter(i -> Optional.ofNullable(i.entityTag)),
             ColormapExpressionProvider.CODEC.optionalFieldOf("expression").forGetter(i -> Optional.ofNullable(i.expression)),
-            ItemModelOverride.ITEM_PREDICATE_CODEC.optionalFieldOf("predicates", Map.of()).forGetter(i -> i.predicates),
+            NBT_COMPONENTS_CODEC.optionalFieldOf("item_nbt_components", Map.of()).forGetter(i -> i.nbtMatchers),
             BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(StandaloneItemModelOverride::getTarget)
     ).apply(instance, StandaloneItemModelOverride::new));
 
@@ -34,9 +35,9 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
     public StandaloneItemModelOverride(Dynamic<?> components, ResourceLocation model,
                                        Optional<Integer> stackCount, Optional<Pattern> pattern,
                                        Optional<CompoundTag> entityTag, Optional<ColormapExpressionProvider> expression,
-                                       Map<ResourceLocation, Float> predicates,
+                                       Map<DataComponentType<?>, CompoundTag> nbtMatchers,
                                        Item target) {
-        super(components, model, stackCount, pattern, entityTag, expression, predicates);
+        super(components, model, stackCount, pattern, entityTag, expression, nbtMatchers);
         this.item = target;
         this.autoModel = model.toString().equals("minecraft:generated");
     }

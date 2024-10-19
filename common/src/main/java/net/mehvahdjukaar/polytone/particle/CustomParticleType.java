@@ -203,6 +203,11 @@ public class CustomParticleType implements CustomParticleFactory {
             }
 
             this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
+            if (this.rotationMode == RotationMode.LOOK_UP) {
+                quaternionf.rotateX(Mth.PI);
+                //render back face
+                this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
+            }
         }
 
         @Override
@@ -418,7 +423,7 @@ public class CustomParticleType implements CustomParticleFactory {
     }
 
     protected enum RotationMode implements StringRepresentable {
-        LOOK_AT_XYZ, LOOK_AT_Y, MOVEMENT_ALIGNED;
+        LOOK_AT_XYZ, LOOK_AT_Y, MOVEMENT_ALIGNED, LOOK_UP;
 
         private static final Codec<RotationMode> CODEC = StringRepresentable.fromEnum(RotationMode::values);
 
@@ -429,6 +434,10 @@ public class CustomParticleType implements CustomParticleFactory {
 
         public void setRotation(SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks) {
             switch (this) {
+                case LOOK_UP -> {
+                    quaternionf.identity(); // Reset rotation
+                    quaternionf.rotateX(Mth.HALF_PI);
+                }
                 case LOOK_AT_XYZ ->
                         SingleQuadParticle.FacingCameraMode.LOOKAT_XYZ.setRotation(quaternionf, camera, partialTicks);
                 case LOOK_AT_Y ->

@@ -68,6 +68,7 @@ public class CustomItemModelsManager extends PartialReloader<Object> {
         this.itemModifiersModels.clear();
 
         var jsons = this.getJsonsInDirectories(resourceManager);
+        checkConditions(jsons);
 
         for (var v : jsons.entrySet()) {
             JsonElement json = v.getValue();

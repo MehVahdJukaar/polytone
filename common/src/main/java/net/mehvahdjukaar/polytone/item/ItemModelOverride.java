@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.UnboundedMapCodec;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.core.BlockPos;
@@ -44,6 +45,8 @@ public class ItemModelOverride {
 
     protected static final Codec<Map<ResourceLocation, Float>> ITEM_PREDICATE_CODEC = Codec.unboundedMap(ResourceLocation.CODEC, Codec.FLOAT);
 
+    protected static final UnboundedMapCodec<DataComponentType<?>, CompoundTag> NBT_COMPONENTS_CODEC = Codec.unboundedMap(DataComponentType.CODEC, CompoundTag.CODEC);
+
     public static final Codec<ItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.PASSTHROUGH.fieldOf("components").forGetter(o -> o.lazyComponent),
             ResourceLocation.CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
@@ -51,7 +54,7 @@ public class ItemModelOverride {
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
             CompoundTag.CODEC.optionalFieldOf("entity_nbt").forGetter(i -> Optional.ofNullable(i.entityTag)),
             ColormapExpressionProvider.CODEC.optionalFieldOf("expression").forGetter(i -> Optional.ofNullable(i.expression)),
-            Codec.unboundedMap(DataComponentType.CODEC, CompoundTag.CODEC).optionalFieldOf("item_nbt_components", Map.of()).forGetter(i -> i.nbtMatchers)
+            NBT_COMPONENTS_CODEC.optionalFieldOf("item_nbt_components", Map.of()).forGetter(i -> i.nbtMatchers)
     ).apply(instance, ItemModelOverride::new));
 
     public ItemModelOverride(Dynamic<?> lazyComponent, ResourceLocation model, Optional<Integer> stackCount,
