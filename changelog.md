@@ -1,2 +1,1 @@
-- added "look_up" particle render mode
-- fog params are now called "fog_radius" and "fog_fade"
+resolved backward compat due to previous renames
