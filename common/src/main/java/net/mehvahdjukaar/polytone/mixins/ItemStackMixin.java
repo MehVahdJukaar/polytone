@@ -1,9 +1,10 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,6 +26,16 @@ public abstract class ItemStackMixin {
             Integer barColor = mod.getBarColor((ItemStack) (Object) this);
             if (barColor != null) cir.setReturnValue(barColor);
         }
-        // Injected code
+    }
+
+    @ModifyReturnValue(method = "isBarVisible", at = @At("RETURN"))
+    public boolean polytone$barVisible(boolean visible) {
+        if (!visible) return false;
+        var mod = ((IPolytoneItem) this.getItem()).polytone$getModifier();
+        if (mod != null) {
+            Integer barColor = mod.getBarColor((ItemStack) (Object) this);
+            return barColor == null || FastColor.ARGB32.alpha(barColor) != 0;
+        }
+        return true;
     }
 }
