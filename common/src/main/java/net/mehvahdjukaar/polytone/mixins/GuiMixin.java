@@ -17,7 +17,7 @@ public abstract class GuiMixin {
 
     @ModifyArg(method = "renderExperienceLevel", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;IIIZ)I",
-    ordinal = 4), index = 4)
+            ordinal = 4), index = 4)
     public int polytone$changeXpColor(Font font, @Nullable String text, int x, int y, int color, boolean dropShadow) {
         return Polytone.COLORS.getXpBar();
     }
@@ -28,7 +28,7 @@ public abstract class GuiMixin {
     public void polytone$renderFancyEmptyHeart(Gui instance, GuiGraphics graphics, Gui.HeartType empty, int i, int j,
                                                boolean bl, boolean bl2, boolean bl3, Operation<Void> original,
                                                @Local Gui.HeartType actualType) {
-        if(Polytone.OVERLAY_MODIFIERS.maybeFancifyHeart(instance, graphics, actualType, i, j, bl, bl2, bl3)){
+        if (Polytone.OVERLAY_MODIFIERS.maybeFancifyHeart(instance, graphics, actualType, i, j, bl, bl2, bl3)) {
             return;
         }
         original.call(instance, graphics, empty, i, j, bl, bl2, bl3);

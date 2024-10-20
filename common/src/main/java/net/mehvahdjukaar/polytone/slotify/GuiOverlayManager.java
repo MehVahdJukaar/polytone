@@ -27,7 +27,6 @@ public class GuiOverlayManager extends JsonPartialReloader {
 
     @Override
     protected void reset() {
-        heartSprites.clear();
         blitModifiers.clear();
     }
 
