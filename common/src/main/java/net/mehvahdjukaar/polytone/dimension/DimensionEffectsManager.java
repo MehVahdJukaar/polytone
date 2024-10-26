@@ -9,9 +9,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
-import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -22,6 +22,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CubicSampler;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Blocks;
@@ -42,6 +43,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     private final Object2ObjectMap<DimensionType, Colormap> fogColormaps = new Object2ObjectArrayMap<>();
     private final Object2ObjectMap<DimensionType, Colormap> skyColormaps = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, Colormap> sunsetColormaps = new Object2ObjectArrayMap<>();
     private final Object2ObjectMap<DimensionType, BlockContextExpression> cloudFunctions = new Object2ObjectArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelFogWeatherDarken = new Object2BooleanArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelSkyWeatherDarken = new Object2BooleanArrayMap<>();
@@ -102,9 +104,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
             BlockColor fog = modifier.getFogColormap();
             BlockColor sky = modifier.getSkyColormap();
+            BlockColor sunset = modifier.getSunsetColormap();
 
             //adds implicit single texture
-            // just 1 colormap defined
+            // just 1 colormap defined. gives to fog
             if (textures.containsKey(id) && fog == null && sky == null) {
                 //if this map doesn't have any colormaps but has a texture we give it fog color
                 modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.createDefTriangle()));
@@ -125,17 +128,26 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
                 fog = modifier.getFogColormap();
             }
 
+            // if sunset is not defined BUT they have a valid texture create a colormap for it
+            ResourceLocation sunsetId = id.withSuffix("_sunset");
+            if (textures.containsKey(sunsetId) && sunset == null) {
+                modifier = modifier.merge(DimensionEffectsModifier.ofSunsetColor(Colormap.createTimeStrip()));
+                sunset = modifier.getSunsetColormap();
+            }
+
             //fill textures
 
             // if just one of them is defined we try assigning to the deafult texture at id
-            if ((fog != null) ^ (sky != null)) {
+            if ((fog != null) ^ (sky != null) ^ (sunset != null)) {
                 ColormapsManager.tryAcceptingTexture(textures, id, fog, usedTextures, false);
                 ColormapsManager.tryAcceptingTexture(textures, id, sky, usedTextures, false);
+                ColormapsManager.tryAcceptingTexture(textures, id, sunset, usedTextures, false);
             }
 
             //try filling with standard textures paths, failing if they are not there
             ColormapsManager.tryAcceptingTexture(textures, fogId, fog, usedTextures, true);
             ColormapsManager.tryAcceptingTexture(textures, skyId, sky, usedTextures, true);
+            ColormapsManager.tryAcceptingTexture(textures, sunsetId, sunset, usedTextures, true);
 
             addModifier(id, modifier);
         }
@@ -182,6 +194,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             }
             if (modifier.getSkyColormap() instanceof Colormap c) {
                 skyColormaps.put(dim, c);
+            }
+            if (modifier.getSunsetColormap() instanceof Colormap c) {
+                sunsetColormaps.put(dim, c);
             }
             if (modifier.noWeatherFogDarken()) {
                 cancelFogWeatherDarken.put(dim, true);
@@ -239,6 +254,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         });
     }
 
+
     @Nullable
     public Float modifyCloudHeight(ClientLevel level) {
         BlockContextExpression height = this.cloudFunctions.get(level.dimensionType());
@@ -263,5 +279,32 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         extraMods.clear();
         extraMods.putAll(converted);
     }
+
+    private static float[] lastSunset = null;
+
+    @Nullable
+    public float[] modifySunsetColor() {
+        Colormap colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
+        if (colormap == null) return null;
+        var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(),
+                ClientFrameTicker.getCameraBiome().value(), null);
+
+        float deltaTime = ClientFrameTicker.getDeltaTime(); // Get time since last frame
+        float interpolationFactor = deltaTime * 0.1f;
+
+
+        var c = ColorUtils.unpack(color);
+
+        if (lastSunset == null) {
+            lastSunset = c;
+            return lastSunset;
+        }
+        // Interpolate towards the fogScalars values
+        lastSunset[0] = Mth.lerp(interpolationFactor, lastSunset[0], c[0]);
+        lastSunset[1] = Mth.lerp(interpolationFactor, lastSunset[1], c[1]);
+        lastSunset[2] = Mth.lerp(interpolationFactor, lastSunset[2], c[2]);
+        return lastSunset;
+    }
+
 
 }

@@ -2,9 +2,9 @@ package net.mehvahdjukaar.polytone.colormap;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.minecraft.client.color.block.BlockTintCache;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -63,6 +63,11 @@ public interface IColormapNumberProvider {
 
     IColormapNumberProvider ZERO = BUILTIN_PROVIDERS.register("zero", new Const(0));
     IColormapNumberProvider ONE = BUILTIN_PROVIDERS.register("one", new Const(1));
+
+
+    IColormapNumberProvider DAY_TIME = BUILTIN_PROVIDERS.register("day_time", (state, pos, biome, mapper, stack) ->
+            (float) ClientFrameTicker.getDayTime());
+
 
     IColormapNumberProvider TEMPERATURE = BUILTIN_PROVIDERS.register("temperature", new IColormapNumberProvider() {
         @Override

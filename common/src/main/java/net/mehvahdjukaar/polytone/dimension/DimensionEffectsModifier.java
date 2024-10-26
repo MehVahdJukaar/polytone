@@ -8,13 +8,13 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
-import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.Set;
@@ -27,6 +27,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                                        Optional<Boolean> constantAmbientLight,
                                        Optional<IColorGetter> fogColor,
                                        Optional<IColorGetter> skyColor,
+                                       Optional<IColorGetter> sunsetColor,
                                        boolean noWeatherFogDarken,
                                        boolean noWeatherSkyDarken,
                                        Optional<Lightmap> lightmap,
@@ -44,6 +45,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                     Codec.BOOL.optionalFieldOf("constant_ambient_light").forGetter(DimensionEffectsModifier::constantAmbientLight),
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
                     Colormap.CODEC.optionalFieldOf("sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
+                    Colormap.CODEC.optionalFieldOf("sunset_colormap").forGetter(DimensionEffectsModifier::sunsetColor),
                     Codec.BOOL.optionalFieldOf("no_weather_fog_darken", false).forGetter(DimensionEffectsModifier::noWeatherFogDarken),
                     Codec.BOOL.optionalFieldOf("no_weather_sky_darken", false).forGetter(DimensionEffectsModifier::noWeatherSkyDarken),
                     Polytone.LIGHTMAPS.byNameCodec().optionalFieldOf("lightmap").forGetter(DimensionEffectsModifier::lightmap),
@@ -52,13 +54,19 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
 
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.of(colormap), Optional.empty(),
-                false, false , Optional.empty(), Set.of());
+                Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty(),
+                false, false, Optional.empty(), Set.of());
     }
 
     public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.of(colormap),
+                Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(),
+                false, false, Optional.empty(), Set.of());
+    }
+
+    public static DimensionEffectsModifier ofSunsetColor(Colormap colormap) {
+        return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(colormap),
                 false, false, Optional.empty(), Set.of());
     }
 
@@ -72,6 +80,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                 other.constantAmbientLight.isPresent() ? other.constantAmbientLight : this.constantAmbientLight,
                 other.fogColor.isPresent() ? other.fogColor : this.fogColor,
                 other.skyColor.isPresent() ? other.skyColor : this.skyColor,
+                other.sunsetColor.isPresent() ? other.sunsetColor : this.sunsetColor,
                 other.noWeatherFogDarken | this.noWeatherFogDarken,
                 other.noWeatherSkyDarken | this.noWeatherSkyDarken,
                 other.lightmap.isPresent() ? other.lightmap : this.lightmap,
@@ -79,12 +88,19 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
         );
     }
 
+    @Nullable
     public BlockColor getFogColormap() {
         return this.fogColor.orElse(null);
     }
-
+    
+    @Nullable
     public BlockColor getSkyColormap() {
         return this.skyColor.orElse(null);
+    }
+
+    @Nullable
+    public BlockColor getSunsetColormap() {
+        return this.sunsetColor.orElse(null);
     }
 
     public DimensionEffectsModifier applyInplace(ResourceLocation dimensionId) {
@@ -115,7 +131,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
             effects.constantAmbientLight = this.constantAmbientLight.get();
         }
         return new DimensionEffectsModifier(oldCloud, oldGround, oldSky, oldBright, oldAmbient,
-                Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(),
                 false, false, Optional.empty(), Set.of());
     }
 

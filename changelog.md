@@ -1,3 +1,2 @@
-- fixed custom hearts texture not wrorking
-- fixed an issue where block modiiers applied to the same block were not merging properly
-- setting an item bar color to 0 will make it disappear entirely
+- added sunset colormaps to dimension modifiers. Check the wiki
+- fog modifiers won't be applied anymore when an effect that alters fog is active

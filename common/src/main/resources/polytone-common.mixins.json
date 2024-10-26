@@ -12,6 +12,7 @@
     "AnimationMetadataSectionSerializerMixin",
     "ClientLevelMixin",
     "ColorResolverMixin",
+    "DimensionSpecialEffectsMixin",
     "FogRendererMixin",
     "GameRendererMixin",
     "GuiMixin",

@@ -111,11 +111,11 @@ public class ParticleContextExpression {
         expression.setVariable(ALPHA, particle.alpha);
         expression.setVariable(SIZE, ((SingleQuadParticle) particle).quadSize);
         expression.setVariable(DX, particle.xd);
-        expression.setVariable(DX, particle.yd);
-        expression.setVariable(DX, particle.zd);
-        expression.setVariable(DX, particle.x);
-        expression.setVariable(DX, particle.y);
-        expression.setVariable(DX, particle.z);
+        expression.setVariable(DY, particle.yd);
+        expression.setVariable(DZ, particle.zd);
+        expression.setVariable(X, particle.x);
+        expression.setVariable(Y, particle.y);
+        expression.setVariable(Z, particle.z);
         expression.setVariable(AGE, particle.age);
         expression.setVariable(ROLL, particle.roll);
         if (hasCustom && particle instanceof CustomParticleType.Instance i)

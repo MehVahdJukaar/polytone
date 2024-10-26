@@ -36,6 +36,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
 
     private static final String TIME = "TIME";
     private static final String DAY_TIME = "DAY_TIME";
+    private static final String SUN_TIME = "SUN_TIME";
     private static final String RAIN = "RAIN";
 
     private static final String STATE_FUNC = "state_prop";
@@ -96,6 +97,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     private final boolean hasRain;
     private final boolean hasTime;
     private final boolean hasDayTime;
+    private final boolean hasSunTime;
 
     private ColormapExpressionProvider(Expression expression, String unparsed) {
         this.expression = expression;
@@ -106,6 +108,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
         this.hasRain = unparsed.contains(RAIN);
         this.hasTime = unparsed.contains(TIME);
         this.hasDayTime = unparsed.contains(DAY_TIME);
+        this.hasSunTime = unparsed.contains(SUN_TIME);
     }
 
     //Unckecked
@@ -157,6 +160,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
             if (hasRain) exp.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
             if (hasTime) exp.setVariable(TIME, ClientFrameTicker.getGameTime());
             if (hasDayTime) exp.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
+            if (hasSunTime) exp.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
 
             if (stack != null) {
                 float damage = 1 - stack.getDamageValue() / (float) stack.getMaxDamage();

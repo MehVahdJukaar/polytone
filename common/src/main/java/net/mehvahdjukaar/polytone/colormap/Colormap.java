@@ -237,6 +237,10 @@ public class Colormap implements IColorGetter, ColorResolver {
         return new Colormap(IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, true);
     }
 
+    public static Colormap createTimeStrip() {
+        return new Colormap(IColormapNumberProvider.DAY_TIME, IColormapNumberProvider.ZERO, false);
+    }
+
     public static Colormap createBiomeId() {
         return new Colormap(Optional.empty(),
                 IColormapNumberProvider.BIOME_ID,

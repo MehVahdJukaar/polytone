@@ -4,8 +4,10 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -65,7 +67,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         doApplyWithLevel(access, firstLogin);
     }
 
-    private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod,RegistryAccess access) {
+    private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod, RegistryAccess access) {
         Registry<Biome> registry = access.registryOrThrow(Registries.BIOME);
         for (var biome : mod.getTargets(pathId, registry)) {
             effectsToApply.merge(registry.getKey(biome), mod, BiomeEffectModifier::merge);
@@ -137,6 +139,11 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null) return null;
+
+        //dont modify if a mob effect that modifies fog is active
+        if (FogRenderer.getPriorityFogFunction(player, mc.getTimer().getGameTimeDeltaPartialTick(false))
+                != null) return null;
+
         Level level = player.level();
 
         Holder<Biome> biome = level.getBiome(player.blockPosition());
@@ -150,7 +157,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
             fogScalars = new Vec2(1, 1);
         }
         if (fogScalars != null) {
-            float deltaTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks(); // Get time since last frame
+            float deltaTime = ClientFrameTicker.getDeltaTime(); // Get time since last frame
             float interpolationFactor = deltaTime * 0.1f;
 
             // Interpolate towards the fogScalars values
