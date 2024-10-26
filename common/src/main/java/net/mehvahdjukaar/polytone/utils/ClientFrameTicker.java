@@ -10,13 +10,17 @@ import net.minecraft.world.level.biome.Biome;
 public class ClientFrameTicker {
 
     private static double time;
+    private static double timeOfDay;
     private static double dayTime;
     private static float rainAndThunder;
     private static int skyLight;
     private static int blockLight;
     private static BlockPos cameraPos = BlockPos.ZERO;
+    public static Holder<Biome> cameraBiome;
     private static float temperature;
     private static float downfall;
+    private static float deltaTime;
+
 
     public static void onRenderTick(Minecraft mc) {
         Level level = mc.level;
@@ -25,13 +29,17 @@ public class ClientFrameTicker {
 
         time = level.getGameTime() + partialTicks;
         dayTime = level.getDayTime() + partialTicks;
+        timeOfDay = level.getTimeOfDay(partialTicks);
         rainAndThunder = level.getRainLevel(partialTicks) * 0.5f + level.getThunderLevel(partialTicks) * 0.5f;
 
         cameraPos = mc.gameRenderer.getMainCamera().getBlockPosition();
+        cameraBiome = level.getBiome(cameraPos);
+
+        deltaTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
     }
 
-    public static void onTick(Level level){
-        if(cameraPos != null) {
+    public static void onTick(Level level) {
+        if (cameraPos != null) {
             skyLight = level.getBrightness(LightLayer.SKY, cameraPos);
             blockLight = level.getBrightness(LightLayer.BLOCK, cameraPos);
             var biome = level.getBiome(cameraPos);
@@ -70,5 +78,17 @@ public class ClientFrameTicker {
 
     public static float getDownfall() {
         return downfall;
+    }
+
+    public static Holder<Biome> getCameraBiome() {
+        return cameraBiome;
+    }
+
+    public static float getDeltaTime() {
+        return deltaTime;
+    }
+
+    public static double getSunTime() {
+        return timeOfDay;
     }
 }
