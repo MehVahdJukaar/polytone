@@ -64,9 +64,9 @@ public interface IColormapNumberProvider {
     IColormapNumberProvider ZERO = BUILTIN_PROVIDERS.register("zero", new Const(0));
     IColormapNumberProvider ONE = BUILTIN_PROVIDERS.register("one", new Const(1));
 
-
+    //why inverted. for sunset colormaps
     IColormapNumberProvider DAY_TIME = BUILTIN_PROVIDERS.register("day_time", (state, pos, biome, mapper, stack) ->
-            (float) ClientFrameTicker.getDayTime());
+            (float) ( 1f-(ClientFrameTicker.getDayTime() % 24000 / 24000f)));
 
 
     IColormapNumberProvider TEMPERATURE = BUILTIN_PROVIDERS.register("temperature", new IColormapNumberProvider() {

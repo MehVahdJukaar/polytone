@@ -12,6 +12,7 @@ import net.mehvahdjukaar.polytone.item.CustomItemModelsManager;
 import net.mehvahdjukaar.polytone.item.ItemModelOverrideList;
 import net.mehvahdjukaar.polytone.item.ItemModifiersManager;
 import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
+import net.mehvahdjukaar.polytone.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.particle.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
@@ -55,6 +56,7 @@ public class Polytone {
     public static final ItemModifiersManager ITEM_MODIFIERS = new ItemModifiersManager();
     public static final CustomItemModelsManager ITEM_MODELS = new CustomItemModelsManager();
     public static final BiomeEffectsManager BIOME_MODIFIERS = new BiomeEffectsManager();
+    public static final NoiseManager NOISES = new NoiseManager();
     public static final ColormapsManager COLORMAPS = new ColormapsManager();
     public static final LightmapsManager LIGHTMAPS = new LightmapsManager();
     public static final BiomeIdMapperManager BIOME_ID_MAPPERS = new BiomeIdMapperManager();
@@ -76,7 +78,7 @@ public class Polytone {
 
     public static void init(boolean devEnv, boolean forge) {
         COMPOUND_RELOADER = new CompoundReloader(
-                SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
+                NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,

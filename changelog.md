@@ -1,2 +1,3 @@
-- added sunset colormaps to dimension modifiers. Check the wiki
-- fog modifiers won't be applied anymore when an effect that alters fog is active
+- added perlin noises to expressions
+- fixed sunset colors being inverted
+- hotix for prev release
