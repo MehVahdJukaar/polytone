@@ -63,6 +63,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         effectsToApply.clear();
         fogColormaps.clear();
         skyColormaps.clear();
+        sunsetColormaps.clear();
         cancelFogWeatherDarken.clear();
         cancelSkyWeatherDarken.clear();
         extraMods.clear();
@@ -283,7 +284,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private static float[] lastSunset = null;
 
     @Nullable
-    public float[] modifySunsetColor() {
+    public float[] modifySunsetColor(float [] old) {
         Colormap colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
         if (colormap == null) return null;
         var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(),
@@ -296,13 +297,14 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         var c = ColorUtils.unpack(color);
 
         if (lastSunset == null) {
-            lastSunset = c;
+            lastSunset = new float[]{c[0], c[1], c[2], old[3]};
             return lastSunset;
         }
         // Interpolate towards the fogScalars values
         lastSunset[0] = Mth.lerp(interpolationFactor, lastSunset[0], c[0]);
         lastSunset[1] = Mth.lerp(interpolationFactor, lastSunset[1], c[1]);
         lastSunset[2] = Mth.lerp(interpolationFactor, lastSunset[2], c[2]);
+        lastSunset[3] = old[3];
         return lastSunset;
     }
 

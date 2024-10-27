@@ -1,11 +1,14 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 import net.objecthunter.exp4j.function.Function;
 import net.objecthunter.exp4j.operator.Operator;
 
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -14,7 +17,9 @@ public class ExpressionUtils {
 
     private static final RandomSource RANDOM_SOURCE = RandomSource.createNewThreadLocalInstance();
 
-private static final ThreadLocal<Long> LAST_SEED = new ThreadLocal<>();
+    private static final ThreadLocal<Long> LAST_SEED = new ThreadLocal<>();
+
+    private static final Set<Function> NOISE_FUNCS = new HashSet<>();
 
     private static final Function RAND = new Function("rand", 0) {
         @Override
@@ -191,10 +196,43 @@ private static final ThreadLocal<Long> LAST_SEED = new ThreadLocal<>();
 
 
     public static Function[] defFunc(Function... others) {
-        return Stream.concat(
-                Stream.of(ATAN2, RAND, GAUSSIAN, STEP, SMOOTHSTEP, MAX, MIN, LERP, RED, GREEN, BLUE, ALPHA, COLOR),
-                Stream.of(others)
-        ).toArray(Function[]::new);
+        List<Function> list = new ArrayList<>();
+        list.addAll(Arrays.asList(others));
+        list.addAll(NOISE_FUNCS);
+        list.addAll(List.of(COS, SIN, ATAN2, RAND, GAUSSIAN, STEP, SMOOTHSTEP, MAX, MIN, LERP, RED, GREEN, BLUE, ALPHA, COLOR));
+        return list.toArray(new Function[0]);
+    }
+
+    public static void regenNoiseFunctions(Set<Map.Entry<ResourceLocation, PerlinSimplexNoise>> noises) {
+        NOISE_FUNCS.clear();
+        for (var e : noises) {
+            ResourceLocation res = e.getKey();
+            PerlinSimplexNoise noise = e.getValue();
+            String key = "noise_" + res.getNamespace() + "_" + res.getPath();
+            NOISE_FUNCS.add(new Function(key, 2) {
+                @Override
+                public double apply(double... args) {
+                    return noise.getValue(args[0], args[1], false);
+                }
+            });
+            if (res.getNamespace().equals("minecraft")) {
+                key = key.replace("minecraft_", "");
+                NOISE_FUNCS.add(new Function(key, 2) {
+                    @Override
+                    public double apply(double... args) {
+                        return noise.getValue(args[0], args[1], false);
+                    }
+                });
+            }
+        }
+        PerlinSimplexNoise baseNoise = new PerlinSimplexNoise(RandomSource.create(0), List.of(1));
+        NOISE_FUNCS.add(new Function("noise", 2) {
+            @Override
+            public double apply(double... args) {
+                return baseNoise.getValue(args[0], args[1], false);
+            }
+        });
+
     }
 
 
@@ -236,5 +274,6 @@ private static final ThreadLocal<Long> LAST_SEED = new ThreadLocal<>();
     }
 
     private static final RandomSource SECONDARY = RandomSource.createNewThreadLocalInstance();
+
 
 }
