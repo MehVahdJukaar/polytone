@@ -14,14 +14,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
 
-    @Shadow
-    @Final
-    @Deprecated
-    private Item item;
+    @Shadow public abstract Item getItem();
 
     @Inject(method = "getBarColor", at = @At("HEAD"), cancellable = true)
     public void polytone$modifyBarColor(CallbackInfoReturnable<Integer> cir) {
-        var mod = ((IPolytoneItem) this.item).polytone$getModifier();
+        var mod = ((IPolytoneItem) this.getItem()).polytone$getModifier();
         if (mod != null) {
             Integer barColor = mod.getBarColor((ItemStack) (Object) this);
             if (barColor != null) cir.setReturnValue(barColor);

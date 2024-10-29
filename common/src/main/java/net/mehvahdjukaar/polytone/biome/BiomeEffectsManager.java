@@ -163,19 +163,17 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     }
 
-
     private static float lastFogDistanceMult = 1;
     private static float lastFogEndMult = 1;
 
     @Nullable
-    public Vec2 modifyFogParameters(float fogNearPlane, float fogFarPlane) {
+    public Vec2 modifyFogParameters(float originalNearPlane, float originalFarPlane) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null) return null;
 
         //dont modify if a mob effect that modifies fog is active
-        if (FogRenderer.getPriorityFogFunction(player, mc.getTimer().getGameTimeDeltaPartialTick(false))
-                != null) return null;
+        if (FogRenderer.getPriorityFogFunction(player, 0) != null) return null;
 
         Level level = player.level();
 
@@ -197,7 +195,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
             lastFogDistanceMult = Mth.lerp(interpolationFactor, lastFogDistanceMult, fogScalars.x);
             lastFogEndMult = Mth.lerp(interpolationFactor, lastFogEndMult, fogScalars.y);
             //fogEvent.scaleNearPlaneDistance(1);
-            float distance = fogFarPlane - fogNearPlane;
+            float distance = originalFarPlane - originalNearPlane;
 
             return new Vec2((originalFarPlane - distance * lastFogDistanceMult) * lastFogEndMult, originalFarPlane * lastFogEndMult);
         }

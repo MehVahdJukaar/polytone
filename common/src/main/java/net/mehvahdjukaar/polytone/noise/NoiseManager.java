@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
@@ -36,7 +37,7 @@ public class NoiseManager extends JsonPartialReloader {
             var id = e.getKey();
             var json = e.getValue();
             PerlinSimplexNoise noise = NOISE_CODEC.decode(ops, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Noise with json id " + id + "\n error: " + errorMsg))
+                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.error("Could not decode Noise with json id {}\n error: {}", id, errorMsg))
                     .getFirst();
             noises.register(id, noise);
         }

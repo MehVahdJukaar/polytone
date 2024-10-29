@@ -65,12 +65,13 @@ public class CustomParticlesManager extends JsonPartialReloader {
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
 
         for (var j : obj.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
-            CustomParticleFactory factory = CUSTOM_OR_SEMI_CUSTOM_CODEC.decode(ops, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Custom Particle Type with json id {} - error: {}",
-                            id, errorMsg)).getFirst();
-            factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
+            try {
+                var json = j.getValue();
+                var id = j.getKey();
+                CustomParticleFactory factory = CUSTOM_OR_SEMI_CUSTOM_CODEC.decode(ops, json)
+                        .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Custom Particle Type with json id {} - error: {}",
+                                id, errorMsg)).getFirst();
+                factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
                 if (BuiltInRegistries.PARTICLE_TYPE.get(id) != null) {
                     ParticleType oldType = BuiltInRegistries.PARTICLE_TYPE.get(id);

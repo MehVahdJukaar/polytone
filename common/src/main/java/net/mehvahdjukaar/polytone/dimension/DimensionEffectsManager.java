@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
@@ -24,6 +25,7 @@ import net.minecraft.util.CubicSampler;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -194,20 +196,21 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
             vanillaEffects.put(dimensionId, old);
 
+            DimensionType dim = dimReg.get(dimensionId);
             if (modifier.getFogColormap() instanceof Colormap c) {
-                fogColormaps.put(dimReg.get(dimensionId), c);
+                fogColormaps.put(dim, c);
             }
             if (modifier.getSkyColormap() instanceof Colormap c) {
-                skyColormaps.put(dimReg.get(dimensionId), c);
+                skyColormaps.put(dim, c);
             }
             if (modifier.getSunsetColormap() instanceof Colormap c) {
                 sunsetColormaps.put(dim, c);
             }
             if (modifier.noWeatherFogDarken()) {
-                cancelFogWeatherDarken.put(dimReg.get(dimensionId), true);
+                cancelFogWeatherDarken.put(dim, true);
             }
             if (modifier.noWeatherSkyDarken()){
-                cancelSkyWeatherDarken.put(dimReg.get(dimensionId), true);
+                cancelSkyWeatherDarken.put(dim, true);
             }
         }
         if (!vanillaEffects.isEmpty())

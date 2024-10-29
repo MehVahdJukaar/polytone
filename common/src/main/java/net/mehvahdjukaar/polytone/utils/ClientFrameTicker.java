@@ -35,7 +35,7 @@ public class ClientFrameTicker {
         cameraPos = mc.gameRenderer.getMainCamera().getBlockPosition();
         cameraBiome = level.getBiome(cameraPos);
 
-        deltaTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
+        deltaTime = Minecraft.getInstance().getDeltaFrameTime();
     }
 
     public static void onTick(Level level) {

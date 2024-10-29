@@ -26,15 +26,15 @@ public final class AlternativeMapCodec<A> extends MapCodec<A> {
     @Override
     public <T> DataResult<A> decode(DynamicOps<T> ops, MapLike<T> input) {
         var firstRead = first.decode(ops, input);
-        if (firstRead.isSuccess()) return firstRead;
+        if (firstRead.result().isPresent()) return firstRead;
         var secondRead = second.decode(ops, input);
-        if (secondRead.isSuccess()) {
+        if (secondRead.result().isPresent()) {
             return secondRead;
         }
-        if (firstRead.hasResultOrPartial()) {
+        if (firstRead.result().isPresent()) {
             return firstRead;
         }
-        if (secondRead.hasResultOrPartial()) {
+        if (secondRead.result().isPresent()) {
             return secondRead;
         }
         if (defaultValue != null) {
