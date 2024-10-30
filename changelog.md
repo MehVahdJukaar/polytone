@@ -1,3 +1,1 @@
-- added perlin noises to expressions
-- fixed sunset colors being inverted
-- hotix for prev release
+- custom leash texture is now off when iris is on

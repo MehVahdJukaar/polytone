@@ -75,8 +75,9 @@ public class Polytone {
 
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
+    public static boolean iris = false;
 
-    public static void init(boolean devEnv, boolean forge) {
+    public static void init(boolean devEnv, boolean forge, boolean iris) {
         COMPOUND_RELOADER = new CompoundReloader(
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
@@ -87,6 +88,7 @@ public class Polytone {
                 res("polytone_stuff"));
         isDevEnv = devEnv;
         isForge = forge;
+        Polytone.iris = iris;
 
         ItemModelOverrideList.testTrie();
         GenericDirectorySpriteSource.init();

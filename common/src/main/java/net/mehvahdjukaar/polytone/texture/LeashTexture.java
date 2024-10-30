@@ -3,20 +3,23 @@ package net.mehvahdjukaar.polytone.texture;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.mehvahdjukaar.polytone.IrisCompat;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 public class LeashTexture extends RenderType {
 
     private static final ResourceLocation LEASH_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/lead.png");
 
-   private static final RenderType RENDER_TYPE = RenderType. create("polytone_leash",DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
-            VertexFormat.Mode.TRIANGLE_STRIP, 1536,RenderType.CompositeState.builder()
+    private static final RenderType RENDER_TYPE = RenderType.create("polytone_leash", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
+            VertexFormat.Mode.TRIANGLE_STRIP, 1536, RenderType.CompositeState.builder()
                     .setShaderState(RENDERTYPE_TEXT_SHADER)
                     .setTextureState(new RenderStateShard.TextureStateShard(LEASH_TEXTURE, false, false))
                     .setCullState(NO_CULL)
@@ -27,7 +30,9 @@ public class LeashTexture extends RenderType {
     }
 
 
+    @Nullable
     public static VertexConsumer getVertexConsumer(MultiBufferSource multiBufferSource) {
+        if (Polytone.iris && IrisCompat.isIrisShaderFuckerActive()) return null;
         return multiBufferSource.getBuffer(RENDER_TYPE);
     }
 
@@ -37,6 +42,8 @@ public class LeashTexture extends RenderType {
                                         float y0, float y1,
                                         float dx, float dz,
                                         int index, boolean flippedColors) {
+        if (Polytone.iris && IrisCompat.isIrisShaderFuckerActive()) return false;
+
         // Calculate segment and interpolate lighting
         float segment = (float) index / 24.0F;
         int blockLight = (int) Mth.lerp(segment, (float) blockLight0, (float) blockLight1);

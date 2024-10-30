@@ -24,6 +24,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.ModelEvent;
@@ -58,7 +59,8 @@ public class PolytoneForge {
     public PolytoneForge(IEventBus modBus) {
         bus = modBus;
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            Polytone.init(!FMLEnvironment.production, true);
+            boolean iris = ModList.get().isLoaded("iris") || ModList.get().isLoaded("oculus");
+            Polytone.init(!FMLEnvironment.production, true, iris);
 
             NeoForge.EVENT_BUS.register(this);
             modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);

@@ -9,8 +9,6 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.impl.lib.tinyremapper.IMappingProvider;
-import net.fabricmc.loader.impl.lib.tinyremapper.TinyRemapper;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
@@ -23,8 +21,8 @@ public class PolytoneFabric implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         FabricLoader instance = FabricLoader.getInstance();
-
-        Polytone.init(instance.isDevelopmentEnvironment(), false);
+        boolean iris = FabricLoader.getInstance().isModLoaded("iris") || FabricLoader.getInstance().isModLoaded("oculus");
+        Polytone.init(instance.isDevelopmentEnvironment(), false, iris);
 
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
             if (client) {
