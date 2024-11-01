@@ -1,1 +1,2 @@
-- custom leash texture is now off when iris is on
+- fixed lightmap expressions always evaluating to 0
+- added TEMPERATURE and HUMIDITY to the list of available expressions for lightmaps

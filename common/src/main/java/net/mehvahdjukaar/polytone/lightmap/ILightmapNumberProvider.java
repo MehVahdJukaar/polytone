@@ -11,10 +11,10 @@ public interface ILightmapNumberProvider {
     MapRegistry<ILightmapNumberProvider> BUILTIN_PROVIDERS = new MapRegistry<>("Lightmap Number Providers");
 
     Codec<ILightmapNumberProvider> CODEC = new ReferenceOrDirectCodec<>(BUILTIN_PROVIDERS,
-            LightmapExpressionProvider.CODEC, true);
+            LightmapContextExpression.CODEC, true);
 
 
-    float getValue(float time, float rain, float thunder);
+    double getValue(float time, float rain, float thunder);
 
     RandomSource RAND = RandomSource.create();
 
@@ -29,9 +29,9 @@ public interface ILightmapNumberProvider {
     // A slanted Step
     ILightmapNumberProvider DEFAULT = BUILTIN_PROVIDERS.register("default",
             (time, rain, thunder) -> {
-                float g = 1.0F - (Mth.cos(time * Mth.TWO_PI) * 2.0F + 0.2F);
-                g = Mth.clamp(g, 0.0F, 1.0F);
-                g = 1.0F - g;
+                double g = 1.0 - (Mth.cos(time * Mth.TWO_PI) * 2.0 + 0.2);
+                g = Mth.clamp(g, 0.0, 1.0);
+                g = 1.0 - g;
                 // g *= 1.0F - rain * 5.0F / 16.0F;
                 // g *= 1.0F - thunder * 5.0F / 16.0F;
                 return g;
@@ -39,7 +39,7 @@ public interface ILightmapNumberProvider {
 
     // Sine
     ILightmapNumberProvider SMOOTH = BUILTIN_PROVIDERS.register("smooth",
-            (time, rain, thunder) -> 0.5f + (Mth.cos(time * Mth.TWO_PI) * 0.5f));
+            (time, rain, thunder) -> 0.5 + (Mth.cos(time * Mth.TWO_PI) * 0.5));
 
     // Triangle func
     ILightmapNumberProvider LINEAR = BUILTIN_PROVIDERS.register("linear",
@@ -47,9 +47,9 @@ public interface ILightmapNumberProvider {
 
     ILightmapNumberProvider DEFAULT_2 = BUILTIN_PROVIDERS.register("default",
             (time, rain, thunder) -> {
-                float g = 1.0F - (Mth.cos(time * Mth.TWO_PI) * 2.0F + 0.2F);
-                g = Mth.clamp(g, 0.0F, 1.0F);
-                g = 1.0F - g;
+                double g = 1.0 - (Mth.cos(time * Mth.TWO_PI) * 2.0 + 0.2);
+                g = Mth.clamp(g, 0.0, 1.0);
+                g = 1.0 - g;
                 g *= 0.5;
                 if (time > 0.5) {
                     return g;
@@ -62,9 +62,9 @@ public interface ILightmapNumberProvider {
     ILightmapNumberProvider SMOOTH_2 = BUILTIN_PROVIDERS.register("smooth_2",
             (time, rain, thunder) -> {
                 if (time > 0.5) {
-                    return 0.25f - (Mth.cos(time * Mth.TWO_PI) * 0.25f);
+                    return 0.25 - (Mth.cos(time * Mth.TWO_PI) * 0.25);
                 } else {
-                    return 0.75f + (Mth.cos(time * Mth.TWO_PI) * 0.25f);
+                    return 0.75 + (Mth.cos(time * Mth.TWO_PI) * 0.25);
                 }
             });
 
@@ -73,9 +73,9 @@ public interface ILightmapNumberProvider {
             (time, rain, thunder) -> {
                 float linear = Mth.abs(1 - 2 * time);
                 if (time > 0.5) {
-                    return linear * 0.5f;
+                    return linear * 0.5;
                 } else {
-                    return 1 - linear * 0.5f;
+                    return 1 - linear * 0.5;
                 }
             });
 

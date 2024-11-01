@@ -259,7 +259,7 @@ public class Lightmap {
         if (image == null) {
             return new float[][]{};
         }
-        float xVal = skyGetter.getValue(time, rain, thunder);
+        double xVal = skyGetter.getValue(time, rain, thunder);
 
         float[][] skyLine = new float[16][];
 
@@ -271,7 +271,7 @@ public class Lightmap {
                 w = usableSkyWidth;
             } else {
                 //no thunder
-                w = Math.round(xVal * usableSkyWidth);
+                w = Math.round((float) xVal * usableSkyWidth);
             }
         } else {
             //thunder lightmap
@@ -290,7 +290,7 @@ public class Lightmap {
         if (image == null || image.height() < 32) {
             return new float[][]{};
         }
-        float xVal = torchGetter.getValue(time, rain, thunder);
+        double xVal = torchGetter.getValue(time, rain, thunder);
         //simulate torch flicker
         float[][] torchLine = new float[16][];
         int h = 16 + ((nightVision != 0 && image.height() == 64) ? 32 : 0);
