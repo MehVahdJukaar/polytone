@@ -16,11 +16,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-//needed because resource packs are loaded way before data packs
+// needed because resource packs are loaded way before data packs
 public class LazyHolderSet<T> implements HolderSet<T> {
     private static final List<LazyHolderSet<?>> TO_INITIALIZE = new ArrayList<>();
 
-    public static void initializeAll(RegistryAccess registryAccess) {
+    public static void initializeAll(HolderLookup.Provider registryAccess) {
         DynamicOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
         for (LazyHolderSet<?> lazy : TO_INITIALIZE) {
             lazy.rePopulate(ops);
@@ -72,6 +72,7 @@ public class LazyHolderSet<T> implements HolderSet<T> {
 
     @Override
     public boolean isBound() {
+        //im sure this was done for a reason but i cant remember that...
         return false; // todo wtf? 1.21.2
     }
 

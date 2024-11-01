@@ -17,9 +17,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.CubicSampler;
@@ -173,7 +175,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess registryAccess, boolean firstLogin) {
+    protected void applyWithLevel(HolderLookup.Provider registryAccess, boolean firstLogin) {
         if (!firstLogin && !needsDynamicApplication) return;
         needsDynamicApplication = false;
 
@@ -181,16 +183,17 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             v.getValue().applyInplace(v.getKey());
         }
 
-        Registry<DimensionType> dimReg = registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE);
+        var dimReg = registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE);
 
         for (var v : effectsToApply.entrySet()) {
             ResourceLocation dimensionId = v.getKey();
+            var dimensionKey = ResourceKey.create(Registries.DIMENSION_TYPE, dimensionId);
             DimensionEffectsModifier modifier = v.getValue();
             var old = modifier.applyInplace(dimensionId);
 
             vanillaEffects.put(dimensionId, old);
 
-            DimensionType dim = dimReg.get(dimensionId).get().value();
+            DimensionType dim = dimReg.get(dimensionKey).get().value();
             if (modifier.getFogColormap() instanceof Colormap c) {
                 fogColormaps.put(dim, c);
             }

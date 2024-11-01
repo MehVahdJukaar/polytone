@@ -37,8 +37,8 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Item Modifier with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
             if (!partial.customModels().isEmpty()) {
-                for (Item item : partial.getTargets(id, BuiltInRegistries.ITEM)) {
-                    Polytone.ITEM_MODELS.addModelFromModifier(item, partial.customModels());
+                for (var item : partial.getTargets(id, BuiltInRegistries.ITEM)) {
+                    Polytone.ITEM_MODELS.addModelFromModifier(item.value(), partial.customModels());
                 }
             }
         }

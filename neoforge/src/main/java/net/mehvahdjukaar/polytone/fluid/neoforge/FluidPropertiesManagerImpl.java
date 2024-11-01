@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -20,6 +21,7 @@ import net.neoforged.neoforge.fluids.FluidType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -106,17 +108,18 @@ public class FluidPropertiesManagerImpl {
         }
 
         @Override
-        public @NotNull Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
+        public @NotNull Vector4f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector4f fluidFogColor) {
             var col = modifier.getFogColormap();
             if (col != null) {
-                return new Vector3f(ColorUtils.unpack(col.getColor(null, level, null, -1)));
+                float[] unpack = ColorUtils.unpack(col.getColor(null, level, null, -1));
+                return new Vector4f(unpack[0], unpack[1], unpack[2], fluidFogColor.w);
             }
             return existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
         }
 
         @Override
-        public void modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, float nearDistance, float farDistance, FogShape shape) {
-            existingProperties.modifyFogRender(camera, mode, renderDistance, partialTick, nearDistance, farDistance, shape);
+        public FogParameters modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, FogParameters fogParameters) {
+            return existingProperties.modifyFogRender(camera, mode, renderDistance, partialTick, fogParameters);
         }
 
         @Override

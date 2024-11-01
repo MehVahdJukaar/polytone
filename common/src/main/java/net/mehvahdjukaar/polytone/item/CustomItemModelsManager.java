@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -108,7 +109,7 @@ public class CustomItemModelsManager extends PartialReloader<Object> {
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean firstLogin) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean firstLogin) {
         for (var list : this.itemModels.values()) {
             list.populateModels(access);
         }

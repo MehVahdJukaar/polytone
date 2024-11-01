@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.*;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
@@ -103,7 +104,7 @@ public class PolytoneForge {
     @SubscribeEvent
     public void onTagSync(TagsUpdatedEvent event) {
         if (event.getUpdateCause() == TagsUpdatedEvent.UpdateCause.CLIENT_PACKET_RECEIVED) {
-            Polytone.onTagsReceived(event.getRegistryAccess());
+            Polytone.onTagsReceived(event.getLookupProvider());
         }
         bus = null;
     }

@@ -14,7 +14,7 @@ These include:
 
 For some things the mod also offers backwards compatibility with the system previously offered by Optifine (color.properties file), allowing said features from existing packs to work aswell
 
-The mod is designed to be fast and as light weight as possible while keeping the most customizaiton it can. 
+The mod is designed to be fast and as lightweight as possible while keeping the most customization it can. 
 Not only does it offer a replacement for color.properties system but also offer way, way more features and customization options that were previously not available.
 
 The mod can work both in VANILLA and in MODDED environment, working flawlessly with ANY Biome, Particle, Blocks and so on, unlike what previous mods did.

@@ -10,6 +10,7 @@ import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -90,7 +91,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean firstLogin) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean firstLogin) {
         var ops = RegistryOps.create(JsonOps.INSTANCE, access);
         for (var j : lazyJsons.entrySet()) {
 

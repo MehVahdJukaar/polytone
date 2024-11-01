@@ -22,7 +22,6 @@ public record ArrayImage(int[][] pixels, int width, int height) {
     public ArrayImage(int[][] matrix) {
         this(matrix, matrix[0].length, matrix.length);
     }
-    //TODO: remove this isnt needed
 
     public static  Map<ResourceLocation, ArrayImage> scanDirectory(ResourceManager manager, String path) {
         Map<ResourceLocation, ArrayImage> map = new HashMap<>();

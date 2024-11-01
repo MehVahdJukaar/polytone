@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -93,7 +94,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         reloader.process((T) object, JsonOps.INSTANCE);
     }
 
-    public void applyOnLevelLoad(RegistryAccess registryAccess, boolean firstLogin){
+    public void applyOnLevelLoad(HolderLookup.Provider registryAccess, boolean firstLogin){
         for (var c : children) {
             c.applyWithLevel(registryAccess, firstLogin);
         }

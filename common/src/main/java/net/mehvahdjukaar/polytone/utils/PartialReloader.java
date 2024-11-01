@@ -7,6 +7,7 @@ import com.google.gson.JsonParseException;
 import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
@@ -111,7 +112,7 @@ public abstract class PartialReloader<T> {
 
     protected abstract void process(T obj, DynamicOps<JsonElement> ops);
 
-    protected void applyWithLevel(RegistryAccess access, boolean firstLogin) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean firstLogin) {
 
     }
 

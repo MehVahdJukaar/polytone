@@ -9,6 +9,7 @@ import com.mojang.serialization.codecs.UnboundedMapCodec;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
@@ -81,14 +82,14 @@ public class ItemModelOverride {
     }
 
 
-    public DataComponentMap getComponents(RegistryAccess registryAccess) {
+    public DataComponentMap getComponents(HolderLookup.Provider registryAccess) {
         if (this.decodedComponents == null && this.lazyComponent != null) {
             this.decodedComponents = runCodec(registryAccess, this.lazyComponent);
         }
         return this.decodedComponents;
     }
 
-    private static <T> DataComponentMap runCodec(RegistryAccess ra, Dynamic<T> dynamic) {
+    private static <T> DataComponentMap runCodec(HolderLookup.Provider ra, Dynamic<T> dynamic) {
         DynamicOps<T> ops = RegistryOps.create(dynamic.getOps(), ra);
         return DataComponentMap.CODEC.decode(ops, dynamic.getValue())
                 .result().orElseThrow(() -> new JsonParseException("Failed to decode components map"))

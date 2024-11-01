@@ -27,6 +27,7 @@ import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -99,7 +100,7 @@ public class Polytone {
     }
 
 
-    public static void onTagsReceived(RegistryAccess registryAccess) {
+    public static void onTagsReceived(HolderLookup.Provider registryAccess) {
         try {
             COMPOUND_RELOADER.applyOnLevelLoad(registryAccess, true);
             BiomeKeysCache.clear();

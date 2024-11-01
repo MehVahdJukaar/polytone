@@ -3,7 +3,9 @@ package net.mehvahdjukaar.polytone.utils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.core.Registry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,9 +24,9 @@ public interface ITargetProvider {
         Matcher matcher = WILDCARD_PATTERN.matcher(s);
         if (matcher.matches()) {
             String group = matcher.group(1);
-            if(group != null)
-                 return DataResult.success(
-                    ResourceLocation.fromNamespaceAndPath(group, WILDCARD_PLACEHOLDER));
+            if (group != null)
+                return DataResult.success(
+                        ResourceLocation.fromNamespaceAndPath(group, WILDCARD_PLACEHOLDER));
         }
         if (s.equals("*")) return DataResult.success(ALL_WILDCARD);
         return DataResult.error(() -> "Wildcard target must be '*'. Was: " + s);
@@ -33,7 +35,7 @@ public interface ITargetProvider {
     Codec<ResourceLocation> WILDCARD_OR_RES = Codec.withAlternative(ResourceLocation.CODEC, WILDCARD_CODEC);
 
     Codec<Set<ResourceLocation>> TARGET_CODEC = Codec.withAlternative(WILDCARD_OR_RES.listOf(), WILDCARD_OR_RES,
-                    List::of).xmap(Set::copyOf, List::copyOf);
+            List::of).xmap(Set::copyOf, List::copyOf);
 
 
     default <T> Set<T> mergeSet(Set<T> first, Set<T> second) {
@@ -60,10 +62,11 @@ public interface ITargetProvider {
         return expl;
     }
 
-    default <T> Set<T> getTargets(ResourceLocation fileId, Registry<T> registry) {
-        Set<T> set = new HashSet<>();
+    default <T> Set<Holder<T>> getTargets(ResourceLocation fileId, HolderLookup.RegistryLookup<T> registry) {
+        Set<Holder<T>> set = new HashSet<>();
         Set<ResourceLocation> explTargets = this.explicitTargets();
-        Optional<T> implicitTarget = registry.getOptional(fileId);
+        var key = regKey(registry, fileId);
+        var implicitTarget = registry.get(key);
         if (!explTargets.isEmpty()) {
             if (implicitTarget.isPresent() && !explTargets.contains(fileId)) {
                 Polytone.LOGGER.error("Found Polytone file with explicit Targets ({}) also having a valid IMPLICIT (file path) Target ({})." +
@@ -73,12 +76,13 @@ public interface ITargetProvider {
 
                 if (explicitId.getPath().equals(WILDCARD_PLACEHOLDER)) {
                     if (explicitId.equals(ALL_WILDCARD)) {
-                        return registry.stream().collect(Collectors.toSet());
+                        return registry.listElements()
+                                .collect(Collectors.toSet());
                     }
-                    return registry.entrySet().stream().filter(e -> e.getKey().location().getNamespace()
-                            .equals(explicitId.getNamespace())).map(Map.Entry::getValue).collect(Collectors.toSet());
+                    return registry.listElements().filter(e -> e.unwrapKey().get().location().getNamespace()
+                            .equals(explicitId.getNamespace())).collect(Collectors.toSet());
                 }
-                Optional<T> target = registry.getOptional(explicitId);
+                var target = registry.get(regKey(registry, explicitId));
                 target.ifPresent(set::add);
             }
         }
@@ -91,6 +95,10 @@ public interface ITargetProvider {
             }
         }
         return set;
+    }
+
+    public static <T> @NotNull ResourceKey<T> regKey(HolderLookup.RegistryLookup<T> registry, ResourceLocation id) {
+        return ResourceKey.create((ResourceKey) registry.key(), id);
     }
 
 }

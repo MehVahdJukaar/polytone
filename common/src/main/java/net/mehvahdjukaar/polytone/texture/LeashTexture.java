@@ -33,7 +33,7 @@ public class LeashTexture extends RenderType {
 
     @Nullable
     public static VertexConsumer getVertexConsumer(MultiBufferSource multiBufferSource) {
-        if (Polytone.iris && IrisCompat.isIrisShaderFuckerActive()) return null;
+        if (Polytone.iris && IrisCompat.isIrisRenderOn()) return null;
         return multiBufferSource.getBuffer(RENDER_TYPE);
     }
 
@@ -43,7 +43,7 @@ public class LeashTexture extends RenderType {
                                         float y0, float y1,
                                         float dx, float dz,
                                         int index, boolean flippedColors) {
-        if (Polytone.iris && IrisCompat.isIrisShaderFuckerActive()) return false;
+        if (Polytone.iris && IrisCompat.isIrisRenderOn()) return false;
 
         // Calculate segment and interpolate lighting
         float segment = (float) index / 24.0F;

@@ -5,6 +5,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.utils.DepthSearchTrie;
 import net.mehvahdjukaar.polytone.utils.FrequencyOrderedCollection;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
@@ -34,7 +35,7 @@ public class ItemModelOverrideList {
     private boolean populated = false;
 
     // initialize
-    public void populateModels(RegistryAccess registryAccess) {
+    public void populateModels(HolderLookup.Provider registryAccess) {
         // staff : name "staff", enchant "fire
         // spear : name "sprear"
         // trident : count 1
@@ -111,7 +112,7 @@ public class ItemModelOverrideList {
             return null;
         }
 
-        public void acceptEntries(List<ItemModelOverride> entries, RegistryAccess registryAccess) {
+        public void acceptEntries(List<ItemModelOverride> entries, HolderLookup.Provider registryAccess) {
             boolean hasCount = false;
             FrequencyOrderedCollection<DataComponentType<?>> keyFrequencies = new FrequencyOrderedCollection<>();
             for (ItemModelOverride entry : entries) {

@@ -9,10 +9,11 @@ import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -25,11 +26,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static net.mehvahdjukaar.polytone.utils.ITargetProvider.regKey;
+
 public class BiomeEffectsManager extends JsonPartialReloader {
 
-    private final Map<ResourceLocation, BiomeSpecialEffects> vanillaEffects = new HashMap<>();
+    private final Map<ResourceKey<Biome>, BiomeSpecialEffects> vanillaEffects = new HashMap<>();
 
-    private final Map<ResourceLocation, BiomeEffectModifier> effectsToApply = new HashMap<>();
+    private final Map<ResourceKey<Biome>, BiomeEffectModifier> effectsToApply = new HashMap<>();
     private boolean needsDynamicApplication = true;
 
     public BiomeEffectsManager() {
@@ -49,7 +52,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     // we need registry ops here since special effects use registry stuff...
     @Override
-    public void applyWithLevel(RegistryAccess access, boolean firstLogin) {
+    public void applyWithLevel(HolderLookup.Provider access, boolean firstLogin) {
         for (var j : lazyJsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
@@ -67,10 +70,10 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         doApplyWithLevel(access, firstLogin);
     }
 
-    private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod, RegistryAccess access) {
-        Registry<Biome> registry = access.lookupOrThrow(Registries.BIOME);
+    private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod, HolderLookup.Provider access) {
+        var registry = access.lookupOrThrow(Registries.BIOME);
         for (var biome : mod.getTargets(pathId, registry)) {
-            effectsToApply.merge(registry.getKey(biome), mod, BiomeEffectModifier::merge);
+            effectsToApply.merge(biome.unwrapKey().get(), mod, BiomeEffectModifier::merge);
         }
     }
 
@@ -78,27 +81,27 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     public void apply() {
     }
 
-    private void doApplyWithLevel(RegistryAccess registryAccess, boolean firstLogin) {
+    private void doApplyWithLevel(HolderLookup.Provider registryAccess, boolean firstLogin) {
         if (!firstLogin && !needsDynamicApplication) return;
 
         needsDynamicApplication = false;
         if (firstLogin) vanillaEffects.clear();
 
 
-        Registry<Biome> biomeReg = registryAccess.lookupOrThrow(Registries.BIOME);
+        var biomeReg = registryAccess.lookupOrThrow(Registries.BIOME);
 
         for (var v : effectsToApply.entrySet()) {
 
-            ResourceLocation biomeId = v.getKey();
+            var biomeId = v.getKey();
             BiomeEffectModifier modifier = v.getValue();
-            var biome = biomeReg.getOptional(biomeId);
+            var biome = biomeReg.get(biomeId);
             if (biome.isPresent()) {
-                var old = modifier.apply(biome.get());
+                var old = modifier.apply(biome.get().value());
 
                 vanillaEffects.put(biomeId, old);
 
                 if (modifier.modifyFogParameter()) {
-                    fogParametersModifiers.put(biome.get(), modifier);
+                    fogParametersModifiers.put(biome.get().value(), modifier);
                 }
             }
         }
