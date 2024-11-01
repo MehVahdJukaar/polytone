@@ -122,7 +122,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
             inner.setNormal(normal.x, normal.y, normal.z);
         } else inner.setNormal(x, y, z);
         if (autoDirection) {
-            this.setDirection(Direction.getNearest(x, y, z));
+            this.setDirection(Direction.getApproximateNearest(x, y, z));
         }
         return this;
     }
@@ -163,7 +163,9 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
     @Override
     public BakedQuadBuilder fromVanilla(BakedQuad q) {
         int[] v = Arrays.copyOf(q.getVertices(), q.getVertices().length);
-        output = new BakedQuad(v, q.getTintIndex(), q.getDirection(), q.getSprite(), q.isShade(), q.hasAmbientOcclusion());
+        output = new BakedQuad(v, q.getTintIndex(), q.getDirection(), q.getSprite(), q.isShade(),
+                q.getLightEmission(),
+                q.hasAmbientOcclusion());
         return this;
     }
 

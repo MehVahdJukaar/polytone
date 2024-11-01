@@ -94,7 +94,9 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
         boolean ambientOcclusion = this.ambientOcclusion == null ? quad.isShade() : this.shade;
         lastSpriteHack = quad.getSprite();
         TextureAtlasSprite sprite = this.sprite == null ? quad.getSprite() : this.sprite;
-        BakedQuad newQuad = new BakedQuad(v, tint, directionRemap.apply(quad.getDirection()), sprite, shade, ambientOcclusion);
+        BakedQuad newQuad = new BakedQuad(v, tint, directionRemap.apply(quad.getDirection()), sprite, shade,
+                quad.getLightEmission(),
+                ambientOcclusion);
         inner.processInPlace(newQuad);
         lastSpriteHack = null;
         return newQuad;
