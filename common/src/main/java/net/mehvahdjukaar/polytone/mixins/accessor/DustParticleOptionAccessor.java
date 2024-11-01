@@ -11,5 +11,5 @@ public interface DustParticleOptionAccessor {
 
     @Mutable
     @Accessor("color")
-    void setColor(Vector3f color);
+    void setColor(int color);
 }

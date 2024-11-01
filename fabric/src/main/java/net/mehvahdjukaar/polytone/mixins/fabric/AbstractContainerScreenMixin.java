@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -34,6 +35,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     @Shadow
     protected int inventoryLabelY;
 
+    @Shadow @Nullable protected Slot hoveredSlot;
     @Unique
     private Integer polytone$customLabelColor = null;
     @Unique
@@ -44,12 +46,21 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     }
 
     @WrapWithCondition(method = "render", at = @At(
-            target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlotHighlight(Lnet/minecraft/client/gui/GuiGraphics;III)V",
+            target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlotHighlightFront(Lnet/minecraft/client/gui/GuiGraphics;)V",
             value = "INVOKE"
     ))
-    public boolean slotifyColor(GuiGraphics graphics, int x, int y, int blitOffset,
-                                @Local Slot slot) {
-        return Polytone.SLOTIFY.maybeChangeColor((AbstractContainerScreen<?>) (Object) this, slot, graphics, x, y, blitOffset);
+    public boolean slotifyColor(AbstractContainerScreen instance, GuiGraphics guiGraphics, @Local Slot slot) {
+        if (this.hoveredSlot == null) return true;
+        return Polytone.SLOTIFY.maybeChangeColor((AbstractContainerScreen<?>) (Object) this, slot, guiGraphics, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 0);
+    }
+
+    @WrapWithCondition(method = "render", at = @At(
+            target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlotHighlightBack(Lnet/minecraft/client/gui/GuiGraphics;)V",
+            value = "INVOKE"
+    ))
+    public boolean slotifyColorBack(AbstractContainerScreen instance, GuiGraphics guiGraphics, @Local Slot slot) {
+        if (this.hoveredSlot == null) return true;
+        return Polytone.SLOTIFY.maybeChangeColor((AbstractContainerScreen<?>) (Object) this, slot, guiGraphics, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 0);
     }
 
     @Inject(method = "init", at = @At("TAIL"))

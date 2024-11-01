@@ -141,7 +141,7 @@ public class DayTimeTextureTicker implements SpriteTicker {
                             int r = this.mix(delta, p >> 16 & 255, q >> 16 & 255);
                             int s = this.mix(delta, p >> 8 & 255, q >> 8 & 255);
                             int t = this.mix(delta, p & 255, q & 255);
-                            this.activeFrame[k].setPixelRGBA(o, n, p & -16777216 | r << 16 | s << 8 | t);
+                            this.activeFrame[k].setPixel(o, n, p & -16777216 | r << 16 | s << 8 | t);
                         }
                     }
                 }
@@ -151,7 +151,7 @@ public class DayTimeTextureTicker implements SpriteTicker {
         }
 
         private int getPixel(SpriteContents.AnimatedTexture animatedTexture, int frameIndex, int mipLevel, int x, int y) {
-            return spriteContents.byMipLevel[mipLevel].getPixelRGBA(x +
+            return spriteContents.byMipLevel[mipLevel].getPixel(x +
                             (animatedTexture.getFrameX(frameIndex) * spriteContents.width() >> mipLevel),
                     y + (animatedTexture.getFrameY(frameIndex) * spriteContents.height() >> mipLevel));
         }

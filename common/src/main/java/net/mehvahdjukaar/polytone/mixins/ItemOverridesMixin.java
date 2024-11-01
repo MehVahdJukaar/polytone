@@ -17,11 +17,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ItemRenderer.class)
 public class ItemOverridesMixin {
 
-    @Inject(method = "getModel", at = @At(value = "INVOKE",
+    @Inject(method = "resolveModelOverride", at = @At(value = "INVOKE",
             shift = At.Shift.BEFORE,
-            target = "Lnet/minecraft/client/resources/model/BakedModel;getOverrides()Lnet/minecraft/client/renderer/block/model/ItemOverrides;"))
-    private void resolve(ItemStack stack, Level level, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir,
-                         @Local LocalRef<BakedModel> bakedModelLocalRef) {
+            target = "Lnet/minecraft/client/resources/model/BakedModel;overrides()Lnet/minecraft/client/renderer/block/model/BakedOverrides;"))
+    private void resolve(BakedModel bakedModel, ItemStack stack, Level level, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir, @Local LocalRef<BakedModel> bakedModelLocalRef) {
         var newModel = Polytone.ITEM_MODELS.getOverride(stack,  level, entity, seed);
         if (newModel != null) {
             bakedModelLocalRef.set(newModel);

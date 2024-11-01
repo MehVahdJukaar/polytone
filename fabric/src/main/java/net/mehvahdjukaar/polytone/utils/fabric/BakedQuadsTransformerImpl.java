@@ -93,7 +93,7 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
         boolean shade = this.shade == null ? quad.isShade() : this.shade;
         TextureAtlasSprite sprite = this.sprite == null ? quad.getSprite() : this.sprite;
         lastSpriteHack = quad.getSprite();
-        BakedQuad newQuad = new BakedQuad(v, tint, directionRemap.apply(quad.getDirection()), sprite, shade);
+        BakedQuad newQuad = new BakedQuad(v, tint, directionRemap.apply(quad.getDirection()), sprite, shade, Math.max(quad.getLightEmission(), emissivity));
         inner.accept(newQuad);
         lastSpriteHack = null;
         if (emissivity != null) {

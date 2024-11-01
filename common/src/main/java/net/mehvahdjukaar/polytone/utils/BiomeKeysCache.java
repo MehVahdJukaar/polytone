@@ -26,12 +26,12 @@ public class BiomeKeysCache {
             if (level == null) return PLAINS;
             return CACHE.get().computeIfAbsent(biome, b ->
             {
-                var biomeKey = level.registryAccess().registryOrThrow(Registries.BIOME).getResourceKey(biome);
+                var biomeKey = level.registryAccess().lookupOrThrow(Registries.BIOME).getResourceKey(biome);
                 if (biomeKey.isEmpty()) {
 
                     //tries with server biomes. This should never happen, server biomes should never be passed here
                     biomeKey = PlatStuff.getServerRegistryAccess()
-                            .registryOrThrow(Registries.BIOME).getResourceKey(biome);
+                            .lookupOrThrow(Registries.BIOME).getResourceKey(biome);
 
                     if (biomeKey.isPresent()) {
                         Polytone.LOGGER.error("Polytone detected a Server Biome was passed to a getColor client side function! This is a bug! Must be caused by some other mod!");

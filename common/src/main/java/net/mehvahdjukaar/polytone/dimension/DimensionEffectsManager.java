@@ -21,6 +21,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.CubicSampler;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
@@ -180,7 +181,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             v.getValue().applyInplace(v.getKey());
         }
 
-        Registry<DimensionType> dimReg = registryAccess.registryOrThrow(Registries.DIMENSION_TYPE);
+        Registry<DimensionType> dimReg = registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE);
 
         for (var v : effectsToApply.entrySet()) {
             ResourceLocation dimensionId = v.getKey();
@@ -189,7 +190,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
             vanillaEffects.put(dimensionId, old);
 
-            DimensionType dim = dimReg.get(dimensionId);
+            DimensionType dim = dimReg.get(dimensionId).get().value();
             if (modifier.getFogColormap() instanceof Colormap c) {
                 fogColormaps.put(dim, c);
             }
@@ -284,9 +285,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private static float[] lastSunset = null;
 
     @Nullable
-    public float[] modifySunsetColor(float [] old) {
+    public int modifySunsetColor(int old) {
         Colormap colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
-        if (colormap == null) return null;
+        if (colormap == null) return 0;
+        float oldAlpha = ARGB.from8BitChannel(ARGB.alpha(old));
         var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(),
                 ClientFrameTicker.getCameraBiome().value(), null);
 
@@ -297,15 +299,15 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         var c = ColorUtils.unpack(color);
 
         if (lastSunset == null) {
-            lastSunset = new float[]{c[0], c[1], c[2], old[3]};
-            return lastSunset;
+            lastSunset = new float[]{c[0], c[1], c[2], oldAlpha};
+            return ARGB.colorFromFloat(lastSunset[3], lastSunset[0], lastSunset[1], lastSunset[2]);
         }
         // Interpolate towards the fogScalars values
         lastSunset[0] = Mth.lerp(interpolationFactor, lastSunset[0], c[0]);
         lastSunset[1] = Mth.lerp(interpolationFactor, lastSunset[1], c[1]);
         lastSunset[2] = Mth.lerp(interpolationFactor, lastSunset[2], c[2]);
-        lastSunset[3] = old[3];
-        return lastSunset;
+        lastSunset[3] = oldAlpha;
+        return ARGB.colorFromFloat(lastSunset[3], lastSunset[0], lastSunset[1], lastSunset[2]);
     }
 
 

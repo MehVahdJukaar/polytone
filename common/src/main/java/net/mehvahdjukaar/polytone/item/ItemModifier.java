@@ -85,7 +85,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             DataComponentMap.Builder builder = DataComponentMap.builder();
             builder.addAll(components);
             builder.set(DataComponents.RARITY, rarity.get());
-            item.components = Item.Properties.COMPONENT_INTERNER.intern(builder.build());
+            item.components = builder.build();
         }
         ItemColor oldColor = null;
         if (tintGetter.isPresent()) {

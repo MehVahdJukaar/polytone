@@ -35,7 +35,7 @@ public abstract class ParticleEngineMixin {
     }
 
     @Inject(method = "reload", at = @At(value = "HEAD"))
-    public void polytone$addPackSpriteSets(PreparableReloadListener.PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler, Executor backgroundExecutor, Executor gameExecutor, CallbackInfoReturnable<CompletableFuture<Void>> cir){
+    public void polytone$addPackSpriteSets(PreparableReloadListener.PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor executor, Executor executor2, CallbackInfoReturnable<CompletableFuture<Void>> cir){
         Polytone.CUSTOM_PARTICLES.addSpriteSets(resourceManager);
     }
 }

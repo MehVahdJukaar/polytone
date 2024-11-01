@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(FogRenderer.class)
 public abstract class FogRendererMixin {
 
-    @WrapOperation(method = "setupColor", at = @At(value = "INVOKE",
+    @WrapOperation(method = "computeFogColor", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/util/CubicSampler;gaussianSampleVec3(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/util/CubicSampler$Vec3Fetcher;)Lnet/minecraft/world/phys/Vec3;"))
     private static Vec3 polytone$modifyFogColor(Vec3 center, CubicSampler.Vec3Fetcher fetcher,
                                                 Operation<Vec3> original, @Local(argsOnly = true) ClientLevel level,
@@ -29,7 +29,7 @@ public abstract class FogRendererMixin {
     }
 
 
-    @ModifyExpressionValue(method = "setupColor", at = @At(value = "INVOKE",
+    @ModifyExpressionValue(method = "computeFogColor", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"))
     private static float polytone$modifyRainFog(float original, @Local(argsOnly = true) ClientLevel level) {
         if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelFogWeatherDarken(level)) {
@@ -38,7 +38,7 @@ public abstract class FogRendererMixin {
         return original;
     }
 
-    @ModifyExpressionValue(method = "setupColor", at = @At(value = "INVOKE",
+    @ModifyExpressionValue(method = "computeFogColor", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F"))
     private static float polytone$modifyThunderFog(float original, @Local(argsOnly = true) ClientLevel level) {
         if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelFogWeatherDarken(level)) {

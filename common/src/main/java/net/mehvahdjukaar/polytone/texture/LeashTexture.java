@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.TriState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
@@ -21,7 +22,7 @@ public class LeashTexture extends RenderType {
     private static final RenderType RENDER_TYPE = RenderType.create("polytone_leash", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
             VertexFormat.Mode.TRIANGLE_STRIP, 1536, RenderType.CompositeState.builder()
                     .setShaderState(RENDERTYPE_TEXT_SHADER)
-                    .setTextureState(new RenderStateShard.TextureStateShard(LEASH_TEXTURE, false, false))
+                    .setTextureState(new RenderStateShard.TextureStateShard(LEASH_TEXTURE, TriState.FALSE, false))
                     .setCullState(NO_CULL)
                     .setLightmapState(LIGHTMAP).createCompositeState(false));
 

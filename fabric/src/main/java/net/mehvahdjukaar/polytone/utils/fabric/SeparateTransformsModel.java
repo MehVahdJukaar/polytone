@@ -67,27 +67,37 @@ public class SeparateTransformsModel extends BlockModel {
     }
 
     @Override
-    public BakedModel bake(ModelBaker baker, BlockModel blockModel, Function<Material, TextureAtlasSprite> spriteGetter,
+    public BakedModel bake(ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState state) {
+        return bakeM(baker, spriteGetter, state, true);
+    }
+
+    @Override
+    public BakedModel bake(Function<Material, TextureAtlasSprite> spriteGetter,
+                           ModelState modelState, boolean bl) {
+        return bakeM(null, spriteGetter, modelState, bl);
+    }
+
+    public BakedModel bakeM(ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter,
                            ModelState modelState, boolean bl) {
         boolean usesBlockLight = this.getGuiLight().lightLikeBlock();
 
         BakedModel base;
-        if (baseModel.getRootModel() == ModelBakery.GENERATION_MARKER) {
+        if (baseModel.getRootModel() == SpecialModels.GENERATED_MARKER) {
             base = ITEM_MODEL_GENERATOR.generateBlockModel(spriteGetter, baseModel)
-                    .bake(baker, baseModel, spriteGetter, modelState, bl);
+                    .bake(spriteGetter, modelState, bl);
         } else {
-            base = baseModel.bake(baker, baseModel, spriteGetter, modelState, bl);
+            base = baseModel.bake(spriteGetter, modelState, bl);
         }
 
         ImmutableMap.Builder<ItemDisplayContext, BakedModel> prespectives = ImmutableMap.builder();
         for (Map.Entry<ItemDisplayContext, BlockModel> entry : perspectives.entrySet()) {
             BlockModel perspective = entry.getValue();
             BakedModel p;
-            if (perspective.getRootModel() == ModelBakery.GENERATION_MARKER) {
+            if (perspective.getRootModel() == SpecialModels.GENERATED_MARKER) {
                 p = ITEM_MODEL_GENERATOR.generateBlockModel(spriteGetter, perspective)
-                        .bake(baker, perspective, spriteGetter, modelState, false);
+                        .bake(spriteGetter, modelState, false);
             } else {
-                p = perspective.bake(baker,perspective, spriteGetter, modelState, bl);
+                p = perspective.bake(spriteGetter, modelState, bl);
             }
             prespectives.put(entry.getKey(), p);
         }
@@ -102,13 +112,13 @@ public class SeparateTransformsModel extends BlockModel {
     }
 
     @Override
-    public void resolveParents(Function<ResourceLocation, UnbakedModel> resolver) {
-        baseModel.resolveParents(resolver);
-        perspectives.values().forEach(model -> model.resolveParents(resolver));
+    public void resolveDependencies(Resolver resolver) {
+        baseModel.resolveDependencies(resolver);
+        perspectives.values().forEach(model -> model.resolveDependencies(resolver));
     }
 
-    private ItemOverrides getItemOverrides(ModelBaker baker, BlockModel model) {
-        return this.getOverrides().isEmpty() ? ItemOverrides.EMPTY : new ItemOverrides(baker, model, this.getOverrides());
+    private BakedOverrides getItemOverrides(ModelBaker baker, BlockModel model) {
+        return this.getOverrides().isEmpty() || baker == null ? BakedOverrides.EMPTY : new BakedOverrides(baker, this.getOverrides());
     }
 
 
@@ -117,12 +127,12 @@ public class SeparateTransformsModel extends BlockModel {
         private final boolean isGui3d;
         private final boolean isSideLit;
         private final TextureAtlasSprite particle;
-        private final ItemOverrides overrides;
+        private final BakedOverrides overrides;
         private final BakedModel baseModel;
         private final ImmutableMap<ItemDisplayContext, BakedModel> perspectives;
         private final ItemTransforms transforms;
 
-        public Baked(boolean isAmbientOcclusion, boolean isGui3d, boolean isSideLit, TextureAtlasSprite particle, ItemOverrides overrides, BakedModel baseModel, ImmutableMap<ItemDisplayContext, BakedModel> perspectives) {
+        public Baked(boolean isAmbientOcclusion, boolean isGui3d, boolean isSideLit, TextureAtlasSprite particle, BakedOverrides overrides, BakedModel baseModel, ImmutableMap<ItemDisplayContext, BakedModel> perspectives) {
             this.isAmbientOcclusion = isAmbientOcclusion;
             this.isGui3d = isGui3d;
             this.isSideLit = isSideLit;
@@ -232,7 +242,7 @@ public class SeparateTransformsModel extends BlockModel {
         }
 
         @Override
-        public ItemOverrides getOverrides() {
+        public BakedOverrides overrides() {
             return overrides;
         }
 

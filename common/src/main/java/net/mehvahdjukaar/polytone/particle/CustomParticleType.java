@@ -301,7 +301,7 @@ public class CustomParticleType implements CustomParticleFactory {
             return switch (this) {
                 case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
                 case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
-                case LIT -> ParticleRenderType.PARTICLE_SHEET_LIT;
+                case LIT -> ParticleRenderType.TERRAIN_SHEET; // TODO: Lit is gone in 1.21.2
                 case INVISIBLE -> ParticleRenderType.NO_RENDER;
                 default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
             };
