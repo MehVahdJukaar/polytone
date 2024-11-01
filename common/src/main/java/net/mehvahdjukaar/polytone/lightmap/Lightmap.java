@@ -1,6 +1,9 @@
 package net.mehvahdjukaar.polytone.lightmap;
 
+import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -20,6 +23,10 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.dimension.DimensionType;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL20C;
+import org.lwjgl.system.MemoryUtil;
+
+import java.lang.ref.Cleaner;
 
 public class Lightmap {
 
@@ -56,6 +63,7 @@ public class Lightmap {
 
     private final float[][] lastSkyLine = new float[16][3];
     private final float[][] lastTorchLine = new float[16][3];
+    private final long lightmapPixels;
 
     private long lastTime = 0;
 
@@ -67,6 +75,9 @@ public class Lightmap {
         this.skyLerp = skyLerp;
         this.torchLerp = torchLerp;
         this.baseLight = baseLight;
+        long pixels = MemoryUtil.nmemAlloc(16 * 16 * 4);
+        Cleaner.create().register(this, () -> MemoryUtil.nmemFree(pixels));
+        this.lightmapPixels = pixels;
     }
 
     //default impl
@@ -88,13 +99,11 @@ public class Lightmap {
 
 
     public void applyToLightTexture(LightTexture instance,
-                                    NativeImage lightPixels,
-                                    DynamicTexture lightTexture,
+                                    TextureTarget lightmap,
                                     Minecraft minecraft, ClientLevel level,
                                     float flicker, float partialTicks) {
 
         // this makes a copy
-        var oldTexture = lightPixels.getPixelsRGBA();
         boolean needsUpload = false;
 
         //this wasn't using partial ticks for some reasons
@@ -228,30 +237,52 @@ public class Lightmap {
 
                 //apply gamma
                 Vector3f notGamma = new Vector3f(
-                        instance.notGamma(combined.x),
-                        instance.notGamma(combined.y),
-                        instance.notGamma(combined.z));
+                        notGamma(combined.x),
+                        notGamma(combined.y),
+                        notGamma(combined.z));
                 combined.lerp(notGamma, gammaAmount);
                 //guess this makes it so its never pitch dark
                 combined.lerp(lightGray, lightGrayAmount);
                 clampColor(combined);
                 combined.mul(255.0F);
+                long pixel = ((long)torchX + (long)skyY * 16L) * 4L;
 
                 int x = (int) combined.x();
                 int y = (int) combined.y();
                 int z = (int) combined.z();
                 int newColor = -16777216 | z << 16 | y << 8 | x;
-                lightPixels.setPixelRGBA(torchX, skyY, newColor);
+                int oldTexture = MemoryUtil.memGetInt(lightmapPixels + pixel);
 
-                if (newColor != oldTexture[skyY * 16 + torchX]) {
+                if (newColor != oldTexture) {
                     needsUpload = true;
+                    MemoryUtil.memPutInt(lightmapPixels + pixel, newColor);
                 }
             }
         }
 
         if (needsUpload) {
-            lightTexture.upload();
+            resetTextureUploadState();
+            RenderSystem.bindTextureForSetup(lightmap.getColorTextureId());
+            GlStateManager._texSubImage2D(3553, 0, 0, 0, 16, 16, NativeImage.Format.RGBA.glFormat(), 5121, lightmapPixels);
         }
+    }
+
+    public static void resetTextureUploadState() {
+        // Ensure that the pixel storage mode is in a sane state, otherwise the uploaded texture data will be quite
+        // incorrect.
+        //
+        // It is likely that this also avoids the crashes on AMD that I previously experienced with texture creation.
+        //
+        // This code is from Canvas: https://github.com/grondag/canvas/commit/f0ab652d7a8b7cc9febf0209bee15cffce9eac83
+        GlStateManager._pixelStore(GL20C.GL_UNPACK_ROW_LENGTH, 0);
+        GlStateManager._pixelStore(GL20C.GL_UNPACK_SKIP_ROWS, 0);
+        GlStateManager._pixelStore(GL20C.GL_UNPACK_SKIP_PIXELS, 0);
+        GlStateManager._pixelStore(GL20C.GL_UNPACK_ALIGNMENT, 4);
+    }
+
+    private float notGamma(float f) {
+        float g = 1.0F - f;
+        return 1.0F - g * g * g * g;
     }
 
     private float[][] selectSky(ArrayImage image, float nightVision, float time, float rain, float thunder,

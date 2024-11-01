@@ -17,7 +17,7 @@ public class LevelRendererMixin {
     @Nullable
     private ClientLevel level;
 
-    @ModifyExpressionValue(method = "renderClouds",
+    @ModifyExpressionValue(method = "renderLevel",
             require = 0,
             at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getCloudHeight()F"))

@@ -241,7 +241,7 @@ public record BlockPropertyModifier(
 
         public BlockBehaviour.OffsetFunction getFunction() {
             var p = BlockBehaviour.Properties.of().offsetType(original);
-            return p.offsetFunction != null ? p.offsetFunction : ((blockState, blockGetter, blockPos) -> Vec3.ZERO);
+            return p.offsetFunction != null ? p.offsetFunction : ((blockState, blockPos) -> Vec3.ZERO);
         }
     }
 

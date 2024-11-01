@@ -72,8 +72,8 @@ public class PlatStuffImpl {
                 return name;
             }
 
-            public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler, Executor backgroundExecutor, Executor gameExecutor) {
-                return this.inner.get().reload(preparationBarrier, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor);
+            public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor executor, Executor executor2) {
+                return this.inner.get().reload(preparationBarrier, resourceManager, executor, executor2);
             }
         });
     }
@@ -255,7 +255,7 @@ public class PlatStuffImpl {
         var type = BuiltInRegistries.PARTICLE_TYPE.get(id);
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
         ((ParticleEngineAccessor) particleEngine)
-                .getProviders().remove(BuiltInRegistries.PARTICLE_TYPE.getId(type));
+                .getProviders().remove(BuiltInRegistries.PARTICLE_TYPE.getId(type.get().value()));
     }
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,

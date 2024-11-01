@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -15,6 +16,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 public class GuiOverlayManager extends JsonPartialReloader {
 
@@ -57,13 +59,13 @@ public class GuiOverlayManager extends JsonPartialReloader {
     private int index = 0;
     private boolean active = false;
 
-    public boolean maybeModifyBlit(GuiGraphics gui, TextureAtlasSprite sprite, int x, int y, int offset, int width, int height) {
+    public boolean maybeModifyBlit(GuiGraphics gui, Function<ResourceLocation, RenderType> function, TextureAtlasSprite sprite, int x, int y, int offset, int width, int height) {
         if (!active || blitModifiers.isEmpty()) return false;
         var mod = blitModifiers.get(sprite.contents().name());
         if (mod != null) {
             int ind = mod.index();
             if (ind == -1 || ind == index) {
-                mod.blitModified(gui, sprite, x, x + width, y, y + height, offset);
+                mod.blitModified(gui, function, sprite, x, x + width, y, y + height, offset);
                 return true;
             }
             index++;
@@ -139,7 +141,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
         if (heartSprites.isEmpty()) return false;
         HeartSprites sprites = heartSprites.get(actualType);
         if (sprites != null) {
-            graphics.blitSprite(sprites.getSprite(bl, bl3, bl2), i, j, 9, 9);
+            graphics.blitSprite(RenderType::guiTextured, sprites.getSprite(bl, bl3, bl2), i, j, 9, 9);
             return true;
         }
         return false;

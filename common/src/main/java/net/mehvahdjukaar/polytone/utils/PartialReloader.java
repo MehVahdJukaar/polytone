@@ -3,14 +3,20 @@ package net.mehvahdjukaar.polytone.utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.GsonHelper;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +45,39 @@ public abstract class PartialReloader<T> {
             greedyAddAll(js, jsons);
         }
         return jsons;
+    }
+
+    public static void scanDirectory(ResourceManager resourceManager, String string, Gson gson, Map<ResourceLocation, JsonElement> map) {
+        FileToIdConverter fileToIdConverter = FileToIdConverter.json(string);
+
+        for (Map.Entry<ResourceLocation, Resource> entry : fileToIdConverter.listMatchingResources(resourceManager).entrySet()) {
+            ResourceLocation resourceLocation = entry.getKey();
+            ResourceLocation resourceLocation2 = fileToIdConverter.fileToId(resourceLocation);
+
+            try {
+                Reader reader = entry.getValue().openAsReader();
+
+                try {
+                    JsonElement jsonElement = GsonHelper.fromJson(gson, reader, JsonElement.class);
+                    JsonElement jsonElement2 = map.put(resourceLocation2, jsonElement);
+                    if (jsonElement2 != null) {
+                        throw new IllegalStateException("Duplicate data file ignored with ID " + resourceLocation2);
+                    }
+                } catch (Throwable var13) {
+                    try {
+                        reader.close();
+                    } catch (Throwable var12) {
+                        var13.addSuppressed(var12);
+                    }
+
+                    throw var13;
+                }
+
+                reader.close();
+            } catch (IllegalArgumentException | IOException | JsonParseException var14) {
+                Polytone.LOGGER.error("Couldn't parse data file {} from {}", resourceLocation2, resourceLocation, var14);
+            }
+        }
     }
 
     private static <T> void greedyAddAll(Map<ResourceLocation, T> js, Map<ResourceLocation, T> jsons) {

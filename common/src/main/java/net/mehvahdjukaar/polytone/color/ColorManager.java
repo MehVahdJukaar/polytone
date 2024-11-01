@@ -13,11 +13,12 @@ import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.animal.Sheep;
@@ -34,9 +35,11 @@ import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
+    private static final int DEFAULT_COLOR = ARGB.colorFromFloat(1.0f, 1, 0, 0);
     private final Object2IntMap<MapColor> vanillaMapColors = new Object2IntOpenHashMap<>();
     private final Map<DyeColor, Integer> vanillaFireworkColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaDiffuseColors = new EnumMap<>(DyeColor.class);
@@ -48,7 +51,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private final EnumMap<BorderStatus, Integer> vanillaBorderStatus = new EnumMap<>(BorderStatus.class);
 
     private final Map<DyeColor, Integer> customSheepColors = new EnumMap<>(DyeColor.class);
-    protected final List<Vec3> originalRedstoneWireColors = Arrays.stream(RedStoneWireBlock.COLORS).toList();
+    protected final int[] originalRedstoneWireColors = Arrays.copyOf(RedStoneWireBlock.COLORS, RedStoneWireBlock.COLORS.length);
 
     @Nullable
     private BlockContextExpression xpOrbColor;
@@ -120,7 +123,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     if (!vanillaDiffuseColors.containsKey(color)) {
                         vanillaDiffuseColors.put(color, color.getTextureDiffuseColor());
                     }
-                    color.textureDiffuseColor = FastColor.ARGB32.opaque(col);
+                    color.textureDiffuseColor = ARGB.opaque(col);
                 } else if (param.equals("firework")) {
                     // save vanilla value
                     if (!vanillaFireworkColors.containsKey(color)) {
@@ -210,7 +213,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             String name = get(prop, 1);
             DyeColor color = DyeColor.byName(name, null);
             if (color != null) {
-                int col = FastColor.ARGB32.opaque(parseHex(obj));
+                int col = ARGB.opaque(parseHex(obj));
                 customSheepColors.put(color, col);
             } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
         } else if (is(prop, 0, "xporb")) {
@@ -231,9 +234,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 if (code < RedStoneWireBlock.COLORS.length) {
                     int col = parseHex(obj);
                     var rgb = ColorUtils.unpack(col);
-                    RedStoneWireBlock.COLORS[code] = new Vec3(rgb[0], rgb[1], rgb[2]);
+                    RedStoneWireBlock.COLORS[code] = ARGB.colorFromFloat(1.0f, rgb[0], rgb[1], rgb[2]);
                     if (code == 15) {
-                        Vector3f maxPower = new Vector3f(rgb[0], rgb[1], rgb[2]);
+                        int maxPower = ARGB.colorFromFloat(1.0f, rgb[0], rgb[1], rgb[2]);
                         net.minecraft.core.particles.DustParticleOptions.REDSTONE_PARTICLE_COLOR = maxPower;
                         ((DustParticleOptionAccessor) DustParticleOptions.REDSTONE).setColor(maxPower);
                     }
@@ -356,8 +359,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         }
         vanillaEggsHighlight.clear();
 
-        RedStoneWireBlock.COLORS = originalRedstoneWireColors.toArray(new Vec3[0]);
-        DustParticleOptions.REDSTONE_PARTICLE_COLOR = new Vector3f(1, 0, 0);//default
+        RedStoneWireBlock.COLORS = Arrays.copyOf(originalRedstoneWireColors, originalRedstoneWireColors.length);
+        DustParticleOptions.REDSTONE_PARTICLE_COLOR = DEFAULT_COLOR;//default
         ((DustParticleOptionAccessor) DustParticleOptions.REDSTONE).setColor(DustParticleOptions.REDSTONE_PARTICLE_COLOR);
     }
 
@@ -372,18 +375,19 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Nullable
-    public float[] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
+    public float[] getXpOrbColor(ExperienceOrbRenderState orb, float partialTicks) {
+        Vec3 orbPos = new Vec3(orb.x, orb.y, orb.z);
         if (xpOrbColor != null) {
-            int color = (int) xpOrbColor.getValue(orb.position(), orb.tickCount + partialTicks);
+            int color = (int) xpOrbColor.getValue(orbPos, orb.ageInTicks + partialTicks);
             return ColorUtils.unpack(color);
         }
         if (xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         float r = 0;
         float g = 0;
         float b = 0;
-        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(orb.position(), orb.tickCount + partialTicks);
-        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(orb.position(), orb.tickCount + partialTicks);
-        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(orb.position(), orb.tickCount + partialTicks);
+        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(orbPos, orb.ageInTicks + partialTicks);
+        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(orbPos, orb.ageInTicks + partialTicks);
+        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(orbPos, orb.ageInTicks + partialTicks);
         return new float[]{r, g, b};
     }
 

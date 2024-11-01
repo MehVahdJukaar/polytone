@@ -68,7 +68,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     }
 
     private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod, RegistryAccess access) {
-        Registry<Biome> registry = access.registryOrThrow(Registries.BIOME);
+        Registry<Biome> registry = access.lookupOrThrow(Registries.BIOME);
         for (var biome : mod.getTargets(pathId, registry)) {
             effectsToApply.merge(registry.getKey(biome), mod, BiomeEffectModifier::merge);
         }
@@ -85,7 +85,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         if (firstLogin) vanillaEffects.clear();
 
 
-        Registry<Biome> biomeReg = registryAccess.registry(Registries.BIOME).get();
+        Registry<Biome> biomeReg = registryAccess.lookupOrThrow(Registries.BIOME);
 
         for (var v : effectsToApply.entrySet()) {
 
@@ -113,7 +113,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         this.needsDynamicApplication = true;
         Level level = Minecraft.getInstance().level;
         if (level != null) {
-            Registry<Biome> biomeReg = level.registryAccess().registry(Registries.BIOME).get();
+            Registry<Biome> biomeReg = level.registryAccess().lookupOrThrow(Registries.BIOME);
             for (var v : vanillaEffects.entrySet()) {
                 var biome = biomeReg.getOptional(v.getKey());
                 biome.ifPresent(bio -> BiomeEffectModifier.applyEffects(bio, v.getValue()));
@@ -141,7 +141,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         if (player == null) return null;
 
         //dont modify if a mob effect that modifies fog is active
-        if (FogRenderer.getPriorityFogFunction(player, mc.getTimer().getGameTimeDeltaPartialTick(false))
+        if (FogRenderer.getPriorityFogFunction(player, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false))
                 != null) return null;
 
         Level level = player.level();

@@ -3,8 +3,11 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ExperienceOrbRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.ExperienceOrb;
 import org.jetbrains.annotations.Nullable;
@@ -21,17 +24,15 @@ public class XpOrbMixin {
     @Unique
     private static float[] polytone$specialColor = null;
 
-    @Inject(method = "render(Lnet/minecraft/world/entity/ExperienceOrb;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+    @Inject(method = "render(Lnet/minecraft/client/renderer/entity/state/ExperienceOrbRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At("HEAD"))
-    private void polytone$startRenderOrb(ExperienceOrb entity, float entityYaw, float partialTicks, PoseStack poseStack,
-                             MultiBufferSource buffer, int packedLight,CallbackInfo ci) {
-        polytone$specialColor = Polytone.COLORS.getXpOrbColor(entity, partialTicks);
+    private void polytone$startRenderOrb(ExperienceOrbRenderState experienceOrbRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
+        polytone$specialColor = Polytone.COLORS.getXpOrbColor(experienceOrbRenderState, Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false));
     }
 
-    @Inject(method = "render(Lnet/minecraft/world/entity/ExperienceOrb;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+    @Inject(method = "render(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At("TAIL"))
-    private void polytone$endRenderOrb(ExperienceOrb entity, float entityYaw, float partialTicks, PoseStack poseStack,
-                             MultiBufferSource buffer, int packedLight,CallbackInfo ci) {
+    private void polytone$endRenderOrb(EntityRenderState entityRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
         polytone$specialColor = null;
     }
 

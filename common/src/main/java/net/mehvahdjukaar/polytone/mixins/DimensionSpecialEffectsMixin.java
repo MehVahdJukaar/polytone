@@ -2,21 +2,19 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.LevelRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(DimensionSpecialEffects.class)
+@Mixin(DimensionSpecialEffects.OverworldEffects.class)
 public class DimensionSpecialEffectsMixin {
 
 
-    @ModifyReturnValue(method = "getSunriseColor", at = @At("RETURN"))
-    private float[] polytone$modifySunsetColor(float[] original) {
-        if (original == null) return null;
+    @ModifyReturnValue(method = "getSunriseOrSunsetColor", at = @At("RETURN"))
+    private int polytone$modifySunsetColor(int original) {
+        if (original == 0) return 0;
         var c = Polytone.DIMENSION_MODIFIERS.modifySunsetColor(original);
-        if (c != null) {
+        if (c != 0) {
             return c;
         }
         return original;

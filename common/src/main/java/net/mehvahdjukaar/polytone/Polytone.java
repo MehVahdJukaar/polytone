@@ -26,7 +26,7 @@ import net.mehvahdjukaar.polytone.utils.GenericDirectorySpriteSource;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -107,7 +107,7 @@ public class Polytone {
         } catch (RuntimeException e) {
             Polytone.LOGGER.error("Failed to apply some Polytone modifiers on world load", e);
 
-            ToastComponent toastComponent = Minecraft.getInstance().getToasts();
+            ToastManager toastComponent = Minecraft.getInstance().getToastManager();
             SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
                     Component.translatable("toast.polytone.lazy_load_fail"),
                     Component.translatable("toast.polytone.load_fail"));

@@ -107,7 +107,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
             inner.normal(vertexIndex, normal.x(), normal.y(), normal.z());
         } else inner.normal(vertexIndex, x, y, z);
         if (autoDirection) {
-            this.setDirection(Direction.getNearest(x, y, z));
+            this.setDirection(Direction.getApproximateNearest(x, y, z));
         }
         return this;
     }

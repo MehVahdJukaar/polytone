@@ -71,6 +71,11 @@ public class LazyHolderSet<T> implements HolderSet<T> {
     }
 
     @Override
+    public boolean isBound() {
+        return false; // todo wtf? 1.21.2
+    }
+
+    @Override
     public Either<TagKey<T>, List<Holder<T>>> unwrap() {
         return instance.unwrap();
     }

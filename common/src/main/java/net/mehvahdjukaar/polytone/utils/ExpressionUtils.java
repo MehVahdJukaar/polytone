@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.utils;
 
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
@@ -54,35 +54,35 @@ public class ExpressionUtils {
     private static final Function RED = new Function("red", 1) {
         @Override
         public double apply(double... args) {
-            return FastColor.ARGB32.red((int) args[0]) / 255f;
+            return ARGB.red((int) args[0]) / 255f;
         }
     };
 
     private static final Function GREEN = new Function("green", 1) {
         @Override
         public double apply(double... args) {
-            return FastColor.ARGB32.green((int) args[0]) / 255f;
+            return ARGB.green((int) args[0]) / 255f;
         }
     };
 
     private static final Function BLUE = new Function("blue", 1) {
         @Override
         public double apply(double... args) {
-            return FastColor.ARGB32.blue((int) args[0]) / 255f;
+            return ARGB.blue((int) args[0]) / 255f;
         }
     };
 
     private static final Function ALPHA = new Function("alpha", 1) {
         @Override
         public double apply(double... args) {
-            return FastColor.ARGB32.alpha((int) args[0]) / 255f;
+            return ARGB.alpha((int) args[0]) / 255f;
         }
     };
 
     private static final Function COLOR = new Function("color", 4) {
         @Override
         public double apply(double... args) {
-            return FastColor.ARGB32.color((int) (args[0] * 255f), (int) (args[1] * 255f), (int) (args[2] * 255f), (int) (args[3] * 255f));
+            return ARGB.color((int) (args[0] * 255f), (int) (args[1] * 255f), (int) (args[2] * 255f), (int) (args[3] * 255f));
         }
     };
 

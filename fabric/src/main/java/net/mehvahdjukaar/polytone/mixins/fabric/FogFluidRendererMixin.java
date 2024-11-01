@@ -8,27 +8,20 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.world.level.material.FluidState;
+import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(FogRenderer.class)
 public abstract class FogFluidRendererMixin {
-
-    @Shadow
-    private static float fogRed;
-
-    @Shadow
-    private static float fogGreen;
-
-    @Shadow
-    private static float fogBlue;
-
-    @Inject(method = "setupColor", at = @At(value = "TAIL"))
-    private static void polytone$modifyFluidFogColor(Camera camera, float partialTicks, ClientLevel level, int renderDistanceChunks, float bossColorModifier, CallbackInfo ci) {
+    @Inject(method = "computeFogColor", at = @At(value = "TAIL"), cancellable = true)
+    private static void polytone$modifyFluidFogColor(Camera camera, float f, ClientLevel level, int i, float g, CallbackInfoReturnable<Vector4f> cir) {
         // Modify fog color depending on the fluid
+        Vector4f output = cir.getReturnValue();
         FluidState state = level.getFluidState(camera.getBlockPosition());
         if (camera.getPosition().y < (double) ((float) camera.getBlockPosition().getY() +
                 state.getHeight(level, camera.getBlockPosition()))) {
@@ -37,10 +30,8 @@ public abstract class FogFluidRendererMixin {
                 var col = modifier.getFogColormap();
                 if (col != null) {
                     var newC = ColorUtils.unpack(col.getColor(null, level, null, -1) | 0xff000000);
-                    fogRed = newC[0];
-                    fogGreen = newC[1];
-                    fogBlue = newC[2];
-                    RenderSystem.clearColor(fogRed, fogGreen, fogBlue, 0.0F);
+                    output.set(newC[0], newC[1], newC[2], output.w);
+                    cir.setReturnValue(output);
                 }
             }
         }

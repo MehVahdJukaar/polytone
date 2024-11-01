@@ -178,7 +178,6 @@ allprojects {
 }
 
 githubRelease {
-    token = project.findProperty("github.token") ?: System.getenv("GITHUB_TOKEN")
     owner = 'MehVahdJukaar'
     repo = 'polytone'
     tagName = 'latest'

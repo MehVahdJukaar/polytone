@@ -154,7 +154,7 @@ public class PlatStuff {
         }
         ((MappedRegistry) reg).frozen = false;
         Registry.register(reg, id, o);
-        reg.freeze();
+        ((MappedRegistry) reg).frozen = true;
 
         return o;
     }
@@ -162,7 +162,7 @@ public class PlatStuff {
     public static <T> void unregisterDynamic(Registry<T> reg, ResourceLocation id) {
         ((MappedRegistry) reg).frozen = false;
         unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
-        reg.freeze();
+        ((MappedRegistry) reg).frozen = true;
 
     }
 

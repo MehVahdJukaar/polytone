@@ -4,11 +4,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 public record BlitModifier(ResourceLocation target, int index, int x, int y, int z, int width, int height,
                            float u0, float v0, float u1, float v1, Optional<ResourceLocation> newTexture,
@@ -31,7 +33,7 @@ public record BlitModifier(ResourceLocation target, int index, int x, int y, int
     ).apply(i, BlitModifier::new));
 
 
-    public void blitModified(GuiGraphics gui, TextureAtlasSprite sprite, int x1, int x2, int y1, int y2, int blitOffset) {
+    public void blitModified(GuiGraphics gui, Function<ResourceLocation, RenderType> function, TextureAtlasSprite sprite, int x1, int x2, int y1, int y2, int blitOffset) {
 
         for (RelativeSprite s : extraSprites) {
             s.render(gui.pose(), x1, x2, y1, y2, blitOffset);

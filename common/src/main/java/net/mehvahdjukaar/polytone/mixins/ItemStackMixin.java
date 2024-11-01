@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +33,7 @@ public abstract class ItemStackMixin {
         var mod = ((IPolytoneItem) this.getItem()).polytone$getModifier();
         if (mod != null) {
             Integer barColor = mod.getBarColor((ItemStack) (Object) this);
-            return barColor == null || FastColor.ARGB32.alpha(barColor) != 0;
+            return barColor == null || ARGB.alpha(barColor) != 0;
         }
         return true;
     }

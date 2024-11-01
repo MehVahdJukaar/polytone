@@ -7,7 +7,7 @@ import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,12 +64,12 @@ public record ArrayImage(int[][] pixels, int width, int height) {
 
             for (int i = 0; i < height; ++i) {
                 for (int j = 0; j < width; ++j) {
-                    int pixel = nativeImage.getPixelRGBA(j, i);
-                    pixelMatrix[i][j] = FastColor.ARGB32.color(
+                    int pixel = nativeImage.getPixel(j, i);
+                    pixelMatrix[i][j] = ARGB.color(
                             255,
-                            FastColor.ABGR32.red(pixel),
-                            FastColor.ABGR32.green(pixel),
-                            FastColor.ABGR32.blue(pixel)
+                            ARGB.red(pixel),
+                            ARGB.green(pixel),
+                            ARGB.blue(pixel)
                     );
                 }
             }

@@ -25,7 +25,7 @@ public class ClientFrameTicker {
     public static void onRenderTick(Minecraft mc) {
         Level level = mc.level;
         if (level == null) return;
-        float partialTicks = mc.getTimer().getGameTimeDeltaPartialTick(false);
+        float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
         time = level.getGameTime() + partialTicks;
         dayTime = level.dimensionType().fixedTime().orElse(level.getDayTime()) + partialTicks;
@@ -35,7 +35,7 @@ public class ClientFrameTicker {
         cameraPos = mc.gameRenderer.getMainCamera().getBlockPosition();
         cameraBiome = level.getBiome(cameraPos);
 
-        deltaTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
+        deltaTime = Minecraft.getInstance().getDeltaTracker().getRealtimeDeltaTicks();
     }
 
     public static void onTick(Level level) {

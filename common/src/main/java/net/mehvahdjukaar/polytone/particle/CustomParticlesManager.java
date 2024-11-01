@@ -73,8 +73,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
                         .getFirst();
                 factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
-                if (BuiltInRegistries.PARTICLE_TYPE.get(id) != null) {
-                    ParticleType oldType = BuiltInRegistries.PARTICLE_TYPE.get(id);
+                if (BuiltInRegistries.PARTICLE_TYPE.get(id).isPresent()) {
+                    ParticleType oldType = BuiltInRegistries.PARTICLE_TYPE.get(id).get().value();
                     Polytone.LOGGER.info("Overriding particle with id {}", id);
                     var oldFactory = PlatStuff.getParticleProvider(oldType);
                     overwrittenVanillaProviders.put(oldType, oldFactory);

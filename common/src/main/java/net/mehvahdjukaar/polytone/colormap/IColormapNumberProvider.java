@@ -5,6 +5,7 @@ import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -86,7 +87,7 @@ public interface IColormapNumberProvider {
         @Override
         public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
                               @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
-            return biome == null ? 0 : biome.getTemperature(pos);
+            return biome == null ? 0 : biome.getTemperature(pos, Minecraft.getInstance().level.getSeaLevel()); // TODO BAD!
         }
 
         @Override
