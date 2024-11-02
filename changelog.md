@@ -1,2 +1,1 @@
-- fixed lightmap expressions always evaluating to 0
-- added TEMPERATURE and HUMIDITY to the list of available expressions for lightmaps
+- beta 1.21.3 version. Thanks to IMS212 for the pull request that made it possible so quickly.
