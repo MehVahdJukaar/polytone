@@ -17,24 +17,38 @@ repositories{
     mavenCentral()
 }
 
-static def listGameVersions(String string1, String string2) {
-    // Extract the base version and the starting and ending patch numbers
-    String baseVersion = string1
-    int startPatch = 0
-    int endPatch = Integer.parseInt(string2.split('\\.')[2])
-
-    // Initialize an array to hold the generated versions
-    def versions = []
-
-    // Add the base version (string1) to the array
-    versions << baseVersion
-
-    // Generate and add the patch versions
-    for (int i = startPatch + 1; i <= endPatch; i++) {
-        versions << "${baseVersion}.${i}"
+static def listGameVersions(String minVersion, String maxVersion) {
+    def parseVersion = { version ->
+        def parts = version.split('\\.').collect { it as Integer }
+        if (parts.size() == 2) parts << 0 // Treat X.Y as X.Y.0
+        parts
     }
 
-    // Return the generated versions
+    def minParts = parseVersion(minVersion)
+    def maxParts = parseVersion(maxVersion)
+
+    def versions = []
+    def currentVersion = minParts.clone()
+
+    // Helper function to compare versions
+    def isLessThanOrEqual = { a, b ->
+        for (int i = 0; i < a.size(); i++) {
+            if (a[i] < b[i]) return true
+            if (a[i] > b[i]) return false
+        }
+        return true
+    }
+
+    while (isLessThanOrEqual(currentVersion, maxParts)) {
+        versions << currentVersion.join('.')
+        currentVersion[2]++ // Increment last part
+
+        if (currentVersion[2] > maxParts[2] && currentVersion[1] < maxParts[1]) {
+            currentVersion[1]++  // Increment middle part if we've exceeded the last part max
+            currentVersion[2] = 0
+        }
+    }
+
     return versions
 }
 
