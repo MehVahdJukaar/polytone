@@ -45,13 +45,13 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlotHighlight(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/inventory/Slot;IIF)V",
             value = "INVOKE"
     ))
-    public boolean slotifyColor(AbstractContainerScreen screen, GuiGraphics poseStack, Slot slot, int x, int y, float partialTicks) {
+    public boolean polytone$slotifyColor(AbstractContainerScreen screen, GuiGraphics poseStack, Slot slot, int x, int y, float partialTicks) {
         return Polytone.SLOTIFY.maybeChangeColor(screen, slot,
                 poseStack, x, y, 0);
     }
 
     @Inject(method = "init", at = @At("TAIL"))
-    public void modifyLabels(CallbackInfo ci) {
+    public void polytone$modifyLabels(CallbackInfo ci) {
         var m = Polytone.SLOTIFY.getGuiModifier(this);
         if (m != null) {
             this.titleLabelX += m.titleX();
@@ -69,7 +69,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             at = @At(value = "INVOKE",
                     ordinal = 0,
                     target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I"))
-    private int changeTitleColor(int fontColor) {
+    private int polytone$changeTitleColor(int fontColor) {
         if (polytone$customTitleColor != null) return polytone$customTitleColor;
         return fontColor;
     }
@@ -81,7 +81,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             at = @At(value = "INVOKE",
                     ordinal = 1,
                     target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I"))
-    private int changeLabelColor(int fontColor) {
+    private int polytone$changeLabelColor(int fontColor) {
         if (polytone$customLabelColor != null) return polytone$customLabelColor;
         return fontColor;
     }

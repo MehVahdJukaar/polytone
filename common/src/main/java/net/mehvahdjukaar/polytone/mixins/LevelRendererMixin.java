@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(value = LevelRenderer.class, priority = 900)
+@Mixin(value = LevelRenderer.class, priority = 1300)
 public class LevelRendererMixin {
 
     @Shadow
