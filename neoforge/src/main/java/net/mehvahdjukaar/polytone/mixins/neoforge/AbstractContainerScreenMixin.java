@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins.neoforge;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -9,6 +10,7 @@ import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -32,6 +34,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 
     @Shadow
     protected int inventoryLabelY;
+    @Shadow @Nullable protected Slot hoveredSlot;
     @Unique
     private Integer polytone$customTitleColor;
     @Unique
@@ -42,12 +45,12 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     }
 
     @WrapWithCondition(method = "render", at = @At(
-            target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlotHighlight(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/inventory/Slot;IIF)V",
+            target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlotHighlightFront(Lnet/minecraft/client/gui/GuiGraphics;)V",
             value = "INVOKE"
     ))
-    public boolean polytone$slotifyColor(AbstractContainerScreen screen, GuiGraphics poseStack, Slot slot, int x, int y, float partialTicks) {
-        return Polytone.SLOTIFY.maybeChangeColor(screen, slot,
-                poseStack, x, y, 0);
+    public boolean slotifyColor(AbstractContainerScreen instance, GuiGraphics guiGraphics, @Local Slot slot) {
+        if (this.hoveredSlot == null) return true;
+        return Polytone.SLOTIFY.maybeChangeColor((AbstractContainerScreen<?>) (Object) this, slot, guiGraphics, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 0);
     }
 
     @Inject(method = "init", at = @At("TAIL"))
