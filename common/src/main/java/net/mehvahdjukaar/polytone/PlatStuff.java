@@ -12,6 +12,9 @@ import net.minecraft.client.particle.CherryParticle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
@@ -31,6 +34,7 @@ import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class PlatStuff {
@@ -47,6 +51,22 @@ public class PlatStuff {
 
     @ExpectPlatform
     public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final ResourceLocation name) {
+        throw new AssertionError();
+    }
+
+    public interface SpecialModelEvent {
+        void register(ModelResourceLocation modelLocation);
+
+        void register(ResourceLocation id);
+    }
+
+    @ExpectPlatform
+    public static void addSpecialModelRegistration(Consumer<SpecialModelEvent> eventListener) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static BakedModel getModel(ResourceLocation modelLocation) {
         throw new AssertionError();
     }
 

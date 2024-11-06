@@ -24,7 +24,7 @@
     "${mod_id}-common.mixins.json"
   ],
   "depends": {
-    "fabric": "*",
+    "fabric": ">=0.92.2",
     "minecraft": ">=${minecraft_min_version} <${minecraft_max_version}"
   },
   "breaks": {

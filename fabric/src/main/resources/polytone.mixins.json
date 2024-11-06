@@ -15,6 +15,7 @@
     "FogRendererMixin2",
     "InventoryScreenMixin",
     "ModelHackMixin",
+    "ModelManagerAccessor",
     "ParticleEngineAccessor"
   ],
   "injectors": {

@@ -4,6 +4,7 @@ import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -13,6 +14,7 @@ import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
@@ -28,6 +30,9 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -59,6 +64,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -294,4 +300,28 @@ public class PlatStuffImpl {
     public static RegistryAccess getServerRegistryAccess(){
         return PolytoneFabric.currentServer.registryAccess();
     }
+
+
+    public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
+        ModelLoadingPlugin.register(pluginContext -> {
+            eventListener.accept(new PlatStuff.SpecialModelEvent() {
+                @Override
+                public void register(ModelResourceLocation modelLocation) {
+                    pluginContext.addModels(modelLocation);
+                }
+
+                @Override
+                public void register(ResourceLocation id) {
+                    pluginContext.addModels(id);
+                }
+            });
+        });
+    }
+
+
+    public static BakedModel getModel(ResourceLocation modelLocation) {
+        ModelManager mm = Minecraft.getInstance().getModelManager();
+        return ((ModelManagerAccessor) mm).getBakedRegistry().getOrDefault(modelLocation, mm.getMissingModel());
+    }
+
 }

@@ -29,7 +29,8 @@ public record PolytoneFluidRenderHandlerWrapper(FluidRenderHandler instance,
             int color = col.getColor(state.createLegacyBlock(), view, pos, -1);
             if (SODIUM_ON) {
                 var p = ColorUtils.unpack(color);
-                return ColorUtils.pack(p[2], p[1], p[0]);
+                return ColorUtils.pack(p);
+                //return ColorUtils.pack(p[2], p[1], p[0]);
             }
             return color;
 

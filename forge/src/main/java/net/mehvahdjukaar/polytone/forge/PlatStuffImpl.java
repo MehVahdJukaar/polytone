@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.forge;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import cpw.mods.modlauncher.api.INameMappingService;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.mixins.forge.*;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.Minecraft;
@@ -16,6 +17,9 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
@@ -37,6 +41,7 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.DimensionSpecialEffectsManager;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.common.CreativeModeTabRegistry;
 import net.minecraftforge.common.world.ModifiableBiomeInfo;
@@ -273,5 +278,26 @@ public class PlatStuffImpl {
 
     public static RegistryAccess getServerRegistryAccess(){
         return ServerLifecycleHooks.getCurrentServer().registryAccess();
+    }
+
+    public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
+        Consumer<ModelEvent.RegisterAdditional> eventConsumer = event -> {
+            eventListener.accept(new PlatStuff.SpecialModelEvent() {
+                @Override
+                public void register(ModelResourceLocation modelLocation) {
+                    event.register(modelLocation);
+                }
+
+                @Override
+                public void register(ResourceLocation id) {
+                    event.register((id));
+                }
+            });
+        };
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(eventConsumer);
+    }
+
+    public static BakedModel getModel(ResourceLocation modelLocation) {
+        return Minecraft.getInstance().getModelManager().getModel(modelLocation);
     }
 }

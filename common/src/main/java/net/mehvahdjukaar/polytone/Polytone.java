@@ -99,6 +99,12 @@ public class Polytone {
         if (isDevEnv) {// force all mixins to load in dev
             MixinEnvironment.getCurrentEnvironment().audit();
         }
+
+        PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
+    }
+
+    private static void addSpecialModels(PlatStuff.SpecialModelEvent event) {
+        CUSTOM_PARTICLES.getCustomModels().forEach(event::register);
     }
 
     public static ResourceLocation res(String name) {
