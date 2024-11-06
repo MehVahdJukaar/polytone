@@ -93,6 +93,8 @@ public class Polytone {
 
         ItemModelOverrideList.testTrie();
         GenericDirectorySpriteSource.init();
+
+        PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
     }
 
     public static ResourceLocation res(String name) {

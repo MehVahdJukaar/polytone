@@ -19,7 +19,9 @@ import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class CustomParticlesManager extends JsonPartialReloader {
 
@@ -41,8 +43,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
             PlatStuff.unregisterDynamic(BuiltInRegistries.PARTICLE_TYPE, id);
         }
         customParticleFactories.clear();
-        for(var v : overwrittenVanillaProviders.entrySet()){
-           PlatStuff.setParticleProvider(v.getKey(), v.getValue());
+        for (var v : overwrittenVanillaProviders.entrySet()) {
+            PlatStuff.setParticleProvider(v.getKey(), v.getValue());
         }
         overwrittenVanillaProviders.clear();
     }
@@ -81,7 +83,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
                     //override vanilla particle
                     try {
                         particleEngine.register(oldType, factory);
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         Polytone.LOGGER.error("Can't override existing particle with ID {}. Particle type not supported", id, e);
                     }
                     continue;
@@ -102,5 +104,11 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     public Codec<CustomParticleFactory> byNameCodec() {
         return customParticleFactories;
+    }
+
+    public Iterable<ResourceLocation> getCustomModels() {
+        return customParticleFactories.getValues().stream()
+                .map(CustomParticleFactory::getCustomModel)
+                .filter(Objects::nonNull).collect(Collectors.toSet());
     }
 }
