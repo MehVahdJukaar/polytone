@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.neoforge;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.mixins.neoforge.*;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.Minecraft;
@@ -14,6 +15,9 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
@@ -45,6 +49,20 @@ import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.DimensionSpecialEffectsManager;
+import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.common.CreativeModeTabRegistry;
+import net.minecraftforge.common.world.ModifiableBiomeInfo;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoader;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import org.joml.Vector3f;
 
 import java.util.List;
@@ -260,5 +278,26 @@ public class PlatStuffImpl {
 
     public static BakedModel getBakedModel(ResourceLocation id) {
         return Minecraft.getInstance().getModelManager().getModel(ModelResourceLocation.standalone(id));
+    }
+
+    public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
+        Consumer<ModelEvent.RegisterAdditional> eventConsumer = event -> {
+            eventListener.accept(new PlatStuff.SpecialModelEvent() {
+                @Override
+                public void register(ModelResourceLocation modelLocation) {
+                    event.register(modelLocation);
+                }
+
+                @Override
+                public void register(ResourceLocation id) {
+                    event.register((id));
+                }
+            });
+        };
+        PolytoneForge.bus.addListener(eventConsumer);
+    }
+
+    public static BakedModel getModel(ResourceLocation modelLocation) {
+        return Minecraft.getInstance().getModelManager().getModel(modelLocation);
     }
 }

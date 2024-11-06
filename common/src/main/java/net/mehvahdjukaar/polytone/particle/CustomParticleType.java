@@ -1,21 +1,34 @@
 package net.mehvahdjukaar.polytone.particle;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,6 +48,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private static BlockState STATE_HACK = Blocks.AIR.defaultBlockState();
 
     private final RenderType renderType;
+    private final @Nullable ResourceLocation model;
     private final @Nullable ParticleInitializer initializer;
     private final @Nullable Ticker ticker;
     private final List<ParticleSoundEmitter> sounds;
@@ -49,11 +63,14 @@ public class CustomParticleType implements CustomParticleFactory {
 
     private transient SpriteSet spriteSet;
 
-    private CustomParticleType(RenderType renderType, RotationMode rotationMode, int light, boolean hasPhysics, boolean killOnContact,
+    private CustomParticleType(RenderType renderType, RotationMode rotationMode,
+                               @Nullable ResourceLocation model,
+                               int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
                                List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
         this.renderType = renderType;
+        this.model = model;
         this.initializer = initializer;
         this.ticker = ticker;
         this.sounds = sounds;
@@ -70,6 +87,7 @@ public class CustomParticleType implements CustomParticleFactory {
             RenderType.CODEC.optionalFieldOf("render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
             RotationMode.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationMode),
+            ResourceLocation.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model)),
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
             Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
@@ -88,6 +106,10 @@ public class CustomParticleType implements CustomParticleFactory {
         this(renderType, rotationMode, light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null), initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
 
+    @Override
+    public @Nullable ResourceLocation getCustomModel() {
+        return this.model;
+    }
 
     public static void setStateHack(BlockState state) {
         STATE_HACK = state;
@@ -132,7 +154,8 @@ public class CustomParticleType implements CustomParticleFactory {
 
     public static class Instance extends TextureSheetParticle {
 
-        protected final ParticleRenderType renderType;
+        protected final RenderType renderType;
+        protected final @Nullable BakedModel model;
         protected final RotationMode rotationMode;
         protected final @Nullable Ticker ticker;
         protected final SpriteSet spriteSet;
@@ -168,7 +191,10 @@ public class CustomParticleType implements CustomParticleFactory {
             this.xd = xSpeed;
             this.yd = ySpeed;
             this.zd = zSpeed;
-            this.renderType = customType.renderType.get();
+            this.model = customType.model == null ? null : PlatStuff.getModel(
+                    customType.model
+            );
+            this.renderType = customType.renderType;
             this.ticker = customType.ticker;
             this.spriteSet = customType.spriteSet;
             ParticleInitializer initializer = customType.initializer;
@@ -176,6 +202,7 @@ public class CustomParticleType implements CustomParticleFactory {
             if (initializer != null) {
                 initializer.initialize(this, level, state, pos);
             }
+
             this.oQuadSize = quadSize;
 
             this.liquidAffinity = customType.liquidAffinity;
@@ -274,6 +301,56 @@ public class CustomParticleType implements CustomParticleFactory {
                 }
             }
         }
+        public void rend2er(VertexConsumer consumer, Camera renderInfo, float partialTicks) {
+            if (this.model == null) {
+                super.render(consumer, renderInfo, partialTicks);
+            } else {
+                PoseStack poseStack = new PoseStack();
+                Vec3 cameraPos = renderInfo.getPosition();
+                float x = (float) (Mth.lerp(partialTicks, this.xo, this.x) - cameraPos.x());
+                float y = (float) (Mth.lerp(partialTicks, this.yo, this.y) - cameraPos.y());
+                float z = (float) (Mth.lerp(partialTicks, this.zo, this.z) - cameraPos.z());
+                Quaternionf quaternionf;
+                if (this.roll == 0.0F) {
+                    quaternionf = new Quaternionf();
+                } else {
+                    quaternionf = new Quaternionf();
+                    quaternionf.rotateY(Mth.lerp(partialTicks, this.oRoll, this.roll));
+                }
+
+                float size = this.getQuadSize(partialTicks);
+
+                poseStack.translate(x, y, z);
+
+                poseStack.scale(size, size, size);
+                poseStack.mulPose(quaternionf);
+                poseStack.translate(-0.5, -0.5, -0.5);
+
+                MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+                consumer = bufferSource.getBuffer(net.minecraft.client.renderer.RenderType.cutout());
+
+                putModelBulkData(this.model, this.getLightColor(partialTicks),
+                        OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol);
+
+                bufferSource.endBatch();
+
+            }
+        }
+
+        public static void putModelBulkData(BakedModel model, int combinedLight, int combinedOverlay,
+                                            PoseStack poseStack, VertexConsumer buffer, float r, float g, float b) {
+            RandomSource randomSource = RandomSource.create();
+            for (Direction direction : Direction.values()) {
+                randomSource.setSeed(42L);
+                for (BakedQuad bakedQuad : model.getQuads(null, direction, randomSource)) {
+                    buffer.putBulkData(poseStack.last(), bakedQuad, 1, g, b, combinedLight, combinedOverlay);
+                }
+            }
+            randomSource.setSeed(42L);
+            for (BakedQuad bakedQuad : model.getQuads(null, null, randomSource)) {
+                buffer.putBulkData(poseStack.last(), bakedQuad, r, g, b, combinedLight, combinedOverlay);
+            }
+        }
 
 
         @Override
@@ -283,12 +360,12 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public ParticleRenderType getRenderType() {
-            return renderType;
+            return this.model == null ? this.renderType.getParticle() : ParticleRenderType.CUSTOM;
         }
 
     }
 
-    private enum RenderType implements StringRepresentable {
+    public enum RenderType implements StringRepresentable {
         TERRAIN,
         OPAQUE,
         TRANSLUCENT,
@@ -297,7 +374,17 @@ public class CustomParticleType implements CustomParticleFactory {
 
         public static final Codec<RenderType> CODEC = StringRepresentable.fromEnum(RenderType::values);
 
-        public ParticleRenderType get() {
+        public net.minecraft.client.renderer.RenderType getBlock() {
+            return switch (this) {
+                case TERRAIN -> net.minecraft.client.renderer.RenderType.solid();
+                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
+                case LIT -> net.minecraft.client.renderer.RenderType.cutout();
+                case INVISIBLE -> net.minecraft.client.renderer.RenderType.cutout();
+                default -> net.minecraft.client.renderer.RenderType.cutoutMipped();
+            };
+        }
+
+        public ParticleRenderType getParticle() {
             return switch (this) {
                 case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
                 case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
