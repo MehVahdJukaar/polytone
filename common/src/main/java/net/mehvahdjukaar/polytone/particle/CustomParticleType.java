@@ -21,7 +21,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -60,12 +59,13 @@ public class CustomParticleType implements CustomParticleFactory {
     private final boolean killOnContact;
     private final @Nullable IColorGetter colormap;
     private final RotationMode rotationMode;
+    private final Vec3 offset;
 
     private transient SpriteSet spriteSet;
 
     private CustomParticleType(RenderType renderType, RotationMode rotationMode,
                                @Nullable ResourceLocation model,
-                               int light, boolean hasPhysics, boolean killOnContact,
+                               Vec3 offset, int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
                                List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
@@ -80,6 +80,7 @@ public class CustomParticleType implements CustomParticleFactory {
         this.killOnContact = killOnContact;
         this.liquidAffinity = liquidAffinity;
         this.colormap = colormap;
+        this.offset = offset;
         this.rotationMode = rotationMode;
     }
 
@@ -88,6 +89,7 @@ public class CustomParticleType implements CustomParticleFactory {
                     .forGetter(CustomParticleType::getRenderType),
             RotationMode.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationMode),
             ResourceLocation.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model)),
+            Vec3.CODEC.optionalFieldOf("offset",Vec3.ZERO).forGetter(c -> c.offset),
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
             Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
@@ -99,11 +101,14 @@ public class CustomParticleType implements CustomParticleFactory {
             ParticleParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.particles)
     ).apply(i, CustomParticleType::new));
 
-    private CustomParticleType(RenderType renderType, RotationMode rotationMode, int light, boolean hasPhysics, boolean killOnContact,
+    private CustomParticleType(RenderType renderType, RotationMode rotationMode,
+                               ResourceLocation mode,Vec3 offset,
+                               int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                Optional<ParticleInitializer> initializer,
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
-        this(renderType, rotationMode, light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null), initializer.orElse(null), ticker.orElse(null), sounds, particles);
+        this(renderType, rotationMode, offset,
+                light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null), initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
 
     @Override
@@ -164,6 +169,7 @@ public class CustomParticleType implements CustomParticleFactory {
         protected final List<ParticleTickable> tickables;
         protected final int light;
         protected float oQuadSize;
+        protected final Vec3 offset;
         protected double custom;
         protected boolean killOnContact;
 
@@ -181,6 +187,7 @@ public class CustomParticleType implements CustomParticleFactory {
             this.tickables = new ArrayList<>();
             this.tickables.addAll(customType.sounds);
             this.tickables.addAll(customType.particles);
+            this.offset = customType.offset;
             //for normal particles since its simple particle types (so that they can be ued in biomes) we can pass extra params
             if (state == null) state = STATE_HACK;
 
