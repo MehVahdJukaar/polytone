@@ -54,18 +54,11 @@ public class PlatStuff {
     }
 
     public interface SpecialModelEvent {
-        void register(ModelResourceLocation modelLocation);
-
-        void register(ResourceLocation id);
+        void register(ModelResourceLocation id);
     }
 
     @ExpectPlatform
     public static void addSpecialModelRegistration(Consumer<SpecialModelEvent> eventListener) {
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
-    public static BakedModel getModel(ResourceLocation modelLocation) {
         throw new AssertionError();
     }
 
@@ -222,7 +215,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static BakedModel getBakedModel(ResourceLocation model) {
+    public static BakedModel getBakedModel(ModelResourceLocation model) {
         throw new AssertionError();
     }
 }

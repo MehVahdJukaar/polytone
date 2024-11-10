@@ -4,10 +4,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
+import net.mehvahdjukaar.polytone.utils.ModelResHelper;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 
@@ -20,7 +21,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
 
     public static final Codec<StandaloneItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.PASSTHROUGH.fieldOf("components").forGetter(i -> i.lazyComponent),
-            ResourceLocation.CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
+            ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
             CompoundTag.CODEC.optionalFieldOf("entity_tag").forGetter(i -> Optional.ofNullable(i.entityTag)),
@@ -32,7 +33,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
     private final Item item;
     private final boolean autoModel;
 
-    public StandaloneItemModelOverride(Dynamic<?> components, ResourceLocation model,
+    public StandaloneItemModelOverride(Dynamic<?> components, ModelResourceLocation model,
                                        Optional<Integer> stackCount, Optional<Pattern> pattern,
                                        Optional<CompoundTag> entityTag, Optional<ColormapExpressionProvider> expression,
                                        Map<DataComponentType<?>, CompoundTag> nbtMatchers,
@@ -43,7 +44,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
     }
 
     // ugly
-    public void setModel(ResourceLocation model) {
+    public void setModel(ModelResourceLocation model) {
         this.model = model;
     }
 

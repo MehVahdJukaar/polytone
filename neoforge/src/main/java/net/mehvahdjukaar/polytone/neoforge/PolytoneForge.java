@@ -65,22 +65,10 @@ public class PolytoneForge {
 
             NeoForge.EVENT_BUS.register(this);
             modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
-            modBus.addListener(this::addAdditionalModels);
-            modBus.addListener(this::test);
         } else {
             LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
 
-    }
-
-    public void test(ModelEvent.ModifyBakingResult modifyBakingResult){
-        int aa = 1;
-    }
-
-    public void addAdditionalModels(ModelEvent.RegisterAdditional event) {
-        Polytone.ITEM_MODELS.getExtraModels().forEach(e -> {
-            event.register(ModelResourceLocation.standalone(e));
-        });
     }
 
     @SubscribeEvent

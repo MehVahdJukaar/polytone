@@ -38,9 +38,6 @@ public class PolytoneFabric implements ClientModInitializer {
             }
         });
 
-        ModelLoadingPlugin.register((pluginContext) ->
-                pluginContext.addModels(Polytone.ITEM_MODELS.getExtraModels()));
-
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {
                 ScreenModifier guiModifier = Polytone.SLOTIFY.getGuiModifier(screen);

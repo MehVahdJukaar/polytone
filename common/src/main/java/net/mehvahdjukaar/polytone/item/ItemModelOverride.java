@@ -8,6 +8,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.UnboundedMapCodec;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.utils.ModelResHelper;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -40,7 +42,7 @@ public class ItemModelOverride {
     protected final CompoundTag entityTag;
     @Nullable
     protected final ColormapExpressionProvider expression;
-    protected ResourceLocation model;
+    protected ModelResourceLocation model;
     protected DataComponentMap decodedComponents;
     protected Map<DataComponentType<?>, CompoundTag> nbtMatchers;
 
@@ -50,7 +52,7 @@ public class ItemModelOverride {
 
     public static final Codec<ItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.PASSTHROUGH.fieldOf("components").forGetter(o -> o.lazyComponent),
-            ResourceLocation.CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
+            ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
             CompoundTag.CODEC.optionalFieldOf("entity_nbt").forGetter(i -> Optional.ofNullable(i.entityTag)),
@@ -58,7 +60,7 @@ public class ItemModelOverride {
             NBT_COMPONENTS_CODEC.optionalFieldOf("item_nbt_components", Map.of()).forGetter(i -> i.nbtMatchers)
     ).apply(instance, ItemModelOverride::new));
 
-    public ItemModelOverride(Dynamic<?> lazyComponent, ResourceLocation model, Optional<Integer> stackCount,
+    public ItemModelOverride(Dynamic<?> lazyComponent, ModelResourceLocation model, Optional<Integer> stackCount,
                              Optional<Pattern> pattern, Optional<CompoundTag> entityTag,
                              Optional<ColormapExpressionProvider> expression,
                              Map<DataComponentType<?>,CompoundTag> nbtMatchers) {
@@ -71,7 +73,7 @@ public class ItemModelOverride {
         this.nbtMatchers = nbtMatchers;
     }
 
-    public ItemModelOverride(DataComponentMap map, ResourceLocation model) {
+    public ItemModelOverride(DataComponentMap map, ModelResourceLocation model) {
         this.lazyComponent = null;
         this.model = model;
         this.stackCount = null;
@@ -96,7 +98,7 @@ public class ItemModelOverride {
                 .getFirst();
     }
 
-    public ResourceLocation model() {
+    public ModelResourceLocation model() {
         return this.model;
     }
 
