@@ -89,7 +89,7 @@ public class CustomParticleType implements CustomParticleFactory {
                     .forGetter(CustomParticleType::getRenderType),
             RotationMode.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationMode),
             ResourceLocation.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model)),
-            Vec3.CODEC.optionalFieldOf("offset",Vec3.ZERO).forGetter(c -> c.offset),
+            Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(c -> c.offset),
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
             Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
@@ -566,5 +566,9 @@ public class CustomParticleType implements CustomParticleFactory {
     public static double getYaw(Vec3 vec3) {
         return Math.toDegrees(Math.atan2(-vec3.x, vec3.z));
     }
+
+    public static final Codec<ResourceLocation> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
+            ResourceLocation.CODEC.fieldOf("model").forGetter(e -> e)
+    ).apply(i, r -> r));
 }
 
