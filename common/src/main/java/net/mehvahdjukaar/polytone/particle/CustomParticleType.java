@@ -79,7 +79,7 @@ public class CustomParticleType implements CustomParticleFactory {
             RenderType.CODEC.optionalFieldOf("render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
             ResourceLocation.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model)),
-            Vec3.CODEC.optionalFieldOf("offset",Vec3.ZERO).forGetter(c -> c.offset),
+            Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(c -> c.offset),
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
             LiquidAffinity.CODEC.optionalFieldOf("liquid_affinity", LiquidAffinity.ANY).forGetter(c -> c.liquidAffinity),
@@ -466,5 +466,9 @@ public class CustomParticleType implements CustomParticleFactory {
             return this.name().toLowerCase(Locale.ROOT);
         }
     }
+
+    public static final Codec<ResourceLocation> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
+            ResourceLocation.CODEC.fieldOf("model").forGetter(e -> e)
+    ).apply(i, r -> r));
 }
 
