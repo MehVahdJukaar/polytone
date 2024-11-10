@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
@@ -11,22 +12,21 @@ import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class CustomParticlesManager extends JsonPartialReloader {
 
     public final MapRegistry<CustomParticleFactory> customParticleFactories = new MapRegistry<>("Custom Particles");
     private final Map<ParticleType<?>, ParticleProvider<?>> overwrittenVanillaProviders = new HashMap<>();
+    private final Set<ModelResourceLocation> customModels = new HashSet<>();
 
     public static final Codec<CustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = Codec.either(SemiCustomParticleType.CODEC, CustomParticleType.CODEC)
             .xmap(e -> e.map(Function.identity(), Function.identity()),
@@ -34,6 +34,21 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     public CustomParticlesManager() {
         super("custom_particles");
+    }
+
+
+    //just gathers the custom models if any are there
+    public void earlyProcess(ResourceManager resourceManager) {
+        customModels.clear();
+        var jsons = this.getJsonsInDirectories(resourceManager);
+        for (var j : jsons.entrySet()) {
+            var json = j.getValue();
+            var id = j.getKey();
+            var model = CustomParticleType.CUSTOM_MODEL_ONLY_CODEC.decode(JsonOps.INSTANCE, json)
+                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
+                    .getFirst();
+            model.ifPresent(customModels::add);
+        }
     }
 
     @Override
@@ -106,9 +121,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
         return customParticleFactories;
     }
 
-    public Iterable<ResourceLocation> getCustomModels() {
-        return customParticleFactories.getValues().stream()
-                .map(CustomParticleFactory::getCustomModel)
-                .filter(Objects::nonNull).collect(Collectors.toSet());
+    public Collection<ModelResourceLocation> getExtraModelsToLoad() {
+        return customModels;
     }
 }

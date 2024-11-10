@@ -1,2 +1,2 @@
-- fixed lightmap expressions always evaluating to 0
-- added TEMPERATURE and HUMIDITY to the list of available expressions for lightmaps
+- added "model" field in customparticle types. allows specifying a 3d model there
+- added "offset" field in customparticle types. allows specifying an offset for the renderer

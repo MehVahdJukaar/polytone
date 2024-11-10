@@ -298,13 +298,13 @@ public class PlatStuffImpl {
         return PolytoneFabric.currentServer.registryAccess();
     }
 
-    public static BakedModel getBakedModel(ResourceLocation model) {
-        ModelResourceLocation id = new ModelResourceLocation(model, "fabric_resource");
-        ModelResourceLocation id2 = new ModelResourceLocation(model, "inventory");
+    public static BakedModel getBakedModel(ModelResourceLocation model) {
         var mm = Minecraft.getInstance().getModelManager();
 
         Map<ModelResourceLocation, BakedModel> reg = ((ModelManagerAccessor) mm).getBakedRegistry();
-        return reg.getOrDefault(id, reg.getOrDefault(id2, mm.getMissingModel()));
+        var first = reg.get(model);
+        if (first != null) return first;
+        return reg.getOrDefault(new ModelResourceLocation(model.id(), "inventory"), mm.getMissingModel());
     }
 
 
@@ -313,22 +313,12 @@ public class PlatStuffImpl {
         ModelLoadingPlugin.register(pluginContext -> {
             eventListener.accept(new PlatStuff.SpecialModelEvent() {
                 @Override
-                public void register(ModelResourceLocation modelLocation) {
-                    pluginContext.addModels(modelLocation);
-                }
-
-                @Override
-                public void register(ResourceLocation id) {
-                    pluginContext.addModels(id);
+                public void register(ModelResourceLocation id) {
+                    pluginContext.addModels(id.id());
                 }
             });
         });
     }
 
-
-    public static BakedModel getModel(ResourceLocation modelLocation) {
-        ModelManager mm = Minecraft.getInstance().getModelManager();
-        return ((ModelManagerAccessor) mm).getBakedRegistry().getOrDefault(modelLocation, mm.getMissingModel());
-    }
 
 }

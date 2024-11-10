@@ -9,7 +9,6 @@ import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
 import net.mehvahdjukaar.polytone.item.CustomItemModelsManager;
-import net.mehvahdjukaar.polytone.item.ItemModelOverrideList;
 import net.mehvahdjukaar.polytone.item.ItemModifiersManager;
 import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.noise.NoiseManager;
@@ -90,10 +89,16 @@ public class Polytone {
         isForge = forge;
         Polytone.iris = iris;
 
-        ItemModelOverrideList.testTrie();
+        //ItemModelOverrideList.testTrie();
         GenericDirectorySpriteSource.init();
 
         PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
+    }
+
+    private static void addSpecialModels(PlatStuff.SpecialModelEvent event) {
+        Polytone.LOGGER.info("Polytone: fetched custom item models from thread {}", Thread.currentThread());
+        CUSTOM_PARTICLES.getExtraModelsToLoad().forEach(event::register);
+        ITEM_MODELS.getExtraModelsToLoad().forEach(event::register);
     }
 
     public static ResourceLocation res(String name) {

@@ -23,6 +23,7 @@ public class ModelManagerMixin {
         try {
             Polytone.ITEM_MODIFIERS.earlyProcess(resourceManager);
             Polytone.ITEM_MODELS.earlyProcess(resourceManager);
+            Polytone.CUSTOM_PARTICLES.earlyProcess(resourceManager);
             Polytone.LOGGER.info("Polytone: computed custom item models from thread {}", Thread.currentThread());
         } catch (Exception e) {
             Polytone.LOGGER.error("Polytone: failed to compute custom item models", e);
