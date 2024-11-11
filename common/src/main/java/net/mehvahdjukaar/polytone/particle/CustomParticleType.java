@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
@@ -28,6 +29,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -50,7 +53,9 @@ public class CustomParticleType implements CustomParticleFactory {
     private final @Nullable ParticleInitializer initializer;
     private final @Nullable Ticker ticker;
     private final List<ParticleSoundEmitter> sounds;
-    private final List<ParticleParticleEmitter> particles;
+    protected final List<ParticleParticleEmitter> particles = new ArrayList<>();
+    @Nullable
+    protected List<Dynamic<?>> lazyParticles;
 
     private final int lightLevel;
     private final LiquidAffinity liquidAffinity;
@@ -67,13 +72,13 @@ public class CustomParticleType implements CustomParticleFactory {
                                int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
-                               List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
+                               @Nullable List<ParticleSoundEmitter> sounds, @Nullable List<Dynamic<?>> particles) {
         this.renderType = renderType;
         this.model = model == null ? null : new ModelResourceLocation(model, "standalone");
         this.initializer = initializer;
         this.ticker = ticker;
         this.sounds = sounds;
-        this.particles = particles;
+        this.lazyParticles = particles;
         this.lightLevel = light;
         this.hasPhysics = hasPhysics;
         this.killOnContact = killOnContact;
@@ -97,7 +102,7 @@ public class CustomParticleType implements CustomParticleFactory {
             ParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
             Ticker.CODEC.optionalFieldOf("ticker").forGetter(c -> Optional.ofNullable(c.ticker)),
             ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
-            ParticleParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.particles)
+            Codec.PASSTHROUGH.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.lazyParticles)
     ).apply(i, CustomParticleType::new));
 
     private CustomParticleType(RenderType renderType, RotationMode rotationMode,
@@ -105,7 +110,7 @@ public class CustomParticleType implements CustomParticleFactory {
                                int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                Optional<ParticleInitializer> initializer,
-                               Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
+                               Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<Dynamic<?>> particles) {
         this(renderType, rotationMode, model.orElse(null), offset,
                 light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null), initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
