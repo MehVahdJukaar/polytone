@@ -8,8 +8,8 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
-import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
+import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -69,7 +69,7 @@ public class CustomParticleType implements CustomParticleFactory {
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
                                List<ParticleSoundEmitter> sounds, List<ParticleParticleEmitter> particles) {
         this.renderType = renderType;
-        this.model = new ModelResourceLocation(model, "standalone");
+        this.model = model == null ? null : new ModelResourceLocation(model, "standalone");
         this.initializer = initializer;
         this.ticker = ticker;
         this.sounds = sounds;
@@ -197,9 +197,7 @@ public class CustomParticleType implements CustomParticleFactory {
             this.xd = xSpeed;
             this.yd = ySpeed;
             this.zd = zSpeed;
-            this.model = customType.model == null ? null : PlatStuff.getBakedModel(
-                    customType.model
-            );
+            this.model = customType.model == null ? null : PlatStuff.getBakedModel(customType.model);
             this.renderType = customType.renderType;
             this.ticker = customType.ticker;
             this.spriteSet = customType.spriteSet;
@@ -236,7 +234,7 @@ public class CustomParticleType implements CustomParticleFactory {
             }
 
             this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
-            if (this.rotationMode == RotationMode.LOOK_UP) {
+            if (this.rotationMode.hasBackFace()) {
                 quaternionf.rotateX(Mth.PI);
                 //render back face
                 this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
@@ -506,7 +504,9 @@ public class CustomParticleType implements CustomParticleFactory {
     }
 
     protected enum RotationMode implements StringRepresentable {
-        LOOK_AT_XYZ, LOOK_AT_Y, MOVEMENT_ALIGNED, LOOK_UP, NONE;
+        LOOK_AT_XYZ, LOOK_AT_Y,
+        LOOK_AT_X, LOOK_AT_Z, LOOK_AT_XZ,
+        MOVEMENT_ALIGNED, LOOK_UP, LOOK_WEST, NONE;
 
         private static final Codec<RotationMode> CODEC = StringRepresentable.fromEnum(RotationMode::values);
 
@@ -523,10 +523,17 @@ public class CustomParticleType implements CustomParticleFactory {
                     quaternionf.identity(); // Reset rotation
                     quaternionf.rotateX(Mth.HALF_PI);
                 }
+                case LOOK_WEST -> {
+                    quaternionf.identity(); // Reset rotation
+                    quaternionf.rotateY(Mth.HALF_PI);
+                }
                 case LOOK_AT_XYZ ->
                         SingleQuadParticle.FacingCameraMode.LOOKAT_XYZ.setRotation(quaternionf, camera, partialTicks);
                 case LOOK_AT_Y ->
                         SingleQuadParticle.FacingCameraMode.LOOKAT_Y.setRotation(quaternionf, camera, partialTicks);
+                case LOOK_AT_X -> quaternionf.set(camera.rotation().x, 0, 0.0F, camera.rotation().w);
+                case LOOK_AT_Z -> quaternionf.set(0.0F, 0.0F, camera.rotation().z, camera.rotation().w);
+                case LOOK_AT_XZ -> quaternionf.set(camera.rotation().x, 0, camera.rotation().z, camera.rotation().w);
                 case MOVEMENT_ALIGNED -> {
                     Vec3 dir = new Vec3(particle.xd, particle.yd, particle.zd).normalize();
 
@@ -545,6 +552,10 @@ public class CustomParticleType implements CustomParticleFactory {
                     quaternionf.rotateY(-roll - Mth.HALF_PI);
                 }
             }
+        }
+
+        public boolean hasBackFace() {
+            return !(this == LOOK_AT_XYZ || this == LOOK_AT_Y || this == MOVEMENT_ALIGNED);
         }
     }
 
