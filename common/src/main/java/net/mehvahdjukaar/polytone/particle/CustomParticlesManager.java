@@ -1,8 +1,10 @@
 package net.mehvahdjukaar.polytone.particle;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -81,6 +83,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
     protected void process(Map<ResourceLocation, JsonElement> obj, DynamicOps<JsonElement> ops) {
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
 
+        Set<CustomParticleType> customTypes = new HashSet<>();
+
         for (var j : obj.entrySet()) {
             try {
                 var json = j.getValue();
@@ -89,6 +93,10 @@ public class CustomParticlesManager extends JsonPartialReloader {
                         .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
                         .getFirst();
                 factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
+
+                if (factory instanceof CustomParticleType c) {
+                    customTypes.add(c);
+                }
 
                 if (BuiltInRegistries.PARTICLE_TYPE.get(id).isPresent()) {
                     ParticleType oldType = BuiltInRegistries.PARTICLE_TYPE.get(id).get().value();
@@ -115,6 +123,25 @@ public class CustomParticlesManager extends JsonPartialReloader {
                 Polytone.LOGGER.error("!!!!!!!!!!!! Failed to load Custom Particle {}", j.getKey(), e);
             }
         }
+
+        //initialize recursive stuff
+        for (var c : customTypes) {
+            for (var d : c.lazyParticles) {
+                try {
+                    c.particles.add(runCodec(ops, d));
+                } catch (Exception e) {
+                    Polytone.LOGGER.error("Failed to initialize custom particles particle emitters", e);
+                }
+            }
+            c.lazyParticles = null;
+        }
+    }
+
+    private static <T> ParticleParticleEmitter runCodec(DynamicOps o, Dynamic<T> dynamic) {
+        DynamicOps<T> ops = (DynamicOps<T>) o;
+        return ParticleParticleEmitter.CODEC.decode(ops, dynamic.getValue())
+                .result().orElseThrow(() -> new JsonParseException("Failed to decode particle emitters"))
+                .getFirst();
     }
 
     public Codec<CustomParticleFactory> byNameCodec() {
