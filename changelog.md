@@ -1,3 +1,1 @@
-- added "model" field in customparticle types. allows specifying a 3d model there
-- added "offset" field in customparticle types. allows specifying an offset for the renderer
-- added "none", "look_at_x", "look_at_xz", "look_at_z" and "look_west" rotation models to particles
+- particle's particle emitters now support recursive references

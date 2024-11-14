@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
@@ -33,6 +34,9 @@ public class BlockContextExpression {
 
     private static final String BLOCK_LIGHT = "BLOCK_LIGHT";
     private static final String SKY_LIGHT = "SKY_LIGHT";
+    private static final String TEMPERATURE = "TEMPERATURE";
+    private static final String DOWNFALL = "DOWNFALL";
+    private static final String DISTANCE_SQUARED = "DISTANCE_SQUARED";
 
 
     private static final String STATE_FUNC = "state_prop";
@@ -75,7 +79,8 @@ public class BlockContextExpression {
     private static Expression createExpression(String s) {
         return new ExpressionBuilder(ExpressionUtils.removeHex(s))
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
-                .variables( POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, TIME, BLOCK_LIGHT, SKY_LIGHT)
+                .variables( POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, TIME, BLOCK_LIGHT, SKY_LIGHT,
+                        DOWNFALL, TEMPERATURE, DISTANCE_SQUARED)
                 .operator(ExpressionUtils.defOp())
                 .build();
     }
@@ -92,7 +97,9 @@ public class BlockContextExpression {
     private final boolean hasDayTime;
     private final boolean hasSkyLight;
     private final boolean hasBlockLight;
-
+    private final boolean hasTemperature;
+    private final boolean hasDownfall;
+    private final boolean hasDistance;
 
     public BlockContextExpression(String expression) {
         this(createExpression(expression), expression);
@@ -110,6 +117,9 @@ public class BlockContextExpression {
         this.hasDayTime = unparsed.contains(DAY_TIME);
         this.hasSkyLight = unparsed.contains(SKY_LIGHT);
         this.hasBlockLight = unparsed.contains(BLOCK_LIGHT);
+        this.hasTemperature = unparsed.contains(TEMPERATURE);
+        this.hasDownfall = unparsed.contains(DOWNFALL);
+        this.hasDistance = unparsed.contains(DISTANCE_SQUARED);
     }
 
     //TODO: turn into entity context expression
@@ -121,7 +131,15 @@ public class BlockContextExpression {
         if (hasTime) expression.setVariable(TIME, entityTime);
         if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
         if (hasDayTime) expression.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
-
+        if (hasTemperature) expression.setVariable(TEMPERATURE, ClientFrameTicker.getTemperature());
+        if (hasDownfall) expression.setVariable(DOWNFALL, ClientFrameTicker.getDownfall());
+        if (hasDistance) {
+            var e = Minecraft.getInstance().getCameraEntity();
+            double x = pos.x - e.getX();
+            double y = pos.y - e.getY();
+            double z = pos.z - e.getZ();
+            expression.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+        }
         return expression.evaluate();
     }
 

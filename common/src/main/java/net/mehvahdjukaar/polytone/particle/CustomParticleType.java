@@ -400,9 +400,11 @@ public class CustomParticleType implements CustomParticleFactory {
     }
 
     //TODO: merge this and particle modifier
-    protected record Ticker(@Nullable ParticleContextExpression x, @Nullable ParticleContextExpression y,
+    protected record Ticker(@Nullable ParticleContextExpression x,
+                            @Nullable ParticleContextExpression y,
                             @Nullable ParticleContextExpression z,
-                            @Nullable ParticleContextExpression dx, @Nullable ParticleContextExpression dy,
+                            @Nullable ParticleContextExpression dx,
+                            @Nullable ParticleContextExpression dy,
                             @Nullable ParticleContextExpression dz,
                             @Nullable ParticleContextExpression size,
                             @Nullable ParticleContextExpression red, @Nullable ParticleContextExpression green,
