@@ -43,7 +43,9 @@ public class ParticleContextExpression {
     private static final String BLOCK_LIGHT = "BLOCK_LIGHT";
     private static final String TEMPERATURE = "TEMPERATURE";
     private static final String DOWNFALL = "DOWNFALL";
-
+    private static final String PLAYER_X = "PLAYER_X";
+    private static final String PLAYER_Y = "PLAYER_Y";
+    private static final String PLAYER_Z = "PLAYER_Z";
 
     public static final Codec<ParticleContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
@@ -63,6 +65,7 @@ public class ParticleContextExpression {
     private final boolean hasTemperature;
     private final boolean hasDownfall;
     private final boolean hasDistance;
+    private final boolean hasPlayer;
 
 
     public ParticleContextExpression(String expression) {
@@ -82,6 +85,7 @@ public class ParticleContextExpression {
         this.hasTemperature = unparsed.contains(TEMPERATURE);
         this.hasDownfall = unparsed.contains(DOWNFALL);
         this.hasDistance = unparsed.contains(DISTANCE_SQUARED);
+        this.hasPlayer = unparsed.contains(PLAYER_X) || unparsed.contains(PLAYER_Y) || unparsed.contains(PLAYER_Z);
     }
 
     public static ParticleContextExpression parse(String s) {
@@ -92,6 +96,7 @@ public class ParticleContextExpression {
         return new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc())
                 .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, ROLL, AGE,
+                        PLAYER_X, PLAYER_Y, PLAYER_Z,
                         CUSTOM, TIME, RAIN, DAY_TIME, SKY_LIGHT, BLOCK_LIGHT, DOWNFALL, TEMPERATURE, DISTANCE_SQUARED)
                 .operator(ExpressionUtils.defOp())
                 .build();
@@ -134,6 +139,12 @@ public class ParticleContextExpression {
             double y = particle.y - e.getY();
             double z = particle.z - e.getZ();
             expression.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+        }
+        if (hasPlayer) {
+            var e = Minecraft.getInstance().getCameraEntity();
+            expression.setVariable(PLAYER_X, e.getX());
+            expression.setVariable(PLAYER_Y, e.getY());
+            expression.setVariable(PLAYER_Z, e.getZ());
         }
 
         ExpressionUtils.randomizeRandom();

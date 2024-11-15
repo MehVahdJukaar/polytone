@@ -21,14 +21,14 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -59,12 +59,14 @@ public class CustomParticleType implements CustomParticleFactory {
     private final boolean hasPhysics;
     private final @Nullable IColorGetter colormap;
     private final Vec3 offset;
+    private final Optional<ParticleGroup> group;
 
     private transient SpriteSet spriteSet;
 
     private CustomParticleType(RenderType renderType, @Nullable ResourceLocation model,
                                Vec3 offset, int light, boolean hasPhysics,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
+                               int particleGroupLimit,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
                                @Nullable List<ParticleSoundEmitter> sounds, @Nullable List<Dynamic<?>> particles) {
         this.renderType = renderType;
@@ -78,6 +80,7 @@ public class CustomParticleType implements CustomParticleFactory {
         this.liquidAffinity = liquidAffinity;
         this.colormap = colormap;
         this.offset = offset;
+        this.group = particleGroupLimit > 0 ? Optional.of(new ParticleGroup(particleGroupLimit)) : Optional.empty();
     }
 
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -89,6 +92,8 @@ public class CustomParticleType implements CustomParticleFactory {
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
             LiquidAffinity.CODEC.optionalFieldOf("liquid_affinity", LiquidAffinity.ANY).forGetter(c -> c.liquidAffinity),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap)),
+            ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("limit", 0).forGetter(c ->
+                    c.group.map(ParticleGroup::getLimit).orElse(0)),
             ParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
             Ticker.CODEC.optionalFieldOf("ticker").forGetter(c -> Optional.ofNullable(c.ticker)),
             ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
@@ -98,10 +103,11 @@ public class CustomParticleType implements CustomParticleFactory {
     private CustomParticleType(RenderType renderType, Optional<ResourceLocation> model,
                                Vec3 offset, int light, boolean hasPhysics,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
-                               Optional<ParticleInitializer> initializer,
+                               int limit, Optional<ParticleInitializer> initializer,
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<Dynamic<?>> particles) {
         this(renderType, model.orElse(null), offset,
-                light, hasPhysics, liquidAffinity, colormap.orElse(null), initializer.orElse(null), ticker.orElse(null), sounds, particles);
+                light, hasPhysics, liquidAffinity, colormap.orElse(null), limit,
+                initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
 
     @Override
@@ -160,6 +166,7 @@ public class CustomParticleType implements CustomParticleFactory {
         protected final @Nullable IColorGetter colormap;
         protected final List<ParticleTickable> tickables;
         protected final int light;
+        private final Optional<ParticleGroup> group;
         protected float oQuadSize;
         protected final Vec3 offset;
         protected double custom;
@@ -177,6 +184,7 @@ public class CustomParticleType implements CustomParticleFactory {
             this.tickables.addAll(customType.sounds);
             this.tickables.addAll(customType.particles);
             this.offset = customType.offset;
+            this.group = customType.group;
             //for normal particles since its simple particle types (so that they can be ued in biomes) we can pass extra params
             if (state == null) state = STATE_HACK;
 
@@ -212,6 +220,10 @@ public class CustomParticleType implements CustomParticleFactory {
             this.setSpriteFromAge(spriteSet);
         }
 
+        @Override
+        public Optional<ParticleGroup> getParticleGroup() {
+            return this.group;
+        }
 
         public double getCustom() {
             return custom;
