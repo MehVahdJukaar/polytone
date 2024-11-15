@@ -1,1 +1,3 @@
-- particle's particle emitters now support recursive references
+- added player_x, player_y, player_z to particle emitters
+- added "limit" parameter to custom particle types
+- added distance_squared parameter to block particle emitters
