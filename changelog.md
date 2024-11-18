@@ -1,3 +1,2 @@
-- added player_x, player_y, player_z to particle emitters
-- added "limit" parameter to custom particle types
-- added distance_squared parameter to block particle emitters
+- added "force_spawn" param to particle types allowing particles to spawn regardless of distance like campfire ones
+- special offset ad scale parameters can be now also used to move armor stand i smithing screen, just like you can more the player in inventory screen (for screen modifies)
