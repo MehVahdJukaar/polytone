@@ -111,7 +111,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
                     }
                     continue;
                 } else {
-                    SimpleParticleType type = PlatStuff.makeParticleType();
+                    SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
                     PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
                     particleEngine.register(type, factory);
                     customParticleFactories.register(id, factory);

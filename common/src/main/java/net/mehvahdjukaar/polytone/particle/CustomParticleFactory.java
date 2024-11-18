@@ -28,4 +28,6 @@ public interface CustomParticleFactory extends ParticleProvider<SimpleParticleTy
     default ModelResourceLocation getCustomModel() {
         return null;
     }
+
+    boolean forceSpawns();
 }
