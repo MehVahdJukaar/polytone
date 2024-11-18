@@ -24,6 +24,7 @@
     "ParticleEngineMixin",
     "PotionUtilsMixin",
     "ScreenMixin",
+    "SmithingScreenMixin",
     "SpriteContentsMixin",
     "VariantDeserializerMixin",
     "XpOrbMixin",
