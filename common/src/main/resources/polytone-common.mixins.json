@@ -28,6 +28,7 @@
     "ModelManagerMixin",
     "ParticleEngineMixin",
     "ScreenMixin",
+    "SmithingScreenMixin",
     "SpriteContentsMixin",
     "VariantDeserializerMixin",
     "XpOrbMixin",
