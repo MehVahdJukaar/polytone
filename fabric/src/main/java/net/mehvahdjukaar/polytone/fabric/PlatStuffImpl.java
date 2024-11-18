@@ -256,8 +256,8 @@ public class PlatStuffImpl {
                 .getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getId(type), provider);
     }
 
-    public static SimpleParticleType makeParticleType() {
-        return FabricParticleTypes.simple();
+    public static SimpleParticleType makeParticleType(boolean forceSpawn) {
+        return FabricParticleTypes.simple(forceSpawn);
     }
 
     public static void unregisterParticleProvider(ResourceLocation id) {

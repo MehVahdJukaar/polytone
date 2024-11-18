@@ -51,6 +51,10 @@ public class SemiCustomParticleType implements CustomParticleFactory {
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap))
     ).apply(i, SemiCustomParticleType::new));
 
+    @Override
+    public boolean forceSpawns() {
+        return copyType.getOverrideLimiter();
+    }
 
     @Override
     public void setSpriteSet(ParticleEngine.MutableSpriteSet mutableSpriteSet) {
