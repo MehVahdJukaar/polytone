@@ -65,6 +65,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private final RotationMode rotationMode;
     private final Vec3 offset;
     private final Optional<ParticleGroup> group;
+    private final boolean forceSpawn;
 
     private transient SpriteSet spriteSet;
 
@@ -72,7 +73,7 @@ public class CustomParticleType implements CustomParticleFactory {
                                @Nullable ResourceLocation model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
-                               int particleGroupLimit,
+                               int particleGroupLimit, boolean forceSpawn,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
                                @Nullable List<ParticleSoundEmitter> sounds, @Nullable List<Dynamic<?>> particles) {
         this.renderType = renderType;
@@ -85,6 +86,7 @@ public class CustomParticleType implements CustomParticleFactory {
         this.hasPhysics = hasPhysics;
         this.killOnContact = killOnContact;
         this.liquidAffinity = liquidAffinity;
+        this.forceSpawn = forceSpawn;
         this.colormap = colormap;
         this.offset = offset;
         this.rotationMode = rotationMode;
@@ -104,6 +106,7 @@ public class CustomParticleType implements CustomParticleFactory {
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap)),
             ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("limit", 0).forGetter(c ->
                     c.group.map(ParticleGroup::getLimit).orElse(0)),
+            Codec.BOOL.optionalFieldOf("force_spawn", false).forGetter(c -> c.forceSpawn),
             ParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
             Ticker.CODEC.optionalFieldOf("ticker").forGetter(c -> Optional.ofNullable(c.ticker)),
             ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
@@ -114,11 +117,16 @@ public class CustomParticleType implements CustomParticleFactory {
                                Optional<ResourceLocation> model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
-                               int limit, Optional<ParticleInitializer> initializer,
+                               int limit, boolean forceSpawn, Optional<ParticleInitializer> initializer,
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<Dynamic<?>> particles) {
         this(renderType, rotationMode, model.orElse(null), offset,
-                light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null), limit,
+                light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null), limit, forceSpawn,
                 initializer.orElse(null), ticker.orElse(null), sounds, particles);
+    }
+
+    @Override
+    public boolean forceSpawns() {
+        return forceSpawn;
     }
 
     @Override

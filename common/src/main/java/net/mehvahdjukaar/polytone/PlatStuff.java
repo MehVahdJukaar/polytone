@@ -205,7 +205,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static SimpleParticleType makeParticleType() {
+    public static SimpleParticleType makeParticleType(boolean forceSpawn) {
         throw new AssertionError();
     }
 

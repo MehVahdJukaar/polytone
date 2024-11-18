@@ -79,8 +79,8 @@ public class PlatStuffImpl {
         ((ParticleEngineAccessor) particleEngine).getProviders().remove(id);
     }
 
-    public static SimpleParticleType makeParticleType() {
-        return new SimpleParticleType(false);
+    public static SimpleParticleType makeParticleType(boolean forceSpawn) {
+        return new SimpleParticleType(forceSpawn);
     }
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
