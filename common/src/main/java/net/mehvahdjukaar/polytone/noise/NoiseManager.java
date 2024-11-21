@@ -23,6 +23,10 @@ public class NoiseManager extends JsonPartialReloader {
     ).apply(instance, (s, l) -> new PerlinSimplexNoise(RandomSource.create(s), l)));
 
 
+    public NoiseManager() {
+        super("noises");
+    }
+
     private final MapRegistry<PerlinSimplexNoise> noises = new MapRegistry<>("Polytone Simplex Noises");
 
     @Override
