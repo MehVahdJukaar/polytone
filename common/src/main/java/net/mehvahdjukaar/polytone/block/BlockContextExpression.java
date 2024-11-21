@@ -93,18 +93,6 @@ public class BlockContextExpression {
                 .build();
     }
 
-    private final Expression expression;
-    private final String unparsed;
-
-    private final boolean hasTime;
-    private final boolean hasRain;
-    private final boolean hasX;
-    private final boolean hasY;
-    private final boolean hasZ;
-    private final boolean hasState;
-    private final boolean hasDayTime;
-    private final boolean hasSkyLight;
-    private final boolean hasBlockLight;
     private final boolean hasDistance;
 
     public BlockContextExpression(String expression) {
