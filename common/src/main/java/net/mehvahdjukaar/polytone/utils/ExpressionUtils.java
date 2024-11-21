@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
@@ -232,6 +233,12 @@ public class ExpressionUtils {
                 return baseNoise.getValue(args[0], args[1], false);
             }
         });
+
+        if (NOISE_FUNCS.size() > 1) {
+            //print names
+            Polytone.LOGGER.info("Registered custom noise functions: {}",
+                    NOISE_FUNCS.stream().map(Function::getName).toList());
+        }
 
     }
 
