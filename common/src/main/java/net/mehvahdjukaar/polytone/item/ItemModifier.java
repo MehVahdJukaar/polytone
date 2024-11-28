@@ -41,7 +41,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             CreativeTabModifier.COMPONENT_CODEC.listOf().optionalFieldOf("tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
             ExtraCodecs.PATTERN.listOf().optionalFieldOf("removed_tooltips", List.of()).forGetter(ItemModifier::removedTooltips),
             ItemModelOverride.CODEC.listOf().optionalFieldOf("custom_models", List.of()).forGetter(ItemModifier::customModels),
-            TARGET_CODEC.optionalFieldOf("targets", java.util.Set.of()).forGetter(ItemModifier::explicitTargets)
+            TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(ItemModifier::explicitTargets)
     ).apply(instance, ItemModifier::new));
 
     public record Partial(List<ItemModelOverride> customModels,

@@ -168,7 +168,7 @@ public record BlockPropertyModifier(
             } else if (block instanceof PressurePlateBlock ppb) {
                 oldType = new BlockSetTypeProvider.Vanilla(ppb.type);
                 ppb.type = blockSetType.get().getOrCreate(ppb.type, soundType);
-            }
+            }//todo: fence gates
         }
         if (tintHack) {
             Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
