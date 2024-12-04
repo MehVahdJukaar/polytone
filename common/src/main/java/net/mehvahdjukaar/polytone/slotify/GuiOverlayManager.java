@@ -7,6 +7,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -57,13 +59,16 @@ public class GuiOverlayManager extends JsonPartialReloader {
     private int index = 0;
     private boolean active = false;
 
-    public boolean maybeModifyBlit(GuiGraphics gui, TextureAtlasSprite sprite, int x, int y, int offset, int width, int height) {
+    public boolean maybeModifyBlit(GuiGraphics gui, Function<ResourceLocation, RenderType> function,
+                                   MultiBufferSource.BufferSource buffer, TextureAtlasSprite sprite,
+                                   int x, int y, int width, int height, int color) {
         if (!active || blitModifiers.isEmpty()) return false;
         var mod = blitModifiers.get(sprite.contents().name());
         if (mod != null) {
             int ind = mod.index();
             if (ind == -1 || ind == index) {
-                mod.blitModified(gui, sprite, x, x + width, y, y + height, offset);
+                mod.blitModified(gui, function, buffer,
+                        sprite, x, x + width, y, y + height, color);
                 return true;
             }
             index++;

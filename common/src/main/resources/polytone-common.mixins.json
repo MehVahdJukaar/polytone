@@ -29,6 +29,7 @@
     "ParticleEngineMixin",
     "ScreenMixin",
     "SmithingScreenMixin",
+    "SplashRendererMixin",
     "SpriteContentsMixin",
     "VariantDeserializerMixin",
     "XpOrbMixin",

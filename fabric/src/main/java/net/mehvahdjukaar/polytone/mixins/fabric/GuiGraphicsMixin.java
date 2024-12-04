@@ -2,9 +2,12 @@ package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.world.level.Level;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -12,9 +15,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GuiGraphics.class)
 public class GuiGraphicsMixin {
 
-    @Inject(method = "blitSprite(Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V", at = @At("HEAD"), cancellable = true)
-    public void polytone$modifyBlit(TextureAtlasSprite textureAtlasSprite, int x, int y, int offset, int width, int height, CallbackInfo ci) {
-        if (Polytone.OVERLAY_MODIFIERS.maybeModifyBlit((GuiGraphics) (Object) this, textureAtlasSprite, x, y, offset, width, height)){
+    @Shadow
+    @Final
+    private MultiBufferSource.BufferSource bufferSource;
+
+    @Inject(method = "blitSprite(Ljava/util/function/Function;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V", at = @At("HEAD"), cancellable = true)
+    public void polytone$modifyBlit(Function<ResourceLocation, RenderType> function, TextureAtlasSprite textureAtlasSprite,
+                                    int x, int y, int width, int height, int offset, CallbackInfo ci) {
+        if (Polytone.OVERLAY_MODIFIERS.maybeModifyBlit((GuiGraphics) (Object) this,
+                function, this.bufferSource, textureAtlasSprite,
+                x, y, width, height, offset)) {
             ci.cancel();
         }
     }
