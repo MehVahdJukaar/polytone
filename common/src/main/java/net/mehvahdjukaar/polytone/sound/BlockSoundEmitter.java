@@ -5,7 +5,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.block.BlockSetTypeProvider;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -32,9 +31,9 @@ public record BlockSoundEmitter(
         boolean distanceDelay,
         Optional<LazyHolderSet<Biome>> biomes) implements BlockClientTickable {
 
-  private static final Codec<SoundSource> SOUND_SOURCE_CODEC =
-          Codec.STRING.comapFlatMap(s -> DataResult.success(SoundSource.valueOf(s.toLowerCase(Locale.ROOT))),
-                  s -> s.getName().toLowerCase(Locale.ROOT));
+    private static final Codec<SoundSource> SOUND_SOURCE_CODEC =
+            Codec.STRING.comapFlatMap(s -> DataResult.success(SoundSource.valueOf(s.toLowerCase(Locale.ROOT))),
+                    s -> s.getName().toLowerCase(Locale.ROOT));
 
     public static final Codec<BlockSoundEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
             BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("sound").forGetter(BlockSoundEmitter::sound),
@@ -67,7 +66,7 @@ public record BlockSoundEmitter(
             float v = (float) volume.getValue(level, pos, state);
             float p = (float) pitch.getValue(level, pos, state);
 
-            level.playLocalSound( vec.x, vec.y, vec.z,
+            level.playLocalSound(vec.x, vec.y, vec.z,
                     sound, category, v, p, false);
         }
     }

@@ -25,6 +25,7 @@
     "PotionUtilsMixin",
     "ScreenMixin",
     "SmithingScreenMixin",
+    "SplashRendererMixin",
     "SpriteContentsMixin",
     "VariantDeserializerMixin",
     "XpOrbMixin",
