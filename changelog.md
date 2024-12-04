@@ -1,1 +1,2 @@
-ported all recent changes from 1.21.1
+added slpash text color
+fixed blit modifies not working correctly
