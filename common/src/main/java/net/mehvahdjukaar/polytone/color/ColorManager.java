@@ -19,7 +19,6 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -30,7 +29,6 @@ import net.minecraft.world.level.border.BorderStatus;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Function;
@@ -60,6 +58,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private BlockContextExpression xpOrbColorB;
 
     private int xpBar = 8453920;
+    private Integer splash = null;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -71,6 +70,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         return xpBar;
     }
 
+    public Integer getSplash() {
+        return splash;
+    }
 
     @Override
     protected void process(Map<ResourceLocation, Properties> map, DynamicOps<JsonElement> ops) {
@@ -242,7 +244,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         } else if (is(prop, 0, "text")) {
             int col = parseHex(obj);
             ChatFormatting text = null;
-            if (is(prop, 1, "xpbar")) {
+            if (is(prop, 1, "splash")) {
+                splash = col;
+            } else if (is(prop, 1, "xpbar")) {
                 xpBar = col;
             } else if (is(prop, 1, "code")) {
                 String s = get(prop, 2);
@@ -386,5 +390,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(orb.position(), orb.tickCount + partialTicks);
         return new float[]{r, g, b};
     }
+
 
 }
