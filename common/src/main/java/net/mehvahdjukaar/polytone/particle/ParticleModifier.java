@@ -101,7 +101,7 @@ public class ParticleModifier implements ITargetProvider {
     }
 
 
-    public void modify(Particle particle, Level level, ParticleOptions options) {
+    public void modify(@NotNull Particle particle, Level level, ParticleOptions options) {
         if (filter != null) {
             if (!filter.test(options)) return;
         }

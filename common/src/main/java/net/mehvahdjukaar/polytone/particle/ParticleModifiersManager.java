@@ -4,16 +4,14 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
-import net.minecraft.client.particle.DripParticle;
-import net.minecraft.client.particle.LavaParticle;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -25,7 +23,7 @@ public class ParticleModifiersManager extends JsonPartialReloader {
         super("particle_modifiers");
     }
 
-    public void maybeModify(ParticleOptions options, Level level, Particle particle) {
+    public void maybeModify(ParticleOptions options, Level level, @NotNull Particle particle) {
         var mod = particleModifiers.get(options.getType());
         for (var modifier : mod) {
             modifier.modify(particle, level, options);

@@ -29,13 +29,13 @@ public abstract class ParticleEngineMixin {
 
     @ModifyReturnValue(method = "makeParticle", at = @At("RETURN"))
     public @Nullable <T extends ParticleOptions> Particle polytone$applyModifiers(@Nullable Particle original,
-                                                                                  @Local(argsOnly = true) T particleData){
-        Polytone.PARTICLE_MODIFIERS.maybeModify( particleData, this.level, original);
+                                                                                  @Local(argsOnly = true) T particleData) {
+        if (original != null) Polytone.PARTICLE_MODIFIERS.maybeModify(particleData, this.level, original);
         return original;
     }
 
     @Inject(method = "reload", at = @At(value = "HEAD"))
-    public void polytone$addPackSpriteSets(PreparableReloadListener.PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor executor, Executor executor2, CallbackInfoReturnable<CompletableFuture<Void>> cir){
+    public void polytone$addPackSpriteSets(PreparableReloadListener.PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor executor, Executor executor2, CallbackInfoReturnable<CompletableFuture<Void>> cir) {
         Polytone.CUSTOM_PARTICLES.addSpriteSets(resourceManager);
     }
 }
