@@ -1,1 +1,1 @@
-- fixed a cash with particle modifiers
+- fixed a rare cash with particle modifiers
