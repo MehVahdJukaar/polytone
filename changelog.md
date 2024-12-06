@@ -1,1 +1,1 @@
-fixed custom "noises" folder not being looked at
+- fixed a cash with particle modifiers
