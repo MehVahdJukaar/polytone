@@ -1,1 +1,3 @@
-ported a fix
+- added random_sprite variable to custom particle types
+- custom particle type models will support different render types
+- fixed particle models rendering twice under some conditions

@@ -107,7 +107,7 @@ public class CustomParticleType implements CustomParticleFactory {
             Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
             LiquidAffinity.CODEC.optionalFieldOf("liquid_affinity", LiquidAffinity.ANY).forGetter(c -> c.liquidAffinity),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap)),
-           Codec.BOOL.optionalFieldOf("random_sprite", false).forGetter(c -> c.randomSprite),
+            Codec.BOOL.optionalFieldOf("random_sprite", false).forGetter(c -> c.randomSprite),
             ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("limit", 0).forGetter(c ->
                     c.group.map(ParticleGroup::getLimit).orElse(0)),
             Codec.BOOL.optionalFieldOf("force_spawn", false).forGetter(c -> c.forceSpawn),
@@ -126,7 +126,7 @@ public class CustomParticleType implements CustomParticleFactory {
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<Dynamic<?>> particles) {
         this(renderType, rotationMode, model.orElse(null), offset,
                 light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null),
-                 randomSprite, limit, forceSpawn,
+                randomSprite, limit, forceSpawn,
                 initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
 
@@ -247,10 +247,9 @@ public class CustomParticleType implements CustomParticleFactory {
                 this.spriteSet = null;
                 this.pickSprite(customType.spriteSet);
 
-            }
-           else  {
+            } else {
                 this.spriteSet = customType.spriteSet;
-               this.setSpriteFromAge(spriteSet);
+                this.setSpriteFromAge(spriteSet);
             }
         }
 
@@ -319,7 +318,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public void tick() {
-         if (spriteSet != null )  this.setSpriteFromAge(spriteSet);
+            if (spriteSet != null) this.setSpriteFromAge(spriteSet);
             super.tick();
 
             if (this.ticker != null) {
