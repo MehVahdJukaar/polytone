@@ -1,0 +1,5 @@
+{
+  "toast.polytone.load_fail": "載入 Polytone 失敗，請檢查 logs/polytone.log",
+  "toast.polytone.lazy_load_fail": "Polytone 延遲載入資源失敗",
+  "toast.polytone.early_load_fail": "Polytone 預先載入資源失敗"
+}
