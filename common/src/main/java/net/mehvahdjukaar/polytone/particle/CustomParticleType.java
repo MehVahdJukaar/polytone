@@ -66,6 +66,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private final Vec3 offset;
     private final Optional<ParticleGroup> group;
     private final boolean forceSpawn;
+    private final boolean randomSprite;
 
     private transient SpriteSet spriteSet;
 
@@ -73,10 +74,12 @@ public class CustomParticleType implements CustomParticleFactory {
                                @Nullable ResourceLocation model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
+                               boolean randomSprite,
                                int particleGroupLimit, boolean forceSpawn,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
                                @Nullable List<ParticleSoundEmitter> sounds, @Nullable List<Dynamic<?>> particles) {
         this.renderType = renderType;
+        this.randomSprite = randomSprite;
         this.model = model == null ? null : new ModelResourceLocation(model, "standalone");
         this.initializer = initializer;
         this.ticker = ticker;
@@ -104,6 +107,7 @@ public class CustomParticleType implements CustomParticleFactory {
             Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
             LiquidAffinity.CODEC.optionalFieldOf("liquid_affinity", LiquidAffinity.ANY).forGetter(c -> c.liquidAffinity),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap)),
+           Codec.BOOL.optionalFieldOf("random_sprite", false).forGetter(c -> c.randomSprite),
             ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("limit", 0).forGetter(c ->
                     c.group.map(ParticleGroup::getLimit).orElse(0)),
             Codec.BOOL.optionalFieldOf("force_spawn", false).forGetter(c -> c.forceSpawn),
@@ -117,10 +121,12 @@ public class CustomParticleType implements CustomParticleFactory {
                                Optional<ResourceLocation> model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
+                               boolean randomSprite,
                                int limit, boolean forceSpawn, Optional<ParticleInitializer> initializer,
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<Dynamic<?>> particles) {
         this(renderType, rotationMode, model.orElse(null), offset,
-                light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null), limit, forceSpawn,
+                light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null),
+                 randomSprite, limit, forceSpawn,
                 initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
 
@@ -221,7 +227,6 @@ public class CustomParticleType implements CustomParticleFactory {
             this.model = customType.model == null ? null : PlatStuff.getBakedModel(customType.model);
             this.renderType = customType.renderType;
             this.ticker = customType.ticker;
-            this.spriteSet = customType.spriteSet;
             ParticleInitializer initializer = customType.initializer;
             BlockPos pos = BlockPos.containing(x, y, z);
             if (initializer != null) {
@@ -238,7 +243,15 @@ public class CustomParticleType implements CustomParticleFactory {
                 this.setColor(unpack[0], unpack[1], unpack[2]);
             }
 
-            this.setSpriteFromAge(spriteSet);
+            if (customType.randomSprite) {
+                this.spriteSet = null;
+                this.pickSprite(customType.spriteSet);
+
+            }
+           else  {
+                this.spriteSet = customType.spriteSet;
+               this.setSpriteFromAge(spriteSet);
+            }
         }
 
 
@@ -306,7 +319,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public void tick() {
-            this.setSpriteFromAge(spriteSet);
+         if (spriteSet != null )  this.setSpriteFromAge(spriteSet);
             super.tick();
 
             if (this.ticker != null) {
