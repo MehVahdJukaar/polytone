@@ -260,7 +260,7 @@ public class CustomParticleType implements CustomParticleFactory {
             }
 
             this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
-            if (this.rotationMode.hasBackFace()) {
+            if (this.rotationMode.hasBackFace() && model == null) {
                 quaternionf.rotateX(Mth.PI);
                 //render back face
                 this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
