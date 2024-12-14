@@ -283,7 +283,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 poseStack.translate(-0.5, -0.5, -0.5);
 
                 MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-                consumer = bufferSource.getBuffer(net.minecraft.client.renderer.RenderType.cutout());
+                consumer = bufferSource.getBuffer(renderType.getBlock());
 
                 putModelBulkData(this.model, this.getLightColor(partialTicks),
                         OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
