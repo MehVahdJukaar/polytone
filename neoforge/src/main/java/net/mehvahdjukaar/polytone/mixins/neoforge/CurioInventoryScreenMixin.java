@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins.neoforge;
 
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.world.item.CreativeModeTabs;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +17,7 @@ public abstract class CurioInventoryScreenMixin {
             target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphics;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
             , index = 1
     )
-    public int modifyRenderEntityX(int x) {
+    public int polytone$modifyRenderEntityX(int x) {
         var m = ((SlotifyScreen) this).polytone$getModifier();
         if (m != null) {
             var s = m.getSpecial("player");
@@ -30,7 +32,7 @@ public abstract class CurioInventoryScreenMixin {
             target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphics;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
             , index = 2
     )
-    public int modifyRenderEntityX2(int x) {
+    public int polytone$modifyRenderEntityX2(int x) {
         var m = ((SlotifyScreen) this).polytone$getModifier();
         if (m != null) {
             var s = m.getSpecial("player");
@@ -45,7 +47,7 @@ public abstract class CurioInventoryScreenMixin {
             target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphics;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
             , index = 2
     )
-    public int modifyRenderEntityY(int y) {
+    public int poltone$modifyRenderEntityY(int y) {
         var m = ((SlotifyScreen) this).polytone$getModifier();
         if (m != null) {
             var s = m.getSpecial("player");
@@ -60,7 +62,7 @@ public abstract class CurioInventoryScreenMixin {
             target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphics;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
             , index = 4
     )
-    public int modifyRenderEntityY2(int y) {
+    public int poltone$modifyRenderEntityY2(int y) {
         var m = ((SlotifyScreen) this).polytone$getModifier();
         if (m != null) {
             var s = m.getSpecial("player");
@@ -75,7 +77,7 @@ public abstract class CurioInventoryScreenMixin {
             target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphics;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
             , index = 4
     )
-    public int modifyRenderEntityScale(int y) {
+    public int polytone$modifyRenderEntityScale(int y) {
         var m = ((SlotifyScreen) this).polytone$getModifier();
         if (m != null) {
             var s = m.getSpecial("player");

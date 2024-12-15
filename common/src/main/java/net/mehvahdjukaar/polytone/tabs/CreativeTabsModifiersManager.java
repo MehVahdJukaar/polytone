@@ -6,10 +6,9 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
+import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -19,13 +18,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.level.Level;
 
 import java.util.*;
 
 public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsModifiersManager.Resources> {
 
-    private final List<ResourceKey<CreativeModeTab>> customTabs = new ArrayList<>();
+    private final MapRegistry<CreativeModeTab> customTabs = new MapRegistry<>("Custom Creative Tabs");
 
     private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> modifiers = new HashMap<>();
     private final Set<ResourceKey<CreativeModeTab>> needsRefresh = new HashSet<>();
@@ -51,9 +49,6 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
     @Override
     protected void reset() {
-        for (var id : customTabs) {
-            PlatStuff.unregisterDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id.location());
-        }
         customTabs.clear();
         for (var e : vanillaTabs.entrySet()) {
             e.getValue().applyAttributes(e.getKey());
@@ -64,23 +59,35 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     }
 
     @Override
+    protected void resetWithLevel(boolean logOff) {
+        for (var id : customTabs.keySet()) {
+            PlatStuff.unregisterDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id);
+            if (logOff) PlatStuff.sortTabs();
+        }
+    }
+
+    @Override
     protected void process(Resources resources, DynamicOps<JsonElement> ops) {
         for (var e : resources.extraTabs.entrySet()) {
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
                 ResourceKey<CreativeModeTab> key = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id);
-                if (!customTabs.contains(key) && !BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(key)) {
+                if (!customTabs.containsKey(id) && !BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(key)) {
                     CreativeModeTab tab = PlatStuff.createCreativeTab(id);
-                    PlatStuff.registerDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id, tab);
-                    customTabs.add(key);
+                    customTabs.register(id, tab);
                 } else {
                     Polytone.LOGGER.error("Creative Tab with id {} already exists! Ignoring.", id);
                 }
             }
         }
 
+        for (var e : customTabs.getEntries()) {
+            PlatStuff.registerDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, e.getKey(), e.getValue());
+        }
+
         if (!customTabs.isEmpty()) {
             Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add items to them!");
+            PlatStuff.sortTabs();
         }
 
         lazyJsons.clear();
@@ -90,7 +97,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean firstLogin) {
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
         var ops = RegistryOps.create(JsonOps.INSTANCE, access);
         for (var j : lazyJsons.entrySet()) {
 
@@ -136,7 +143,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             if (access != null) {
                 CreativeTabModifier v = mod.applyItemsAndAttributes(event, access);
                 //dont add custom tabs here!
-                if (!customTabs.contains(tab)) vanillaTabs.put(tab, v);
+                if (!customTabs.containsKey(tab.location())) vanillaTabs.put(tab, v);
             }
         }
     }

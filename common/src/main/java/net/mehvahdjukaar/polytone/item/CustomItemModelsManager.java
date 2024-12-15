@@ -109,7 +109,7 @@ public class CustomItemModelsManager extends PartialReloader<Object> {
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean firstLogin) {
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
         for (var list : this.itemModels.values()) {
             list.populateModels(access);
         }

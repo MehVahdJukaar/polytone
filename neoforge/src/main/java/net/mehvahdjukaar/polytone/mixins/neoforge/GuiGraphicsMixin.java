@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.mixins.neoforge;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,6 +17,7 @@ public class GuiGraphicsMixin {
                                     int height, CallbackInfo ci) {
         if (Polytone.OVERLAY_MODIFIERS.maybeModifyBlit((GuiGraphics) (Object) this, textureAtlasSprite, x, y, offset, width, height)){
             ci.cancel();
+
         }
     }
 }

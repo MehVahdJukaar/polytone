@@ -36,6 +36,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.ModelEvent;
@@ -45,6 +46,7 @@ import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.joml.Vector3f;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -122,8 +124,19 @@ public class PlatStuffImpl {
 
     }
 
+    private static Field VANILLA_TABS = null;
+
     public static void sortTabs() {
-        CreativeModeTabRegistry.sortTabs();
+        //needs to clear vanilla tabs cause neo is stupid
+        if (VANILLA_TABS == null) {
+            VANILLA_TABS = ObfuscationReflectionHelper.findField(CreativeModeTabRegistry.class, "DEFAULT_TABS");
+        }
+        try {
+            ((List) VANILLA_TABS.get(null)).clear();
+            CreativeModeTabRegistry.sortTabs();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void updateSearchTrees(SessionSearchTrees searchTrees, List<CreativeModeTab> needsTreeUpdated) {
