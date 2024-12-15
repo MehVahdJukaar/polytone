@@ -106,6 +106,14 @@ public class MapRegistry<T> implements Codec<T> {
         this.map.clear();
     }
 
+    public boolean isEmpty() {
+        return this.map.isEmpty();
+    }
+
+    public int size() {
+        return map.size();
+    }
+
 
     public static class CodecMap<T> extends MapRegistry<Codec<? extends T>> {
 

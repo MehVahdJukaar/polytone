@@ -73,6 +73,7 @@ public class Polytone {
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
 
+    //todo: make all of thise load on level load and unload
     public static void init(boolean isSodiumOn, boolean devEnv, boolean forge) {
         PlatStuff.addClientReloadListener(() -> new CompoundReloader(
                         NOISES,SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
@@ -129,6 +130,7 @@ public class Polytone {
     }
 
     public static void onLevelUnload() {
+        COMPOUND_RELOADER.resetOnLevelUnload( );
         BiomeKeysCache.clear();
     }
 

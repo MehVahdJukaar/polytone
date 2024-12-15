@@ -39,6 +39,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.ModLoader;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
+import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
+import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.common.CreativeModeTabRegistry;
+import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.DimensionSpecialEffectsManager;
 import net.minecraftforge.client.event.ModelEvent;
@@ -149,8 +161,19 @@ public class PlatStuffImpl {
 
     }
 
+    private static Field VANILLA_TABS = null;
+
     public static void sortTabs() {
-        CreativeModeTabRegistry.sortTabs();
+        //needs to clear vanilla tabs cause neo is stupid
+        if (VANILLA_TABS == null) {
+            VANILLA_TABS = ObfuscationReflectionHelper.findField(CreativeModeTabRegistry.class, "DEFAULT_TABS");
+        }
+        try {
+            ((List) VANILLA_TABS.get(null)).clear();
+            CreativeModeTabRegistry.sortTabs();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     public static RegistryAccess hackyGetRegistryAccess() {

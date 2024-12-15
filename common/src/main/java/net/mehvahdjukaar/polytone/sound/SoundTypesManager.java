@@ -11,6 +11,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -22,7 +23,7 @@ import java.util.*;
 
 public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resources> {
 
-    private final List<ResourceLocation> customSoundEvents = new ArrayList<>();
+    private final MapRegistry<SoundEvent> customSoundEvents = new MapRegistry<>("Custom Sound Events");
 
     // custom defined sound types
     private final MapRegistry<SoundType> customSoundTypes = new MapRegistry<>("Custom Sound Types");
@@ -57,23 +58,15 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         for (var e : soundEvents.entrySet()) {
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
-                if (!customSoundEvents.contains(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
-                    SoundEvent newSound = PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id,
-                            SoundEvent.createVariableRangeEvent(id));
-                    customSoundEvents.add(id);
+                if (!customSoundEvents.containsKey(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
+                    SoundEvent newSound = SoundEvent.createVariableRangeEvent(id);
+                    customSoundEvents.register(id, newSound);
                 } else {
                     Polytone.LOGGER.error("Sound Event with id {} already exists! Ignoring.", id);
                 }
             }
         }
-
-        if (!customSoundEvents.isEmpty()) {
-            Polytone.LOGGER.info("Registered {} custom Sound Events from Resource Packs: {}", customSoundEvents.size(), customSoundEvents + ". Remember to add them to sounds.json!");
-            //this is bad
-            Minecraft.getInstance().getSoundManager().reload();
-            //this entire thing is a bad idea
-        }
-
+applyWithLevel(null, false);
         // sound types
 
         for (var j : soundJsons.entrySet()) {
@@ -88,8 +81,32 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     }
 
     @Override
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+        if(access != null)return;
+        for (var e : customSoundEvents.getEntries()) {
+            var id = e.getKey();
+            var sound = e.getValue();
+            PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id, sound);
+        }
+
+        if (!customSoundEvents.isEmpty()) {
+            Polytone.LOGGER.info("Registered {} custom Sound Events from Resource Packs: {}", customSoundEvents.size(), customSoundEvents + ". Remember to add them to sounds.json!");
+            //this is bad
+            Minecraft.getInstance().getSoundManager().reload();
+            //this entire thing is a bad idea
+        }
+    }
+
+    @Override
+    protected void resetWithLevel(boolean logOff) {
+        for(var e : customSoundEvents.getEntries()) {
+            var id  = e.getKey();
+            PlatStuff.unregisterDynamic(BuiltInRegistries.SOUND_EVENT, id);
+        }
+    }
+
+    @Override
     protected void reset() {
-        PlatStuff.unregisterAllDynamic(BuiltInRegistries.SOUND_EVENT, customSoundEvents);
         customSoundTypes.clear();
         customSoundEvents.clear();
     }

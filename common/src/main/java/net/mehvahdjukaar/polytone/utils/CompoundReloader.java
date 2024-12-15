@@ -37,6 +37,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         for (var c : children) {
+            c.resetWithLevel(false);
             c.reset();
         }
 
@@ -71,6 +72,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         for (var c : children) {
             try {
                 c.apply();
+                if (level != null) c.applyWithLevel(level.registryAccess(), false);
             } catch (Exception e) {
                 String message = c + " failed to apply some resources";
                 Polytone.logException(e, message);
@@ -90,4 +92,15 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         reloader.process((T) object, JsonOps.INSTANCE);
     }
 
+    public void applyOnLevelLoad(RegistryAccess registryAccess, boolean firstLogin) {
+        for (var c : children) {
+            c.applyWithLevel(registryAccess, firstLogin);
+        }
+    }
+
+    public void resetOnLevelUnload() {
+        for (var c : children) {
+            c.resetWithLevel(true);
+        }
+    }
 }

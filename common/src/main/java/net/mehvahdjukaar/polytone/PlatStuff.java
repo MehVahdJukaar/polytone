@@ -6,6 +6,7 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.AshParticle;
 import net.minecraft.client.particle.CherryParticle;
@@ -26,6 +27,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -114,6 +116,7 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @Contract
     @ExpectPlatform
     public static void sortTabs() {
         throw new AssertionError();
@@ -197,20 +200,18 @@ public class PlatStuff {
 
             reg.byLocation.remove(key.location());
             reg.byValue.remove(value);
-            reg.byId.remove(reference);
-            reg.toId.removeInt(reg.toId.getInt(value));
+            int id = reg.getId(value);
+            if(id != -1) reg.byId.remove(id);
+            else{
+                int error = 1;
+            }
+            reg.toId.removeInt(value);
         } else {
             int aa = 1;
         }
         return reference;
     }
 
-    public static void unregisterAllDynamic(Registry<?> soundEvent, List<ResourceLocation> customSoundEvents) {
-        for (int j = customSoundEvents.size() - 1; j >= 0; --j) {
-            ResourceLocation id = customSoundEvents.get(j);
-            unregisterDynamic(soundEvent, id);
-        }
-    }
 
     @ExpectPlatform
     public static SimpleParticleType makeParticleType(boolean forceSpawn) {

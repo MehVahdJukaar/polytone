@@ -179,8 +179,8 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         //else apply as soon as we load a level
     }
 
-    public void doApply(RegistryAccess registryAccess, boolean firstLogin) {
-        if (!firstLogin && !needsDynamicApplication) return;
+    public void doApply(RegistryAccess registryAccess, boolean isLogIn) {
+        if (!isLogIn && !needsDynamicApplication) return;
         needsDynamicApplication = false;
 
         for (var v : vanillaEffects.entrySet()) {
