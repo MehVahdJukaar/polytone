@@ -5,6 +5,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
+import net.mehvahdjukaar.polytone.tabs.ItemPredicate;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
@@ -150,7 +151,7 @@ public class PolytoneForge {
 
         @Override
         public void addItems(@Nullable Predicate<ItemStack> target, boolean after, List<ItemStack> items) {
-            if (target == null) {
+            if (target == null || target == ItemPredicate.TRUE_PRED || !event.getTab().hasAnyItems()) {
                 event.acceptAll(items);
             } else {
                 if (after) {

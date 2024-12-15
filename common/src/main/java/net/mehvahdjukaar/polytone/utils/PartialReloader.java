@@ -112,7 +112,11 @@ public abstract class PartialReloader<T> {
 
     protected abstract void process(T obj, DynamicOps<JsonElement> ops);
 
-    protected void applyWithLevel(HolderLookup.Provider access, boolean firstLogin) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
+
+    }
+
+    protected void resetWithLevel(boolean logOff){
 
     }
 

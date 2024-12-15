@@ -4,6 +4,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Final;
@@ -18,7 +19,8 @@ import java.util.function.Function;
 @Mixin(GuiGraphics.class)
 public class GuiGraphicsMixin {
 
-    @Shadow @Final private MultiBufferSource.BufferSource bufferSource;
+    @Shadow @Final
+    public MultiBufferSource.BufferSource bufferSource;
 
     @Inject(method = "blitSprite(Ljava/util/function/Function;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V", at = @At("HEAD"), cancellable = true)
     public void polytone$modifyBlit(Function<ResourceLocation, RenderType> function, TextureAtlasSprite textureAtlasSprite,
@@ -26,6 +28,7 @@ public class GuiGraphicsMixin {
         if (Polytone.OVERLAY_MODIFIERS.maybeModifyBlit((GuiGraphics) (Object) this, function,
                 this.bufferSource, textureAtlasSprite, x, y, width, height, color)){
             ci.cancel();
+
         }
     }
 }

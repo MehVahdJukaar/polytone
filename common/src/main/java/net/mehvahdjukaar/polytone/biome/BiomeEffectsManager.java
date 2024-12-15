@@ -52,7 +52,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     // we need registry ops here since special effects use registry stuff...
     @Override
-    public void applyWithLevel(HolderLookup.Provider access, boolean firstLogin) {
+    public void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         for (var j : lazyJsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
@@ -67,7 +67,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         }
         lazyJsons.clear();
 
-        doApplyWithLevel(access, firstLogin);
+        doApplyWithLevel(access, isLogIn);
     }
 
     private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod, HolderLookup.Provider access) {

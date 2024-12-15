@@ -77,6 +77,7 @@ public class Polytone {
     public static boolean isForge = false;
     public static boolean iris = false;
 
+    //todo: make all of thise load on level load and unload
     public static void init(boolean devEnv, boolean forge, boolean iris) {
         COMPOUND_RELOADER = new CompoundReloader(
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
@@ -124,6 +125,7 @@ public class Polytone {
     }
 
     public static void onLevelUnload() {
+        COMPOUND_RELOADER.resetOnLevelUnload( );
         BiomeKeysCache.clear();
     }
 

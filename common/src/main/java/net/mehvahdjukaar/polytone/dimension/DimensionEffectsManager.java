@@ -175,8 +175,8 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel(HolderLookup.Provider registryAccess, boolean firstLogin) {
-        if (!firstLogin && !needsDynamicApplication) return;
+    protected void applyWithLevel(HolderLookup.Provider registryAccess, boolean isLogIn) {
+        if (!isLogIn && !needsDynamicApplication) return;
         needsDynamicApplication = false;
 
         for (var v : vanillaEffects.entrySet()) {

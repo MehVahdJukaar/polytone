@@ -111,7 +111,7 @@ public class CustomItemModelsManager extends PartialReloader<Object> {
     }
 
     @Override
-    protected void applyWithLevel(HolderLookup.Provider access, boolean firstLogin) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         for (var list : this.itemModels.values()) {
             list.populateModels(access);
         }

@@ -9,12 +9,14 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -55,15 +57,19 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     @Override
     protected void reset() {
-        for (var id : customParticleFactories.orderedKeys()) {
-            PlatStuff.unregisterParticleProvider(id);
-            PlatStuff.unregisterDynamic(BuiltInRegistries.PARTICLE_TYPE, id);
-        }
         customParticleFactories.clear();
         for (var v : overwrittenVanillaProviders.entrySet()) {
             PlatStuff.setParticleProvider(v.getKey(), v.getValue());
         }
         overwrittenVanillaProviders.clear();
+    }
+
+    @Override
+    protected void resetWithLevel(boolean logOff) {
+        for (var id : customParticleFactories.orderedKeys()) {
+            PlatStuff.unregisterParticleProvider(id);
+            PlatStuff.unregisterDynamic(BuiltInRegistries.PARTICLE_TYPE, id);
+        }
     }
 
     // not ideal
@@ -76,6 +82,20 @@ public class CustomParticlesManager extends JsonPartialReloader {
         this.checkConditions(jsons);
         for (var v : jsons.keySet()) {
             engine.spriteSets.put(v, new ParticleEngine.MutableSpriteSet());
+        }
+    }
+
+    @Override
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+        if(access != null)return;
+        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
+
+        for (var c : customParticleFactories.getEntries()) {
+            var factory = c.getValue();
+            var id  = c.getKey();
+            SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
+            PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
+            particleEngine.register(type, factory);
         }
     }
 
@@ -111,9 +131,6 @@ public class CustomParticlesManager extends JsonPartialReloader {
                     }
                     continue;
                 } else {
-                    SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
-                    PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
-                    particleEngine.register(type, factory);
                     customParticleFactories.register(id, factory);
                 }
 
@@ -123,6 +140,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
                 Polytone.LOGGER.error("!!!!!!!!!!!! Failed to load Custom Particle {}", j.getKey(), e);
             }
         }
+
+        applyWithLevel(null, false);
 
         //initialize recursive stuff
         for (var c : customTypes) {
