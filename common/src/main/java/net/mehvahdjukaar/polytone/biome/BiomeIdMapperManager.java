@@ -9,6 +9,8 @@ import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
@@ -23,13 +25,14 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void reset() {
+    protected void resetWithLevel(boolean logOff) {
         biomeIdMappers.clear();
     }
 
     @Override
-    protected void process(Map<ResourceLocation, JsonElement> obj, DynamicOps<JsonElement> ops) {
-        for (var j : obj.entrySet()) {
+    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+                                  RegistryAccess access) {
+        for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
             var mapper = BiomeIdMapper.CODEC.decode(ops, json)
@@ -41,6 +44,11 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
                 Polytone.LOGGER.warn("Found duplicate biome in biome id mapper {}", id);
             }
         }
+    }
+
+    @Override
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+
     }
 
     public Codec<BiomeIdMapper> byNameCodec() {

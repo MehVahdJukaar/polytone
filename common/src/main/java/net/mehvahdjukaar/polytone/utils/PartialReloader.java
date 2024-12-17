@@ -7,6 +7,7 @@ import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.apache.commons.lang3.StringUtils;
@@ -66,22 +67,17 @@ public abstract class PartialReloader<T> {
         return ArrayImage.groupTextures(this.getImagesInDirectories(manager));
     }
 
+    protected void earlyProcess(ResourceManager resourceManager){
+
+    }
+
     protected abstract T prepare(ResourceManager resourceManager);
 
-    protected abstract void reset();
+    protected abstract void parseWithLevel(T obj, RegistryOps<JsonElement> ops, RegistryAccess access);
 
-    protected abstract void process(T obj, DynamicOps<JsonElement> ops);
+    protected abstract void applyWithLevel(RegistryAccess access, boolean isLogIn);
 
-    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-
-    }
-
-    protected void resetWithLevel(boolean logOff){
-
-    }
-
-    protected void apply() {
-    }
+    protected abstract void resetWithLevel(boolean logOff);
 
     protected void checkConditions(Map<ResourceLocation, JsonElement> object) {
         object.entrySet().removeIf(e -> {

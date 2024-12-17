@@ -13,7 +13,9 @@ import net.minecraft.client.renderer.chunk.RenderChunkRegion;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
@@ -43,15 +45,19 @@ public class VariantTextureManager extends JsonPartialReloader {
     }
 
     @Override
-    public void process(Map<ResourceLocation, JsonElement> jsonElementMap, DynamicOps<JsonElement> ops) {
-
-        for (var j : jsonElementMap.entrySet()) {
+    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
             VariantTexture variant = VariantTexture.CODEC.decode(ops, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Variant Texture with json id " + id + "\n error: " + errorMsg)).getFirst();
             addVariant(id, variant);
         }
+    }
+
+    @Override
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+
     }
 
     private void addVariant(ResourceLocation pathId, VariantTexture mod) {
@@ -64,7 +70,7 @@ public class VariantTextureManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void reset() {
+    protected void resetWithLevel(boolean logOff) {
         blocksWithVariants.clear();
         variantQuadsCache.clear(); //we might need a lock here
         forceTintBlocks.clear();

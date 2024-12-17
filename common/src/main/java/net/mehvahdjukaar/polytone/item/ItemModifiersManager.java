@@ -1,13 +1,14 @@
 package net.mehvahdjukaar.polytone.item;
 
 import com.google.gson.JsonElement;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.Item;
@@ -27,28 +28,26 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
         super("item_modifiers", "item_properties");
     }
 
-    // early reload to grab the extra models we need to add. Ugly but needed as model manager reloads before all these
+    // early reload to grab the extra models we need to add.
+    @Override
     public void earlyProcess(ResourceManager resourceManager) {
         var jsons = getJsonsInDirectories(resourceManager);
         for (var e : jsons.entrySet()) {
             var json = e.getValue();
             ResourceLocation id = e.getKey();
-            var partial = ItemModifier.CODEC_PARTIAL.decode(JsonOps.INSTANCE, json)
+            var partial = ItemModifier.CODEC_ONLY_MODELS.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Item Modifier with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
-            if (!partial.customModels().isEmpty()) {
-                for (Item item : partial.getTargets(id, BuiltInRegistries.ITEM)) {
-                    Polytone.ITEM_MODELS.addModelFromModifier(item, partial.customModels());
-                }
+            for (var m : partial.customModels()) {
+                Polytone.addCustomModel(m.model());
             }
         }
-
     }
 
     @Override
-    public void process(Resources resources, DynamicOps<JsonElement> ops) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var jsons = resources.jsons();
-        var textures = resources.textures();
+        var textures = new HashMap<>(resources.textures());
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
@@ -63,6 +62,8 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
                     .getFirst();
 
             parsedModifiers.put(location, modifier);
+
+
         }
 
         // add all modifiers (with or without texture)
@@ -108,11 +109,13 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
     private void addModifier(ResourceLocation id, ItemModifier mod) {
         for (Item item : mod.getTargets(id, BuiltInRegistries.ITEM)) {
             modifiers.merge(item, mod, ItemModifier::merge);
+
+            Polytone.ITEM_MODELS.addModelFromModifier(item, mod.customModels());
         }
     }
 
     @Override
-    protected void reset() {
+    protected void resetWithLevel(boolean logOff) {
         for (var e : vanillaProperties.entrySet()) {
             e.getValue().apply(e.getKey());
             ((IPolytoneItem) e.getKey()).polytone$setModifier(null);
@@ -121,7 +124,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void apply() {
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
         for (var e : modifiers.entrySet()) {
             Item target = e.getKey();
 

@@ -20,6 +20,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -30,7 +31,6 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     public final MapRegistry<CustomParticleFactory> customParticleFactories = new MapRegistry<>("Custom Particles");
     private final Map<ParticleType<?>, ParticleProvider<?>> overwrittenVanillaProviders = new HashMap<>();
-    private final Set<ModelResourceLocation> customModels = new HashSet<>();
 
     public static final Codec<CustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = Codec.either(SemiCustomParticleType.CODEC, CustomParticleType.CODEC)
             .xmap(e -> e.map(Function.identity(), Function.identity()),
@@ -42,8 +42,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
 
     //just gathers the custom models if any are there
+    @Override
     public void earlyProcess(ResourceManager resourceManager) {
-        customModels.clear();
         var jsons = this.getJsonsInDirectories(resourceManager);
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
@@ -51,25 +51,21 @@ public class CustomParticlesManager extends JsonPartialReloader {
             var model = CustomParticleType.CUSTOM_MODEL_ONLY_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
-            model.ifPresent(customModels::add);
+            model.ifPresent(Polytone::addCustomModel);
         }
     }
 
     @Override
-    protected void reset() {
+    protected void resetWithLevel(boolean isLogOff) {
+        for (var id : customParticleFactories.orderedKeys()) {
+            PlatStuff.unregisterParticleProvider(id);
+            PlatStuff.unregisterDynamic(BuiltInRegistries.PARTICLE_TYPE, id);
+        }
         customParticleFactories.clear();
         for (var v : overwrittenVanillaProviders.entrySet()) {
             PlatStuff.setParticleProvider(v.getKey(), v.getValue());
         }
         overwrittenVanillaProviders.clear();
-    }
-
-    @Override
-    protected void resetWithLevel(boolean logOff) {
-        for (var id : customParticleFactories.orderedKeys()) {
-            PlatStuff.unregisterParticleProvider(id);
-            PlatStuff.unregisterDynamic(BuiltInRegistries.PARTICLE_TYPE, id);
-        }
     }
 
     // not ideal
@@ -87,25 +83,17 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-        if(access != null)return;
-        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
 
-        for (var c : customParticleFactories.getEntries()) {
-            var factory = c.getValue();
-            var id  = c.getKey();
-            SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
-            PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
-            particleEngine.register(type, factory);
-        }
     }
 
     @Override
-    protected void process(Map<ResourceLocation, JsonElement> obj, DynamicOps<JsonElement> ops) {
+    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+                                  RegistryAccess access) {
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
 
         Set<CustomParticleType> customTypes = new HashSet<>();
 
-        for (var j : obj.entrySet()) {
+        for (var j : jsons.entrySet()) {
             try {
                 var json = j.getValue();
                 var id = j.getKey();
@@ -141,8 +129,6 @@ public class CustomParticlesManager extends JsonPartialReloader {
             }
         }
 
-        applyWithLevel(null, false);
-
         //initialize recursive stuff
         for (var c : customTypes) {
             for (var d : c.lazyParticles) {
@@ -153,6 +139,15 @@ public class CustomParticlesManager extends JsonPartialReloader {
                 }
             }
             c.lazyParticles = null;
+        }
+
+        // register custom particle types. needs to be here
+        for (var c : customParticleFactories.getEntries()) {
+            var factory = c.getValue();
+            var id  = c.getKey();
+            SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
+            PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
+            particleEngine.register(type, factory);
         }
     }
 
@@ -165,9 +160,5 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     public Codec<CustomParticleFactory> byNameCodec() {
         return customParticleFactories;
-    }
-
-    public Collection<ModelResourceLocation> getExtraModelsToLoad() {
-        return customModels;
     }
 }

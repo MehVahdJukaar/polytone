@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.tabs;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
@@ -44,11 +45,15 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
         var types = CsvUtils.parseCsv(resourceManager, "creative_tabs");
 
-        return new Resources(jsons, types);
+        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(types));
     }
 
     @Override
-    protected void reset() {
+    protected void resetWithLevel(boolean logOff) {
+        for (var id : customTabs.keySet()) {
+            PlatStuff.unregisterDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id);
+            if (logOff) PlatStuff.sortTabs();
+        }
         customTabs.clear();
         for (var e : vanillaTabs.entrySet()) {
             e.getValue().applyAttributes(e.getKey());
@@ -59,15 +64,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     }
 
     @Override
-    protected void resetWithLevel(boolean logOff) {
-        for (var id : customTabs.keySet()) {
-            PlatStuff.unregisterDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id);
-            if (logOff) PlatStuff.sortTabs();
-        }
-    }
-
-    @Override
-    protected void process(Resources resources, DynamicOps<JsonElement> ops) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         for (var e : resources.extraTabs.entrySet()) {
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
@@ -113,18 +110,12 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         if (!modifiers.isEmpty()) {
             needsRefresh.addAll(modifiers.keySet());
         }
-        apply();
-    }
-
-    @Override
-    protected void apply() {
-        if (Minecraft.getInstance().level != null && !needsRefresh.isEmpty()) {
+        if (!needsRefresh.isEmpty()) {
             CreativeModeTabs.CACHED_PARAMETERS = null;
             //forces reload on next open screen
             needsRefresh.clear();
         }
     }
-
 
     private void addModifier(ResourceLocation fileId, CreativeTabModifier mod) {
         for (ResourceLocation id : mod.getTargetsKeys(fileId)) {

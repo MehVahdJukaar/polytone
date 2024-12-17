@@ -22,9 +22,10 @@ public interface ITargetProvider {
         Matcher matcher = WILDCARD_PATTERN.matcher(s);
         if (matcher.matches()) {
             String group = matcher.group(1);
-            if(group != null)
-                 return DataResult.success(
-                    ResourceLocation.fromNamespaceAndPath(group, WILDCARD_PLACEHOLDER));
+            if (group != null) {
+                return DataResult.success(
+                        ResourceLocation.fromNamespaceAndPath(group, WILDCARD_PLACEHOLDER));
+            }
         }
         if (s.equals("*")) return DataResult.success(ALL_WILDCARD);
         return DataResult.error(() -> "Wildcard target must be '*'. Was: " + s);
@@ -33,7 +34,7 @@ public interface ITargetProvider {
     Codec<ResourceLocation> WILDCARD_OR_RES = Codec.withAlternative(ResourceLocation.CODEC, WILDCARD_CODEC);
 
     Codec<Set<ResourceLocation>> TARGET_CODEC = Codec.withAlternative(WILDCARD_OR_RES.listOf(), WILDCARD_OR_RES,
-                    List::of).xmap(Set::copyOf, List::copyOf);
+            List::of).xmap(Set::copyOf, List::copyOf);
 
 
     default <T> Set<T> mergeSet(Set<T> first, Set<T> second) {

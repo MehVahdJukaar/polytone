@@ -1,11 +1,9 @@
 package net.mehvahdjukaar.polytone.block;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
-import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.biome.BiomeEffectModifier;
-import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
@@ -14,7 +12,9 @@ import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.mehvahdjukaar.polytone.utils.PropertiesUtils;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
@@ -65,22 +65,25 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
         textures.putAll(this.getImagesInDirectories(resourceManager));
 
-        return new Resources(jsons, textures, LegacyHelper.convertPaths(ofProperties));
+        return new Resources(
+                ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures),
+                ImmutableMap.copyOf(LegacyHelper.convertPaths(ofProperties)));
     }
 
     @Override
-    public void process(Resources resources, DynamicOps<JsonElement> ops) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
 
         var jsons = resources.jsons();
         var textures = ArrayImage.groupTextures(resources.textures());
+        var textureCopy = new HashMap<>(resources.textures);
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
         Map<ResourceLocation, BlockPropertyModifier> parsedModifiers = new HashMap<>();
-        parsedModifiers.putAll(LegacyHelper.convertBlockProperties(resources.ofProperties, resources.textures));
+        parsedModifiers.putAll(LegacyHelper.convertBlockProperties(resources.ofProperties, textureCopy));
         parsedModifiers.putAll(LegacyHelper.convertInlinedPalettes(optifineColormapsToBlocks));
 
-        LegacyHelper.convertOfBlockToFluidProp(parsedModifiers, resources.textures);
-        LegacyHelper.convertOfBlockToDimensionProperties(parsedModifiers, resources.textures);
+        LegacyHelper.convertOfBlockToFluidProp(parsedModifiers, textureCopy);
+        LegacyHelper.convertOfBlockToDimensionProperties(parsedModifiers, textureCopy);
 
 
         // parse jsons
@@ -90,7 +93,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
 
             BlockPropertyModifier prop = BlockPropertyModifier.CODEC.decode(ops, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Client Block Property with json id " + id + "\n error: " + errorMsg))
+                    .getOrThrow(errorMsg ->
+                            new IllegalStateException("Could not decode Client Block Property with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
 
             //always have priority
@@ -146,7 +150,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
     @Override
-    public void reset() {
+    protected void resetWithLevel(boolean logOff) {
         for (var e : vanillaProperties.entrySet()) {
             e.getValue().apply(e.getKey());
         }
@@ -157,7 +161,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
     @Override
-    public void apply() {
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
         for (var e : modifiers.entrySet()) {
             Block target = e.getKey();
 

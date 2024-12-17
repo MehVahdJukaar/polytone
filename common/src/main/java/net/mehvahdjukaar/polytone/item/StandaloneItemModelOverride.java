@@ -30,6 +30,16 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
             BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(StandaloneItemModelOverride::getTarget)
     ).apply(instance, StandaloneItemModelOverride::new));
 
+    public static final Codec<Partial> CODEC_MODEL_ONLY = RecordCodecBuilder.create(instance -> instance.group(
+            ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(Partial::model)
+    ).apply(instance, Partial::new));
+
+    public record Partial(ModelResourceLocation model, boolean autoModel) {
+        public Partial(ModelResourceLocation model) {
+            this(model, model.toString().equals("minecraft:generated"));
+        }
+    }
+
     private final Item item;
     private final boolean autoModel;
 
