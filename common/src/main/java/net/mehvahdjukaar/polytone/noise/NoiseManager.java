@@ -9,6 +9,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
@@ -31,13 +33,14 @@ public class NoiseManager extends JsonPartialReloader {
     private final MapRegistry<PerlinSimplexNoise> noises = new MapRegistry<>("Polytone Simplex Noises");
 
     @Override
-    protected void reset() {
+    protected void resetWithLevel(boolean logOff) {
         noises.clear();
     }
 
     @Override
-    protected void process(Map<ResourceLocation, JsonElement> obj, DynamicOps<JsonElement> ops) {
-        for (var e : obj.entrySet()) {
+    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+                                  RegistryAccess access) {
+        for (var e : jsons.entrySet()) {
             var id = e.getKey();
             var json = e.getValue();
             PerlinSimplexNoise noise = NOISE_CODEC.decode(ops, json)
@@ -46,5 +49,9 @@ public class NoiseManager extends JsonPartialReloader {
             noises.register(id, noise);
         }
         ExpressionUtils.regenNoiseFunctions(noises.getEntries());
+    }
+
+    @Override
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
     }
 }

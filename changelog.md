@@ -1,3 +1,2 @@
-- added random_sprite variable to custom particle types
-- custom particle type models will support different render types
-- fixed particle models rendering twice under some conditions
+- all polytone resources re now reloaded and unloaded on world load and unload
+- this means they can now all use tags and generally work nicely with the rest of the game

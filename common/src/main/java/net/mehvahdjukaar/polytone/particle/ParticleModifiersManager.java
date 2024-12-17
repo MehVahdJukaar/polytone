@@ -4,13 +4,16 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
+import net.mehvahdjukaar.polytone.Polytone;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
@@ -32,8 +35,7 @@ public class ParticleModifiersManager extends JsonPartialReloader {
     }
 
     @Override
-    public void process(Map<ResourceLocation, JsonElement> jsons, DynamicOps<JsonElement> ops) {
-
+    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
@@ -47,6 +49,13 @@ public class ParticleModifiersManager extends JsonPartialReloader {
         //does not support inline colormaps yet
     }
 
+    @Override
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+        if (!particleModifiers.isEmpty()){
+            Polytone.LOGGER.info("Registered {} particle modifiers", particleModifiers.size());
+        }
+    }
+
 
     private void addModifier(ResourceLocation pathId, ParticleModifier mod) {
         for (var p : mod.getTargets(pathId, BuiltInRegistries.PARTICLE_TYPE)) {
@@ -56,7 +65,7 @@ public class ParticleModifiersManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void reset() {
+    protected void resetWithLevel(boolean logOff) {
         particleModifiers.clear();
     }
 

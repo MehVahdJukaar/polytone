@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.fluid;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
@@ -12,7 +13,9 @@ import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.material.Fluid;
@@ -52,14 +55,15 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         textures.putAll(this.getImagesInDirectories(resourceManager));
 
-        return new Resources(jsons, textures);
+        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures));
     }
 
     //TODO: this is a mess. Improve
+
     @Override
-    public void process(Resources resources, DynamicOps<JsonElement> ops) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var jsons = resources.jsons();
-        var textures = resources.textures();
+        var textures = new HashMap<>(resources.textures());
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
@@ -113,7 +117,14 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void reset() {
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+        if (!modifiers.isEmpty()) {
+            Polytone.LOGGER.info("Applied {} Fluid Modifiers", modifiers.size());
+        }
+    }
+
+    @Override
+    protected void resetWithLevel(boolean logOff) {
         modifiers.clear();
         clearSpecial();
     }

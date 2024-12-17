@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
@@ -75,7 +76,7 @@ public abstract class SingleJsonOrPropertiesReloadListener extends PartialReload
                 }
             }
         }
-        return list;
+        return ImmutableMap.copyOf(list);
     }
 }
 

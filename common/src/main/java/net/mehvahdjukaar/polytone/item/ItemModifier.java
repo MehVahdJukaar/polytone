@@ -41,6 +41,13 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             StrOpt.of(TARGET_CODEC, "targets", java.util.Set.of()).forGetter(ItemModifier::explicitTargets)
     ).apply(instance, ItemModifier::new));
 
+    public record Partial(List<ItemModelOverride.Partial> customModels) {
+    }
+
+    public static final Codec<Partial> CODEC_ONLY_MODELS = RecordCodecBuilder.create(instance -> instance.group(
+            ItemModelOverride.CODEC_MODEL_ONLY.listOf().optionalFieldOf("custom_models", List.of()).forGetter(Partial::customModels)
+    ).apply(instance, Partial::new));
+
     public static ItemModifier ofItemColor(Colormap colormap) {
         return new ItemModifier(Optional.of(colormap), Optional.empty(), Optional.empty(), List.of(), List.of(), java.util.Set.of());
     }

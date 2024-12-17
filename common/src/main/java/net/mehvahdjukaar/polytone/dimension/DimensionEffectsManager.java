@@ -20,6 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CubicSampler;
 import net.minecraft.util.Mth;
@@ -57,7 +58,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    public void reset() {
+    protected void resetWithLevel(boolean logOff) {
         needsDynamicApplication = true;
 
         //Dimensions are NOT reloaded with world load. we need to reset vanilla stuff once we have a level
@@ -71,11 +72,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         extraMods.clear();
     }
 
-
     @Override
-    protected void process(Resources resources, DynamicOps<JsonElement> ops) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var jsons = resources.jsons();
-        var textures = resources.textures();
+        var textures = new HashMap<>(resources.textures());
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 

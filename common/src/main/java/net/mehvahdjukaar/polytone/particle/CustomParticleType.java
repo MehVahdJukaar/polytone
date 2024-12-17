@@ -262,6 +262,12 @@ public class CustomParticleType implements CustomParticleFactory {
         }
 
         @Override
+        public void remove() {
+            super.remove();
+            this.age = this.lifetime;
+        }
+
+        @Override
         public void tick() {
             if (spriteSet != null) this.setSpriteFromAge(spriteSet);
             super.tick();

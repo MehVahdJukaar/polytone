@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.sound;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -13,6 +14,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.SoundEvent;
@@ -44,11 +46,11 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
 
         var types = CsvUtils.parseCsv(resourceManager, "sound_events");
 
-        return new Resources(jsons, types);
+        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(types));
     }
 
     @Override
-    public void process(Resources resources, DynamicOps<JsonElement> ops) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
 
         var soundJsons = resources.soundTypes;
         var soundEvents = resources.soundEvents;
@@ -66,7 +68,6 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                 }
             }
         }
-applyWithLevel(null, false);
         // sound types
 
         for (var j : soundJsons.entrySet()) {
@@ -82,7 +83,6 @@ applyWithLevel(null, false);
 
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-        if(access != null)return;
         for (var e : customSoundEvents.getEntries()) {
             var id = e.getKey();
             var sound = e.getValue();
@@ -103,14 +103,9 @@ applyWithLevel(null, false);
             var id  = e.getKey();
             PlatStuff.unregisterDynamic(BuiltInRegistries.SOUND_EVENT, id);
         }
-    }
-
-    @Override
-    protected void reset() {
         customSoundTypes.clear();
         customSoundEvents.clear();
     }
-
 
     public record Resources(Map<ResourceLocation, JsonElement> soundTypes,
                             Map<ResourceLocation, List<String>> soundEvents) {

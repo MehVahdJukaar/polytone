@@ -2,19 +2,20 @@ package net.mehvahdjukaar.polytone.colormap;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -45,9 +46,9 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    public void process(Resources resources, DynamicOps<JsonElement> ops) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var jsons = resources.jsons();
-        var textures = resources.textures();
+        var textures = new HashMap<>(resources.textures());
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
@@ -81,7 +82,12 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    public void reset() {
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+
+    }
+
+    @Override
+    protected void resetWithLevel(boolean logOff) {
         colormaps.clear();
         colormaps.register(new ResourceLocation("grass_color"), () -> GRASS_COLOR);
         colormaps.register(new ResourceLocation("foliage_color"), () -> FOLIAGE_COLOR);
@@ -181,7 +187,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
                 Polytone.LOGGER.error("Could not resolve explicit texture at location {}.png. Skipping", explTarget);
             }
             if (strict) {
-                throw new IllegalStateException("Could not find any colormap texture .png associated with path " + textureLoc + " for colormap '" + colormapName +"'");
+                throw new IllegalStateException("Could not find any colormap texture .png associated with path " + textureLoc + " for colormap '" + colormapName + "'");
             }
         }
     }

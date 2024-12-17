@@ -2,11 +2,12 @@ package net.mehvahdjukaar.polytone.block;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 
@@ -27,17 +28,19 @@ public class BlockSetManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void reset() {
+    protected void resetWithLevel(boolean logOff) {
         blockSetTypes.clear();
         //copy vanilla
-        BlockSetType.values().forEach(type ->
-                blockSetTypes.register(new ResourceLocation(type.name()),
-                        new BlockSetTypeProvider.Vanilla(type)));
         counter = 0;
     }
 
     @Override
-    protected void process(Map<ResourceLocation, JsonElement> jsons, DynamicOps<JsonElement> ops) {
+    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+                                  RegistryAccess access) {
+        //copy vanilla
+        BlockSetType.values().forEach(type ->
+                blockSetTypes.register(new ResourceLocation(type.name()),
+                        new BlockSetTypeProvider.Vanilla(type)));
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
@@ -47,6 +50,13 @@ public class BlockSetManager extends JsonPartialReloader {
             blockSetTypes.register(id, type);
         }
 
+    }
+
+    @Override
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+        if (!blockSetTypes.isEmpty()) {
+            Polytone.LOGGER.info("Registered {} custom block set types", blockSetTypes.size());
+        }
     }
 
     public Codec<BlockSetTypeProvider> byNameCodec() {

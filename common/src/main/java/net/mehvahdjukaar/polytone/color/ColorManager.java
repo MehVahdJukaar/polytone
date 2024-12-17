@@ -13,9 +13,11 @@ import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.effect.MobEffect;
@@ -87,12 +89,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void process(Map<ResourceLocation, Properties> map, DynamicOps<JsonElement> ops) {
+    protected void parseWithLevel(Map<ResourceLocation, Properties> properties, RegistryOps<JsonElement> ops, RegistryAccess access) {
         //iterate from the lowest priority to highest
-        var keySet = new ArrayList<>(map.keySet());
+        var keySet = new ArrayList<>(properties.keySet());
         Lists.reverse(keySet);
         for (var k : keySet) {
-            Properties p = map.get(k);
+            Properties p = properties.get(k);
             for (var e : p.entrySet()) {
                 if (e.getKey() instanceof String key) {
                     String[] split = key.split("\\.");
@@ -303,7 +305,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    public void reset() {
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+
+    }
+
+    @Override
+    protected void resetWithLevel(boolean logOff) {
         emptyPotion = 16253176;
         waterBottle = 3694022;
         xpBar = 8453920;
