@@ -1,8 +1,6 @@
 package net.mehvahdjukaar.polytone.texture;
 
 import com.google.gson.JsonElement;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.BakedQuadsTransformer;
@@ -62,10 +60,10 @@ public class VariantTextureManager extends JsonPartialReloader {
     }
 
     private void addVariant(ResourceLocation pathId, VariantTexture mod) {
-        for (Block b : mod.getTargets(pathId, BuiltInRegistries.BLOCK)) {
-            var old = blocksWithVariants.put(b, mod);
+        for (var b : mod.targets().compute(pathId, BuiltInRegistries.BLOCK)) {
+            var old = blocksWithVariants.put(b.value(), mod);
             if (old != null) {
-                Polytone.LOGGER.warn("Found 2 Variant Textures jsons with same target ({}). Overriding", b);
+                Polytone.LOGGER.warn("Found 2 Variant Textures jsons with same targets ({}). Overriding", b);
             }
         }
     }

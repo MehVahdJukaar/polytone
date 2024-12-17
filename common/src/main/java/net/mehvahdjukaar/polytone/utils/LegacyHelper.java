@@ -98,7 +98,7 @@ public class LegacyHelper {
                 }
                 map.put(id, BlockPropertyModifier.coloringBlocks(colormap, targets));
             } else if (path.equals("redstone_wire")) {
-                Colormap colormap = Colormap.simple((state, level, pos, m, i) -> state != null ? state.getValue(RedStoneWireBlock.POWER) / 15f : 0,
+                Colormap colormap = Colormap.simple((state, level, pos, m, i) -> state != null ?  state.getValue(RedStoneWireBlock.POWER) / 15f : 0,
                         IColormapNumberProvider.ZERO);
 
                 map.put(id, BlockPropertyModifier.coloringBlocks(colormap, Blocks.REDSTONE_WIRE));
@@ -180,7 +180,8 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), set, false);
+                Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Targets.ofIds(set), false);
     }
 
 
@@ -242,7 +243,7 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), set, false);
+                Optional.empty(), Targets.ofIds(set), false);
     }
 
     public static Map<ResourceLocation, BlockPropertyModifier> convertInlinedPalettes(
@@ -404,8 +405,9 @@ public class LegacyHelper {
             // ignore targets as those are block targets anyways
             BlockPropertyModifier mod = f.getValue();
             ResourceLocation id = f.getKey();
-            Set<ResourceLocation> targets = new HashSet<>(mod.explicitTargets());
-            targets.add(id.withPrefix("flowing_"));
+            Targets targets = mod.targets();
+            targets.addSimple(id);
+            targets.addSimple(id.withSuffix("_flowing"));
             FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
                     Optional.ofNullable(fog.get(id.withSuffix("_fog")))
                             .map(BlockPropertyModifier::getColormap),
@@ -476,7 +478,7 @@ public class LegacyHelper {
             if (fogCol != null || skyCol != null) {
                 var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                         Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(),
-                        false,false, Optional.empty(), Set.of());
+                        false,false, Optional.empty(), Targets.EMPTY);
 
                 converted.put(new ResourceLocation(names[i]), mod);
             }

@@ -8,11 +8,13 @@ import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.animation.AnimationChannel;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
@@ -24,6 +26,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import static net.mehvahdjukaar.polytone.utils.ListUtils.mergeList;
 
 public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Optional<IColorGetter> barColor,
@@ -38,7 +42,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             StrOpt.of(StringRepresentable.fromEnum(Rarity::values), "rarity").forGetter(ItemModifier::rarity),
             StrOpt.of(ExtraCodecs.COMPONENT.listOf(), "tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
             StrOpt.of(ExtraCodecs.PATTERN.listOf(), "removed_tooltips", List.of()).forGetter(ItemModifier::removedTooltips),
-            StrOpt.of(TARGET_CODEC, "targets", java.util.Set.of()).forGetter(ItemModifier::explicitTargets)
+            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(ItemModifier::targets)
     ).apply(instance, ItemModifier::new));
 
     public record Partial(List<ItemModelOverride.Partial> customModels) {
@@ -64,7 +68,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 this.rarity.isPresent() ? this.rarity : other.rarity,
                 mergeList(this.tooltips, other.tooltips),
                 mergeList(this.removedTooltips, other.removedTooltips),
-                mergeSet(this.explicitTargets, other.explicitTargets)
+                this.explicitTargets.merge(other.explicitTargets)
         );
     }
 
@@ -87,7 +91,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 Optional.ofNullable(oldColor),
                 Optional.empty(),
                 Optional.ofNullable(Rarity.fromVanilla(oldRarity)),
-                List.of(), List.of(), Set.of());
+                List.of(), List.of(), Targets.EMPTY);
     }
 
     @Nullable

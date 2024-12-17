@@ -37,7 +37,6 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
     @Override
     protected void apply(List<Object> object, ResourceManager resourceManager, ProfilerFiller profiler) {
         // clear existing lazy holder sets
-        LazyHolderSet.clearAll();
 
         childrenResources.clear();
         childrenResources.addAll(object);
@@ -66,17 +65,6 @@ RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAcce
                 Polytone.LOGGER.error(message);
                 throw e;
             }
-        }
-
-        try {
-            LazyHolderSet.initializeAll(registryAccess);
-        } catch (Exception e) {
-            String message = "failed to parse some resources";
-            Polytone.logException(e, message);
-            Polytone.iMessedUp = true;
-
-            Polytone.LOGGER.error(message);
-            throw e;
         }
 
         for (var c : children) {

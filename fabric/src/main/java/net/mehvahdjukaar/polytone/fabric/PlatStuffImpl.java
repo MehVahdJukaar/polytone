@@ -19,6 +19,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -211,7 +212,8 @@ public class PlatStuffImpl {
                 Optional.ofNullable(oldAfterTabs),
                 List.of(),
                 List.of(),
-                Set.of());
+                Targets.EMPTY
+        );
     }
 
     public static void sortTabs() {

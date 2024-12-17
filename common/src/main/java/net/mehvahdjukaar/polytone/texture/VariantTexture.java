@@ -4,18 +4,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.UnboundedMapCodec;
-import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
-import java.util.Set;
 
 // texture to variant texture map
 public record VariantTexture(Map<ResourceLocation, Map<ResourceLocation, ResourceLocation>> textures,
-                             Set<ResourceLocation> explicitTargets) implements ITargetProvider {
+                             Targets targets) {
 
     private static final UnboundedMapCodec<ResourceLocation, Map<ResourceLocation, ResourceLocation>> MAP_CODEC = Codec.unboundedMap(ResourceLocation.CODEC,
             Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC));
@@ -23,7 +22,7 @@ public record VariantTexture(Map<ResourceLocation, Map<ResourceLocation, Resourc
     public static final Decoder<VariantTexture> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     MAP_CODEC.fieldOf("textures").forGetter(VariantTexture::textures),
-                    StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(VariantTexture::explicitTargets)
+                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(VariantTexture::targets)
             ).apply(instance, VariantTexture::new));
 
 

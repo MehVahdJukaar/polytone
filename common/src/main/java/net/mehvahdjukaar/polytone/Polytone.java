@@ -21,6 +21,7 @@ import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
+import net.mehvahdjukaar.polytone.utils.GenericDirectorySpriteSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
@@ -126,7 +127,6 @@ public class Polytone {
         try {
             COMPOUND_RELOADER.applyWithLevel(registryAccess, true);
             BiomeKeysCache.clear();
-            LazyHolderSet.initializeAll(registryAccess);
         } catch (RuntimeException e) {
             Polytone.LOGGER.error("Failed to apply some Polytone modifiers on world load", e);
 

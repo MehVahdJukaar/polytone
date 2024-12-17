@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.tabs;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.LazyHolderSet;

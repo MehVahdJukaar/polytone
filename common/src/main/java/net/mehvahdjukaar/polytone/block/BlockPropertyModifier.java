@@ -11,7 +11,7 @@ import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.BlockSoundEmitter;
 import net.mehvahdjukaar.polytone.sound.PolytoneSoundType;
-import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -32,6 +32,8 @@ import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
+import static net.mehvahdjukaar.polytone.utils.ListUtils.mergeSet;
+
 public record BlockPropertyModifier(
         Optional<? extends BlockColor> tintGetter,
         Optional<SoundType> soundType,
@@ -45,8 +47,8 @@ public record BlockPropertyModifier(
         Optional<List<BlockSoundEmitter>> soundEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
         Optional<BlockSetTypeProvider> blockSetType,
-        @NotNull Set<ResourceLocation> explicitTargets,
-        boolean tintHack) implements ITargetProvider {
+        @NotNull Targets targets,
+        boolean tintHack) {
 //TODO: add is soid for occlusion
     // Other has priority
     public BlockPropertyModifier merge(BlockPropertyModifier other) {
@@ -63,7 +65,7 @@ public record BlockPropertyModifier(
                 other.soundEmitters.isPresent() ? other.soundEmitters.map(List::copyOf) : this.soundEmitters.map(List::copyOf),
                 other.offsetType().isPresent() ? other.offsetType() : this.offsetType(),
                 other.blockSetType().isPresent() ? other.blockSetType() : this.blockSetType(),
-                mergeSet(other.explicitTargets, this.explicitTargets),
+                other.targets.merge(this.targets),
                 other.tintHack || this.tintHack
         );
     }
@@ -73,7 +75,7 @@ public record BlockPropertyModifier(
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), java.util.Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Set.of(), false);
+                Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY, false);
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
@@ -85,11 +87,12 @@ public record BlockPropertyModifier(
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
+        Targets t = Targets.ofIds(blocks);
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), blocks, false);
+                Optional.empty(), Optional.empty(), Optional.empty(), t, false);
     }
 
     // returns the old ones
@@ -100,7 +103,8 @@ public record BlockPropertyModifier(
             block.soundType = soundType.get();
         }
 
-        Optional<BlockBehaviour.OffsetFunction> oldOffsetType = Optional.empty();
+        /*
+        BlockBehaviour.OffsetFunction oldOffsetType = null;
         boolean hasOffset = false;
         if (offsetType.isPresent()) {
             oldOffsetType = block.defaultBlockState().offsetFunction;
@@ -110,6 +114,7 @@ public record BlockPropertyModifier(
             }
         }
         if (hasOffset) block.dynamicShape = true;
+         */
 
         Function<BlockState, MapColor> oldMapColor = null;
         if (mapColor.isPresent()) {
@@ -186,7 +191,7 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak), Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
                 Optional.empty(), Optional.empty(),
-                oldOffsetType, Optional.ofNullable(oldType), Set.of(), false);
+                Optional.empty(), Optional.ofNullable(oldType),  Targets.EMPTY, false);
     }
 
 
@@ -208,7 +213,7 @@ public record BlockPropertyModifier(
                     StringRepresentable.fromEnum(OffsetTypeR::values).xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
                             .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
                     BlockSetTypeProvider.CODEC.optionalFieldOf("block_set_type").forGetter(BlockPropertyModifier::blockSetType),
-                    TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(BlockPropertyModifier::explicitTargets),
+                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BlockPropertyModifier::targets),
                     //dont use
                     StrOpt.of(Codec.BOOL, "force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
             ).apply(instance, BlockPropertyModifier::new));

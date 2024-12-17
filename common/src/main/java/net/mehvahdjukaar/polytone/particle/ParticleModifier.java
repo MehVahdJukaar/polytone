@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.particle.Particle;
@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class ParticleModifier implements ITargetProvider {
+public class ParticleModifier {
 
     public static final Codec<ParticleModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             StrOpt.of(Filter.CODEC, "filter").forGetter(p -> Optional.ofNullable(p.filter)),
@@ -39,7 +39,7 @@ public class ParticleModifier implements ITargetProvider {
             StrOpt.of(ParticleContextExpression.CODEC, "blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             StrOpt.of(ParticleContextExpression.CODEC, "alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             StrOpt.of(ParticleContextExpression.CODEC, "speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
-            StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(p -> p.explicitTargets)
+            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(p -> p.targets)
 
     ).apply(instance, ParticleModifier::new));
 
@@ -64,17 +64,17 @@ public class ParticleModifier implements ITargetProvider {
     public final ParticleContextExpression greenGetter;
     @Nullable
     public final ParticleContextExpression alphaGetter;
-    public final Set<ResourceLocation> explicitTargets;
+    public final Targets targets;
 
     private ParticleModifier(Optional<Filter> filter, Optional<IColorGetter> colormap,
                              Optional<ParticleContextExpression> color, Optional<ParticleContextExpression> life,
                              Optional<ParticleContextExpression> size, Optional<ParticleContextExpression> red,
                              Optional<ParticleContextExpression> green, Optional<ParticleContextExpression> blue,
                              Optional<ParticleContextExpression> alpha, Optional<ParticleContextExpression> speed,
-                             Set<ResourceLocation> explicitTargets) {
+                             Targets targets) {
         this(filter.orElse(null), colormap.orElse(null), color.orElse(null), life.orElse(null), size.orElse(null),
                 red.orElse(null), green.orElse(null), blue.orElse(null),
-                alpha.orElse(null), speed.orElse(null), explicitTargets);
+                alpha.orElse(null), speed.orElse(null), targets);
     }
 
     public ParticleModifier(@Nullable Filter filter, @Nullable IColorGetter colormap,
@@ -82,7 +82,7 @@ public class ParticleModifier implements ITargetProvider {
                             @Nullable ParticleContextExpression size, @Nullable ParticleContextExpression red,
                             @Nullable ParticleContextExpression green, @Nullable ParticleContextExpression blue,
                             @Nullable ParticleContextExpression alpha, @Nullable ParticleContextExpression speed,
-                            Set<ResourceLocation> explicitTargets) {
+                            Targets explicitTargets) {
         this.colorGetter = color;
         this.lifeGetter = life;
         this.sizeGetter = size;
@@ -91,7 +91,7 @@ public class ParticleModifier implements ITargetProvider {
         this.blueGetter = blue;
         this.alphaGetter = alpha;
         this.speedGetter = speed;
-        this.explicitTargets = explicitTargets;
+        this.targets = explicitTargets;
         this.filter = filter;
         this.colormap = colormap;
     }
@@ -99,9 +99,12 @@ public class ParticleModifier implements ITargetProvider {
     public static ParticleModifier ofColor(String color) {
         ParticleContextExpression expression = ParticleContextExpression.parse(color);
         return new ParticleModifier(null, null, expression, null, null, null, null,
-                null, null, null, Set.of());
+                null, null, null, Targets.EMPTY);
     }
 
+    public Targets targets() {
+        return this.targets;
+    }
 
     public void modify(Particle particle, Level level, ParticleOptions options) {
         if (filter != null) {
@@ -143,11 +146,6 @@ public class ParticleModifier implements ITargetProvider {
         if (alphaGetter != null) {
             particle.alpha = (float) alphaGetter.getValue(particle, level);
         }
-    }
-
-    @Override
-    public @NotNull Set<ResourceLocation> explicitTargets() {
-        return explicitTargets;
     }
 
     private record Filter(@Nullable Block forBlock,

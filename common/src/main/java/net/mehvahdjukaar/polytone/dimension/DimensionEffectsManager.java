@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.dimension;
 
 import com.google.gson.JsonElement;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
-import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -96,6 +95,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             }
             parsedModifiers.put(id, modifier);
         }
+        Registry<DimensionType> reg = access.registryOrThrow(Registries.DIMENSION_TYPE);
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
@@ -149,7 +149,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             ColormapsManager.tryAcceptingTexture(textures, skyId, sky, usedTextures, true);
             ColormapsManager.tryAcceptingTexture(textures, sunsetId, sunset, usedTextures, true);
 
-            addModifier(id, modifier);
+            addModifier(id, modifier, reg);
         }
 
         // creates orphaned texture colormaps & properties
@@ -160,13 +160,13 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             Colormap defaultColormap = Colormap.createDefTriangle();
             ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
-            addModifier(id, DimensionEffectsModifier.ofFogColor(defaultColormap));
+            addModifier(id, DimensionEffectsModifier.ofFogColor(defaultColormap), reg);
         }
     }
 
-    private void addModifier(ResourceLocation fileId, DimensionEffectsModifier mod) {
-        for (ResourceLocation id : mod.getTargetsKeys(fileId)) {
-            effectsToApply.merge(id, mod, DimensionEffectsModifier::merge);
+    private void addModifier(ResourceLocation fileId, DimensionEffectsModifier mod, Registry<DimensionType> reg) {
+        for (var h : mod.targets().compute(fileId, reg)) {
+            effectsToApply.merge(h.unwrapKey().get().location(), mod, DimensionEffectsModifier::merge);
         }
     }
 

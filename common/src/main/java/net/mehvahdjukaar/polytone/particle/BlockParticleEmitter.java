@@ -9,6 +9,8 @@ import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.particles.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -17,6 +19,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +37,8 @@ public record BlockParticleEmitter(
         BlockContextExpression dx,
         BlockContextExpression dy,
         BlockContextExpression dz,
-        Optional<LazyHolderSet<Biome>> biomes,
+        RuleTest predicate,
+        Optional<HolderSet<Biome>> biomes,
         SpawnLocation spawnLocation
 ) implements BlockClientTickable {
 
@@ -47,7 +52,8 @@ public record BlockParticleEmitter(
             StrOpt.of(BlockContextExpression.CODEC,"dx", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dx),
             StrOpt.of(BlockContextExpression.CODEC,"dy", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dy),
             StrOpt.of(BlockContextExpression.CODEC,"dz", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dz),
-            StrOpt.of(LazyHolderSet.codec(Registries.BIOME),"biomes").forGetter(BlockParticleEmitter::biomes),
+            RuleTest.CODEC.optionalFieldOf("state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
+            RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
             StrOpt.of(SpawnLocation.CODEC,"spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation)
     ).apply(i, BlockParticleEmitter::new));
 
@@ -55,8 +61,9 @@ public record BlockParticleEmitter(
     @Override
     public void tick(Level level, BlockPos pos, BlockState state) {
         double spawnChance = chance.getValue(level, pos, state);
-        if (level.random.nextFloat() < spawnChance) {
-            if (biomes.isPresent()) {
+        if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {
+
+                if (biomes.isPresent()) {
                 var biome = level.getBiome(pos);
                 if (!biomes.get().contains(biome)) return;
             }

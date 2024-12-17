@@ -7,9 +7,9 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.utils.AlternativeMapCodec;
 import net.mehvahdjukaar.polytone.utils.*;
+import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
@@ -33,7 +33,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Optional<AmbientAdditionsSettings> ambientAdditionsSettings,
                                   Optional<Music> backgroundMusic,
                                   Optional<FogParam> fogStart, Optional<FogParam> fogEnd,
-                                  Set<ResourceLocation> explicitTargets) implements ITargetProvider {
+                                  Targets targets) {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             StrOpt.of(Codec.INT, "fog_color").forGetter(BiomeEffectModifier::fogColor),
@@ -50,7 +50,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             StrOpt.of(Music.CODEC, "music").forGetter(BiomeEffectModifier::backgroundMusic),
             AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start").forGetter(BiomeEffectModifier::fogStart),
             AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end").forGetter(BiomeEffectModifier::fogEnd),
-            StrOpt.of(TARGET_CODEC, "targets", Set.of()).forGetter(BiomeEffectModifier::explicitTargets)
+            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));
 
     public static BiomeEffectModifier ofWaterColor(int waterColor) {
@@ -58,7 +58,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Set.of());
+                Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY);
     }
 
     // Other has priority
@@ -78,7 +78,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                 other.backgroundMusic().isPresent() ? other.backgroundMusic() : this.backgroundMusic(),
                 other.fogStart().isPresent() ? other.fogStart() : this.fogStart(),
                 other.fogEnd().isPresent() ? other.fogEnd() : this.fogEnd(),
-                mergeSet(explicitTargets, other.explicitTargets)
+                this.targets.merge(other.targets)
         );
     }
 

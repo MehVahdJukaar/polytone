@@ -17,9 +17,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -35,6 +38,19 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
     public BlockPropertiesManager() {
         super("block_modifiers", "block_properties");
+    }
+
+
+    @Nullable
+    public Vec3 maybeModify(BlockState state, BlockGetter blockGetter, BlockPos pos) {
+        BlockPropertyModifier modifier = modifiers.get(state.getBlock());
+        if (modifier != null) {
+            var of = modifier.offsetType();
+            if (of.isPresent()) {
+                return of.get().evaluate(state, blockGetter, pos);
+            }
+        }
+        return null;
     }
 
 
@@ -143,8 +159,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
 
     private void addModifier(ResourceLocation fileId, BlockPropertyModifier mod) {
-        for (Block block : mod.getTargets(fileId, BuiltInRegistries.BLOCK)) {
-            modifiers.merge(block, mod, BlockPropertyModifier::merge);
+        for (var block : mod.targets().compute(fileId, BuiltInRegistries.BLOCK)) {
+            modifiers.merge(block.value(), mod, BlockPropertyModifier::merge);
         }
     }
 

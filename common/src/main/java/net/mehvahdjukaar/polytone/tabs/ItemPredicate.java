@@ -160,7 +160,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         @Override
         public boolean test(ItemStack stack) {
             Item item = stack.getItem();
-            ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+            ResourceLocation id = item.builtInRegistryHolder().key().location();
             return namespace.matcher(id.getNamespace()).matches() && path.matcher(id.getPath()).matches();
         }
 
