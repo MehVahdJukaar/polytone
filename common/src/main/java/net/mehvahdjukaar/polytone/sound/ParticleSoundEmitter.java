@@ -5,9 +5,10 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.particle.ParticleContextExpression;
 import net.mehvahdjukaar.polytone.particle.ParticleTickable;
-import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
@@ -29,7 +30,7 @@ public record ParticleSoundEmitter(
         ParticleContextExpression volume,
         ParticleContextExpression pitch,
         boolean distanceDelay,
-        Optional<LazyHolderSet<Biome>> biomes) implements ParticleTickable {
+        Optional<HolderSet<Biome>> biomes) implements ParticleTickable {
 
   private static final Codec<SoundSource> SOUND_SOURCE_CODEC =
           Codec.STRING.comapFlatMap(s -> DataResult.success(SoundSource.valueOf(s.toLowerCase(Locale.ROOT))),
@@ -45,7 +46,7 @@ public record ParticleSoundEmitter(
             ParticleContextExpression.CODEC.optionalFieldOf("volume", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::volume),
             ParticleContextExpression.CODEC.optionalFieldOf("pitch", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(ParticleSoundEmitter::distanceDelay),
-            LazyHolderSet.codec(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleSoundEmitter::biomes)
+            RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleSoundEmitter::biomes)
     ).apply(i, ParticleSoundEmitter::new));
 
 

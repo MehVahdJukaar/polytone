@@ -5,9 +5,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.particles.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -35,7 +36,7 @@ public record BlockParticleEmitter(
         BlockContextExpression dy,
         BlockContextExpression dz,
         RuleTest predicate,
-        Optional<LazyHolderSet<Biome>> biomes,
+        Optional<HolderSet<Biome>> biomes,
         SpawnLocation spawnLocation
 ) implements BlockClientTickable {
 
@@ -50,7 +51,7 @@ public record BlockParticleEmitter(
             BlockContextExpression.CODEC.optionalFieldOf("dy", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dy),
             BlockContextExpression.CODEC.optionalFieldOf("dz", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dz),
             RuleTest.CODEC.optionalFieldOf("state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
-            LazyHolderSet.codec(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
+            RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
             SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation)
     ).apply(i, BlockParticleEmitter::new));
 

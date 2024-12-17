@@ -1,15 +1,11 @@
 package net.mehvahdjukaar.polytone.tabs;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
-import java.util.function.Function;
 
 public class ExtraItemCodecs {
 

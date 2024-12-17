@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.particle;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
-import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.particle.Particle;
@@ -50,16 +49,16 @@ public class ParticleModifiersManager extends JsonPartialReloader {
 
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-        if (!particleModifiers.isEmpty()){
+        if (!particleModifiers.isEmpty()) {
             Polytone.LOGGER.info("Registered {} particle modifiers", particleModifiers.size());
         }
     }
 
 
     private void addModifier(ResourceLocation pathId, ParticleModifier mod) {
-        for (var p : mod.getTargets(pathId, BuiltInRegistries.PARTICLE_TYPE)) {
+        for (var p : mod.targets().compute(pathId, BuiltInRegistries.PARTICLE_TYPE)) {
             //can have multiple
-            particleModifiers.put(p, mod);
+            particleModifiers.put(p.value(), mod);
         }
     }
 

@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -17,10 +17,10 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 
 import static net.mehvahdjukaar.polytone.tabs.ExtraItemCodecs.ITEM_OR_STACK;
+import static net.mehvahdjukaar.polytone.utils.ListUtils.mergeList;
 
 public record CreativeTabModifier(
         Optional<ItemStack> icon,
@@ -35,7 +35,7 @@ public record CreativeTabModifier(
         Optional<List<ResourceLocation>> afterTabs,
         List<ItemPredicate> removals,
         List<ItemAddition> additions,
-        Set<ResourceLocation> explicitTargets) implements ITargetProvider {
+        Targets targets) {
 
     public static final Codec<Component> COMPONENT_CODEC = Codec.withAlternative(ComponentSerialization.CODEC, ComponentSerialization.FLAT_CODEC,
             Function.identity());
@@ -53,7 +53,7 @@ public record CreativeTabModifier(
             ResourceLocation.CODEC.listOf().optionalFieldOf("after_tabs").forGetter(CreativeTabModifier::afterTabs),
             ItemPredicate.CODEC.listOf().optionalFieldOf("removals", List.of()).forGetter(CreativeTabModifier::removals),
             ItemAddition.CODEC.listOf().optionalFieldOf("additions", List.of()).forGetter(CreativeTabModifier::additions),
-            TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(CreativeTabModifier::explicitTargets)
+            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)
     ).apply(i, CreativeTabModifier::new));
 
 
@@ -71,7 +71,7 @@ public record CreativeTabModifier(
                 afterTabs.isPresent() ? afterTabs.map(List::copyOf) : other.afterTabs.map(List::copyOf),
                 mergeList(removals, other.removals),
                 mergeList(additions, other.additions),
-                mergeSet(explicitTargets, other.explicitTargets)
+                this.targets.merge(other.targets)
         );
     }
 

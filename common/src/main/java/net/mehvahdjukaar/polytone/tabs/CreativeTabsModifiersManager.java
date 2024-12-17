@@ -2,14 +2,12 @@ package net.mehvahdjukaar.polytone.tabs;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -118,8 +116,8 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     }
 
     private void addModifier(ResourceLocation fileId, CreativeTabModifier mod) {
-        for (ResourceLocation id : mod.getTargetsKeys(fileId)) {
-            ResourceKey<CreativeModeTab> key = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id);
+        for (var tab : mod.targets().compute(fileId, BuiltInRegistries.CREATIVE_MODE_TAB)) {
+            ResourceKey<CreativeModeTab> key = tab.unwrapKey().get();
             modifiers.merge(key, mod, CreativeTabModifier::merge);
 
             PlatStuff.addTabEventForTab(key);

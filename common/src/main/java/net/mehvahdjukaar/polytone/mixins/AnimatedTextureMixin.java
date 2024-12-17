@@ -38,7 +38,7 @@ public abstract class AnimatedTextureMixin implements DayTimeTexture {
         if (mode == Mode.DAY_TIME) {
             polytone$dayDuration = SharedConstants.TICKS_PER_GAME_DAY;
         } else if (mode == Mode.GAME_TIME) {
-            polytone$dayDuration = 30;
+            polytone$dayDuration = 1;
         }
     }
 

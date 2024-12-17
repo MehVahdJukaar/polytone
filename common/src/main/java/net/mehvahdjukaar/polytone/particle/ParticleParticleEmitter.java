@@ -3,9 +3,10 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -24,7 +25,7 @@ public record ParticleParticleEmitter(
         ParticleContextExpression dx,
         ParticleContextExpression dy,
         ParticleContextExpression dz,
-        Optional<LazyHolderSet<Biome>> biomes
+        Optional<HolderSet<Biome>> biomes
 ) implements ParticleTickable {
 
     public static final Codec<ParticleParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -42,7 +43,7 @@ public record ParticleParticleEmitter(
             ParticleContextExpression.CODEC.optionalFieldOf("dx", ParticleContextExpression.ZERO).forGetter(ParticleParticleEmitter::dx),
             ParticleContextExpression.CODEC.optionalFieldOf("dy", ParticleContextExpression.ZERO).forGetter(ParticleParticleEmitter::dy),
             ParticleContextExpression.CODEC.optionalFieldOf("dz", ParticleContextExpression.ZERO).forGetter(ParticleParticleEmitter::dz),
-            LazyHolderSet.codec(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleParticleEmitter::biomes)
+            RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleParticleEmitter::biomes)
     ).apply(i, ParticleParticleEmitter::new));
 
 

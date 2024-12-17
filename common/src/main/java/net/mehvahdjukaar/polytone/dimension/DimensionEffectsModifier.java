@@ -10,14 +10,13 @@ import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.lightmap.Lightmap;
-import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
-import java.util.Set;
 
 
 public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpression>> cloudLevel,
@@ -31,7 +30,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                                        boolean noWeatherFogDarken,
                                        boolean noWeatherSkyDarken,
                                        Optional<Lightmap> lightmap,
-                                       Set<ResourceLocation> explicitTargets) implements ITargetProvider {
+                                       Targets targets) {
 
     public static final Codec<DimensionSpecialEffects.SkyType> SKY_TYPE_CODEC = Codec.STRING
             .xmap(DimensionSpecialEffects.SkyType::valueOf, DimensionSpecialEffects.SkyType::name);
@@ -49,25 +48,25 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                     Codec.BOOL.optionalFieldOf("no_weather_fog_darken", false).forGetter(DimensionEffectsModifier::noWeatherFogDarken),
                     Codec.BOOL.optionalFieldOf("no_weather_sky_darken", false).forGetter(DimensionEffectsModifier::noWeatherSkyDarken),
                     Polytone.LIGHTMAPS.byNameCodec().optionalFieldOf("lightmap").forGetter(DimensionEffectsModifier::lightmap),
-                    TARGET_CODEC.optionalFieldOf("targets", Set.of()).forGetter(DimensionEffectsModifier::explicitTargets)
+                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(DimensionEffectsModifier::targets)
             ).apply(instance, DimensionEffectsModifier::new));
 
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty(),
-                false, false, Optional.empty(), Set.of());
+                false, false, Optional.empty(), Targets.EMPTY);
     }
 
     public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(),
-                false, false, Optional.empty(), Set.of());
+                false, false, Optional.empty(), Targets.EMPTY);
     }
 
     public static DimensionEffectsModifier ofSunsetColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(colormap),
-                false, false, Optional.empty(), Set.of());
+                false, false, Optional.empty(), Targets.EMPTY);
     }
 
 
@@ -84,7 +83,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                 other.noWeatherFogDarken | this.noWeatherFogDarken,
                 other.noWeatherSkyDarken | this.noWeatherSkyDarken,
                 other.lightmap.isPresent() ? other.lightmap : this.lightmap,
-                mergeSet(other.explicitTargets, this.explicitTargets)
+                other.targets.merge(this.targets)
         );
     }
 
@@ -132,7 +131,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
         }
         return new DimensionEffectsModifier(oldCloud, oldGround, oldSky, oldBright, oldAmbient,
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                false, false, Optional.empty(), Set.of());
+                false, false, Optional.empty(), Targets.EMPTY);
     }
 
 }

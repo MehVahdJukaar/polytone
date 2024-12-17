@@ -7,14 +7,14 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
-import net.mehvahdjukaar.polytone.utils.ITargetProvider;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.animation.AnimationChannel;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,13 +26,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static net.mehvahdjukaar.polytone.utils.ListUtils.mergeList;
+
 public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Optional<IColorGetter> barColor,
                            Optional<Rarity> rarity,
                            List<Component> tooltips,
                            List<Pattern> removedTooltips,
                            List<ItemModelOverride> customModels,
-                           Set<ResourceLocation> explicitTargets) implements ITargetProvider {
+                           Targets targets) {
 
     public static final Codec<ItemModifier> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> (Optional<IColorGetter>) b.tintGetter),
@@ -41,7 +43,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             CreativeTabModifier.COMPONENT_CODEC.listOf().optionalFieldOf("tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
             ExtraCodecs.PATTERN.listOf().optionalFieldOf("removed_tooltips", List.of()).forGetter(ItemModifier::removedTooltips),
             ItemModelOverride.CODEC.listOf().optionalFieldOf("custom_models", List.of()).forGetter(ItemModifier::customModels),
-            TARGET_CODEC.optionalFieldOf("targets", java.util.Set.of()).forGetter(ItemModifier::explicitTargets)
+            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(ItemModifier::targets)
     ).apply(instance, ItemModifier::new));
 
     public record Partial(List<ItemModelOverride.Partial> customModels) {
@@ -53,12 +55,12 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
 
     public static ItemModifier ofItemColor(Colormap colormap) {
         return new ItemModifier(Optional.of(colormap), Optional.empty(), Optional.empty(), List.of(),
-                List.of(), List.of(), Set.of());
+                List.of(), List.of(), Targets.EMPTY);
     }
 
     public static ItemModifier ofBarColor(Colormap colormap) {
         return new ItemModifier(Optional.empty(), Optional.of(colormap),
-                Optional.empty(), List.of(), List.of(), List.of(), Set.of());
+                Optional.empty(), List.of(), List.of(), List.of(), Targets.EMPTY);
     }
 
     public ItemModifier merge(ItemModifier other) {
@@ -69,7 +71,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 mergeList(this.tooltips, other.tooltips),
                 mergeList(this.removedTooltips, other.removedTooltips),
                 mergeList(this.customModels, other.customModels),
-                mergeSet(this.explicitTargets, other.explicitTargets)
+                this.targets.merge(other.targets)
         );
     }
 
@@ -97,7 +99,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 Optional.ofNullable(oldColor),
                 Optional.empty(),
                 Optional.ofNullable(oldRarity),
-                List.of(), List.of(), List.of(), Set.of());
+                List.of(), List.of(), List.of(), Targets.EMPTY);
     }
 
     @Nullable

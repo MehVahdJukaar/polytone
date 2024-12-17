@@ -52,8 +52,8 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod, RegistryAccess access) {
         Registry<Biome> registry = access.registryOrThrow(Registries.BIOME);
-        for (var biome : mod.getTargets(pathId, registry)) {
-            effectsToApply.merge(registry.getKey(biome), mod, BiomeEffectModifier::merge);
+        for (var biome : mod.targets().compute(pathId, registry)) {
+            effectsToApply.merge(biome.unwrapKey().get().location(), mod, BiomeEffectModifier::merge);
         }
     }
 

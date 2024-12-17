@@ -39,7 +39,7 @@ public class Colormap implements IColorGetter, ColorResolver {
 
     private Integer defaultColor;
     private ArrayImage image = null;
-    private ResourceLocation explicitTargetTexture = null; //explicit target
+    private ResourceLocation explicitTargetTexture = null; //explicit targets
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
