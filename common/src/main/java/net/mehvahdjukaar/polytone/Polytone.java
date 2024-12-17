@@ -27,9 +27,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -43,7 +45,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class Polytone {
     public static final String MOD_ID = "polytone";
@@ -71,13 +75,15 @@ public class Polytone {
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
 
+    private static final Set<ModelResourceLocation> EXTRA_MODELS = new HashSet<>();
+
     public static boolean iMessedUp = false;
 
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
     public static boolean iris = false;
 
-    //todo: make all of thise load on level load and unload
+    //todo: cutout not working. splash color not working, 1.20 color accessor crash
     public static void init(boolean devEnv, boolean forge, boolean iris) {
         COMPOUND_RELOADER = new CompoundReloader(
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
@@ -98,9 +104,11 @@ public class Polytone {
     }
 
     private static void addSpecialModels(PlatStuff.SpecialModelEvent event) {
-        Polytone.LOGGER.info("Polytone: fetched custom item models from thread {}", Thread.currentThread());
-        CUSTOM_PARTICLES.getExtraModelsToLoad().forEach(event::register);
-        ITEM_MODELS.getExtraModelsToLoad().forEach(event::register);
+        for (var m : EXTRA_MODELS) {
+            event.register(m);
+        }
+        Polytone.LOGGER.info("Registered {} extra models", EXTRA_MODELS.size());
+        EXTRA_MODELS.clear();
     }
 
     public static ResourceLocation res(String name) {
@@ -110,7 +118,7 @@ public class Polytone {
 
     public static void onTagsReceived(HolderLookup.Provider registryAccess) {
         try {
-            COMPOUND_RELOADER.applyOnLevelLoad(registryAccess, true);
+            COMPOUND_RELOADER.applyWithLevel(registryAccess, true);
             BiomeKeysCache.clear();
             LazyHolderSet.initializeAll(registryAccess);
         } catch (RuntimeException e) {
@@ -125,10 +133,13 @@ public class Polytone {
     }
 
     public static void onLevelUnload() {
-        COMPOUND_RELOADER.resetOnLevelUnload( );
+        COMPOUND_RELOADER.resetWithLevel(true);
         BiomeKeysCache.clear();
     }
 
+    public static void onEarlyPackLoad(ResourceManager manager) {
+        COMPOUND_RELOADER.earlyProcess(manager);
+    }
 
     public static void logException(Exception e, String message) {
         // Find the Log4j logging directory
@@ -158,5 +169,9 @@ public class Polytone {
                 .map(Path::getParent)
                 .map(Path::toString)
                 .findFirst();
+    }
+
+    public static void addCustomModel(ModelResourceLocation model) {
+        EXTRA_MODELS.add(model);
     }
 }

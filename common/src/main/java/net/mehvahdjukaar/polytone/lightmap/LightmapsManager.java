@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.lightmap;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -16,6 +17,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -55,13 +58,13 @@ public class LightmapsManager extends JsonImgPartialReloader {
 
         textures.putAll(this.getImagesInDirectories(resourceManager));
 
-        return new Resources(jsons, textures);
+        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures));
     }
 
     @Override
-    public void process(Resources resources, DynamicOps<JsonElement> ops) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var images = resources.textures();
-        var jsons = resources.jsons();
+        var jsons = new HashMap<>(resources.jsons());
         lastDimension = null;
         currentLightmap = null;
 
@@ -114,7 +117,12 @@ public class LightmapsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void reset() {
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+
+    }
+
+    @Override
+    protected void resetWithLevel(boolean logOff) {
         lightmaps.clear();
     }
 

@@ -10,6 +10,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -29,13 +31,14 @@ public class GuiOverlayManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void reset() {
+    protected void resetWithLevel(boolean logOff) {
         blitModifiers.clear();
     }
 
     @Override
-    protected void process(Map<ResourceLocation, JsonElement> obj, DynamicOps<JsonElement> ops) {
-        for (var j : obj.entrySet()) {
+    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+                                  RegistryAccess access) {
+        for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
 
@@ -49,6 +52,11 @@ public class GuiOverlayManager extends JsonPartialReloader {
             }
             blitModifiers.put(textureId, effect);
         }
+    }
+
+    @Override
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+
     }
 
     @Override

@@ -24,9 +24,10 @@ public interface ITargetProvider {
         Matcher matcher = WILDCARD_PATTERN.matcher(s);
         if (matcher.matches()) {
             String group = matcher.group(1);
-            if (group != null)
+            if (group != null) {
                 return DataResult.success(
                         ResourceLocation.fromNamespaceAndPath(group, WILDCARD_PLACEHOLDER));
+            }
         }
         if (s.equals("*")) return DataResult.success(ALL_WILDCARD);
         return DataResult.error(() -> "Wildcard target must be '*'. Was: " + s);

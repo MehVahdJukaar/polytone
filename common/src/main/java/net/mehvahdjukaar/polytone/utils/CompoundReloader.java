@@ -1,11 +1,13 @@
 package net.mehvahdjukaar.polytone.utils;
 
 import com.google.common.base.Stopwatch;
+import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -18,6 +20,7 @@ import java.util.List;
 public class CompoundReloader extends SimplePreparableReloadListener<List<Object>> {
 
     private final List<PartialReloader<?>> children;
+    private final List<Object> childrenResources = new ArrayList<>();
 
     public CompoundReloader(PartialReloader<?>... reloaders) {
         children = List.of(reloaders);
@@ -39,16 +42,24 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         // clear existing lazy holder sets
         LazyHolderSet.clearAll();
 
-        Stopwatch stopwatch = Stopwatch.createStarted();
-        for (var c : children) {
-            c.resetWithLevel(false);
-            c.reset();
-        }
+        childrenResources.clear();
+        childrenResources.addAll(object);
 
-        for (int i = 0; i < object.size(); i++) {
+        if (level != null) {
+            applyWithLevel(level.registryAccess(), false);
+        }
+    }
+
+    public void applyWithLevel(RegistryAccess registryAccess, boolean firstLogin) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        if (!firstLogin) resetWithLevel(false);
+
+        RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
+
+        for (int i = 0; i < childrenResources.size(); i++) {
             PartialReloader<?> c = children.get(i);
             try {
-                processTyped(c, object.get(i));
+                processTyped(c, childrenResources.get(i), ops, registryAccess);
             } catch (Exception e) {
                 String message = c + " failed to parse some resources";
                 Polytone.logException(e, message);
@@ -59,23 +70,20 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
             }
         }
 
-        if (Minecraft.getInstance().level != null) {
-            try {
-                LazyHolderSet.initializeAll(Minecraft.getInstance().level.registryAccess());
-            } catch (Exception e) {
-                String message = "failed to parse some resources";
-                Polytone.logException(e, message);
-                Polytone.iMessedUp = true;
+        try {
+            LazyHolderSet.initializeAll(registryAccess);
+        } catch (Exception e) {
+            String message = "failed to parse some resources";
+            Polytone.logException(e, message);
+            Polytone.iMessedUp = true;
 
-                Polytone.LOGGER.error(message);
-                throw e;
-            }
+            Polytone.LOGGER.error(message);
+            throw e;
         }
 
         for (var c : children) {
             try {
-                c.apply();
-                if (level != null) c.applyWithLevel(level.registryAccess(), false);
+                c.applyWithLevel(registryAccess, firstLogin);
             } catch (Exception e) {
                 String message = c + " failed to apply some resources";
                 Polytone.logException(e, message);
@@ -90,20 +98,21 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
     }
 
     @SuppressWarnings("all")
-    private <T> void processTyped(PartialReloader<T> reloader, Object object) {
+    private <T> void processTyped(PartialReloader<T> reloader, Object object, RegistryOps<JsonElement> ops, RegistryAccess access) {
         //yea... we cant use registry ops here theres no level yet
-        reloader.process((T) object, JsonOps.INSTANCE);
+        reloader.parseWithLevel((T) object, ops, access);
     }
 
-    public void applyOnLevelLoad(HolderLookup.Provider registryAccess, boolean firstLogin) {
+
+    public void resetWithLevel(boolean isLogOff) {
         for (var c : children) {
-            c.applyWithLevel(registryAccess, firstLogin);
+            c.resetWithLevel(isLogOff);
         }
     }
 
-    public void resetOnLevelUnload() {
+    public void earlyProcess(ResourceManager resourceManager) {
         for (var c : children) {
-            c.resetWithLevel(true);
+            c.earlyProcess(resourceManager);
         }
     }
 }

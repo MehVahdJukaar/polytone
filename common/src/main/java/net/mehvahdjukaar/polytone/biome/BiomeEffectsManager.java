@@ -1,8 +1,6 @@
 package net.mehvahdjukaar.polytone.biome;
 
 import com.google.gson.JsonElement;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
@@ -39,35 +37,20 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         super("biome_modifiers", "biome_effects");
     }
 
-    private final Map<ResourceLocation, JsonElement> lazyJsons = new HashMap<>();
-
     private final Map<Biome, BiomeEffectModifier> fogParametersModifiers = new HashMap<>();
 
     @Override
-    public void process(Map<ResourceLocation, JsonElement> biomesJsons, DynamicOps<JsonElement> ops) {
-        lazyJsons.clear();
-        lazyJsons.putAll(biomesJsons);
-        //else apply as soon as we load a level
-    }
-
-    // we need registry ops here since special effects use registry stuff...
-    @Override
-    public void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
-        for (var j : lazyJsons.entrySet()) {
+    public void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
 
-            BiomeEffectModifier effect = BiomeEffectModifier.CODEC.decode(
-                            RegistryOps.create(JsonOps.INSTANCE, access), json)
+            BiomeEffectModifier effect = BiomeEffectModifier.CODEC.decode(ops, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Biome Special Effect with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
 
             addEffect(id, effect, access);
-
         }
-        lazyJsons.clear();
-
-        doApplyWithLevel(access, isLogIn);
     }
 
     private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod, HolderLookup.Provider access) {
@@ -77,15 +60,13 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         }
     }
 
+    // we need registry ops here since special effects use registry stuff...
     @Override
-    public void apply() {
-    }
-
-    private void doApplyWithLevel(HolderLookup.Provider registryAccess, boolean firstLogin) {
-        if (!firstLogin && !needsDynamicApplication) return;
+    public void applyWithLevel(HolderLookup.Provider registryAccess, boolean isLogIn) {
+        if (!isLogIn && !needsDynamicApplication) return;
 
         needsDynamicApplication = false;
-        if (firstLogin) vanillaEffects.clear();
+        if (isLogIn) vanillaEffects.clear();
 
 
         var biomeReg = registryAccess.lookupOrThrow(Registries.BIOME);
@@ -112,7 +93,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     }
 
     @Override
-    public void reset() {
+    public void resetWithLevel(boolean isLogOff) {
         this.needsDynamicApplication = true;
         Level level = Minecraft.getInstance().level;
         if (level != null) {

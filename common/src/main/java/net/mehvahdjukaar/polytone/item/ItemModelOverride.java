@@ -26,6 +26,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -59,6 +60,13 @@ public class ItemModelOverride {
             ColormapExpressionProvider.CODEC.optionalFieldOf("expression").forGetter(i -> Optional.ofNullable(i.expression)),
             NBT_COMPONENTS_CODEC.optionalFieldOf("item_nbt_components", Map.of()).forGetter(i -> i.nbtMatchers)
     ).apply(instance, ItemModelOverride::new));
+
+    public static final Codec<Partial> CODEC_MODEL_ONLY = RecordCodecBuilder.create(instance -> instance.group(
+            ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(Partial::model)
+    ).apply(instance, Partial::new));
+
+    public record Partial(ModelResourceLocation model) {
+    }
 
     public ItemModelOverride(Dynamic<?> lazyComponent, ModelResourceLocation model, Optional<Integer> stackCount,
                              Optional<Pattern> pattern, Optional<CompoundTag> entityTag,

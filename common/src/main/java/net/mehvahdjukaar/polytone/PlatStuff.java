@@ -191,11 +191,7 @@ public class PlatStuff {
 
             reg.byLocation.remove(key.location());
             reg.byValue.remove(value);
-            int id = reg.getId(value);
-            if(id != -1) reg.byId.remove(id);
-            else{
-                int error = 1;
-            }
+            reg.byId.remove(reference);
             reg.toId.removeInt(value);
             reg.registrationInfos.remove(key);
         } else {
