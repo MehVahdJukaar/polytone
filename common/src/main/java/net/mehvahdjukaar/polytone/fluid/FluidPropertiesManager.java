@@ -12,6 +12,7 @@ import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -112,7 +113,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
             addModifier(id, new FluidPropertyModifier(Optional.of(defaultColormap),
-                    Optional.empty(), Set.of()));
+                    Optional.empty(), Targets.EMPTY));
         }
     }
 
@@ -130,9 +131,10 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     private void addModifier(ResourceLocation pathId, FluidPropertyModifier mod) {
-        for (var fluid : mod.getTargets(pathId, BuiltInRegistries.FLUID)) {
-            modifiers.merge(fluid.value(), mod, FluidPropertyModifier::merge);
-            tryAddSpecial(fluid.value(), mod);
+        for (var fluid : mod.targets().compute(pathId, BuiltInRegistries.FLUID)) {
+            var f = fluid.value();
+            modifiers.merge(f, mod, FluidPropertyModifier::merge);
+            tryAddSpecial(f, mod);
         }
     }
 

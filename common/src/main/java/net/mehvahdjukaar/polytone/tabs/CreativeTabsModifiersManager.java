@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.tabs;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -121,8 +120,8 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     }
 
     private void addModifier(ResourceLocation fileId, CreativeTabModifier mod) {
-        for (ResourceLocation id : mod.getTargetsKeys(fileId)) {
-            ResourceKey<CreativeModeTab> key = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id);
+        for (var tab : mod.targets().compute(fileId, BuiltInRegistries.CREATIVE_MODE_TAB)) {
+            ResourceKey<CreativeModeTab> key = tab.unwrapKey().get();
             modifiers.merge(key, mod, CreativeTabModifier::merge);
 
             PlatStuff.addTabEventForTab(key);

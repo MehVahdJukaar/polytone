@@ -89,10 +89,10 @@ public class DayTimeTextureTicker implements SpriteTicker {
             float rainAndThunder = ClientFrameTicker.getRainAndThunder() * 2 / 3f;
             return rainAndThunder + 1 / 6;
             //needs to fall in between those 2 so we dont get interpolation as this stuff doesnt loop back
-        }else if(mode == DayTimeTexture.Mode.GAME_TIME){
-            double gameTime = level.getDayTime() % timeCycleDuration;
+        } else if (mode == DayTimeTexture.Mode.GAME_TIME) {
+            double gameTime = level.getGameTime() % timeCycleDuration;
             return (float) (gameTime / timeCycleDuration);
-        }else {
+        } else {
             double dayTime = ClientFrameTicker.getDayTime() % timeCycleDuration;
             return (float) (dayTime / timeCycleDuration);
         }

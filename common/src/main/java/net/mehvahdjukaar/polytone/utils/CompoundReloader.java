@@ -40,7 +40,6 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
     protected void apply(List<Object> object, ResourceManager resourceManager, ProfilerFiller profiler) {
         Level level = Minecraft.getInstance().level;
         // clear existing lazy holder sets
-        LazyHolderSet.clearAll();
 
         childrenResources.clear();
         childrenResources.addAll(object);
@@ -68,17 +67,6 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
                 Polytone.LOGGER.error(message);
                 throw e;
             }
-        }
-
-        try {
-            LazyHolderSet.initializeAll(registryAccess);
-        } catch (Exception e) {
-            String message = "failed to parse some resources";
-            Polytone.logException(e, message);
-            Polytone.iMessedUp = true;
-
-            Polytone.LOGGER.error(message);
-            throw e;
         }
 
         for (var c : children) {

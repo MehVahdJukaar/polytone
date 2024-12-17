@@ -1,2 +1,7 @@
 - all polytone resources re now reloaded and unloaded on world load and unload
 - this means they can now all use tags and generally work nicely with the rest of the game
+- particles will have their age variable set to lifetime (max life) every time they die for whichever reason
+- fixed custom creative tabs on neoforge (due to previous changes)
+- block offsets from block modifiers will exclusively affect the position of the rendered block, not its hitbox to avoid issues on server due to mismatched hitbox
+- this also means that it will likely not work anymore with sodium as it probably overrides any logic related to rendering
+- fixed variant textures game_time using day_time instead
