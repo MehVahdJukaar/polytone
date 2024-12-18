@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
+import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -70,27 +71,23 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
 
     public static final Codec<ColormapExpressionProvider> CODEC = Codec.STRING.flatXmap(s -> {
         try {
-            Expression compiled = createExpression(s);
+            ConcurrentExpression compiled = createExpression(s);
             return DataResult.success(new ColormapExpressionProvider(compiled, s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
     }, javaxExpression -> DataResult.success(javaxExpression.unparsed));
 
-    private static Expression createExpression(String s) {
-        return new ExpressionBuilder(s)
+    private static ConcurrentExpression createExpression(String s) {
+        return ConcurrentExpression.of(new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
                 .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z, BIOME_VALUE, TIME, RAIN, DAY_TIME)
                 .operator(ExpressionUtils.defOp())
-                .build();
+        );
     }
 
     private final String unparsed;
-    private final Expression expression;
-
-    // we use this optimistic approach instead of a lock because it's faster,
-    // and we don't really care about blocking as we can just use new if its locked
-    private final AtomicBoolean nonBlockingLock = new AtomicBoolean();
+    private final ConcurrentExpression expression;
 
     private final boolean hasTemperature;
     private final boolean hasDownfall;
@@ -99,7 +96,7 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     private final boolean hasDayTime;
     private final boolean hasSunTime;
 
-    private ColormapExpressionProvider(Expression expression, String unparsed) {
+    private ColormapExpressionProvider(ConcurrentExpression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
 
@@ -136,17 +133,10 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
     public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
                           @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
         float result = 0;
-        boolean needsToUnlock = false;
         try {
-            Expression exp;
+            ConcurrentExpression exp;
             // no other code has acquired this yet so we can use our instance
-            if (false && nonBlockingLock.compareAndSet(false, true)) {
-                exp = expression;
-                needsToUnlock = true;
-            } else {
-                // if not, we have to create a new one because this has to work concurrently.
-                exp = new Expression(this.expression);
-            }
+            exp = expression;
 
             if (hasTemperature)
                 exp.setVariable(TEMPERATURE, biome != null ? ColorUtils.getClimateSettings(biome).temperature : 0);
@@ -179,8 +169,6 @@ public final class ColormapExpressionProvider implements IColormapNumberProvider
 
         } catch (Exception e) {
             Polytone.LOGGER.error("Failed to evaluate expression with value: {}", unparsed, e);
-        } finally {
-            if (needsToUnlock) nonBlockingLock.set(false);
         }
         return result;
     }

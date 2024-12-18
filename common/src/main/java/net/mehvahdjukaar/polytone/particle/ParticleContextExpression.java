@@ -5,17 +5,16 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
+import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
 public class ParticleContextExpression {
-    private final Expression expression;
+    private final ConcurrentExpression expression;
     private final String unparsed;
 
     private static final String COLOR = "COLOR";
@@ -50,7 +49,7 @@ public class ParticleContextExpression {
 
     public static final Codec<ParticleContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
-            Expression compiled = createExpression(s);
+            ConcurrentExpression compiled = createExpression(s);
             return DataResult.success(new ParticleContextExpression(compiled, s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
@@ -73,7 +72,7 @@ public class ParticleContextExpression {
         this(createExpression(expression), expression);
     }
 
-    public ParticleContextExpression(Expression expression, String unparsed) {
+    public ParticleContextExpression(ConcurrentExpression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
 
@@ -93,14 +92,14 @@ public class ParticleContextExpression {
         return new ParticleContextExpression(createExpression(s), s);
     }
 
-    private static Expression createExpression(String s) {
-        return new ExpressionBuilder(s)
+    private static ConcurrentExpression createExpression(String s) {
+        return ConcurrentExpression.of(new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc())
                 .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, ROLL, AGE,
                         PLAYER_X, PLAYER_Y, PLAYER_Z,
                         CUSTOM, TIME, RAIN, DAY_TIME, SKY_LIGHT, BLOCK_LIGHT, DOWNFALL, TEMPERATURE, DISTANCE_SQUARED)
                 .operator(ExpressionUtils.defOp())
-                .build();
+        );
     }
 
 

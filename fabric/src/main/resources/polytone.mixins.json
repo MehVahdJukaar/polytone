@@ -17,6 +17,7 @@
     "InventoryScreenMixin",
     "ModelHackMixin",
     "ModelManagerAccessor",
+    "ModelRendererMixin",
     "ParticleEngineAccessor"
   ],
   "injectors": {

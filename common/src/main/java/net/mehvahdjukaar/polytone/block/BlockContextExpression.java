@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -23,7 +24,7 @@ import java.util.List;
 public class BlockContextExpression {
 
 
-    private final Expression expression;
+    private final ConcurrentExpression expression;
     private final String unparsed;
 
     private final boolean hasTime;
@@ -85,12 +86,12 @@ public class BlockContextExpression {
     }, javaxExpression -> DataResult.success(javaxExpression.unparsed));
 
 
-    private static Expression createExpression(String s) {
-        return new ExpressionBuilder(s)
+    private static ConcurrentExpression createExpression(String s) {
+        return ConcurrentExpression.of(new ExpressionBuilder(s)
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
                 .variables( POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, TIME, BLOCK_LIGHT, SKY_LIGHT, DISTANCE_SQUARED)
                 .operator(ExpressionUtils.defOp())
-                .build();
+        );
     }
 
     private final boolean hasDistance;
@@ -99,7 +100,7 @@ public class BlockContextExpression {
         this(createExpression(expression), expression);
     }
 
-    public BlockContextExpression(Expression expression, String unparsed) {
+    public BlockContextExpression(ConcurrentExpression expression, String unparsed) {
         this.expression = expression;
         this.unparsed = unparsed;
         this.hasTime = unparsed.contains(TIME);

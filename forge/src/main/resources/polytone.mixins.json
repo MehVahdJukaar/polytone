@@ -12,6 +12,7 @@
     "CurioInventoryScreenMixin",
     "InventoryScreenMixin",
     "ItemColorsAccessor",
+    "ModelRendererMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
     "ParticleEngineAccessor"

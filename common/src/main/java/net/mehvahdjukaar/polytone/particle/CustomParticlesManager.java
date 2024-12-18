@@ -131,6 +131,15 @@ public class CustomParticlesManager extends JsonPartialReloader {
             }
         }
 
+        // register custom particle types. needs to be here
+        for (var c : customParticleFactories.getEntries()) {
+            var factory = c.getValue();
+            var id  = c.getKey();
+            SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
+            PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
+            particleEngine.register(type, factory);
+        }
+
         //initialize recursive stuff
         for (var c : customTypes) {
             for (var d : c.lazyParticles) {
@@ -142,22 +151,11 @@ public class CustomParticlesManager extends JsonPartialReloader {
             }
             c.lazyParticles = null;
         }
-
-        // register custom particle types. needs to be here
-        for (var c : customParticleFactories.getEntries()) {
-            var factory = c.getValue();
-            var id = c.getKey();
-            SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
-            PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
-            particleEngine.register(type, factory);
-        }
     }
 
     private static <T> ParticleParticleEmitter runCodec(DynamicOps o, Dynamic<T> dynamic) {
         DynamicOps<T> ops = (DynamicOps<T>) o;
-        return ParticleParticleEmitter.CODEC.decode(ops, dynamic.getValue())
-                .result().orElseThrow(() -> new JsonParseException("Failed to decode particle emitters"))
-                .getFirst();
+        return ParticleParticleEmitter.CODEC.decode(ops, dynamic.getValue()).getOrThrow().getFirst();
     }
 
     public Codec<CustomParticleFactory> byNameCodec() {
