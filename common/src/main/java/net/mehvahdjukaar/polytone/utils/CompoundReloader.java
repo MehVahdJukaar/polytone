@@ -39,7 +39,6 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
     @Override
     protected void apply(List<Object> object, ResourceManager resourceManager, ProfilerFiller profiler) {
         Level level = Minecraft.getInstance().level;
-        // clear existing lazy holder sets
 
         childrenResources.clear();
         childrenResources.addAll(object);

@@ -79,16 +79,16 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
 
             customSoundTypes.register(id, soundType);
         }
-    }
 
-    @Override
-    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         for (var e : customSoundEvents.getEntries()) {
             var id = e.getKey();
             var sound = e.getValue();
             PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id, sound);
         }
+    }
 
+    @Override
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         if (!customSoundEvents.isEmpty()) {
             Polytone.LOGGER.info("Registered {} custom Sound Events from Resource Packs: {}", customSoundEvents.size(), customSoundEvents + ". Remember to add them to sounds.json!");
             //this is bad
