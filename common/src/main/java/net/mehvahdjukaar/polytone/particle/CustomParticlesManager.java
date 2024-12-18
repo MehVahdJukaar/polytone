@@ -155,7 +155,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     private static <T> ParticleParticleEmitter runCodec(DynamicOps o, Dynamic<T> dynamic) {
         DynamicOps<T> ops = (DynamicOps<T>) o;
-        return ParticleParticleEmitter.CODEC.decode(ops, dynamic.getValue()).getOrThrow().getFirst();
+        return ParticleParticleEmitter.CODEC.decode(ops, dynamic.getValue()).getOrThrow(false,
+                Polytone.LOGGER::error).getFirst();
     }
 
     public Codec<CustomParticleFactory> byNameCodec() {
