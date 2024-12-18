@@ -8,8 +8,6 @@ import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
@@ -88,10 +86,6 @@ public class PlatStuffImpl {
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         return ((BlockColorsAccessor) colors).getBlockColors().get(block);
-    }
-
-    public static ItemColor getItemColor(ItemColors colors, Item item) {
-        return ((ItemColorsAccessor) colors).getItemColors().get(item);
     }
 
     public static String maybeRemapName(String s) {

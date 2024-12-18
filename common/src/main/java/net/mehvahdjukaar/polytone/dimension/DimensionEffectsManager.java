@@ -76,7 +76,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var jsons = resources.jsons();
         var textures = new HashMap<>(resources.textures());
 
@@ -250,6 +250,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         Colormap colormap = this.skyColormaps.get(level.dimensionType());
         if (colormap == null) return null;
 
+        //same as original one
         BiomeManager biomeManager = level.getBiomeManager();
         return CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
             var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();

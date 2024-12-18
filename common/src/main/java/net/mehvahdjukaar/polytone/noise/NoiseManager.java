@@ -8,6 +8,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -38,7 +39,7 @@ public class NoiseManager extends JsonPartialReloader {
 
     @Override
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
-                                  RegistryAccess access) {
+                                  HolderLookup.Provider access) {
         for (var e : jsons.entrySet()) {
             var id = e.getKey();
             var json = e.getValue();
@@ -51,6 +52,6 @@ public class NoiseManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
     }
 }

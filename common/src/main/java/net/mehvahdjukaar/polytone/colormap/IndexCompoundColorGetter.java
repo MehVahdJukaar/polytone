@@ -5,8 +5,8 @@ import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,6 +25,7 @@ public class IndexCompoundColorGetter implements IColorGetter {
     }
 
     private IndexCompoundColorGetter() {
+
     }
 
     protected static final Codec<IndexCompoundColorGetter> DIRECT_CODEC = Codec.unboundedMap(Codec.STRING
@@ -78,15 +79,15 @@ public class IndexCompoundColorGetter implements IColorGetter {
     }
 
 
-    @Override
-    public int getColor(ItemStack itemStack, int i) {
+    public int getItemColor(ItemStack itemStack, int i) {
+        /*
         ItemColor getter = getters.get(i);
         if (getter == null) {
             getter = getters.get(-1);
         }
         if (getter != null) {
             return getter.getColor(itemStack, i);
-        }
+        }*/
 
         return -1;
     }

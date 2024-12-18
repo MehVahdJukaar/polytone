@@ -14,6 +14,7 @@ import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -62,7 +63,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     //TODO: this is a mess. Improve
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var jsons = resources.jsons();
         var textures = new HashMap<>(resources.textures());
 
@@ -118,7 +119,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         if (!modifiers.isEmpty()) {
             Polytone.LOGGER.info("Applied {} Fluid Modifiers", modifiers.size());
         }

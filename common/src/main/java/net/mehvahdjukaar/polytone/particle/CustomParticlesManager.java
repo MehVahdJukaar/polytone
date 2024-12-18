@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -82,13 +83,13 @@ public class CustomParticlesManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
 
     }
 
     @Override
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
-                                  RegistryAccess access) {
+                                  HolderLookup.Provider access) {
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
 
         Set<CustomParticleType> customTypes = new HashSet<>();

@@ -9,9 +9,6 @@ import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.animation.AnimationChannel;
-import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -28,8 +25,7 @@ import java.util.regex.Pattern;
 
 import static net.mehvahdjukaar.polytone.utils.ListUtils.mergeList;
 
-public record ItemModifier(Optional<? extends ItemColor> tintGetter,
-                           Optional<IColorGetter> barColor,
+public record ItemModifier(Optional<IColorGetter> barColor,
                            Optional<Rarity> rarity,
                            List<Component> tooltips,
                            List<Pattern> removedTooltips,
@@ -37,7 +33,8 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Targets targets) {
 
     public static final Codec<ItemModifier> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> (Optional<IColorGetter>) b.tintGetter),
+            //TODO: register custom item model color sampler that takes in a colormap
+            //IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> (Optional<IColorGetter>) b.tintGetter),
             Colormap.CODEC.optionalFieldOf("bar_color").forGetter(ItemModifier::barColor),
             Rarity.CODEC.optionalFieldOf("rarity").forGetter(ItemModifier::rarity),
             CreativeTabModifier.COMPONENT_CODEC.listOf().optionalFieldOf("tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
@@ -53,19 +50,13 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             ItemModelOverride.CODEC_MODEL_ONLY.listOf().optionalFieldOf("custom_models", List.of()).forGetter(Partial::customModels)
     ).apply(instance, Partial::new));
 
-    public static ItemModifier ofItemColor(Colormap colormap) {
-        return new ItemModifier(Optional.of(colormap), Optional.empty(), Optional.empty(), List.of(),
-                List.of(), List.of(), Targets.EMPTY);
-    }
-
     public static ItemModifier ofBarColor(Colormap colormap) {
-        return new ItemModifier(Optional.empty(), Optional.of(colormap),
+        return new ItemModifier( Optional.of(colormap),
                 Optional.empty(), List.of(), List.of(), List.of(), Targets.EMPTY);
     }
 
     public ItemModifier merge(ItemModifier other) {
         return new ItemModifier(
-                this.tintGetter.isPresent() ? this.tintGetter : other.tintGetter,
                 this.barColor.isPresent() ? this.barColor : other.barColor,
                 this.rarity.isPresent() ? this.rarity : other.rarity,
                 mergeList(this.tooltips, other.tooltips),
@@ -87,16 +78,9 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             builder.set(DataComponents.RARITY, rarity.get());
             item.components = builder.build();
         }
-        ItemColor oldColor = null;
-        if (tintGetter.isPresent()) {
-            ItemColors itemColors = Minecraft.getInstance().itemColors;
-            oldColor = PlatStuff.getItemColor(itemColors, item);
-            itemColors.register(tintGetter.get(), item);
-        }
 
         // returns old properties
         return new ItemModifier(
-                Optional.ofNullable(oldColor),
                 Optional.empty(),
                 Optional.ofNullable(oldRarity),
                 List.of(), List.of(), List.of(), Targets.EMPTY);
@@ -107,15 +91,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
         return barColor.map(c -> c.getColor(itemStack, 0)).orElse(null);
     }
 
-    public boolean hasTint() {
-        return tintGetter.isPresent();
-    }
-
-    public ItemColor getTint() {
-        return tintGetter.orElse(null);
-    }
-
-    public ItemColor getBarColor() {
+    public IColorGetter getBarColor() {
         return barColor.orElse(null);
     }
 

@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
@@ -24,8 +25,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.mehvahdjukaar.polytone.utils.ITargetProvider.regKey;
-
 public class BiomeEffectsManager extends JsonPartialReloader {
 
     private final Map<ResourceKey<Biome>, BiomeSpecialEffects> vanillaEffects = new HashMap<>();
@@ -40,7 +39,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     private final Map<Biome, BiomeEffectModifier> fogParametersModifiers = new HashMap<>();
 
     @Override
-    public void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    public void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
@@ -54,7 +53,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     }
 
     private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod, HolderLookup.Provider access) {
-        Registry<Biome> registry = access.lookupOrThrow(Registries.BIOME);
+        var registry = access.lookupOrThrow(Registries.BIOME);
         for (var biome : mod.targets().compute(pathId, registry)) {
             effectsToApply.merge(biome.unwrapKey().get().location(), mod, BiomeEffectModifier::merge);
         }

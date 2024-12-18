@@ -17,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
@@ -62,7 +63,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var images = resources.textures();
         var jsons = new HashMap<>(resources.jsons());
         lastDimension = null;
@@ -117,7 +118,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
 
     }
 

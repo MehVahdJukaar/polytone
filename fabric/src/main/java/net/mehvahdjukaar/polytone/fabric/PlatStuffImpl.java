@@ -89,11 +89,6 @@ public class PlatStuffImpl {
         return ((BlockColorsAccessor) colors).getBlockColors().byId(BuiltInRegistries.BLOCK.getId(block));
     }
 
-    @org.jetbrains.annotations.Contract
-    public static ItemColor getItemColor(ItemColors colors, Item item) {
-        return ((ItemColorsAccessor) colors).getItemColors().byId(BuiltInRegistries.ITEM.getId(item));
-    }
-
     public static String maybeRemapName(String s) {
         return FabricLoader.getInstance().getMappingResolver().mapClassName("official", s);
     }

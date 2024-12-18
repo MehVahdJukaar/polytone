@@ -49,7 +49,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         }
     }
 
-    public void applyWithLevel(RegistryAccess registryAccess, boolean firstLogin) {
+    public void applyWithLevel(HolderLookup.Provider registryAccess, boolean firstLogin) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         if (!firstLogin) resetWithLevel(false);
 
@@ -71,7 +71,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
         for (var c : children) {
             try {
-                c.applyWithLevel(registryAccess, firstLogin);
+                c.applyWithLevel(HolderLookup.Provider, firstLogin);
             } catch (Exception e) {
                 String message = c + " failed to apply some resources";
                 Polytone.logException(e, message);
@@ -86,7 +86,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
     }
 
     @SuppressWarnings("all")
-    private <T> void processTyped(PartialReloader<T> reloader, Object object, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    private <T> void processTyped(PartialReloader<T> reloader, Object object, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         //yea... we cant use registry ops here theres no level yet
         reloader.parseWithLevel((T) object, ops, access);
     }

@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -35,7 +36,7 @@ public class BlockSetManager extends JsonPartialReloader {
 
     @Override
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
-                                  RegistryAccess access) {
+                                  HolderLookup.Provider access) {
         //copy vanilla
         BlockSetType.values().forEach(type ->
                 blockSetTypes.register(ResourceLocation.parse(type.name()),
@@ -52,7 +53,7 @@ public class BlockSetManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         if (!blockSetTypes.isEmpty()) {
             Polytone.LOGGER.info("Registered {} custom block set types", blockSetTypes.size());
         }

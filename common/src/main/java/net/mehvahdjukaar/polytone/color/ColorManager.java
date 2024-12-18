@@ -14,6 +14,7 @@ import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -79,7 +80,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, Properties> properties, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(Map<ResourceLocation, Properties> properties, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         //iterate from the lowest priority to highest
         var keySet = new ArrayList<>(properties.keySet());
         Lists.reverse(keySet);
@@ -307,7 +308,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
 
     }
 

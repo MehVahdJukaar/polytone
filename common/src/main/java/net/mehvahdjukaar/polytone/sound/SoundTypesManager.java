@@ -9,12 +9,16 @@ import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.level.block.SoundType;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,13 +51,12 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
 
         var soundJsons = resources.soundTypes;
         var soundEvents = resources.soundEvents;
 
         //custom sound events
-
         for (var e : soundEvents.entrySet()) {
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
@@ -79,7 +82,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     }
 
     @Override
-    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         for (var e : customSoundEvents.getEntries()) {
             var id = e.getKey();
             var sound = e.getValue();

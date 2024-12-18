@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -76,7 +77,7 @@ public record CreativeTabModifier(
         );
     }
 
-    public CreativeTabModifier applyItemsAndAttributes(ItemToTabEvent event, RegistryAccess access) {
+    public CreativeTabModifier applyItemsAndAttributes(ItemToTabEvent event, HolderLookup.Provider access) {
         for (var v : removals) {
             event.removeItems(v);
         }

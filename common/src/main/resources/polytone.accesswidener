@@ -108,11 +108,6 @@ accessible field net/minecraft/client/particle/Particle gCol F
 accessible field net/minecraft/client/particle/Particle bCol F
 accessible field net/minecraft/client/particle/Particle alpha F
 
-accessible field net/minecraft/world/item/SpawnEggItem backgroundColor I
-mutable field net/minecraft/world/item/SpawnEggItem backgroundColor I
-accessible field net/minecraft/world/item/SpawnEggItem highlightColor I
-mutable field net/minecraft/world/item/SpawnEggItem highlightColor I
-
 accessible field net/minecraft/world/effect/MobEffect color I
 mutable field net/minecraft/world/effect/MobEffect color I
 
@@ -176,7 +171,6 @@ mutable field net/minecraft/client/renderer/DimensionSpecialEffects constantAmbi
 
 accessible field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
 mutable field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
-accessible field net/minecraft/client/Minecraft itemColors Lnet/minecraft/client/color/item/ItemColors;
 
 
 # freaking forge field to method...mutable
