@@ -1,8 +1,7 @@
 package net.mehvahdjukaar.polytone.utils.fabric;
 
 import com.google.common.base.Preconditions;
-import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
-import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
+import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.mehvahdjukaar.polytone.utils.BakedQuadBuilder;
@@ -33,8 +32,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
     private boolean autoDirection = false;
 
     private BakedQuadBuilderImpl(TextureAtlasSprite sprite, @Nullable Matrix4f transform) {
-        MeshBuilder meshBuilder = RendererAccess.INSTANCE.getRenderer().meshBuilder();
-        this.inner = meshBuilder.getEmitter();
+        this.inner = Renderer.get().mutableMesh().emitter();
         this.globalTransform = transform; //new Matrix4f(new Matrix3f(transform));
         this.sprite = sprite;
         inner.spriteBake(sprite, MutableQuadView.BAKE_LOCK_UV);
@@ -50,7 +48,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
     @Override
     public BakedQuadBuilder setTint(int tintIndex) {
-        inner.colorIndex(tintIndex);
+        inner.color(tintIndex);
         return this;
     }
 
@@ -145,13 +143,13 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
     @Override
     public BakedQuadBuilderImpl lightEmission(int lightLevel) {
-        inner.material(RendererAccess.INSTANCE.getRenderer().materialFinder().emissive(true).find());
+        inner.material(Renderer.get().materialFinder().emissive(true).find());
         return this;
     }
 
     @Override
     public BakedQuadBuilder fromVanilla(BakedQuad quad) {
-        inner.fromVanilla(quad, RendererAccess.INSTANCE.getRenderer().materialFinder().find(), null);
+        inner.fromVanilla(quad, Renderer.get().materialFinder().find(), null);
         return null;
     }
 
