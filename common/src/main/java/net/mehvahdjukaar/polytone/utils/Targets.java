@@ -8,7 +8,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.*;
 import java.util.regex.Pattern;

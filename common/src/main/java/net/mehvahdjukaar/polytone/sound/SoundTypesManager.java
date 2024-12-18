@@ -65,6 +65,13 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                 }
             }
         }
+
+        for (var e : customSoundEvents.getEntries()) {
+            var id = e.getKey();
+            var sound = e.getValue();
+            PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id, sound);
+        }
+        
         // sound types
 
         for (var j : soundJsons.entrySet()) {
@@ -80,11 +87,6 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
 
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-        for (var e : customSoundEvents.getEntries()) {
-            var id = e.getKey();
-            var sound = e.getValue();
-            PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id, sound);
-        }
 
         if (!customSoundEvents.isEmpty()) {
             Polytone.LOGGER.info("Registered {} custom Sound Events from Resource Packs: {}", customSoundEvents.size(), customSoundEvents + ". Remember to add them to sounds.json!");

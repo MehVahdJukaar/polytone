@@ -129,7 +129,7 @@ public class Polytone {
 
     }
 
-    public static void onLevelUnload() {
+    public static void onLoggedOut() {
         COMPOUND_RELOADER.resetWithLevel(true);
         BiomeKeysCache.clear();
     }

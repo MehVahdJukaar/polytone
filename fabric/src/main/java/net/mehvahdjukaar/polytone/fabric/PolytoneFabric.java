@@ -1,9 +1,11 @@
 package net.mehvahdjukaar.polytone.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
@@ -24,6 +26,9 @@ public class PolytoneFabric implements ClientModInitializer {
         boolean iris = FabricLoader.getInstance().isModLoaded("iris") || FabricLoader.getInstance().isModLoaded("oculus");
         Polytone.init(instance.isDevelopmentEnvironment(), false, iris);
 
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            Polytone.onLoggedOut();
+        });
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
             if (client) {
                 Polytone.onTagsReceived(registries);
