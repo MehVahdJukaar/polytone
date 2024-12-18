@@ -9,7 +9,6 @@
     "AbstractContainerMenuMixin",
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
-    "AnimationMetadataSectionSerializerMixin",
     "ClientLevelMixin",
     "ColorResolverMixin",
     "DimensionSpecialEffectsMixin",

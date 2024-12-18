@@ -71,7 +71,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
         for (var c : children) {
             try {
-                c.applyWithLevel(HolderLookup.Provider, firstLogin);
+                c.applyWithLevel(registryAccess, firstLogin);
             } catch (Exception e) {
                 String message = c + " failed to apply some resources";
                 Polytone.logException(e, message);

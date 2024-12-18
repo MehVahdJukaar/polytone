@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.texture;
 
 import com.google.gson.JsonElement;
+import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +19,8 @@ public interface DayTimeTexture {
 
     enum Mode implements StringRepresentable {
         VANILLA, GAME_TIME, DAY_TIME, WEATHER;
+
+        public static final Codec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
 
         @Override
         public String getSerializedName() {

@@ -191,7 +191,7 @@ public class Colormap implements IColorGetter, ColorResolver {
 
     //for items
     @Override
-    public int getColor(ItemStack itemStack, int i) {
+    public int getItemColor(ItemStack itemStack, int i) {
         BlockPos pos = null;
         Biome biome = null;
         if (usesPos) {

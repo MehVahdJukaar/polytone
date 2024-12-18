@@ -59,7 +59,7 @@ public class ParticleModifiersManager extends JsonPartialReloader {
     private void addModifier(ResourceLocation pathId, ParticleModifier mod) {
         for (var particle : mod.targets().compute(pathId, BuiltInRegistries.PARTICLE_TYPE)) {
             //can have multiple
-            particleModifiers.put(p.value(), mod);
+            particleModifiers.put(particle.value(), mod);
         }
     }
 

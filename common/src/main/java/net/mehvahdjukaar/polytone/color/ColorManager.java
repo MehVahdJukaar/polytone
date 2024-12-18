@@ -45,8 +45,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private final Map<DyeColor, Integer> vanillaDiffuseColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaTextColors = new EnumMap<>(DyeColor.class);
     private final Map<ChatFormatting, Integer> vanillaChatFormatting = new EnumMap<>(ChatFormatting.class);
-    private final Object2IntMap<SpawnEggItem> vanillaEggsBackgrounds = new Object2IntOpenHashMap<>();
-    private final Object2IntMap<SpawnEggItem> vanillaEggsHighlight = new Object2IntOpenHashMap<>();
     private final Object2IntMap<MobEffect> vanillaEffectColors = new Object2IntOpenHashMap<>();
     private final EnumMap<BorderStatus, Integer> vanillaBorderStatus = new EnumMap<>(BorderStatus.class);
 
@@ -165,38 +163,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             } catch (Exception ignored) {
                 Polytone.LOGGER.warn("Unknown BorderStatus with name {}", name);
             }
-        } else if (is(prop, 0, "egg")) {
-            if (prop.length > 2) {
-                ResourceLocation id = ResourceLocation.parse(prop[2].replace("\\", ""));
-                Item item = BuiltInRegistries.ITEM.getOptional(id).orElse(null);
-                if (item == null) {
-                    var entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
-                    if (entity != null) {
-                        item = SpawnEggItem.byId(entity);
-                    }
-                }
-                if (item == null) {
-                    item = BuiltInRegistries.ITEM.getOptional(id.withSuffix("_spawn_egg")).orElse(null);
-                }
-                if (item instanceof SpawnEggItem spawnEggItem) {
-                    int col = parseHex(obj);
-
-                    if (is(prop, 1, "shell")) {
-                        if (!vanillaEggsBackgrounds.containsKey(spawnEggItem)) {
-                            vanillaEggsBackgrounds.put(spawnEggItem, spawnEggItem.backgroundColor);
-                        }
-                        spawnEggItem.backgroundColor = col;
-                    } else if (is(prop, 1, "spots")) {
-                        if (!vanillaEggsHighlight.containsKey(spawnEggItem)) {
-                            vanillaEggsHighlight.put(spawnEggItem, spawnEggItem.highlightColor);
-                        }
-                        spawnEggItem.highlightColor = col;
-                    }
-                } else {
-                    Polytone.LOGGER.warn("Unknown or invalid Spawn Egg Item with name {}", id);
-                }
-            }
-        } else if (is(prop, 0, "potion") || is(prop, 0, "effect")) {
+        }
+        else if (is(prop, 0, "potion") || is(prop, 0, "effect")) {
             ResourceLocation id = ResourceLocation.parse(prop[1].replace("\\", ""));
             int col = parseHex(obj);
             if (id.getPath().equals("empty")) {
@@ -355,20 +323,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             TextColor tc = TextColor.fromLegacyFormat(text);
             tc.value = e.getValue();
         }
-
-        //spawn eggs
-
-        for (var e : vanillaEggsBackgrounds.entrySet()) {
-            SpawnEggItem item = e.getKey();
-            item.backgroundColor = e.getValue();
-        }
-        vanillaEggsBackgrounds.clear();
-
-        for (var e : vanillaEggsHighlight.entrySet()) {
-            SpawnEggItem item = e.getKey();
-            item.highlightColor = e.getValue();
-        }
-        vanillaEggsHighlight.clear();
 
         RedStoneWireBlock.COLORS = Arrays.copyOf(originalRedstoneWireColors, originalRedstoneWireColors.length);
         DustParticleOptions.REDSTONE_PARTICLE_COLOR = DEFAULT_COLOR;//default

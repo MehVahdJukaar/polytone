@@ -10,6 +10,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.*;
 import net.minecraft.world.level.block.Blocks;
@@ -27,7 +28,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Optional<Holder<SoundEvent>> ambientLoopSoundEvent,
                                   Optional<AmbientMoodSettings> ambientMoodSettings,
                                   Optional<AmbientAdditionsSettings> ambientAdditionsSettings,
-                                  Optional<Music> backgroundMusic,
+                                  Optional<SimpleWeightedRandomList<Music>> backgroundMusic,
                                   Optional<FogParam> fogStart, Optional<FogParam> fogEnd,
                                   Targets targets) {
 
@@ -43,7 +44,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             SoundEvent.CODEC.optionalFieldOf("ambient_sound").forGetter(BiomeEffectModifier::ambientLoopSoundEvent),
             AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
             AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
-            Music.CODEC.optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
+            SimpleWeightedRandomList.wrappedCodecAllowingEmpty(Music.CODEC).optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
             AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start").forGetter(BiomeEffectModifier::fogStart),
             AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end").forGetter(BiomeEffectModifier::fogEnd),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
@@ -127,7 +128,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         }
         newAdditions.ifPresent(builder::ambientAdditionsSound);
 
-        Optional<Music> newMusic = effects.getBackgroundMusic();
+        Optional<SimpleWeightedRandomList<Music>> newMusic = effects.getBackgroundMusic();
         if (backgroundMusic.isPresent()) {
             newMusic = backgroundMusic;
         }

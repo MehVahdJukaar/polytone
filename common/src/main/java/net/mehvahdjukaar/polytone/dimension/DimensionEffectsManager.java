@@ -17,11 +17,9 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.CubicSampler;
@@ -99,7 +97,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             }
             parsedModifiers.put(id, modifier);
         }
-        Registry<DimensionType> reg = access.registryOrThrow(Registries.DIMENSION_TYPE);
+        var reg = access.lookupOrThrow(Registries.DIMENSION_TYPE);
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
@@ -168,7 +166,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         }
     }
 
-    private void addModifier(ResourceLocation fileId, DimensionEffectsModifier mod, Registry<DimensionType> reg) {
+    private void addModifier(ResourceLocation fileId, DimensionEffectsModifier mod, HolderLookup.RegistryLookup<DimensionType> reg) {
         for (var h : mod.targets().compute(fileId, reg)) {
             effectsToApply.merge(h.unwrapKey().get().location(), mod, DimensionEffectsModifier::merge);
         }
@@ -289,10 +287,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private static float[] lastSunset = null;
 
     @Nullable
-    public int modifySunsetColor(int old) {
+    public Integer modifySunsetColor(int old) {
         Colormap colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
-        if (colormap == null) return 0;
-        float oldAlpha = ARGB.from8BitChannel(ARGB.alpha(old));
+        if (colormap == null) return null;
+        float oldAlpha = ARGB.alpha(old) / 255f;
         var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(),
                 ClientFrameTicker.getCameraBiome().value(), null);
 

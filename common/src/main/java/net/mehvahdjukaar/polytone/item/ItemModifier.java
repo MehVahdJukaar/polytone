@@ -88,7 +88,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
 
     @Nullable
     public Integer getBarColor(ItemStack itemStack) {
-        return barColor.map(c -> c.getColor(itemStack, 0)).orElse(null);
+        return barColor.map(c -> c.getItemColor(itemStack, 0)).orElse(null);
     }
 
     public IColorGetter getBarColor() {

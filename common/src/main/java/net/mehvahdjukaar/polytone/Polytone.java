@@ -117,7 +117,7 @@ public class Polytone {
 
     public static void onTagsReceived(HolderLookup.Provider registryAccess) {
         try {
-            COMPOUND_RELOADER.applyWithLevel(HolderLookup.Provider, true);
+            COMPOUND_RELOADER.applyWithLevel(registryAccess, true);
             BiomeKeysCache.clear();
         } catch (RuntimeException e) {
             Polytone.LOGGER.error("Failed to apply some Polytone modifiers on world load", e);

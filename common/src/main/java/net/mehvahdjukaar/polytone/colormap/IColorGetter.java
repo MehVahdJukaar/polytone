@@ -19,7 +19,7 @@ public interface IColorGetter extends BlockColor, BarColor {
         }
 
         @Override
-        public int getColor(ItemStack itemStack, int i) {
+        public int getItemColor(ItemStack itemStack, int i) {
             Minecraft mc = Minecraft.getInstance();
             Level world = mc.level;
             if (world == null) return -1;
@@ -32,12 +32,12 @@ public interface IColorGetter extends BlockColor, BarColor {
     record OfItem(BarColor ic) implements IColorGetter {
         @Override
         public int getColor(BlockState state, BlockAndTintGetter reader, BlockPos pos, int tintIndex) {
-            return ic.getColor(ItemStack.EMPTY, tintIndex);
+            return ic.getItemColor(ItemStack.EMPTY, tintIndex);
         }
 
         @Override
-        public int getColor(ItemStack itemStack, int i) {
-            return ic.getColor(itemStack, i);
+        public int getItemColor(ItemStack itemStack, int i) {
+            return ic.getItemColor(itemStack, i);
         }
     }
 }

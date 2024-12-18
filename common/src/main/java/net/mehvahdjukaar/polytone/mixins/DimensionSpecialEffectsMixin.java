@@ -14,7 +14,7 @@ public class DimensionSpecialEffectsMixin {
     private int polytone$modifySunsetColor(int original) {
         if (original == 0) return 0;
         var c = Polytone.DIMENSION_MODIFIERS.modifySunsetColor(original);
-        if (c != 0) {
+        if (c != null) {
             return c;
         }
         return original;

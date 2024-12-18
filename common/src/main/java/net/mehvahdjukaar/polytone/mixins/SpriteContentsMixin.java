@@ -17,9 +17,9 @@ public class SpriteContentsMixin {
                                                                            @Local(argsOnly = true) AnimationMetadataSection metadata) {
         if(original != null) {
             ((DayTimeTexture) original).polytone$setMode(
-                    ((DayTimeTexture) metadata).polytone$getMode());
+                    ((DayTimeTexture)(Object) metadata).polytone$getMode());
             ((DayTimeTexture) original).polytone$setTimeCycleDuration(
-                    ((DayTimeTexture) metadata).polytone$getTimeCycleDuration());
+                    ((DayTimeTexture)(Object) metadata).polytone$getTimeCycleDuration());
         }
         return original;
     }

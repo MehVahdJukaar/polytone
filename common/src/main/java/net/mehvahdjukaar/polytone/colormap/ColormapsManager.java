@@ -30,7 +30,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
             l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor());
 
     public static final IColorGetter FOLIAGE_COLOR = new IColorGetter.OfBlock((s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor());
+            l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.FOLIAGE_DEFAULT);
 
     public static final IColorGetter WATER_COLOR = new IColorGetter.OfBlock((s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000);

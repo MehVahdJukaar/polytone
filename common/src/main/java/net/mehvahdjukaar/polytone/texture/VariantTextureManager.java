@@ -63,7 +63,7 @@ public class VariantTextureManager extends JsonPartialReloader {
         for (var b : mod.targets().compute(pathId, BuiltInRegistries.BLOCK)) {
             var old = blocksWithVariants.put(b.value(), mod);
             if (old != null) {
-                Polytone.LOGGER.warn("Found 2 Variant Textures jsons with same targets ({}). Overriding", block);
+                Polytone.LOGGER.warn("Found 2 Variant Textures jsons with same targets ({}). Overriding", pathId);
             }
         }
     }

@@ -48,7 +48,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         if (modifier != null) {
             var of = modifier.offsetType();
             if (of.isPresent()) {
-                return of.get().evaluate(state, blockGetter, pos);
+                return of.get().evaluate(state, pos);
             }
         }
         return null;
