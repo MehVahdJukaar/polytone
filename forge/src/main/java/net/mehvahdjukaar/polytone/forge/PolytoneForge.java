@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec2;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -24,7 +25,6 @@ import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -64,7 +64,7 @@ public class PolytoneForge {
 
     @SubscribeEvent
     public void onTick(TickEvent.LevelTickEvent event) {
-        if(event.phase == TickEvent.Phase.START) {
+        if (event.phase == TickEvent.Phase.START) {
             ClientFrameTicker.onTick(event.level);
         }
     }
@@ -112,10 +112,9 @@ public class PolytoneForge {
     }
 
     @SubscribeEvent
-    public void onLevelUnload(LevelEvent.Unload event) {
-        Polytone.onLevelUnload();
+    public void onLevelUnload(ClientPlayerNetworkEvent.LoggingOut event) {
+        Polytone.onLoggedOut();
     }
-
 
     public void modifyCreativeTabs(BuildCreativeModeTabContentsEvent event) {
         Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(event));
