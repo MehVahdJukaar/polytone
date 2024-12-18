@@ -6,11 +6,12 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
+import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
 import net.minecraft.core.BlockPos;
-import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import org.jetbrains.annotations.NotNull;
 
-record LightmapContextExpression(Expression expression, String unparsed,
+record LightmapContextExpression(ConcurrentExpression expression, String unparsed,
                                  boolean usesBiome) implements ILightmapNumberProvider {
 
     public static final Codec<LightmapContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
@@ -31,12 +32,17 @@ record LightmapContextExpression(Expression expression, String unparsed,
     private static final String DOWNFALL = "DOWNFALL";
 
     public static LightmapContextExpression create(String s) {
-        return new LightmapContextExpression(new ExpressionBuilder(ExpressionUtils.removeHex(s))
-                .variables(TIME, RAIN, THUNDER, DOWNFALL, TEMPERATURE)
-                .functions(ExpressionUtils.defFunc())
-                .operator(ExpressionUtils.defOp())
-                .build(), s,
-                s.contains(TEMPERATURE) || s.contains(DOWNFALL));
+        return new LightmapContextExpression(createExpression(s),
+                s, s.contains(TEMPERATURE) || s.contains(DOWNFALL));
+    }
+
+    private static @NotNull ConcurrentExpression createExpression(String s) {
+        return ConcurrentExpression.of(
+                new ExpressionBuilder(ExpressionUtils.removeHex(s))
+                        .variables(TIME, RAIN, THUNDER, DOWNFALL, TEMPERATURE)
+                        .functions(ExpressionUtils.defFunc())
+                        .operator(ExpressionUtils.defOp())
+        );
     }
 
     @Override

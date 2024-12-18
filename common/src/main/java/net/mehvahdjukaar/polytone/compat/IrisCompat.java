@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone;
+package net.mehvahdjukaar.polytone.compat;
 
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;

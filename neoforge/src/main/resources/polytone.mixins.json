@@ -16,6 +16,7 @@
     "IClientFluidTypeExtensionsMixin",
     "InventoryScreenMixin",
     "ModelBlockRendererMixin",
+    "ModelRendererMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
     "ParticleEngineAccessor"

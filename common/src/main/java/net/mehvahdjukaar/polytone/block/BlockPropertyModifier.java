@@ -106,7 +106,7 @@ public record BlockPropertyModifier(
             block.soundType = soundType.get();
         }
 
-        /*
+
         BlockBehaviour.OffsetFunction oldOffsetType = null;
         boolean hasOffset = false;
         if (offsetType.isPresent()) {
@@ -117,7 +117,7 @@ public record BlockPropertyModifier(
             }
         }
         if (hasOffset) block.dynamicShape = true;
-         */
+
 
         Function<BlockState, MapColor> oldMapColor = null;
         if (mapColor.isPresent()) {
@@ -194,7 +194,7 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),
                 Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
-                List.of(), List.of(), Optional.empty(),
+                List.of(), List.of(),  Optional.ofNullable(oldOffsetType),
                 Optional.ofNullable(oldType),
                 false, Targets.EMPTY, false);
     }
