@@ -121,8 +121,6 @@ accessible method net/minecraft/client/renderer/LightTexture getDarknessGamma (F
 accessible method net/minecraft/client/renderer/LightTexture calculateDarknessScale (Lnet/minecraft/world/entity/LivingEntity;FF)F
 
 
-accessible field net/minecraft/client/resources/model/ModelBakery ITEM_MODEL_GENERATOR Lnet/minecraft/client/renderer/block/model/ItemModelGenerator;
-
 
 #ok
 
