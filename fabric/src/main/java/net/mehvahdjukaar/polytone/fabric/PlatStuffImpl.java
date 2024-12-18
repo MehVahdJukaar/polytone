@@ -308,5 +308,10 @@ public class PlatStuffImpl {
         });
     }
 
+    public static String getVersion() {
+        return FabricLoader.getInstance().getModContainer(Polytone.MOD_ID).get()
+                .getMetadata().getVersion().getFriendlyString();
+    }
+
 
 }

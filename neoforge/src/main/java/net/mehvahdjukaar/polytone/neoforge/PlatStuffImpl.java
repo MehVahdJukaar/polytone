@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.neoforge;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.neoforge.*;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.utils.Targets;
@@ -275,6 +276,11 @@ public class PlatStuffImpl {
             eventListener.accept(id -> event.register(id.id()));
         };
         PolytoneForge.bus.addListener(eventConsumer);
+    }
+
+    public static String getVersion() {
+        return ModList.get().getModContainerById(Polytone.MOD_ID)
+                .map(c -> c.getModInfo().getVersion().toString()).orElse("unknown");
     }
 
 }

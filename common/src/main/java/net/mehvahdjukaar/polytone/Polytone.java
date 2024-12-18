@@ -149,6 +149,7 @@ public class Polytone {
 
         // Write the exception to the new log file
         try (PrintWriter writer = new PrintWriter(new FileWriter(logFilePath, false))) {
+            writer.println("Polytone version: "+ PlatStuff.getVersion());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String timestamp = LocalDateTime.now().format(formatter);
             writer.println("[" + timestamp + "] " + message + ". Check lines below to see where the error was:");
