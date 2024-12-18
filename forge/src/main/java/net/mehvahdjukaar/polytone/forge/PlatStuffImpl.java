@@ -12,20 +12,13 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.core.Holder;
-import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -40,18 +33,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.ModLoader;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.fml.util.ObfuscationReflectionHelper;
-import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
-import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
-import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.common.CreativeModeTabRegistry;
-import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.DimensionSpecialEffectsManager;
 import net.minecraftforge.client.event.ModelEvent;
@@ -70,9 +51,7 @@ import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -105,7 +84,7 @@ public class PlatStuffImpl {
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         try {
-            return ((BlockColorsAccessor)colors).getBlockColors()
+            return ((BlockColorsAccessor) colors).getBlockColors()
                     .get(ForgeRegistries.BLOCKS.getDelegateOrThrow(block));
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -114,7 +93,7 @@ public class PlatStuffImpl {
 
     public static ItemColor getItemColor(ItemColors colors, Item block) {
         try {
-            return ((ItemColorsAccessor)colors).getItemColors()
+            return ((ItemColorsAccessor) colors).getItemColors()
                     .get(ForgeRegistries.ITEMS.getDelegateOrThrow(block));
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -295,12 +274,12 @@ public class PlatStuffImpl {
     }
 
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
-       return  ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).getProviders()
+        return ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).getProviders()
                 .get(BuiltInRegistries.PARTICLE_TYPE.getKey(type));
     }
 
 
-    public static RegistryAccess getServerRegistryAccess(){
+    public static RegistryAccess getServerRegistryAccess() {
         return ServerLifecycleHooks.getCurrentServer().registryAccess();
     }
 
