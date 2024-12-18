@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -103,8 +104,8 @@ public class FluidPropertiesManagerImpl {
         }
 
         @Override
-        public void renderOverlay(Minecraft mc, PoseStack poseStack) {
-            existingProperties.renderOverlay(mc, poseStack);
+        public void renderOverlay(Minecraft mc, PoseStack poseStack, MultiBufferSource buffers) {
+            existingProperties.renderOverlay(mc, poseStack,buffers);
         }
 
         @Override

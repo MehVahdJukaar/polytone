@@ -23,6 +23,7 @@ import java.util.Map;
 @Mixin(ModelBakery.class)
 public class ModelBakeryMixin {
 
+    /*
     @Shadow @Final private Map<ModelResourceLocation, UnbakedModel> topModels;
 
     @Shadow @Final private Map<ResourceLocation, UnbakedModel> unbakedModels;
@@ -39,5 +40,5 @@ public class ModelBakeryMixin {
                 this.topModels.put(new ModelResourceLocation(key, p), value);
             });
         }
-    }
+    }*/
 }

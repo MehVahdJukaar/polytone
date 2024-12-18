@@ -15,6 +15,7 @@
     "FogRendererMixin2",
     "GuiGraphicsMixin",
     "InventoryScreenMixin",
+    "ModelBlockRendererMixin",
     "ModelHackMixin",
     "ModelManagerAccessor",
     "ParticleEngineAccessor"

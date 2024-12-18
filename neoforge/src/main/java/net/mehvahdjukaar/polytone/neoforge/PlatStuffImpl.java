@@ -272,7 +272,7 @@ public class PlatStuffImpl {
 
     public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
         Consumer<ModelEvent.RegisterAdditional> eventConsumer = event -> {
-            eventListener.accept(event::register);
+            eventListener.accept(id -> event.register(id.id()));
         };
         PolytoneForge.bus.addListener(eventConsumer);
     }

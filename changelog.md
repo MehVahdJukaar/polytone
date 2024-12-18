@@ -1,10 +1,5 @@
-- big internal changes:
-- all polytone resources re now reloaded and unloaded on world load and unload
-- this means they can now all use tags and generally work nicely with the rest of the game
-- targeting can also use regex
-- particles will have their age variable set to lifetime (max life) every time they die for whichever reason
-- fixed custom creative tabs on neoforge (due to previous changes)
-- block offsets from block modifiers will exclusively affect the position of the rendered block, not its hitbox to avoid issues on server due to mismatched hitbox
-- this also means that it will likely not work anymore with sodium as it probably overrides any logic related to rendering
-- fixed variant textures game_time using day_time instead
-- with the recent changes polytone wont be able to alter anything outside of a world load, so no main menu stuff. RIP splash text colors for now
+- updated to 1.21.4
+- for obvious reasons CIM system has been cremoved
+- same for separate transforms model
+- same for variant block textures
+- this also means no more hackily setting block tint for optifine pack. Add tint index to your models if you want them colored!!

@@ -43,7 +43,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
 
     @Nullable
-    public Vec3 maybeModify(BlockState state, BlockGetter blockGetter, BlockPos pos) {
+    public Vec3 maybeModify(BlockState state, BlockPos pos) {
         BlockPropertyModifier modifier = modifiers.get(state.getBlock());
         if (modifier != null) {
             var of = modifier.offsetType();
