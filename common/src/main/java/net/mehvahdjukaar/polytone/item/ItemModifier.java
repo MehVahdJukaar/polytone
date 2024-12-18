@@ -8,13 +8,12 @@ import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.animation.AnimationChannel;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
@@ -34,7 +33,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Optional<Rarity> rarity,
                            List<Component> tooltips,
                            List<Pattern> removedTooltips,
-                           Set<ResourceLocation> explicitTargets) implements ITargetProvider {
+                           Targets targets) implements ITargetProvider {
 
     public static final Codec<ItemModifier> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             StrOpt.of(IndexCompoundColorGetter.SINGLE_OR_MULTIPLE, "colormap").forGetter(b -> (Optional<IColorGetter>) b.tintGetter),
@@ -45,20 +44,15 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(ItemModifier::targets)
     ).apply(instance, ItemModifier::new));
 
-    public record Partial(List<ItemModelOverride.Partial> customModels) {
-    }
-
-    public static final Codec<Partial> CODEC_ONLY_MODELS = RecordCodecBuilder.create(instance -> instance.group(
-            ItemModelOverride.CODEC_MODEL_ONLY.listOf().optionalFieldOf("custom_models", List.of()).forGetter(Partial::customModels)
-    ).apply(instance, Partial::new));
 
     public static ItemModifier ofItemColor(Colormap colormap) {
-        return new ItemModifier(Optional.of(colormap), Optional.empty(), Optional.empty(), List.of(), List.of(), java.util.Set.of());
+        return new ItemModifier(Optional.of(colormap), Optional.empty(), Optional.empty(), List.of(),
+                List.of(), Targets.EMPTY);
     }
 
     public static ItemModifier ofBarColor(Colormap colormap) {
         return new ItemModifier(Optional.empty(), Optional.of(colormap),
-                Optional.empty(), List.of(), List.of(), java.util.Set.of());
+                Optional.empty(), List.of(), List.of(), Targets.EMPTY);
     }
 
     public ItemModifier merge(ItemModifier other) {
@@ -68,7 +62,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 this.rarity.isPresent() ? this.rarity : other.rarity,
                 mergeList(this.tooltips, other.tooltips),
                 mergeList(this.removedTooltips, other.removedTooltips),
-                this.explicitTargets.merge(other.explicitTargets)
+                this.targets.merge(other.targets)
         );
     }
 

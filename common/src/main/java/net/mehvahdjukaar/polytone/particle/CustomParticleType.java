@@ -512,8 +512,8 @@ public class CustomParticleType implements CustomParticleFactory {
         }
     }
 
-    public static final Codec<ResourceLocation> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
-            ResourceLocation.CODEC.fieldOf("model").forGetter(e -> e)
+    public static final Codec<Optional<ResourceLocation>> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
+            ResourceLocation.CODEC.optionalFieldOf("model").forGetter(e -> e)
     ).apply(i, r -> r));
 }
 

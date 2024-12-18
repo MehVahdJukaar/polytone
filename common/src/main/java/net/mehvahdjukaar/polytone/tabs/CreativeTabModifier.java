@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.CodecUtil;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.RegistryAccess;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static net.mehvahdjukaar.polytone.tabs.ExtraItemCodecs.ITEM_OR_STACK;
 import static net.mehvahdjukaar.polytone.utils.ListUtils.mergeList;
 
 public record CreativeTabModifier(
@@ -44,7 +44,7 @@ public record CreativeTabModifier(
     );
 
     public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            StrOpt.of(ExtraItemCodecs.ITEM_OR_STACK, "icon").forGetter(CreativeTabModifier::icon),
+            StrOpt.of(CodecUtil.ITEM_OR_STACK, "icon").forGetter(CreativeTabModifier::icon),
             StrOpt.of(Codec.BOOL, "search_bar").forGetter(CreativeTabModifier::search), //unused
             StrOpt.of(Codec.INT, "search_bar_width").forGetter(CreativeTabModifier::searchWidth),
             StrOpt.of(Codec.BOOL, "can_scroll").forGetter(CreativeTabModifier::canScroll),

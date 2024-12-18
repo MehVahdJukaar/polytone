@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

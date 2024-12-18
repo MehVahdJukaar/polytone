@@ -4,15 +4,20 @@ import com.google.common.base.Stopwatch;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.particle.ParticleContextExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 // Needed to reload stuff in order but still off-thread when we can in prepare
 public class CompoundReloader extends SimplePreparableReloadListener<List<Object>> {
@@ -36,7 +41,12 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
     @Override
     protected void apply(List<Object> object, ResourceManager resourceManager, ProfilerFiller profiler) {
+        Level level = Minecraft.getInstance().level;
         // clear existing lazy holder sets
+
+        BlockContextExpression exp = new BlockContextExpression("noise(POS_X,POS_Z)");
+        Vec3 vec = new Vec3(3, 0, 1);
+        exp.getValue(vec,2);
 
         childrenResources.clear();
         childrenResources.addAll(object);
@@ -50,8 +60,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         Stopwatch stopwatch = Stopwatch.createStarted();
         if (!firstLogin) resetWithLevel(false);
 
-
-RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
+        RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
 
         for (int i = 0; i < childrenResources.size(); i++) {
             PartialReloader<?> c = children.get(i);

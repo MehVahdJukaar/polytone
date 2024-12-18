@@ -13,6 +13,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -82,21 +83,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             PlatStuff.registerDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, e.getKey(), e.getValue());
         }
 
-        if (!customTabs.isEmpty()) {
-            Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add items to them!");
-            PlatStuff.sortTabs();
-        }
-
-        lazyJsons.clear();
-        lazyJsons.putAll(resources.tabsModifiers);
-
-        //else apply as soon as we load a level
-    }
-
-    @Override
-    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-        var ops = RegistryOps.create(JsonOps.INSTANCE, access);
-        for (var j : lazyJsons.entrySet()) {
+        for (var j : resources.tabsModifiers.entrySet()) {
 
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
@@ -107,6 +94,16 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
             addModifier(id, modifier);
         }
+
+        if (!customTabs.isEmpty()) {
+            Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add items to them!");
+            PlatStuff.sortTabs();
+        }
+        //else apply as soon as we load a level
+    }
+
+    @Override
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
         if (!modifiers.isEmpty()) {
             needsRefresh.addAll(modifiers.keySet());
         }

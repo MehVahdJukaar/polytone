@@ -10,6 +10,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.Item;
 
 import java.util.HashMap;
@@ -25,22 +26,6 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
 
     public ItemModifiersManager() {
         super("item_modifiers", "item_properties");
-    }
-
-    // early reload to grab the extra models we need to add.
-    @Override
-    public void earlyProcess(ResourceManager resourceManager) {
-        var jsons = getJsonsInDirectories(resourceManager);
-        for (var e : jsons.entrySet()) {
-            var json = e.getValue();
-            ResourceLocation id = e.getKey();
-            var partial = ItemModifier.CODEC_ONLY_MODELS.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Item Modifier with json id " + id + "\n error: " + errorMsg))
-                    .getFirst();
-            for (var m : partial.customModels()) {
-                Polytone.addCustomModel(m.model());
-            }
-        }
     }
 
     @Override
@@ -108,8 +93,6 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
         for (var item : mod.targets().compute(id, BuiltInRegistries.ITEM)) {
             var i = item.value();
             modifiers.merge(i, mod, ItemModifier::merge);
-
-            Polytone.ITEM_MODELS.addModelFromModifier(i, mod.customModels());
         }
     }
 

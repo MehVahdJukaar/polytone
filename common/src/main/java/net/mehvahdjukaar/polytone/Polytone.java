@@ -20,8 +20,6 @@ import net.mehvahdjukaar.polytone.tabs.CreativeTabsModifiersManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
-import net.mehvahdjukaar.polytone.utils.LazyHolderSet;
-import net.mehvahdjukaar.polytone.utils.GenericDirectorySpriteSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
@@ -72,7 +70,8 @@ public class Polytone {
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
 
-    private static final Set<ModelResourceLocation> EXTRA_MODELS = new HashSet<>();
+    private static final Set<ResourceLocation> EXTRA_MODELS = new HashSet<>();
+    private static CompoundReloader COMPOUND_RELOADER;
 
     public static boolean iMessedUp = false;
 
@@ -82,12 +81,13 @@ public class Polytone {
 
     //todo: cutout not working. splash color not working, 1.20 color accessor crash
     public static void init(boolean isSodiumOn, boolean devEnv, boolean forge) {
-        PlatStuff.addClientReloadListener(() -> new CompoundReloader(
-                        NOISES,SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
-                        BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS,
-                        BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
-                        PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,
-                        CREATIVE_TABS_MODIFIERS),
+        COMPOUND_RELOADER = new CompoundReloader(
+                NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
+                BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS,
+                BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
+                PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,
+                CREATIVE_TABS_MODIFIERS);
+        PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         sodiumOn = isSodiumOn;
         isDevEnv = devEnv;
@@ -177,7 +177,7 @@ public class Polytone {
                 .findFirst();
     }
 
-    public static void addCustomModel(ModelResourceLocation model) {
+    public static void addCustomModel(ResourceLocation model) {
         EXTRA_MODELS.add(model);
     }
 }

@@ -171,15 +171,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    public void apply() {
-        Level level = Minecraft.getInstance().level;
-        if (level != null) {
-            doApply(level.registryAccess(), false);
-        }
-        //else apply as soon as we load a level
-    }
-
-    public void doApply(RegistryAccess registryAccess, boolean isLogIn) {
+    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
         if (!isLogIn && !needsDynamicApplication) return;
         needsDynamicApplication = false;
 
@@ -187,7 +179,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             v.getValue().applyInplace(v.getKey());
         }
 
-        Registry<DimensionType> dimReg = registryAccess.registryOrThrow(Registries.DIMENSION_TYPE);
+        Registry<DimensionType> dimReg = access.registryOrThrow(Registries.DIMENSION_TYPE);
 
         for (var v : effectsToApply.entrySet()) {
             ResourceLocation dimensionId = v.getKey();

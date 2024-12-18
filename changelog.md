@@ -8,3 +8,4 @@
 - this also means that it will likely not work anymore with sodium as it probably overrides any logic related to rendering
 - fixed variant textures game_time using day_time instead
 - with the recent changes polytone wont be able to alter anything outside of a world load, so no main menu stuff. RIP splash text colors for now
+- fixed a crash on fabric

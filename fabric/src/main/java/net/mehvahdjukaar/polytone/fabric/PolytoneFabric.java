@@ -13,9 +13,11 @@ import net.fabricmc.loader.impl.lib.tinyremapper.IMappingProvider;
 import net.fabricmc.loader.impl.lib.tinyremapper.TinyRemapper;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
+import net.mehvahdjukaar.polytone.mixins.fabric.ItemColorsAccessor;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
 
 public class PolytoneFabric implements ClientModInitializer  {

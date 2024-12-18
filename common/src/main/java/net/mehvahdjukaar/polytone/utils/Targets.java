@@ -6,9 +6,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -30,7 +31,8 @@ public record Targets(List<Entry> entries) {
     public <T> Collection<Holder<T>> compute(ResourceLocation fileId, Registry<T> registry) {
 
         Set<Holder<T>> set = new HashSet<>();
-        Optional<Holder.Reference<T>> implicitTarget = registry.getHolder(fileId);
+        ResourceKey<T> key = ResourceKey.create(registry.key(), fileId);
+        Optional<Holder.Reference<T>> implicitTarget = registry.getHolder(key);
         if (!entries.isEmpty()) {
             if (implicitTarget.isPresent()) {
                 Polytone.LOGGER.warn("Found Polytone file with explicit Targets ({}) also having a valid IMPLICIT (file path) Target ({})." +
@@ -71,13 +73,13 @@ public record Targets(List<Entry> entries) {
         <T> Iterable<? extends Holder<T>> get(Registry<T> reg);
     }
 
-    private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = Codec.withAlternative(
+    private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = CodecUtil.withAlternative(
             (Codec<Entry>) (Object) SimpleLocation.SIMPLE_CODEC,
-            Codec.withAlternative((Codec<Entry>) (Object) TagLocation.TAG_CODEC, RegexLocation.REGEX_CODEC));
+            CodecUtil.withAlternative((Codec<Entry>) (Object) TagLocation.TAG_CODEC, RegexLocation.REGEX_CODEC));
 
-    private static final Codec<Entry> ENTRY_CODEC = Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC);
+    private static final Codec<Entry> ENTRY_CODEC = CodecUtil.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC);
 
-    public static final Codec<Targets> CODEC = Codec.withAlternative(ENTRY_CODEC.xmap(List::of, List::getFirst),
+    public static final Codec<Targets> CODEC = CodecUtil.withAlternative(ENTRY_CODEC.xmap(List::of, l->l.get(0)),
             ENTRY_CODEC.listOf()).xmap(Targets::new, t -> t.entries);
 
     private record OptionalEntry(Entry entry, boolean required) implements Entry {
@@ -111,7 +113,8 @@ public record Targets(List<Entry> entries) {
 
         @Override
         public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
-            return List.of(reg.getHolder(id).orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
+            ResourceKey<T> key = ResourceKey.create(reg.key(), id);
+            return List.of(reg.getHolder(key).orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
         }
     }
 

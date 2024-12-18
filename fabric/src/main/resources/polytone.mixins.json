@@ -8,6 +8,7 @@
   "client": [
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
+    "ItemColorsAccessor",
     "BlockModelDeserializerMixin",
     "CreativeTabAccessor",
     "FabricItemGroupEntriesAccessor",

@@ -6,15 +6,14 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -23,9 +22,11 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class CustomParticlesManager extends JsonPartialReloader {
 
@@ -49,7 +50,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
             var json = j.getValue();
             var id = j.getKey();
             var model = CustomParticleType.CUSTOM_MODEL_ONLY_CODEC.decode(JsonOps.INSTANCE, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
+                    .getOrThrow(false, errorMsg ->
+                            Polytone.LOGGER.error("Could not decode Custom Particle with json id {}\n error: {}", id, errorMsg))
                     .getFirst();
             model.ifPresent(Polytone::addCustomModel);
         }
@@ -144,7 +146,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
         // register custom particle types. needs to be here
         for (var c : customParticleFactories.getEntries()) {
             var factory = c.getValue();
-            var id  = c.getKey();
+            var id = c.getKey();
             SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
             PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
             particleEngine.register(type, factory);

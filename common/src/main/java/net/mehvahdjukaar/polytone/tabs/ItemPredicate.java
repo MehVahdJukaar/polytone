@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.tabs;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.utils.CodecUtil;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -131,7 +132,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
     }
 
     Codec<ItemStackMatch> ITEMSTACK_MATCH = TYPES.register("itemstack_match",
-            ExtraItemCodecs.ITEMSTACK.fieldOf("itemstack")
+            CodecUtil.ITEMSTACK.fieldOf("itemstack")
                     .xmap(ItemStackMatch::new, ItemStackMatch::items).codec());
 
     record ItemStackMatch(ItemStack items) implements ItemPredicate {
