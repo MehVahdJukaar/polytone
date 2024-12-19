@@ -1,5 +1,1 @@
-- updated to 1.21.4
-- for obvious reasons CIM system has been cremoved
-- same for separate transforms model
-- same for variant block textures
-- this also means no more hackily setting block tint for optifine pack. Add tint index to your models if you want them colored!!
+- fixed custom sounds loading too later, after block modifiers
