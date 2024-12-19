@@ -36,6 +36,7 @@ dependencies {
 
     modImplementation ("curse.maven:continuity-531351:4779473")
     modImplementation ("curse.maven:embeddium-908741:5522040")
+    modRuntimeOnly("curse.maven:spark-361579:4738953")
 
 }
 
