@@ -1,5 +1,1 @@
-- vastly improved expressions performance. They are now capable of correctly working offthread without the need of being copied every time they are queried
-- fixed a crash on neoforge
-- fixed an issue on fabric when logging out where pack was not being cleared
-- fixed opposite issue on neo, clearing thepack too much
-- fixed recursive particles and custom sounds not being registered properly
+- fixed custom sounds loading too later, after block modifiers
