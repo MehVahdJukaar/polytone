@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.particle;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
+import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
@@ -98,9 +98,15 @@ public class CustomParticlesManager extends JsonPartialReloader {
             try {
                 var json = j.getValue();
                 var id = j.getKey();
-                CustomParticleFactory factory = CUSTOM_OR_SEMI_CUSTOM_CODEC.decode(ops, json)
-                        .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
-                        .getFirst();
+                CustomParticleFactory factory;
+                if (json instanceof JsonObject jo && jo.has("copy_from")) {
+                    factory = SemiCustomParticleType.CODEC.decode(ops, json)
+                            .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Semi Custom Particle Type with json id {} - error: {}",
+                                    id, errorMsg)).getFirst();
+                } else {
+                    factory = CustomParticleType.CODEC.decode(ops, json)
+                            .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
+                        .getFirst();}
                 factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
                 if (factory instanceof CustomParticleType c) {
@@ -130,6 +136,15 @@ public class CustomParticlesManager extends JsonPartialReloader {
             }
         }
 
+        // register custom particle types. needs to be here
+        for (var c : customParticleFactories.getEntries()) {
+            var factory = c.getValue();
+            var id = c.getKey();
+            SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
+            PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
+            particleEngine.register(type, factory);
+        }
+
         //initialize recursive stuff
         for (var c : customTypes) {
             for (var d : c.lazyParticles) {
@@ -140,15 +155,6 @@ public class CustomParticlesManager extends JsonPartialReloader {
                 }
             }
             c.lazyParticles = null;
-        }
-
-        // register custom particle types. needs to be here
-        for (var c : customParticleFactories.getEntries()) {
-            var factory = c.getValue();
-            var id  = c.getKey();
-            SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
-            PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
-            particleEngine.register(type, factory);
         }
     }
 
