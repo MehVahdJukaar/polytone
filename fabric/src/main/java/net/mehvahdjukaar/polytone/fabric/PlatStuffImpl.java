@@ -326,4 +326,15 @@ public class PlatStuffImpl {
         return ((ModelManagerAccessor) mm).getBakedRegistry().getOrDefault(modelLocation, mm.getMissingModel());
     }
 
+    public static <T extends SoundEvent> T registerSoundEvent(ResourceLocation id, T sound) {
+        throw new AssertionError();
+    }
+
+    public static void unregisterSoundEvent(ResourceLocation id) {
+    }
+
+    public static void unregisterParticleType(ResourceLocation id) {
+    }
+
+
 }

@@ -6,15 +6,11 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.AshParticle;
-import net.minecraft.client.particle.CherryParticle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
@@ -22,12 +18,12 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -35,7 +31,6 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -92,7 +87,13 @@ public class PlatStuff {
 
     @ExpectPlatform
     @Contract
-    public static SoundEvent registerSoundEvent(ResourceLocation id) {
+    public static <T extends SoundEvent> T registerSoundEvent(ResourceLocation id, T sound) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    @Contract
+    public static <T extends ParticleType<?>> T registerParticleType(ResourceLocation id, T sound) {
         throw new AssertionError();
     }
 
@@ -174,24 +175,55 @@ public class PlatStuff {
 
 
     public static <T> T registerDynamic(Registry<T> reg, ResourceLocation id, T o) {
+        if (Polytone.isForge) {
+            if (reg.key().equals(Registries.SOUND_EVENT) && o instanceof SoundEvent s) {
+                registerSoundEvent(id, s);
+                return o;
+            } else if (reg.key().equals(Registries.PARTICLE_TYPE) && o instanceof ParticleType<?> t) {
+                registerParticleType(id, t);
+                return o;
+            }
+        }
+        registerFabric(reg, id, o);
+
+        return o;
+    }
+
+    private static <T> void registerFabric(Registry<T> reg, ResourceLocation id, T o) {
         if (reg.containsKey(id)) {
             throw new RuntimeException("Tried to register object with id " + id + " to registry " + reg + " but it already exists");
         }
         ((MappedRegistry) reg).frozen = false;
         Registry.register(reg, id, o);
         reg.freeze();
-
-        return o;
     }
 
     public static <T> void unregisterDynamic(Registry<T> reg, ResourceLocation id) {
-        ((MappedRegistry) reg).frozen = false;
+        if (Polytone.isForge) {
+            if (reg.key().equals(Registries.SOUND_EVENT)) {
+                unregisterSoundEvent(id);
+                return;
+            } else if (reg.key().equals(Registries.PARTICLE_TYPE)) {
+                unregisterParticleType(id);
+                return;
+            }
+        }
         unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
-        reg.freeze();
+    }
 
+    @ExpectPlatform
+    public static void unregisterParticleType(ResourceLocation id) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    private static void unregisterSoundEvent(ResourceLocation id) {
+        throw new AssertionError();
     }
 
     private static <T> Holder.Reference<T> unRegister(MappedRegistry<T> reg, ResourceKey<T> key) {
+
+        reg.frozen = false;
 
         Holder.Reference<T> reference = reg.byKey.remove(key);
 
@@ -205,6 +237,8 @@ public class PlatStuff {
         } else {
             int aa = 1;
         }
+        reg.freeze();
+
         return reference;
     }
 

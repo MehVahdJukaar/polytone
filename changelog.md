@@ -1,4 +1,3 @@
-- fixed copy_from particle types not being parsed as such
-- fixed recursive particles not working
-
-((DAY_TIME%480000)/480000)-0.025"
+- fixed sound events and particle types not registering /undregistering correctly on forge
+- fixed an issue with colormap rounding errors in its samplers
+- added a "rounds" parameter in colormap to turn of rounding and use flooring instead

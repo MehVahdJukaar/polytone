@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.forge;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import cpw.mods.modlauncher.api.INameMappingService;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -28,6 +30,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
@@ -46,12 +49,12 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -100,15 +103,108 @@ public class PlatStuffImpl {
         }
     }
 
-    public static SoundEvent registerSoundEvent(ResourceLocation id) {
-        SoundEvent variableRangeEvent = SoundEvent.createVariableRangeEvent(id);
+
+    public static <T extends ParticleType<?>> T  registerParticleType(ResourceLocation id, T sound) {
+        ForgeRegistry<ParticleType<?>> reg = (ForgeRegistry<ParticleType<?>>) ForgeRegistries.PARTICLE_TYPES;
+        registerDyn(id, sound, reg);
+        return sound;
+    }
+
+    public static <T extends SoundEvent>  T registerSoundEvent(ResourceLocation id, T sound) {
         ForgeRegistry<SoundEvent> reg = (ForgeRegistry<SoundEvent>) ForgeRegistries.SOUND_EVENTS;
+        registerDyn(id, sound, reg);
+        return sound;
+    }
+
+    private static <T> void registerDyn(ResourceLocation id, T sound, ForgeRegistry<T> reg) {
         boolean wasLocked = reg.isLocked();
         if (wasLocked) reg.unfreeze();
-        ForgeRegistries.SOUND_EVENTS.register(id, variableRangeEvent);
+        reg.register(id, sound);
         if (wasLocked) reg.freeze();
-        return variableRangeEvent;
     }
+
+
+    public static void unregisterParticleType(ResourceLocation id) {
+        unregisterDyn(id, ForgeRegistries.PARTICLE_TYPES);
+    }
+
+    public static void unregisterSoundEvent(ResourceLocation id) {
+        unregisterDyn(id, ForgeRegistries.SOUND_EVENTS);
+    }
+
+    private static void unregisterDyn(ResourceLocation id, IForgeRegistry<?> registry) {
+        //No op. too bad. forge registry shit is too complicated
+        try {
+            remove((ForgeRegistry) registry, id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final Field NAMES;
+    private static final Field IDS;
+    private static final Field AVAILABILITYMAP;
+    private static final Field KEYS;
+    private static final Field OWNERS;
+    private static final Field HASWRAPPER;
+    private static final Field OVERRIDES;
+    static{
+        try {
+            NAMES = ForgeRegistry.class.getDeclaredField("names");
+            IDS = ForgeRegistry.class.getDeclaredField("ids");
+            AVAILABILITYMAP = ForgeRegistry.class.getDeclaredField("availabilityMap");
+            KEYS = ForgeRegistry.class.getDeclaredField("keys");
+            OWNERS = ForgeRegistry.class.getDeclaredField("owners");
+            HASWRAPPER = ForgeRegistry.class.getDeclaredField("hasWrapper");
+            OVERRIDES = ForgeRegistry.class.getDeclaredField("overrides");
+            NAMES.setAccessible(true);
+            IDS.setAccessible(true);
+            AVAILABILITYMAP.setAccessible(true);
+            KEYS.setAccessible(true);
+            OWNERS.setAccessible(true);
+            HASWRAPPER.setAccessible(true);
+            OVERRIDES.setAccessible(true);
+
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    static <V> int remove(ForgeRegistry<V> registry, ResourceLocation key) throws Exception {
+
+        // Check if the key exists in the registry
+        V value = ((BiMap<ResourceLocation, V>)NAMES.get(registry)).remove(key);
+        if (value == null) {
+            throw new IllegalArgumentException(String.format(Locale.ENGLISH, "The name %s is not registered in the registry.", key));
+        }
+
+        // Get the associated ID and remove it
+        int idToRemove = registry.getID(value);
+        ((BiMap<Integer, V>)IDS.get(registry)).remove(idToRemove);
+        ((BitSet)AVAILABILITYMAP.get(registry)).clear(idToRemove);
+
+        // Remove from keys map
+        ResourceKey<V> rkey = ResourceKey.create(registry.getRegistryKey(), key);
+        ((BiMap<ResourceKey, V>)KEYS.get(registry)).remove(rkey);
+
+        // Remove from owners
+        ((BiMap<?, V>) OWNERS.get(registry)).inverse().remove(value);
+
+        // Remove from overrides if applicable
+        if ((Boolean) HASWRAPPER.get(registry)) {
+            var overrides = ((Multimap<ResourceLocation, V>)OVERRIDES.get(registry));
+            if (overrides.containsKey(key)) {
+                overrides.get(key).add(value);
+                if (overrides.get(key).isEmpty()) {
+                    overrides.remove(key, value);
+                }
+            }
+        }
+
+        return idToRemove;
+    }
+
 
     public static String maybeRemapName(String s) {
         return ObfuscationReflectionHelper.remapName(INameMappingService.Domain.CLASS, s);
@@ -303,4 +399,7 @@ public class PlatStuffImpl {
     public static BakedModel getModel(ResourceLocation modelLocation) {
         return Minecraft.getInstance().getModelManager().getModel(modelLocation);
     }
+
+
+
 }
