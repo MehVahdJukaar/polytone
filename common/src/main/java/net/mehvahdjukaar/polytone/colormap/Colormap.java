@@ -32,6 +32,7 @@ public class Colormap implements IColorGetter, ColorResolver {
     private final IColormapNumberProvider yGetter;
     private final BiomeIdMapper biomeMapper;
     private final boolean triangular;
+    private final boolean rounds;
     private final boolean hasBiomeBlend; //if this should be used as ColorResolver, allowing for biome blend
     private final boolean usesBiome;
     private final boolean usesPos;
@@ -51,6 +52,7 @@ public class Colormap implements IColorGetter, ColorResolver {
             IColormapNumberProvider.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
             IColormapNumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
             StrOpt.of(Codec.BOOL, "triangular", false).forGetter(c -> c.triangular),
+            Codec.BOOL.optionalFieldOf("rounds", true).forGetter(c -> c.rounds),
             StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
             StrOpt.of(BiomeIdMapper.CODEC, "biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
             StrOpt.of(ResourceLocation.CODEC, "texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture))
@@ -69,12 +71,13 @@ public class Colormap implements IColorGetter, ColorResolver {
     //  .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
-                     boolean triangular, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
+                     boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
                      Optional<ResourceLocation> explicitTargetTexture) {
         this.defaultColor = defaultColor.orElse(null);
         this.xGetter = xGetter;
         this.yGetter = yGetter;
         this.triangular = triangular;
+        this.rounds = rounds;
         this.usesBiome = (xGetter.usesBiome() || yGetter.usesBiome());
         this.usesPos = usesBiome || (xGetter.usesPos() || yGetter.usesPos());
         this.usesState = (xGetter.usesState() || yGetter.usesState());
@@ -84,7 +87,7 @@ public class Colormap implements IColorGetter, ColorResolver {
     }
 
     protected Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter, boolean triangular) {
-        this(Optional.empty(), xGetter, yGetter, triangular, Optional.empty(), Optional.empty(), Optional.empty());
+        this(Optional.empty(), xGetter, yGetter, triangular, true, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public void acceptTexture(ArrayImage image) {
@@ -183,11 +186,16 @@ public class Colormap implements IColorGetter, ColorResolver {
         int width = image.width();
         int height = image.height();
 
-        //gets rid of floating point errors for biome id map stuff
-        int w = (int) Math.round((1.0 - textX) * (width - 1));
-        int h = (int) Math.round((1.0 - textY) * (height - 1));
+        int wm = width - 1;
+        int hm = height - 1;
 
-        return w >= width || h >= height ? defValue : image.pixels()[h][w];
+        //gets rid of floating point errors for biome id map stuff
+        int scaledW = rounds ? Math.round(textX * width) : Mth.floor(textX * width);
+        int scaledH = rounds ? Math.round(textY * height) : Mth.floor(textY * height);
+        int w = (wm - scaledW % width);
+        int h = (hm - scaledH % height);
+
+        return image.pixels()[h][w];
     }
 
 
@@ -221,7 +229,7 @@ public class Colormap implements IColorGetter, ColorResolver {
 
     public static Colormap createFixed() {
         return new Colormap(Optional.empty(), IColormapNumberProvider.ZERO,
-                IColormapNumberProvider.ZERO, false, Optional.empty(), Optional.empty(), Optional.empty());
+                IColormapNumberProvider.ZERO, false, true, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     //this is dumb. dont use
@@ -247,7 +255,7 @@ public class Colormap implements IColorGetter, ColorResolver {
         return new Colormap(Optional.empty(),
                 IColormapNumberProvider.BIOME_ID,
                 IColormapNumberProvider.Y_LEVEL,
-                false, Optional.of(Boolean.TRUE), Optional.empty(), Optional.empty());
+                false, false, Optional.of(Boolean.TRUE), Optional.empty(), Optional.empty());
     }
 
     public static Colormap createDamage() {

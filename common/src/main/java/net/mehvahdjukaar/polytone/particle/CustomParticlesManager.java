@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
@@ -14,6 +15,7 @@ import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -102,8 +104,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
                 CustomParticleFactory factory;
                 if (json instanceof JsonObject jo && jo.has("copy_from")) {
                     factory = SemiCustomParticleType.CODEC.decode(ops, json)
-                            .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Semi Custom Particle Type with json id {} - error: {}",
-                                    id, errorMsg)).getFirst();
+                            .getOrThrow().getFirst();
                 } else {
                     factory = CustomParticleType.CODEC.decode(ops, json)
                             .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Custom Particle Type with json id {} - error: {}",
