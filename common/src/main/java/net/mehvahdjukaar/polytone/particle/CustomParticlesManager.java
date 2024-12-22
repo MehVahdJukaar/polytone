@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonParseException;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
@@ -9,7 +10,6 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
@@ -17,6 +17,7 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -24,7 +25,10 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 public class CustomParticlesManager extends JsonPartialReloader {
@@ -97,9 +101,14 @@ public class CustomParticlesManager extends JsonPartialReloader {
             try {
                 var json = j.getValue();
                 var id = j.getKey();
-                CustomParticleFactory factory = CUSTOM_OR_SEMI_CUSTOM_CODEC.decode(ops, json)
-                        .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
-                        .getFirst();
+                CustomParticleFactory factory;
+                if (json instanceof JsonObject jo && jo.has("copy_from")) {
+                    factory = SemiCustomParticleType.CODEC.decode(ops, json)
+                            .getOrThrow().getFirst();
+                } else {
+                    factory = CustomParticleType.CODEC.decode(ops, json)
+                            .getOrThrow().getFirst();
+                }
                 factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
                 if (factory instanceof CustomParticleType c) {

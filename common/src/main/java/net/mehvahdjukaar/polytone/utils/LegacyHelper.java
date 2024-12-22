@@ -387,6 +387,7 @@ public class LegacyHelper {
         map.put(biomeResKey("end_midlands"), 61);
         map.put(biomeResKey("small_end_islands"), 62);
         map.put(biomeResKey("end_barrens"), 63);
+        map.put(biomeResKey("pale_garden"), 64);
         return map;
     });
 
