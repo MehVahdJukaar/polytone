@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
+import com.google.common.base.Preconditions;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -49,7 +50,8 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     ))
     public boolean slotifyColor(GuiGraphics graphics, int x, int y, int blitOffset,
                                 @Local Slot slot) {
-        return Polytone.SLOTIFY.maybeChangeColor((AbstractContainerScreen<?>) (Object) this, slot, graphics, x, y, blitOffset);
+        return Polytone.SLOTIFY.maybeChangeColor((AbstractContainerScreen<?>) (Object) this,
+                Preconditions.checkNotNull(slot), graphics, x, y, blitOffset);
     }
 
     @Inject(method = "init", at = @At("TAIL"))
