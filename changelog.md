@@ -1,2 +1,1 @@
-- fixed colormap incorrectly rounding numbers
-- added "rounds" parameter to colormap
+- fixed an off by one error in id mapers due to previous changes
