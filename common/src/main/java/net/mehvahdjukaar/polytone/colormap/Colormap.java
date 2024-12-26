@@ -192,8 +192,9 @@ public class Colormap implements IColorGetter, ColorResolver {
         //gets rid of floating point errors for biome id map stuff
         int scaledW = rounds ? Math.round(textX * width) : Mth.floor(textX * width);
         int scaledH = rounds ? Math.round(textY * height) : Mth.floor(textY * height);
-        int w = (wm - scaledW % width);
-        int h = (hm - scaledH % height);
+        int w = Math.max(wm - scaledW, 0);
+        int h = Math.max(hm - scaledH, 0);
+
 
         return image.pixels()[h][w];
     }

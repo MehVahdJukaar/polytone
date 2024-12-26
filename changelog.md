@@ -1,3 +1,1 @@
-- fixed sound events and particle types not registering /undregistering correctly on forge
-- fixed an issue with colormap rounding errors in its samplers
-- added a "rounds" parameter in colormap to turn of rounding and use flooring instead
+- fixed an off by one error in id mapers due to previous changes
