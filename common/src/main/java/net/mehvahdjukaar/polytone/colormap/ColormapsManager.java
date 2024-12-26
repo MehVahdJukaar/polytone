@@ -47,6 +47,8 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     @Override
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        addBuiltinColormaps();
+
         var jsons = resources.jsons();
         var textures = new HashMap<>(resources.textures());
 
@@ -83,12 +85,9 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-
     }
 
-    @Override
-    protected void resetWithLevel(boolean logOff) {
-        colormaps.clear();
+    private void addBuiltinColormaps() {
         colormaps.register(ResourceLocation.parse("grass_color"), () -> GRASS_COLOR);
         colormaps.register(ResourceLocation.parse("foliage_color"), () -> FOLIAGE_COLOR);
         colormaps.register(ResourceLocation.parse("water_color"), () -> WATER_COLOR);
@@ -98,6 +97,11 @@ public class ColormapsManager extends JsonImgPartialReloader {
         colormaps.register(ResourceLocation.parse("fixed"), Colormap::createFixed);
         colormaps.register(ResourceLocation.parse("grid"), Colormap::createBiomeId);
         colormaps.register(ResourceLocation.parse("damage"), Colormap::createDamage);
+    }
+
+    @Override
+    protected void resetWithLevel(boolean logOff) {
+        colormaps.clear();
     }
 
     public void add(ResourceLocation id, Colormap colormap) {
