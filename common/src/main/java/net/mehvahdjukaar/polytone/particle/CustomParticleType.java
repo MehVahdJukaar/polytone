@@ -65,6 +65,8 @@ public class CustomParticleType implements CustomParticleFactory {
 
     private transient SpriteSet spriteSet;
 
+    private boolean isValid = true;
+
     private CustomParticleType(RenderType renderType, @Nullable ResourceLocation model,
                                Vec3 offset, int light, boolean hasPhysics,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
@@ -170,19 +172,20 @@ public class CustomParticleType implements CustomParticleFactory {
         this.spriteSet = mutableSpriteSet;
     }
 
+    public void setUnregistered() {
+        this.isValid = false;
+    }
+
     public static class Instance extends TextureSheetParticle {
 
+        protected final CustomParticleType type;
         protected final RenderType renderType;
         protected final @Nullable BakedModel model;
         protected final @Nullable Ticker ticker;
         protected final SpriteSet spriteSet;
         protected final LiquidAffinity liquidAffinity;
-        protected final @Nullable IColorGetter colormap;
         protected final List<ParticleTickable> tickables;
-        protected final int light;
-        private final Optional<ParticleGroup> group;
         protected float oQuadSize;
-        protected final Vec3 offset;
         protected double custom;
 
         private ResourceLocation name;
@@ -192,13 +195,12 @@ public class CustomParticleType implements CustomParticleFactory {
             super(level, x, y, z, xSpeed, ySpeed, zSpeed);
             this.setSize(0.1f, 0.1f);
             this.name = typeId;
-            this.light = customType.lightLevel;
-            this.colormap = customType.colormap;
+            this.type = customType;
+
             this.tickables = new ArrayList<>();
             this.tickables.addAll(customType.sounds);
             this.tickables.addAll(customType.particles);
-            this.offset = customType.offset;
-            this.group = customType.group;
+
             //for normal particles since its simple particle types (so that they can be ued in biomes) we can pass extra params
             if (state == null) state = STATE_HACK;
 
@@ -225,8 +227,8 @@ public class CustomParticleType implements CustomParticleFactory {
             this.liquidAffinity = customType.liquidAffinity;
             this.hasPhysics = customType.hasPhysics;
 
-            if (this.colormap != null) {
-                float[] unpack = ColorUtils.unpack(this.colormap.getColor(state, level, pos, 0));
+            if (this.type.colormap != null) {
+                float[] unpack = ColorUtils.unpack(this.type.colormap.getColor(state, level, pos, 0));
                 this.setColor(unpack[0], unpack[1], unpack[2]);
             }
 
@@ -242,7 +244,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public Optional<ParticleGroup> getParticleGroup() {
-            return this.group;
+            return this.type.group;
         }
 
         public double getCustom() {
@@ -252,10 +254,10 @@ public class CustomParticleType implements CustomParticleFactory {
         @Override
         protected int getLightColor(float partialTick) {
             int total = super.getLightColor(partialTick);
-            if (this.light > 0) {
+            if (this.type.lightLevel > 0) {
                 int sky = LightTexture.sky(total);
                 int block = LightTexture.block(total);
-                block = Math.max(block, light);
+                block = Math.max(block, this.type.lightLevel);
                 return LightTexture.pack(block, sky);
             }
             return total;
@@ -269,6 +271,10 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public void tick() {
+            if (!this.type.isValid) {
+                this.remove();
+                return;
+            }
             if (spriteSet != null) this.setSpriteFromAge(spriteSet);
             super.tick();
 
@@ -276,9 +282,9 @@ public class CustomParticleType implements CustomParticleFactory {
                 this.ticker.tick(this, level);
             }
 
-            if (this.colormap != null) {
+            if (this.type.colormap != null) {
                 BlockPos pos = BlockPos.containing(x, y, z);
-                float[] unpack = ColorUtils.unpack(this.colormap.getColor(null, level, pos, 0));
+                float[] unpack = ColorUtils.unpack(this.type.colormap.getColor(null, level, pos, 0));
                 this.setColor(unpack[0], unpack[1], unpack[2]);
             }
 
