@@ -2,6 +2,8 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
@@ -61,7 +63,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
     protected void resetWithLevel(boolean isLogOff) {
         for (var id : customParticleFactories.orderedKeys()) {
             var p = customParticleFactories.getValue(id);
-            if (p instanceof CustomParticleType cp) {
+            if (p instanceof CustomParticleType cp){
                 cp.setUnregistered();
             }
             PlatStuff.unregisterParticleProvider(id);
