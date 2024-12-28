@@ -28,6 +28,7 @@ public class BlockContextExpression {
     private static final String POS_Z = "POS_Z";
 
     private static final String DAY_TIME = "DAY_TIME";
+
     private static final String TIME = "TIME";
     private static final String RAIN = "RAIN";
     private static final String SKY_LIGHT = "SKY_LIGHT";
