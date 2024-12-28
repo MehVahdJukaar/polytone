@@ -34,7 +34,7 @@ public class ParticleContextExpression {
     private static final String LIFE = "LIFETIME";
     private static final String AGE = "AGE";
     private static final String ROLL = "ROLL";
-    private static final String DISTANCE_SQUARED = "DISTANCE_SQUARED";
+
     private static final String CUSTOM = "CUSTOM";
 
     private static final String DAY_TIME = "DAY_TIME";
@@ -42,11 +42,13 @@ public class ParticleContextExpression {
     private static final String RAIN = "RAIN";
     private static final String SKY_LIGHT = "SKY_LIGHT";
     private static final String BLOCK_LIGHT = "BLOCK_LIGHT";
-    private static final String TEMPERATURE = "TEMPERATURE";
+    private static final String TEMPERATURE = "TEMPERATURE"; //at player
     private static final String DOWNFALL = "DOWNFALL";
     private static final String PLAYER_X = "PLAYER_X";
     private static final String PLAYER_Y = "PLAYER_Y";
     private static final String PLAYER_Z = "PLAYER_Z";
+    private static final String DISTANCE_SQUARED = "DISTANCE_SQUARED";
+    private static final String PLAYER_SPEED_SQUARED = "PLAYER_SPEED_SQUARED";
 
     public static final Codec<ParticleContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
@@ -67,6 +69,7 @@ public class ParticleContextExpression {
     private final boolean hasDownfall;
     private final boolean hasDistance;
     private final boolean hasPlayer;
+    private final boolean hasPlayerSpeed;
 
 
     public ParticleContextExpression(String expression) {
@@ -86,6 +89,7 @@ public class ParticleContextExpression {
         this.hasTemperature = unparsed.contains(TEMPERATURE);
         this.hasDownfall = unparsed.contains(DOWNFALL);
         this.hasDistance = unparsed.contains(DISTANCE_SQUARED);
+        this.hasPlayerSpeed = unparsed.contains(DISTANCE_SQUARED);
         this.hasPlayer = unparsed.contains(PLAYER_X) || unparsed.contains(PLAYER_Y) || unparsed.contains(PLAYER_Z);
     }
 
@@ -97,7 +101,7 @@ public class ParticleContextExpression {
         return new ExpressionBuilder(ExpressionUtils.removeHex(s))
                 .functions(ExpressionUtils.defFunc())
                 .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, ROLL, AGE,
-                        PLAYER_X, PLAYER_Y, PLAYER_Z,
+                        PLAYER_X, PLAYER_Y, PLAYER_Z, PLAYER_SPEED_SQUARED,
                         CUSTOM, TIME, RAIN, DAY_TIME, SKY_LIGHT, BLOCK_LIGHT, DOWNFALL, TEMPERATURE, DISTANCE_SQUARED)
                 .operator(ExpressionUtils.defOp())
                 .build();
@@ -146,6 +150,9 @@ public class ParticleContextExpression {
             expression.setVariable(PLAYER_X, e.getX());
             expression.setVariable(PLAYER_Y, e.getY());
             expression.setVariable(PLAYER_Z, e.getZ());
+        }
+        if (hasPlayerSpeed) {
+            expression.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
         }
 
         ExpressionUtils.randomizeRandom();

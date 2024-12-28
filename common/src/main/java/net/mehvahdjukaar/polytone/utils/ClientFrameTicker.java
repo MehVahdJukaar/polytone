@@ -20,6 +20,7 @@ public class ClientFrameTicker {
     private static float temperature;
     private static float downfall;
     private static float deltaTime;
+    private static double playerSpeed;
 
 
     public static void onRenderTick(Minecraft mc) {
@@ -36,6 +37,7 @@ public class ClientFrameTicker {
         cameraBiome = level.getBiome(cameraPos);
 
         deltaTime = Minecraft.getInstance().getDeltaTracker().getRealtimeDeltaTicks();
+        playerSpeed =  mc.player.getDeltaMovement().lengthSqr();
     }
 
     public static void onTick(Level level) {
@@ -90,5 +92,9 @@ public class ClientFrameTicker {
 
     public static double getSunTime() {
         return timeOfDay;
+    }
+
+    public static double getPlayerSpeed() {
+        return playerSpeed;
     }
 }
