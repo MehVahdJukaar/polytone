@@ -1,2 +1,1 @@
-- fixed an issue with custom item models and nbt match
-- fixed an issue with backward compat code
+- added kill_when_still variable to particles

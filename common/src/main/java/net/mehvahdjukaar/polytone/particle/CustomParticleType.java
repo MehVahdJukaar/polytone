@@ -194,9 +194,7 @@ public class CustomParticleType implements CustomParticleFactory {
     public static class Instance extends TextureSheetParticle {
 
         protected final CustomParticleType type;
-        protected final CustomParticleType type;
         protected final @Nullable BakedModel model;
-        protected final @Nullable Ticker ticker;
         protected final SpriteSet spriteSet;
         protected final LiquidAffinity liquidAffinity;
         protected final List<ParticleTickable> tickables;
