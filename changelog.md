@@ -1,1 +1,1 @@
-- fixed an off by one error in id mapers due to previous changes
+- added kill_when_still variable to particles
