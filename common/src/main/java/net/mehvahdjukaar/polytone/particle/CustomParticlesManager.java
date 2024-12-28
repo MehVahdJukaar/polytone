@@ -18,6 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -63,7 +64,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
     protected void resetWithLevel(boolean isLogOff) {
         for (var id : customParticleFactories.orderedKeys()) {
             var p = customParticleFactories.getValue(id);
-            if (p instanceof CustomParticleType cp){
+            if (p instanceof CustomParticleType cp) {
                 cp.setUnregistered();
             }
             PlatStuff.unregisterParticleProvider(id);
