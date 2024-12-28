@@ -2,8 +2,6 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParseException;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
@@ -16,9 +14,7 @@ import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -64,7 +60,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
     protected void resetWithLevel(boolean isLogOff) {
         for (var id : customParticleFactories.orderedKeys()) {
             var p = customParticleFactories.getValue(id);
-            if(p instanceof CustomParticleType cp){
+            if (p instanceof CustomParticleType cp) {
                 cp.setUnregistered();
             }
             PlatStuff.unregisterParticleProvider(id);
@@ -146,7 +142,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
         // register custom particle types. needs to be here
         for (var c : customParticleFactories.getEntries()) {
             var factory = c.getValue();
-            var id  = c.getKey();
+            var id = c.getKey();
             SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
             PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
             particleEngine.register(type, factory);
