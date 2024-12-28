@@ -1,1 +1,1 @@
-- fixed backward compat parsing code returning an always false condition
+- added kill_when_still variable to particles

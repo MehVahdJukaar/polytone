@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
+import net.mehvahdjukaar.polytone.utils.BiggerCodecs;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.minecraft.client.Camera;
@@ -61,6 +62,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private final LiquidAffinity liquidAffinity;
     private final boolean hasPhysics;
     private final boolean killOnContact;
+    private final boolean killWhenStill;
     private final @Nullable IColorGetter colormap;
     private final RotationMode rotationMode;
     private final Vec3 offset;
@@ -74,7 +76,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
     private CustomParticleType(RenderType renderType, RotationMode rotationMode,
                                @Nullable ResourceLocation model, Vec3 offset,
-                               int light, boolean hasPhysics, boolean killOnContact,
+                               int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                boolean randomSprite,
                                int particleGroupLimit, boolean forceSpawn,
@@ -90,6 +92,7 @@ public class CustomParticleType implements CustomParticleFactory {
         this.lightLevel = light;
         this.hasPhysics = hasPhysics;
         this.killOnContact = killOnContact;
+        this.killWhenStill = killWhenStill;
         this.liquidAffinity = liquidAffinity;
         this.forceSpawn = forceSpawn;
         this.colormap = colormap;
@@ -98,7 +101,7 @@ public class CustomParticleType implements CustomParticleFactory {
         this.group = particleGroupLimit > 0 ? Optional.of(new ParticleGroup(particleGroupLimit)) : Optional.empty();
     }
 
-    public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
             RenderType.CODEC.optionalFieldOf("render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
             RotationMode.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationMode),
@@ -107,6 +110,7 @@ public class CustomParticleType implements CustomParticleFactory {
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
             Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
+            Codec.BOOL.optionalFieldOf("kill_when_still", false).forGetter(c -> c.killWhenStill),
             LiquidAffinity.CODEC.optionalFieldOf("liquid_affinity", LiquidAffinity.ANY).forGetter(c -> c.liquidAffinity),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap)),
             Codec.BOOL.optionalFieldOf("random_sprite", false).forGetter(c -> c.randomSprite),
@@ -121,13 +125,13 @@ public class CustomParticleType implements CustomParticleFactory {
 
     private CustomParticleType(RenderType renderType, RotationMode rotationMode,
                                Optional<ResourceLocation> model, Vec3 offset,
-                               int light, boolean hasPhysics, boolean killOnContact,
+                               int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                boolean randomSprite,
                                int limit, boolean forceSpawn, Optional<ParticleInitializer> initializer,
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<Dynamic<?>> particles) {
         this(renderType, rotationMode, model.orElse(null), offset,
-                light, hasPhysics, killOnContact, liquidAffinity, colormap.orElse(null),
+                light, hasPhysics, killOnContact, killWhenStill, liquidAffinity, colormap.orElse(null),
                 randomSprite, limit, forceSpawn,
                 initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
@@ -190,15 +194,12 @@ public class CustomParticleType implements CustomParticleFactory {
     public static class Instance extends TextureSheetParticle {
 
         protected final CustomParticleType type;
-        protected final RenderType renderType;
         protected final @Nullable BakedModel model;
-        protected final @Nullable Ticker ticker;
         protected final SpriteSet spriteSet;
         protected final LiquidAffinity liquidAffinity;
         protected final List<ParticleTickable> tickables;
         protected float oQuadSize;
         protected double custom;
-        protected boolean killOnContact;
 
         private ResourceLocation name;
 
@@ -224,8 +225,6 @@ public class CustomParticleType implements CustomParticleFactory {
             this.yd = ySpeed;
             this.zd = zSpeed;
             this.model = customType.model == null ? null : PlatStuff.getBakedModel(customType.model);
-            this.renderType = customType.renderType;
-            this.ticker = customType.ticker;
             ParticleInitializer initializer = customType.initializer;
             BlockPos pos = BlockPos.containing(x, y, z);
             if (initializer != null) {
@@ -295,7 +294,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 poseStack.translate(-0.5, -0.5, -0.5);
 
                 MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-                consumer = bufferSource.getBuffer(renderType.getBlock());
+                consumer = bufferSource.getBuffer(type.renderType.getBlock());
 
                 putModelBulkData(this.model, this.getLightColor(partialTicks),
                         OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
@@ -331,8 +330,8 @@ public class CustomParticleType implements CustomParticleFactory {
             if (spriteSet != null) this.setSpriteFromAge(spriteSet);
             super.tick();
 
-            if (this.ticker != null) {
-                this.ticker.tick(this, level);
+            if (type.ticker != null) {
+                type.ticker.tick(this, level);
             }
 
             if (this.type.colormap != null) {
@@ -341,7 +340,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 this.setColor(unpack[0], unpack[1], unpack[2]);
             }
 
-            if (this.age > 1 && this.x == this.xo && this.y == this.yo && this.z == this.zo && hasPhysics) {
+            if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo ) {
                 this.remove();
             }
 
@@ -366,7 +365,7 @@ public class CustomParticleType implements CustomParticleFactory {
         @Override
         public void move(double x, double y, double z) {
             super.move(x, y, z);
-            if (this.killOnContact && this.age > 1) {
+            if (type.killOnContact && this.age > 1) {
                 Vec3 myPos = new Vec3(this.x, this.y, this.z);
                 Vec3 wantedPos = new Vec3(this.xo + x, this.yo + y, this.zo + z);
                 if (myPos.distanceToSqr(wantedPos) > 0.000001) {
@@ -402,7 +401,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public ParticleRenderType getRenderType() {
-            return this.model == null ? this.renderType.getParticle() : ParticleRenderType.CUSTOM;
+            return this.model == null ? type.renderType.getParticle() : ParticleRenderType.CUSTOM;
         }
 
     }
@@ -494,7 +493,7 @@ public class CustomParticleType implements CustomParticleFactory {
         private void tick(CustomParticleType.Instance particle, ClientLevel level) {
             if (this.roll != null) {
                 particle.oRoll = particle.roll;
-                particle.roll = (float) particle.ticker.roll.getValue(particle, level);
+                particle.roll = (float) this.roll.getValue(particle, level);
             }
             if (this.size != null) {
                 particle.oQuadSize = particle.quadSize;
