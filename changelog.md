@@ -1,1 +1,3 @@
 - added kill_when_still variable to particles
+- fixed an of by 1 error in colormap due to recent updates
+- more parity with 1.21 version of the mod

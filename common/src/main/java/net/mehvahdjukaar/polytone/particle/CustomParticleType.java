@@ -57,6 +57,8 @@ public class CustomParticleType implements CustomParticleFactory {
     private final int lightLevel;
     private final LiquidAffinity liquidAffinity;
     private final boolean hasPhysics;
+    private final boolean killOnContact;
+    private final boolean killWhenStill;
     private final @Nullable IColorGetter colormap;
     private final Vec3 offset;
     private final Optional<ParticleGroup> group;
@@ -68,7 +70,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private boolean isValid = true;
 
     private CustomParticleType(RenderType renderType, @Nullable ResourceLocation model,
-                               Vec3 offset, int light, boolean hasPhysics,
+                               Vec3 offset, int light, boolean hasPhysics,  boolean killOnContact, boolean killWhenStill,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                boolean randomSprite,
                                int particleGroupLimit, boolean forceSpawn,
@@ -83,6 +85,8 @@ public class CustomParticleType implements CustomParticleFactory {
         this.lazyParticles = particles;
         this.lightLevel = light;
         this.hasPhysics = hasPhysics;
+        this.killOnContact = killOnContact;
+        this.killWhenStill = killWhenStill;
         this.liquidAffinity = liquidAffinity;
         this.forceSpawn = forceSpawn;
         this.colormap = colormap;
@@ -97,6 +101,8 @@ public class CustomParticleType implements CustomParticleFactory {
             Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(c -> c.offset),
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
+            Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
+            Codec.BOOL.optionalFieldOf("kill_when_still", false).forGetter(c -> c.killWhenStill),
             LiquidAffinity.CODEC.optionalFieldOf("liquid_affinity", LiquidAffinity.ANY).forGetter(c -> c.liquidAffinity),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap)),
             Codec.BOOL.optionalFieldOf("random_sprite", false).forGetter(c -> c.randomSprite),
@@ -110,13 +116,13 @@ public class CustomParticleType implements CustomParticleFactory {
     ).apply(i, CustomParticleType::new));
 
     private CustomParticleType(RenderType renderType, Optional<ResourceLocation> model,
-                               Vec3 offset, int light, boolean hasPhysics,
+                               Vec3 offset, int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                boolean randomSprite,
                                int limit, boolean forceSpawn, Optional<ParticleInitializer> initializer,
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<Dynamic<?>> particles) {
         this(renderType, model.orElse(null), offset,
-                light, hasPhysics, liquidAffinity, colormap.orElse(null),
+                light, hasPhysics, killOnContact, killWhenStill,  liquidAffinity, colormap.orElse(null),
                 randomSprite, limit, forceSpawn,
                 initializer.orElse(null), ticker.orElse(null), sounds, particles);
     }
@@ -243,6 +249,23 @@ public class CustomParticleType implements CustomParticleFactory {
         }
 
         @Override
+        public void move(double x, double y, double z) {
+            super.move(x, y, z);
+            if (type.killOnContact && this.age > 1) {
+                Vec3 myPos = new Vec3(this.x, this.y, this.z);
+                Vec3 wantedPos = new Vec3(this.xo + x, this.yo + y, this.zo + z);
+                if (myPos.distanceToSqr(wantedPos) > 0.000001) {
+                    // collided with any block. pop. It fragile
+                    this.remove();
+                    this.xd = 0;
+                    this.yd = 0;
+                    this.zd = 0;
+                }
+            }
+        }
+
+
+        @Override
         public Optional<ParticleGroup> getParticleGroup() {
             return this.type.group;
         }
@@ -288,7 +311,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 this.setColor(unpack[0], unpack[1], unpack[2]);
             }
 
-            if (this.age > 1 && this.x == this.xo && this.y == this.yo && this.z == this.zo && hasPhysics) {
+            if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo ) {
                 this.remove();
             }
 
