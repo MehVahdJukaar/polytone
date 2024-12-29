@@ -440,7 +440,7 @@ public class LegacyHelper {
             ResourceLocation id = f.getKey();
             Targets targets = mod.targets();
             targets.addSimple(id);
-            targets.addSimple(id.withSuffix("_flowing"));
+            targets.addSimple(id.withPrefix("flowing_"));
             FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
                     Optional.ofNullable(fog.get(id.withSuffix("_fog")))
                             .map(BlockPropertyModifier::getColormap),

@@ -1,1 +1,5 @@
 - added kill_when_still variable to particles
+- fixed an of by 1 error in colormap due to recent updates
+- added player speed squared varaible
+- more parity with 1.21 version of the mod
+- fixed legacy watercolor conversion giving wrong target for flowing water
