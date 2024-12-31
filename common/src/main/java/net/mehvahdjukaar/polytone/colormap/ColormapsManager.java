@@ -48,6 +48,17 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     @Override
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        //builtin stuff
+        colormaps.register(ResourceLocation.parse("grass_color"), () -> GRASS_COLOR);
+        colormaps.register(ResourceLocation.parse("foliage_color"), () -> FOLIAGE_COLOR);
+        colormaps.register(ResourceLocation.parse("water_color"), () -> WATER_COLOR);
+        //These create new incomplete ones every time
+        colormaps.register(ResourceLocation.parse("biome_sample"), Colormap::createDefSquare);
+        colormaps.register(ResourceLocation.parse("triangular_biome_sample"), Colormap::createDefTriangle);
+        colormaps.register(ResourceLocation.parse("fixed"), Colormap::createFixed);
+        colormaps.register(ResourceLocation.parse("grid"), Colormap::createBiomeId);
+        colormaps.register(ResourceLocation.parse("damage"), Colormap::createDamage);
+
         var jsons = resources.jsons();
         var textures = new HashMap<>(resources.textures());
 
@@ -90,15 +101,6 @@ public class ColormapsManager extends JsonImgPartialReloader {
     @Override
     protected void resetWithLevel(boolean logOff) {
         colormaps.clear();
-        colormaps.register(ResourceLocation.parse("grass_color"), () -> GRASS_COLOR);
-        colormaps.register(ResourceLocation.parse("foliage_color"), () -> FOLIAGE_COLOR);
-        colormaps.register(ResourceLocation.parse("water_color"), () -> WATER_COLOR);
-        //These create new incomplete ones every time
-        colormaps.register(ResourceLocation.parse("biome_sample"), Colormap::createDefSquare);
-        colormaps.register(ResourceLocation.parse("triangular_biome_sample"), Colormap::createDefTriangle);
-        colormaps.register(ResourceLocation.parse("fixed"), Colormap::createFixed);
-        colormaps.register(ResourceLocation.parse("grid"), Colormap::createBiomeId);
-        colormaps.register(ResourceLocation.parse("damage"), Colormap::createDamage);
     }
 
     public void add(ResourceLocation id, Colormap colormap) {

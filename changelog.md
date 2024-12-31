@@ -1,1 +1,1 @@
-- fixed an off by one error in id mapers due to previous changes
+- fixed builtin colormaps only working after first reload
