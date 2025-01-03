@@ -12,6 +12,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
@@ -82,7 +83,6 @@ public class CustomParticlesManager extends JsonPartialReloader {
             engine.spriteSets.remove(v);
         }
         var jsons = this.getJsonsInDirectories(resourceManager);
-        this.checkConditions(jsons);
         for (var v : jsons.keySet()) {
             engine.spriteSets.put(v, new ParticleEngine.MutableSpriteSet());
         }
@@ -106,16 +106,11 @@ public class CustomParticlesManager extends JsonPartialReloader {
                 var id = j.getKey();
                 CustomParticleFactory factory;
                 if (json instanceof JsonObject jo && jo.has("copy_from")) {
-                    factory = SemiCustomParticleType.CODEC.decode(ops, json)
-                            .getOrThrow(false, errorMsg ->
-                                    Polytone.LOGGER.warn("Could not decode Semi Custom Particle Type with json id {} - error: {}",
-                                            id, errorMsg)).getFirst();
+                    factory = Parsed.parseOrNull(SemiCustomParticleType.CODEC, json, ops, id, "custom particle");
                 } else {
-                    factory = CustomParticleType.CODEC.decode(ops, json)
-                            .getOrThrow(false, errorMsg ->
-                                    Polytone.LOGGER.warn("Could not decode Custom Particle Type with json id {} - error: {}",
-                                            id, errorMsg)).getFirst();
+                    factory = Parsed.parseOrNull(CustomParticleType.CODEC, json, ops, id, "custom particle");
                 }
+                if (factory == null) continue;
                 factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
                 if (factory instanceof CustomParticleType c) {

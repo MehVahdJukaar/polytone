@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
@@ -68,14 +69,14 @@ public class LegacyHelper {
     }
 
 
-    public static Map<ResourceLocation, BlockPropertyModifier> convertBlockProperties(
+    public static Map<ResourceLocation, Parsed<BlockPropertyModifier>> convertBlockProperties(
             Map<ResourceLocation, Properties> ofProperties, Map<ResourceLocation, ArrayImage> textures) {
 
         List<ResourceLocation> ids = new ArrayList<>();
         ids.addAll(ofProperties.keySet());
         ids.addAll(textures.keySet());
 
-        Map<ResourceLocation, BlockPropertyModifier> map = new HashMap<>();
+        Map<ResourceLocation, Parsed<BlockPropertyModifier>> map = new HashMap<>();
 
         for (ResourceLocation id : ids) {
             Properties prop = ofProperties.get(id);
@@ -96,16 +97,16 @@ public class LegacyHelper {
                     targets.add(Blocks.MELON_STEM);
                     targets.add(Blocks.ATTACHED_MELON_STEM);
                 }
-                map.put(id, BlockPropertyModifier.coloringBlocks(colormap, targets));
+                map.put(id, withCond(id, prop, BlockPropertyModifier.coloringBlocks(colormap, targets)));
             } else if (path.equals("redstone_wire")) {
                 Colormap colormap = Colormap.simple((state, level, pos, m, i) -> state != null ?  state.getValue(RedStoneWireBlock.POWER) / 15f : 0,
                         IColormapNumberProvider.ZERO);
 
-                map.put(id, BlockPropertyModifier.coloringBlocks(colormap, Blocks.REDSTONE_WIRE));
+                map.put(id, withCond(id, prop, BlockPropertyModifier.coloringBlocks(colormap, Blocks.REDSTONE_WIRE)));
             } else if (prop != null) {
                 try {
                     BlockPropertyModifier modifier = convertOFProperty(prop, id);
-                    map.put(id, modifier);
+                    map.put(id, withCond(id, prop, modifier));
                 } catch (Exception e) {
                     Polytone.LOGGER.error("FAILED TO CONVERT OPTIFINE COLORMAP AT {}: ", id, e);
                 }
@@ -113,6 +114,22 @@ public class LegacyHelper {
         }
         return map;
 
+    }
+
+    private static <T> Parsed<T> withCond(ResourceLocation id, Properties prop, T t) {
+        return Parsed.of(t, id, checkConditions(prop));
+    }
+
+    private static boolean checkConditions(Properties prop) {
+        boolean ignored = prop.getOrDefault("polytone_ignore", false).equals(Boolean.TRUE);
+        if (ignored) return false;
+        List<String> requireMods = List.of(prop.getProperty("require_mods", "").split(" "));
+        for (String s : requireMods) {
+            if (!PlatStuff.isModLoaded(s)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static final Decoder<BlockPropertyModifier> OF_JSON_CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -130,7 +147,7 @@ public class LegacyHelper {
                                                               Optional<Integer> yoffset, Optional<String> sourceTexture,
                                                               boolean forceTint) {
 
-        Set<ResourceLocation> set = null;
+        Set<ResourceLocation> set = new HashSet<>();
         Colormap colormap;
         if (!targets.isEmpty()) {
             set = targets.stream()
@@ -246,9 +263,9 @@ public class LegacyHelper {
                 Optional.empty(), Targets.ofIds(set), false);
     }
 
-    public static Map<ResourceLocation, BlockPropertyModifier> convertInlinedPalettes(
+    public static Map<ResourceLocation, Parsed<BlockPropertyModifier>> convertInlinedPalettes(
             Map<ResourceLocation, String> inlineColormaps) {
-        Map<ResourceLocation, BlockPropertyModifier> map = new HashMap<>();
+        Map<ResourceLocation, Parsed<BlockPropertyModifier>> map = new HashMap<>();
 
         int k = 0;
         for (var special : inlineColormaps.entrySet()) {
@@ -267,7 +284,8 @@ public class LegacyHelper {
                 BlockPropertyModifier mod = BlockPropertyModifier.coloringBlocks(colormap, blockTargets);
 
                 // unique id just because
-                map.put(texturePath.withSuffix("-color_prop_palette_" + k++), mod);
+                ResourceLocation id = texturePath.withSuffix("-color_prop_palette_" + k++);
+                map.put(id, Parsed.success(mod, id));
             }
         }
         return map;
@@ -364,24 +382,24 @@ public class LegacyHelper {
     }
 
 
-    public static void convertOfBlockToFluidProp(Map<ResourceLocation, BlockPropertyModifier> parsedModifiers,
+    public static void convertOfBlockToFluidProp(Map<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers,
                                                  Map<ResourceLocation, ArrayImage> textures) {
 
-        Map<ResourceLocation, BlockPropertyModifier> fluid = new HashMap<>();
-        Map<ResourceLocation, BlockPropertyModifier> fog = new HashMap<>();
-        Map<ResourceLocation, FluidPropertyModifier> converted = new HashMap<>();
+        Map<ResourceLocation, Parsed<BlockPropertyModifier>> fluid = new HashMap<>();
+        Map<ResourceLocation, Parsed<BlockPropertyModifier>> fog = new HashMap<>();
         Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation id = entry.getKey();
-            BlockPropertyModifier modifier = entry.getValue();
+            Parsed<BlockPropertyModifier> parsed = entry.getValue();
+            BlockPropertyModifier modifier = parsed.getResultOrPartial();
             var colormap = modifier.getColormap();
             if (colormap instanceof Colormap c) {
                 if (!id.getNamespace().equals("minecraft")) continue;
                 String path = id.getPath();
                 if (path.contains("water") || path.contains("lava")) {
 
-                    if (path.endsWith("_fog")) fog.put(id, modifier);
-                    else fluid.put(id, modifier);
+                    if (path.endsWith("_fog") || path.contains("under")) fog.put(id, parsed);
+                    else fluid.put(id, parsed);
 
                     ResourceLocation targetTexture = c.getTargetTexture(id);
                     //uglyyy
@@ -402,34 +420,38 @@ public class LegacyHelper {
         textures.keySet().removeAll(filteredTextures.keySet());
         parsedModifiers.keySet().removeAll(fluid.keySet());
 
+        Map<ResourceLocation, FluidPropertyModifier> converted = new HashMap<>();
+
         for (var f : fluid.entrySet()) {
             // ignore targets as those are block targets anyways
-            BlockPropertyModifier mod = f.getValue();
-            ResourceLocation id = f.getKey();
-            Targets targets = mod.targets();
-            targets.addSimple(id);
-            targets.addSimple(id.withPrefix("flowing_"));
-            FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
-                    Optional.ofNullable(fog.get(id.withSuffix("_fog")))
-                            .map(BlockPropertyModifier::getColormap),
-                    targets);
-            converted.put(id, modifier);
-
+            var parsed = f.getValue();
+            if (parsed.isEnabled()) {
+                var mod = parsed.getResultOrPartial();
+                ResourceLocation id = f.getKey();
+                Targets targets = mod.targets();
+                targets.addSimple(id);
+                targets.addSimple(id.withPrefix("flowing_"));
+                FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
+                        Optional.ofNullable(fog.get(id.withSuffix("_fog")))
+                                .map(BlockPropertyModifier::getColormap),
+                        targets);
+                converted.put(id, modifier);
+    }
         }
 
         Polytone.FLUID_MODIFIERS.addConvertedBlockProperties(converted, filteredTextures);
     }
 
-    public static void convertOfBlockToDimensionProperties(Map<ResourceLocation, BlockPropertyModifier> parsedModifiers,
+    public static void convertOfBlockToDimensionProperties(Map<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers,
                                                            Map<ResourceLocation, ArrayImage> textures) {
-        Map<ResourceLocation, BlockPropertyModifier> filtered = new HashMap<>();
+        Map<ResourceLocation, Parsed<BlockPropertyModifier>> filtered = new HashMap<>();
         Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
         Pattern fogP = Pattern.compile("minecraft:fog[0-2]");
         Pattern skyP = Pattern.compile("minecraft:sky[0-2]");
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation id = entry.getKey();
             String stringId = id.toString();
-            BlockPropertyModifier modifier = entry.getValue();
+            var modifier = entry.getValue();
             if (fogP.matcher(stringId).matches() || skyP.matcher(stringId).matches()) {
                 filtered.put(id, modifier);
             }
@@ -450,7 +472,7 @@ public class LegacyHelper {
     }
 
     // fot OF fog and sky. shit code...
-    private static void addConvertedBlockProperties(Map<ResourceLocation, BlockPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
+    private static void addConvertedBlockProperties(Map<ResourceLocation, Parsed<BlockPropertyModifier>> modifiers, Map<ResourceLocation, ArrayImage> textures) {
         String[] names = new String[]{"overworld", "the_nether", "the_end"};
         Map<ResourceLocation, DimensionEffectsModifier> converted = new HashMap<>();
         for (int i = 0; i <= 2; i++) {
@@ -458,27 +480,36 @@ public class LegacyHelper {
             IColorGetter fogCol;
             {
                 ResourceLocation skyKey = ResourceLocation.tryParse("sky" + i);
-                BlockPropertyModifier skyMod = modifiers.get(skyKey);
+                var skyMod = modifiers.get(skyKey);
                 ArrayImage skyImage = textures.get(skyKey);
 
-                skyCol = skyMod != null ? skyMod.getColormap() : (skyImage == null ? null : Colormap.createDefTriangle());
+                skyCol = skyMod != null ? skyMod.getResultOrPartial().getColormap() : (skyImage == null ? null : Colormap.createDefTriangle());
                 if (skyCol != null) {
                     ColormapsManager.tryAcceptingTexture(textures, skyKey, skyCol, new HashSet<>(), true);
+                }
+                //disable removed
+                if (skyMod != null && skyMod.isEnabled()) {
+                    skyCol = null;
                 }
             }
             {
                 ResourceLocation fogKey = new ResourceLocation("fog" + i);
-                BlockPropertyModifier fogMod = modifiers.get(fogKey);
+                var fogMod = modifiers.get(fogKey);
                 ArrayImage fogImage = textures.get(fogKey);
 
-                fogCol = fogMod != null ? fogMod.getColormap() : (fogImage == null ? null : Colormap.createDefTriangle());
+                fogCol = fogMod != null ? fogMod.getResultOrPartial().getColormap() : (fogImage == null ? null : Colormap.createDefTriangle());
                 if (fogCol != null) {
                     ColormapsManager.tryAcceptingTexture(textures, fogKey, fogCol, new HashSet<>(), true);
                 }
+                //disable removed
+                if (fogMod != null && fogMod.isEnabled()) {
+                    fogCol = null;
+                }
             }
             if (fogCol != null || skyCol != null) {
-                var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                        Optional.empty(), Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(),
+                var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(),
+                        Optional.empty(), Optional.empty(), Optional.empty(),
+                        Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(),
                         false,false, Optional.empty(), Targets.EMPTY);
 
                 converted.put(new ResourceLocation(names[i]), mod);

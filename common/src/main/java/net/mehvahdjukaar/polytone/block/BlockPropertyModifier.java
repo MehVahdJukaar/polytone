@@ -71,7 +71,7 @@ public record BlockPropertyModifier(
     }
 
     public static BlockPropertyModifier ofBlockColor(BlockColor colormap) {
-        return new BlockPropertyModifier(Optional.of(colormap),
+        return new BlockPropertyModifier(Optional.ofNullable(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), java.util.Optional.empty(), Optional.empty(),
@@ -217,6 +217,11 @@ public record BlockPropertyModifier(
                     //dont use
                     StrOpt.of(Codec.BOOL, "force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
             ).apply(instance, BlockPropertyModifier::new));
+
+    public static final Decoder<BlockPropertyModifier> PARTIAL_CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null)))
+            ).apply(instance, c -> ofBlockColor(c.orElse(null))));
 
     public boolean hasColormap() {
         return this.tintGetter.isPresent();

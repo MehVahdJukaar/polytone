@@ -3,20 +3,17 @@ package net.mehvahdjukaar.polytone.lightmap;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ArrayImage;
-import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
-import net.mehvahdjukaar.polytone.utils.LegacyHelper;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -42,7 +39,6 @@ public class LightmapsManager extends JsonImgPartialReloader {
     @Override
     protected Resources prepare(ResourceManager resourceManager) {
         var jsons = this.getJsonsInDirectories(resourceManager);
-        this.checkConditions(jsons);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 
@@ -90,21 +86,20 @@ public class LightmapsManager extends JsonImgPartialReloader {
             ResourceLocation location = e.getKey();
 
             JsonElement j = jsons.remove(location);
+            Parsed<Lightmap> parsed;
             Lightmap lightmap;
             if (j != null) {
-                lightmap = Lightmap.DIRECT_CODEC.decode(ops, j)
-                        .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Lightmap with json id {} - error: {}", location, errorMsg))
-                        .getFirst();
-
+                parsed = Parsed.parseFull(Lightmap.CODEC, j, ops, location, "lightmap");
             } else {
                 //default samplers
-                lightmap = new Lightmap();
+                parsed = Parsed.success(new Lightmap(), location);
             }
+            lightmap = parsed.getResultOrPartial();
 
             var map = e.getValue();
             lightmap.acceptImages(map.get("normal"), map.get("rain"), map.get("thunder"));
 
-            lightmaps.register(location, lightmap);
+            if (parsed.isEnabled()) lightmaps.register(location, lightmap);
         }
 
         if (!jsons.isEmpty()) {

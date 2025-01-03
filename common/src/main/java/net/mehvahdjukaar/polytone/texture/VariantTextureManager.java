@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.BakedQuadsTransformer;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.chunk.RenderChunkRegion;
@@ -12,6 +13,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -47,10 +49,8 @@ public class VariantTextureManager extends JsonPartialReloader {
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            VariantTexture variant = VariantTexture.CODEC.decode(ops, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Variant Texture with json res {} - error: {}",
-                            id, errorMsg)).getFirst();
-            addVariant(id, variant);
+            VariantTexture variant = Parsed.parseOrNull(VariantTexture.CODEC, json, ops, id, "variant texture");
+            if (variant != null) this.addVariant(id, variant);
         }
     }
 

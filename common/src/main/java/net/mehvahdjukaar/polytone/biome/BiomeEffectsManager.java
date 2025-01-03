@@ -6,11 +6,11 @@ import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -46,11 +46,10 @@ public class BiomeEffectsManager extends JsonPartialReloader {
             var json = j.getValue();
             var id = j.getKey();
 
-            BiomeEffectModifier effect = BiomeEffectModifier.CODEC.decode(ops, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Biome Special Effect with json id {} - error: {}", id, errorMsg))
-                    .getFirst();
+            var effect = Parsed.parseOptional(BiomeEffectModifier.CODEC,
+                    json, ops, id, "biome modifier");
 
-            addEffect(id, effect, access);
+            effect.ifPresent(e -> this.addEffect(id, e, access));
         }
     }
 

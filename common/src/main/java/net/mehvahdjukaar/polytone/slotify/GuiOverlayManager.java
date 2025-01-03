@@ -2,13 +2,14 @@
 package net.mehvahdjukaar.polytone.slotify;
 
 import com.google.gson.JsonElement;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -37,10 +38,8 @@ public class GuiOverlayManager extends JsonPartialReloader {
             var json = j.getValue();
             var id = j.getKey();
 
-            BlitModifier effect = BlitModifier.CODEC.decode(ops, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Overlay Modifier with json id {} - error: {}", id, errorMsg))
-                    .getFirst();
-
+            BlitModifier effect = Parsed.parseOrNull(BlitModifier.CODEC, json, ops, id, "overlay modifier");
+            if (effect == null) continue;
             ResourceLocation textureId = effect.target();
             if (blitModifiers.containsKey(textureId)) {
                 Polytone.LOGGER.warn("Overlay Modifier with texture id {} already exists. Overwriting", textureId);

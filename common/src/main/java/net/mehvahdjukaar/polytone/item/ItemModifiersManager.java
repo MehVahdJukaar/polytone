@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -35,15 +36,13 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, ItemModifier> parsedModifiers = new HashMap<>();
+        Map<ResourceLocation, Parsed<ItemModifier>> parsedModifiers = new HashMap<>();
 
         for (var j : jsons.entrySet()) {
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            ItemModifier modifier = ItemModifier.CODEC.decode(ops, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode Item Modifier with json id {} - error: {}", id, errorMsg))
-                    .getFirst();
+            var modifier = Parsed.parseFull(ItemModifier.CODEC, json, ops, location, "item modifier");
 
             parsedModifiers.put(id, modifier);
 
@@ -52,7 +51,8 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation tintId = entry.getKey();
-            ItemModifier modifier = entry.getValue();
+            Parsed<ItemModifier> result = entry.getValue();
+            ItemModifier modifier = result.getResultOrPartial();
 
             if (!modifier.hasTint() && textures.containsKey(tintId)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
@@ -69,7 +69,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
 
             ColormapsManager.tryAcceptingTexture(textures, barId, modifier.getBarColor(), usedTextures, true);
 
-            addModifier(tintId, modifier);
+            if (result.isEnabled()) addModifier(tintId, modifier);
         }
 
         // creates orphaned texture colormaps & properties

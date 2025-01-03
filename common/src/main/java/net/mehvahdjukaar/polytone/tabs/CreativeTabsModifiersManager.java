@@ -8,7 +8,9 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -40,7 +42,6 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     @Override
     public Resources prepare(ResourceManager resourceManager) {
         var jsons = getJsonsInDirectories(resourceManager);
-        this.checkConditions(jsons);
 
         var types = CsvUtils.parseCsv(resourceManager, "creative_tabs");
 
@@ -88,11 +89,8 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            CreativeTabModifier modifier = CreativeTabModifier.CODEC.decode(ops, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.error("Could not decode Creative Mode Tab Modifier with json id {} - error: {}", id, errorMsg))
-                    .getFirst();
-
-            addModifier(id, modifier);
+            CreativeTabModifier modifier = Parsed.parseOrNull(CreativeTabModifier.CODEC, json, ops, id, "creative tab modifier");
+            if (modifier != null) addModifier(id, modifier);
         }
 
         if (!customTabs.isEmpty()) {

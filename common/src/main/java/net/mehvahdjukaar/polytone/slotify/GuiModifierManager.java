@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -62,10 +63,8 @@ public class GuiModifierManager extends JsonPartialReloader {
         for (var entry : jsons.entrySet()) {
             var json = entry.getValue();
             var id = entry.getKey();
-            GuiModifier modifier = GuiModifier.CODEC.decode(ops, json)
-                    .getOrThrow(false, errorMsg -> Polytone.LOGGER.warn("Could not decode GUI Modifier with json res {} - error: {}",
-                            id, errorMsg)).getFirst();
-            allModifiers.add(modifier);
+            GuiModifier modifier = Parsed.parseOrNull(GuiModifier.CODEC, json, ops, id, "gui modifier");
+            if (modifier != null) allModifiers.add(modifier);
         }
 
         for (GuiModifier mod : allModifiers) {
