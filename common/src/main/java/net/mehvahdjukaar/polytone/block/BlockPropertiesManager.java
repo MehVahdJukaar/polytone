@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
+import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
@@ -14,6 +15,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,13 +24,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
+
 public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
 
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();
 
     // Block ID to modifier
     private final Map<Block, BlockPropertyModifier> modifiers = new HashMap<>();
-    private final Map<Block, List<BlockClientTickable>> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
+    private final Map<Block, ClientTickModifier> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
 
     public BlockPropertiesManager() {
         super("block_modifiers", "block_properties");
@@ -176,11 +180,14 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
             var particle = value.particleEmitters();
             if (!particle.isEmpty()) {
-                particleAndSoundEmitters.computeIfAbsent(target, t -> new ArrayList<>()).addAll(particle);
+                particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier()).addAll(particle);
             }
             var sound = value.soundEmitters();
             if (!sound.isEmpty()) {
                 particleAndSoundEmitters.computeIfAbsent(target, t -> new ArrayList<>()).addAll(sound);
+            }
+            if(value.disableParticles()){
+                particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier()).cancelsExisting();
             }
         }
         if (!vanillaProperties.isEmpty()) {
@@ -197,12 +204,31 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         optifineColormapsToBlocks.put(path, str);
     }
 
-    public void maybeEmitParticle(Block block, BlockState state, Level level, BlockPos pos) {
+    public boolean maybeEmitParticle(Block block, BlockState state, Level level, BlockPos pos) {
         var m = particleAndSoundEmitters.get(block);
         if (m != null) {
-            for (var p : m) {
+            for (var p : m.tickables) {
                 p.tick(level, pos, state);
             }
+            return m.cancelExisting;
+        }
+        return false;
+    }
+
+    private static class ClientTickModifier{
+        final List<BlockClientTickable> tickables = new ArrayList<>();
+        boolean cancelExisting;
+
+        public void add(BlockClientTickable tickable){
+            tickables.add(tickable);
+        }
+
+        public void cancelsExisting(){
+            cancelExisting = true;
+        }
+
+        public void addAll(List<? extends BlockClientTickable> emitters) {
+            tickables.addAll(emitters);
         }
     }
 }

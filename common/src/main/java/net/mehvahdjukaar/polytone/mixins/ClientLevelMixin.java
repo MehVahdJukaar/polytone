@@ -34,9 +34,10 @@ public abstract class ClientLevelMixin extends Level {
             target = "Lnet/minecraft/world/level/block/Block;animateTick(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/util/RandomSource;)V"))
     public void polytone$extraParticles(Block instance, BlockState state, Level level, BlockPos pos, RandomSource random,
                                         Operation<Void> original) {
-        original.call(instance, state, level, pos, random);
-
-        Polytone.BLOCK_MODIFIERS.maybeEmitParticle(instance, state, level, pos);
+        boolean cancels = Polytone.BLOCK_MODIFIERS.maybeEmitParticle(instance, state, level, pos);
+        if(!cancels) {
+            original.call(instance, state, level, pos, random);
+        }
     }
 
     @WrapOperation(method = "getSkyColor", at = @At(value = "INVOKE",

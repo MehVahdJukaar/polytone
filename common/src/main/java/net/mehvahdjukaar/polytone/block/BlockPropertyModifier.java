@@ -46,6 +46,7 @@ public record BlockPropertyModifier(
         List<BlockSoundEmitter> soundEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
         Optional<BlockSetTypeProvider> blockSetType,
+        Boolean disableParticles,
         @NotNull Targets targets,
         boolean tintHack) {
     //TODO: add is soid for occlusion
@@ -64,6 +65,7 @@ public record BlockPropertyModifier(
                 mergeList(newMod.soundEmitters, this.soundEmitters),
                 newMod.offsetType().isPresent() ? newMod.offsetType() : this.offsetType(),
                 newMod.blockSetType().isPresent() ? newMod.blockSetType() : this.blockSetType(),
+                newMod.disableParticles || this.disableParticles,
                 newMod.targets.merge(this.targets),
                 newMod.tintHack || this.tintHack
         );
@@ -74,7 +76,8 @@ public record BlockPropertyModifier(
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), java.util.Optional.empty(), List.of(),
-                List.of(), Optional.empty(), Optional.empty(), Targets.EMPTY, false);
+                List.of(), Optional.empty(), Optional.empty(),
+                false, Targets.EMPTY, false);
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
@@ -86,12 +89,13 @@ public record BlockPropertyModifier(
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
-        Targets t = Targets.ofIds(blocks);
+        Targets t = net.mehvahdjukaar.polytone.utils.Targets.ofIds(blocks);
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(), List.of(),
-                List.of(), Optional.empty(), Optional.empty(), t, false);
+                List.of(), Optional.empty(), Optional.empty(),
+                false, t, false);
     }
 
     // returns the old ones
@@ -191,7 +195,8 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),
                 Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
                 List.of(), List.of(), Optional.empty(),
-                Optional.ofNullable(oldType), Targets.EMPTY, false);
+                Optional.ofNullable(oldType),
+                false, Targets.EMPTY, false);
     }
 
 
@@ -213,6 +218,7 @@ public record BlockPropertyModifier(
                     OffsetTypeR.CODEC.xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
                             .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
                     BlockSetTypeProvider.CODEC.optionalFieldOf("block_set_type").forGetter(BlockPropertyModifier::blockSetType),
+                    Codec.BOOL.optionalFieldOf("disable_particles", false).forGetter(BlockPropertyModifier::disableParticles),
                     Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BlockPropertyModifier::targets),
                     //dont use
                     Codec.BOOL.optionalFieldOf("force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
