@@ -198,7 +198,8 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Targets.ofIds(set), false);
+                Optional.empty(), Optional.empty(),
+                false, Targets.ofIds(set), false);
     }
 
 
@@ -260,7 +261,7 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Targets.ofIds(set), false);
+                Optional.empty(), false, Targets.ofIds(set), false);
     }
 
     public static Map<ResourceLocation, Parsed<BlockPropertyModifier>> convertInlinedPalettes(
@@ -431,9 +432,9 @@ public class LegacyHelper {
                 Targets targets = mod.targets();
                 targets.addSimple(id);
                 targets.addSimple(id.withPrefix("flowing_"));
+                var fogMod = fog.get(id.withSuffix("_fog")).asOptional();
                 FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
-                        Optional.ofNullable(fog.get(id.withSuffix("_fog")))
-                                .map(BlockPropertyModifier::getColormap),
+                        fogMod.map(BlockPropertyModifier::getColormap),
                         targets);
                 converted.put(id, modifier);
     }
