@@ -18,7 +18,6 @@ public abstract class JsonImgPartialReloader extends PartialReloader<JsonImgPart
         var jsons = this.getJsonsInDirectories(resourceManager);
         var textures = this.getImagesInDirectories(resourceManager);
 
-        this.checkConditions(jsons);
         return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures));
     }
 

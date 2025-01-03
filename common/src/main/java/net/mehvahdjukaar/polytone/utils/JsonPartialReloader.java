@@ -16,7 +16,6 @@ public abstract class JsonPartialReloader extends PartialReloader<Map<ResourceLo
     @Override
     protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
         var jsons = this.getJsonsInDirectories(resourceManager);
-        this.checkConditions(jsons);
         return ImmutableMap.copyOf(jsons);
     }
 }
