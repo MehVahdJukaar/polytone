@@ -2,8 +2,8 @@ package net.mehvahdjukaar.polytone.block;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -13,7 +13,6 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.Vec3;
-import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlockContextExpression {
-
 
 
     private static final String POS_X = "POS_X";
@@ -80,7 +78,7 @@ public class BlockContextExpression {
     private static ConcurrentExpression createExpression(String s) {
         return ConcurrentExpression.of(new ExpressionBuilder(ExpressionUtils.removeHex(s))
                 .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
-                .variables( POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, TIME, BLOCK_LIGHT, SKY_LIGHT, DISTANCE_SQUARED,
+                .variables(POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, TIME, BLOCK_LIGHT, SKY_LIGHT, DISTANCE_SQUARED,
                         PLAYER_X, PLAYER_Y, PLAYER_Z, PLAYER_SPEED_SQUARED)
                 .operator(ExpressionUtils.defOp())
         );
@@ -176,5 +174,5 @@ public class BlockContextExpression {
 
     public static final BlockContextExpression ZERO = new BlockContextExpression("0");
     public static final BlockContextExpression ONE = new BlockContextExpression("1");
-    public static final BlockContextExpression PARTICLE_RAND= new BlockContextExpression("(rand() * 2.0 - 1.0) * 0.4");
+    public static final BlockContextExpression PARTICLE_RAND = new BlockContextExpression("(rand() * 2.0 - 1.0) * 0.4");
 }

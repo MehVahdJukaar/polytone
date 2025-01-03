@@ -21,7 +21,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
 
 
     public static final Codec<StandaloneItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            DataComponentMap.CODEC.fieldOf("components").forGetter(i -> i.components),
+            DataComponentMap.CODEC.optionalFieldOf("components", DataComponentMap.EMPTY).forGetter(i -> i.components),
             ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
