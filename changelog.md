@@ -1,5 +1,4 @@
-- added kill_when_still variable to particles
-- fixed an of by 1 error in colormap due to recent updates
-- added player speed squared varaible
-- more parity with 1.21 version of the mod
-- fixed legacy watercolor conversion giving wrong target for flowing water
+- ALL mod jsons can now properly use polytone conditions. 
+- These are "require_mods" and "polytone_ignore"
+- Both of these can be added to both .json and .properties files
+- disabled files will still consume their relative textures as intended

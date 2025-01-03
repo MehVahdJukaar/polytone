@@ -64,7 +64,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         Map<ResourceLocation, Parsed<FluidPropertyModifier>> parsedModifiers = new HashMap<>();
         for (var j : extraModifiers.entrySet()) {
-            parsedModifiers.put(j.getKey(), Parsed.of(j.getValue(), j.getKey()));
+            parsedModifiers.put(j.getKey(), Parsed.success(j.getValue(), j.getKey()));
         }
         textures.putAll(extraImages);
 
@@ -98,7 +98,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             BlockColor tint = modifier.getTint();
             ColormapsManager.tryAcceptingTexture(textures, id, tint, usedTextures, true);
 
-            parsed.ifEnabled(this::addModifier);
+            if (parsed.isEnabled()) this.addModifier(id, modifier);
         }
 
         // creates orphaned texture colormaps & properties
