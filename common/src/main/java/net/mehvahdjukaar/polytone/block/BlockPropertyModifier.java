@@ -32,8 +32,6 @@ import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
-import static net.mehvahdjukaar.polytone.utils.ListUtils.mergeSet;
-
 public record BlockPropertyModifier(
         Optional<? extends BlockColor> tintGetter,
         Optional<SoundType> soundType,
@@ -47,9 +45,10 @@ public record BlockPropertyModifier(
         Optional<List<BlockSoundEmitter>> soundEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
         Optional<BlockSetTypeProvider> blockSetType,
+        Boolean disableParticles,
         @NotNull Targets targets,
         boolean tintHack) {
-//TODO: add is soid for occlusion
+    //TODO: add is soid for occlusion
     // Other has priority
     public BlockPropertyModifier merge(BlockPropertyModifier other) {
         return new BlockPropertyModifier(
@@ -65,6 +64,7 @@ public record BlockPropertyModifier(
                 other.soundEmitters.isPresent() ? other.soundEmitters.map(List::copyOf) : this.soundEmitters.map(List::copyOf),
                 other.offsetType().isPresent() ? other.offsetType() : this.offsetType(),
                 other.blockSetType().isPresent() ? other.blockSetType() : this.blockSetType(),
+                other.disableParticles || this.disableParticles,
                 other.targets.merge(this.targets),
                 other.tintHack || this.tintHack
         );
@@ -75,7 +75,8 @@ public record BlockPropertyModifier(
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), java.util.Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY, false);
+                Optional.empty(), Optional.empty(), Optional.empty(),
+                false, Targets.EMPTY, false);
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
@@ -87,12 +88,13 @@ public record BlockPropertyModifier(
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
-        Targets t = Targets.ofIds(blocks);
+        Targets t = net.mehvahdjukaar.polytone.utils.Targets.ofIds(blocks);
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), t, false);
+                Optional.empty(), Optional.empty(), Optional.empty(),
+                false, t, false);
     }
 
     // returns the old ones
@@ -191,7 +193,7 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak), Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
                 Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.ofNullable(oldType),  Targets.EMPTY, false);
+                Optional.empty(), Optional.ofNullable(oldType), false, Targets.EMPTY, false);
     }
 
 
@@ -213,6 +215,7 @@ public record BlockPropertyModifier(
                     StringRepresentable.fromEnum(OffsetTypeR::values).xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
                             .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
                     BlockSetTypeProvider.CODEC.optionalFieldOf("block_set_type").forGetter(BlockPropertyModifier::blockSetType),
+                    Codec.BOOL.optionalFieldOf("disable_particles", false).forGetter(BlockPropertyModifier::disableParticles),
                     Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BlockPropertyModifier::targets),
                     //dont use
                     StrOpt.of(Codec.BOOL, "force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
