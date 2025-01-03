@@ -22,8 +22,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
-
 public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
 
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();
@@ -117,8 +115,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation id = entry.getKey();
-            Parsed<BlockPropertyModifier> parsed = entry.getValue();
-            BlockPropertyModifier modifier = parsed.getResultOrPartial();
+            Parsed<BlockPropertyModifier> result = entry.getValue();
+            BlockPropertyModifier modifier = result.getResultOrPartial();
 
             if (!modifier.hasColormap() && textures.containsKey(id)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
@@ -131,7 +129,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             BlockColor tint = modifier.getColormap();
             ColormapsManager.tryAcceptingTextureGroup(textures, id, tint, usedTextures, true);
 
-            parsed.ifEnabled(this::addModifier);
+            if (result.isEnabled()) addModifier(id, modifier);
         }
 
         textures.keySet().removeAll(usedTextures);
