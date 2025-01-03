@@ -42,7 +42,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            var modifier = Parsed.parseFull(ItemModifier.CODEC, json, ops, location, "item modifier");
+            var modifier = Parsed.parseFull(ItemModifier.CODEC, json, ops, id, "item modifier");
 
             parsedModifiers.put(id, modifier);
 

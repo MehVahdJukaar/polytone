@@ -6,11 +6,14 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
+
+import static net.mehvahdjukaar.polytone.utils.CodecUtil.withAlternative;
 
 public class Parsed<T> {
 
@@ -59,7 +62,7 @@ public class Parsed<T> {
 
     private static final Codec<Boolean> CONDITION_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.optionalFieldOf("polytone_ignore", false).forGetter(b -> b),
-            Codec.withAlternative(Codec.STRING.listOf(), Codec.STRING, List::of)
+            withAlternative(Codec.STRING.listOf(), Codec.STRING, List::of)
                     .optionalFieldOf("require_mods", List.of()).forGetter(b -> List.of())
     ).apply(instance, (b, l) -> {
         if (b) {
@@ -80,10 +83,14 @@ public class Parsed<T> {
 
     public static <T, J> Optional<T> parseOptional(Decoder<T> codec, J input, DynamicOps<J> ops,
                                                    ResourceLocation id, String jsonTypeName) {
-        Boolean enabled = CONDITION_CODEC.decode(ops, input).getOrThrow().getFirst();
+        Boolean enabled = CONDITION_CODEC.decode(ops, input).getOrThrow(
+                false, Polytone.LOGGER::error
+        ).getFirst();
         try {
             if (enabled) {
-                return Optional.of(codec.decode(ops, input).getOrThrow().getFirst());
+                return Optional.of(codec.decode(ops, input).getOrThrow(
+                        false, Polytone.LOGGER::error
+                ).getFirst());
             } else {
                 return Optional.empty();
             }
@@ -101,13 +108,19 @@ public class Parsed<T> {
 
     public static <T, J> Parsed<T> parse(Decoder<T> fullCodec, Decoder<T> partialCodec, J input, DynamicOps<J> ops,
                                          ResourceLocation id, String jsonTypeName) {
-        Boolean enabled = CONDITION_CODEC.decode(ops, input).getOrThrow().getFirst();
+        Boolean enabled = CONDITION_CODEC.decode(ops, input).getOrThrow(
+                false, Polytone.LOGGER::error
+        ).getFirst();
         T value;
         try {
             if (enabled) {
-                value = fullCodec.decode(ops, input).getOrThrow().getFirst();
+                value = fullCodec.decode(ops, input).getOrThrow(
+                        false, Polytone.LOGGER::error
+                ).getFirst();
             } else {
-                value = partialCodec.decode(ops, input).getOrThrow().getFirst();
+                value = partialCodec.decode(ops, input).getOrThrow(
+                        false, Polytone.LOGGER::error
+                ).getFirst();
             }
         } catch (Exception e) {
             throw new JsonParseException("Failed to decode " + jsonTypeName + " from file \"" + id + ".json\": ", e);
