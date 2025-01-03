@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -20,7 +21,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
 
 
     public static final Codec<StandaloneItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.PASSTHROUGH.fieldOf("components").forGetter(i -> i.lazyComponent),
+            DataComponentMap.CODEC.fieldOf("components").forGetter(i -> i.components),
             ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
@@ -43,7 +44,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
     private final Item item;
     private final boolean autoModel;
 
-    public StandaloneItemModelOverride(Dynamic<?> components, ModelResourceLocation model,
+    public StandaloneItemModelOverride(DataComponentMap components, ModelResourceLocation model,
                                        Optional<Integer> stackCount, Optional<Pattern> pattern,
                                        Optional<CompoundTag> entityTag, Optional<ColormapExpressionProvider> expression,
                                        Map<DataComponentType<?>, CompoundTag> nbtMatchers,

@@ -6,18 +6,13 @@ import net.mehvahdjukaar.polytone.utils.DepthSearchTrie;
 import net.mehvahdjukaar.polytone.utils.FrequencyOrderedCollection;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +35,7 @@ public class ItemModelOverrideList {
         // trident : count 1
         // key: name, enchant, count
         this.overrides.clear();
-        this.overrides.acceptEntries(this.entries, registryAccess);
+        this.overrides.acceptEntries(this.entries);
         this.populated = true;
         this.entries.clear();
     }
@@ -111,12 +106,12 @@ public class ItemModelOverrideList {
             return null;
         }
 
-        public void acceptEntries(List<ItemModelOverride> entries, RegistryAccess registryAccess) {
+        public void acceptEntries(List<ItemModelOverride> entries) {
             boolean hasCount = false;
             FrequencyOrderedCollection<DataComponentType<?>> keyFrequencies = new FrequencyOrderedCollection<>();
             for (ItemModelOverride entry : entries) {
                 if (entry.stackCount() != null) hasCount = true;
-                for (var component : entry.getComponents(registryAccess)) {
+                for (var component : entry.components()) {
                     keyFrequencies.add(component.type());
                 }
             }
@@ -127,7 +122,7 @@ public class ItemModelOverrideList {
                 List<Object> key = new ArrayList<>();
                 if (hasCount) key.add(entry.stackCount());
                 for (DataComponentType<?> type : this.orderedKeys) {
-                    key.add(entry.getComponents(registryAccess).getTyped(type));
+                    key.add(entry.components().getTyped(type));
                 }
                 this.insert(key, entry);
             }

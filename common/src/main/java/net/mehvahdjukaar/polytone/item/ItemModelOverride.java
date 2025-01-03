@@ -1,9 +1,6 @@
 package net.mehvahdjukaar.polytone.item;
 
-import com.google.gson.JsonParseException;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.UnboundedMapCodec;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
@@ -17,7 +14,6 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
@@ -25,15 +21,12 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class ItemModelOverride {
-    @Nullable
-    protected final Dynamic<?> lazyComponent;
     @Nullable
     protected final Integer stackCount;
     @Nullable
@@ -42,8 +35,8 @@ public class ItemModelOverride {
     protected final CompoundTag entityTag;
     @Nullable
     protected final ColormapExpressionProvider expression;
+    protected final DataComponentMap components;
     protected ModelResourceLocation model;
-    protected DataComponentMap decodedComponents;
     protected Map<DataComponentType<?>, CompoundTag> nbtMatchers;
 
     protected static final Codec<Map<ResourceLocation, Float>> ITEM_PREDICATE_CODEC = Codec.unboundedMap(ResourceLocation.CODEC, Codec.FLOAT);
@@ -51,7 +44,7 @@ public class ItemModelOverride {
     protected static final UnboundedMapCodec<DataComponentType<?>, CompoundTag> NBT_COMPONENTS_CODEC = Codec.unboundedMap(DataComponentType.CODEC, CompoundTag.CODEC);
 
     public static final Codec<ItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.PASSTHROUGH.fieldOf("components").forGetter(o -> o.lazyComponent),
+            DataComponentMap.CODEC.optionalFieldOf("components", DataComponentMap.EMPTY).forGetter(o -> o.components),
             ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
@@ -67,11 +60,11 @@ public class ItemModelOverride {
     public record Partial(ModelResourceLocation model) {
     }
 
-    public ItemModelOverride(Dynamic<?> lazyComponent, ModelResourceLocation model, Optional<Integer> stackCount,
+    public ItemModelOverride(DataComponentMap components, ModelResourceLocation model, Optional<Integer> stackCount,
                              Optional<Pattern> pattern, Optional<CompoundTag> entityTag,
                              Optional<ColormapExpressionProvider> expression,
                              Map<DataComponentType<?>,CompoundTag> nbtMatchers) {
-        this.lazyComponent = lazyComponent;
+        this.components = components;
         this.model = model;
         this.stackCount = stackCount.orElse(null);
         this.pattern = pattern.orElse(null);
@@ -81,28 +74,17 @@ public class ItemModelOverride {
     }
 
     public ItemModelOverride(DataComponentMap map, ModelResourceLocation model) {
-        this.lazyComponent = null;
         this.model = model;
         this.stackCount = null;
         this.pattern = null;
-        this.decodedComponents = map;
+        this.components = map;
         this.entityTag = null;
         this.expression = null;
     }
 
 
-    public DataComponentMap getComponents(RegistryAccess registryAccess) {
-        if (this.decodedComponents == null && this.lazyComponent != null) {
-            this.decodedComponents = runCodec(registryAccess, this.lazyComponent);
-        }
-        return this.decodedComponents;
-    }
-
-    private static <T> DataComponentMap runCodec(RegistryAccess ra, Dynamic<T> dynamic) {
-        DynamicOps<T> ops = RegistryOps.create(dynamic.getOps(), ra);
-        return DataComponentMap.CODEC.decode(ops, dynamic.getValue())
-                .result().orElseThrow(() -> new JsonParseException("Failed to decode components map"))
-                .getFirst();
+    public DataComponentMap components() {
+        return this.components;
     }
 
     public ModelResourceLocation model() {
@@ -151,7 +133,7 @@ public class ItemModelOverride {
         return true;
     }
 
-    private static boolean containsTag(CompoundTag tagToMatch, CompoundTag entityTag) {
+    private static boolean containsTag(CompoundTag entityTag, CompoundTag tagToMatch) {
         for (String key : tagToMatch.getAllKeys()) {
             Tag t = entityTag.get(key);
             if (t == null) return false;

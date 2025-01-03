@@ -1,1 +1,2 @@
-- fixed backward compat parsing code returning an always false condition
+- fixed an issue with custom item models and nbt match
+- fixed an issue with backward compat code
