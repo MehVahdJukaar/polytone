@@ -2,20 +2,13 @@ package net.mehvahdjukaar.polytone.fluid;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.utils.ArrayImage;
-import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
-import net.mehvahdjukaar.polytone.utils.LegacyHelper;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +22,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
 
     public FluidPropertiesManager() {
-        super( "fluid_modifiers", "fluid_properties");
+        super("fluid_modifiers", "fluid_properties");
     }
 
     private Map<ResourceLocation, FluidPropertyModifier> extraModifiers;
@@ -38,13 +31,12 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     // fot OF lava and water. shit code...
     public void addConvertedBlockProperties(Map<ResourceLocation, FluidPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
         this.extraImages = textures;
-        this.extraModifiers =  modifiers;
+        this.extraModifiers = modifiers;
     }
 
     @Override
     protected Resources prepare(ResourceManager resourceManager) {
         var jsons = this.getJsonsInDirectories(resourceManager);
-        this.checkConditions(jsons);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 
@@ -69,7 +61,10 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, FluidPropertyModifier> parsedModifiers = new HashMap<>(extraModifiers);
+        Map<ResourceLocation, Parsed<FluidPropertyModifier>> parsedModifiers = new HashMap<>();
+        for (var j : extraModifiers.entrySet()) {
+            parsedModifiers.put(j.getKey(), Parsed.of(j.getValue(), j.getKey()));
+        }
         textures.putAll(extraImages);
 
 
@@ -77,9 +72,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            FluidPropertyModifier modifier = FluidPropertyModifier.CODEC.decode(ops, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Fluid Modifier with json id " + id + "\n error: " + errorMsg))
-                    .getFirst();
+            var modifier = Parsed.parseFull(FluidPropertyModifier.CODEC, json, ops, id, "fluid modifier");
 
             //always have priority
             if (parsedModifiers.containsKey(id)) {
@@ -92,7 +85,8 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation id = entry.getKey();
-            FluidPropertyModifier modifier = entry.getValue();
+            Parsed<FluidPropertyModifier> parsed = entry.getValue();
+            FluidPropertyModifier modifier = parsed.getResultOrPartial();
 
             if (!modifier.hasColormap() && textures.containsKey(id)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
@@ -102,7 +96,8 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             //fill inline colormaps colormapTextures
             BlockColor tint = modifier.getTint();
             ColormapsManager.tryAcceptingTexture(textures, id, tint, usedTextures, true);
-            addModifier(id, modifier);
+
+            parsed.ifEnabled(this::addModifier);
         }
 
         // creates orphaned texture colormaps & properties

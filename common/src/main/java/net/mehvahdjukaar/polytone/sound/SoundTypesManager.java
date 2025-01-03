@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BlockModel;
@@ -43,7 +44,6 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     @Override
     protected Resources prepare(ResourceManager resourceManager) {
         var jsons = getJsonsInDirectories(resourceManager);
-        this.checkConditions(jsons);
 
         var types = CsvUtils.parseCsv(resourceManager, "sound_events");
 
@@ -73,11 +73,8 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         for (var j : soundJsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            SoundType soundType = PolytoneSoundType.DIRECT_CODEC.decode(ops, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Sound Type with json id " + id + "\n error: " + errorMsg))
-                    .getFirst();
-
-            customSoundTypes.register(id, soundType);
+            SoundType soundType = Parsed.parseOrNull(PolytoneSoundType.DIRECT_CODEC, json, ops, id, "sound type");
+            if (soundType != null) customSoundTypes.register(id, soundType);
         }
 
         for (var e : customSoundEvents.getEntries()) {

@@ -119,24 +119,4 @@ public abstract class PartialReloader<T> {
 
     protected abstract void resetWithLevel(boolean logOff);
 
-    protected void checkConditions(Map<ResourceLocation, JsonElement> object) {
-        object.entrySet().removeIf(e -> {
-            if (e.getValue() instanceof JsonObject jo) {
-                JsonElement je = jo.get("require_mods");
-                if (je != null) {
-                    if (je.isJsonArray()) {
-                        for (JsonElement el : je.getAsJsonArray()) {
-                            if (!PlatStuff.isModLoaded(el.getAsString())) {
-                                return true;
-                            }
-                        }
-                    } else if (je.isJsonPrimitive()) {
-                        return !PlatStuff.isModLoaded(je.getAsString());
-                    }
-                }
-            }
-            return false;
-        });
-
-    }
 }

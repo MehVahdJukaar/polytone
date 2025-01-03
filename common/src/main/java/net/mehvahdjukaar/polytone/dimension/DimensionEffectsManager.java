@@ -12,6 +12,7 @@ import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -80,16 +81,17 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, DimensionEffectsModifier> parsedModifiers = new HashMap<>(extraMods);
+        Map<ResourceLocation, Parsed<DimensionEffectsModifier>> parsedModifiers = new HashMap<>();
+        for (var e : extraMods.entrySet()) {
+            parsedModifiers.put(e.getKey(), Parsed.success(e.getValue(), e.getKey()));
+        }
 
         for (var j : jsons.entrySet()) {
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            DimensionEffectsModifier modifier = DimensionEffectsModifier.CODEC.decode(ops, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Dimension Effects with json id " + id + " - error: " + errorMsg))
-                    .getFirst();
-
+            var modifier = Parsed.parseFull(DimensionEffectsModifier.CODEC,
+                    json, ops, id, "dimension modifier");
             //always have priority
             if (parsedModifiers.containsKey(id)) {
                 Polytone.LOGGER.warn("Found duplicate Dimension Effects file with id {}." +
@@ -102,7 +104,8 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation id = entry.getKey();
-            DimensionEffectsModifier modifier = entry.getValue();
+            Parsed<DimensionEffectsModifier> parsed = entry.getValue();
+            DimensionEffectsModifier modifier = parsed.getResultOrPartial();
 
             BlockColor fog = modifier.getFogColormap();
             BlockColor sky = modifier.getSkyColormap();
@@ -151,7 +154,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             ColormapsManager.tryAcceptingTexture(textures, skyId, sky, usedTextures, true);
             ColormapsManager.tryAcceptingTexture(textures, sunsetId, sunset, usedTextures, true);
 
-            addModifier(id, modifier, reg);
+            if (parsed.isEnabled()) {
+                addModifier(id, modifier, reg);
+            }
         }
 
         // creates orphaned texture colormaps & properties

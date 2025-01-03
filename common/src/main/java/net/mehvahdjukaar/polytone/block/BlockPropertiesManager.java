@@ -6,19 +6,14 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
-import net.mehvahdjukaar.polytone.utils.ArrayImage;
-import net.mehvahdjukaar.polytone.utils.LegacyHelper;
-import net.mehvahdjukaar.polytone.utils.PartialReloader;
-import net.mehvahdjukaar.polytone.utils.PropertiesUtils;
+import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -63,7 +58,6 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     @Override
     protected Resources prepare(ResourceManager resourceManager) {
         var jsons = this.getJsonsInDirectories(resourceManager);
-        checkConditions(jsons);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
 
@@ -73,7 +67,6 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         Map<ResourceLocation, Properties> ofProperties = PropertiesUtils.gatherProperties(resourceManager, "optifine/colormap");
         Map<ResourceLocation, JsonElement> ofJsons = new HashMap<>();
         scanDirectory(resourceManager, "optifine/colormap", GSON, ofJsons);
-        checkConditions(ofJsons);
 
         ofJsons.forEach((k, v) -> ofProperties.put(k, PropertiesUtils.jsonToProperties(v)));
 
@@ -95,7 +88,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         var textureCopy = new HashMap<>(resources.textures);
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, BlockPropertyModifier> parsedModifiers = new HashMap<>();
+        Map<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers = new HashMap<>();
         parsedModifiers.putAll(LegacyHelper.convertBlockProperties(resources.ofProperties, textureCopy));
         parsedModifiers.putAll(LegacyHelper.convertInlinedPalettes(optifineColormapsToBlocks));
 
@@ -109,10 +102,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             ResourceLocation id = j.getKey();
 
 
-            BlockPropertyModifier prop = BlockPropertyModifier.CODEC.decode(ops, json)
-                    .getOrThrow(errorMsg ->
-                            new IllegalStateException("Could not decode Client Block Property with json id " + id + "\n error: " + errorMsg))
-                    .getFirst();
+            var prop = Parsed.parse(BlockPropertyModifier.CODEC, BlockPropertyModifier.PARTIAL_CODEC,
+                    json, ops, id, "block modifier");
 
             //always have priority
             if (parsedModifiers.containsKey(id)) {
@@ -126,7 +117,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation id = entry.getKey();
-            BlockPropertyModifier modifier = entry.getValue();
+            Parsed<BlockPropertyModifier> parsed = entry.getValue();
+            BlockPropertyModifier modifier = parsed.getResultOrPartial();
 
             if (!modifier.hasColormap() && textures.containsKey(id)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
@@ -139,7 +131,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             BlockColor tint = modifier.getColormap();
             ColormapsManager.tryAcceptingTextureGroup(textures, id, tint, usedTextures, true);
 
-            addModifier(id, modifier);
+            parsed.ifEnabled(this::addModifier);
         }
 
         textures.keySet().removeAll(usedTextures);

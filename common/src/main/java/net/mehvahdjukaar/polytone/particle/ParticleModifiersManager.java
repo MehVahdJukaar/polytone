@@ -5,9 +5,9 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -38,10 +38,9 @@ public class ParticleModifiersManager extends JsonPartialReloader {
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            ParticleModifier modifier = ParticleModifier.CODEC.decode(ops, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Particle Modifier with json id " + id + "\n error: " + errorMsg))
-                    .getFirst();
-            addModifier(id, modifier);
+
+            var modifier = Parsed.parseOptional(ParticleModifier.CODEC, json, ops, id, "particle modifier");
+            modifier.ifPresent(m -> this.addModifier(id, m));
         }
 
         //TODO: add inline colormap support
