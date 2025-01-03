@@ -1,5 +1,1 @@
-- ALL mod jsons can now properly use polytone conditions. 
-- These are "require_mods" and "polytone_ignore"
-- Both of these can be added to both .json and .properties files
-- disabled files will still consume their relative textures as intended, preventing disabled stuff ot create extra implicit colormaps
-- added "disable_particles" param to block modifiers. Prevents original client tick from spawning sounds and particles
+- fixed backward compat parsing code returning an always false condition
