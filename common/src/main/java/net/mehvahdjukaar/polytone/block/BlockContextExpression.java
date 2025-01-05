@@ -169,6 +169,13 @@ public class BlockContextExpression {
         if (hasPlayerSpeed) {
             expression.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
         }
+        if (hasDistance) {
+            var e = Minecraft.getInstance().getCameraEntity();
+            double x = pos.getX() - e.getX();
+            double y = pos.getY() - e.getY();
+            double z = pos.getZ() - e.getZ();
+            expression.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+        }
         return expression.evaluate();
     }
 
