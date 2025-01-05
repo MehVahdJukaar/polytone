@@ -1,1 +1,1 @@
-- ported stuff
+- fixed distance squared

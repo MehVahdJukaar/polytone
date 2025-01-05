@@ -11,6 +11,9 @@ mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBas
 
 accessible field net/minecraft/client/gui/GuiGraphics bufferSource Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;
 
+#particle clear
+accessible field net/minecraft/client/particle/ParticleEngine particles Ljava/util/Map;
+
 accessible field net/minecraft/client/particle/Particle friction F
 accessible field net/minecraft/client/particle/Particle oRoll F
 accessible field net/minecraft/client/particle/Particle hasPhysics Z
