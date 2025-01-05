@@ -80,7 +80,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
     public void addSpriteSets(ResourceManager resourceManager) {
         ParticleEngine engine = Minecraft.getInstance().particleEngine;
         for (var v : customParticleFactories.keySet()) {
-            engine.spriteSets.remove(v);
+            //never remove them as it could crash with old already spawner particles. not ideal
+            //engine.spriteSets.remove(v);
         }
         var jsons = this.getJsonsInDirectories(resourceManager);
         for (var v : jsons.keySet()) {

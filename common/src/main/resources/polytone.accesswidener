@@ -6,6 +6,9 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour soundType 
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties canOcclude Z
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties offsetFunction Ljava/util/Optional;
 
+#particle clear
+accessible field net/minecraft/client/particle/ParticleEngine particles Ljava/util/Map;
+
 accessible field net/minecraft/client/particle/Particle friction F
 accessible field net/minecraft/client/particle/Particle oRoll F
 accessible field net/minecraft/client/particle/Particle hasPhysics Z
