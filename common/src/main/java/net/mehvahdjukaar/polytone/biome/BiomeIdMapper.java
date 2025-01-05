@@ -40,7 +40,7 @@ public interface BiomeIdMapper {
         @Override
         public float getIndex(Biome biome) {
             // no clue why 1 is needed. dont touch
-            return (map.getOrDefault(BiomeKeysCache.get(biome), 0f)) / (textureSize - 1);
+            return (map.getOrDefault(BiomeKeysCache.get(biome), 0f) + 1) / (textureSize);
         }
     }
 
