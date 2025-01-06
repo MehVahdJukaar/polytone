@@ -1,1 +1,1 @@
-- fixed distance squared
+- fixed slot modifiers crashing in some circumstances

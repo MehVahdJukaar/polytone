@@ -46,6 +46,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             value = "INVOKE"
     ))
     public boolean polytone$slotifyColor(AbstractContainerScreen screen, GuiGraphics poseStack, Slot slot, int x, int y, float partialTicks) {
+        if (slot == null) return true;
         return Polytone.SLOTIFY.maybeChangeColor(screen, slot,
                 poseStack, x, y, 0);
     }
