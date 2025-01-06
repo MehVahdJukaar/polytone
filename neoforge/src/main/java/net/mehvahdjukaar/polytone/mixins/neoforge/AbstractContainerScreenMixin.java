@@ -48,9 +48,9 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlotHighlightFront(Lnet/minecraft/client/gui/GuiGraphics;)V",
             value = "INVOKE"
     ))
-    public boolean slotifyColor(AbstractContainerScreen instance, GuiGraphics guiGraphics, @Local Slot slot) {
+    public boolean slotifyColor(AbstractContainerScreen instance, GuiGraphics guiGraphics) {
         if (this.hoveredSlot == null) return true;
-        return Polytone.SLOTIFY.maybeChangeColor((AbstractContainerScreen<?>) (Object) this, slot, guiGraphics, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 0);
+        return Polytone.SLOTIFY.maybeChangeColor((AbstractContainerScreen<?>) (Object) this, this.hoveredSlot, guiGraphics, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 0);
     }
 
     @Inject(method = "init", at = @At("TAIL"))
