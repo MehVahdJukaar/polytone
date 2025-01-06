@@ -22,6 +22,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
+import org.jetbrains.annotations.NotNull;
 import net.minecraft.world.level.material.Fluids;
 import org.jetbrains.annotations.Nullable;
 
@@ -234,7 +235,7 @@ public class GuiModifierManager extends JsonPartialReloader {
         }
     }
 
-    public boolean maybeChangeColor(AbstractContainerScreen<?> screen, Slot slot, GuiGraphics graphics,
+    public boolean maybeChangeColor(AbstractContainerScreen<?> screen, @NotNull Slot slot, GuiGraphics graphics,
                                     int x, int y, int offset) {
         var mod = getSlotModifier(screen, slot);
         if (mod != null && mod.hasCustomColor()) {

@@ -48,6 +48,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     ))
     public boolean slotifyColor(GuiGraphics poseStack, int x, int y, int blitOffset, int color,
                                 @Local Slot slot) {
+        if (slot == null) return true;
         return Polytone.SLOTIFY.maybeChangeColor((AbstractContainerScreen<?>) (Object) this, slot, poseStack, x, y, blitOffset);
     }
 
