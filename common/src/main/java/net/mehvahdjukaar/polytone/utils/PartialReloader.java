@@ -12,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
+
 public abstract class PartialReloader<T> {
 
     public static final Gson GSON = new Gson();
