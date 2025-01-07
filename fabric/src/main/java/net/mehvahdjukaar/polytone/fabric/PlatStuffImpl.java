@@ -13,6 +13,9 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.impl.client.indigo.renderer.IndigoRenderer;
+import net.fabricmc.fabric.impl.client.indigo.renderer.render.AbstractBlockRenderContext;
+import net.fabricmc.fabric.mixin.block.BlockMixin;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -187,7 +190,6 @@ public class PlatStuffImpl {
         List<ResourceLocation> oldBeforeTabs = null;
 
         List<ResourceLocation> oldAfterTabs = null;
-
         return new CreativeTabModifier(
                 Optional.ofNullable(oldIcon),
                 Optional.ofNullable(oldSearch),
