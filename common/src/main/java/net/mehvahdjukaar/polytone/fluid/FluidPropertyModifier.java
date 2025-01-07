@@ -22,11 +22,11 @@ public record FluidPropertyModifier(Optional<? extends BlockColor> colormap, Opt
             ).apply(instance, FluidPropertyModifier::new));
 
     // Other has priority
-    public FluidPropertyModifier merge(FluidPropertyModifier other) {
+    public FluidPropertyModifier merge(FluidPropertyModifier newMod) {
         return new FluidPropertyModifier(
-                other.colormap.isPresent() ? other.colormap() : this.colormap(),
-                other.fogColormap().isPresent() ? other.fogColormap() : this.fogColormap(),
-                other.targets.merge(this.targets)
+                newMod.colormap.isPresent() ? newMod.colormap() : this.colormap(),
+                newMod.fogColormap().isPresent() ? newMod.fogColormap() : this.fogColormap(),
+                newMod.targets.merge(this.targets)
         );
     }
 

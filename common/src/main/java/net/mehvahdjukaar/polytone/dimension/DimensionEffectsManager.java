@@ -9,10 +9,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
-import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -80,7 +77,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, Parsed<DimensionEffectsModifier>> parsedModifiers = new HashMap<>();
+        Map<ResourceLocation, Parsed<DimensionEffectsModifier>> parsedModifiers = Utils.sortedMap();
         for (var e : extraMods.entrySet()) {
             parsedModifiers.put(e.getKey(), Parsed.success(e.getValue(), e.getKey()));
         }

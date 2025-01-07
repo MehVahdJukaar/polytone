@@ -2,10 +2,8 @@ package net.mehvahdjukaar.polytone.item;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
@@ -23,10 +21,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Pattern;
 
-import static net.mehvahdjukaar.polytone.utils.ListUtils.mergeList;
+import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
 
 public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Optional<IColorGetter> barColor,
@@ -63,15 +60,15 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 Optional.empty(), List.of(), List.of(), List.of(), Targets.EMPTY);
     }
 
-    public ItemModifier merge(ItemModifier other) {
+    public ItemModifier merge(ItemModifier newMod) {
         return new ItemModifier(
-                this.tintGetter.isPresent() ? this.tintGetter : other.tintGetter,
-                this.barColor.isPresent() ? this.barColor : other.barColor,
-                this.rarity.isPresent() ? this.rarity : other.rarity,
-                mergeList(this.tooltips, other.tooltips),
-                mergeList(this.removedTooltips, other.removedTooltips),
-                mergeList(this.customModels, other.customModels),
-                this.targets.merge(other.targets)
+                newMod.tintGetter.isPresent() ? newMod.tintGetter : this.tintGetter,
+                newMod.barColor.isPresent() ? newMod.barColor : this.barColor,
+                newMod.rarity.isPresent() ? newMod.rarity : this.rarity,
+                mergeList(newMod.tooltips, this.tooltips),
+                mergeList(newMod.removedTooltips, this.removedTooltips),
+                mergeList(newMod.customModels, this.customModels),
+                newMod.targets.merge(this.targets)
         );
     }
 
