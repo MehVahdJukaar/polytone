@@ -7,7 +7,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -22,7 +21,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static net.mehvahdjukaar.polytone.tabs.ExtraItemCodecs.ITEM_OR_STACK;
-import static net.mehvahdjukaar.polytone.utils.ListUtils.mergeList;
+import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
 
 public record CreativeTabModifier(
         Optional<ItemStack> icon,
@@ -59,21 +58,21 @@ public record CreativeTabModifier(
     ).apply(i, CreativeTabModifier::new));
 
 
-    public CreativeTabModifier merge(CreativeTabModifier other) {
+    public CreativeTabModifier merge(CreativeTabModifier newMod) {
         return new CreativeTabModifier(
-                icon.isPresent() ? icon : other.icon,
-                search.isPresent() ? search : other.search,
-                searchWidth.isPresent() ? searchWidth : other.searchWidth,
-                canScroll.isPresent() ? canScroll : other.canScroll,
-                showTitle.isPresent() ? showTitle : other.showTitle,
-                name.isPresent() ? name : other.name,
-                backGroundLocation.isPresent() ? backGroundLocation : other.backGroundLocation,
-                tabsImage.isPresent() ? tabsImage : other.tabsImage,
-                beforeTabs.isPresent() ? beforeTabs.map(List::copyOf) : other.beforeTabs.map(List::copyOf),
-                afterTabs.isPresent() ? afterTabs.map(List::copyOf) : other.afterTabs.map(List::copyOf),
-                mergeList(removals, other.removals),
-                mergeList(additions, other.additions),
-                this.targets.merge(other.targets)
+                newMod.icon.isPresent() ? newMod.icon : this.icon,
+                newMod.search.isPresent() ? newMod.search : this.search,
+                newMod.searchWidth.isPresent() ? newMod.searchWidth : this.searchWidth,
+                newMod.canScroll.isPresent() ? newMod.canScroll : this.canScroll,
+                newMod.showTitle.isPresent() ? newMod.showTitle : this.showTitle,
+                newMod.name.isPresent() ? newMod.name : this.name,
+                newMod.backGroundLocation.isPresent() ? newMod.backGroundLocation : this.backGroundLocation,
+                newMod.tabsImage.isPresent() ? newMod.tabsImage : this.tabsImage,
+                newMod.beforeTabs.isPresent() ? newMod.beforeTabs : this.beforeTabs,
+                newMod.afterTabs.isPresent() ? newMod.afterTabs : this.afterTabs,
+                mergeList(newMod.removals, this.removals),
+                mergeList(newMod.additions, this.additions),
+                this.targets.merge(newMod.targets)
         );
     }
 

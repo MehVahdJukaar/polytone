@@ -31,7 +31,7 @@ import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
-import static net.mehvahdjukaar.polytone.utils.ListUtils.mergeSet;
+import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
 
 public record BlockPropertyModifier(
         Optional<? extends BlockColor> tintGetter,
@@ -42,30 +42,30 @@ public record BlockPropertyModifier(
         //Optional<Object> emissiveRendering,
         Optional<RenderType> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
-        Optional<List<BlockParticleEmitter>> particleEmitters,
-        Optional<List<BlockSoundEmitter>> soundEmitters,
+        List<BlockParticleEmitter> particleEmitters,
+        List<BlockSoundEmitter> soundEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
         Optional<BlockSetTypeProvider> blockSetType,
         @NotNull Targets targets,
         boolean tintHack) {
-//TODO: add is soid for occlusion
+    //TODO: add is soid for occlusion
     // Other has priority
-    public BlockPropertyModifier merge(BlockPropertyModifier other) {
+    public BlockPropertyModifier merge(BlockPropertyModifier newMod) {
         return new BlockPropertyModifier(
-                other.tintGetter.isPresent() ? other.tintGetter() : this.tintGetter(),
-                other.soundType().isPresent() ? other.soundType() : this.soundType(),
-                other.mapColor.isPresent() ? other.mapColor() : this.mapColor(),
-                other.canOcclude().isPresent() ? other.canOcclude() : this.canOcclude(),
-                other.spawnParticlesOnBreak().isPresent() ? other.spawnParticlesOnBreak() : this.spawnParticlesOnBreak(),
-                //other.emissiveRendering().isPresent() ? other.emissiveRendering() : this.emissiveRendering(),
-                other.renderType().isPresent() ? other.renderType() : this.renderType(),
-                other.clientLight.isPresent() ? other.clientLight : this.clientLight,
-                other.particleEmitters.isPresent() ? other.particleEmitters.map(List::copyOf) : this.particleEmitters.map(List::copyOf),
-                other.soundEmitters.isPresent() ? other.soundEmitters.map(List::copyOf) : this.soundEmitters.map(List::copyOf),
-                other.offsetType().isPresent() ? other.offsetType() : this.offsetType(),
-                other.blockSetType().isPresent() ? other.blockSetType() : this.blockSetType(),
-                other.targets.merge(this.targets),
-                other.tintHack || this.tintHack
+                newMod.tintGetter.isPresent() ? newMod.tintGetter() : this.tintGetter(),
+                newMod.soundType().isPresent() ? newMod.soundType() : this.soundType(),
+                newMod.mapColor.isPresent() ? newMod.mapColor() : this.mapColor(),
+                newMod.canOcclude().isPresent() ? newMod.canOcclude() : this.canOcclude(),
+                newMod.spawnParticlesOnBreak().isPresent() ? newMod.spawnParticlesOnBreak() : this.spawnParticlesOnBreak(),
+                //newMod.emissiveRendering().isPresent() ? newMod.emissiveRendering() : this.emissiveRendering(),
+                newMod.renderType().isPresent() ? newMod.renderType() : this.renderType(),
+                newMod.clientLight.isPresent() ? newMod.clientLight : this.clientLight,
+                mergeList(newMod.particleEmitters, this.particleEmitters),
+                mergeList(newMod.soundEmitters, this.soundEmitters),
+                newMod.offsetType().isPresent() ? newMod.offsetType() : this.offsetType(),
+                newMod.blockSetType().isPresent() ? newMod.blockSetType() : this.blockSetType(),
+                newMod.targets.merge(this.targets),
+                newMod.tintHack || this.tintHack
         );
     }
 
@@ -73,8 +73,8 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.ofNullable(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
-                java.util.Optional.empty(), java.util.Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY, false);
+                java.util.Optional.empty(), java.util.Optional.empty(), List.of(),
+                List.of(), Optional.empty(), Optional.empty(), Targets.EMPTY, false);
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
@@ -90,8 +90,8 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
-                java.util.Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty() ,Optional.empty(), t, false);
+                java.util.Optional.empty(), Optional.empty(), List.of(),
+                List.of(), Optional.empty(), Optional.empty(), t, false);
     }
 
     // returns the old ones
@@ -190,7 +190,7 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),
                 Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
-                Optional.empty(), Optional.empty(),  Optional.empty(),
+                List.of(), List.of(), Optional.empty(),
                 Optional.ofNullable(oldType), Targets.EMPTY, false);
     }
 
@@ -208,8 +208,8 @@ public record BlockPropertyModifier(
                     StringRepresentable.fromEnum(RenderType::values).optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
-                    BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters").forGetter(BlockPropertyModifier::particleEmitters),
-                    BlockSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters").forGetter(BlockPropertyModifier::soundEmitters),
+                    BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(BlockPropertyModifier::particleEmitters),
+                    BlockSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(BlockPropertyModifier::soundEmitters),
                     OffsetTypeR.CODEC.xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
                             .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
                     BlockSetTypeProvider.CODEC.optionalFieldOf("block_set_type").forGetter(BlockPropertyModifier::blockSetType),

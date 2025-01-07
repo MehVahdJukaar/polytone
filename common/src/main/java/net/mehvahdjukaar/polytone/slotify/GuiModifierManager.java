@@ -79,7 +79,7 @@ public class GuiModifierManager extends JsonPartialReloader {
                     } else if (target.equals("ItemPickerMenu")) {
                         cl = CreativeModeInventoryScreen.ItemPickerMenu.class;
                     } else cl = Class.forName(target);
-                    byClass.merge(cl, ScreenModifier.fromGuiMod(mod), (a, b) -> b.merge(a));
+                    byClass.merge(cl, ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
 
                     if (!mod.slotModifiers().isEmpty()) {
                         Int2ObjectArrayMap<SlotModifier> map = slotsByClass.computeIfAbsent(cl,
@@ -98,7 +98,7 @@ public class GuiModifierManager extends JsonPartialReloader {
                 Optional<MenuType<?>> menu = BuiltInRegistries.MENU.getOptional(menuId);
 
                 if (menu.isPresent() || isInventory) {
-                    byMenuId.merge(menu.orElse(null), ScreenModifier.fromGuiMod(mod), (a, b) -> b.merge(a));
+                    byMenuId.merge(menu.orElse(null), ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
 
                     if (!mod.slotModifiers().isEmpty()) {
                         Int2ObjectArrayMap<SlotModifier> map = slotsByMenuId.computeIfAbsent(menu.orElse(null),
@@ -109,7 +109,7 @@ public class GuiModifierManager extends JsonPartialReloader {
             } else {
                 //title target
                 String title = mod.target();
-                byTitle.merge(title, ScreenModifier.fromGuiMod(mod), (a, b) -> b.merge(a));
+                byTitle.merge(title, ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
 
                 if (!mod.slotModifiers().isEmpty()) {
                     Int2ObjectArrayMap<SlotModifier> map = slotsByTitle.computeIfAbsent(title,
