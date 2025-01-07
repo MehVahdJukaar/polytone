@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.slotify;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.mehvahdjukaar.polytone.utils.Utils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import org.jetbrains.annotations.Nullable;
@@ -24,10 +25,18 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
                 Map.copyOf(original.specialOffsets()));
     }
 
-    public ScreenModifier merge(ScreenModifier other) {
-        this.sprites.addAll(other.sprites);
-        this.specialOffsets.putAll(other.specialOffsets);
-        return this;
+    public ScreenModifier merge(ScreenModifier newMod) {
+        return new ScreenModifier(
+                newMod.titleX != 0 ? newMod.titleX : this.titleX,
+                newMod.titleY != 0 ? newMod.titleY : this.titleY,
+                newMod.labelX != 0 ? newMod.labelX : this.labelX,
+                newMod.labelY != 0 ? newMod.labelY : this.labelY,
+                newMod.titleColor != null ? newMod.titleColor : this.titleColor,
+                newMod.labelColor != null ? newMod.labelColor : this.labelColor,
+                Utils.mergeList(newMod.extraRenderables, this.extraRenderables),
+                Utils.mergeList(newMod.widgetModifiers, this.widgetModifiers),
+                Utils.mergedMap(newMod.specialOffsets, this.specialOffsets)
+        );
     }
 
     @Nullable

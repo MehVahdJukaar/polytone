@@ -16,8 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
-
 public abstract class PartialReloader<T> {
 
     public static final Gson GSON = new Gson();
@@ -34,12 +32,14 @@ public abstract class PartialReloader<T> {
     }
 
     protected Map<ResourceLocation, JsonElement> getJsonsInDirectories(ResourceManager resourceManager) {
-        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
+        // resources given by the resource manager won't be sorted by pack ordering so we at least sort them by name
+        Map<ResourceLocation, JsonElement> jsons = Utils.sortedMap();
         for (String name : names) {
             Map<ResourceLocation, JsonElement> js = new HashMap<>();
             scanDirectory(resourceManager, Polytone.MOD_ID + "/" + name, GSON, js);
             greedyAddAll(js, jsons);
         }
+        //sort by key
         return jsons;
     }
 
@@ -47,9 +47,6 @@ public abstract class PartialReloader<T> {
         for (var entry : js.entrySet()) {
             var r = entry.getKey();
             var j = entry.getValue();
-            if (jsons.containsKey(r)) {
-                Polytone.LOGGER.warn("Duplicate data file ignored with ID {}", r);
-            }
             jsons.put(r, j);
         }
     }
@@ -68,7 +65,7 @@ public abstract class PartialReloader<T> {
         return ArrayImage.groupTextures(this.getImagesInDirectories(manager));
     }
 
-    protected void earlyProcess(ResourceManager resourceManager){
+    protected void earlyProcess(ResourceManager resourceManager) {
 
     }
 

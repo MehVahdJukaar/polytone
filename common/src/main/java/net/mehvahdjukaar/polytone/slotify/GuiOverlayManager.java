@@ -41,6 +41,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
             BlitModifier effect = Parsed.parseOrNull(BlitModifier.CODEC, json, ops, id, "overlay modifier");
             if (effect == null) continue;
             ResourceLocation textureId = effect.target();
+            //just 1 makes sense
             if (blitModifiers.containsKey(textureId)) {
                 Polytone.LOGGER.warn("Overlay Modifier with texture id {} already exists. Overwriting", textureId);
             }

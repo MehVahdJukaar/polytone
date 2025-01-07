@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.utils.Utils;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -36,7 +37,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, Parsed<ItemModifier>> parsedModifiers = new HashMap<>();
+        Map<ResourceLocation, Parsed<ItemModifier>> parsedModifiers = Utils.sortedMap();
 
         for (var j : jsons.entrySet()) {
             JsonElement json = j.getValue();

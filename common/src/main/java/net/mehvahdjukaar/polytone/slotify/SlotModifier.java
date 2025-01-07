@@ -64,21 +64,21 @@ public record SlotModifier(TargetSlots targets, int color, int color2, int xOffs
         return xOffset != 0 || yOffset != 0;
     }
 
-    public SlotModifier merge(SlotModifier other) {
+    public SlotModifier merge(SlotModifier newMod) {
         Set<Integer> combinedSlots = new HashSet<>();
 
         this.targets.getSlots().forEach(combinedSlots::add);
-        other.targets.getSlots().forEach(combinedSlots::add);
+        newMod.targets.getSlots().forEach(combinedSlots::add);
 
         return new SlotModifier(new TargetSlots.ListTarget(new ArrayList<>(combinedSlots)),
-                other.hasCustomColor() ? other.color : this.color,
-                other.hasCustomColor() ? other.color2 : this.color,
-                other.hasOffset() ? other.xOffset : this.xOffset,
-                other.hasOffset() ? other.yOffset : this.yOffset,
-                other.zOffset,
-                other.targetX,
-                other.targetY,
-                other.targetClass
+                newMod.hasCustomColor() ? newMod.color : this.color,
+                newMod.hasCustomColor() ? newMod.color2 : this.color,
+                newMod.hasOffset() ? newMod.xOffset : this.xOffset,
+                newMod.hasOffset() ? newMod.yOffset : this.yOffset,
+                newMod.zOffset,
+                newMod.targetX,
+                newMod.targetY,
+                newMod.targetClass
         );
     }
 

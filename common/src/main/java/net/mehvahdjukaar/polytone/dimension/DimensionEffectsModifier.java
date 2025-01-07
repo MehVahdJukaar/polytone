@@ -71,20 +71,20 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
     }
 
 
-    public DimensionEffectsModifier merge(DimensionEffectsModifier other) {
+    public DimensionEffectsModifier merge(DimensionEffectsModifier newMod) {
         return new DimensionEffectsModifier(
-                other.cloudLevel.isPresent() ? other.cloudLevel : this.cloudLevel,
-                other.hasGround.isPresent() ? other.hasGround : this.hasGround,
-                other.skyType.isPresent() ? other.skyType : this.skyType,
-                other.forceBrightLightmap.isPresent() ? other.forceBrightLightmap : this.forceBrightLightmap,
-                other.constantAmbientLight.isPresent() ? other.constantAmbientLight : this.constantAmbientLight,
-                other.fogColor.isPresent() ? other.fogColor : this.fogColor,
-                other.skyColor.isPresent() ? other.skyColor : this.skyColor,
-                other.sunsetColor.isPresent() ? other.sunsetColor : this.sunsetColor,
-                other.noWeatherFogDarken | this.noWeatherFogDarken,
-                other.noWeatherSkyDarken | this.noWeatherSkyDarken,
-                other.lightmap.isPresent() ? other.lightmap : this.lightmap,
-                other.targets.merge(this.targets)
+                newMod.cloudLevel.isPresent() ? newMod.cloudLevel : this.cloudLevel,
+                newMod.hasGround.isPresent() ? newMod.hasGround : this.hasGround,
+                newMod.skyType.isPresent() ? newMod.skyType : this.skyType,
+                newMod.forceBrightLightmap.isPresent() ? newMod.forceBrightLightmap : this.forceBrightLightmap,
+                newMod.constantAmbientLight.isPresent() ? newMod.constantAmbientLight : this.constantAmbientLight,
+                newMod.fogColor.isPresent() ? newMod.fogColor : this.fogColor,
+                newMod.skyColor.isPresent() ? newMod.skyColor : this.skyColor,
+                newMod.sunsetColor.isPresent() ? newMod.sunsetColor : this.sunsetColor,
+                newMod.noWeatherFogDarken | this.noWeatherFogDarken,
+                newMod.noWeatherSkyDarken | this.noWeatherSkyDarken,
+                newMod.lightmap.isPresent() ? newMod.lightmap : this.lightmap,
+                newMod.targets.merge(this.targets)
         );
     }
 

@@ -91,7 +91,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         var textureCopy = new HashMap<>(resources.textures);
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers = new HashMap<>();
+        Map<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers = Utils.sortedMap();
         parsedModifiers.putAll(LegacyHelper.convertBlockProperties(resources.ofProperties, textureCopy));
         parsedModifiers.putAll(LegacyHelper.convertInlinedPalettes(optifineColormapsToBlocks));
 
@@ -181,12 +181,13 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             vanillaProperties.put(target, value.apply(target));
 
             var particle = value.particleEmitters();
-            particle.ifPresent(emitters -> particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier())
-                    .addAll(emitters));
-
+            if (!particle.isEmpty()) {
+                particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier()).addAll(particle);
+            }
             var sound = value.soundEmitters();
-            sound.ifPresent(emitters -> particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier())
-                    .addAll(emitters));
+            if (!sound.isEmpty()) {
+                particleAndSoundEmitters.computeIfAbsent(target, t -> new ArrayList<>()).addAll(sound);
+            }
 
             if(value.disableParticles()){
                 particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier()).cancelsExisting();

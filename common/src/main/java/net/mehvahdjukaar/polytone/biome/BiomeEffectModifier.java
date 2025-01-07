@@ -66,23 +66,23 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
     }
 
     // Other has priority
-    public BiomeEffectModifier merge(BiomeEffectModifier other) {
+    public BiomeEffectModifier merge(BiomeEffectModifier newMod) {
         return new BiomeEffectModifier(
-                other.fogColor.isPresent() ? other.fogColor() : this.fogColor(),
-                other.waterColor().isPresent() ? other.waterColor() : this.waterColor(),
-                other.waterFogColor().isPresent() ? other.waterFogColor() : this.waterFogColor(),
-                other.skyColor().isPresent() ? other.skyColor() : this.skyColor(),
-                other.foliageColorOverride().isPresent() ? other.waterColor() : this.foliageColorOverride(),
-                other.grassColorOverride().isPresent() ? other.grassColorOverride() : this.grassColorOverride(),
-                other.grassColorModifier().isPresent() ? other.grassColorModifier() : this.grassColorModifier(),
-                other.ambientParticleSettings().isPresent() ? other.ambientParticleSettings() : this.ambientParticleSettings(),
-                other.ambientLoopSoundEvent().isPresent() ? other.ambientLoopSoundEvent() : this.ambientLoopSoundEvent(),
-                other.ambientMoodSettings().isPresent() ? other.ambientMoodSettings() : this.ambientMoodSettings(),
-                other.ambientAdditionsSettings().isPresent() ? other.ambientAdditionsSettings() : this.ambientAdditionsSettings(),
-                other.backgroundMusic().isPresent() ? other.backgroundMusic() : this.backgroundMusic(),
-                other.fogStart().isPresent() ? other.fogStart() : this.fogStart(),
-                other.fogEnd().isPresent() ? other.fogEnd() : this.fogEnd(),
-                this.targets.merge(other.targets)
+                newMod.fogColor.isPresent() ? newMod.fogColor() : this.fogColor(),
+                newMod.waterColor().isPresent() ? newMod.waterColor() : this.waterColor(),
+                newMod.waterFogColor().isPresent() ? newMod.waterFogColor() : this.waterFogColor(),
+                newMod.skyColor().isPresent() ? newMod.skyColor() : this.skyColor(),
+                newMod.foliageColorOverride().isPresent() ? newMod.waterColor() : this.foliageColorOverride(),
+                newMod.grassColorOverride().isPresent() ? newMod.grassColorOverride() : this.grassColorOverride(),
+                newMod.grassColorModifier().isPresent() ? newMod.grassColorModifier() : this.grassColorModifier(),
+                newMod.ambientParticleSettings().isPresent() ? newMod.ambientParticleSettings() : this.ambientParticleSettings(),
+                newMod.ambientLoopSoundEvent().isPresent() ? newMod.ambientLoopSoundEvent() : this.ambientLoopSoundEvent(),
+                newMod.ambientMoodSettings().isPresent() ? newMod.ambientMoodSettings() : this.ambientMoodSettings(),
+                newMod.ambientAdditionsSettings().isPresent() ? newMod.ambientAdditionsSettings() : this.ambientAdditionsSettings(),
+                newMod.backgroundMusic().isPresent() ? newMod.backgroundMusic() : this.backgroundMusic(),
+                newMod.fogStart().isPresent() ? newMod.fogStart() : this.fogStart(),
+                newMod.fogEnd().isPresent() ? newMod.fogEnd() : this.fogEnd(),
+                this.targets.merge(newMod.targets)
         );
     }
 

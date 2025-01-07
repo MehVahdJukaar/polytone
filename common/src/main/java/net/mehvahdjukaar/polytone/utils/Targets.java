@@ -15,7 +15,7 @@ import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static net.mehvahdjukaar.polytone.utils.ListUtils.mergeList;
+import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
 
 public record Targets(List<Entry> entries) {
 
