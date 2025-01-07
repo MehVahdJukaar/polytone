@@ -1,1 +1,3 @@
-- fixed slot modifiers crashing in some circumstances
+- fixed render type on fabric
+- all resources are now applied in reverse natural order of their IDs
+- improved resources merging when 2 modifiers target the same id to be more consistent. last applied wins.
