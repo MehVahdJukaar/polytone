@@ -17,6 +17,7 @@
     "InventoryScreenMixin",
     "ItemColorsAccessor",
     "ModelHackMixin",
+    "ItemBlockRenderTypeAccessor",
     "ModelManagerAccessor",
     "ModelRendererMixin",
     "ParticleEngineAccessor"
