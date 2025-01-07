@@ -222,7 +222,7 @@ public class PlatStuffImpl {
     }
 
     public static void setRenderType(Block block, RenderType renderType) {
-        BlockRenderLayerMap.INSTANCE.putBlock(block, renderType);
+        ItemBlockRenderTypeAccessor.getTypeByBlock().put(block, renderType);
     }
 
     public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX, int skyY, Vector3f combined) {
