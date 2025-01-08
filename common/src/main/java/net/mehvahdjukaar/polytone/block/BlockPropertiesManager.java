@@ -184,7 +184,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             }
             var sound = value.soundEmitters();
             if (!sound.isEmpty()) {
-                particleAndSoundEmitters.computeIfAbsent(target, t -> new ArrayList<>()).addAll(sound);
+                particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier()).addAll(sound);
             }
             if(value.disableParticles()){
                 particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier()).cancelsExisting();
