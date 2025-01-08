@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -83,7 +84,7 @@ public class LegacyHelper {
         Map<ResourceLocation, Parsed<BlockPropertyModifier>> map = new HashMap<>();
 
         for (ResourceLocation id : ids) {
-            Properties prop = ofProperties.get(id);
+            @Nullable Properties prop = ofProperties.get(id);
             String path = id.getPath();
 
             // hardcoded special color stuff
@@ -148,11 +149,11 @@ public class LegacyHelper {
 
     }
 
-    private static <T> Parsed<T> withCond(ResourceLocation id, Properties prop, T t) {
-        return Parsed.of(t, id, checkConditions(prop));
+    private static <T> Parsed<T> withCond(ResourceLocation id, @Nullable Properties prop, T t) {
+        return Parsed.of(t, id, prop == null || checkConditions(prop));
     }
 
-    private static boolean checkConditions(Properties prop) {
+    private static boolean checkConditions( Properties prop) {
         boolean ignored = prop.getOrDefault("polytone_ignore", false).equals(Boolean.TRUE);
         if (ignored) return false;
         List<String> requireMods = List.of(prop.getProperty("require_mods", "").split(" "));
