@@ -29,9 +29,7 @@ public class PolytoneFabric implements ClientModInitializer {
         boolean iris = FabricLoader.getInstance().isModLoaded("iris") || FabricLoader.getInstance().isModLoaded("oculus");
         Polytone.init(instance.isDevelopmentEnvironment(), false, iris);
 
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            Polytone.onLoggedOut();
-        });
+
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
             if (client) {
                 Polytone.onTagsReceived(registries);
@@ -76,7 +74,7 @@ public class PolytoneFabric implements ClientModInitializer {
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            Polytone.onLogOut();
+            Polytone.onLoggedOut();
         });
     }
 

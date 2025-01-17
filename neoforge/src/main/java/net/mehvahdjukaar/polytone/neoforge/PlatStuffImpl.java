@@ -243,6 +243,11 @@ public class PlatStuffImpl {
 
     }
 
+    public static String getVersion() {
+        return ModList.get().getModContainerById("polytone")
+                .get().getModInfo().getVersion().toString();
+    }
+
     public static RenderType getRenderType(Block block) {
         return null;
     }

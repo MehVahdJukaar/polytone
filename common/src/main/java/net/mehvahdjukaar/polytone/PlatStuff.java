@@ -55,6 +55,11 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @ExpectPlatform
+    public static String getVersion() {
+        throw new AssertionError();
+    }
+
     public interface SpecialModelEvent {
         void register(ModelResourceLocation id);
     }
