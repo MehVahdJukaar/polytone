@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.sound;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
-import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
@@ -10,6 +9,7 @@ import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -71,7 +71,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
             var sound = e.getValue();
             PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id, sound);
         }
-        
+
         // sound types
 
         for (var j : soundJsons.entrySet()) {
@@ -101,6 +101,10 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         }
         customSoundTypes.clear();
         customSoundEvents.clear();
+    }
+
+    public boolean isDynamicSound(ResourceLocation entryId) {
+        return customSoundEvents.containsKey(entryId);
     }
 
     public record Resources(Map<ResourceLocation, JsonElement> soundTypes,

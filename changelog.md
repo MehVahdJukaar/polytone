@@ -1,1 +1,3 @@
-fixed an issue with conditions and legacy assets conversion
+- fixed pack dynamic entries not being cleared on level unload on fabric
+- render types through block modifiers will apply to forge too (wasn't a thing before as forge itself ALREADY can do this through block models "render_type" field)
+- added some experimental code that prevents the game from sending and saving polytone dynamic registry id entries on fabric

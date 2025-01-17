@@ -72,4 +72,5 @@ public class ParticleModifiersManager extends JsonPartialReloader {
         var opt = BuiltInRegistries.PARTICLE_TYPE.getOptional(id);
         opt.ifPresent(t -> particleModifiers.put(t, ParticleModifier.ofColor(color)));
     }
+
 }
