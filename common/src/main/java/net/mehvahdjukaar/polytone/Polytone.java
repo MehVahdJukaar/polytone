@@ -23,8 +23,11 @@ import net.mehvahdjukaar.polytone.utils.CompoundReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -161,6 +164,7 @@ public class Polytone {
 
         // Write the exception to the new log file
         try (PrintWriter writer = new PrintWriter(new FileWriter(logFilePath, false))) {
+            writer.println("Polytone version: " + PlatStuff.getVersion());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String timestamp = LocalDateTime.now().format(formatter);
             writer.println("[" + timestamp + "] " + message + ". Check lines below to see where the error was:");
@@ -184,5 +188,18 @@ public class Polytone {
 
     public static void addCustomModel(ResourceLocation model) {
         EXTRA_MODELS.add(model);
+    }
+
+    public static boolean isEntryDynamic(Registry<?> reg, ResourceLocation entryId) {
+        if (reg == BuiltInRegistries.CREATIVE_MODE_TAB) {
+            return CREATIVE_TABS_MODIFIERS.isDynamicTab(entryId);
+        }
+        if (reg == BuiltInRegistries.PARTICLE_TYPE) {
+            return CUSTOM_PARTICLES.isDynamicParticle(entryId);
+        }
+        if (reg == BuiltInRegistries.SOUND_EVENT) {
+            return SOUND_TYPES.isDynamicSound(entryId);
+        }
+        return false;
     }
 }

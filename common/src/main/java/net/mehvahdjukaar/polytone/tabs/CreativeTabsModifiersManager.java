@@ -160,6 +160,11 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         }
     }
 
+    public boolean isDynamicTab(ResourceLocation entryId) {
+        return customTabs.containsKey(entryId);
+    }
+
+
     public record Resources(Map<ResourceLocation, JsonElement> tabsModifiers,
                             Map<ResourceLocation, List<String>> extraTabs) {
     }

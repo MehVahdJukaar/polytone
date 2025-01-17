@@ -16,6 +16,7 @@ import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -77,7 +78,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
             var sound = e.getValue();
             PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id, sound);
         }
-        
+
         // sound types
 
         for (var j : soundJsons.entrySet()) {
@@ -107,6 +108,10 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         }
         customSoundTypes.clear();
         customSoundEvents.clear();
+    }
+
+    public boolean isDynamicSound(ResourceLocation entryId) {
+        return customSoundEvents.containsKey(entryId);
     }
 
     public record Resources(Map<ResourceLocation, JsonElement> soundTypes,

@@ -172,4 +172,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
     public Codec<CustomParticleFactory> byNameCodec() {
         return customParticleFactories;
     }
+
+    public boolean isDynamicParticle(ResourceLocation entryId) {
+        return customParticleFactories.containsKey(entryId);
+    }
 }

@@ -2,12 +2,15 @@ package net.mehvahdjukaar.polytone.colormap;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -69,6 +72,18 @@ public class ColormapsManager extends JsonImgPartialReloader {
             add(id, colormap);
         }
 
+        //initialize recursive stuff
+        for (var c : colormaps.getValues()) {
+            if (c instanceof Colormap cm && cm.lazyFallback != null) {
+                try {
+                    cm.fallback = runCodec(ops, cm.lazyFallback);
+                } catch (Exception e) {
+                    Polytone.LOGGER.error("Failed to initialize colormap fallback", e);
+                }
+                cm.lazyFallback = null;
+            }
+        }
+
 
         // creates orphaned texture colormaps
         textures.keySet().removeAll(usedTextures);
@@ -82,6 +97,13 @@ public class ColormapsManager extends JsonImgPartialReloader {
             add(id, defaultColormap);
         }
     }
+
+    private <T> IColorGetter runCodec(DynamicOps o, Dynamic<T> dynamic) {
+        DynamicOps<T> ops = (DynamicOps<T>) o;
+        return this.byNameCodec().decode(ops, dynamic.getValue())
+                .getOrThrow().getFirst();
+    }
+
 
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {

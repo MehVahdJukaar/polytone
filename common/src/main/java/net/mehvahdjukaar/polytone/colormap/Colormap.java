@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.colormap;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
@@ -42,7 +43,9 @@ public class Colormap implements IColorGetter, ColorResolver {
 
     private Integer defaultColor;
     private ArrayImage image = null;
-    private ResourceLocation explicitTargetTexture = null; //explicit targets
+    private @Nullable ResourceLocation explicitTargetTexture; //explicit targets
+    protected @Nullable Dynamic<?> lazyFallback;
+    protected @Nullable IColorGetter fallback;
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
@@ -55,7 +58,8 @@ public class Colormap implements IColorGetter, ColorResolver {
             Codec.BOOL.optionalFieldOf("rounds", true).forGetter(c -> c.rounds),
             StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
             StrOpt.of(BiomeIdMapper.CODEC, "biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
-            StrOpt.of(ResourceLocation.CODEC, "texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture))
+            StrOpt.of(ResourceLocation.CODEC, "texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture)),
+            Codec.PASSTHROUGH.optionalFieldOf("fallback_colormap").forGetter(c -> Optional.empty())
     ).apply(i, Colormap::new));
 
     protected static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
@@ -72,7 +76,7 @@ public class Colormap implements IColorGetter, ColorResolver {
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
-                     Optional<ResourceLocation> explicitTargetTexture) {
+                     Optional<ResourceLocation> explicitTargetTexture, Optional<Dynamic<?>> fallback) {
         this.defaultColor = defaultColor.orElse(null);
         this.xGetter = xGetter;
         this.yGetter = yGetter;
@@ -84,10 +88,12 @@ public class Colormap implements IColorGetter, ColorResolver {
         this.hasBiomeBlend = biomeBlend.orElse(usesBiome);
         this.biomeMapper = biomeMapper.orElse(BiomeIdMapper.BY_INDEX);
         this.explicitTargetTexture = explicitTargetTexture.orElse(null);
+        this.lazyFallback = fallback.orElse(null);
     }
 
     protected Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter, boolean triangular) {
-        this(Optional.empty(), xGetter, yGetter, triangular, true, Optional.empty(), Optional.empty(), Optional.empty());
+        this(Optional.empty(), xGetter, yGetter, triangular, true, Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty());
     }
 
     public void acceptTexture(ArrayImage image) {
@@ -140,7 +146,13 @@ public class Colormap implements IColorGetter, ColorResolver {
     public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
         float temperature = Mth.clamp(xGetter.getValue(state, pos, biome, biomeMapper, item), 0, 1);
         float humidity = Mth.clamp(yGetter.getValue(state, pos, biome, biomeMapper, item), 0, 1);
-        return sample(humidity, temperature, defaultColor);
+        int sampled = sample(humidity, temperature, defaultColor);
+
+        if (fallback != null && sampled == 0) {
+            //TODO: finish
+            //return fallback.getColor(state, l)
+        }
+        return sampled;
     }
 
     // gets color for blend
@@ -230,7 +242,8 @@ public class Colormap implements IColorGetter, ColorResolver {
 
     public static Colormap createFixed() {
         return new Colormap(Optional.empty(), IColormapNumberProvider.ZERO,
-                IColormapNumberProvider.ZERO, false, true, Optional.empty(), Optional.empty(), Optional.empty());
+                IColormapNumberProvider.ZERO, false, true, Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     //this is dumb. dont use
@@ -256,7 +269,8 @@ public class Colormap implements IColorGetter, ColorResolver {
         return new Colormap(Optional.empty(),
                 IColormapNumberProvider.BIOME_ID,
                 IColormapNumberProvider.Y_LEVEL,
-                false, false, Optional.of(Boolean.TRUE), Optional.empty(), Optional.empty());
+                false, false, Optional.of(Boolean.TRUE), Optional.empty(), Optional.empty(),
+                Optional.empty());
     }
 
     public static Colormap createDamage() {
