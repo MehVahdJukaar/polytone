@@ -167,11 +167,14 @@ public class CustomParticlesManager extends JsonPartialReloader {
     private static <T> ParticleParticleEmitter runCodec(DynamicOps o, Dynamic<T> dynamic) {
         DynamicOps<T> ops = (DynamicOps<T>) o;
         return ParticleParticleEmitter.CODEC.decode(ops, dynamic.getValue())
-                .result().orElseThrow(() -> new JsonParseException("Failed to decode particle emitters"))
-                .getFirst();
+                .getOrThrow().getFirst();
     }
 
     public Codec<CustomParticleFactory> byNameCodec() {
         return customParticleFactories;
+    }
+
+    public boolean isDynamicParticle(ResourceLocation entryId) {
+        return customParticleFactories.containsKey(entryId);
     }
 }

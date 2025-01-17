@@ -116,7 +116,7 @@ public class PolytoneForge {
 
     @SubscribeEvent
     public void onLevelUnload(ClientPlayerNetworkEvent.LoggingOut event) {
-        Polytone.onLevelUnload();
+        Polytone.onLogOut();
     }
 
 

@@ -14,6 +14,7 @@ import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
@@ -242,6 +243,7 @@ public class PlatStuffImpl {
     }
 
     public static void setRenderType(Block block, RenderType renderType) {
+        ItemBlockRenderTypes.setRenderLayer(block, renderType);
     }
 
     private static final boolean AC = ModList.get().isLoaded("alexscaves");
