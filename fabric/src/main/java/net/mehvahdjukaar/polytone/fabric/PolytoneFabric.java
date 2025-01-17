@@ -31,9 +31,7 @@ public class PolytoneFabric implements ClientModInitializer  {
 
         Polytone.init(sodiumOn, instance.isDevelopmentEnvironment(), false);
 
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            Polytone.onLoggedOut();
-        });
+
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
             if (client) {
                 Polytone.onTagsReceived(registries);
@@ -78,6 +76,9 @@ public class PolytoneFabric implements ClientModInitializer  {
             currentServer = server;
         });
 
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            Polytone.onLoggedOut();
+        });
     }
 
 

@@ -320,6 +320,10 @@ public class PlatStuffImpl {
         });
     }
 
+    public static String getVersion() {
+        return FabricLoader.getInstance().getModContainer("polytone").get().getMetadata().getVersion().getFriendlyString();
+    }
+
 
     public static BakedModel getModel(ResourceLocation modelLocation) {
         ModelManager mm = Minecraft.getInstance().getModelManager();
