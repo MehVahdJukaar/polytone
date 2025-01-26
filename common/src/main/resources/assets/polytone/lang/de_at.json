@@ -1,0 +1,5 @@
+{
+  "toast.polytone.load_fail": "Überprüfe logs/polytone.log",
+  "toast.polytone.lazy_load_fail": "Polytone Fehler beim verzögerten Laden der Ressourcen",
+  "toast.polytone.early_load_fail": "Polytone Fehler beim frühen Laden der Ressourcen"
+}
