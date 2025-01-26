@@ -131,6 +131,7 @@ dependencies {
     modCompileOnly("curse.maven:alexs-caves-924854:4806837")
     modCompileOnly("curse.maven:citadel-331936:4786380")
     //modCompileOnly ("org.embeddedt:embeddium-1.21:1.0.7+mc1.21")
+    modImplementation("curse.maven:farmers-delight-398521:5772720")
 
 
     implementation 'org.jetbrains:annotations:22.0.0'

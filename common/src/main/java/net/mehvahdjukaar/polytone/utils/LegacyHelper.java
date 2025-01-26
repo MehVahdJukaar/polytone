@@ -294,7 +294,7 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(),
                 Optional.empty(), List.of(), List.of(), Optional.empty(),
-                Optional.empty(), false, Targets.ofIds(set), false);
+                Optional.empty(), false, Targets.ofOptionalIds(set), false);
     }
 
     public static Map<ResourceLocation, Parsed<BlockPropertyModifier>> convertInlinedPalettes(
