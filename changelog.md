@@ -1,3 +1,2 @@
-- fixed pack dynamic entries not being cleared on level unload on fabric
-- render types through block modifiers will apply to forge too (wasn't a thing before as forge itself ALREADY can do this through block models "render_type" field)
-- added some experimental code that prevents the game from sending and saving polytone dynamic registry id entries on fabric
+- empty creative tabs will no longer appear in creative inventory
+- optifine converted block colormaps will have all their block targets as optional, even when those targets are invalid so not to break backwards compatibility with those packs that still use this

@@ -27,6 +27,14 @@ public record Targets(List<Entry> entries) {
         return new Targets(entries);
     }
 
+    public static Targets ofOptionalIds(Set<ResourceLocation> blocks) {
+        List<Entry> entries = new ArrayList<>();
+        for (ResourceLocation id : blocks) {
+            entries.add(new OptionalEntry(new SimpleLocation(id), false));
+        }
+        return new Targets(entries);
+    }
+
     public <T> Collection<Holder<T>> compute(ResourceLocation fileId, HolderLookup.RegistryLookup<T> registry) {
 
         Set<Holder<T>> set = new HashSet<>();
