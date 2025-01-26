@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.mixins.neoforge;
+package net.mehvahdjukaar.polytone.mixins.forge;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -12,7 +12,7 @@ import java.util.List;
 public class CreativeModeInventoryScreenMixin {
 
     @ModifyExpressionValue(method = "init", at  = @At(value = "INVOKE",
-            target = "Lnet/neoforged/neoforge/common/CreativeModeTabRegistry;getSortedCreativeModeTabs()Ljava/util/List;"))
+            target = "Lnet/minecraftforge/common/CreativeModeTabRegistry;getSortedCreativeModeTabs()Ljava/util/List;"))
     public List<CreativeModeTab> polytone$removeEmptyTabs(List<CreativeModeTab> original){
         return original.stream().filter(CreativeModeTab::shouldDisplay).toList();
     }

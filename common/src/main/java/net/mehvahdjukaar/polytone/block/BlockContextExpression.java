@@ -161,6 +161,13 @@ public class BlockContextExpression {
         if (hasSkyLight) expression.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, pos));
         if (hasBlockLight) expression.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, pos));
         if (hasState) STATE_HACK.set(state);
+        if (hasDistance) {
+            var e = Minecraft.getInstance().getCameraEntity();
+            double x = pos.getX() - e.getX();
+            double y = pos.getY() - e.getY();
+            double z = pos.getZ() - e.getZ();
+            expression.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+        }
         if (hasPlayer) {
             var e = Minecraft.getInstance().getCameraEntity();
             expression.setVariable(PLAYER_X, e.getX());
