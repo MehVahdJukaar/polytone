@@ -66,6 +66,7 @@ public class Lightmap {
     private final long lightmapPixels;
 
     private long lastTime = 0;
+    private boolean forceUpload = false;
 
     public Lightmap(ILightmapNumberProvider skyGetter, ILightmapNumberProvider torchGetter,
                     boolean lightningColumn, double skyLerp, double torchLerp, float baseLight) {
@@ -98,6 +99,10 @@ public class Lightmap {
     }
 
 
+    public void forceRefresh(){
+        this.forceUpload = true;
+    }
+
     public void applyToLightTexture(LightTexture instance,
                                     TextureTarget lightmap,
                                     Minecraft minecraft, ClientLevel level,
@@ -105,6 +110,10 @@ public class Lightmap {
 
         // this makes a copy
         boolean needsUpload = false;
+        if(forceUpload){
+            forceUpload = false;
+            needsUpload = true;
+        }
 
         //this wasn't using partial ticks for some reasons
         float skyDarken = level.getSkyDarken(partialTicks);

@@ -127,6 +127,9 @@ public class LightmapsManager extends JsonImgPartialReloader {
             reachedMainMenuHack = true;
             lastDimension = level.dimension();
             currentLightmap = lightmaps.getValue(lastDimension.location());
+            if (currentLightmap != null) {
+                currentLightmap.forceRefresh();
+            }
         }
         if (currentLightmap != null) {
             currentLightmap.applyToLightTexture(instance, lightmap, minecraft,
