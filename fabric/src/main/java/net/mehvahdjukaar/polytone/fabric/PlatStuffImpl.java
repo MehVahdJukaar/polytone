@@ -136,10 +136,13 @@ public class PlatStuffImpl {
     public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
         if (!addedCallbacks.contains(key)) {
             addedCallbacks.add(key);
-            Event<ItemGroupEvents.ModifyEntries> event = ItemGroupEvents.modifyEntriesEvent(key);
+            var event = ItemGroupEvents.MODIFY_ENTRIES_ALL;
             event.addPhaseOrdering(Event.DEFAULT_PHASE, POLYTONE_PHASE);
-            event.register(POLYTONE_PHASE, f ->
-                    Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(key, f)));
+            event.register(POLYTONE_PHASE, (tab,entries) ->{
+                Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(
+                       BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(tab).get(), entries));
+            });
+
         }
     }
 
