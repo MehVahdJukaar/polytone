@@ -1,5 +1,2 @@
-- ALL mod jsons can now properly use polytone conditions. 
-- These are "require_mods" and "polytone_ignore"
-- Both of these can be added to both .json and .properties files
-- disabled files will still consume their relative textures as intended, preventing disabled stuff ot create extra implicit colormaps
-- added "disable_particles" param to block modifiers. Prevents original client tick from spawning sounds and particles
+- empty creative tabs will no longer appear in creative inventory
+- optifine converted block colormaps will have all their block targets as optional, even when those targets are invalid so not to break backwards compatibility with those packs that still use this
