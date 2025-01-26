@@ -1,2 +1,3 @@
 - fixed a crash with particle expressions
+- fixed creative tab removal only working with regex exact match
 - creative tab modification will happen even later on fabric
