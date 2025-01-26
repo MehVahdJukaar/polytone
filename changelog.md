@@ -1,2 +1,2 @@
-- empty creative tabs will no longer appear in creative inventory
-- optifine converted block colormaps will have all their block targets as optional, even when those targets are invalid so not to break backwards compatibility with those packs that still use this
+- fixed a crash with particle expressions
+- creative tab modification will happen even later on fabric
