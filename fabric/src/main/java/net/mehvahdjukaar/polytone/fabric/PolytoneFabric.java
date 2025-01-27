@@ -44,7 +44,7 @@ public class PolytoneFabric implements ClientModInitializer {
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {
                 ScreenModifier guiModifier = Polytone.SLOTIFY.getGuiModifier(screen);
-                if (guiModifier != null && !guiModifier.sprites().isEmpty()) {
+                if (guiModifier != null && !guiModifier.extraRederables().isEmpty()) {
                     ScreenEvents.afterRender(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) -> {
 
                         var matrices = graphics.pose();

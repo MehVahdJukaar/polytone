@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = MobRenderer.class, priority = 1300)
-public class LeashTextureMixin {
+public class LeashMixin {
 
     @Inject(method = "addVertexPair", at = @At("HEAD"), cancellable = true)
     private static void polytone$modifyLeashRender(VertexConsumer vertexConsumer, Matrix4f matrix4f, float f, float g, float h, int i, int j, int k, int l, float m, float n, float o, float p, int q, boolean bl, CallbackInfo ci) {

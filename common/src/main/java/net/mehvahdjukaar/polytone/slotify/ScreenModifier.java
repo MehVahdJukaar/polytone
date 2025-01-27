@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.slotify;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.utils.Utils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -13,7 +12,7 @@ import java.util.Map;
 
 public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
                              @Nullable Integer titleColor, @Nullable Integer labelColor,
-                             List<SimpleSprite> sprites,
+                             List<SimpleSprite> extraRederables,
                              List<WidgetModifier> widgetModifiers,
                              Map<String, SpecialOffset> specialOffsets) {
 
@@ -33,7 +32,7 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
                 newMod.labelY != 0 ? newMod.labelY : this.labelY,
                 newMod.titleColor != null ? newMod.titleColor : this.titleColor,
                 newMod.labelColor != null ? newMod.labelColor : this.labelColor,
-                Utils.mergeList(newMod.extraRenderables, this.extraRenderables),
+                Utils.mergeList(newMod.extraRederables, this.extraRederables),
                 Utils.mergeList(newMod.widgetModifiers, this.widgetModifiers),
                 Utils.mergedMap(newMod.specialOffsets, this.specialOffsets)
         );
@@ -52,6 +51,6 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
 
     public void renderSprites(GuiGraphics poseStack) {
         RenderSystem.enableDepthTest();
-        this.sprites.forEach(r -> r.render(poseStack));
+        this.extraRederables.forEach(r -> r.render(poseStack));
     }
 }

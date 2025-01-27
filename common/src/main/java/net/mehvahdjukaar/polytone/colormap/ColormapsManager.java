@@ -101,7 +101,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     private <T> IColorGetter runCodec(DynamicOps o, Dynamic<T> dynamic) {
         DynamicOps<T> ops = (DynamicOps<T>) o;
         return this.byNameCodec().decode(ops, dynamic.getValue())
-                .getOrThrow().getFirst();
+                .getOrThrow(false, Polytone.LOGGER::error).getFirst();
     }
 
 
