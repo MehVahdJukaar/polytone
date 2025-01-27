@@ -16,7 +16,7 @@ import org.joml.Matrix4f;
 
 public class LeashTexture extends RenderType {
 
-    private static final ResourceLocation LEASH_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/lead.png");
+    private static final ResourceLocation LEASH_TEXTURE = new ResourceLocation("textures/entity/lead.png");
 
     private static final RenderType RENDER_TYPE = RenderType.create("polytone_leash", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
             VertexFormat.Mode.TRIANGLE_STRIP, 1536, RenderType.CompositeState.builder()
@@ -61,13 +61,13 @@ public class LeashTexture extends RenderType {
         float u2 = 1.0f;     // V-coordinate for the second vertex
 
         // Apply vertex attributes
-        vertexConsumer.addVertex(matrix4f, z - dx, aa + y1, ab + dz)
-                .setColor(1, 1, 1, 1f).setLight(light)
-                .setUv(u1, segment);
+        vertexConsumer.vertex(matrix4f, z - dx, aa + y1, ab + dz)
+                .color(1, 1, 1, 1f).uv2(light)
+                .uv(u1, segment).endVertex();
 
-        vertexConsumer.addVertex(matrix4f, z + dx, aa + y0 - y1, ab - dz)
-                .setColor(1, 1, 1, 1f).setLight(light)
-                .setUv(u2, segment);
+        vertexConsumer.vertex(matrix4f, z + dx, aa + y0 - y1, ab - dz)
+                .color(1, 1, 1, 1f).uv2(light)
+                .uv(u2, segment).endVertex();
 
 
         return true;

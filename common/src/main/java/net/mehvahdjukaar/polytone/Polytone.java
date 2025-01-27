@@ -23,12 +23,6 @@ import net.mehvahdjukaar.polytone.utils.CompoundReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
-import net.minecraft.client.gui.components.toasts.ToastManager;
-import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -85,9 +79,10 @@ public class Polytone {
     public static boolean sodiumOn = false;
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
+    public static boolean iris;
 
     //todo: cutout not working. splash color not working, 1.20 color accessor crash
-    public static void init(boolean isSodiumOn, boolean devEnv, boolean forge) {
+    public static void init(boolean isSodiumOn, boolean devEnv, boolean forge, boolean iris) {
         COMPOUND_RELOADER = new CompoundReloader(
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS,
@@ -99,6 +94,7 @@ public class Polytone {
         sodiumOn = isSodiumOn;
         isDevEnv = devEnv;
         isForge = forge;
+        Polytone.iris = iris;
 
         //TODO: colormap for particles
         //SKY and fog

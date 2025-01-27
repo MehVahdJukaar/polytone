@@ -27,6 +27,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -47,7 +48,8 @@ public class PolytoneForge {
 
     public PolytoneForge() {
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            Polytone.init(false, !FMLEnvironment.production, true);
+            boolean iris = ModList.get().isLoaded("iris") || ModList.get().isLoaded("oculus");
+            Polytone.init(false, !FMLEnvironment.production, true, iris);
 
             MinecraftForge.EVENT_BUS.register(this);
             FMLJavaModLoadingContext.get().getModEventBus().addListener(EventPriority.LOWEST, this::modifyCreativeTabs);

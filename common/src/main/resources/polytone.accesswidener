@@ -8,7 +8,7 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties
 
 #particle clear
 accessible field net/minecraft/client/particle/ParticleEngine particles Ljava/util/Map;
-
+accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;ILnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
 accessible field net/minecraft/client/particle/Particle friction F
 accessible field net/minecraft/client/particle/Particle oRoll F
 accessible field net/minecraft/client/particle/Particle hasPhysics Z

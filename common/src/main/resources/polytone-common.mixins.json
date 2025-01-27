@@ -18,6 +18,8 @@
     "GuiMixin",
     "ItemMixin",
     "ItemStackMixin",
+    "LeashMixin",
+    "LeashTextureMixin",
     "LightTextureMixin",
     "MinecraftMixin",
     "ModelBlockRendererMixin",
