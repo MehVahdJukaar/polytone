@@ -95,7 +95,7 @@ public class ParticleModifier {
     }
 
     public static ParticleModifier ofColor(String color) {
-        ParticleContextExpression expression = ParticleContextExpression.parse(color);
+        ParticleContextExpression expression = new ParticleContextExpression(color);
         return new ParticleModifier(null, null, expression, null, null, null, null,
                 null, null, null, Targets.EMPTY);
     }

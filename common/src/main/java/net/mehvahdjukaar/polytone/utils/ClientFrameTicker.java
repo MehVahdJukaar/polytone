@@ -97,4 +97,8 @@ public class ClientFrameTicker {
     public static double getPlayerSpeed() {
         return playerSpeed;
     }
+
+    public static double getRenderDistance() {
+        return Minecraft.getInstance().options.renderDistance().get();
+    }
 }

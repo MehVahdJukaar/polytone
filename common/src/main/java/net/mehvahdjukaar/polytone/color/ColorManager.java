@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.color;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -27,6 +26,7 @@ import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.border.BorderStatus;
@@ -342,17 +342,18 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     public float[] getXpOrbColor(ExperienceOrbRenderState orb, float partialTicks) {
         Vec3 orbPos = new Vec3(orb.x, orb.y, orb.z);
+        Level level = orb.level();
         if (xpOrbColor != null) {
-            int color = (int) xpOrbColor.getValue(orbPos, orb.ageInTicks + partialTicks);
+            int color = (int) xpOrbColor.getValue(orbPos, orb.ageInTicks + partialTicks, level);
             return ColorUtils.unpack(color);
         }
         if (xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         float r = 0;
         float g = 0;
         float b = 0;
-        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(orbPos, orb.ageInTicks + partialTicks);
-        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(orbPos, orb.ageInTicks + partialTicks);
-        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(orbPos, orb.ageInTicks + partialTicks);
+        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(orbPos, orb.ageInTicks + partialTicks , level);
+        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(orbPos, orb.ageInTicks + partialTicks , level);
+        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(orbPos, orb.ageInTicks + partialTicks , level);
         return new float[]{r, g, b};
     }
 

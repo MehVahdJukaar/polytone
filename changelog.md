@@ -1,2 +1,3 @@
-- empty creative tabs will no longer appear in creative inventory
-- optifine converted block colormaps will have all their block targets as optional, even when those targets are invalid so not to break backwards compatibility with those packs that still use this
+unified all expression types. most of the vaiables are no waccessible to all
+added RENDER_DISTANCE variable
+fixed a bug with leash texture
