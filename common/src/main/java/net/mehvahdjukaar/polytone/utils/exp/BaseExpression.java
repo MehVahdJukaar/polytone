@@ -119,8 +119,9 @@ public abstract class BaseExpression {
     }
 
     protected void buildVars(VarBuilder builder) {
-        builder.addAll(RAIN, DAY_TIME, TIME, BLOCK_LIGHT, SKY_LIGHT, DISTANCE_SQUARED,
-                PLAYER_X, PLAYER_Y, PLAYER_Z, PLAYER_SPEED_SQUARED);
+        builder.addAll(POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, SUN_TIME,  TIME,
+                TEMPERATURE, DOWNFALL, BLOCK_LIGHT, SKY_LIGHT,
+                DISTANCE_SQUARED, PLAYER_X, PLAYER_Y, PLAYER_Z, PLAYER_SPEED_SQUARED, RENDER_DISTANCE);
     }
 
     protected void buildFunctions(FunBuilder builder) {
