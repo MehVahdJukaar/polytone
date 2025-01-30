@@ -2,174 +2,137 @@ package net.mehvahdjukaar.polytone.colormap;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
+import net.mehvahdjukaar.polytone.utils.exp.BaseExpression;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.Property;
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
-import net.objecthunter.exp4j.function.Function;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-
-public final class ColormapExpressionProvider implements IColormapNumberProvider {
+public final class ColormapExpressionProvider extends BaseExpression implements IColormapNumberProvider {
 
     //Keywords
-    private static final String TEMPERATURE = "TEMPERATURE";
-    private static final String DOWNFALL = "DOWNFALL";
-    private static final String POS_X = "POS_X";
-    private static final String POS_Y = "POS_Y";
-    private static final String POS_Z = "POS_Z";
     private static final String BIOME_VALUE = "BIOME_VALUE";
     private static final String DAMAGE = "DAMAGE";
 
-    private static final String TIME = "TIME";
-    private static final String DAY_TIME = "DAY_TIME";
-    private static final String SUN_TIME = "SUN_TIME";
-    private static final String RAIN = "RAIN";
-
-    private static final String STATE_FUNC = "state_prop";
-    private static final Function STATE_PROP = new Function(STATE_FUNC, 1) {
-        @Override
-        public double apply(double... args) {
-            BlockState blockState = STATE_HACK.get();
-            List<Property<?>> properties = new ArrayList<>(blockState.getProperties());
-            int index = (int) args[0];
-            Property<?> p = properties.get(Mth.clamp(index, 0, properties.size() - 1));
-            List<?> values = new ArrayList<>(p.getPossibleValues());
-            return values.indexOf(blockState.getValue(p)) / (properties.size() - 1f);
-        }
-    };
-
-    private static final Function STATE_PROP_INT = new Function("state_prop_i", 1) {
-        @Override
-        public double apply(double... args) {
-            BlockState blockState = STATE_HACK.get();
-            List<Property<?>> properties = new ArrayList<>(blockState.getProperties());
-            int index = (int) args[0];
-            Property<?> p = properties.get(Mth.clamp(index, 0, properties.size() - 1));
-            List<?> values = new ArrayList<>(p.getPossibleValues());
-            return values.indexOf(blockState.getValue(p));
-        }
-    };
-
-
-    private static final ThreadLocal<BlockState> STATE_HACK = new ThreadLocal<>();
-
-
     public static final Codec<ColormapExpressionProvider> CODEC = Codec.STRING.flatXmap(s -> {
         try {
-            ConcurrentExpression compiled = createExpression(s);
-            return DataResult.success(new ColormapExpressionProvider(compiled, s));
+            return DataResult.success(new ColormapExpressionProvider(s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
-    }, javaxExpression -> DataResult.success(javaxExpression.unparsed));
+    }, javaxExpression -> DataResult.success(javaxExpression.getUnparsed()));
 
-    private static ConcurrentExpression createExpression(String s) {
-        return ConcurrentExpression.of(new ExpressionBuilder(s)
-                .functions(ExpressionUtils.defFunc(STATE_PROP, STATE_PROP_INT))
-                .variables(TEMPERATURE, DOWNFALL, POS_X, POS_Y, POS_Z, BIOME_VALUE, TIME, RAIN, DAY_TIME)
-                .operator(ExpressionUtils.defOp())
-        );
+    private final boolean usesBiome;
+    private final boolean hasState;
+
+
+    private ColormapExpressionProvider(String unparsed) {
+        super(unparsed);
+
+        this.usesBiome = unparsed.contains(BaseExpression.TEMPERATURE) || unparsed.contains(BaseExpression.DOWNFALL)
+                || unparsed.contains(BIOME_VALUE);
+        this.hasState = unparsed.contains(BaseExpression.STATE_FUNC);
     }
 
-    private final String unparsed;
-    private final ConcurrentExpression expression;
-
-    private final boolean hasTemperature;
-    private final boolean hasDownfall;
-    private final boolean hasRain;
-    private final boolean hasTime;
-    private final boolean hasDayTime;
-    private final boolean hasSunTime;
-
-    private ColormapExpressionProvider(ConcurrentExpression expression, String unparsed) {
-        this.expression = expression;
-        this.unparsed = unparsed;
-
-        this.hasTemperature = unparsed.contains(TEMPERATURE);
-        this.hasDownfall = unparsed.contains(DOWNFALL);
-        this.hasRain = unparsed.contains(RAIN);
-        this.hasTime = unparsed.contains(TIME);
-        this.hasDayTime = unparsed.contains(DAY_TIME);
-        this.hasSunTime = unparsed.contains(SUN_TIME);
+    @Override
+    protected void buildVars(VarBuilder builder) {
+        super.buildVars(builder);
+        builder.addAll(BIOME_VALUE, DAMAGE);
     }
 
-    //Unckecked
-    public static ColormapExpressionProvider make(String s) {
-        return new ColormapExpressionProvider(createExpression(s), s);
+    @Override
+    protected void buildFunctions(FunBuilder builder) {
+        super.buildFunctions(builder);
+        builder.addAll(STATE_PROP_INT, STATE_PROP);
     }
 
     @Override
     public boolean usesBiome() {
-        return unparsed.contains(TEMPERATURE) || unparsed.contains(DOWNFALL)
-                || unparsed.contains(BIOME_VALUE);
+        return usesBiome;
     }
 
     @Override
     public boolean usesPos() {
-        return unparsed.contains(POS_X) || unparsed.contains(POS_Y) || unparsed.contains(POS_Z);
+        return this.hasPos;
     }
 
     @Override
     public boolean usesState() {
-        return unparsed.contains(STATE_FUNC);
+        return this.hasState;
     }
 
     @Override
     public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
                           @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
-        float result = 0;
-        try {
-            ConcurrentExpression exp;
-            // no other code has acquired this yet so we can use our instance
-            exp = expression;
 
-            if (hasTemperature)
-                exp.setVariable(TEMPERATURE, biome != null ? ColorUtils.getClimateSettings(biome).temperature : 0);
-            if (hasDownfall)
-                exp.setVariable(DOWNFALL, biome != null ? ColorUtils.getClimateSettings(biome).downfall : 0);
-
-            exp.setVariable(POS_X, pos != null ? pos.getX() : 0);
-            exp.setVariable(POS_Y, pos != null ? pos.getY() : 0);
-            exp.setVariable(POS_Z, pos != null ? pos.getZ() : 0);
-
-            if (hasRain) exp.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
-            if (hasTime) exp.setVariable(TIME, ClientFrameTicker.getGameTime());
-            if (hasDayTime) exp.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
-            if (hasSunTime) exp.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
-
-            if (stack != null) {
-                float damage = 1 - stack.getDamageValue() / (float) stack.getMaxDamage();
-                exp.setVariable(DAMAGE, damage);
-            } else exp.setVariable(DAMAGE, 0);
-
-
-            // Evaluate the expression
-            //this state hack won't even work as its multithreaded lmao
-
-            STATE_HACK.set(state);
-            if (pos != null) ExpressionUtils.seedRandom(pos.hashCode() * pos.asLong());
-            else ExpressionUtils.randomizeRandom();
-            result = (float) exp.evaluate();
-            STATE_HACK.remove();
-
-        } catch (Exception e) {
-            Polytone.LOGGER.error("Failed to evaluate expression with value: {}", unparsed, e);
+        if (pos == null) {
+            pos = BlockPos.ZERO;
+            ExpressionUtils.randomizeRandom();
+        } else {
+            ExpressionUtils.seedRandom(pos.hashCode() * pos.asLong());
         }
+
+        if (hasPos) {
+            expression.setVariable(POS_X, pos.getX());
+            expression.setVariable(POS_Y, pos.getY());
+            expression.setVariable(POS_Z, pos.getZ());
+        }
+
+        if (hasTime) expression.setVariable(TIME, ClientFrameTicker.getGameTime());
+        if (hasDayTime) expression.setVariable(BaseExpression.DAY_TIME, ClientFrameTicker.getDayTime());
+        if (hasSunTime) expression.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
+        if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+
+        if (hasSkyLight)
+            expression.setVariable(SKY_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.SKY, pos));
+        if (hasBlockLight)
+            expression.setVariable(BLOCK_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.BLOCK, pos));
+        if (hasTemperature)
+            expression.setVariable(BaseExpression.TEMPERATURE, biome != null ? ColorUtils.getClimateSettings(biome).temperature : 0);
+        if (hasDownfall)
+            expression.setVariable(BaseExpression.DOWNFALL, biome != null ? ColorUtils.getClimateSettings(biome).downfall : 0);
+
+        if (hasPlayer) {
+            var e = Minecraft.getInstance().getCameraEntity();
+            expression.setVariable(PLAYER_X, e.getX());
+            expression.setVariable(PLAYER_Y, e.getY());
+            expression.setVariable(PLAYER_Z, e.getZ());
+        }
+        if (hasDistance) {
+            var e = Minecraft.getInstance().getCameraEntity();
+            double x = pos.getX() - e.getX();
+            double y = pos.getY() - e.getY();
+            double z = pos.getZ() - e.getZ();
+            expression.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+        }
+        if (hasPlayerSpeed) {
+            expression.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
+        }
+
+        if (hasRenderDistance) expression.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
+
+
+        if (stack != null) {
+            float damage = 1 - stack.getDamageValue() / (float) stack.getMaxDamage();
+            expression.setVariable(DAMAGE, damage);
+        } else expression.setVariable(DAMAGE, 0);
+
+        // Evaluate the expressionression
+        //this state hack won't even work as its multithreaded lmao
+
+        if (hasState) STATE_HACK.set(state);
+
+        float result = (float) expression.evaluate();
+        STATE_HACK.remove();
+
         return result;
     }
 }

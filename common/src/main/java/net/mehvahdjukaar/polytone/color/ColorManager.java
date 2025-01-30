@@ -3,14 +3,12 @@ package net.mehvahdjukaar.polytone.color;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
-import net.mehvahdjukaar.polytone.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.RegistryAccess;
@@ -19,13 +17,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.Vec3;
@@ -190,7 +188,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                         }
                         spawnEggItem.highlightColor = col;
                     }
-                } else{
+                } else {
                     Polytone.LOGGER.warn("Unknown or invalid Spawn Egg Item with name {}", id);
                 }
             }
@@ -239,7 +237,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     if (code == 15) {
                         Vector3f maxPower = new Vector3f(rgb[0], rgb[1], rgb[2]);
                         DustParticleOptions.REDSTONE_PARTICLE_COLOR = maxPower;
-                        ((DustParticleOptionAccessor)DustParticleOptions.REDSTONE).setColor(maxPower);
+                        ((DustParticleOptionAccessor) DustParticleOptions.REDSTONE).setColor(maxPower);
                     }
                 } else Polytone.LOGGER.warn("Redstone color index must be between 0 and 15");
             }
@@ -368,7 +366,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
         RedStoneWireBlock.COLORS = originalRedstoneWireColors.toArray(new Vec3[0]);
         DustParticleOptions.REDSTONE_PARTICLE_COLOR = new Vector3f(1, 0, 0);//default
-        ((DustParticleOptionAccessor)DustParticleOptions.REDSTONE).setColor(DustParticleOptions.REDSTONE_PARTICLE_COLOR);
+        ((DustParticleOptionAccessor) DustParticleOptions.REDSTONE).setColor(DustParticleOptions.REDSTONE_PARTICLE_COLOR);
     }
 
     public void regenSheepColors() {
@@ -386,18 +384,19 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     public float[] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
         float time = orb.tickCount + partialTicks;
+        Level level = orb.level();
         Vec3 position = orb.position();
         if (xpOrbColor != null) {
-            int color = (int) xpOrbColor.getValue(position, time);
+            int color = (int) xpOrbColor.getValue(position, time, level);
             return unpack(color);
         }
         if (xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         float r = 0;
         float g = 0;
         float b = 0;
-        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(position, time);
-        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(position, time);
-        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(position, time);
+        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(position, time, level);
+        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(position, time, level);
+        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(position, time, level);
         return new float[]{r, g, b};
     }
 

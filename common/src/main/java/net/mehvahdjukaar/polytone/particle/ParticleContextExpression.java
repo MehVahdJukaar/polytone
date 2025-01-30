@@ -5,17 +5,16 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
+import net.mehvahdjukaar.polytone.utils.exp.BaseExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.objecthunter.exp4j.ExpressionBuilder;
+import net.minecraft.world.level.LightLayer;
 
-public class ParticleContextExpression {
-    private final ConcurrentExpression expression;
-    private final String unparsed;
+public class ParticleContextExpression extends BaseExpression {
 
     private static final String COLOR = "COLOR";
     private static final String SPEED = "SPEED";
@@ -36,74 +35,30 @@ public class ParticleContextExpression {
 
     private static final String CUSTOM = "CUSTOM";
 
-    private static final String DAY_TIME = "DAY_TIME";
-    private static final String TIME = "TIME";
-    private static final String RAIN = "RAIN";
-    private static final String SKY_LIGHT = "SKY_LIGHT";
-    private static final String BLOCK_LIGHT = "BLOCK_LIGHT";
-    private static final String TEMPERATURE = "TEMPERATURE"; //at player
-    private static final String DOWNFALL = "DOWNFALL";
-    private static final String PLAYER_X = "PLAYER_X";
-    private static final String PLAYER_Y = "PLAYER_Y";
-    private static final String PLAYER_Z = "PLAYER_Z";
-    private static final String DISTANCE_SQUARED = "DISTANCE_SQUARED";
-    private static final String PLAYER_SPEED_SQUARED = "PLAYER_SPEED_SQUARED";
-
     public static final Codec<ParticleContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
-            ConcurrentExpression compiled = createExpression(s);
-            return DataResult.success(new ParticleContextExpression(compiled, s));
+            return DataResult.success(new ParticleContextExpression(s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
-    }, javaxExpression -> DataResult.success(javaxExpression.unparsed));
+    }, javaxExpression -> DataResult.success(javaxExpression.getUnparsed()));
 
-    private final boolean hasTime;
-    private final boolean hasRain;
-    private final boolean hasDayTime;
     private final boolean hasCustom;
-    private final boolean hasSkyLight;
-    private final boolean hasBlockLight;
-    private final boolean hasTemperature;
-    private final boolean hasDownfall;
-    private final boolean hasDistance;
-    private final boolean hasPlayer;
-    private final boolean hasPlayerSpeed;
-
 
     public ParticleContextExpression(String expression) {
-        this(createExpression(expression), expression);
+        super(expression);
+        this.hasCustom = expression.contains(CUSTOM);
     }
 
-    public ParticleContextExpression(ConcurrentExpression expression, String unparsed) {
-        this.expression = expression;
-        this.unparsed = unparsed;
-
-        this.hasTime = unparsed.contains(TIME);
-        this.hasRain = unparsed.contains(RAIN);
-        this.hasDayTime = unparsed.contains(DAY_TIME);
-        this.hasCustom = unparsed.contains(CUSTOM);
-        this.hasSkyLight = unparsed.contains(SKY_LIGHT);
-        this.hasBlockLight = unparsed.contains(BLOCK_LIGHT);
-        this.hasTemperature = unparsed.contains(TEMPERATURE);
-        this.hasDownfall = unparsed.contains(DOWNFALL);
-        this.hasDistance = unparsed.contains(DISTANCE_SQUARED);
-        this.hasPlayerSpeed = unparsed.contains(DISTANCE_SQUARED);
-        this.hasPlayer = unparsed.contains(PLAYER_X) || unparsed.contains(PLAYER_Y) || unparsed.contains(PLAYER_Z);
+    @Override
+    protected void buildFunctions(FunBuilder builder) {
+        super.buildFunctions(builder);
     }
 
-    public static ParticleContextExpression parse(String s) {
-        return new ParticleContextExpression(createExpression(s), s);
-    }
-
-    private static ConcurrentExpression createExpression(String s) {
-        return ConcurrentExpression.of(new ExpressionBuilder(s)
-                .functions(ExpressionUtils.defFunc())
-                .variables(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, ROLL, AGE,
-                        PLAYER_X, PLAYER_Y, PLAYER_Z, PLAYER_SPEED_SQUARED,
-                        CUSTOM, TIME, RAIN, DAY_TIME, SKY_LIGHT, BLOCK_LIGHT, DOWNFALL, TEMPERATURE, DISTANCE_SQUARED)
-                .operator(ExpressionUtils.defOp())
-        );
+    @Override
+    protected void buildVars(VarBuilder builder) {
+        super.buildVars(builder);
+        builder.addAll(COLOR, SPEED, X, Y, Z, DX, DY, DZ, RED, GREEN, BLUE, ALPHA, SIZE, LIFE, AGE, ROLL, CUSTOM);
     }
 
 
@@ -130,13 +85,36 @@ public class ParticleContextExpression {
         if (hasCustom && particle instanceof CustomParticleType.Instance i)
             expression.setVariable(CUSTOM, i.getCustom());
 
+
+
+        if (hasPos) {
+            BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
+            expression.setVariable(POS_X, pos.getX());
+            expression.setVariable(POS_Y, pos.getY());
+            expression.setVariable(POS_Z, pos.getZ());
+        }
+
         if (hasTime) expression.setVariable(TIME, ClientFrameTicker.getGameTime());
+        if (hasDayTime) expression.setVariable(BaseExpression.DAY_TIME, ClientFrameTicker.getDayTime());
+        if (hasSunTime) expression.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
         if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
-        if (hasDayTime) expression.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
-        if (hasSkyLight) expression.setVariable(SKY_LIGHT, ClientFrameTicker.getSkyLight());
-        if (hasBlockLight) expression.setVariable(BLOCK_LIGHT, ClientFrameTicker.getBlockLight());
-        if (hasTemperature) expression.setVariable(TEMPERATURE, ClientFrameTicker.getTemperature());
-        if (hasDownfall) expression.setVariable(DOWNFALL, ClientFrameTicker.getDownfall());
+
+        if (hasSkyLight)
+            expression.setVariable(SKY_LIGHT, ClientFrameTicker.getSkyLight());
+        if (hasBlockLight)
+            expression.setVariable(BLOCK_LIGHT, ClientFrameTicker.getBlockLight());
+        if (hasTemperature)
+            expression.setVariable(BaseExpression.TEMPERATURE, ClientFrameTicker.getTemperature());
+        if (hasDownfall)
+            expression.setVariable(BaseExpression.DOWNFALL, ClientFrameTicker.getDownfall());
+
+
+        if (hasPlayer) {
+            var e = Minecraft.getInstance().getCameraEntity();
+            expression.setVariable(PLAYER_X, e.getX());
+            expression.setVariable(PLAYER_Y, e.getY());
+            expression.setVariable(PLAYER_Z, e.getZ());
+        }
         if (hasDistance) {
             var e = Minecraft.getInstance().getCameraEntity();
             double x = particle.x - e.getX();
@@ -144,15 +122,12 @@ public class ParticleContextExpression {
             double z = particle.z - e.getZ();
             expression.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
         }
-        if (hasPlayer) {
-            var e = Minecraft.getInstance().getCameraEntity();
-            expression.setVariable(PLAYER_X, e.getX());
-            expression.setVariable(PLAYER_Y, e.getY());
-            expression.setVariable(PLAYER_Z, e.getZ());
-        }
         if (hasPlayerSpeed) {
             expression.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
         }
+
+        if (hasRenderDistance) expression.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
+
 
         ExpressionUtils.randomizeRandom();
         return expression.evaluate();
