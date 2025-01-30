@@ -3,8 +3,8 @@ package net.mehvahdjukaar.polytone.texture;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.mehvahdjukaar.polytone.IrisCompat;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
@@ -18,7 +18,8 @@ public class LeashTexture extends RenderType {
 
     private static final ResourceLocation LEASH_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/lead.png");
 
-    private static final RenderType RENDER_TYPE = RenderType.create("polytone_leash", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
+    private static final RenderType RENDER_TYPE = RenderType.create("polytone_leash",
+            DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
             VertexFormat.Mode.TRIANGLE_STRIP, 1536, RenderType.CompositeState.builder()
                     .setShaderState(RENDERTYPE_TEXT_SHADER)
                     .setTextureState(new RenderStateShard.TextureStateShard(LEASH_TEXTURE, false, false))
@@ -62,12 +63,12 @@ public class LeashTexture extends RenderType {
 
         // Apply vertex attributes
         vertexConsumer.addVertex(matrix4f, z - dx, aa + y1, ab + dz)
-                .setColor(1, 1, 1, 1f).setLight(light)
-                .setUv(u1, segment);
+                .setColor(1, 1, 1, 1f)
+                .setUv(u1, segment).setLight(light);
 
         vertexConsumer.addVertex(matrix4f, z + dx, aa + y0 - y1, ab - dz)
-                .setColor(1, 1, 1, 1f).setLight(light)
-                .setUv(u2, segment);
+                .setColor(1, 1, 1, 1f)
+                .setUv(u2, segment).setLight(light);
 
 
         return true;

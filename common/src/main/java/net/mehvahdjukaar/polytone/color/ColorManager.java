@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.color;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -19,13 +18,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.border.BorderStatus;
@@ -386,17 +385,19 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     @Nullable
     public float[] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
+        Level level = orb.level();
+        Vec3 position = orb.position();
         if (xpOrbColor != null) {
-            int color = (int) xpOrbColor.getValue(orb.position(), orb.tickCount + partialTicks);
+            int color = (int) xpOrbColor.getValue(position, time, level);
             return ColorUtils.unpack(color);
         }
         if (xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         float r = 0;
         float g = 0;
         float b = 0;
-        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(orb.position(), orb.tickCount + partialTicks);
-        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(orb.position(), orb.tickCount + partialTicks);
-        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(orb.position(), orb.tickCount + partialTicks);
+        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(position, time, level);
+        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(position, time, level);
+        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(position, time, level);
         return new float[]{r, g, b};
     }
 
