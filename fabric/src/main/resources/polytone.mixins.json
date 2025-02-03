@@ -19,7 +19,6 @@
     "ItemBlockRenderTypeAccessor",
     "ModelBlockRendererMixin",
     "ModelManagerAccessor",
-    "ModelRendererMixin",
     "ParticleEngineAccessor"
   ],
   "injectors": {

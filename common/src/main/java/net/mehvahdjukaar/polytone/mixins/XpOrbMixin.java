@@ -20,9 +20,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ExperienceOrbRenderer.class)
 public class XpOrbMixin {
 
-    @Nullable
     @Unique
-    private static float[] polytone$specialColor = null;
+    private static float @Nullable [] polytone$specialColor = null;
 
     @Inject(method = "render(Lnet/minecraft/client/renderer/entity/state/ExperienceOrbRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At("HEAD"))

@@ -9,14 +9,12 @@
   "client": [
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
-    "CreativeModeInventoryScreenMixin",
     "CreativeTabAccessor",
     "CurioInventoryScreenMixin",
     "GuiGraphicsMixin",
     "IClientFluidTypeExtensionsMixin",
     "InventoryScreenMixin",
     "ModelBlockRendererMixin",
-    "ModelRendererMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
     "ParticleEngineAccessor"

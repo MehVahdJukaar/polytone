@@ -1,1 +1,2 @@
-fixed couple variables that got broken due to latest refactor
+addedback block render offset
+ported improvements to expressions

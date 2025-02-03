@@ -12,6 +12,7 @@ import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -339,10 +340,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         customSheepColors.clear();
     }
 
-    @Nullable
-    public float[] getXpOrbColor(ExperienceOrbRenderState orb, float partialTicks) {
+    public float @Nullable [] getXpOrbColor(ExperienceOrbRenderState orb, float partialTicks) {
         Vec3 orbPos = new Vec3(orb.x, orb.y, orb.z);
-        Level level = orb.level();
+        Level level = Minecraft.getInstance().level;
         if (xpOrbColor != null) {
             int color = (int) xpOrbColor.getValue(orbPos, orb.ageInTicks + partialTicks, level);
             return ColorUtils.unpack(color);
