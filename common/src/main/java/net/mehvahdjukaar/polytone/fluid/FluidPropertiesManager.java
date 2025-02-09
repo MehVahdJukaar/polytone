@@ -7,10 +7,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.*;
-import net.minecraft.Util;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -74,7 +72,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            var modifier = Parsed.parseFull(FluidPropertyModifier.CODEC, json, ops, id, "fluid modifier");
+            var modifier = Parsed.parseAlways(FluidPropertyModifier.CODEC, json, ops, id, "fluid modifier");
 
             //always have priority
             if (parsedModifiers.containsKey(id)) {

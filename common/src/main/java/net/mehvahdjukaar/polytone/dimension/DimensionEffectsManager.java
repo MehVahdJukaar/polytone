@@ -85,7 +85,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            var modifier = Parsed.parseFull(DimensionEffectsModifier.CODEC,
+            var modifier = Parsed.parseAlways(DimensionEffectsModifier.CODEC,
                     json, ops, id, "dimension modifier");
 
             //always have priority
@@ -206,6 +206,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             }
             if (modifier.noWeatherSkyDarken()){
                 cancelSkyWeatherDarken.put(dim, true);
+            }
+            if (modifier.cloudLevel().isPresent() && modifier.cloudLevel().get().right().isPresent()) {
+                cloudFunctions.put(dim, modifier.cloudLevel().get().right().get());
             }
         }
         if (!vanillaEffects.isEmpty())

@@ -57,7 +57,7 @@ public record GuiModifier(Type type, String target,
                     StrOpt.of(Codec.INT, "label_y_offset", 0).forGetter(GuiModifier::labelY),
                     StrOpt.of(ColorUtils.CODEC, "title_color").forGetter(g->Optional.ofNullable(g.titleColor)),
                     StrOpt.of(ColorUtils.CODEC, "label_color").forGetter(g->Optional.ofNullable(g.labelColor)),
-                    StrOpt.of(SimpleSprite.CODEC.listOf(), "extraRederables", List.of()).forGetter(GuiModifier::sprites),
+                    StrOpt.of(SimpleSprite.CODEC.listOf(), "sprites", List.of()).forGetter(GuiModifier::sprites),
                     StrOpt.of(WidgetModifier.CODEC.listOf(), "widget_modifiers", List.of()).forGetter(GuiModifier::widgetModifiers),
                     StrOpt.of(Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC), "special_offsets", Map.of()).forGetter(GuiModifier::specialOffsets)
 

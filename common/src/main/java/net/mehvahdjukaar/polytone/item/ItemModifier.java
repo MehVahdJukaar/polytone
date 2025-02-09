@@ -6,14 +6,12 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
-import net.mehvahdjukaar.polytone.utils.ITargetProvider;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
@@ -32,7 +30,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Optional<Rarity> rarity,
                            List<Component> tooltips,
                            List<Pattern> removedTooltips,
-                           Targets targets) implements ITargetProvider {
+                           Targets targets) {
 
     public static final Codec<ItemModifier> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             StrOpt.of(IndexCompoundColorGetter.SINGLE_OR_MULTIPLE, "colormap").forGetter(b -> (Optional<IColorGetter>) b.tintGetter),

@@ -1,1 +1,6 @@
-fixed couple variables that got broken due to latest refactor
+- particle modifiers can have inlined colormaps. 
+- they even support texture only
+- made all targets that references minecraft blocks optional. This means they wont hard fail if the target block is not there.
+- This was done since the game is changing some ids between versions such as minecraft:grass to short_grass. Still one should use optional targeting here instead
+- fixed expression cloud level not working
+- fixed custom sprites not working

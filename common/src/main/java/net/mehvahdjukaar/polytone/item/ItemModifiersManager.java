@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.item;
 
 import com.google.gson.JsonElement;
-import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
@@ -12,7 +11,6 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.Item;
 
 import java.util.HashMap;
@@ -43,7 +41,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            var modifier = Parsed.parseFull(ItemModifier.CODEC, json, ops, id, "item modifier");
+            var modifier = Parsed.parseAlways(ItemModifier.CODEC, json, ops, id, "item modifier");
 
             parsedModifiers.put(id, modifier);
 

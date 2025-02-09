@@ -4,9 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
+import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
@@ -14,16 +15,13 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
 
 public class ParticleModifier {
@@ -43,11 +41,16 @@ public class ParticleModifier {
 
     ).apply(instance, ParticleModifier::new));
 
+    public static final Codec<ParticleModifier> PARTIAL_CODEC = RecordCodecBuilder.create((instance) ->
+            instance.group(
+                    StrOpt.of(Colormap.CODEC, "colormap").forGetter(p -> Optional.ofNullable(p.colormap))
+            ).apply(instance, c -> ParticleModifier.ofColormap(c.orElse(null))));
+
 
     @Nullable
     private final Filter filter;
     @Nullable
-    public final IColorGetter colormap;
+    public IColorGetter colormap;
     @Nullable
     public final ParticleContextExpression colorGetter;
     @Nullable
@@ -102,6 +105,12 @@ public class ParticleModifier {
                 null, null, null, Targets.EMPTY);
     }
 
+    public static ParticleModifier ofColormap(IColorGetter colormap) {
+        return new ParticleModifier(null, colormap, null, null, null, null, null,
+                null, null, null, Targets.EMPTY);
+    }
+
+
     public Targets targets() {
         return this.targets;
     }
@@ -147,6 +156,19 @@ public class ParticleModifier {
             particle.alpha = (float) alphaGetter.getValue(particle, level);
         }
     }
+
+    public boolean hasColormap() {
+        return this.colormap != null;
+    }
+
+    public void setColormap(IColorGetter colormap) {
+        this.colormap = colormap;
+    }
+
+    public BlockColor getColormap() {
+        return this.colormap;
+    }
+
 
     private record Filter(@Nullable Block forBlock,
                           @Nullable Item forItem) implements Predicate<ParticleOptions> {

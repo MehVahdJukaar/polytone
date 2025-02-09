@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.lightmap;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -13,7 +12,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -89,7 +87,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
             Parsed<Lightmap> parsed;
             Lightmap lightmap;
             if (j != null) {
-                parsed = Parsed.parseFull(Lightmap.CODEC, j, ops, location, "lightmap");
+                parsed = Parsed.parseAlways(Lightmap.CODEC, j, ops, location, "lightmap");
             } else {
                 //default samplers
                 parsed = Parsed.success(new Lightmap(), location);

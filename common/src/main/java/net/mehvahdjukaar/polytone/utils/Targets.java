@@ -5,12 +5,10 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -92,7 +90,7 @@ public record Targets(List<Entry> entries) {
 
     private static final Codec<Entry> ENTRY_CODEC = CodecUtil.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC);
 
-    public static final Codec<Targets> CODEC = CodecUtil.withAlternative(ENTRY_CODEC.xmap(List::of, l->l.get(0)),
+    public static final Codec<Targets> CODEC = CodecUtil.withAlternative(ENTRY_CODEC.xmap(List::of, l -> l.get(0)),
             ENTRY_CODEC.listOf()).xmap(Targets::new, t -> t.entries);
 
     private record OptionalEntry(Entry entry, boolean required) implements Entry {
@@ -127,7 +125,12 @@ public record Targets(List<Entry> entries) {
         @Override
         public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
             ResourceKey<T> key = ResourceKey.create(reg.key(), id);
-            return List.of(reg.getHolder(key).orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
+            Optional<Holder.Reference<T>> holder = reg.getHolder(key);
+            if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
+                Polytone.LOGGER.warn("Found missing ID in minecraft namespace: {}", id + ". Skipping.");
+                return List.of();
+            }
+            return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
         }
     }
 
