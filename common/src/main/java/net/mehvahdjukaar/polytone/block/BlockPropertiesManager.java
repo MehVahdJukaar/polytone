@@ -6,12 +6,10 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
-import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -104,7 +102,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            var prop = Parsed.parse(BlockPropertyModifier.CODEC, BlockPropertyModifier.PARTIAL_CODEC,
+            var prop = Parsed.parseOptionalOrPartial(BlockPropertyModifier.CODEC, BlockPropertyModifier.PARTIAL_CODEC,
                     json, ops, id, "block modifier");
 
             //always have priority

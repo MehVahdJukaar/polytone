@@ -118,7 +118,13 @@ public record Targets(List<Entry> entries) {
 
         @Override
         public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
-            return List.of(reg.getHolder(id).orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
+            ResourceKey<T> key = ResourceKey.create(reg.key(), id);
+            Optional<Holder.Reference<T>> holder = reg.getHolder(key);
+            if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
+                Polytone.LOGGER.warn("Found missing ID in minecraft namespace: {}", id + ". Skipping.");
+                return List.of();
+            }
+            return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
         }
     }
 

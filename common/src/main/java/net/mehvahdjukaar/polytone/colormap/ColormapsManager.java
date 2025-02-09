@@ -203,10 +203,10 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
         if (selectedTexture != null) {
             usedTexture.add(textureLoc);
-            colormap.acceptTexture(selectedTexture);
             if (selectedTexture.pixels().length == 0) {
                 throw new IllegalStateException("Colormap texture at location " + textureLoc + " had invalid 0 dimension");
             }
+            colormap.acceptTexture(selectedTexture);
         } else {
             ResourceLocation explTarget = colormap.getExplicitTargetTexture();
             if (explTarget != null) {

@@ -73,9 +73,9 @@ public class Parsed<T> {
         return true;
     }));
 
-    public static <T, J> Parsed<T> parseFull(Decoder<T> codec, J input, DynamicOps<J> ops,
-                                             ResourceLocation id, String jsonTypeName) {
-        return parse(codec, codec, input, ops, id, jsonTypeName);
+    public static <T, J> Parsed<T> parseAlways(Decoder<T> codec, J input, DynamicOps<J> ops,
+                                               ResourceLocation id, String jsonTypeName) {
+        return parseOptionalOrPartial(codec, codec, input, ops, id, jsonTypeName);
     }
 
     public static <T, J> Optional<T> parseOptional(Decoder<T> codec, J input, DynamicOps<J> ops,
@@ -99,8 +99,8 @@ public class Parsed<T> {
     }
 
 
-    public static <T, J> Parsed<T> parse(Decoder<T> fullCodec, Decoder<T> partialCodec, J input, DynamicOps<J> ops,
-                                         ResourceLocation id, String jsonTypeName) {
+    public static <T, J> Parsed<T> parseOptionalOrPartial(Decoder<T> fullCodec, Decoder<T> partialCodec, J input, DynamicOps<J> ops,
+                                                          ResourceLocation id, String jsonTypeName) {
         Boolean enabled = CONDITION_CODEC.decode(ops, input).getOrThrow().getFirst();
         T value;
         try {
