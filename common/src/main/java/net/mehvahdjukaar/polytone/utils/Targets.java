@@ -124,10 +124,14 @@ public record Targets(List<Entry> entries) {
                 .xmap(SimpleLocation::new, s -> s.id);
 
         @Override
-        public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
-            ResourceKey k = reg.key();
-            ResourceKey<T> key = ResourceKey.create(k, this.id);
-            return List.of(reg.getOrThrow(key));
+        public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
+            ResourceKey<T> key = ResourceKey.create(reg.key(), id);
+            Optional<Holder.Reference<T>> holder = reg.getHolder(key);
+            if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
+                Polytone.LOGGER.warn("Found missing ID in minecraft namespace: {}", id + ". Skipping.");
+                return List.of();
+            }
+            return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
         }
     }
 

@@ -4,6 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
+import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.core.component.DataComponentMap;

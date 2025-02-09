@@ -5,8 +5,16 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
+import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.utils.Utils;
+import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
@@ -16,9 +24,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
+import java.util.*;
 
-public class ParticleModifiersManager extends JsonPartialReloader {
+public class ParticleModifiersManager extends JsonImgPartialReloader {
 
     private final Multimap<ParticleType<?>, ParticleModifier> particleModifiers = HashMultimap.create();
 
@@ -34,17 +42,51 @@ public class ParticleModifiersManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        for (var j : jsons.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
+    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        var jsons = resources.jsons();
+        var textures = new HashMap<>(resources.textures());
 
-            var modifier = Parsed.parseOptional(ParticleModifier.CODEC, json, ops, id, "particle modifier");
-            modifier.ifPresent(m -> this.addModifier(id, m));
+        Set<ResourceLocation> usedTextures = new HashSet<>();
+        Map<ResourceLocation, Parsed<ParticleModifier>> parsedModifiers = Utils.sortedMap();
+        for (var j : jsons.entrySet()) {
+            JsonElement json = j.getValue();
+            ResourceLocation id = j.getKey();
+
+            var modifier = Parsed.parseOptionalOrPartial(ParticleModifier.CODEC,
+                    ParticleModifier.PARTIAL_CODEC, json, ops, id, "particle modifier");
+
+            //always have priority
+            parsedModifiers.put(id, modifier);
         }
 
-        //TODO: add inline colormap support
-        //does not support inline colormaps yet
+        // add all modifiers (with or without texture)
+        for (var entry : parsedModifiers.entrySet()) {
+            ResourceLocation id = entry.getKey();
+            Parsed<ParticleModifier> parsed = entry.getValue();
+            ParticleModifier modifier = parsed.getResultOrPartial();
+
+            if (!modifier.hasColormap() && textures.containsKey(id)) {
+                //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
+                modifier.setColormap(Colormap.createDefTriangle());
+            }
+
+            //fill inline colormaps colormapTextures
+            BlockColor tint = modifier.getColormap();
+            ColormapsManager.tryAcceptingTexture(textures, id, tint, usedTextures, true);
+
+            if (parsed.isEnabled()) this.addModifier(id, modifier);
+        }
+
+        // creates orphaned texture colormaps & properties
+        textures.keySet().removeAll(usedTextures);
+
+        for (var t : textures.entrySet()) {
+            ResourceLocation id = t.getKey();
+            Colormap defaultColormap = Colormap.createDefTriangle();
+            ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
+
+            addModifier(id, ParticleModifier.ofColormap(defaultColormap));
+        }
     }
 
     @Override

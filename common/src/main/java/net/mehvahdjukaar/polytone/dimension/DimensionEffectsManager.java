@@ -87,7 +87,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            var modifier = Parsed.parseFull(DimensionEffectsModifier.CODEC,
+            var modifier = Parsed.parseAlways(DimensionEffectsModifier.CODEC,
                     json, ops, id, "dimension modifier");
             //always have priority
             if (parsedModifiers.containsKey(id)) {
