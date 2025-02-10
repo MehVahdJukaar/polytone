@@ -1,9 +1,10 @@
 package net.mehvahdjukaar.polytone.utils;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
+
+import java.util.Locale;
 
 public enum Weather implements StringRepresentable {
     CLEAR, RAIN, THUNDER;
@@ -18,7 +19,7 @@ public enum Weather implements StringRepresentable {
 
     @Override
     public String getSerializedName() {
-        return this.name().toLowerCase();
+        return this.name().toLowerCase(Locale.ROOT);
     }
 
 
