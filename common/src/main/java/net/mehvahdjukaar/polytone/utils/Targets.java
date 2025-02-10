@@ -5,6 +5,9 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -117,16 +120,17 @@ public record Targets(List<Entry> entries) {
         public static final Codec<SimpleLocation> SIMPLE_CODEC = ResourceLocation.CODEC
                 .xmap(SimpleLocation::new, s -> s.id);
 
-        @Override
-        public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
-            ResourceKey<T> key = ResourceKey.create(reg.key(), id);
-            Optional<Holder.Reference<T>> holder = reg.getHolder(key);
+        public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
+            ResourceKey k = reg.key();
+            ResourceKey<T> key = ResourceKey.create(k, this.id);
+            Optional<Holder.Reference<T>> holder = reg.get(key);
             if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
                 Polytone.LOGGER.warn("Found missing ID in minecraft namespace: {}", id + ". Skipping.");
                 return List.of();
             }
             return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
         }
+
     }
 
     private record TagLocation(ResourceLocation id) implements Entry {

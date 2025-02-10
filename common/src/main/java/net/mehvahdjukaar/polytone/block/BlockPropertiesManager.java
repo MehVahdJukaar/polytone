@@ -4,26 +4,28 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-
-import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
 
@@ -32,6 +34,10 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     // Block ID to modifier
     private final Map<Block, BlockPropertyModifier> modifiers = new HashMap<>();
     private final Map<Block, ClientTickModifier> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
+
+    //replacing vanilla color resolvers too for better mod compat
+    private ColorResolver vanillaGrassColorResolver = null;
+    private ColorResolver vanillaFoliageColorResolver = null;
 
     public BlockPropertiesManager() {
         super("block_modifiers", "block_properties");
@@ -155,6 +161,15 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     private void addModifier(ResourceLocation fileId, BlockPropertyModifier mod) {
         for (var block : mod.targets().compute(fileId, BuiltInRegistries.BLOCK)) {
             modifiers.merge(block.value(), mod, BlockPropertyModifier::merge);
+
+            //not perfect but good enough
+            if (block.value() == Blocks.GRASS_BLOCK && mod.getColormap() instanceof Colormap c) {
+                vanillaGrassColorResolver = BiomeColors.GRASS_COLOR_RESOLVER;
+                BiomeColors.GRASS_COLOR_RESOLVER = c;
+            } else if (block.value() == Blocks.OAK_LEAVES && mod.getColormap() instanceof Colormap c) {
+                vanillaFoliageColorResolver = BiomeColors.FOLIAGE_COLOR_RESOLVER;
+                BiomeColors.FOLIAGE_COLOR_RESOLVER = c;
+            }
         }
     }
 
@@ -167,6 +182,15 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         modifiers.clear();
         optifineColormapsToBlocks.clear();
         particleAndSoundEmitters.clear();
+
+        if (vanillaGrassColorResolver != null) {
+            BiomeColors.GRASS_COLOR_RESOLVER = vanillaGrassColorResolver;
+        }
+        vanillaGrassColorResolver = null;
+        if (vanillaFoliageColorResolver != null) {
+            BiomeColors.FOLIAGE_COLOR_RESOLVER = vanillaFoliageColorResolver;
+        }
+        vanillaFoliageColorResolver = null;
     }
 
     @Override
@@ -186,7 +210,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                 particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier()).addAll(sound);
             }
 
-            if(value.disableParticles()){
+            if (value.disableParticles()) {
                 particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier()).cancelsExisting();
             }
         }
@@ -215,15 +239,15 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         return false;
     }
 
-    private static class ClientTickModifier{
+    private static class ClientTickModifier {
         final List<BlockClientTickable> tickables = new ArrayList<>();
         boolean cancelExisting;
 
-        public void add(BlockClientTickable tickable){
+        public void add(BlockClientTickable tickable) {
             tickables.add(tickable);
         }
 
-        public void cancelsExisting(){
+        public void cancelsExisting() {
             cancelExisting = true;
         }
 
