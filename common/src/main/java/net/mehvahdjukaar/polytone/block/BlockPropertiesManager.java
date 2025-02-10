@@ -28,6 +28,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
+
 public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
 
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();

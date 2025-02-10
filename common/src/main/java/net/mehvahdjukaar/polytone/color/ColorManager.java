@@ -18,6 +18,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.animal.Sheep;
@@ -386,6 +387,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     public float[] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
         Level level = orb.level();
+        var time = orb.tickCount + partialTicks;
         Vec3 position = orb.position();
         if (xpOrbColor != null) {
             int color = (int) xpOrbColor.getValue(position, time, level);

@@ -120,10 +120,9 @@ public record Targets(List<Entry> entries) {
         public static final Codec<SimpleLocation> SIMPLE_CODEC = ResourceLocation.CODEC
                 .xmap(SimpleLocation::new, s -> s.id);
 
-        public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
-            ResourceKey k = reg.key();
-            ResourceKey<T> key = ResourceKey.create(k, this.id);
-            Optional<Holder.Reference<T>> holder = reg.get(key);
+        @Override
+        public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
+            var holder = reg.getHolder(id);
             if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
                 Polytone.LOGGER.warn("Found missing ID in minecraft namespace: {}", id + ". Skipping.");
                 return List.of();
