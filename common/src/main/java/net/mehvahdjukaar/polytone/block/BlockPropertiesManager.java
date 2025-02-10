@@ -17,6 +17,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -26,6 +27,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+
+import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
 public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
 

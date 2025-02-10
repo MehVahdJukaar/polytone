@@ -99,7 +99,7 @@ public class Colormap implements IColorGetter, ColorResolver {
     public void acceptTexture(ArrayImage image) {
         this.image = image;
         if (defaultColor == null) {
-            this.defaultColor = sample(0.5f, 0.5f, -1);
+            this.defaultColor = sample(0.5f, 0.5f);
         }
     }
 
@@ -191,7 +191,7 @@ public class Colormap implements IColorGetter, ColorResolver {
     }
 
 
-    private int sample(float textY, float textX, int defValue) {
+    private int sample(float textY, float textX) {
         // dont ask questions here
         //if (Polytone.sodiumOn) return defValue;
         if (triangular) textY *= textX;
