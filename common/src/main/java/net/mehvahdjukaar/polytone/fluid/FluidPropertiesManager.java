@@ -8,12 +8,16 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 
 import java.util.*;
 
@@ -27,6 +31,9 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
     private Map<ResourceLocation, FluidPropertyModifier> extraModifiers;
     private Map<ResourceLocation, ArrayImage> extraImages;
+
+    //essentially replacing this for better mod compat
+    private ColorResolver vanillaWaterColorResolver = null;
 
     // fot OF lava and water. shit code...
     public void addConvertedBlockProperties(Map<ResourceLocation, FluidPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
@@ -94,7 +101,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             }
 
             //fill inline colormaps colormapTextures
-            BlockColor tint = modifier.getTint();
+            BlockColor tint = modifier.getColormap();
             ColormapsManager.tryAcceptingTexture(textures, id, tint, usedTextures, true);
 
             if (parsed.isEnabled()) this.addModifier(id, modifier);
@@ -124,6 +131,10 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     protected void resetWithLevel(boolean logOff) {
         modifiers.clear();
         clearSpecial();
+        if (vanillaWaterColorResolver != null) {
+            BiomeColors.WATER_COLOR_RESOLVER = vanillaWaterColorResolver;
+        }
+        vanillaWaterColorResolver = null;
     }
 
     private void addModifier(ResourceLocation pathId, FluidPropertyModifier mod) {
@@ -131,6 +142,12 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             var f = fluid.value();
             modifiers.merge(f, mod, FluidPropertyModifier::merge);
             tryAddSpecial(f, mod);
+
+            //replaces watercolor func with first colormap that targets water. good enough
+            if (fluid.value() == Fluids.WATER && mod.getColormap() instanceof Colormap c) {
+                vanillaWaterColorResolver = BiomeColors.WATER_COLOR_RESOLVER;
+                BiomeColors.WATER_COLOR_RESOLVER = c;
+            }
         }
     }
 
