@@ -144,7 +144,7 @@ public class Colormap implements IColorGetter, ColorResolver {
     public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
         float temperature = Mth.clamp(xGetter.getValue(state, pos, biome, biomeMapper, item), 0, 1);
         float humidity = Mth.clamp(yGetter.getValue(state, pos, biome, biomeMapper, item), 0, 1);
-        int sampled = sample(humidity, temperature, defaultColor);
+        int sampled = sample(humidity, temperature);
 
         if (fallback != null && sampled == 0) {
             //TODO: finish

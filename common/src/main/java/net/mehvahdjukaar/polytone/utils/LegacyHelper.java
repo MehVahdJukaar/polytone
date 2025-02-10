@@ -465,7 +465,8 @@ public class LegacyHelper {
                 Targets targets = mod.targets();
                 targets.addSimple(id);
                 targets.addSimple(id.withPrefix("flowing_"));
-                var fogMod = fog.get(id.withSuffix("_fog")).asOptional();
+                var fogMod = Optional.ofNullable(fog.get(id.withSuffix("_fog")))
+                        .map(Parsed::getResultOrPartial);
                 FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
                         fogMod.map(BlockPropertyModifier::getColormap),
                         targets);

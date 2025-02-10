@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.fluid.neoforge;
 
-import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
@@ -16,12 +15,10 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.event.entity.player.ClientInformationUpdatedEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.util.HashMap;
@@ -58,7 +55,7 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public int getTintColor() {
-            var col = modifier.getTint();
+            var col = modifier.getColormap();
             if (col != null) {
                 return col.getColor(null, null, null, -1) | 0xff000000;
             }
@@ -67,7 +64,7 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public int getTintColor(FluidStack stack) {
-            var col = modifier.getTint();
+            var col = modifier.getColormap();
             if (col != null) {
                 return col.getColor(null, null, null, -1) | 0xff000000;
             }
@@ -76,7 +73,7 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            var col = modifier.getTint();
+            var col = modifier.getColormap();
             if (col != null) {
                 return col.getColor(state.createLegacyBlock(), getter, pos, -1) | 0xff000000;
             }

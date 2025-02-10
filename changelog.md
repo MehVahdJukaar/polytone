@@ -1,6 +1,2 @@
-- particle modifiers can have inlined colormaps. 
-- they even support texture only
-- made all targets that references minecraft blocks optional. This means they wont hard fail if the target block is not there.
-- This was done since the game is changing some ids between versions such as minecraft:grass to short_grass. Still one should use optional targeting here instead
-- fixed expression cloud level not working
-- fixed custom sprites not working
+- fixed a bug when converting of fluid stuff
+- adding a colormap for water fluid, oak leaves or grass block is not set to automatically replace the internal watercolor, foliagecolor and leaves color resolver with the colomap too. This is mainly used for mod that reference those color resolvers directly. In most cases this should be what one wants.

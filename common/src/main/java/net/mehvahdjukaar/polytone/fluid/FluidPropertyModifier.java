@@ -9,7 +9,6 @@ import net.minecraft.client.color.block.BlockColor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
-import java.util.Set;
 
 public record FluidPropertyModifier(Optional<? extends BlockColor> colormap, Optional<IColorGetter> fogColormap,
                                     Targets targets) {
@@ -35,7 +34,7 @@ public record FluidPropertyModifier(Optional<? extends BlockColor> colormap, Opt
     }
 
     @Nullable
-    public BlockColor getTint() {
+    public BlockColor getColormap() {
         return colormap.orElse(null);
     }
 
