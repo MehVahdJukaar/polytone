@@ -141,7 +141,7 @@ public class LegacyHelper {
                     BlockPropertyModifier modifier = convertOFProperty(prop, id);
                     map.put(id, withCond(id, prop, modifier));
                 } catch (Exception e) {
-                    Polytone.LOGGER.error("FAILED TO CONVERT OPTIFINE COLORMAP AT {}: ", id, e);
+                    Polytone.LOGGER.error("FAILED TO CONVERT OPTIFINE COLORMAP AT {}. Its likely the file has errors: ", id, e);
                 }
             }
         }
@@ -252,7 +252,7 @@ public class LegacyHelper {
                         } catch (Exception ignored) {
                         }
                         return true;
-                    }).map(ResourceLocation::tryParse)
+                    }).map(ResourceLocation::parse)
                     .collect(Collectors.toSet());
             if (forceTint) set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
         } else set = Set.of();
