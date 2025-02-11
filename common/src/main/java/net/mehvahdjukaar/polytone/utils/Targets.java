@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import com.google.common.base.Preconditions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -12,6 +13,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -73,7 +75,7 @@ public record Targets(List<Entry> entries) {
         return new Targets(mergeList(entries, other.entries));
     }
 
-    public void addSimple(ResourceLocation id) {
+    public void addSimple (@NotNull ResourceLocation id) {
         Entry simpleLocation = new SimpleLocation(id);
         this.entries.add(simpleLocation);
     }
@@ -121,7 +123,7 @@ public record Targets(List<Entry> entries) {
         }
     }
 
-    private record SimpleLocation(ResourceLocation id) implements Entry {
+    private record SimpleLocation(@NotNull ResourceLocation id) implements Entry {
         public static final Codec<SimpleLocation> SIMPLE_CODEC = ResourceLocation.CODEC
                 .xmap(SimpleLocation::new, s -> s.id);
 

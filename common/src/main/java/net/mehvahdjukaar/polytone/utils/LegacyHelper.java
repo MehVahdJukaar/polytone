@@ -110,7 +110,7 @@ public class LegacyHelper {
                     BlockPropertyModifier modifier = convertOFProperty(prop, id);
                     map.put(id, withCond(id, prop, modifier));
                 } catch (Exception e) {
-                    Polytone.LOGGER.error("FAILED TO CONVERT OPTIFINE COLORMAP AT {}: ", id, e);
+                    Polytone.LOGGER.error("FAILED TO CONVERT OPTIFINE COLORMAP AT {}. Its likely the file has errors: ", id, e);
                 }
             }
         }
