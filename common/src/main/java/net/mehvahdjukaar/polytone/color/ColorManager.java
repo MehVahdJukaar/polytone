@@ -61,8 +61,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     private BlockContextExpression xpOrbColorB;
 
-    private int xpBar = 8453920;
+    private Integer xpBar = null;
     private Integer splash = null;
+    private Integer enchantTableXp = null;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -70,7 +71,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 Polytone.MOD_ID, "colormatic", "vanadium", "optifine");
     }
 
-    public int getXpBar() {
+    public Integer getXpBar() {
         return xpBar;
     }
 
@@ -286,7 +287,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         //TODO:
         //PotionContents.EMPTY_COLOR = 16253176;
         PotionContents.BASE_POTION_COLOR = 3694022;
-        xpBar = 8453920;
+        xpBar = null;
         xpOrbColor = null;
         xpOrbColorR = null;
         xpOrbColorG = null;
