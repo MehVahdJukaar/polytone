@@ -25,6 +25,10 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.*;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
@@ -70,7 +74,7 @@ public class PolytoneForge {
         ClientFrameTicker.onRenderTick(Minecraft.getInstance());
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOW)
     public void onTooltip(ItemTooltipEvent tooltipEvent) {
         var mod = ((IPolytoneItem) tooltipEvent.getItemStack().getItem()).polytone$getModifier();
         if (mod != null) {
