@@ -61,8 +61,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     private int emptyPotion = 16253176;
     private int waterBottle = 3694022;
-    private int xpBar = 8453920;
+    private Integer xpBar = null;
     private Integer splash = null;
+    private Integer enchantTableXp = null;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -78,7 +79,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         return waterBottle;
     }
 
-    public int getXpBar() {
+    public Integer getXpBar() {
         return xpBar;
     }
 
@@ -311,7 +312,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     protected void resetWithLevel(boolean logOff) {
         emptyPotion = 16253176;
         waterBottle = 3694022;
-        xpBar = 8453920;
+        xpBar = null;
         xpOrbColor = null;
         xpOrbColorR = null;
         xpOrbColorG = null;
