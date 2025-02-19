@@ -1,2 +1,1 @@
-- fixed a bug when converting of fluid stuff
-- adding a colormap for water fluid, oak leaves or grass block is not set to automatically replace the internal watercolor, foliagecolor and leaves color resolver with the colomap too. This is mainly used for mod that reference those color resolvers directly. In most cases this should be what one wants.
+- added version condition

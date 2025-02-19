@@ -6,16 +6,20 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.minecraft.SharedConstants;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static net.mehvahdjukaar.polytone.utils.CodecUtil.withAlternative;
 
 public class Parsed<T> {
+
 
     private final boolean isEnabled;
     private final T value;
@@ -62,13 +66,17 @@ public class Parsed<T> {
 
     private static final Codec<Boolean> CONDITION_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.optionalFieldOf("polytone_ignore", false).forGetter(b -> b),
+            VersionRange.CODEC.optionalFieldOf("version").forGetter(b -> Optional.empty()),
             withAlternative(Codec.STRING.listOf(), Codec.STRING, List::of)
                     .optionalFieldOf("require_mods", List.of()).forGetter(b -> List.of())
-    ).apply(instance, (b, l) -> {
-        if (b) {
+    ).apply(instance, (ignore, version, modList) -> {
+        if (ignore) {
             return false;
         }
-        for (String s : l) {
+        if (version.isPresent() && ! version.get().matches(SharedConstants.VERSION_STRING)) {
+            return false;
+        }
+        for (String s : modList) {
             if (!PlatStuff.isModLoaded(s)) {
                 return false;
             }
@@ -127,5 +135,6 @@ public class Parsed<T> {
         }
         return new Parsed<>(enabled, value, id);
     }
+
 
 }
