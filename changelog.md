@@ -1,1 +1,1 @@
-- added version condition
+- player inventory menu will be refreshed on pack reload so that slot modifiers can be applied properly
