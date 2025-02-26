@@ -11,6 +11,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
@@ -82,6 +83,19 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         }
 
         Polytone.LOGGER.info("Reloaded Polytone Resources in {} ms", stopwatch.elapsed().toMillis());
+
+        //refresh player inventory menu as its the only one its not re made. needed for slot mod. ugly
+        var player = Minecraft.getInstance().player;
+        if (player != null) {
+            var container = player.containerMenu;
+            var inv = player.inventoryMenu;
+            if (inv.getClass() == InventoryMenu.class) {
+                player.inventoryMenu = new InventoryMenu(player.getInventory(), inv.active, player);
+                if (container == inv) {
+                    player.containerMenu = player.inventoryMenu;
+                }
+            }
+        }
     }
 
     @SuppressWarnings("all")
