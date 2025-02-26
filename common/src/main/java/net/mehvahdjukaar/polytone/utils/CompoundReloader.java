@@ -86,6 +86,13 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         }
 
         Polytone.LOGGER.info("Reloaded Polytone Resources in {} ms", stopwatch.elapsed().toMillis());
+
+        //refresh player inventory menu as its the only one its not re made. needed for slot mod. ugly
+        var player = Minecraft.getInstance().player;
+        if (player != null) {
+            var container = player.containerMenu;
+           // player.inventoryMenu
+        }
     }
 
     @SuppressWarnings("all")
