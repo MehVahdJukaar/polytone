@@ -4,20 +4,17 @@ import com.google.common.base.Stopwatch;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.particle.ParticleContextExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 // Needed to reload stuff in order but still off-thread when we can in prepare
 public class CompoundReloader extends SimplePreparableReloadListener<List<Object>> {
@@ -91,7 +88,13 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         var player = Minecraft.getInstance().player;
         if (player != null) {
             var container = player.containerMenu;
-           // player.inventoryMenu
+            var inv = player.inventoryMenu;
+            if (inv.getClass() == InventoryMenu.class) {
+                player.inventoryMenu = new InventoryMenu(player.getInventory(), inv.active, player);
+                if (container == inv) {
+                    player.containerMenu = player.inventoryMenu;
+                }
+            }
         }
     }
 
