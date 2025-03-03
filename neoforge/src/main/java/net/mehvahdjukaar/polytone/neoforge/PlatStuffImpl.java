@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.neoforge;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.neoforge.*;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.utils.Targets;
@@ -30,6 +31,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.biome.Biome;
@@ -244,11 +246,6 @@ public class PlatStuffImpl {
         );
 
 
-    }
-
-    public static String getVersion() {
-        return ModList.get().getModContainerById("polytone")
-                .get().getModInfo().getVersion().toString();
     }
 
     public static RenderType getRenderType(Block block) {

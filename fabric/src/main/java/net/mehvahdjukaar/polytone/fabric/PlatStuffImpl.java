@@ -355,7 +355,9 @@ public class PlatStuffImpl {
         for (var f : RESOLVER_MAPS) {
             try {
                 Set<ColorResolver> set = (Set<ColorResolver>) f.get(null);
-                set.removeAll(MY_CUSTOM_RESOLVERS);
+                Set<ColorResolver> newSet = new HashSet<>(set);
+                newSet.removeAll(MY_CUSTOM_RESOLVERS);
+                f.set(null, newSet);
             } catch (IllegalAccessException e) {
                 int aa = 1;
             }
