@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
@@ -87,6 +88,8 @@ public class Colormap implements IColorGetter, ColorResolver {
         this.biomeMapper = biomeMapper.orElse(BiomeIdMapper.BY_INDEX);
         this.explicitTargetTexture = explicitTargetTexture.orElse(null);
         this.lazyFallback = fallback.orElse(null);
+
+        if (this.hasBiomeBlend) PlatStuff.registerColorResolver(this);
     }
 
     protected Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter, boolean triangular) {

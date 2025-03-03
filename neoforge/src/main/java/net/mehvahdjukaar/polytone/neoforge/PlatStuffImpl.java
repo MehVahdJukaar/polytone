@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.neoforge;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.mixins.neoforge.*;
@@ -29,8 +30,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -39,6 +40,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.neoforge.client.ColorResolverManager;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.ModelEvent;
@@ -52,6 +54,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -289,4 +292,51 @@ public class PlatStuffImpl {
         PolytoneForge.bus.addListener(eventConsumer);
     }
 
+    public static String getVersion() {
+        return ModList.get().getModContainerById(Polytone.MOD_ID)
+                .map(c -> c.getModInfo().getVersion().toString()).orElse("unknown");
+    }
+
+    public static void unregisterAllCustomColorResolves() {
+        for (ColorResolver resolver : MY_CUSTOM_RESOLVERS) {
+            try {
+                ImmutableList<ColorResolver> resolvers = (ImmutableList<ColorResolver>) COLOR_RESOLVERS.get(null);
+                List<ColorResolver> temp = new ArrayList<>(resolvers);
+                temp.remove(resolver);
+                ImmutableList<ColorResolver> newList = ImmutableList.copyOf(temp);
+                COLOR_RESOLVERS.set(null, newList);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        MY_CUSTOM_RESOLVERS.clear();
+    }
+
+    public static void registerColorResolver(ColorResolver colorResolver) {
+        MY_CUSTOM_RESOLVERS.add(colorResolver);
+        try {
+            ImmutableList<ColorResolver> resolvers = (ImmutableList<ColorResolver>) COLOR_RESOLVERS.get(null);
+            ImmutableList<ColorResolver> newList = ImmutableList.<ColorResolver>builder()
+                    .addAll(resolvers).add(colorResolver).build();
+            COLOR_RESOLVERS.set(null, newList);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
+    private static final Field COLOR_RESOLVERS;
+
+    static {
+        Field found = null;
+        var fields = ColorResolverManager.class.getDeclaredFields();
+        for (var f : fields) {
+            if (f.getType() == ImmutableList.class) {
+                f.setAccessible(true);
+                found = f;
+                break;
+            }
+        }
+        COLOR_RESOLVERS = found;
+    }
 }

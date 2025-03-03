@@ -3,8 +3,8 @@ package net.mehvahdjukaar.polytone.fabric;
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -13,9 +13,7 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.impl.client.indigo.renderer.IndigoRenderer;
-import net.fabricmc.fabric.impl.client.indigo.renderer.render.AbstractBlockRenderContext;
-import net.fabricmc.fabric.mixin.block.BlockMixin;
+import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -55,6 +53,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -138,9 +137,9 @@ public class PlatStuffImpl {
             addedCallbacks.add(key);
             var event = ItemGroupEvents.MODIFY_ENTRIES_ALL;
             event.addPhaseOrdering(Event.DEFAULT_PHASE, POLYTONE_PHASE);
-            event.register(POLYTONE_PHASE, (tab,entries) ->{
+            event.register(POLYTONE_PHASE, (tab, entries) -> {
                 Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(
-                       BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(tab).get(), entries));
+                        BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(tab).get(), entries));
             });
 
         }
@@ -331,4 +330,36 @@ public class PlatStuffImpl {
     }
 
 
+    public static void registerColorResolver(ColorResolver colorResolver) {
+        ColorResolverRegistry.register(colorResolver);
+        MY_CUSTOM_RESOLVERS.add(colorResolver);
+    }
+
+    private static final Set<Field> RESOLVER_MAPS;
+    private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
+
+    static {
+        RESOLVER_MAPS = new HashSet<>();
+        var fields = ColorResolverRegistryImpl.class.getDeclaredFields();
+        //addall that are Set<ColorResolver>
+
+        for (var f : fields) {
+            if (f.getType() == Set.class) {
+                f.setAccessible(true);
+                RESOLVER_MAPS.add(f);
+            }
+        }
+    }
+
+    public static void unregisterAllCustomColorResolves() {
+        for (var f : RESOLVER_MAPS) {
+            try {
+                Set<ColorResolver> set = (Set<ColorResolver>) f.get(null);
+                set.removeAll(MY_CUSTOM_RESOLVERS);
+            } catch (IllegalAccessException e) {
+                int aa = 1;
+            }
+        }
+        MY_CUSTOM_RESOLVERS.clear();
+    }
 }

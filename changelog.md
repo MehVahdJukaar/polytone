@@ -1,1 +1,1 @@
-- added version condition
+- fixed an issue with color resolvers on bot fabric and neoforge, needed in 1.21.4 due to new api
