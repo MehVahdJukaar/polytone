@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
@@ -121,6 +122,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     @Override
     protected void resetWithLevel(boolean logOff) {
         colormaps.clear();
+        PlatStuff.unregisterAllCustomColorResolves();
     }
 
     public void add(ResourceLocation id, Colormap colormap) {
