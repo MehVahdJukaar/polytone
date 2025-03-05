@@ -92,7 +92,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     @Override
     protected void resetWithLevel(boolean logOff) {
         for(var e : customSoundEvents.getEntries()) {
-            var id  = e.getKey();
+            ResourceLocation id  = e.getKey();
             PlatStuff.unregisterDynamic(BuiltInRegistries.SOUND_EVENT, id);
         }
         customSoundTypes.clear();

@@ -294,7 +294,7 @@ public class PlatStuffImpl {
                 ImmutableList<ColorResolver> newList = ImmutableList.copyOf(temp);
                 COLOR_RESOLVERS.set(null, newList);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
         MY_CUSTOM_RESOLVERS.clear();
@@ -308,7 +308,7 @@ public class PlatStuffImpl {
                     .addAll(resolvers).add(colorResolver).build();
             COLOR_RESOLVERS.set(null, newList);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

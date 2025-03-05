@@ -6,7 +6,6 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -51,7 +50,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
     public void applyWithLevel(HolderLookup.Provider registryAccess, boolean firstLogin) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        if (!firstLogin) resetWithLevel(false);
+        resetWithLevel(false);
 
         RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
 
