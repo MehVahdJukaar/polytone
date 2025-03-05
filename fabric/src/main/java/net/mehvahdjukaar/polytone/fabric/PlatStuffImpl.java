@@ -17,6 +17,7 @@ import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
@@ -332,11 +333,17 @@ public class PlatStuffImpl {
 
     public static void registerColorResolver(ColorResolver colorResolver) {
         ColorResolverRegistry.register(colorResolver);
-        MY_CUSTOM_RESOLVERS.add(colorResolver);
+        if(colorResolver instanceof Colormap) {
+            MY_CUSTOM_RESOLVERS.add(colorResolver);
+        }else{
+            int aa = 1;
+        }
     }
 
     private static final Set<Field> RESOLVER_MAPS;
+    //lags behind as multithread bs...
     private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
+    private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS_OLD = new HashSet<>();
 
     static {
         RESOLVER_MAPS = new HashSet<>();
@@ -344,7 +351,7 @@ public class PlatStuffImpl {
         //addall that are Set<ColorResolver>
 
         for (var f : fields) {
-            if (f.getType() == Set.class) {
+            if (f.getType() == Set.class && f.getName().equals("CUSTOM_RESOLVERS") || f.getName().equals("ALL_RESOLVERS")) {
                 f.setAccessible(true);
                 RESOLVER_MAPS.add(f);
             }
@@ -356,12 +363,15 @@ public class PlatStuffImpl {
             try {
                 Set<ColorResolver> set = (Set<ColorResolver>) f.get(null);
                 Set<ColorResolver> newSet = new HashSet<>(set);
-                newSet.removeAll(MY_CUSTOM_RESOLVERS);
+                newSet.removeAll(MY_CUSTOM_RESOLVERS_OLD);
                 f.set(null, newSet);
             } catch (IllegalAccessException e) {
-                int aa = 1;
+                throw new RuntimeException(e);
             }
         }
+        //swaps these 2
+        MY_CUSTOM_RESOLVERS_OLD.clear();
+        MY_CUSTOM_RESOLVERS_OLD.addAll(MY_CUSTOM_RESOLVERS);
         MY_CUSTOM_RESOLVERS.clear();
     }
 }

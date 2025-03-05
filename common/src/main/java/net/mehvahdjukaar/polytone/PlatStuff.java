@@ -197,6 +197,10 @@ public class PlatStuff {
         unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
         reg.freeze();
 
+        if(reg.containsKey(id)){
+            int aaa = 1;
+        }
+
     }
 
     private static <T> Holder.Reference<T> unRegister(MappedRegistry<T> reg, ResourceKey<T> key) {

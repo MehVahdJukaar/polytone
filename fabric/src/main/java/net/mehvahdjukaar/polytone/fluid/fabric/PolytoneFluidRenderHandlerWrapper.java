@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.fluid.fabric;
 
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
+import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -18,7 +19,7 @@ public record PolytoneFluidRenderHandlerWrapper(FluidRenderHandler instance,
 
     @Override
     public int getFluidColor(@Nullable BlockAndTintGetter view, @Nullable BlockPos pos, FluidState state) {
-        var col = modifier.getColormap();
+        BlockColor col = modifier.getColormap();
         if (col != null) {
             return col.getColor(state.createLegacyBlock(), view, pos, -1);
         }

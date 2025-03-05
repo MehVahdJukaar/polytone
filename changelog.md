@@ -1,1 +1,4 @@
-- fixed an issue with color resolvers on bot fabric and neoforge, needed in 1.21.4 due to new api
+- fixed resource pack failing to reload on datapack reload with /reload command when using packs with custom particles or sounds
+- fixed custom color resolvers not being registered on fabric
+- fixed block tint cache not being populated causing crashes
+- fixed a very very rare issue that would crash the game when it was reloaded while a block with a custom color resolver was being tesselated while the reload was happening

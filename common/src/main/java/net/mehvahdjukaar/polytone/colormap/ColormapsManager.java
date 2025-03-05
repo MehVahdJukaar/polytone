@@ -173,7 +173,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
                 }
 
                 if (blockColorGetters.size() == 1 || index == 0) {
-                    //try twice. first time doesnt throw
+                    //try twice. first time doesn't throw
                     tryAcceptingTexture(textureMap.getDefault(), id, c, usedTextures, false);
                 }
                 try {
@@ -184,7 +184,6 @@ public class ColormapsManager extends JsonImgPartialReloader {
                 }
             }
         }
-
     }
 
     public static void tryAcceptingTexture(Map<ResourceLocation, ArrayImage> availableTextures,
@@ -194,6 +193,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
             ResourceLocation textureLoc = colormap.getTargetTexture(defaultPath);
             ArrayImage texture = availableTextures.get(textureLoc);
             tryAcceptingTexture(texture, textureLoc, colormap, usedTexture, strict);
+            colormap.ID = textureLoc;
         }
     }
 

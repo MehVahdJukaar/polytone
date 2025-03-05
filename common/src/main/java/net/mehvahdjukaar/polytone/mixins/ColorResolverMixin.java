@@ -15,6 +15,7 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.WritableLevelData;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,7 +27,8 @@ import java.util.function.Supplier;
 @Mixin(ClientLevel.class)
 public abstract class ColorResolverMixin extends Level {
 
-    @Shadow @Final private Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches;
+    @Shadow @Final @Mutable
+    private Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches;
 
     protected ColorResolverMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, RegistryAccess registryAccess, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l, int i) {
         super(writableLevelData, resourceKey, registryAccess, holder, supplier, bl, bl2, l, i);
@@ -36,17 +38,25 @@ public abstract class ColorResolverMixin extends Level {
      * Hack so we don't have to register these on every reload. They are instead added on request
      */
     @Inject(method = "getBlockTint", at = @At("HEAD"))
-    private void fixVanillaColorCache(BlockPos pos, ColorResolver resolver, CallbackInfoReturnable<Integer> info) {
+    private void polytone$makeCachesForColormaps(BlockPos pos, ColorResolver resolver, CallbackInfoReturnable<Integer> info) {
         if (!this.tintCaches.containsKey(resolver) && resolver instanceof Colormap c) {
-            tintCaches.put(resolver, new BlockTintCache(p -> c.calculateBlendedColor(this, p)));
+            //make copy of the map and assigns it as it has limited capacity
+            var newMap = new Object2ObjectArrayMap<>(this.tintCaches);
+            newMap.put(resolver, new BlockTintCache(p -> c.calculateBlendedColor(this, p)));
+            this.tintCaches = newMap;
         }
     }
 
     /**
      * Remove all custom added resolvers
      */
-    @Inject(method = "clearTintCaches", at = @At("RETURN"))
+    @Inject(method = "clearTintCaches", at = @At("HEAD"))
     private void polytone$resetCustomColorResolvers(CallbackInfo info) {
-        this.tintCaches.entrySet().removeIf(entry -> entry.getKey() instanceof Colormap);
+        for (var resolver : this.tintCaches.entrySet()) {
+            if(resolver == null){
+                int aa = 1;
+            }
+        }
+        //this.tintCaches.entrySet().removeIf(entry -> entry.getKey() instanceof Colormap);
     }
 }
