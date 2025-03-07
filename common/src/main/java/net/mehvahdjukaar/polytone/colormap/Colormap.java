@@ -147,8 +147,8 @@ public class Colormap implements IColorGetter, ColorResolver {
             yHack.set(pos != null ? pos.getY() : 0);
             try {
                 return level.getBlockTint(pos, this);
-            }catch (Exception e){
-                int aa = 1;
+            } catch (Exception e) {
+                Polytone.LOGGER.error("Error getting block tint at {} with colormap {}. Was it during a reload?", pos, this, e);
                 return 0;
             }
         }

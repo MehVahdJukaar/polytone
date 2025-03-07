@@ -1,4 +1,2 @@
-- fixed resource pack failing to reload on datapack reload with /reload command when using packs with custom particles or sounds
-- fixed custom color resolvers not being registered on fabric
-- fixed block tint cache not being populated causing crashes
-- fixed a very very rare issue that would crash the game when it was reloaded while a block with a custom color resolver was being tesselated while the reload was happening
+- added screen_time animated texture mode
+- colormap with biome sample can no longer crash. If it were to fail getting a color it will simply output black and log an error. Relevant because of some very rare issue that can happen during a reload on fabric
