@@ -132,7 +132,12 @@ public class Colormap implements IColorGetter, ColorResolver {
             // this will intern call calculateBlendedColor which will call getColor/sampleColor
             stateHack.set(state); //pass block state arg like this
             yHack.set(pos != null ? pos.getY() : 0);
-            return level.getBlockTint(pos, this);
+            try {
+                return level.getBlockTint(pos, this);
+            } catch (Exception e) {
+                Polytone.LOGGER.error("Error getting block tint at {} with colormap {}. Was it during a reload?", pos, this, e);
+                return 0;
+            }
         }
         //else we sample normally
         Biome biome = null;

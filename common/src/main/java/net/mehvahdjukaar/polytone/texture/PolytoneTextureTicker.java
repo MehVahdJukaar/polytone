@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
 
-public class DayTimeTextureTicker implements SpriteTicker {
+public class PolytoneTextureTicker implements SpriteTicker {
 
     private final SpriteContents.AnimatedTexture animationInfo;
     @Nullable
@@ -23,9 +23,9 @@ public class DayTimeTextureTicker implements SpriteTicker {
 
     private int lastFrameIndex = 0;
 
-    public DayTimeTextureTicker(SpriteContents.AnimatedTexture animationInfo,
-                                SpriteContents spriteContents, boolean interpolateFrames,
-                                int dayDuration, DayTimeTexture.Mode mode) {
+    public PolytoneTextureTicker(SpriteContents.AnimatedTexture animationInfo,
+                                 SpriteContents spriteContents, boolean interpolateFrames,
+                                 int dayDuration, DayTimeTexture.Mode mode) {
         this.animationInfo = animationInfo;
         this.timeCycleDuration = dayDuration;
         this.mode = mode;
@@ -85,17 +85,22 @@ public class DayTimeTextureTicker implements SpriteTicker {
         Level level = Minecraft.getInstance().level;
         if (level == null) return null;
 
-        if (mode == DayTimeTexture.Mode.WEATHER) {
-            float rainAndThunder = ClientFrameTicker.getRainAndThunder() * 2 / 3f;
-            return rainAndThunder + 1 / 6;
+        return switch (mode) {
+            case WEATHER -> {
+                float rainAndThunder = ClientFrameTicker.getRainAndThunder() * 2 / 3f;
+                yield rainAndThunder + 1 / 6;
+            }
             //needs to fall in between those 2 so we dont get interpolation as this stuff doesnt loop back
-        } else if (mode == DayTimeTexture.Mode.GAME_TIME) {
-            double gameTime = level.getGameTime() % timeCycleDuration;
-            return (float) (gameTime / timeCycleDuration);
-        } else {
-            double dayTime = ClientFrameTicker.getDayTime() % timeCycleDuration;
-            return (float) (dayTime / timeCycleDuration);
-        }
+            case GAME_TIME -> {
+                double gameTime = level.getGameTime() % timeCycleDuration;
+                yield (float) (gameTime / timeCycleDuration);
+            }
+            case SCREEN_TIME -> (float) Math.min(1, (ClientFrameTicker.getGuiTime() / timeCycleDuration));
+            default -> {
+                double dayTime = ClientFrameTicker.getDayTime() % timeCycleDuration;
+                yield (float) (dayTime / timeCycleDuration);
+            }
+        };
     }
 
     @Override
