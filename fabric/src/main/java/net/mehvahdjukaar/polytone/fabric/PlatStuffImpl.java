@@ -321,40 +321,28 @@ public class PlatStuffImpl {
 
     public static void registerColorResolver(ColorResolver colorResolver) {
         ColorResolverRegistry.register(colorResolver);
-        if(colorResolver instanceof Colormap) {
+        if (colorResolver instanceof Colormap) {
             MY_CUSTOM_RESOLVERS.add(colorResolver);
-        }else{
+        } else {
             int aa = 1;
         }
     }
 
-    private static final Set<Field> RESOLVER_MAPS;
     //lags behind as multithread bs...
     private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
     private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS_OLD = new HashSet<>();
 
-    static {
-        RESOLVER_MAPS = new HashSet<>();
-        var fields = ColorResolverRegistryImpl.class.getDeclaredFields();
-        //addall that are Set<ColorResolver>
-
-        for (var f : fields) {
-            if (f.getType() == Set.class && f.getName().equals("CUSTOM_RESOLVERS") || f.getName().equals("ALL_RESOLVERS")) {
-                f.setAccessible(true);
-                RESOLVER_MAPS.add(f);
-            }
-        }
-    }
-
     public static void unregisterAllCustomColorResolves() {
-        for (var f : RESOLVER_MAPS) {
-            try {
-                Set<ColorResolver> set = (Set<ColorResolver>) f.get(null);
-                set.removeAll(MY_CUSTOM_RESOLVERS_OLD);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        Set<ColorResolver> set = ColorResolverRegistryImpl.getAllResolvers();
+        Set<ColorResolver> newSet = new HashSet<>(set);
+        newSet.removeAll(MY_CUSTOM_RESOLVERS_OLD);
+        ColorResolverRegistryAccessor.setAllResolvers(newSet);
+
+        Set<ColorResolver> set2 = ColorResolverRegistryImpl.getCustomResolvers();
+        Set<ColorResolver> newSet2 = new HashSet<>(set2);
+        newSet2.removeAll(MY_CUSTOM_RESOLVERS_OLD);
+        ColorResolverRegistryAccessor.setCustomResolvers(newSet2);
+
         //swaps these 2
         MY_CUSTOM_RESOLVERS_OLD.clear();
         MY_CUSTOM_RESOLVERS_OLD.addAll(MY_CUSTOM_RESOLVERS);
