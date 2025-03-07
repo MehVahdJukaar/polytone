@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.texture.DayTimeTexture;
-import net.mehvahdjukaar.polytone.texture.DayTimeTextureTicker;
+import net.mehvahdjukaar.polytone.texture.PolytoneTextureTicker;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.SpriteTicker;
@@ -55,7 +55,7 @@ public abstract class AnimatedTextureMixin implements DayTimeTexture {
     @Inject(method = "createTicker", at = @At("HEAD"), cancellable = true)
     public void polytone$modifyTicker(CallbackInfoReturnable<SpriteTicker> cir) {
         if (polytone$mode != Mode.VANILLA) {
-            var t = new DayTimeTextureTicker((SpriteContents.AnimatedTexture) (Object) this, this.field_28469,
+            var t = new PolytoneTextureTicker((SpriteContents.AnimatedTexture) (Object) this, this.field_28469,
                     this.interpolateFrames, this.polytone$dayDuration, this.polytone$mode);
             cir.setReturnValue(t);
         }

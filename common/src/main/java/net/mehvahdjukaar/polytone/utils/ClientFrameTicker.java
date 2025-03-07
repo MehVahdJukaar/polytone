@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.utils;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.Level;
@@ -22,6 +23,8 @@ public class ClientFrameTicker {
     private static float deltaTime;
     private static double playerSpeed;
 
+    private static Screen lastScreen;
+    private static int screenTime;
 
     public static void onRenderTick(Minecraft mc) {
         Level level = mc.level;
@@ -38,6 +41,11 @@ public class ClientFrameTicker {
 
         deltaTime = Minecraft.getInstance().getDeltaTracker().getRealtimeDeltaTicks();
         playerSpeed =  mc.player.getDeltaMovement().lengthSqr();
+
+      if ( mc.screen != lastScreen) {
+            lastScreen = mc.screen;
+            screenTime = 0;
+        }
     }
 
     public static void onTick(Level level) {
@@ -48,6 +56,7 @@ public class ClientFrameTicker {
             temperature = ColorUtils.getClimateSettings(biome.value()).temperature;
             downfall = ColorUtils.getClimateSettings(biome.value()).downfall;
         }
+        screenTime++;
     }
 
     public static float getRainAndThunder() {
@@ -100,5 +109,9 @@ public class ClientFrameTicker {
 
     public static double getRenderDistance() {
         return Minecraft.getInstance().options.renderDistance().get();
+    }
+
+    public static int getGuiTime() {
+        return 0;
     }
 }

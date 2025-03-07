@@ -18,7 +18,7 @@ public interface DayTimeTexture {
     void polytone$setTimeCycleDuration(int duration);
 
     enum Mode implements StringRepresentable {
-        VANILLA, GAME_TIME, DAY_TIME, WEATHER;
+        VANILLA, GAME_TIME, DAY_TIME, WEATHER, SCREEN_TIME;
 
         public static final Codec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
 
