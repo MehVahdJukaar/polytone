@@ -341,6 +341,8 @@ public class PlatStuffImpl {
     private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS_OLD = new HashSet<>();
 
     public static void unregisterAllCustomColorResolves() {
+        //fuck this.if you unregister stuff it can crash... because those are still thown around WHILE a reload is happening
+        /*
         Set<ColorResolver> set = ColorResolverRegistryImpl.getAllResolvers();
         Set<ColorResolver> newSet = new HashSet<>(set);
         newSet.removeAll(MY_CUSTOM_RESOLVERS_OLD);
@@ -355,5 +357,7 @@ public class PlatStuffImpl {
         MY_CUSTOM_RESOLVERS_OLD.clear();
         MY_CUSTOM_RESOLVERS_OLD.addAll(MY_CUSTOM_RESOLVERS);
         MY_CUSTOM_RESOLVERS.clear();
+
+         */
     }
 }
