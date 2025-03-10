@@ -1,1 +1,1 @@
-fixed an issue on fabric
+woraround for another issue on fabric when pack was unloaded

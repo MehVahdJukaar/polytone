@@ -73,7 +73,8 @@ public abstract class PartialReloader<T> {
 
                 reader.close();
             } catch (IllegalArgumentException | IOException | JsonParseException var14) {
-                Polytone.LOGGER.error("Couldn't parse data file {} from {}", resourceLocation2, resourceLocation, var14);
+                throw new IllegalStateException("Couldn't parse data file " + resourceLocation2 + " from " + resourceLocation, var14);
+               // Polytone.LOGGER.error("Couldn't parse data file {} from {}", resourceLocation2, resourceLocation, var14);
             }
         }
     }
