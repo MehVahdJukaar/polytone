@@ -1,2 +1,1 @@
-- added screen_time animated texture mode
-- colormap with biome sample can no longer crash. If it were to fail getting a color it will simply output black and log an error. Relevant because of some very rare issue that can happen during a reload on fabric
+woraround for another issue on fabric when pack was unloaded
