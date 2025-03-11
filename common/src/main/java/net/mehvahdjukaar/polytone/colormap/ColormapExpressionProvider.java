@@ -6,9 +6,11 @@ import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.mehvahdjukaar.polytone.utils.exp.BaseExpression;
+import net.mehvahdjukaar.polytone.utils.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.utils.exp.IExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
@@ -16,7 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 
-public final class ColormapExpressionProvider extends BaseExpression implements IColormapNumberProvider {
+public final class ColormapExpressionProvider extends PolytoneExpression implements IColormapNumberProvider {
 
     //Keywords
     private static final String BIOME_VALUE = "BIOME_VALUE";
@@ -40,9 +42,9 @@ public final class ColormapExpressionProvider extends BaseExpression implements 
     private ColormapExpressionProvider(String unparsed, boolean concurrent) {
         super(unparsed, concurrent);
 
-        this.usesBiome = unparsed.contains(BaseExpression.TEMPERATURE) || unparsed.contains(BaseExpression.DOWNFALL)
+        this.usesBiome = unparsed.contains(PolytoneExpression.TEMPERATURE) || unparsed.contains(PolytoneExpression.DOWNFALL)
                 || unparsed.contains(BIOME_VALUE);
-        this.hasState = unparsed.contains(BaseExpression.STATE_FUNC);
+        this.hasState = unparsed.contains(PolytoneExpression.STATE_FUNC);
     }
 
     @Override
@@ -87,58 +89,59 @@ public final class ColormapExpressionProvider extends BaseExpression implements 
         } else {
             ExpressionUtils.seedRandom(pos.hashCode() * pos.asLong());
         }
+        IExpression.IVars vb = expression.varBuilder();
 
         if (hasPos) {
-            expression.setVariable(POS_X, pos.getX());
-            expression.setVariable(POS_Y, pos.getY());
-            expression.setVariable(POS_Z, pos.getZ());
+            vb.setVariable(POS_X, pos.getX());
+            vb.setVariable(POS_Y, pos.getY());
+            vb.setVariable(POS_Z, pos.getZ());
         }
 
-        if (hasTime) expression.setVariable(TIME, ClientFrameTicker.getGameTime());
-        if (hasDayTime) expression.setVariable(BaseExpression.DAY_TIME, ClientFrameTicker.getDayTime());
-        if (hasSunTime) expression.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
-        if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+        if (hasTime) vb.setVariable(TIME, ClientFrameTicker.getGameTime());
+        if (hasDayTime) vb.setVariable(PolytoneExpression.DAY_TIME, ClientFrameTicker.getDayTime());
+        if (hasSunTime) vb.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
+        if (hasRain) vb.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
 
         if (hasSkyLight)
-            expression.setVariable(SKY_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.SKY, pos));
+            vb.setVariable(SKY_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.SKY, pos));
         if (hasBlockLight)
-            expression.setVariable(BLOCK_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.BLOCK, pos));
+            vb.setVariable(BLOCK_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.BLOCK, pos));
         if (hasTemperature)
-            expression.setVariable(BaseExpression.TEMPERATURE, biome != null ? ColorUtils.getClimateSettings(biome).temperature : 0);
+            vb.setVariable(PolytoneExpression.TEMPERATURE, biome != null ? ColorUtils.getClimateSettings(biome).temperature : 0);
         if (hasDownfall)
-            expression.setVariable(BaseExpression.DOWNFALL, biome != null ? ColorUtils.getClimateSettings(biome).downfall : 0);
+            vb.setVariable(PolytoneExpression.DOWNFALL, biome != null ? ColorUtils.getClimateSettings(biome).downfall : 0);
 
         if (hasPlayer) {
             var e = Minecraft.getInstance().getCameraEntity();
-            expression.setVariable(PLAYER_X, e.getX());
-            expression.setVariable(PLAYER_Y, e.getY());
-            expression.setVariable(PLAYER_Z, e.getZ());
+            vb.setVariable(PLAYER_X, e.getX());
+            vb.setVariable(PLAYER_Y, e.getY());
+            vb.setVariable(PLAYER_Z, e.getZ());
         }
         if (hasDistance) {
-            var e = Minecraft.getInstance().getCameraEntity();
+            Entity e = Minecraft.getInstance().getCameraEntity();
             double x = pos.getX() - e.getX();
             double y = pos.getY() - e.getY();
             double z = pos.getZ() - e.getZ();
-            expression.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+            vb.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
         }
         if (hasPlayerSpeed) {
-            expression.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
+            vb.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
         }
 
-        if (hasRenderDistance) expression.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
+        if (hasRenderDistance) vb.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
 
 
         if (stack != null) {
             float damage = 1 - stack.getDamageValue() / (float) stack.getMaxDamage();
-            expression.setVariable(DAMAGE, damage);
-        } else expression.setVariable(DAMAGE, 0);
+            vb.setVariable(DAMAGE, damage);
+        } else vb.setVariable(DAMAGE, 0);
 
         // Evaluate the expressionression
         //this state hack won't even work as its multithreaded lmao
 
         if (hasState) STATE_HACK.set(state);
 
-        float result = (float) expression.evaluate();
+        float result = (float) expression.evaluate(vb);
         STATE_HACK.remove();
 
         return result;

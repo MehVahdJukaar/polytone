@@ -2,8 +2,14 @@ package net.mehvahdjukaar.polytone.utils.exp;
 
 public interface IExpression {
 
-    IExpression setVariable(final String name, final double value);
+    double evaluate(IVars builder);
 
-    double evaluate();
+    IVars varBuilder();
+
+    interface IVars {
+        IVars setVariable(final String name, final double value);
+
+        Double getVariable(final String name);
+    }
 
 }

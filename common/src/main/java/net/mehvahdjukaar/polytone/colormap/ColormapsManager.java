@@ -48,7 +48,6 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     //dumb but better than codec madness since we have the supplier thing here
     public Colormap getOrCreateConcurrentColormap(Colormap colormap) {
-        if (!colormap.usesExpressions()) return colormap;
         return concurrentColormaps.computeIfAbsent(colormap, Colormap::makeConcurrent);
     }
 

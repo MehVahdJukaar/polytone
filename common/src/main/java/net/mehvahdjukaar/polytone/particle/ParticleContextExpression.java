@@ -5,7 +5,8 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.mehvahdjukaar.polytone.utils.exp.BaseExpression;
+import net.mehvahdjukaar.polytone.utils.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.utils.exp.IExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
@@ -16,7 +17,7 @@ import net.minecraft.world.level.Level;
 import net.objecthunter.exp4j.Expression;
 import net.minecraft.world.level.LightLayer;
 
-public class ParticleContextExpression extends BaseExpression {
+public class ParticleContextExpression extends PolytoneExpression {
 
     private static final String COLOR = "COLOR";
     private static final String SPEED = "SPEED";
@@ -74,74 +75,75 @@ public class ParticleContextExpression extends BaseExpression {
 
 
     public double getValue(Particle particle, Level level) {
-        expression.setVariable(LIFE, particle.getLifetime());
+        IExpression.IVars vb = expression.varBuilder();
+        vb.setVariable(LIFE, particle.getLifetime());
 
         int pack = ColorUtils.pack(particle.rCol, particle.gCol, particle.bCol);
-        expression.setVariable(COLOR, pack);
+        vb.setVariable(COLOR, pack);
 
-        expression.setVariable(RED, particle.rCol);
-        expression.setVariable(GREEN, particle.gCol);
-        expression.setVariable(BLUE, particle.bCol);
-        expression.setVariable(SPEED, Mth.length(particle.xd, particle.yd, particle.zd));
-        expression.setVariable(ALPHA, particle.alpha);
-        expression.setVariable(SIZE, ((SingleQuadParticle) particle).quadSize);
-        expression.setVariable(DX, particle.xd);
-        expression.setVariable(DY, particle.yd);
-        expression.setVariable(DZ, particle.zd);
-        expression.setVariable(X, particle.x);
-        expression.setVariable(Y, particle.y);
-        expression.setVariable(Z, particle.z);
-        expression.setVariable(AGE, particle.age);
-        expression.setVariable(ROLL, particle.roll);
+        vb.setVariable(RED, particle.rCol);
+        vb.setVariable(GREEN, particle.gCol);
+        vb.setVariable(BLUE, particle.bCol);
+        vb.setVariable(SPEED, Mth.length(particle.xd, particle.yd, particle.zd));
+        vb.setVariable(ALPHA, particle.alpha);
+        vb.setVariable(SIZE, ((SingleQuadParticle) particle).quadSize);
+        vb.setVariable(DX, particle.xd);
+        vb.setVariable(DY, particle.yd);
+        vb.setVariable(DZ, particle.zd);
+        vb.setVariable(X, particle.x);
+        vb.setVariable(Y, particle.y);
+        vb.setVariable(Z, particle.z);
+        vb.setVariable(AGE, particle.age);
+        vb.setVariable(ROLL, particle.roll);
         if (hasCustom && particle instanceof CustomParticleType.Instance i)
-            expression.setVariable(CUSTOM, i.getCustom());
+            vb.setVariable(CUSTOM, i.getCustom());
 
 
 
         if (hasPos) {
             BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
-            expression.setVariable(POS_X, pos.getX());
-            expression.setVariable(POS_Y, pos.getY());
-            expression.setVariable(POS_Z, pos.getZ());
+            vb.setVariable(POS_X, pos.getX());
+            vb.setVariable(POS_Y, pos.getY());
+            vb.setVariable(POS_Z, pos.getZ());
         }
 
-        if (hasTime) expression.setVariable(TIME, ClientFrameTicker.getGameTime());
-        if (hasDayTime) expression.setVariable(BaseExpression.DAY_TIME, ClientFrameTicker.getDayTime());
-        if (hasSunTime) expression.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
-        if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+        if (hasTime) vb.setVariable(TIME, ClientFrameTicker.getGameTime());
+        if (hasDayTime) vb.setVariable(PolytoneExpression.DAY_TIME, ClientFrameTicker.getDayTime());
+        if (hasSunTime) vb.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
+        if (hasRain) vb.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
 
         if (hasSkyLight)
-            expression.setVariable(SKY_LIGHT, ClientFrameTicker.getSkyLight());
+            vb.setVariable(SKY_LIGHT, ClientFrameTicker.getSkyLight());
         if (hasBlockLight)
-            expression.setVariable(BLOCK_LIGHT, ClientFrameTicker.getBlockLight());
+            vb.setVariable(BLOCK_LIGHT, ClientFrameTicker.getBlockLight());
         if (hasTemperature)
-            expression.setVariable(BaseExpression.TEMPERATURE, ClientFrameTicker.getTemperature());
+            vb.setVariable(PolytoneExpression.TEMPERATURE, ClientFrameTicker.getTemperature());
         if (hasDownfall)
-            expression.setVariable(BaseExpression.DOWNFALL, ClientFrameTicker.getDownfall());
+            vb.setVariable(PolytoneExpression.DOWNFALL, ClientFrameTicker.getDownfall());
 
 
         if (hasPlayer) {
             var e = Minecraft.getInstance().getCameraEntity();
-            expression.setVariable(PLAYER_X, e.getX());
-            expression.setVariable(PLAYER_Y, e.getY());
-            expression.setVariable(PLAYER_Z, e.getZ());
+            vb.setVariable(PLAYER_X, e.getX());
+            vb.setVariable(PLAYER_Y, e.getY());
+            vb.setVariable(PLAYER_Z, e.getZ());
         }
         if (hasDistance) {
             var e = Minecraft.getInstance().getCameraEntity();
             double x = particle.x - e.getX();
             double y = particle.y - e.getY();
             double z = particle.z - e.getZ();
-            expression.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+            vb.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
         }
         if (hasPlayerSpeed) {
-            expression.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
+            vb.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
         }
 
-        if (hasRenderDistance) expression.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
+        if (hasRenderDistance) vb.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
 
 
         ExpressionUtils.randomizeRandom();
-        return expression.evaluate();
+        return expression.evaluate(vb);
     }
 
     public static final ParticleContextExpression ZERO = new ParticleContextExpression("0");

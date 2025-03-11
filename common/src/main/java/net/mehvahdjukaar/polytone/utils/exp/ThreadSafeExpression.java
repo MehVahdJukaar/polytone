@@ -10,49 +10,46 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.*;
 
-public class ConcurrentExpression implements IExpression {
+public class ThreadSafeExpression implements IExpression {
 
     private final Token[] tokens;
 
-    private final ThreadLocal<Map<String, Double>> variables;
-
+    private final Map<String, Double> defaultVariables;
     private final Set<String> userFunctionNames;
-    private final IVars vb;
 
     /**
      * Creates a new expression that is a copy of the existing one.
      *
      * @param existing the expression to copy
      */
-    public ConcurrentExpression(final Expression existing) {
+    public ThreadSafeExpression(final Expression existing) {
         try {
             this.tokens = (Token[]) TOKENS_FIELD.get(existing);
             var originalVars = (Map<String, Double>) VARIABLES_FIELD.get(existing);
-            this.variables = ThreadLocal.withInitial(() -> new HashMap<>(originalVars));
+            this.defaultVariables = new HashMap<>(originalVars);
             this.userFunctionNames = (Set<String>) USER_FUNCTION_NAMES_FIELD.get(existing);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
 
-        this.vb = new IVars() {
+    @Override
+    public IVars varBuilder() {
+        return new IVars() {
+            final Map<String, Double> vars = new HashMap<>(defaultVariables);
+
             @Override
             public IVars setVariable(String name, double value) {
-                variables.get().put(name, value);
+                vars.put(name, value);
                 return this;
             }
 
             @Override
             public Double getVariable(String name) {
-                return variables.get().get(name);
+                return vars.get(name);
             }
         };
-    }
-
-    @Override
-    public IVars varBuilder() {
-        return vb;
     }
 
     private static final Field TOKENS_FIELD;
@@ -72,8 +69,8 @@ public class ConcurrentExpression implements IExpression {
         }
     }
 
-    public static ConcurrentExpression of(ExpressionBuilder operator) {
-        return new ConcurrentExpression(operator.build());
+    public static ThreadSafeExpression of(ExpressionBuilder operator) {
+        return new ThreadSafeExpression(operator.build());
     }
 
     private void checkVariableName(String name) {
@@ -99,7 +96,7 @@ public class ConcurrentExpression implements IExpression {
                 output.push(((NumberToken) t).getValue());
             } else if (t.getType() == Token.TOKEN_VARIABLE) {
                 final String name = ((VariableToken) t).getName();
-                final Double value = this.variables.get().get(name);
+                final Double value = vars.getVariable(name);
                 if (value == null) {
                     throw new IllegalArgumentException("No value has been set for the setVariable '" + name + "'.");
                 }
@@ -138,4 +135,6 @@ public class ConcurrentExpression implements IExpression {
         }
         return output.pop();
     }
+
+
 }
