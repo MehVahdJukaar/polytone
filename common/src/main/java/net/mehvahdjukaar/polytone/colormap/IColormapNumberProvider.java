@@ -37,6 +37,10 @@ public interface IColormapNumberProvider {
         return true;
     }
 
+    default boolean usesRandom(){
+        return false;
+    }
+
     default IColormapNumberProvider createConcurrent() {
         return this;
     }
@@ -149,6 +153,11 @@ public interface IColormapNumberProvider {
         @Override
         public boolean usesState() {
             return false;
+        }
+
+        @Override
+        public boolean usesRandom() {
+            return true; //uses random
         }
     });
 

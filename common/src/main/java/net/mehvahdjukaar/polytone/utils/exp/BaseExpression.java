@@ -87,6 +87,8 @@ public abstract class BaseExpression {
 
     protected final boolean hasRenderDistance;
 
+    protected final boolean hasRandom;
+
     public BaseExpression(String unparsed) {
         this(unparsed, false);
     }
@@ -121,6 +123,12 @@ public abstract class BaseExpression {
         this.hasPlayerSpeed = unparsed.contains(PLAYER_SPEED_SQUARED);
 
         this.hasRenderDistance = unparsed.contains(RENDER_DISTANCE);
+
+        this.hasRandom = unparsed.contains("rand") || unparsed.contains("noise");
+    }
+
+    public boolean usesRandom(){
+        return hasRandom;
     }
 
     protected abstract BaseExpression createConcurrent();
