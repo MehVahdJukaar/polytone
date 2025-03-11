@@ -26,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 public final class Colormap implements IColorGetter, ColorResolver {
 
@@ -109,8 +108,9 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return concurrentColormap;
     }
 
-    public boolean usesExpressions() {
-        return xGetter instanceof ColormapExpressionProvider || yGetter instanceof ColormapExpressionProvider;
+    public boolean isConcurrentSafe() {
+        return (!(xGetter instanceof ColormapExpressionProvider ep) || !ep.usesRandom())
+                && (!(yGetter instanceof ColormapExpressionProvider ep1) || !ep1.usesRandom());
     }
 
     @Override
