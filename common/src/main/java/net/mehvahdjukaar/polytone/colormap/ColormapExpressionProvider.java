@@ -33,13 +33,21 @@ public final class ColormapExpressionProvider extends BaseExpression implements 
     private final boolean usesBiome;
     private final boolean hasState;
 
-
     private ColormapExpressionProvider(String unparsed) {
-        super(unparsed);
+        this(unparsed, false);
+    }
+
+    private ColormapExpressionProvider(String unparsed, boolean concurrent) {
+        super(unparsed, concurrent);
 
         this.usesBiome = unparsed.contains(BaseExpression.TEMPERATURE) || unparsed.contains(BaseExpression.DOWNFALL)
                 || unparsed.contains(BIOME_VALUE);
         this.hasState = unparsed.contains(BaseExpression.STATE_FUNC);
+    }
+
+    @Override
+    public ColormapExpressionProvider createConcurrent() {
+        return new ColormapExpressionProvider(this.getUnparsed(), true);
     }
 
     @Override

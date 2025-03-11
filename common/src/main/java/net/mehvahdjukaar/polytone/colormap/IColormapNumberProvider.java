@@ -37,6 +37,10 @@ public interface IColormapNumberProvider {
         return true;
     }
 
+    default IColormapNumberProvider createConcurrent() {
+        return this;
+    }
+
     record Const(float c) implements IColormapNumberProvider {
 
         @Override
@@ -66,7 +70,7 @@ public interface IColormapNumberProvider {
 
     //why inverted. for sunset colormaps
     IColormapNumberProvider DAY_TIME = BUILTIN_PROVIDERS.register("day_time", (state, pos, biome, mapper, stack) ->
-            (float) ( 1f-(ClientFrameTicker.getDayTime() % 24000 / 24000f)));
+            (float) (1f - (ClientFrameTicker.getDayTime() % 24000 / 24000f)));
 
 
     IColormapNumberProvider TEMPERATURE = BUILTIN_PROVIDERS.register("temperature", new IColormapNumberProvider() {
