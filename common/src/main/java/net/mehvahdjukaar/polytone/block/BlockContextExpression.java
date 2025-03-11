@@ -27,8 +27,17 @@ public class BlockContextExpression extends BaseExpression {
     private final boolean hasState;
 
     public BlockContextExpression(String unparsed) {
-        super(unparsed);
+        this(unparsed, false);
+    }
+
+    public BlockContextExpression(String unparsed, boolean concurrent) {
+        super(unparsed, concurrent);
         this.hasState = unparsed.contains(STATE_FUNC);
+    }
+
+    @Override
+    protected BlockContextExpression createConcurrent() {
+        return new BlockContextExpression(this.getUnparsed(), true);
     }
 
     @Override

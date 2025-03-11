@@ -45,9 +45,18 @@ public class ParticleContextExpression extends BaseExpression {
 
     private final boolean hasCustom;
 
-    public ParticleContextExpression(String expression) {
-        super(expression);
+    public ParticleContextExpression(String expression){
+        this(expression, false);
+    }
+
+    public ParticleContextExpression(String expression, boolean concurrent) {
+        super(expression, concurrent);
         this.hasCustom = expression.contains(CUSTOM);
+    }
+
+    @Override
+    protected ParticleContextExpression createConcurrent() {
+        return new ParticleContextExpression(this.getUnparsed(), true);
     }
 
     @Override

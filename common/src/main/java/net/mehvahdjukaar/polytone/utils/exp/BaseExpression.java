@@ -4,6 +4,7 @@ import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;
 
@@ -66,7 +67,7 @@ public abstract class BaseExpression {
     protected static final ThreadLocal<BlockState> STATE_HACK = new ThreadLocal<>();
 
     private final String unparsed;
-    protected final ConcurrentExpression expression;
+    protected final IExpression expression;
 
     protected final boolean hasPos;
 
@@ -86,17 +87,21 @@ public abstract class BaseExpression {
 
     protected final boolean hasRenderDistance;
 
-
     public BaseExpression(String unparsed) {
+        this(unparsed, false);
+    }
+
+    public BaseExpression(String unparsed, boolean concurrent) {
         FunBuilder funBuilder = new FunBuilder();
         buildFunctions(funBuilder);
         VarBuilder varBuilder = new VarBuilder();
         buildVars(varBuilder);
-        this.expression = ConcurrentExpression.of(new ExpressionBuilder(unparsed)
+        Expression exp = new ExpressionBuilder(unparsed)
                 .functions(defFunc(funBuilder.list.toArray(new Function[0])))
                 .variables(varBuilder.list)
-                .operator(ExpressionUtils.defOp())
-        );
+                .operator(ExpressionUtils.defOp()).build();
+        this.expression = concurrent ? new ConcurrentExpression(exp) : new ExpressionDelegate(exp);
+
         this.unparsed = unparsed;
 
         this.hasPos = unparsed.contains(POS_X) || unparsed.contains(POS_Y) || unparsed.contains(POS_Z);
@@ -118,8 +123,10 @@ public abstract class BaseExpression {
         this.hasRenderDistance = unparsed.contains(RENDER_DISTANCE);
     }
 
+    protected abstract BaseExpression createConcurrent();
+
     protected void buildVars(VarBuilder builder) {
-        builder.addAll(POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, SUN_TIME,  TIME,
+        builder.addAll(POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, SUN_TIME, TIME,
                 TEMPERATURE, DOWNFALL, BLOCK_LIGHT, SKY_LIGHT,
                 DISTANCE_SQUARED, PLAYER_X, PLAYER_Y, PLAYER_Z, PLAYER_SPEED_SQUARED, RENDER_DISTANCE);
     }

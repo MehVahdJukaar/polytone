@@ -22,12 +22,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Function;
 
-public class Colormap implements IColorGetter, ColorResolver {
+public final class Colormap implements IColorGetter, ColorResolver {
 
     private final IColormapNumberProvider xGetter;
     private final IColormapNumberProvider yGetter;
@@ -40,12 +41,14 @@ public class Colormap implements IColorGetter, ColorResolver {
     private final boolean usesState;
 
     public boolean inlined = true;
+    ResourceLocation ID = null;
 
     private Integer defaultColor;
     private ArrayImage image = null;
     private @Nullable ResourceLocation explicitTargetTexture; //explicit targets
-    protected @Nullable Dynamic<?> lazyFallback;
-    protected @Nullable IColorGetter fallback;
+    private final @Nullable Dynamic<?> lazyFallback;
+    private @Nullable IColorGetter fallback;
+    private boolean concurrent = false;
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
@@ -62,7 +65,7 @@ public class Colormap implements IColorGetter, ColorResolver {
             Codec.PASSTHROUGH.optionalFieldOf("fallback_colormap").forGetter(c -> Optional.empty())
     ).apply(i, Colormap::new));
 
-    protected static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
+    public static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
     public static final Codec<IColorGetter> COLORMAP_CODEC = Codec.either(SINGLE_COLOR_CODEC,
@@ -91,12 +94,38 @@ public class Colormap implements IColorGetter, ColorResolver {
         this.lazyFallback = fallback.orElse(null);
     }
 
-    protected Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter, boolean triangular) {
+    private Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter, boolean triangular) {
         this(Optional.empty(), xGetter, yGetter, triangular, true, Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty());
     }
 
-    public void acceptTexture(ArrayImage image) {
+    public Colormap makeConcurrent() {
+        Colormap concurrentColormap = new Colormap(Optional.ofNullable(this.defaultColor), this.xGetter.createConcurrent(),
+                this.yGetter.createConcurrent(), this.triangular,
+                this.rounds, Optional.of(this.hasBiomeBlend), Optional.of(this.biomeMapper),
+                Optional.ofNullable(this.explicitTargetTexture), Optional.ofNullable(this.lazyFallback));
+        if (this.image != null) concurrentColormap.acceptTexture(this.image);
+        concurrentColormap.concurrent = true;
+        return concurrentColormap;
+    }
+
+    public boolean usesExpressions() {
+        return xGetter instanceof ColormapExpressionProvider || yGetter instanceof ColormapExpressionProvider;
+    }
+
+    @Override
+    public String toString() {
+        return "Colormap{" +
+                "ID=" + ID +
+                ", triangular=" + triangular +
+                ", rounds=" + rounds +
+                ", hasBiomeBlend=" + hasBiomeBlend +
+                ", inlined=" + inlined +
+                ", concurrent=" + concurrent +
+                '}';
+    }
+
+    public void acceptTexture(@NotNull ArrayImage image) {
         this.image = image;
         if (defaultColor == null) {
             this.defaultColor = sample(0.5f, 0.5f);
@@ -107,7 +136,7 @@ public class Colormap implements IColorGetter, ColorResolver {
         return image != null;
     }
 
-    protected ResourceLocation getExplicitTargetTexture() {
+    ResourceLocation getExplicitTargetTexture() {
         return explicitTargetTexture;
     }
 

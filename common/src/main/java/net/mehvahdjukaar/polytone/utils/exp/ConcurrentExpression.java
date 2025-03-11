@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ConcurrentExpression {
+public class ConcurrentExpression implements IExpression{
 
     private final Token[] tokens;
 
@@ -56,6 +56,7 @@ public class ConcurrentExpression {
         return new ConcurrentExpression(operator.build());
     }
 
+    @Override
     public ConcurrentExpression setVariable(final String name, final double value) {
         //this.checkVariableName(name); //unchecked
         this.variables.get().put(name, value);
@@ -84,6 +85,7 @@ public class ConcurrentExpression {
         return variables;
     }
 
+    @Override
     public double evaluate() {
         final ArrayStack output = new ArrayStack();
         for (Token t : tokens) {
