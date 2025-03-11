@@ -5,16 +5,18 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.mehvahdjukaar.polytone.utils.exp.BaseExpression;
+import net.mehvahdjukaar.polytone.utils.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.utils.exp.IExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
-public class BlockContextExpression extends BaseExpression {
+public class BlockContextExpression extends PolytoneExpression {
 
     public static final Codec<BlockContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
@@ -51,90 +53,94 @@ public class BlockContextExpression extends BaseExpression {
     public double getValue(Vec3 pos, float entityTime, Level level) {
         ExpressionUtils.randomizeRandom();
 
+        IExpression.IVars vb = expression.varBuilder();
+
         if (hasPos) {
-            expression.setVariable(POS_X, pos.x);
-            expression.setVariable(POS_Y, pos.y);
-            expression.setVariable(POS_Z, pos.z);
+            vb.setVariable(POS_X, pos.x);
+            vb.setVariable(POS_Y, pos.y);
+            vb.setVariable(POS_Z, pos.z);
         }
         BlockPos p = BlockPos.containing(pos);
 
-        if (hasTime) expression.setVariable(TIME, entityTime);
-        if (hasDayTime) expression.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
-        if (hasSunTime) expression.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
-        if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+        if (hasTime) vb.setVariable(TIME, entityTime);
+        if (hasDayTime) vb.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
+        if (hasSunTime) vb.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
+        if (hasRain) vb.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
 
-        if (hasSkyLight) expression.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, p));
-        if (hasBlockLight) expression.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, p));
+        if (hasSkyLight) vb.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, p));
+        if (hasBlockLight) vb.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, p));
         if (hasTemperature)
-            expression.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(p).value()).temperature);
+            vb.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(p).value()).temperature);
         if (hasDownfall)
-            expression.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(p).value()).downfall);
+            vb.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(p).value()).downfall);
 
         if (hasState) STATE_HACK.set(level.getBlockState(p));
 
         if (hasPlayer) {
             var e = Minecraft.getInstance().getCameraEntity();
-            expression.setVariable(PLAYER_X, e.getX());
-            expression.setVariable(PLAYER_Y, e.getY());
-            expression.setVariable(PLAYER_Z, e.getZ());
+            vb.setVariable(PLAYER_X, e.getX());
+            vb.setVariable(PLAYER_Y, e.getY());
+            vb.setVariable(PLAYER_Z, e.getZ());
         }
         if (hasDistance) {
             var e = Minecraft.getInstance().getCameraEntity();
             double x = pos.x - e.getX();
             double y = pos.y - e.getY();
             double z = pos.z - e.getZ();
-            expression.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+            vb.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
         }
         if (hasPlayerSpeed) {
-            expression.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
+            vb.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
         }
 
-        if (hasRenderDistance) expression.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
-        return expression.evaluate();
+        if (hasRenderDistance) vb.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
+        return expression.evaluate(vb);
     }
 
     public double getValue(Level level, @NotNull BlockPos pos, BlockState state) {
         ExpressionUtils.seedRandom(pos.hashCode() * pos.asLong());
 
-        if (hasPos) {
-            expression.setVariable(POS_X, pos.getX());
-            expression.setVariable(POS_Y, pos.getY());
-            expression.setVariable(POS_Z, pos.getZ());
-        }
-        if (hasTime) expression.setVariable(TIME, ClientFrameTicker.getGameTime());
-        if (hasDayTime) expression.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
-        if (hasSunTime) expression.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
-        if (hasRain) expression.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+        IExpression.IVars vars = expression.varBuilder();
 
-        if (hasSkyLight) expression.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, pos));
-        if (hasBlockLight) expression.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, pos));
+        if (hasPos) {
+            vars.setVariable(POS_X, pos.getX());
+            vars.setVariable(POS_Y, pos.getY());
+            vars.setVariable(POS_Z, pos.getZ());
+        }
+        if (hasTime) vars.setVariable(TIME, ClientFrameTicker.getGameTime());
+        if (hasDayTime) vars.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
+        if (hasSunTime) vars.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
+        if (hasRain) vars.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+
+        if (hasSkyLight) vars.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, pos));
+        if (hasBlockLight) vars.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, pos));
         if (hasTemperature)
-            expression.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(pos).value()).temperature);
+            vars.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(pos).value()).temperature);
         if (hasDownfall)
-            expression.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(pos).value()).downfall);
+            vars.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(pos).value()).downfall);
 
         if (hasState) STATE_HACK.set(state);
 
         if (hasPlayer) {
             var e = Minecraft.getInstance().getCameraEntity();
-            expression.setVariable(PLAYER_X, e.getX());
-            expression.setVariable(PLAYER_Y, e.getY());
-            expression.setVariable(PLAYER_Z, e.getZ());
+            vars.setVariable(PLAYER_X, e.getX());
+            vars.setVariable(PLAYER_Y, e.getY());
+            vars.setVariable(PLAYER_Z, e.getZ());
         }
         if (hasDistance) {
-            var e = Minecraft.getInstance().getCameraEntity();
+            Entity e = Minecraft.getInstance().getCameraEntity();
             double x = pos.getX() - e.getX();
             double y = pos.getY() - e.getY();
             double z = pos.getZ() - e.getZ();
-            expression.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+            vars.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
         }
         if (hasPlayerSpeed) {
-            expression.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
+            vars.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
         }
 
-        if (hasRenderDistance) expression.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
+        if (hasRenderDistance) vars.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
 
-        return expression.evaluate();
+        return expression.evaluate(vars);
     }
 
     public static final BlockContextExpression ZERO = new BlockContextExpression("0");

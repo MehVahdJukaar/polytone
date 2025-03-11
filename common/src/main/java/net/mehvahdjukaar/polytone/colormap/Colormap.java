@@ -10,6 +10,7 @@ import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
@@ -47,7 +48,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private @Nullable ResourceLocation explicitTargetTexture; //explicit targets
     private final @Nullable Dynamic<?> lazyFallback;
     private @Nullable IColorGetter fallback;
-    private boolean concurrent = false;
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
@@ -98,19 +98,14 @@ public final class Colormap implements IColorGetter, ColorResolver {
                 Optional.empty());
     }
 
+    // block tint, fluid tint need to have a concurrent expression.expression variable list needs to be thread safe
     public Colormap makeConcurrent() {
         Colormap concurrentColormap = new Colormap(Optional.ofNullable(this.defaultColor), this.xGetter.createConcurrent(),
                 this.yGetter.createConcurrent(), this.triangular,
                 this.rounds, Optional.of(this.hasBiomeBlend), Optional.of(this.biomeMapper),
                 Optional.ofNullable(this.explicitTargetTexture), Optional.ofNullable(this.lazyFallback));
         if (this.image != null) concurrentColormap.acceptTexture(this.image);
-        concurrentColormap.concurrent = true;
         return concurrentColormap;
-    }
-
-    public boolean isConcurrentSafe() {
-        return (!(xGetter instanceof ColormapExpressionProvider ep) || !ep.usesRandom())
-                && (!(yGetter instanceof ColormapExpressionProvider ep1) || !ep1.usesRandom());
     }
 
     @Override
@@ -121,7 +116,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
                 ", rounds=" + rounds +
                 ", hasBiomeBlend=" + hasBiomeBlend +
                 ", inlined=" + inlined +
-                ", concurrent=" + concurrent +
                 '}';
     }
 

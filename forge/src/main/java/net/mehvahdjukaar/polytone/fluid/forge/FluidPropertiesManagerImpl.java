@@ -2,10 +2,13 @@ package net.mehvahdjukaar.polytone.fluid.forge;
 
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.BlockPos;
@@ -27,12 +30,17 @@ public class FluidPropertiesManagerImpl {
 
     private static final Map<FluidType, IClientFluidTypeExtensions> FLUID_EXTENSIONS = new HashMap<>();
 
-    public static void tryAddSpecial(Fluid fluid, FluidPropertyModifier colormap) {
-        var fluidType = fluid.getFluidType();
+    public static void tryAddSpecial(Fluid fluid, FluidPropertyModifier prop) {
+        FluidType fluidType = fluid.getFluidType();
         //gets real one. will internally try to get wrapped but a map is empty now
         IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fluidType);
         if (!(ext instanceof FluidExtensionWrapper)) {
-            FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, colormap));
+            BlockColor tintColormap = prop.getColormap();
+            BlockColor fogColormap = prop.getFogColormap();
+            if (tintColormap instanceof Colormap c) {
+                tintColormap = Polytone.COLORMAPS.getOrCreateConcurrentColormap(c);
+            }
+            FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, tintColormap, fogColormap));
         }
     }
 
@@ -49,32 +57,30 @@ public class FluidPropertiesManagerImpl {
     }
 
     private record FluidExtensionWrapper(IClientFluidTypeExtensions existingProperties,
-                                         FluidPropertyModifier modifier) implements IClientFluidTypeExtensions {
+                                         @Nullable BlockColor tintColor,
+                                         @Nullable BlockColor fogColor) implements IClientFluidTypeExtensions {
 
 
         @Override
         public int getTintColor() {
-            var col = modifier.getColormap();
-            if (col != null) {
-                return col.getColor(null, null, null, -1) | 0xff000000;
+            if (tintColor != null) {
+                return tintColor.getColor(null, null, null, -1) | 0xff000000;
             }
             return existingProperties.getTintColor();
         }
 
         @Override
         public int getTintColor(FluidStack stack) {
-            var col = modifier.getColormap();
-            if (col != null) {
-                return col.getColor(null, null, null, -1) | 0xff000000;
+            if (tintColor != null) {
+                return tintColor.getColor(null, null, null, -1) | 0xff000000;
             }
             return existingProperties.getTintColor();
         }
 
         @Override
         public int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            var col = modifier.getColormap();
-            if (col != null) {
-                return col.getColor(state.createLegacyBlock(), getter, pos, -1) | 0xff000000;
+            if (tintColor != null) {
+                return tintColor.getColor(state.createLegacyBlock(), getter, pos, -1) | 0xff000000;
             }
             return existingProperties.getTintColor();
         }
@@ -106,9 +112,8 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public @NotNull Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
-            var col = modifier.getFogColormap();
-            if (col != null) {
-                return new Vector3f(ColorUtils.unpack(col.getColor(null, level, null, -1) | 0xff000000));
+            if (fogColor != null) {
+                return new Vector3f(ColorUtils.unpack(fogColor.getColor(null, level, null, -1) | 0xff000000));
             }
             return existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
         }
