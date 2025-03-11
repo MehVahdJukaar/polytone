@@ -39,9 +39,17 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     // custom defined colormaps
     private final MapRegistry<Supplier<IColorGetter>> colormaps = new MapRegistry<>("Polytone Colormaps");
+    private final Map<Colormap, Colormap> concurrentColormaps = new HashMap<>();
+
 
     public Codec<IColorGetter> byNameCodec() {
         return colormaps.xmap(Supplier::get, s -> () -> s);
+    }
+
+    //dumb but better than codec madness since we have the supplier thing here
+    public Colormap getOrCreateConcurrentColormap(Colormap colormap) {
+        if (!colormap.usesExpressions()) return colormap;
+        return concurrentColormaps.computeIfAbsent(colormap, Colormap::makeConcurrent);
     }
 
     public ColormapsManager() {
@@ -82,8 +90,9 @@ public class ColormapsManager extends JsonImgPartialReloader {
         }
 
         //initialize recursive stuff
+        /*
         for (var c : colormaps.getValues()) {
-            if (c instanceof Colormap cm && cm.lazyFallback != null) {
+            if (c.get() instanceof Colormap cm && cm.lazyFallback != null) {
                 try {
                     cm.fallback = runCodec(ops, cm.lazyFallback);
                 } catch (Exception e) {
@@ -91,7 +100,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
                 }
                 cm.lazyFallback = null;
             }
-        }
+        }*/
 
 
         // creates orphaned texture colormaps
@@ -122,6 +131,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
     @Override
     protected void resetWithLevel(boolean logOff) {
         colormaps.clear();
+        concurrentColormaps.clear();
         PlatStuff.unregisterAllCustomColorResolves();
     }
 

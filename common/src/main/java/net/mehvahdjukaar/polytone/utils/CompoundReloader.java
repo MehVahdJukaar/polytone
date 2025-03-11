@@ -44,7 +44,11 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         childrenResources.addAll(object);
 
         if (level != null) {
-            applyWithLevel(level.registryAccess(), false);
+            try {
+                applyWithLevel(level.registryAccess(), false);
+            }catch (Exception e){
+                throw new RuntimeException(e);
+            }
         }
     }
 

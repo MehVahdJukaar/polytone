@@ -25,6 +25,10 @@ public class MapRegistry<T> implements Codec<T> {
         this.name = name;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public static <B> CodecMap<B> ofCodec(String name) {
         return new CodecMap<>(name);
     }

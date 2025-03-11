@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
+import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
@@ -160,7 +161,11 @@ public record BlockPropertyModifier(
         if (tintGetter.isPresent()) {
             BlockColors blockColors = Minecraft.getInstance().getBlockColors();
             oldColor = PlatStuff.getBlockColor(blockColors, block);
-            blockColors.register(tintGetter.get(), block);
+            BlockColor blockColor = tintGetter.get();
+            if (blockColor instanceof Colormap cm) {
+                blockColor = Polytone.COLORMAPS.getOrCreateConcurrentColormap(cm);
+            }
+            blockColors.register(blockColor, block);
         }
 
         BlockSetTypeProvider oldType = null;
@@ -194,7 +199,7 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),
                 Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
-                List.of(), List.of(),  Optional.ofNullable(oldOffsetType),
+                List.of(), List.of(), Optional.ofNullable(oldOffsetType),
                 Optional.ofNullable(oldType),
                 false, Targets.EMPTY, false);
     }
