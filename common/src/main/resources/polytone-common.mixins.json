@@ -19,6 +19,7 @@
     "ItemMixin",
     "ItemStackMixin",
     "LeashMixin",
+    "LevelRendererMixin",
     "LightTextureMixin",
     "MinecraftMixin",
     "ModelBlockRendererMixin",
