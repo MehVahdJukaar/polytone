@@ -1,1 +1,1 @@
-woraround for another issue on fabric when pack was unloaded
+- optimized expressions to just use a concurrent approach when used by block colors. This means that all non blocks colormaps that use expressions should be much faster now
