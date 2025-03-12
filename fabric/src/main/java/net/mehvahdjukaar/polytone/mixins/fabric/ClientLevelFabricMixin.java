@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
 import net.minecraft.client.color.block.BlockTintCache;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -17,7 +18,8 @@ import java.lang.reflect.Field;
 @Mixin(ClientLevel.class)
 public abstract class ClientLevelFabricMixin {
 
-    @Shadow public abstract int calculateBlockTint(BlockPos blockPos, ColorResolver colorResolver);
+    @Shadow
+    public abstract int calculateBlockTint(BlockPos blockPos, ColorResolver colorResolver);
 
     @Unique
     private Field fabricCacheField = null;
@@ -26,15 +28,30 @@ public abstract class ClientLevelFabricMixin {
     private void clearTintCaches(CallbackInfo ci) {
         if (fabricCacheField == null) {
             try {
-                fabricCacheField = this.getClass().getDeclaredField("customColorCache");
+                fabricCacheField = ClientLevel.class.getDeclaredField("customColorCache");
                 fabricCacheField.setAccessible(true);
-                //re-assigns fields. Hoping other mods aren't adding shit to it
-                fabricCacheField.set(this, ColorResolverRegistryImpl.createCustomCacheMap(resolver ->
-                        new BlockTintCache(pos -> calculateBlockTint(pos, resolver))));
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                try {
+                    for (var f : ClientLevel.class.getDeclaredFields()) {
+                        //check if field is of class Reference2ReferenceMap.class
+                        if (f.getType().isAssignableFrom(Reference2ReferenceMap.class)) {
+                            fabricCacheField = f;
+                            fabricCacheField.setAccessible(true);
+                            break;
+                        }
+                    }
+                } catch (Exception ee) {
+                    throw new RuntimeException(ee);
+                }
             }
 
+        }
+        try {
+            //re-assigns fields. Hoping other mods aren't adding shit to it
+            fabricCacheField.set(this, ColorResolverRegistryImpl.createCustomCacheMap(resolver ->
+                    new BlockTintCache(pos -> calculateBlockTint(pos, resolver))));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
