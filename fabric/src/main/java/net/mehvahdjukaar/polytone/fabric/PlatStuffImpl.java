@@ -329,35 +329,27 @@ public class PlatStuffImpl {
 
     public static void registerColorResolver(ColorResolver colorResolver) {
         ColorResolverRegistry.register(colorResolver);
+        System.out.println("registered color resolver"+ colorResolver);
+
         if (colorResolver instanceof Colormap) {
             MY_CUSTOM_RESOLVERS.add(colorResolver);
-        } else {
-            int aa = 1;
         }
     }
 
     //lags behind as multithread bs...
     private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
-    private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS_OLD = new HashSet<>();
 
     public static void unregisterAllCustomColorResolves() {
-        //fuck this.if you unregister stuff it can crash... because those are still thown around WHILE a reload is happening
-        /*
         Set<ColorResolver> set = ColorResolverRegistryImpl.getAllResolvers();
         Set<ColorResolver> newSet = new HashSet<>(set);
-        newSet.removeAll(MY_CUSTOM_RESOLVERS_OLD);
+        newSet.removeAll(MY_CUSTOM_RESOLVERS);
         ColorResolverRegistryAccessor.setAllResolvers(newSet);
 
         Set<ColorResolver> set2 = ColorResolverRegistryImpl.getCustomResolvers();
         Set<ColorResolver> newSet2 = new HashSet<>(set2);
-        newSet2.removeAll(MY_CUSTOM_RESOLVERS_OLD);
+        newSet2.removeAll(MY_CUSTOM_RESOLVERS);
         ColorResolverRegistryAccessor.setCustomResolvers(newSet2);
 
-        //swaps these 2
-        MY_CUSTOM_RESOLVERS_OLD.clear();
-        MY_CUSTOM_RESOLVERS_OLD.addAll(MY_CUSTOM_RESOLVERS);
         MY_CUSTOM_RESOLVERS.clear();
-
-         */
     }
 }
