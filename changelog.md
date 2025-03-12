@@ -1,2 +1,1 @@
-- fixed an issue with color cache not being cleared and repopulated correctly causing rare issues on reload
-- fixed fabric fluid fog color not having pos argument
+- fixed fluid fog color not having pos argument

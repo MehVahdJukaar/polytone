@@ -9,15 +9,15 @@
   "client": [
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
-    "ItemColorsAccessor",
     "BlockModelDeserializerMixin",
     "CreativeTabAccessor",
     "FabricItemGroupEntriesAccessor",
     "FogFluidRendererMixin",
     "FogRendererMixin2",
     "InventoryScreenMixin",
-    "ModelHackMixin",
     "ItemBlockRenderTypeAccessor",
+    "ItemColorsAccessor",
+    "ModelHackMixin",
     "ModelManagerAccessor",
     "ModelRendererMixin",
     "ParticleEngineAccessor"
