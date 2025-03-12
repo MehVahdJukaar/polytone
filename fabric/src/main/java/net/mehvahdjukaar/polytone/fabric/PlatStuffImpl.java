@@ -339,11 +339,29 @@ public class PlatStuffImpl {
         throw new AssertionError();
     }
 
-    public static void unregisterSoundEvent(ResourceLocation id) {
+    public static void registerColorResolver(ColorResolver colorResolver) {
+        ColorResolverRegistry.register(colorResolver);
+        System.out.println("registered color resolver"+ colorResolver);
+
+        if (colorResolver instanceof Colormap) {
+            MY_CUSTOM_RESOLVERS.add(colorResolver);
+        }
     }
 
-    public static void unregisterParticleType(ResourceLocation id) {
+    //lags behind as multithread bs...
+    private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
+
+    public static void unregisterAllCustomColorResolves() {
+        Set<ColorResolver> set = ColorResolverRegistryImpl.getAllResolvers();
+        Set<ColorResolver> newSet = new HashSet<>(set);
+        newSet.removeAll(MY_CUSTOM_RESOLVERS);
+        ColorResolverRegistryAccessor.setAllResolvers(newSet);
+
+        Set<ColorResolver> set2 = ColorResolverRegistryImpl.getCustomResolvers();
+        Set<ColorResolver> newSet2 = new HashSet<>(set2);
+        newSet2.removeAll(MY_CUSTOM_RESOLVERS);
+        ColorResolverRegistryAccessor.setCustomResolvers(newSet2);
+
+        MY_CUSTOM_RESOLVERS.clear();
     }
-
-
 }

@@ -1,3 +1,2 @@
-- optimized expressions to just use a concurrent approach when used by block colors. This means that all non blocks colormaps that use expressions should be much faster now
-- fixed cloud height expression
-- fixed fluid modifiers not using concurrent colormaps
+- fixed an issue with color cache not being cleared and repopulated correctly causing rare issues on reload
+- fixed fabric fluid fog color not having pos argument

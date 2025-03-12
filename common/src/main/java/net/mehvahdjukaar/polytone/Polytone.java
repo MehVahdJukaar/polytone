@@ -112,6 +112,8 @@ public class Polytone {
         }
 
         PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
+
+        //TODO: acche fog and d sky color
     }
 
     private static void addSpecialModels(PlatStuff.SpecialModelEvent event) {
