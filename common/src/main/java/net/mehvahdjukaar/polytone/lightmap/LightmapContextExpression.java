@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
+import net.mehvahdjukaar.polytone.utils.exp.IExpression;
 import net.minecraft.core.BlockPos;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -47,25 +48,26 @@ record LightmapContextExpression(ConcurrentExpression expression, String unparse
 
     @Override
     public double getValue(float time, float rain, float thunder) {
-        expression.setVariable(TIME, time);
-        expression.setVariable(RAIN, rain);
-        expression.setVariable(THUNDER, thunder);
+        IExpression.IVars vb = expression.varBuilder();
+        vb.setVariable(TIME, time);
+        vb.setVariable(RAIN, rain);
+        vb.setVariable(THUNDER, thunder);
         BlockPos pos = ClientFrameTicker.getCameraPos();
-        expression.setVariable(POS_X, pos.getX());
-        expression.setVariable(POS_Y, pos.getY());
-        expression.setVariable(POS_Z, pos.getZ());
+        vb.setVariable(POS_X, pos.getX());
+        vb.setVariable(POS_Y, pos.getY());
+        vb.setVariable(POS_Z, pos.getZ());
         if (usesBiome) {
             var biome = ClientFrameTicker.getCameraBiome();
             if (biome == null) {
-                expression.setVariable(TEMPERATURE, 0);
-                expression.setVariable(DOWNFALL, 0);
+                vb.setVariable(TEMPERATURE, 0);
+                vb.setVariable(DOWNFALL, 0);
             } else {
                 var cs = ColorUtils.getClimateSettings(biome.value());
-                expression.setVariable(TEMPERATURE, cs.temperature);
-                expression.setVariable(DOWNFALL, cs.downfall);
+                vb.setVariable(TEMPERATURE, cs.temperature);
+                vb.setVariable(DOWNFALL, cs.downfall);
             }
 
         }
-        return expression.evaluate();
+        return expression.evaluate(vb);
     }
 }
