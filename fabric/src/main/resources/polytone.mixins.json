@@ -10,6 +10,7 @@
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "BlockModelDeserializerMixin",
+    "ClientLevelFabricMixin",
     "ColorResolverRegistryAccessor",
     "CreativeTabAccessor",
     "FabricItemGroupEntriesAccessor",
@@ -19,7 +20,6 @@
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
     "ModelBlockRendererMixin",
-    "ItemBlockRenderTypeAccessor",
     "ModelManagerAccessor",
     "ParticleEngineAccessor"
   ],

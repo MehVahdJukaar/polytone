@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -46,7 +47,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
         if (level != null) {
             try {
                 applyWithLevel(level.registryAccess(), false);
-            }catch (Exception e){
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -98,6 +99,10 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
                     player.containerMenu = player.inventoryMenu;
                 }
             }
+        }
+        Level level = Minecraft.getInstance().level;
+        if (level instanceof ClientLevel cl) {
+            cl.clearTintCaches();
         }
     }
 
