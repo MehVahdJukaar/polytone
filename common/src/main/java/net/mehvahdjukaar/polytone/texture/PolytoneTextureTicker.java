@@ -95,7 +95,7 @@ public class PolytoneTextureTicker implements SpriteTicker {
                 double gameTime = level.getGameTime() % timeCycleDuration;
                 yield (float) (gameTime / timeCycleDuration);
             }
-            case SCREEN_TIME -> (float) Math.min(1, (ClientFrameTicker.getGuiTime() / timeCycleDuration));
+            case SCREEN_TIME -> Math.min(1, (ClientFrameTicker.getGuiTime() / timeCycleDuration));
             default -> {
                 double dayTime = ClientFrameTicker.getDayTime() % timeCycleDuration;
                 yield (float) (dayTime / timeCycleDuration);

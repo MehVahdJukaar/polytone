@@ -24,7 +24,7 @@ public class ClientFrameTicker {
     private static double playerSpeed;
 
     private static Screen lastScreen;
-    private static int screenTime;
+    private static float screenTime;
 
     public static void onRenderTick(Minecraft mc) {
         Level level = mc.level;
@@ -111,7 +111,7 @@ public class ClientFrameTicker {
         return Minecraft.getInstance().options.renderDistance().get();
     }
 
-    public static int getGuiTime() {
-        return 0;
+    public static float getGuiTime() {
+        return screenTime;
     }
 }
