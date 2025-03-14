@@ -43,8 +43,8 @@ public record ParticleSoundEmitter(
             ParticleContextExpression.CODEC.optionalFieldOf("x", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::x),
             ParticleContextExpression.CODEC.optionalFieldOf("y", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::y),
             ParticleContextExpression.CODEC.optionalFieldOf("z", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::z),
-            ParticleContextExpression.CODEC.optionalFieldOf("volume", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::volume),
-            ParticleContextExpression.CODEC.optionalFieldOf("pitch", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::pitch),
+            ParticleContextExpression.CODEC.optionalFieldOf("volume", ParticleContextExpression.ONE).forGetter(ParticleSoundEmitter::volume),
+            ParticleContextExpression.CODEC.optionalFieldOf("pitch", ParticleContextExpression.ONE).forGetter(ParticleSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(ParticleSoundEmitter::distanceDelay),
             RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleSoundEmitter::biomes)
     ).apply(i, ParticleSoundEmitter::new));
