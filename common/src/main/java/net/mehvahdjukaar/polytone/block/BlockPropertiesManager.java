@@ -57,6 +57,11 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         return null;
     }
 
+    public boolean hasVisualOffset(BlockState state) {
+        BlockPropertyModifier modifier = modifiers.get(state.getBlock());
+        return modifier != null && modifier.offsetType().isPresent();
+    }
+
 
     public record Resources(Map<ResourceLocation, JsonElement> jsons,
                             Map<ResourceLocation, ArrayImage> textures,

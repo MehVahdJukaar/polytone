@@ -4,10 +4,9 @@
   "compatibilityLevel": "JAVA_17",
   "package": "net.mehvahdjukaar.polytone.mixins.fabric",
   "mixins": [
-    "RegistrySyncManagerMixin",
-    "SodiumBlockRendererMixin"
   ],
   "client": [
+    "RegistrySyncManagerMixin",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "BlockModelDeserializerMixin",
@@ -22,7 +21,6 @@
     "ItemBlockRenderTypeAccessor",
     "ItemColorsAccessor",
     "ModelHackMixin",
-    "ModelBlockRendererMixin",
     "ModelManagerAccessor",
     "ModelRendererMixin",
     "ParticleEngineAccessor",

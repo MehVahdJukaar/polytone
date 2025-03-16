@@ -126,7 +126,7 @@ dependencies {
     forgeRuntimeLibrary ( "net.objecthunter:exp4j:${exp4j_version}")
 
     modCompileOnly ("curse.maven:curios-continuation-1037991:5546342")
-    modCompileOnly ("curse.maven:embeddium-908741:5630163")
+    modImplementation ("curse.maven:embeddium-908741:6118392")
 
     modCompileOnly("curse.maven:alexs-caves-924854:4806837")
     modCompileOnly("curse.maven:citadel-331936:4786380")
