@@ -4,14 +4,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -48,7 +46,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
 
     @Nullable
-    public Vec3 maybeModify(BlockState state, BlockGetter blockGetter, BlockPos pos) {
+    public Vec3 maybeModifyOffset(BlockState state, BlockGetter blockGetter, BlockPos pos) {
         BlockPropertyModifier modifier = modifiers.get(state.getBlock());
         if (modifier != null) {
             var of = modifier.offsetType();
@@ -165,15 +163,6 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     private void addModifier(ResourceLocation fileId, BlockPropertyModifier mod) {
         for (var block : mod.targets().compute(fileId, BuiltInRegistries.BLOCK)) {
             modifiers.merge(block.value(), mod, BlockPropertyModifier::merge);
-
-            //not perfect but good enough
-            if (block.value() == Blocks.GRASS_BLOCK && mod.getColormap() instanceof Colormap c) {
-                vanillaGrassColorResolver = BiomeColors.GRASS_COLOR_RESOLVER;
-                BiomeColors.GRASS_COLOR_RESOLVER = c;
-            } else if (block.value() == Blocks.OAK_LEAVES && mod.getColormap() instanceof Colormap c) {
-                vanillaFoliageColorResolver = BiomeColors.FOLIAGE_COLOR_RESOLVER;
-                BiomeColors.FOLIAGE_COLOR_RESOLVER = c;
-            }
         }
     }
 
@@ -203,6 +192,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             Block target = e.getKey();
 
             BlockPropertyModifier value = e.getValue();
+
             vanillaProperties.put(target, value.apply(target));
 
             var particle = value.particleEmitters();
@@ -222,7 +212,18 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             Polytone.LOGGER.info("Applied {} Custom Block Properties", vanillaProperties.size());
         }
         //clear as we dont need the anymore
-        modifiers.clear();
+       // modifiers.clear();
+    }
+
+    protected void maybeAssignToDefaultGrassAndFoliage(Block block, BlockColor color) {
+        //TODO: this doesnt work with IndexCompoundColorGetter
+        if (block == Blocks.GRASS_BLOCK && color instanceof ColorResolver c) {
+            vanillaGrassColorResolver = BiomeColors.GRASS_COLOR_RESOLVER;
+            BiomeColors.GRASS_COLOR_RESOLVER = c;
+        } else if (block == Blocks.OAK_LEAVES && color instanceof ColorResolver c) {
+            vanillaFoliageColorResolver = BiomeColors.FOLIAGE_COLOR_RESOLVER;
+            BiomeColors.FOLIAGE_COLOR_RESOLVER = c;
+        }
     }
 
     //optifine stuff

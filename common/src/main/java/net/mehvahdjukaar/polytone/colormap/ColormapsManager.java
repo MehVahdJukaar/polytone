@@ -38,7 +38,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     // custom defined colormaps
     private final MapRegistry<Supplier<IColorGetter>> colormaps = new MapRegistry<>("Polytone Colormaps");
-    private final Map<Colormap, Colormap> concurrentColormaps = new HashMap<>();
+    private final Map<IColorGetter, IColorGetter> concurrentColormaps = new HashMap<>();
 
 
     public Codec<IColorGetter> byNameCodec() {
@@ -46,8 +46,8 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
     //dumb but better than codec madness since we have the supplier thing here
-    public Colormap getOrCreateConcurrentColormap(Colormap colormap) {
-        return concurrentColormaps.computeIfAbsent(colormap, Colormap::makeConcurrent);
+    public IColorGetter getOrCreateConcurrentColormap(IColorGetter colormap) {
+        return concurrentColormaps.computeIfAbsent(colormap, IColorGetter::makeConcurrent);
     }
 
     public ColormapsManager() {
