@@ -1,17 +1,12 @@
-package net.mehvahdjukaar.polytone.mixins.forge;
+package net.mehvahdjukaar.polytone.mixins.neoforge;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildBuffers;
-import me.jellysquid.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderContext;
-import me.jellysquid.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderer;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.embeddedt.embeddium.api.render.chunk.BlockRenderContext;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
+import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;

@@ -9,6 +9,7 @@
   "client": [
     "RegistrySyncManagerMixin",
     "SodiumBlockRendererMixin",
+    "RegistrySyncManagerMixin",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "BlockModelDeserializerMixin",
@@ -22,6 +23,8 @@
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
     "ModelBlockRendererMixin",
+    "ItemColorsAccessor",
+    "ModelHackMixin",
     "ModelManagerAccessor",
     "ParticleEngineAccessor",
     "TerrainRendererContextMixin"

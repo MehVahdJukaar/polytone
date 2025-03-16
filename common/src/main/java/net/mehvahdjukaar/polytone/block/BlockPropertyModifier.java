@@ -12,8 +12,6 @@ import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.BlockSoundEmitter;
 import net.mehvahdjukaar.polytone.sound.PolytoneSoundType;
 import net.mehvahdjukaar.polytone.utils.Targets;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;

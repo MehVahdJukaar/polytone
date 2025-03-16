@@ -24,7 +24,6 @@ public abstract class FogFluidRendererMixin {
     @Inject(method = "computeFogColor", at = @At(value = "TAIL"), cancellable = true)
     private static void polytone$modifyFluidFogColor(Camera camera, float f, ClientLevel level, int i, float g, CallbackInfoReturnable<Vector4f> cir) {
         // Modify fog color depending on the fluid
-        Vector4f output = cir.getReturnValue();
         BlockPos pos = camera.getBlockPosition();
         FluidState state = level.getFluidState(pos);
         if (camera.getPosition().y < (double) ((float) pos.getY() +
