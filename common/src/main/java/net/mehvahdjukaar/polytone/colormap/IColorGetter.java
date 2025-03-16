@@ -12,6 +12,10 @@ import net.minecraft.world.level.block.state.BlockState;
 public interface IColorGetter extends BlockColor, BarColor {
 
 
+    default IColorGetter makeConcurrent(){
+        return this;
+    }
+
     record OfBlock(BlockColor bc) implements IColorGetter {
         @Override
         public int getColor(BlockState state, BlockAndTintGetter reader, BlockPos pos, int tintIndex) {

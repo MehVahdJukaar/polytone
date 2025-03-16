@@ -16,7 +16,7 @@ public class ModelBlockRendererMixin {
     @WrapOperation(method = "tesselateBlock",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getOffset(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/Vec3;"))
     private Vec3 polytone$modifyVisualOffset(BlockState state, BlockPos pos, Operation<Vec3> original) {
-        var m = Polytone.BLOCK_MODIFIERS.maybeModify(state, pos);
+        Vec3 m = Polytone.BLOCK_MODIFIERS.maybeModifyOffset(state, pos);
         if (m != null) {
 
             return m;

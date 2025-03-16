@@ -9,14 +9,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 // basically a map of colormap to tint color
-public class IndexCompoundColorGetter implements IColorGetter {
+public class IndexCompoundColorGetter implements IColorGetter, ColorResolver {
 
     final Int2ObjectMap<IColorGetter> getters = new Int2ObjectArrayMap<>();
 
@@ -26,6 +29,15 @@ public class IndexCompoundColorGetter implements IColorGetter {
 
     private IndexCompoundColorGetter() {
 
+    }
+
+    @Override
+    public IColorGetter makeConcurrent() {
+        Map<Integer, IColorGetter> newMap = new HashMap<>();
+        for(var e : getters.int2ObjectEntrySet()){
+            newMap.put(e.getIntKey(), e.getValue().makeConcurrent());
+        }
+        return new IndexCompoundColorGetter(newMap);
     }
 
     protected static final Codec<IndexCompoundColorGetter> DIRECT_CODEC = Codec.unboundedMap(Codec.STRING
@@ -89,6 +101,16 @@ public class IndexCompoundColorGetter implements IColorGetter {
             return getter.getColor(itemStack, i);
         }*/
 
+        return -1;
+    }
+
+    @Override
+    public int getColor(Biome biome, double d, double e) {
+        for (var en : getters.int2ObjectEntrySet()){
+            if(en.getValue() instanceof ColorResolver res){
+                return res.getColor(biome, d, e);
+            }
+        }
         return -1;
     }
 }
