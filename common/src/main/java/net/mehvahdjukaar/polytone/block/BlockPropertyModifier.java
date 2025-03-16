@@ -6,12 +6,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.BlockSoundEmitter;
 import net.mehvahdjukaar.polytone.sound.PolytoneSoundType;
+import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -101,6 +102,7 @@ public record BlockPropertyModifier(
 
     // returns the old ones
     public BlockPropertyModifier apply(Block block) {
+
         SoundType oldSound = null;
         if (soundType.isPresent()) {
             oldSound = block.soundType;
@@ -162,10 +164,11 @@ public record BlockPropertyModifier(
             BlockColors blockColors = Minecraft.getInstance().getBlockColors();
             oldColor = PlatStuff.getBlockColor(blockColors, block);
             BlockColor blockColor = tintGetter.get();
-            if (blockColor instanceof Colormap cm) {
-                blockColor = Polytone.COLORMAPS.getOrCreateConcurrentColormap(cm);
+            if (blockColor instanceof IColorGetter cg) {
+                blockColor = Polytone.COLORMAPS.getOrCreateConcurrentColormap(cg);
             }
             blockColors.register(blockColor, block);
+            Polytone.BLOCK_MODIFIERS.maybeAssignToDefaultGrassAndFoliage(block, blockColor);
         }
 
         BlockSetTypeProvider oldType = null;
