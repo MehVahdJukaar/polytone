@@ -34,11 +34,11 @@ public abstract class SodiumBlockRendererMixin  {
             remap = false,
             at = @At(value = "INVOKE",
                     remap = true,
-                    target = "Lnet/minecraft/world/level/block/state/BlockState;getOffset(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/Vec3;"))
+                    target = "Lnet/minecraft/world/level/block/state/BlockState;getOffset(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/Vec3;"))
 
-    private Vec3 polytone$modifyVisualOffset(BlockState state, BlockGetter blockGetter, BlockPos pos, Operation<Vec3> operation) {
-        var off = Polytone.BLOCK_MODIFIERS.maybeModifyOffset(state, blockGetter, pos);
+    private Vec3 polytone$modifyVisualOffset(BlockState state, BlockPos pos, Operation<Vec3> operation) {
+        var off = Polytone.BLOCK_MODIFIERS.maybeModifyOffset(state, pos);
         if(off != null) return off;
-        return operation.call(state, blockGetter, pos);
+        return operation.call(state, pos);
     }
 }

@@ -25,7 +25,7 @@ public class SodiumBlockRendererMixin {
                     target = "Ljava/util/List;clear()V"))
     private void polytone$modifyVisualOffset(BlockRenderContext ctx, ChunkBuildBuffers buffers, CallbackInfo ci,
                                              @Local LocalRef<Vec3> offset) {
-        Vec3 m = Polytone.BLOCK_MODIFIERS.maybeModifyOffset(ctx.state(), ctx.world(), ctx.pos());
+        Vec3 m = Polytone.BLOCK_MODIFIERS.maybeModifyOffset(ctx.state(),  ctx.pos());
         if (m != null) {
             offset.set(m);
         }
