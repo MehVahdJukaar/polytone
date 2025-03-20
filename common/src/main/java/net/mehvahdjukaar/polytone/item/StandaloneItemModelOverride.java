@@ -51,7 +51,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
                                        Item target) {
         super(components, model, stackCount, pattern, entityTag, expression, nbtMatchers);
         this.item = target;
-        this.autoModel = model.toString().equals("minecraft:generated");
+        this.autoModel = model.toString().contains("minecraft:generated");
     }
 
     // ugly

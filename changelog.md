@@ -1,7 +1,1 @@
-- blocks visual offsets works with indigo renderer
-- blocks visual offsets works with sodium
-- blocks visual offsets works with embeddium
-- blocks visual offsets works with vanilla (fixed)
-- fixed colormaps for grass not being overwritten correctly
-- fixed block colors compound colormaps not being concurrent safe
-- more random backported fixes
+- fixed CIM implicit models not working on fabric
