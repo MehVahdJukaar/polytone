@@ -1,1 +1,2 @@
-block offset works with embeddium
+added particle "tick_rate" param
+improved offsets logic
