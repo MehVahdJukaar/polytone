@@ -123,7 +123,7 @@ public class CustomParticleType implements CustomParticleFactory {
             ParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
             Ticker.CODEC.optionalFieldOf("ticker").forGetter(c -> Optional.ofNullable(c.ticker)),
             ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
-            ExtraCodecs.POSITIVE_INT.optionalFieldOf("tick_rate", 1).forGetter(c -> c.tickRate),
+            ExtraCodecs.POSITIVE_INT.optionalFieldOf("tick_interval", 1).forGetter(c -> c.tickRate),
             Codec.PASSTHROUGH.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.lazyParticles)
     ).apply(i, CustomParticleType::new));
 

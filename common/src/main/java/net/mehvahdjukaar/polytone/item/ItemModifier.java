@@ -47,7 +47,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
     ).apply(instance, Partial::new));
 
     public static ItemModifier ofBarColor(Colormap colormap) {
-        return new ItemModifier( Optional.of(colormap),
+        return new ItemModifier(Optional.of(colormap),
                 Optional.empty(), List.of(), List.of(), List.of(), Targets.EMPTY);
     }
 
@@ -97,7 +97,9 @@ public record ItemModifier(Optional<IColorGetter> barColor,
 
     public void modifyTooltips(List<Component> tooltips) {
         tooltips.removeIf(t -> removedTooltips.stream().anyMatch(p -> p.matcher(t.getString()).matches()));
-        tooltips.addAll(this.tooltips);
+        for (var t : this.tooltips) {
+            tooltips.addFirst(t);
+        }
     }
 
     public boolean shouldAttachToItem() {
