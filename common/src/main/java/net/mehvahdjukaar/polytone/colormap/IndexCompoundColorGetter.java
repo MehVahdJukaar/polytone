@@ -27,6 +27,12 @@ public class IndexCompoundColorGetter implements IColorGetter, ColorResolver {
 
     private IndexCompoundColorGetter(Map<Integer, IColorGetter> map) {
         getters.putAll(map);
+        //verify all are not null
+        for (var e : map.entrySet()) {
+            if (e.getValue() == null || e.getKey() == null) {
+                throw new IllegalArgumentException("Cannot have null tint getter");
+            }
+        }
     }
 
     private IndexCompoundColorGetter() {
