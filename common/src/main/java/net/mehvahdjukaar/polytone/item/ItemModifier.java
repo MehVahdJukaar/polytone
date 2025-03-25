@@ -138,7 +138,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
     public void modifyTooltips(List<Component> tooltips) {
         tooltips.removeIf(t -> removedTooltips.stream().anyMatch(p -> p.matcher(t.getString()).matches()));
         for (var t : this.tooltips) {
-            tooltips.addFirst(t);
+            tooltips.add(0,t);
         }
     }
 

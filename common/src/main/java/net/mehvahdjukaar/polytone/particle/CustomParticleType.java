@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
+import net.mehvahdjukaar.polytone.utils.BiggerCodecs;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -68,6 +69,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private transient SpriteSet spriteSet;
 
     private boolean isValid = true;
+    private Integer tickRate;
 
     private CustomParticleType(RenderType renderType, @Nullable ResourceLocation model,
                                Vec3 offset, int light, boolean hasPhysics,  boolean killOnContact, boolean killWhenStill,
@@ -75,7 +77,7 @@ public class CustomParticleType implements CustomParticleFactory {
                                boolean randomSprite,
                                int particleGroupLimit, boolean forceSpawn,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
-                               @Nullable List<ParticleSoundEmitter> sounds, @Nullable List<Dynamic<?>> particles) {
+                               @Nullable List<ParticleSoundEmitter> sounds,int tickRate, @Nullable List<Dynamic<?>> particles) {
         this.renderType = renderType;
         this.randomSprite = randomSprite;
         this.model = model;
@@ -91,10 +93,11 @@ public class CustomParticleType implements CustomParticleFactory {
         this.forceSpawn = forceSpawn;
         this.colormap = colormap;
         this.offset = offset;
+        this.tickRate = tickRate;
         this.group = particleGroupLimit > 0 ? Optional.of(new ParticleGroup(particleGroupLimit)) : Optional.empty();
     }
 
-    public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
             RenderType.CODEC.optionalFieldOf("render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
             ResourceLocation.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model)),
@@ -121,11 +124,12 @@ public class CustomParticleType implements CustomParticleFactory {
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                boolean randomSprite,
                                int limit, boolean forceSpawn, Optional<ParticleInitializer> initializer,
-                               Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, List<Dynamic<?>> particles) {
+                               Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds,
+                               int tickInterval, List<Dynamic<?>> particles) {
         this(renderType, model.orElse(null), offset,
                 light, hasPhysics, killOnContact, killWhenStill,  liquidAffinity, colormap.orElse(null),
                 randomSprite, limit, forceSpawn,
-                initializer.orElse(null), ticker.orElse(null), sounds, particles);
+                initializer.orElse(null), ticker.orElse(null), sounds, tickInterval, particles);
     }
 
     @Override

@@ -217,17 +217,26 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             Polytone.LOGGER.info("Applied {} Custom Block Properties", vanillaProperties.size());
         }
         //clear as we dont need the anymore
-       // modifiers.clear();
+        // modifiers.clear();
     }
 
     protected void maybeAssignToDefaultGrassAndFoliage(Block block, BlockColor color) {
         //TODO: this doesnt work with IndexCompoundColorGetter
-        if (block == Blocks.GRASS_BLOCK && color instanceof ColorResolver c) {
+        ColorResolver cc = null;
+        if (color instanceof IndexCompoundColorGetter ic) {
+            for (var e : ic.getGetters().int2ObjectEntrySet()) {
+                if (e instanceof ColorResolver c) {
+                    cc = c;
+                    break;
+                }
+            }
+        }
+        if (block == Blocks.GRASS_BLOCK && cc != null) {
             vanillaGrassColorResolver = BiomeColors.GRASS_COLOR_RESOLVER;
-            BiomeColors.GRASS_COLOR_RESOLVER = c;
-        } else if (block == Blocks.OAK_LEAVES && color instanceof ColorResolver c) {
+            BiomeColors.GRASS_COLOR_RESOLVER = cc;
+        } else if (block == Blocks.OAK_LEAVES && cc != null) {
             vanillaFoliageColorResolver = BiomeColors.FOLIAGE_COLOR_RESOLVER;
-            BiomeColors.FOLIAGE_COLOR_RESOLVER = c;
+            BiomeColors.FOLIAGE_COLOR_RESOLVER = cc;
         }
     }
 
