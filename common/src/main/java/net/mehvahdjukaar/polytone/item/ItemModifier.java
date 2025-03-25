@@ -98,7 +98,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
     public void modifyTooltips(List<Component> tooltips) {
         tooltips.removeIf(t -> removedTooltips.stream().anyMatch(p -> p.matcher(t.getString()).matches()));
         for (var t : this.tooltips) {
-            tooltips.addFirst(t);
+            tooltips.add(0,t);
         }
     }
 
