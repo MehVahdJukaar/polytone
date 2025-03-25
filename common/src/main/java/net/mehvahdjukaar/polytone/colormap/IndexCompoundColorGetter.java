@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 // basically a map of colormap to tint color
-public class IndexCompoundColorGetter implements IColorGetter, ColorResolver {
+public class IndexCompoundColorGetter implements IColorGetter {
 
     final Int2ObjectMap<IColorGetter> getters = new Int2ObjectArrayMap<>();
 
@@ -103,13 +103,4 @@ public class IndexCompoundColorGetter implements IColorGetter, ColorResolver {
         return -1;
     }
 
-    @Override
-    public int getColor(Biome biome, double d, double e) {
-        for (var en : getters.int2ObjectEntrySet()){
-            if(en.getValue() instanceof ColorResolver res){
-                return res.getColor(biome, d, e);
-            }
-        }
-        return -1;
-    }
 }

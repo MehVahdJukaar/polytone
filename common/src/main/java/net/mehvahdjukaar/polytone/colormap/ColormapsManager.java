@@ -16,6 +16,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
+import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -28,14 +29,17 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     // Builtin colormaps
     //TODO: delegate to grass so we have quark compat
-    public static final IColorGetter GRASS_COLOR = new IColorGetter.OfBlock((s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor());
+    public static final IColorGetter GRASS_COLOR = new IColorGetter.ofColorResolver((s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor(),
+            BiomeColors.GRASS_COLOR_RESOLVER);
 
-    public static final IColorGetter FOLIAGE_COLOR = new IColorGetter.OfBlock((s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor());
+    public static final IColorGetter FOLIAGE_COLOR = new IColorGetter.ofColorResolver((s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor(),
+            BiomeColors.FOLIAGE_COLOR_RESOLVER);
 
-    public static final IColorGetter WATER_COLOR = new IColorGetter.OfBlock((s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000);
+    public static final IColorGetter WATER_COLOR = new IColorGetter.ofColorResolver((s, l, p, i) ->
+            l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000,
+            BiomeColors.WATER_COLOR_RESOLVER);
 
     // custom defined colormaps
     private final MapRegistry<Supplier<IColorGetter>> colormaps = new MapRegistry<>("Polytone Colormaps");
