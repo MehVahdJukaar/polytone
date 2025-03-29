@@ -20,7 +20,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
 
 
     public static final Codec<StandaloneItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.PASSTHROUGH.fieldOf("components").forGetter(i -> i.lazyComponent),
+            Codec.PASSTHROUGH.optionalFieldOf("components").forGetter(i -> Optional.ofNullable(i.lazyComponent)),
             ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
@@ -43,7 +43,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
     private final Item item;
     private final boolean autoModel;
 
-    public StandaloneItemModelOverride(Dynamic<?> components, ModelResourceLocation model,
+    public StandaloneItemModelOverride(Optional<Dynamic<?>> components, ModelResourceLocation model,
                                        Optional<Integer> stackCount, Optional<Pattern> pattern,
                                        Optional<CompoundTag> entityTag, Optional<ColormapExpressionProvider> expression,
                                        Map<DataComponentType<?>, CompoundTag> nbtMatchers,
