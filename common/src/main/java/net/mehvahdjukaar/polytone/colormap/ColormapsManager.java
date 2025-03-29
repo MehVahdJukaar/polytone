@@ -34,7 +34,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
             BiomeColors.GRASS_COLOR_RESOLVER);
 
     public static final IColorGetter FOLIAGE_COLOR = new IColorGetter.ofColorResolver((s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.getDefaultColor(),
+            l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.get(0.5, 1.0),
             BiomeColors.FOLIAGE_COLOR_RESOLVER);
 
     public static final IColorGetter WATER_COLOR = new IColorGetter.ofColorResolver((s, l, p, i) ->
