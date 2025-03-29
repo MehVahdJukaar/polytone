@@ -43,15 +43,14 @@ public interface IColorGetter extends BlockColor, BarColor {
         public int getColor(BlockState state, @Nullable BlockAndTintGetter reader, @Nullable BlockPos pos, int tintIndex) {
             return bc.getColor(state, reader, pos, tintIndex);
         }
-
         @Override
-        public int getColor(ItemStack itemStack, int i) {
+        public int getItemColor(ItemStack stack, int tintIndex) {
             Minecraft mc = Minecraft.getInstance();
             Level world = mc.level;
             if (world == null) return -1;
             BlockPos pos = mc.player.blockPosition();
             BlockState state = world.getBlockState(pos);
-            return bc.getColor(state, world, pos, i) | 0xff000000;
+            return bc.getColor(state, world, pos, tintIndex) | 0xff000000;
 
         }
 
@@ -59,6 +58,7 @@ public interface IColorGetter extends BlockColor, BarColor {
         public int getColor(Biome biome, double d, double e) {
             return cr.getColor(biome, d, e);
         }
+
     }
 
     record OfItem(BarColor ic) implements IColorGetter {

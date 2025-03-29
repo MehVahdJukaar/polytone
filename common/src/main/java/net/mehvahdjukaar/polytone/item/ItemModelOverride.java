@@ -52,7 +52,7 @@ public class ItemModelOverride {
     protected static final UnboundedMapCodec<DataComponentType<?>, CompoundTag> NBT_COMPONENTS_CODEC = Codec.unboundedMap(DataComponentType.CODEC, CompoundTag.CODEC);
 
     public static final Codec<ItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.PASSTHROUGH.fieldOf("components").forGetter(o -> o.lazyComponent),
+            Codec.PASSTHROUGH.optionalFieldOf("components").forGetter(o ->  Optional.ofNullable(o.lazyComponent)),
             ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(ItemModelOverride::model),
             Codec.INT.optionalFieldOf("stack_count").forGetter(i -> Optional.ofNullable(i.stackCount())),
             ExtraCodecs.PATTERN.optionalFieldOf("name_pattern").forGetter(i -> Optional.ofNullable(i.namePattern())),
@@ -68,11 +68,11 @@ public class ItemModelOverride {
     public record Partial(ModelResourceLocation model) {
     }
 
-    public ItemModelOverride(Dynamic<?> lazyComponent, ModelResourceLocation model, Optional<Integer> stackCount,
+    public ItemModelOverride(Optional<Dynamic<?>> lazyComponent, ModelResourceLocation model, Optional<Integer> stackCount,
                              Optional<Pattern> pattern, Optional<CompoundTag> entityTag,
                              Optional<ColormapExpressionProvider> expression,
                              Map<DataComponentType<?>,CompoundTag> nbtMatchers) {
-        this.lazyComponent = lazyComponent;
+        this.lazyComponent = lazyComponent.orElse(null);
         this.model = model;
         this.stackCount = stackCount.orElse(null);
         this.pattern = pattern.orElse(null);
