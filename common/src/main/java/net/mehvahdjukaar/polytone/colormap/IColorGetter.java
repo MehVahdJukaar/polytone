@@ -43,8 +43,9 @@ public interface IColorGetter extends BlockColor, ItemColor {
         public int getColor(BlockState state, @Nullable BlockAndTintGetter reader, @Nullable BlockPos pos, int tintIndex) {
             return bc.getColor(state, reader, pos, tintIndex);
         }
+
         @Override
-        public int getItemColor(ItemStack stack, int tintIndex) {
+        public int getColor(ItemStack stack, int tintIndex) {
             Minecraft mc = Minecraft.getInstance();
             Level world = mc.level;
             if (world == null) return -1;
