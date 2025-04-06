@@ -282,29 +282,44 @@ public class CustomParticleType implements CustomParticleFactory {
         }
 
         @Override
+        public void renderCustom(PoseStack poseStack, MultiBufferSource multiBufferSource, Camera camera, float partialTicks) {
+            Quaternionf quaternionf = new Quaternionf();
+            this.type.rotationMode.setRotation(this, quaternionf, camera, partialTicks);
+            if (this.roll != 0.0F) {
+                quaternionf.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
+            }
+            Vec3 vec3 = camera.getPosition();
+            float x = (float)(Mth.lerp(partialTicks, this.xo, this.x) - vec3.x());
+            float y = (float)(Mth.lerp(partialTicks, this.yo, this.y) - vec3.y());
+            float z = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3.z());
+            this.renderRotatedModel(quaternionf,x,y,z, partialTicks);
+        }
+
+        private void renderRotatedModel(Quaternionf quaternion, float x, float y, float z, float partialTicks) {
+            Vec3 offset = this.type.offset;
+            float size = this.getQuadSize(partialTicks);
+
+            PoseStack poseStack = new PoseStack();
+            poseStack.translate(x + offset.x, y + offset.y, z + offset.z);
+
+            poseStack.scale(size, size, size);
+            poseStack.mulPose(quaternion);
+            poseStack.translate(-0.5, -0.5, -0.5);
+
+            MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+            var consumer = bufferSource.getBuffer(type.renderType.getBlock());
+
+            putModelBulkData(this.model, this.getLightColor(partialTicks),
+                    OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
+
+            bufferSource.endBatch();
+        }
+
+        @Override
         protected void renderRotatedQuad(VertexConsumer consumer, Quaternionf quaternion, float x, float y, float z, float partialTicks) {
             var offset = this.type.offset;
-            if (model == null) {
-                super.renderRotatedQuad(consumer, quaternion, (float) (x + offset.x),
-                        (float) (y + offset.y), (float) (z + offset.z), partialTicks);
-            } else {
-                float size = this.getQuadSize(partialTicks);
-
-                PoseStack poseStack = new PoseStack();
-                poseStack.translate(x + offset.x, y + offset.y, z + offset.z);
-
-                poseStack.scale(size, size, size);
-                poseStack.mulPose(quaternion);
-                poseStack.translate(-0.5, -0.5, -0.5);
-
-                MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-                consumer = bufferSource.getBuffer(type.renderType.getBlock());
-
-                putModelBulkData(this.model, this.getLightColor(partialTicks),
-                        OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
-
-                bufferSource.endBatch();
-            }
+            super.renderRotatedQuad(consumer, quaternion, (float) (x + offset.x),
+                    (float) (y + offset.y), (float) (z + offset.z), partialTicks);
         }
 
         @Override

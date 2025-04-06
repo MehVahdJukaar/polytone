@@ -13,7 +13,9 @@ import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.Utils;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
@@ -22,6 +24,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

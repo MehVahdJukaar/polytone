@@ -1,4 +1,3 @@
-added particle "tick_rate" param
-improved offsets logic
-increased max particle count perlayer
-fixed a very specifie issue when grass color was assigned to grass block using compound colormap
+- tooltips will now always be appended at the end rather than at the beginning
+- added destroy_particle_emitters to block modifiers
+- fixed particles 3d models not working

@@ -13,6 +13,14 @@ public class Utils {
         return Collections.unmodifiableSet(set);
     }
 
+    public static <T> Optional<List<T>> mergeList(Optional<List<T>> newObj, Optional<List<T>> oldObj) {
+        if (newObj.isPresent() && oldObj.isPresent()) {
+            return Optional.of(mergeList(newObj.get(), oldObj.get()));
+        } else if (newObj.isPresent()) {
+            return newObj;
+        } else return oldObj;
+    }
+
     public static <T> List<T> mergeList(List<? extends T> newObj, List<? extends T> oldObj) {
         var list = new ArrayList<T>();
         list.addAll(oldObj);

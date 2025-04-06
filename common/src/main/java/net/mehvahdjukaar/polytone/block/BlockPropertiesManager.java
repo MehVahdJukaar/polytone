@@ -8,9 +8,9 @@ import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -58,6 +58,16 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     public boolean hasVisualOffset(BlockState state) {
         BlockPropertyModifier modifier = modifiers.get(state.getBlock());
         return modifier != null && modifier.offsetType().isPresent();
+    }
+
+    public void addExtraDestroyParticles(BlockState state, ClientLevel level, BlockPos pos, BlockState state1) {
+        BlockPropertyModifier modifier = modifiers.get(state.getBlock());
+        if (modifier != null) {
+            var of = modifier.destroyParticleEmitters();
+            for (var p : of) {
+                p.tick(level, pos, state1);
+            }
+        }
     }
 
 
