@@ -43,6 +43,7 @@ public record BlockPropertyModifier(
         Optional<RenderType> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
         List<BlockParticleEmitter> particleEmitters,
+        List<BlockParticleEmitter> destroyParticleEmitters,
         List<BlockSoundEmitter> soundEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
         Optional<BlockSetTypeProvider> blockSetType,
@@ -62,6 +63,7 @@ public record BlockPropertyModifier(
                 newMod.renderType().isPresent() ? newMod.renderType() : this.renderType(),
                 newMod.clientLight.isPresent() ? newMod.clientLight : this.clientLight,
                 mergeList(newMod.particleEmitters, this.particleEmitters),
+                mergeList(newMod.destroyParticleEmitters, this.destroyParticleEmitters),
                 mergeList(newMod.soundEmitters, this.soundEmitters),
                 newMod.offsetType().isPresent() ? newMod.offsetType() : this.offsetType(),
                 newMod.blockSetType().isPresent() ? newMod.blockSetType() : this.blockSetType(),
@@ -75,7 +77,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.ofNullable(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
-                java.util.Optional.empty(), java.util.Optional.empty(), List.of(),
+                Optional.empty(), Optional.empty(), List.of(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
                 false, Targets.EMPTY, false);
     }
@@ -93,7 +95,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
-                java.util.Optional.empty(), Optional.empty(), List.of(),
+                java.util.Optional.empty(), Optional.empty(), List.of(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
                 false, t, false);
     }
@@ -200,7 +202,7 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),
                 Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
-                List.of(), List.of(), Optional.ofNullable(oldOffsetType),
+                List.of(),List.of(), List.of(), Optional.ofNullable(oldOffsetType),
                 Optional.ofNullable(oldType),
                 false, Targets.EMPTY, false);
     }
@@ -220,6 +222,7 @@ public record BlockPropertyModifier(
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
                     BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(BlockPropertyModifier::particleEmitters),
+                    BlockParticleEmitter.CODEC.listOf().optionalFieldOf("destroy_particle_emitters", List.of()).forGetter(BlockPropertyModifier::destroyParticleEmitters),
                     BlockSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(BlockPropertyModifier::soundEmitters),
                     OffsetTypeR.CODEC.xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
                             .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
