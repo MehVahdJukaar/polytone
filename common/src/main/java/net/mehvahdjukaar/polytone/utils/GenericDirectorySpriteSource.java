@@ -4,15 +4,15 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
-import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
+import net.minecraft.client.renderer.texture.atlas.SpriteSourceList;
 import net.minecraft.client.renderer.texture.atlas.SpriteSources;
+import net.minecraft.client.renderer.texture.atlas.sources.SingleFile;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public class GenericDirectorySpriteSource implements SpriteSource {
-
-
 
     public static final MapCodec<GenericDirectorySpriteSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(
             Codec.STRING.fieldOf("source").forGetter((d) -> d.sourcePath),
@@ -22,6 +22,7 @@ public class GenericDirectorySpriteSource implements SpriteSource {
     public static final SpriteSourceType TYPE = SpriteSources.register("polytone_generic_directory", GenericDirectorySpriteSource.CODEC);
 
     public static void init() {
+        BuiltInRegistries.
     }
 
     private final String sourcePath;
