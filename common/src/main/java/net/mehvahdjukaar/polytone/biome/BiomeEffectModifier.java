@@ -3,23 +3,15 @@ package net.mehvahdjukaar.polytone.biome;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.utils.AlternativeMapCodec;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.utils.Targets;
-import net.mehvahdjukaar.polytone.utils.Weather;
-import net.minecraft.core.BlockPos;
+import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.*;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec2;
 
-import java.util.Map;
 import java.util.Optional;
 
 public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> waterColor,
@@ -31,7 +23,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Optional<AmbientMoodSettings> ambientMoodSettings,
                                   Optional<AmbientAdditionsSettings> ambientAdditionsSettings,
                                   Optional<SimpleWeightedRandomList<Music>> backgroundMusic,
-                                  Optional<FogParam> fogStart, Optional<FogParam> fogEnd,
+                                  Optional<FogManager.FogParam> fogFade, Optional<FogManager.FogParam> fogRadius,
                                   Targets targets) {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
@@ -47,8 +39,8 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
             AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
             SimpleWeightedRandomList.wrappedCodecAllowingEmpty(Music.CODEC).optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
-            AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start").forGetter(BiomeEffectModifier::fogStart),
-            AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end").forGetter(BiomeEffectModifier::fogEnd),
+            AlternativeMapCodec.optionalAlias(FogManager.FogParam.CODEC, "fog_fade", "fog_start").forGetter(BiomeEffectModifier::fogFade),
+            AlternativeMapCodec.optionalAlias(FogManager.FogParam.CODEC, "fog_radius", "fog_end").forGetter(BiomeEffectModifier::fogRadius),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));
 
@@ -75,8 +67,8 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                 newMod.ambientMoodSettings().isPresent() ? newMod.ambientMoodSettings() : this.ambientMoodSettings(),
                 newMod.ambientAdditionsSettings().isPresent() ? newMod.ambientAdditionsSettings() : this.ambientAdditionsSettings(),
                 newMod.backgroundMusic().isPresent() ? newMod.backgroundMusic() : this.backgroundMusic(),
-                newMod.fogStart().isPresent() ? newMod.fogStart() : this.fogStart(),
-                newMod.fogEnd().isPresent() ? newMod.fogEnd() : this.fogEnd(),
+                newMod.fogFade().isPresent() ? newMod.fogFade() : this.fogFade(),
+                newMod.fogRadius().isPresent() ? newMod.fogRadius() : this.fogRadius(),
                 this.targets.merge(newMod.targets)
         );
     }
@@ -222,47 +214,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
     }
 
     public boolean modifyFogParameter() {
-        return fogStart.isPresent() || fogEnd.isPresent();
+        return fogFade.isPresent() || fogRadius.isPresent();
     }
-
-    public Vec2 modifyFogParameters(Level level) {
-        return new Vec2(fogStart.map(f -> f.get(level)).orElse(1f),
-                fogEnd.map(f -> f.get(level)).orElse(1f));
-    }
-
-    public interface FogParam {
-        float get(Level level);
-
-        Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> (l) -> f, fogParam -> fogParam.get(null));
-        Codec<FogParam> CODEC = Codec.withAlternative(
-                Codec.withAlternative(SIMPLE_CODEC,
-                        Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
-                                .xmap(FogMap::new, FogMap::map).codec()
-                ),
-                BlockContextExpression.CODEC.xmap(
-                        FogExpression::new,
-                        fogMap -> fogMap.map
-                )
-        );
-    }
-
-    public record FogExpression(BlockContextExpression map) implements FogParam {
-
-        @Override
-        public float get(Level level) {
-            BlockPos pos = ClientFrameTicker.getCameraPos();
-            return (float) map.getValue(level, pos, Blocks.AIR.defaultBlockState());
-        }
-    }
-
-    public record FogMap(Map<Weather, FogParam> map) implements FogParam {
-
-        @Override
-        public float get(Level level) {
-            Weather w = Weather.get(level);
-            return map.getOrDefault(w, (l) -> 1).get(level);
-        }
-    }
-
 
 }

@@ -4,19 +4,27 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.biome.BiomeEffectModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.*;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.Vec2;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -115,6 +123,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
             addModifier(id, new FluidPropertyModifier(Optional.of(defaultColormap),
+                    Optional.empty(), Optional.empty(),
                     Optional.empty(), Targets.EMPTY));
         }
     }
@@ -164,5 +173,6 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     public FluidPropertyModifier getModifier(Fluid water) {
         return modifiers.get(water);
     }
+
 
 }

@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.tabs.ItemPredicate;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.utils.FogManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -107,10 +108,10 @@ public class PolytoneForge {
     @SubscribeEvent
     public void fogEvent(ViewportEvent.RenderFog fogEvent) {
         if (fogEvent.getType() != FogType.NONE || fogEvent.getMode() != FogRenderer.FogMode.FOG_TERRAIN) return;
-        Vec2 targetFog = Polytone.BIOME_MODIFIERS.modifyFogParameters(fogEvent.getNearPlaneDistance(), fogEvent.getFarPlaneDistance());
+        FogManager.FogState targetFog = FogManager.modifyBiomeFog(fogEvent.getNearPlaneDistance(), fogEvent.getFarPlaneDistance());
         if (targetFog != null) {
-            fogEvent.setNearPlaneDistance(targetFog.x);
-            fogEvent.setFarPlaneDistance(targetFog.y);
+            fogEvent.setNearPlaneDistance(targetFog.start());
+            fogEvent.setFarPlaneDistance(targetFog.end());
             fogEvent.setCanceled(true);
         }
     }

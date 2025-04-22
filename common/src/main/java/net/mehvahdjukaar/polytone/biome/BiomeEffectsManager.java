@@ -114,44 +114,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     }
 
 
-    private static float lastFogDistanceMult = 1;
-    private static float lastFogEndMult = 1;
-
-    @Nullable
-    public Vec2 modifyFogParameters(float originalNearPlane, float originalFarPlane) {
-        Minecraft mc = Minecraft.getInstance();
-        Player player = mc.player;
-        if (player == null) return null;
-
-        //dont modify if a mob effect that modifies fog is active
-        if (FogRenderer.getPriorityFogFunction(player, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false))
-                != null) return null;
-
-        Level level = player.level();
-
-        Holder<Biome> biome = level.getBiome(player.blockPosition());
-        var fogMod = fogParametersModifiers.get(biome.value());
-        Vec2 fogScalars = null;
-        if (fogMod != null) {
-            fogScalars = fogMod.modifyFogParameters(level);
-        }
-
-        if (fogScalars == null && (Mth.abs(lastFogDistanceMult - 1) > 0.02f || Mth.abs(lastFogEndMult - 1) > 0.02f)) {
-            fogScalars = new Vec2(1, 1);
-        }
-        if (fogScalars != null) {
-            float deltaTime = ClientFrameTicker.getDeltaTime(); // Get time since last frame
-            float interpolationFactor = deltaTime * 0.1f;
-
-            // Interpolate towards the fogScalars values
-            lastFogDistanceMult = Mth.lerp(interpolationFactor, lastFogDistanceMult, fogScalars.x);
-            lastFogEndMult = Mth.lerp(interpolationFactor, lastFogEndMult, fogScalars.y);
-            //fogEvent.scaleNearPlaneDistance(1);
-            float distance = originalFarPlane - originalNearPlane;
-
-            return new Vec2((originalFarPlane - distance * lastFogDistanceMult) * lastFogEndMult, originalFarPlane * lastFogEndMult);
-        }
-
-        return null;
+    public BiomeEffectModifier getFogModifier(Biome value) {
+        return fogParametersModifiers.get(value);
     }
 }

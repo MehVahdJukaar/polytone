@@ -10,6 +10,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.server.packs.resources.SimpleReloadInstance;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.Level;
@@ -40,7 +41,6 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
     @Override
     protected void apply(List<Object> object, ResourceManager resourceManager, ProfilerFiller profiler) {
         Level level = Minecraft.getInstance().level;
-
         childrenResources.clear();
         childrenResources.addAll(object);
 
@@ -48,7 +48,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
             try {
                 applyWithLevel(level.registryAccess(), false);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         }
     }

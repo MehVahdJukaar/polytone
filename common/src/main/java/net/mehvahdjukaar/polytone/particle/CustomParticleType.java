@@ -289,10 +289,10 @@ public class CustomParticleType implements CustomParticleFactory {
                 quaternionf.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
             }
             Vec3 vec3 = camera.getPosition();
-            float x = (float)(Mth.lerp(partialTicks, this.xo, this.x) - vec3.x());
-            float y = (float)(Mth.lerp(partialTicks, this.yo, this.y) - vec3.y());
-            float z = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3.z());
-            this.renderRotatedModel(quaternionf,x,y,z, partialTicks);
+            float x = (float) (Mth.lerp(partialTicks, this.xo, this.x) - vec3.x());
+            float y = (float) (Mth.lerp(partialTicks, this.yo, this.y) - vec3.y());
+            float z = (float) (Mth.lerp(partialTicks, this.zo, this.z) - vec3.z());
+            this.renderRotatedModel(quaternionf, x, y, z, partialTicks);
         }
 
         private void renderRotatedModel(Quaternionf quaternion, float x, float y, float z, float partialTicks) {
@@ -366,7 +366,7 @@ public class CustomParticleType implements CustomParticleFactory {
             }
 
             //TODO: check for any block collision. also check this on my mods
-            if (this.hasPhysics && this.stoppedByCollision) {
+            if (this.hasPhysics && this.stoppedByCollision && type.killWhenStill) {
                 this.remove();
             }
 

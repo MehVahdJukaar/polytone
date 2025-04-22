@@ -469,6 +469,7 @@ public class LegacyHelper {
                         .map(Parsed::getResultOrPartial);
                 FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
                         fogMod.map(BlockPropertyModifier::getColormap),
+                        Optional.empty(), Optional.empty(),
                         targets);
                 converted.put(id, modifier);
             }

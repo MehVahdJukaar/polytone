@@ -1,3 +1,2 @@
-- tooltips will now always be appended at the end rather than at the beginning
-- added destroy_particle_emitters to block modifiers
-- fixed particles 3d models not working
+- particles with physics will now properly follow the kill_on_contact field
+- fluid mods now have a fog_fade and fog_radius params

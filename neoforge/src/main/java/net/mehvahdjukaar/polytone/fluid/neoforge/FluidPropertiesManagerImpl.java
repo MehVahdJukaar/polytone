@@ -5,10 +5,10 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
+import net.mehvahdjukaar.polytone.utils.FogManager;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.FogRenderer;
@@ -42,7 +42,9 @@ public class FluidPropertiesManagerImpl {
             if (tintColormap instanceof Colormap c) {
                 tintColormap = Polytone.COLORMAPS.getOrCreateConcurrentColormap(c);
             }
-            FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, tintColormap, fogColormap));
+            var fogRadius = prop.fogRadius().orElse(null);
+            var fogFade = prop.fogFade().orElse(null);
+            FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, tintColormap, fogColormap, fogRadius, fogFade));
         }
     }
 
@@ -60,7 +62,9 @@ public class FluidPropertiesManagerImpl {
 
     private record FluidExtensionWrapper(IClientFluidTypeExtensions existingProperties,
                                          @Nullable BlockColor tintColor,
-                                         @Nullable BlockColor fogColor) implements IClientFluidTypeExtensions {
+                                         @Nullable BlockColor fogColor,
+                                         @Nullable FogManager.FogParam fogRadius,
+                                         @Nullable FogManager.FogParam forFade) implements IClientFluidTypeExtensions {
 
 
         @Override
@@ -109,7 +113,7 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public void renderOverlay(Minecraft mc, PoseStack poseStack, MultiBufferSource buffers) {
-            existingProperties.renderOverlay(mc, poseStack,buffers);
+            existingProperties.renderOverlay(mc, poseStack, buffers);
         }
 
         @Override
@@ -123,6 +127,26 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public FogParameters modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, FogParameters fogParameters) {
+            if (fogRadius != null || forFade != null) {
+                FogManager.FogState fogState = FogManager.modifyFluidFog(
+                        fogParameters.start(),
+                        fogParameters.end(),
+                        fogRadius,
+                        forFade
+                );
+                if(fogState != null) {
+                    return new FogParameters(
+                            fogState.start(),
+                            fogState.end(),
+                            fogParameters.shape(),
+                            fogParameters.red(),
+                            fogParameters.green(),
+                            fogParameters.blue(),
+                            fogParameters.alpha()
+                    );
+                }
+
+            }
             return existingProperties.modifyFogRender(camera, mode, renderDistance, partialTick, fogParameters);
         }
 
