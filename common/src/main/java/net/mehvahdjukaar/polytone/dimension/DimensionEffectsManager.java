@@ -294,7 +294,6 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         float deltaTime = ClientFrameTicker.getDeltaTime(); // Get time since last frame
         float interpolationFactor = deltaTime * 0.1f;
 
-
         var c = ColorUtils.unpack(color);
 
         if (lastSunset == null) {
