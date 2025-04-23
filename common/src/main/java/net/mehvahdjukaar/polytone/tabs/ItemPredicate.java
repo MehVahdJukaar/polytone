@@ -96,7 +96,6 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         }
     }
 
-
     Codec<TagMatch> TAG_MATCH = TYPES.register("tag_match",
             TagKey.codec(Registries.ITEM).fieldOf("tag")
                     .xmap(TagMatch::new, TagMatch::tag).codec());

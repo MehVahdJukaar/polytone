@@ -4,7 +4,10 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -12,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class CodecUtil {
     public static <T> Codec<T> withAlternative(final Codec<T> primary, final Codec<? extends T> alternative) {
@@ -35,7 +39,6 @@ public class CodecUtil {
     }
 
 
-
     public static final Codec<Item> NONNULL_ITEM = BuiltInRegistries.ITEM.holderByNameCodec()
             .xmap(Holder::value, BuiltInRegistries.ITEM::wrapAsHolder);
 
@@ -54,4 +57,14 @@ public class CodecUtil {
 
     public static final Codec<List<ItemStack>> ITEMSTACK_OR_ITEMSTACK_LIST = Codec.either(ITEM_OR_STACK, ITEM_OR_STACK.listOf())
             .xmap(e -> e.map(List::of, Function.identity()), Either::right);
+
+    public static final Codec<Supplier<List<ItemStack>>> ITEMSTACK_HOLDER_SET = RegistryCodecs.homogeneousList(Registries.ITEM)
+            .xmap(l -> () -> l.stream().map(Holder::value).map(ItemStack::new).toList(), s -> HolderSet.direct(s.get().stream().map(ItemStack::getItemHolder).toList()));
+
+    public static final Codec<Supplier<List<ItemStack>>> ITEMSTACK_OR_LIST_OR_HOLDER_SET =
+            CodecUtil.withAlternative(
+                    ITEMSTACK_OR_ITEMSTACK_LIST.xmap(l -> () -> l, Supplier::get),
+                    ITEMSTACK_HOLDER_SET);
+
 }
+
