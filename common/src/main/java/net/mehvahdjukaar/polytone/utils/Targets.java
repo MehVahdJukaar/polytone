@@ -155,8 +155,7 @@ public record Targets(List<Entry> entries) {
 
         @Override
         public <T> Iterable<Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
-            ResourceKey k = reg.key();
-            TagKey<T> key = TagKey.create(k, id);
+            TagKey<T> key = TagKey.create((ResourceKey<? extends Registry<T>>) reg.key(), id);
             return reg.getOrThrow(key);
         }
 

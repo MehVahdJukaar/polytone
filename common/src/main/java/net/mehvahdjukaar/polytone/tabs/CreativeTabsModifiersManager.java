@@ -31,8 +31,6 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
     private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> vanillaTabs = new HashMap<>();
 
-    private final Map<ResourceLocation, JsonElement> lazyJsons = new HashMap<>();
-
     public CreativeTabsModifiersManager() {
         super("creative_tab_modifiers");
     }
@@ -86,16 +84,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             PlatStuff.sortTabs();
         }
 
-        lazyJsons.clear();
-        lazyJsons.putAll(resources.tabsModifiers);
-
-        //else apply as soon as we load a level
-    }
-
-    @Override
-    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
-        var ops = RegistryOps.create(JsonOps.INSTANCE, access);
-        for (var j : lazyJsons.entrySet()) {
+        for (var j : resources.tabsModifiers.entrySet()) {
 
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
@@ -103,6 +92,12 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             CreativeTabModifier modifier = Parsed.parseOrNull(CreativeTabModifier.CODEC, json, ops, id, "creative tab modifier");
             if (modifier != null) addModifier(id, modifier);
         }
+
+        //else apply as soon as we load a level
+    }
+
+    @Override
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         if (!modifiers.isEmpty()) {
             needsRefresh.addAll(modifiers.keySet());
         }
