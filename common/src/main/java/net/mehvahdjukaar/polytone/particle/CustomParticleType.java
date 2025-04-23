@@ -321,7 +321,7 @@ public class CustomParticleType implements CustomParticleFactory {
             }
 
             //TODO: check for any block collision. also check this on my mods
-            if (this.hasPhysics && this.stoppedByCollision) {
+            if (this.hasPhysics && this.stoppedByCollision && this.type.killWhenStill) {
                 this.remove();
             }
 
