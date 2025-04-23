@@ -82,7 +82,7 @@ public record CreativeTabModifier(
         }
 
         for (var v : additions) {
-            List<ItemStack> stacks = v.items();
+            List<ItemStack> stacks = v.items().get();
             if (stacks == null) continue;
             if (v.inverse()) {
                 List<ItemStack> newList = new ArrayList<>();
