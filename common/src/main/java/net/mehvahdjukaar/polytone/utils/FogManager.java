@@ -58,32 +58,32 @@ public class FogManager {
                                                 @Nullable FogParam fogRadius, @Nullable FogParam fogFade,
                                                 FogStateMutable old) {
         if (level == null) return null;
-        FogState params = null;
+        Float radiusMult = null;
+        Float fadeMul = null;
         if (fogRadius != null || fogFade != null) {
-            params = new FogState(
-                    fogRadius != null ? fogRadius.get(level) : 1,
-                    fogFade != null ? fogFade.get(level) : 1
-            );
+
+            radiusMult = fogRadius != null ? fogRadius.get(level) : 1;
+            fadeMul = fogFade != null ? fogFade.get(level) : 1;
         }
 
 
         //interpolation
-        if (params == null && (Mth.abs(old.distanceMult - 1) > 0.02f || Mth.abs(old.endMult - 1) > 0.02f)) {
-            params = ONE;
+        if (radiusMult == null && (Mth.abs(old.distanceMult - 1) > 0.02f || Mth.abs(old.endMult - 1) > 0.02f)) {
+            radiusMult = 1f;
+            fadeMul = 1f;
         }
-        if (params != null) {
+        if(radiusMult != null) {
             float deltaTime = ClientFrameTicker.getDeltaTime(); // Get time since last frame
             float interpolationFactor = deltaTime * 0.1f;
 
             // Interpolate towards the fogScalars values
-            old.distanceMult = Mth.lerp(interpolationFactor, old.distanceMult, params.start);
-            old.endMult = Mth.lerp(interpolationFactor, old.endMult, params.end);
+            old.distanceMult = Mth.lerp(interpolationFactor, old.distanceMult, fadeMul);
+            old.endMult = Mth.lerp(interpolationFactor, old.endMult, radiusMult);
             //fogEvent.scaleNearPlaneDistance(1);
             float distance = originalFarPlane - originalNearPlane;
 
             return new FogState((originalFarPlane - distance * old.distanceMult) * old.endMult, originalFarPlane * old.endMult);
         }
-
         return null;
     }
 

@@ -1,2 +1,5 @@
-- particles with physics will now properly follow the kill_on_contact field
-- fluid mods now have a fog_fade and fog_radius params
+fixed fog being inverted
+
+```
+
+```
