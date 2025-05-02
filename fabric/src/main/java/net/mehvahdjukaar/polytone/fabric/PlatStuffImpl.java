@@ -33,6 +33,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
@@ -293,25 +294,36 @@ public class PlatStuffImpl {
         return PolytoneFabric.currentServer.registryAccess();
     }
 
-    public static BakedModel getBakedModel(ModelResourceLocation model) {
+    public static BlockStateModel getBakedModel(ResourceLocation model) {
         var mm = Minecraft.getInstance().getModelManager();
 
+        /*
         Map<ModelResourceLocation, BakedModel> reg = ((ModelManagerAccessor) mm).getBakedRegistry();
         var first = reg.get(model);
         if (first != null) return first;
         return reg.getOrDefault(new ModelResourceLocation(model.id(), "inventory"), mm.getMissingModel());
+       
+         */
+        return null;
     }
 
 
     public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
+       /*
         ModelLoadingPlugin.register(pluginContext -> {
             eventListener.accept(new PlatStuff.SpecialModelEvent() {
+
+                @Override
+                public void register(ResourceLocation id) {
+                    pluginContext.modifyBlockModelBeforeBake(id);
+                }
+
                 @Override
                 public void register(ModelResourceLocation id) {
                     pluginContext.addModels(id.id());
                 }
             });
-        });
+        });*/
     }
 
     public static String getVersion() {

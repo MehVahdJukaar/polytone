@@ -30,6 +30,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
         super("item_modifiers", "item_properties");
     }
 
+    /*
     // early reload to grab the extra models we need to add.
     @Override
     public void earlyProcess(ResourceManager resourceManager) {
@@ -44,7 +45,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
                 Polytone.addCustomModel(m.model());
             }
         }
-    }
+    }*/
 
     @Override
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
@@ -100,7 +101,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
             var i = item.value();
             modifiers.merge(i, mod, ItemModifier::merge);
 
-            Polytone.ITEM_MODELS.addModelFromModifier(i, mod.customModels());
+          //  Polytone.ITEM_MODELS.addModelFromModifier(i, mod.customModels());
         }
     }
 

@@ -12,8 +12,9 @@ import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-public class GenericDirectorySpriteSource implements SpriteSource {
+public abstract class GenericDirectorySpriteSource implements SpriteSource {
 
+    /*
     public static final MapCodec<GenericDirectorySpriteSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(
             Codec.STRING.fieldOf("source").forGetter((d) -> d.sourcePath),
             Codec.STRING.fieldOf("prefix").forGetter((d) -> d.idPrefix)
@@ -46,5 +47,5 @@ public class GenericDirectorySpriteSource implements SpriteSource {
     @Override
     public SpriteSourceType type() {
         return TYPE;
-    }
+    }*/
 }

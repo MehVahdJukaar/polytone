@@ -20,8 +20,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ItemModelOverrideList {
 
+public class ItemModelOverrideList {
+/*
     private final PropertiesSearchTrie overrides = new PropertiesSearchTrie();
     private final List<ItemModelOverride> entries = new ArrayList<>();
 
@@ -47,12 +48,11 @@ public class ItemModelOverrideList {
         this.entries.add(itemModelOverride);
     }
 
-/*
     @Nullable
     public BakedModel getModel(ItemStack stack, @Nullable Level level, @Nullable LivingEntity entity, int seed) {
         if (!populated) return null;
         return this.overrides.searchModel(stack, level, entity);
-    }*/
+    }
 
     public int size() {
         return entries.size();
@@ -67,7 +67,7 @@ public class ItemModelOverrideList {
             super.clear();
             this.orderedKeys.clear();
         }
-/*
+
         public BakedModel searchModel(ItemStack stack, @Nullable Level level, @Nullable Entity entity) {
             var list = this.search(stack);
             if (list == null || list.isEmpty()) {
@@ -83,7 +83,7 @@ public class ItemModelOverrideList {
             }
             return null;
         }
-*/
+
         @Override
         protected Object getKeyOfType(Object folder) {
             if (folder instanceof TypedDataComponent<?> t) {
@@ -127,7 +127,7 @@ public class ItemModelOverrideList {
             }
         }
 
-    }
+    }*/
 /*
     public static void testTrie() {
         if (true) return;

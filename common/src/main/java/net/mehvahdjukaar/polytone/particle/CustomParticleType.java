@@ -19,6 +19,7 @@ import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
@@ -85,7 +86,7 @@ public class CustomParticleType implements CustomParticleFactory {
                                int tickRate, @Nullable List<Dynamic<?>> particles) {
         this.renderType = renderType;
         this.randomSprite = randomSprite;
-        this.model = model == null ? null : new ModelResourceLocation(model, "standalone");
+        this.model = model;
         this.initializer = initializer;
         this.ticker = ticker;
         this.sounds = sounds;
@@ -107,7 +108,7 @@ public class CustomParticleType implements CustomParticleFactory {
             RenderType.CODEC.optionalFieldOf("render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
             RotationMode.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationMode),
-            ResourceLocation.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model.id())),
+            ResourceLocation.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model)),
             Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(c -> c.offset),
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
@@ -197,7 +198,7 @@ public class CustomParticleType implements CustomParticleFactory {
     public static class Instance extends TextureSheetParticle {
 
         protected final CustomParticleType type;
-        protected final @Nullable BakedModel model;
+        protected final @Nullable BlockStateModel model;
         protected final SpriteSet spriteSet;
         protected final LiquidAffinity liquidAffinity;
         protected final List<ParticleTickable> tickables;
@@ -227,7 +228,7 @@ public class CustomParticleType implements CustomParticleFactory {
             this.xd = xSpeed;
             this.yd = ySpeed;
             this.zd = zSpeed;
-            this.model = customType.model == null ? null : PlatStuff.getBakedModel(customType.model);
+            this.model = null;// customType.model == null ? null : PlatStuff.getBakedModel(customType.model);
             ParticleInitializer initializer = customType.initializer;
             BlockPos pos = BlockPos.containing(x, y, z);
             if (initializer != null) {
@@ -308,8 +309,8 @@ public class CustomParticleType implements CustomParticleFactory {
             MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
             var consumer = bufferSource.getBuffer(type.renderType.getBlock());
 
-            putModelBulkData(this.model, this.getLightColor(partialTicks),
-                    OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
+        //    putModelBulkData(this.model, this.getLightColor(partialTicks),
+          //          OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
 
             bufferSource.endBatch();
         }
@@ -398,9 +399,10 @@ public class CustomParticleType implements CustomParticleFactory {
             }
         }
 
-        public static void putModelBulkData(BakedModel model, int combinedLight, int combinedOverlay,
+        public static void putModelBulkData(BlockStateModel model, int combinedLight, int combinedOverlay,
                                             PoseStack poseStack, VertexConsumer buffer, float r, float g, float b, float a) {
             RandomSource randomSource = RandomSource.create();
+          /*
             for (Direction direction : Direction.values()) {
                 randomSource.setSeed(42L);
                 for (BakedQuad bakedQuad : model.getQuads(null, direction, randomSource)) {
@@ -410,7 +412,7 @@ public class CustomParticleType implements CustomParticleFactory {
             randomSource.setSeed(42L);
             for (BakedQuad bakedQuad : model.getQuads(null, null, randomSource)) {
                 buffer.putBulkData(poseStack.last(), bakedQuad, r, g, b, a, combinedLight, combinedOverlay);
-            }
+            }*/
         }
 
 

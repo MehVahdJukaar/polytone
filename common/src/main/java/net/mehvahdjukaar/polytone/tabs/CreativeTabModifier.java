@@ -38,16 +38,13 @@ public record CreativeTabModifier(
         List<ItemAddition> additions,
         Targets targets) {
 
-    public static final Codec<Component> COMPONENT_CODEC = Codec.withAlternative(ComponentSerialization.CODEC, ComponentSerialization.FLAT_CODEC,
-            Function.identity());
-
     public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
             ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
             Codec.BOOL.optionalFieldOf("search_bar").forGetter(CreativeTabModifier::search), //unused
             Codec.INT.optionalFieldOf("search_bar_width").forGetter(CreativeTabModifier::searchWidth),
             Codec.BOOL.optionalFieldOf("can_scroll").forGetter(CreativeTabModifier::canScroll),
             Codec.BOOL.optionalFieldOf("show_title").forGetter(CreativeTabModifier::showTitle),
-            COMPONENT_CODEC.optionalFieldOf("name").forGetter(CreativeTabModifier::name),
+            ComponentSerialization.CODEC.optionalFieldOf("name").forGetter(CreativeTabModifier::name),
             ResourceLocation.CODEC.optionalFieldOf("background").forGetter(CreativeTabModifier::backGroundLocation),
             ResourceLocation.CODEC.optionalFieldOf("tabs_image").forGetter(CreativeTabModifier::tabsImage),
             ResourceLocation.CODEC.listOf().optionalFieldOf("before_tabs").forGetter(CreativeTabModifier::beforeTabs),

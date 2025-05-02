@@ -90,7 +90,7 @@ public class VariantTextureManager extends JsonPartialReloader {
         Block block = state.getBlock();
         var variant = blocksWithVariants.get(block);
         if (variant != null) {
-            var biomeToTexture = variant.getBiomeMap(quad.getSprite());
+            var biomeToTexture = variant.getBiomeMap(quad.sprite());
             if (biomeToTexture != null && level instanceof RenderChunkRegion region) {
                 Holder<Biome> biome = region.level.getBiome(pos);
                 ResourceLocation biomeLoc = biome.unwrapKey().get().location();

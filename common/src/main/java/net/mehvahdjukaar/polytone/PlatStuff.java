@@ -10,6 +10,7 @@ import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
@@ -220,7 +221,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static BakedModel getBakedModel(ResourceLocation model) {
+    public static BlockStateModel getBakedModel(ResourceLocation model) {
         throw new AssertionError();
     }
 }

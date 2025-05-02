@@ -98,7 +98,7 @@ public class Polytone {
         Polytone.iris = iris;
 
         //ItemModelOverrideList.testTrie();
-        GenericDirectorySpriteSource.init();
+        //GenericDirectorySpriteSource.init();
 
         PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
 
