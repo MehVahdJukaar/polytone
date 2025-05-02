@@ -10,6 +10,7 @@ import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
+/*
 @Mixin(Variant.Deserializer.class)
 public class VariantDeserializerMixin {
 
@@ -26,4 +27,4 @@ public class VariantDeserializerMixin {
         mat.translate(x /16f, y /16f, z /16f);
         return new Transformation(mat).compose(original);
     }
-}
+}*/

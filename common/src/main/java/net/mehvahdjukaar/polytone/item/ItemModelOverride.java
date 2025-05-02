@@ -8,7 +8,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.UnboundedMapCodec;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -32,6 +31,7 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class ItemModelOverride {
+    /*
     @Nullable
     protected final Dynamic<?> lazyComponent;
     @Nullable
@@ -163,5 +163,5 @@ public class ItemModelOverride {
         }
         return true;
     }
-
+*/
 }

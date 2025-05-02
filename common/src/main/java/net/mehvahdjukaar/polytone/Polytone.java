@@ -74,7 +74,7 @@ public class Polytone {
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
 
-    private static final Set<ModelResourceLocation> EXTRA_MODELS = new HashSet<>();
+    private static final Set<ResourceLocation> EXTRA_MODELS = new HashSet<>();
 
     public static boolean iMessedUp = false;
 
@@ -174,7 +174,7 @@ public class Polytone {
                 .findFirst();
     }
 
-    public static void addCustomModel(ModelResourceLocation model) {
+    public static void addCustomModel(ResourceLocation model) {
         EXTRA_MODELS.add(model);
     }
 

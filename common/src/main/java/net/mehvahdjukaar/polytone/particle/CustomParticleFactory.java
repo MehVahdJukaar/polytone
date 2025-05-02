@@ -4,7 +4,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,7 +24,7 @@ public interface CustomParticleFactory extends ParticleProvider<SimpleParticleTy
 
 
     @Nullable
-    default ModelResourceLocation getCustomModel() {
+    default ResourceLocation getCustomModel() {
         return null;
     }
 

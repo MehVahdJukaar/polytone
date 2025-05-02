@@ -19,10 +19,11 @@ public class GenericDirectorySpriteSource implements SpriteSource {
             Codec.STRING.fieldOf("prefix").forGetter((d) -> d.idPrefix)
     ).apply(i, GenericDirectorySpriteSource::new));
 
-    public static final SpriteSourceType TYPE = SpriteSources.register("polytone_generic_directory", GenericDirectorySpriteSource.CODEC);
+    public static final SpriteSourceType TYPE =
+            SpriteSources.register("polytone_generic_directory", GenericDirectorySpriteSource.CODEC);
 
     public static void init() {
-        BuiltInRegistries.
+
     }
 
     private final String sourcePath;

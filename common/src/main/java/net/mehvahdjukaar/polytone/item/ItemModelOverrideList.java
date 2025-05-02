@@ -4,21 +4,14 @@ import com.google.common.base.Suppliers;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.utils.DepthSearchTrie;
 import net.mehvahdjukaar.polytone.utils.FrequencyOrderedCollection;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,12 +47,12 @@ public class ItemModelOverrideList {
         this.entries.add(itemModelOverride);
     }
 
-
+/*
     @Nullable
     public BakedModel getModel(ItemStack stack, @Nullable Level level, @Nullable LivingEntity entity, int seed) {
         if (!populated) return null;
         return this.overrides.searchModel(stack, level, entity);
-    }
+    }*/
 
     public int size() {
         return entries.size();
@@ -74,7 +67,7 @@ public class ItemModelOverrideList {
             super.clear();
             this.orderedKeys.clear();
         }
-
+/*
         public BakedModel searchModel(ItemStack stack, @Nullable Level level, @Nullable Entity entity) {
             var list = this.search(stack);
             if (list == null || list.isEmpty()) {
@@ -90,7 +83,7 @@ public class ItemModelOverrideList {
             }
             return null;
         }
-
+*/
         @Override
         protected Object getKeyOfType(Object folder) {
             if (folder instanceof TypedDataComponent<?> t) {

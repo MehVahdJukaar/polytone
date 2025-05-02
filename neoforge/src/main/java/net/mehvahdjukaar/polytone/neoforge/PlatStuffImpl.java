@@ -17,9 +17,8 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -44,6 +43,7 @@ import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -268,14 +268,14 @@ public class PlatStuffImpl {
         return ServerLifecycleHooks.getCurrentServer().registryAccess();
     }
 
-    public static BakedModel getBakedModel(ModelResourceLocation id) {
+    public static ItemModel getBakedModel(ResourceLocation id) {
         ModelManager mm = Minecraft.getInstance().getModelManager();
-        return mm.getModel(id);
+        return mm.getStandaloneModel(new StandaloneModelKey<>(id));
     }
 
     public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
-        Consumer<ModelEvent.RegisterAdditional> eventConsumer = event -> {
-            eventListener.accept(id -> event.register(id.id()));
+        Consumer<ModelEvent.RegisterStandalone> eventConsumer = event -> {
+            eventListener.accept(id -> event.register(new StandaloneModelKey<ItemModel>(id)));
         };
         PolytoneForge.bus.addListener(eventConsumer);
     }

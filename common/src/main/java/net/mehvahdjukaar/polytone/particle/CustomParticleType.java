@@ -5,13 +5,13 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.caffeinemc.mods.sodium.mixin.features.render.frapi.BakedModelMixin;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
 import net.mehvahdjukaar.polytone.utils.BiggerCodecs;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -19,9 +19,8 @@ import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleGroup;
@@ -50,7 +49,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private static BlockState STATE_HACK = Blocks.AIR.defaultBlockState();
 
     private final RenderType renderType;
-    private final @Nullable ModelResourceLocation model;
+    private final @Nullable ResourceLocation model;
     private final @Nullable ParticleInitializer initializer;
     private final @Nullable Ticker ticker;
     private final List<ParticleSoundEmitter> sounds;
@@ -146,7 +145,7 @@ public class CustomParticleType implements CustomParticleFactory {
     }
 
     @Override
-    public @Nullable ModelResourceLocation getCustomModel() {
+    public @Nullable ResourceLocation getCustomModel() {
         return this.model;
     }
 
@@ -639,8 +638,8 @@ public class CustomParticleType implements CustomParticleFactory {
         return Math.toDegrees(Math.atan2(-vec3.x, vec3.z));
     }
 
-    public static final Codec<Optional<ModelResourceLocation>> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
-            ModelResHelper.MODEL_RES_CODEC.optionalFieldOf("model").forGetter(e -> e)
+    public static final Codec<Optional<ResourceLocation>> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
+            ResourceLocation.CODEC.optionalFieldOf("model").forGetter(e -> e)
     ).apply(i, r -> r));
 }
 

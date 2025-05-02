@@ -25,7 +25,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
                            Optional<Rarity> rarity,
                            List<Component> tooltips,
                            List<Pattern> removedTooltips,
-                           List<ItemModelOverride> customModels,
+                           //List<ItemModelOverride> customModels,
                            Targets targets) {
 
     public static final Codec<ItemModifier> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -35,20 +35,24 @@ public record ItemModifier(Optional<IColorGetter> barColor,
             Rarity.CODEC.optionalFieldOf("rarity").forGetter(ItemModifier::rarity),
             CreativeTabModifier.COMPONENT_CODEC.listOf().optionalFieldOf("tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
             ExtraCodecs.PATTERN.listOf().optionalFieldOf("removed_tooltips", List.of()).forGetter(ItemModifier::removedTooltips),
-            ItemModelOverride.CODEC.listOf().optionalFieldOf("custom_models", List.of()).forGetter(ItemModifier::customModels),
+            //ItemModelOverride.CODEC.listOf().optionalFieldOf("custom_models", List.of()).forGetter(ItemModifier::customModels),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(ItemModifier::targets)
     ).apply(instance, ItemModifier::new));
 
+    /*
     public record Partial(List<ItemModelOverride.Partial> customModels) {
     }
 
     public static final Codec<Partial> CODEC_ONLY_MODELS = RecordCodecBuilder.create(instance -> instance.group(
             ItemModelOverride.CODEC_MODEL_ONLY.listOf().optionalFieldOf("custom_models", List.of()).forGetter(Partial::customModels)
     ).apply(instance, Partial::new));
+*/
 
     public static ItemModifier ofBarColor(Colormap colormap) {
         return new ItemModifier(Optional.of(colormap),
-                Optional.empty(), List.of(), List.of(), List.of(), Targets.EMPTY);
+                Optional.empty(),
+             //   List.of(),
+                List.of(), List.of(), Targets.EMPTY);
     }
 
     public ItemModifier merge(ItemModifier newMod) {
@@ -57,7 +61,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
                 newMod.rarity.isPresent() ? newMod.rarity : this.rarity,
                 mergeList(newMod.tooltips, this.tooltips),
                 mergeList(newMod.removedTooltips, this.removedTooltips),
-                mergeList(newMod.customModels, this.customModels),
+              //  mergeList(newMod.customModels, this.customModels),
                 newMod.targets.merge(this.targets)
         );
     }
@@ -79,7 +83,8 @@ public record ItemModifier(Optional<IColorGetter> barColor,
         return new ItemModifier(
                 Optional.empty(),
                 Optional.ofNullable(oldRarity),
-                List.of(), List.of(), List.of(), Targets.EMPTY);
+           //     List.of(),
+                List.of(), List.of(), Targets.EMPTY);
     }
 
     @Nullable

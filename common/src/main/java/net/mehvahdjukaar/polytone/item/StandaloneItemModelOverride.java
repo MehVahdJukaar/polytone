@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
-import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -16,7 +15,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class StandaloneItemModelOverride extends ItemModelOverride {
-
+/*
 
     public static final Codec<StandaloneItemModelOverride> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.PASSTHROUGH.optionalFieldOf("components").forGetter(i -> Optional.ofNullable(i.lazyComponent)),
@@ -63,5 +62,5 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
 
     public boolean isAutoModel() {
         return autoModel;
-    }
+    }*/
 }
