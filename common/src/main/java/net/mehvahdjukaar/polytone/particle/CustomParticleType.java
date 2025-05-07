@@ -7,6 +7,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.caffeinemc.mods.sodium.mixin.features.render.frapi.BakedModelMixin;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
@@ -18,6 +19,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.item.ItemModel;
@@ -433,6 +435,7 @@ public class CustomParticleType implements CustomParticleFactory {
         OPAQUE,
         TRANSLUCENT,
         LIT,
+        ADDITIVE_TRANSLUCENT,
         INVISIBLE;
 
         public static final Codec<RenderType> CODEC = StringRepresentable.fromEnum(RenderType::values);
@@ -442,6 +445,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 case TERRAIN -> net.minecraft.client.renderer.RenderType.solid();
                 case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
                 case LIT -> net.minecraft.client.renderer.RenderType.cutout();
+                case ADDITIVE_TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
                 case INVISIBLE -> net.minecraft.client.renderer.RenderType.cutout();
                 default -> net.minecraft.client.renderer.RenderType.cutoutMipped();
             };
@@ -451,7 +455,8 @@ public class CustomParticleType implements CustomParticleFactory {
             return switch (this) {
                 case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
                 case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
-                case LIT -> ParticleRenderType.TERRAIN_SHEET; // TODO: Lit is gone in 1.21.2
+                case LIT -> ParticleRenderType.TERRAIN_SHEET;
+                case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE;
                 case INVISIBLE -> ParticleRenderType.NO_RENDER;
                 default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
             };
