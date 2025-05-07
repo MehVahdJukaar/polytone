@@ -100,10 +100,11 @@ public class Polytone {
 
         //ItemModelOverrideList.testTrie();
         GenericDirectorySpriteSource.init();
+        PolytoneRenderTypes.init();
 
         PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
 
-        //TODO: acche fog and d sky color
+        //TODO: cache fog and d sky color
     }
 
     private static void addSpecialModels(PlatStuff.SpecialModelEvent event) {

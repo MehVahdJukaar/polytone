@@ -6,7 +6,6 @@
   "mixins": [
   ],
   "client": [
-    "RegistrySyncManagerMixin",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "BlockModelDeserializerMixin",
@@ -16,6 +15,7 @@
     "FabricItemGroupEntriesAccessor",
     "FogFluidRendererMixin",
     "FogRendererMixin2",
+    "GameRendererMixin",
     "GuiGraphicsMixin",
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
@@ -24,6 +24,8 @@
     "ModelManagerAccessor",
     "ModelRendererMixin",
     "ParticleEngineAccessor",
+    "RegistrySyncManagerMixin",
+    "ShaderInstanceMixin",
     "TerrainRendererContextMixin"
   ],
   "injectors": {
