@@ -2,8 +2,10 @@ package net.mehvahdjukaar.polytone.fabric;
 
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.event.Event;
@@ -14,7 +16,6 @@ import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
-import net.fabricmc.fabric.mixin.registry.sync.SimpleRegistryMixin;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -33,6 +34,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
@@ -322,7 +324,7 @@ public class PlatStuffImpl {
 
     public static void registerColorResolver(ColorResolver colorResolver) {
         ColorResolverRegistry.register(colorResolver);
-        System.out.println("registered color resolver"+ colorResolver);
+        Polytone.LOGGER.info("registered color resolver {}", colorResolver);
 
         if (colorResolver instanceof Colormap) {
             MY_CUSTOM_RESOLVERS.add(colorResolver);
@@ -345,4 +347,19 @@ public class PlatStuffImpl {
 
         MY_CUSTOM_RESOLVERS.clear();
     }
+
+    public static final List<ShaderRecord> SHADER_REGISTRATIONS = Collections.synchronizedList(new ArrayList<>());
+
+
+    public static void registerShaders(ResourceLocation event, VertexFormat format, Consumer<ShaderInstance> shaderConsumer) {
+        SHADER_REGISTRATIONS.add(new ShaderRecord(event, format, shaderConsumer));
+
+    }
+
+    public record ShaderRecord(ResourceLocation id, VertexFormat format, Consumer<ShaderInstance> shaderConsumer) {
+        public void register(ShaderInstance shader) {
+            this.shaderConsumer.accept(shader);
+        }
+    }
+
 }
