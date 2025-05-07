@@ -122,7 +122,7 @@ public class LegacyHelper {
         return Parsed.of(t, id, prop == null || checkConditions(prop));
     }
 
-    private static boolean checkConditions( Properties prop) {
+    private static boolean checkConditions(Properties prop) {
         boolean ignored = prop.getOrDefault("polytone_ignore", false).equals(Boolean.TRUE);
         if (ignored) return false;
         List<String> requireMods = List.of(prop.getProperty("require_mods", "").split(" "));
@@ -441,7 +441,7 @@ public class LegacyHelper {
                         Optional.empty(), Optional.empty(),
                         targets);
                 converted.put(id, modifier);
-    }
+            }
         }
 
         Polytone.FLUID_MODIFIERS.addConvertedBlockProperties(converted, filteredTextures);
