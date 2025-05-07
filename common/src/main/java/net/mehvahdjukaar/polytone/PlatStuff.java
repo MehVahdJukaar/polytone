@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone;
 
+import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.color.block.BlockColor;
@@ -10,6 +11,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Holder;
@@ -56,12 +58,23 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @ExpectPlatform
+    public static void registerColorResolver(ColorResolver colormap) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static void unregisterAllCustomColorResolves() {
+        throw new AssertionError();
+    }
+
     public interface SpecialModelEvent {
         void register(ModelResourceLocation modelLocation);
 
         void register(ResourceLocation id);
     }
 
+    @Contract
     @ExpectPlatform
     public static void addSpecialModelRegistration(Consumer<SpecialModelEvent> eventListener) {
         throw new AssertionError();
@@ -258,4 +271,16 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @ExpectPlatform
+    public static BakedModel getBakedModel(ModelResourceLocation model) {
+        throw new AssertionError();
+    }
+
+
+    @ExpectPlatform
+    public static void registerShaders(ResourceLocation event, VertexFormat format,
+                                       Consumer<ShaderInstance> shaderConsumer) {
+        throw new AssertionError();
+
+    }
 }

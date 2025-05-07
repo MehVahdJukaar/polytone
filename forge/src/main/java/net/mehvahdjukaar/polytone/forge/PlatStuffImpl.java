@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.forge;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import cpw.mods.modlauncher.api.INameMappingService;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.mixins.forge.*;
@@ -19,6 +20,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
@@ -49,6 +51,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.server.ServerLifecycleHooks;
@@ -407,6 +410,21 @@ public class PlatStuffImpl {
         return Minecraft.getInstance().getModelManager().getModel(modelLocation);
     }
 
+    public static void registerShaders(ResourceLocation id, VertexFormat format, Consumer<ShaderInstance> shaderConsumer) {
+
+        Consumer<RegisterShadersEvent> eventConsumer = event -> {
+            try {
+                ShaderInstance shader = new ShaderInstance(event.getResourceProvider(), id, format);
+                event.registerShader(shader, shaderConsumer);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to parse shader: " + id, e);
+            }
+        };
+        PolytoneForge.bus.addListener(eventConsumer);
+    }
+
+    private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
+    private static final Field COLOR_RESOLVERS;
 
 
 }

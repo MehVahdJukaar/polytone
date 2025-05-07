@@ -110,10 +110,13 @@ public class Polytone {
         if (isDevEnv) {// force all mixins to load in dev
             MixinEnvironment.getCurrentEnvironment().audit();
         }
+        //ItemModelOverrideList.testTrie();
+        //GenericDirectorySpriteSource.init();
+        PolytoneRenderTypes.init();
 
         PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
 
-        //TODO: acche fog and d sky color
+        //TODO: cache fog and d sky color
     }
 
     private static void addSpecialModels(PlatStuff.SpecialModelEvent event) {
