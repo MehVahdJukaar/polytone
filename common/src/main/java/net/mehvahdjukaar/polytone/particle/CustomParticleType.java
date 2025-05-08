@@ -19,7 +19,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.item.ItemModel;
@@ -42,10 +41,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 public class CustomParticleType implements CustomParticleFactory {
 
@@ -57,6 +53,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private final @Nullable Ticker ticker;
     private final List<ParticleSoundEmitter> sounds;
     private final int tickRate;
+    private final int exclusionRadius;
     protected final List<ParticleParticleEmitter> particles = new ArrayList<>();
     @Nullable
     protected List<Dynamic<?>> lazyParticles;
@@ -85,7 +82,7 @@ public class CustomParticleType implements CustomParticleFactory {
                                int particleGroupLimit, boolean forceSpawn,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
                                @Nullable List<ParticleSoundEmitter> sounds,
-                               int tickRate, @Nullable List<Dynamic<?>> particles) {
+                               int tickRate, @Nullable List<Dynamic<?>> particles, int killSimilarInRadius) {
         this.renderType = renderType;
         this.randomSprite = randomSprite;
         this.model = model;
@@ -103,6 +100,7 @@ public class CustomParticleType implements CustomParticleFactory {
         this.offset = offset;
         this.rotationMode = rotationMode;
         this.tickRate = tickRate;
+        this.exclusionRadius = killSimilarInRadius;
         this.group = particleGroupLimit > 0 ? Optional.of(new ParticleGroup(particleGroupLimit)) : Optional.empty();
     }
 
@@ -126,7 +124,8 @@ public class CustomParticleType implements CustomParticleFactory {
             Ticker.CODEC.optionalFieldOf("ticker").forGetter(c -> Optional.ofNullable(c.ticker)),
             ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
             ExtraCodecs.POSITIVE_INT.optionalFieldOf("tick_interval", 1).forGetter(c -> c.tickRate),
-            Codec.PASSTHROUGH.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.lazyParticles)
+            Codec.PASSTHROUGH.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.lazyParticles),
+            ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("exclusion_radius", 0).forGetter(c -> c.exclusionRadius)
     ).apply(i, CustomParticleType::new));
 
     private CustomParticleType(RenderType renderType, RotationMode rotationMode,
@@ -135,11 +134,11 @@ public class CustomParticleType implements CustomParticleFactory {
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                boolean randomSprite,
                                int limit, boolean forceSpawn, Optional<ParticleInitializer> initializer,
-                               Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, int tickRate, List<Dynamic<?>> particles) {
+                               Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, int tickRate, List<Dynamic<?>> particles, int killSimilarInRadius) {
         this(renderType, rotationMode, model.orElse(null), offset,
                 light, hasPhysics, killOnContact, killWhenStill, liquidAffinity, colormap.orElse(null),
                 randomSprite, limit, forceSpawn,
-                initializer.orElse(null), ticker.orElse(null), sounds, tickRate, particles);
+                initializer.orElse(null), ticker.orElse(null), sounds, tickRate, particles, killSimilarInRadius);
     }
 
     @Override
@@ -182,6 +181,26 @@ public class CustomParticleType implements CustomParticleFactory {
                     return null;
                 }
             }
+            if (exclusionRadius > 0) {
+                //wont work with 3d ones
+                var particleRenderType = this.renderType.getParticle();
+                double radiusSquared = exclusionRadius * exclusionRadius;
+                Queue<Particle> particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
+                if(particleQueue != null) {
+                    for (var p : particleQueue) {
+                        if (p instanceof Instance inst && inst.type == this) {
+                            //calculate distance between p and newParticle
+                            double distSqrt = Math.pow(inst.x - newParticle.x, 2) +
+                                    Math.pow(inst.y - newParticle.y, 2) +
+                                    Math.pow(inst.z - newParticle.z, 2);
+                            if (distSqrt < radiusSquared) {
+                                return null;
+                            }
+                        }
+                    }
+                }
+            }
+
             return newParticle;
         } else {
             throw new IllegalStateException("Sprite set not set for custom particle type");
