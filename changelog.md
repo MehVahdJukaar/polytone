@@ -1,1 +1,1 @@
-added additive_translucent render type for custom 2d particles
+added exclusion_radius param to custom particles
