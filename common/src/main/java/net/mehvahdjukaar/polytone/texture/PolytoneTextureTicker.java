@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.SpriteContents;
@@ -51,7 +52,7 @@ public class PolytoneTextureTicker implements SpriteTicker {
     }
 
     @Override
-    public void tickAndUpload(int x, int y) {
+    public void tickAndUpload(int x, int y, GpuTexture gpuTexture) {
         Float delta = getDelta();
         if (delta == null) return;
         // Calculate the current frame based on the day cycle

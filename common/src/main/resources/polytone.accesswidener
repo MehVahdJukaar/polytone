@@ -120,8 +120,8 @@ accessible field net/minecraft/client/particle/Particle alpha F
 accessible field net/minecraft/world/effect/MobEffect color I
 mutable field net/minecraft/world/effect/MobEffect color I
 
-accessible field net/minecraft/world/entity/animal/Sheep COLOR_BY_DYE Ljava/util/Map;
-mutable field net/minecraft/world/entity/animal/Sheep COLOR_BY_DYE Ljava/util/Map;
+accessible field net/minecraft/world/entity/animal/sheep/Sheep COLOR_BY_DYE Ljava/util/Map;
+mutable field net/minecraft/world/entity/animal/sheep/Sheep COLOR_BY_DYE Ljava/util/Map;
 
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase mapColor Lnet/minecraft/world/level/material/MapColor;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase mapColor Lnet/minecraft/world/level/material/MapColor;

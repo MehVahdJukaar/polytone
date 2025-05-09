@@ -64,8 +64,8 @@ public class CustomItemModelsManager extends JsonPartialReloader {
         for (var l : this.itemModifiersModels.entrySet()) {
             var target = l.getKey();
             var overrides = l.getValue();
-            this.itemModels.computeIfAbsent(target, a -> new ItemModelOverrideList())
-                    .addAll(overrides);
+            //this.itemModels.computeIfAbsent(target, a -> new ItemModelOverrideList())
+            //        .addAll(overrides);
         }
         this.itemModifiersModels.clear();
 
@@ -95,13 +95,13 @@ public class CustomItemModelsManager extends JsonPartialReloader {
     @Override
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         for (var list : this.itemModels.values()) {
-            list.populateModels(access);
+          //  list.populateModels(access);
         }
         int allModels = 0;
         for (var list : this.itemModels.values()) {
-            allModels += list.size();
+           // allModels += list.size();
         }
-        Polytone.LOGGER.info("Loaded {} Custom Item Models for {} items", allModels, this.itemModels.size());
+      //  Polytone.LOGGER.info("Loaded {} Custom Item Models for {} items", allModels, this.itemModels.size());
     }
 
     /*
