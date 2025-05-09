@@ -15,6 +15,7 @@ import net.minecraft.util.TriState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
+/* //TODO: 1.21.5
 public class LeashTexture extends RenderType {
 
     private static final ResourceLocation LEASH_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/lead.png");
@@ -74,3 +75,4 @@ public class LeashTexture extends RenderType {
         return true;
     }
 }
+*/

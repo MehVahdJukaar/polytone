@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
@@ -64,20 +63,15 @@ public class PolytoneTextureTicker implements SpriteTicker {
         SpriteContents.FrameInfo frameInfo = frames.get(frameOrdinal);
 
         if (frameInfo.index != lastFrameIndex) {
-            this.animationInfo.uploadFrame(x, y, frameInfo.index);
+            this.animationInfo.uploadFrame(x, y, frameInfo.index, gpuTexture);
         }
         if (this.interpolationData != null) {
             var nextFrameInfo = frames.get((frameOrdinal + 1) % frames.size());
             float floorKey = currentFrame.getKey();
             float frameDelta = (delta - floorKey) / animationScaleFactor;
 
-            if (!RenderSystem.isOnRenderThread()) {
-                RenderSystem.recordRenderCall(() -> this.interpolationData.uploadInterpolatedFrame(x, y,
-                        frameInfo, nextFrameInfo, frameDelta, animationInfo));
-            } else {
-                this.interpolationData.uploadInterpolatedFrame(x, y,
-                        frameInfo, nextFrameInfo, frameDelta, animationInfo);
-            }
+            this.interpolationData.uploadInterpolatedFrame(x, y,
+                    frameInfo, nextFrameInfo, frameDelta, animationInfo, gpuTexture);
         }
         lastFrameIndex = frameInfo.index;
     }
@@ -128,9 +122,11 @@ public class PolytoneTextureTicker implements SpriteTicker {
 
         }
 
+
         void uploadInterpolatedFrame(int x, int y, SpriteContents.FrameInfo currentFrame,
                                      SpriteContents.FrameInfo nextFrame, float frameDelta,
-                                     SpriteContents.AnimatedTexture animatedTexture) {
+                                     SpriteContents.AnimatedTexture animatedTexture,
+                                     GpuTexture gpuTexture) {
             double time = currentFrame.time;
             double delta = 1.0 - (double) frameDelta / time;
             int currentFrameIndex = currentFrame.index;
@@ -151,8 +147,7 @@ public class PolytoneTextureTicker implements SpriteTicker {
                         }
                     }
                 }
-
-                spriteContents.upload(x, y, 0, 0, this.activeFrame);
+                spriteContents.upload(x, y, 0, 0, this.activeFrame, gpuTexture);
             }
         }
 

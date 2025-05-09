@@ -1,14 +1,11 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.profiling.Profiler;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,7 +26,7 @@ public abstract class LightTextureMixin {
     @Shadow
     private boolean updateLightTexture;
 
-    @Shadow @Final private TextureTarget target;
+    @Shadow public abstract GpuTexture getTarget();
 
     //needs to be same as alexcaves
     @Inject(
@@ -42,7 +39,7 @@ public abstract class LightTextureMixin {
             ClientLevel clientlevel = this.minecraft.level;
             if (clientlevel != null) {
                 Profiler.get().push("lightTex");
-                if (Polytone.LIGHTMAPS.maybeModifyLightTexture((LightTexture) (Object) this, target,
+                if (Polytone.LIGHTMAPS.maybeModifyLightTexture((LightTexture) (Object) this, getTarget(),
                         minecraft, clientlevel, blockLightRedFlicker, partialTicks)) {
                     this.updateLightTexture = false;
                     ci.cancel();
@@ -55,11 +52,15 @@ public abstract class LightTextureMixin {
     @Inject(method = "turnOnLightLayer", at = @At(value = "HEAD"), cancellable = true)
     public void polytone$useGuiLightmap(CallbackInfo ci) {
         if (Polytone.LIGHTMAPS.isGui()) {
+            //TODO 1.21.5:
+            /*
             RenderSystem.setShaderTexture(2, LightmapsManager.GUI_LIGHTMAP);
             RenderSystem.bindTextureForSetup(Minecraft.getInstance().getTextureManager().getTexture(LightmapsManager.GUI_LIGHTMAP).getId());
             RenderSystem.texParameter(3553, 10241, 9729);
             RenderSystem.texParameter(3553, 10240, 9729);
             ci.cancel();
+
+             */
         }
 
     }

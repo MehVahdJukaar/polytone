@@ -4,6 +4,7 @@ import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -102,11 +103,12 @@ public class Lightmap {
         this.forceUpload = true;
     }
 
+    //TODO:this needs to go into a shader
     public void applyToLightTexture(LightTexture instance,
-                                    TextureTarget lightmap,
+                                    GpuTexture lightmap,
                                     Minecraft minecraft, ClientLevel level,
                                     float flicker, float partialTicks) {
-
+/*
         // this makes a copy
         boolean needsUpload = false;
         if(forceUpload){
@@ -135,7 +137,8 @@ public class Lightmap {
         }
 
         float darknessEffect = options.darknessEffectScale().get().floatValue();
-        float darknessGamma = instance.getDarknessGamma(partialTicks) * darknessEffect;
+
+        float darknessGamma = player.getEffectBlendFactor(MobEffects.DARKNESS, partialTicks) * darknessEffect;
         float darknessSubtract = instance.calculateDarknessScale(player, darknessGamma, partialTicks) * darknessEffect;
 
         float gamma = (options.gamma().get()).floatValue();
@@ -273,6 +276,7 @@ public class Lightmap {
             RenderSystem.bindTextureForSetup(lightmap.getColorTextureId());
             GlStateManager._texSubImage2D(3553, 0, 0, 0, 16, 16, NativeImage.Format.RGBA.glFormat(), 5121, lightmapPixels);
         }
+ */
     }
 
     public static void resetTextureUploadState() {

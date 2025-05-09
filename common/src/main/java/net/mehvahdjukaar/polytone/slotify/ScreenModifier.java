@@ -53,7 +53,7 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
     }
 
     public void renderExtrs(GuiGraphics poseStack, int mouseX, int mouseY, float partialTicks) {
-        RenderSystem.enableDepthTest();
+        //RenderSystem.enableDepthTest(); //TODO: 1.21.5 check
         this.extraRenderables.forEach(r -> r.render(poseStack, mouseX, mouseY, partialTicks));
     }
 }

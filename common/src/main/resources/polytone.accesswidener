@@ -82,10 +82,10 @@ accessible class net/minecraft/client/renderer/texture/SpriteContents$FrameInfo
 accessible field net/minecraft/client/renderer/texture/SpriteContents byMipLevel [Lcom/mojang/blaze3d/platform/NativeImage;
 accessible field net/minecraft/client/renderer/texture/SpriteContents$FrameInfo index I
 accessible field net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture frames Ljava/util/List;
-accessible method net/minecraft/client/renderer/texture/SpriteContents upload (IIII[Lcom/mojang/blaze3d/platform/NativeImage;)V
+accessible method net/minecraft/client/renderer/texture/SpriteContents upload (IIII[Lcom/mojang/blaze3d/platform/NativeImage;Lcom/mojang/blaze3d/textures/GpuTexture;)V
 accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameX (I)I
 accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameY (I)I
-accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture uploadFrame (III)V
+accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture uploadFrame (IIILcom/mojang/blaze3d/textures/GpuTexture;)V
 accessible field net/minecraft/client/renderer/texture/SpriteContents$FrameInfo time I
 
 accessible field net/minecraft/client/particle/Particle stoppedByCollision Z

@@ -235,15 +235,4 @@ public class GuiModifierManager extends JsonPartialReloader {
         }
     }
 
-    public boolean maybeChangeColor(AbstractContainerScreen<?> screen, @NotNull Slot slot, GuiGraphics graphics,
-                                    int x, int y, int offset) {
-        var mod = getSlotModifier(screen, slot);
-        if (mod != null && mod.hasCustomColor()) {
-            mod.renderCustomHighlight(graphics, x, y, offset);
-            return false;
-        }
-        return true;
-    }
-
-
 }
