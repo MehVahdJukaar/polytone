@@ -1,3 +1,7 @@
-- tooltips will now always be appended at the end rather than at the beginning
-- added destroy_particle_emitters to block modifiers
-- fixed particles 3d models not working
+- due to the huge demand here's an early version of 1.21.5 polytone
+- due to astronomically huge internal render changes caused by this "minor" 1.21.5 mc version the following features are missing
+- anything that touches models (custom item models, 3d particles, fabric separate transform model, biome variant models, auto tinting for incorrectly setup optifine packs, json models offsets)
+- light texture stuff (lightmap)
+- gui modifiers might be broken
+- leash texture
+- anything related to textures/models/render types and rendering in general might be broken

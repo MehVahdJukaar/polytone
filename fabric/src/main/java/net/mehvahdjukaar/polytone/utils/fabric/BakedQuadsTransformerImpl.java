@@ -87,13 +87,13 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
 
     @Override
     public BakedQuad transform(BakedQuad quad) {
-        int[] v = Arrays.copyOf(quad.getVertices(), quad.getVertices().length);
+        int[] v = Arrays.copyOf(quad.vertices(), quad.vertices().length);
 
-        int tint = this.tintIndex == null ? quad.getTintIndex() : this.tintIndex;
-        boolean shade = this.shade == null ? quad.isShade() : this.shade;
-        TextureAtlasSprite sprite = this.sprite == null ? quad.getSprite() : this.sprite;
-        lastSpriteHack = quad.getSprite();
-        BakedQuad newQuad = new BakedQuad(v, tint, directionRemap.apply(quad.getDirection()), sprite, shade, Math.max(quad.getLightEmission(), emissivity));
+        int tint = this.tintIndex == null ? quad.tintIndex() : this.tintIndex;
+        boolean shade = this.shade == null ? quad.shade() : this.shade;
+        TextureAtlasSprite sprite = this.sprite == null ? quad.sprite() : this.sprite;
+        lastSpriteHack = quad.sprite();
+        BakedQuad newQuad = new BakedQuad(v, tint, directionRemap.apply(quad.direction()), sprite, shade, Math.max(quad.lightEmission(), emissivity));
         inner.accept(newQuad);
         lastSpriteHack = null;
         if (emissivity != null) {
@@ -110,7 +110,7 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
         return q -> {
             TextureAtlasSprite oldSprite = lastSpriteHack;
             int stride = getStride();
-            int[] v = q.getVertices();
+            int[] v = q.vertices();
             float segmentWScale = sprite.contents().width() / (float) oldSprite.contents().width();
             float segmentHScale = sprite.contents().height() / (float) oldSprite.contents().height();
 
@@ -130,7 +130,7 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
 
     private static Consumer<BakedQuad> applyingColorInplace(IntUnaryOperator indexToABGR) {
         return quad -> {
-            int[] v = quad.getVertices();
+            int[] v = quad.vertices();
             int stride = getStride();
             for (int i = 0; i < 4; i++) {
                 int i1 = indexToABGR.applyAsInt(i);
@@ -141,7 +141,7 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
 
     private static Consumer<BakedQuad> applyingLightmapInplace(int packedLight) {
         return quad -> {
-            var vertices = quad.getVertices();
+            var vertices = quad.vertices();
             for (int i = 0; i < 4; i++)
                 vertices[i * getStride() + UV2] = packedLight;
         };
@@ -149,7 +149,7 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
 
     private static Consumer<BakedQuad> applyingTransformInplace(Matrix4f transform) {
         return quad -> {
-            var v = quad.getVertices();
+            var v = quad.vertices();
             int stride = getStride();
             for (int i = 0; i < 4; i++) {
                 int offset = i * stride + POSITION;

@@ -107,7 +107,7 @@ subprojects {
             project {
                 id = project_id
                 changelog = changelogText
-                releaseType = 'release'
+                releaseType = rootProject.release_type
                 for(v in versions) {
                     addGameVersion v
                 }
