@@ -87,15 +87,15 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
 
     @Override
     public BakedQuad transform(BakedQuad quad) {
-        int[] v = Arrays.copyOf(quad.getVertices(), quad.getVertices().length);
+        int[] v = Arrays.copyOf(quad.vertices(), quad.vertices().length);
 
-        int tint = this.tintIndex == null ? quad.getTintIndex() : this.tintIndex;
-        boolean shade = this.shade == null ? quad.isShade() : this.shade;
-        boolean ambientOcclusion = this.ambientOcclusion == null ? quad.isShade() : this.shade;
-        lastSpriteHack = quad.getSprite();
-        TextureAtlasSprite sprite = this.sprite == null ? quad.getSprite() : this.sprite;
-        BakedQuad newQuad = new BakedQuad(v, tint, directionRemap.apply(quad.getDirection()), sprite, shade,
-                quad.getLightEmission(),
+        int tint = this.tintIndex == null ? quad.tintIndex : this.tintIndex;
+        boolean shade = this.shade == null ? quad.shade() : this.shade;
+        boolean ambientOcclusion = this.ambientOcclusion == null ? quad.shade() : this.shade;
+        lastSpriteHack = quad.sprite();
+        TextureAtlasSprite sprite = this.sprite == null ? quad.sprite() : this.sprite;
+        BakedQuad newQuad = new BakedQuad(v, tint, directionRemap.apply(quad.direction()), sprite, shade,
+                quad.lightEmission(),
                 ambientOcclusion);
         inner.processInPlace(newQuad);
         lastSpriteHack = null;
@@ -107,7 +107,7 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
         return q -> {
             TextureAtlasSprite oldSprite = lastSpriteHack;
             int stride = IQuadTransformer.STRIDE;
-            int[] v = q.getVertices();
+            int[] v = q.vertices();
             float segmentWScale = sprite.contents().width() / (float) oldSprite.contents().width();
             float segmentHScale = sprite.contents().height() / (float) oldSprite.contents().height();
 
@@ -127,7 +127,7 @@ public class BakedQuadsTransformerImpl implements BakedQuadsTransformer {
 
     private static IQuadTransformer applyingColorInplace(IntUnaryOperator indexToABGR) {
         return quad -> {
-            int[] v = quad.getVertices();
+            int[] v = quad.vertices();
             int stride = IQuadTransformer.STRIDE;
             for (int i = 0; i < 4; i++) {
                 int i1 = indexToABGR.applyAsInt(i);

@@ -162,9 +162,9 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
     @Override
     public BakedQuadBuilder fromVanilla(BakedQuad q) {
-        int[] v = Arrays.copyOf(q.getVertices(), q.getVertices().length);
-        output = new BakedQuad(v, q.getTintIndex(), q.getDirection(), q.getSprite(), q.isShade(),
-                q.getLightEmission(),
+        int[] v = Arrays.copyOf(q.vertices(), q.vertices().length);
+        output = new BakedQuad(v, q.tintIndex(), q.direction(), q.sprite(), q.shade(),
+                q.lightEmission(),
                 q.hasAmbientOcclusion());
         return this;
     }

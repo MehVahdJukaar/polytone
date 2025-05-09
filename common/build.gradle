@@ -15,7 +15,7 @@ dependencies {
     implementation "net.objecthunter:exp4j:${exp4j_version}"
 
     modCompileOnly("curse.maven:irisshaders-455508:6369436")
-    modCompileOnly("curse.maven:sodium-394468:6348518")
+    modCompileOnly("curse.maven:sodium-394468:6382664")
 
 
 }
