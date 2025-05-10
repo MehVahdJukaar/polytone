@@ -5,8 +5,6 @@ import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleProvider;

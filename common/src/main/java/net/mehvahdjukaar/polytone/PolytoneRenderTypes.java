@@ -9,7 +9,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.ShaderProgram;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import org.lwjgl.opengl.GL13;
@@ -18,7 +18,7 @@ import static com.mojang.blaze3d.vertex.DefaultVertexFormat.PARTICLE;
 
 public class PolytoneRenderTypes extends RenderType {
 
-    static ShaderInstance instance;
+    static ShaderProgram instance;
 
     public static void init() {
         PlatStuff.registerShaders(Polytone.res("particle_translucent"), DefaultVertexFormat.POSITION_TEX,
@@ -26,6 +26,7 @@ public class PolytoneRenderTypes extends RenderType {
     }
 
     public static final ParticleRenderType PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE = new ParticleRenderType() {
+
 
         @Override
         public BufferBuilder begin(Tesselator builder, TextureManager textureManager) {
