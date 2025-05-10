@@ -1,1 +1,1 @@
-added exclusion_radius param to custom particles
+added state_predicate to particle emitters

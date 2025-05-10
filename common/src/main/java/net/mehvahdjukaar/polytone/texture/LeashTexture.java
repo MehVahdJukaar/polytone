@@ -20,7 +20,8 @@ public class LeashTexture extends RenderType {
 
     private static final RenderType RENDER_TYPE = RenderType.create("polytone_leash",
             DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP,
-            VertexFormat.Mode.TRIANGLE_STRIP, 1536, RenderType.CompositeState.builder()
+            VertexFormat.Mode.TRIANGLE_STRIP, 1536,
+            RenderType.CompositeState.builder()
                     .setShaderState(RENDERTYPE_TEXT_SHADER)
                     .setTextureState(new RenderStateShard.TextureStateShard(LEASH_TEXTURE, false, false))
                     .setCullState(NO_CULL)
