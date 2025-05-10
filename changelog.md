@@ -5,4 +5,4 @@
 - gui modifiers might be broken
 - leash texture
 - anything related to textures/models/render types and rendering in general might be broken
-- fabric only as who is version chasing on neoforge am I right?
+- fabric only as who is version chasing on neoforge am I right? (i have the version ready just don't want to support yet anothe one)
