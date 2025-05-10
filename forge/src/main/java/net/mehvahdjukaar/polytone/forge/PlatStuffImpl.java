@@ -36,6 +36,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -43,7 +44,9 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.DimensionSpecialEffectsManager;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.common.CreativeModeTabRegistry;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.world.ModifiableBiomeInfo;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoader;
@@ -51,7 +54,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.server.ServerLifecycleHooks;
@@ -420,11 +422,11 @@ public class PlatStuffImpl {
                 throw new RuntimeException("Failed to parse shader: " + id, e);
             }
         };
-        PolytoneForge.bus.addListener(eventConsumer);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(eventConsumer);
     }
 
-    private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
-    private static final Field COLOR_RESOLVERS;
+   // private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
+   // private static final Field COLOR_RESOLVERS;
 
 
 }
