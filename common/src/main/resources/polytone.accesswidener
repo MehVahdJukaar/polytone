@@ -131,7 +131,6 @@ mutable field net/minecraft/world/entity/animal/Sheep COLOR_BY_DYE Ljava/util/Ma
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase mapColor Lnet/minecraft/world/level/material/MapColor;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase mapColor Lnet/minecraft/world/level/material/MapColor;
 
-accessible method net/minecraft/client/renderer/LightTexture getDarknessGamma (F)F
 accessible method net/minecraft/client/renderer/LightTexture calculateDarknessScale (Lnet/minecraft/world/entity/LivingEntity;FF)F
 accessible method net/minecraft/client/renderer/LightTexture notGamma (F)F
 
@@ -143,7 +142,6 @@ accessible field net/minecraft/client/resources/model/ModelBakery ITEM_MODEL_GEN
 
 
 
-accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;ILnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
 
 accessible field net/minecraft/ChatFormatting color Ljava/lang/Integer;
 mutable field net/minecraft/ChatFormatting color Ljava/lang/Integer;

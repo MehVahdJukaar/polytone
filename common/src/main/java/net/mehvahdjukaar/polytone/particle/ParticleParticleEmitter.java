@@ -12,6 +12,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 
 import java.util.Optional;
 
@@ -25,6 +27,7 @@ public record ParticleParticleEmitter(
         ParticleContextExpression dx,
         ParticleContextExpression dy,
         ParticleContextExpression dz,
+        RuleTest predicate,
         Optional<HolderSet<Biome>> biomes
 ) implements ParticleTickable {
 
@@ -43,6 +46,7 @@ public record ParticleParticleEmitter(
             ParticleContextExpression.CODEC.optionalFieldOf("dx", ParticleContextExpression.ZERO).forGetter(ParticleParticleEmitter::dx),
             ParticleContextExpression.CODEC.optionalFieldOf("dy", ParticleContextExpression.ZERO).forGetter(ParticleParticleEmitter::dy),
             ParticleContextExpression.CODEC.optionalFieldOf("dz", ParticleContextExpression.ZERO).forGetter(ParticleParticleEmitter::dz),
+            RuleTest.CODEC.optionalFieldOf("state_predicate", AlwaysTrueTest.INSTANCE).forGetter(ParticleParticleEmitter::predicate),
             RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleParticleEmitter::biomes)
     ).apply(i, ParticleParticleEmitter::new));
 
@@ -54,6 +58,10 @@ public record ParticleParticleEmitter(
             if (biomes.isPresent()) {
                 var biome = level.getBiome(BlockPos.containing(particle.x, particle.y, particle.z));
                 if (!biomes.get().contains(biome)) return;
+            }
+            if(predicate != AlwaysTrueTest.INSTANCE){
+                var blockAt = level.getBlockState(BlockPos.containing(particle.x, particle.y, particle.z));
+                if (!predicate.test(blockAt, level.random)) return;
             }
             for (int i = 0; i < count.getValue(particle, level); i++) {
 
