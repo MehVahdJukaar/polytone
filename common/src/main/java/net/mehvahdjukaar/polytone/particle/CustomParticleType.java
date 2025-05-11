@@ -186,9 +186,9 @@ public class CustomParticleType implements CustomParticleFactory {
                 var particleRenderType = this.renderType.getParticle();
                 double radiusSquared = exclusionRadius * exclusionRadius;
                 Queue<Particle> particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
-                if(particleQueue != null) {
+                if (particleQueue != null) {
                     for (var p : particleQueue) {
-                        if (p instanceof Instance inst && inst.type == this) {
+                        if (p instanceof Instance inst && inst.type == this && inst.hasAgeLeft()) {
                             //calculate distance between p and newParticle
                             double distSqrt = Math.pow(inst.x - newParticle.x, 2) +
                                     Math.pow(inst.y - newParticle.y, 2) +
@@ -338,6 +338,10 @@ public class CustomParticleType implements CustomParticleFactory {
                 return LightTexture.pack(block, sky);
             }
             return total;
+        }
+
+        public boolean hasAgeLeft() {
+            return this.age < this.lifetime;
         }
 
         @Override

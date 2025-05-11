@@ -59,7 +59,7 @@ public record ParticleParticleEmitter(
                 var biome = level.getBiome(BlockPos.containing(particle.x, particle.y, particle.z));
                 if (!biomes.get().contains(biome)) return;
             }
-            if(predicate != AlwaysTrueTest.INSTANCE){
+            if (predicate != AlwaysTrueTest.INSTANCE) {
                 var blockAt = level.getBlockState(BlockPos.containing(particle.x, particle.y, particle.z));
                 if (!predicate.test(blockAt, level.random)) return;
             }
