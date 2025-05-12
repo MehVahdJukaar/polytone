@@ -1,1 +1,1 @@
-added state_predicate to particle emitters
+exclusion radius wont consider particles that are about to die
