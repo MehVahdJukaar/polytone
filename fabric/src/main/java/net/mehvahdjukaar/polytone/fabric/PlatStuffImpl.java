@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.event.Event;
@@ -31,10 +30,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
@@ -362,14 +358,17 @@ public class PlatStuffImpl {
     public static final List<ShaderRecord> SHADER_REGISTRATIONS = Collections.synchronizedList(new ArrayList<>());
 
 
-    public static void registerShaders(ResourceLocation event, VertexFormat format, Consumer<ShaderInstance> shaderConsumer) {
-        SHADER_REGISTRATIONS.add(new ShaderRecord(event, format, shaderConsumer));
+    public static void registerShaders(ResourceLocation event, VertexFormat format, ShaderDefines defines, Consumer<ShaderProgram> shaderConsumer) {
+        SHADER_REGISTRATIONS.add(new ShaderRecord(event, format, defines, shaderConsumer));
 
     }
 
-    public record ShaderRecord(ResourceLocation id, VertexFormat format, Consumer<ShaderInstance> shaderConsumer) {
-        public void register(ShaderInstance shader) {
-            this.shaderConsumer.accept(shader);
+    public record ShaderRecord(ResourceLocation id, VertexFormat format, ShaderDefines defines,
+                               Consumer<ShaderProgram> shaderConsumer) {
+        public ShaderProgram create() {
+            ShaderProgram program = new ShaderProgram(id, format, defines);
+            shaderConsumer.accept(program);
+            return program;
         }
     }
 

@@ -249,7 +249,7 @@ public class CustomParticleType implements CustomParticleFactory {
             this.xd = xSpeed;
             this.yd = ySpeed;
             this.zd = zSpeed;
-            this.model = null;// customType.model == null ? null : PlatStuff.getBakedModel(customType.model);
+            this.model = null;// customType.model == null ? null : PlatStuff.getBakedModel(customType.model); //TODO
             ParticleInitializer initializer = customType.initializer;
             BlockPos pos = BlockPos.containing(x, y, z);
             if (initializer != null) {
