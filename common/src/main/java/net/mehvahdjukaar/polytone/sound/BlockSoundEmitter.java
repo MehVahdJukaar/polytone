@@ -15,6 +15,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CandleBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
@@ -68,10 +70,8 @@ public record BlockSoundEmitter(
                     x.getValue(level, pos, state),
                     y.getValue(level, pos, state),
                     z.getValue(level, pos, state));
-
             float v = (float) volume.getValue(level, pos, state);
             float p = (float) pitch.getValue(level, pos, state);
-
             level.playLocalSound( vec.x, vec.y, vec.z,
                     sound, category, v, p, false);
         }

@@ -117,6 +117,8 @@ accessible field net/minecraft/client/particle/Particle gCol F
 accessible field net/minecraft/client/particle/Particle bCol F
 accessible field net/minecraft/client/particle/Particle alpha F
 
+accessible method net/minecraft/client/renderer/LightTexture getDarknessGamma (F)F
+
 accessible field net/minecraft/world/effect/MobEffect color I
 mutable field net/minecraft/world/effect/MobEffect color I
 
@@ -129,7 +131,7 @@ mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBas
 accessible method net/minecraft/client/renderer/LightTexture calculateDarknessScale (Lnet/minecraft/world/entity/LivingEntity;FF)F
 
 accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;IZZLnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
-
+accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;ILnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
 #ok
 
 

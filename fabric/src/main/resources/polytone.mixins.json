@@ -26,7 +26,6 @@
     "ModelManagerAccessor",
     "ParticleEngineAccessor",
     "RegistrySyncManagerMixin",
-    "ShaderInstanceMixin",
     "TerrainRendererContextMixin"
   ],
   "injectors": {
