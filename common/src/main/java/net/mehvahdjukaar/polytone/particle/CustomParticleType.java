@@ -188,19 +188,25 @@ public class CustomParticleType implements CustomParticleFactory {
                 Queue<Particle> particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
                 if (particleQueue != null) {
                     for (var p : particleQueue) {
-                        if (p instanceof Instance inst && inst.type == this && inst.hasAgeLeft()) {
+                        if (p instanceof Instance inst && inst.type == this) {
                             //calculate distance between p and newParticle
                             double distSqrt = Math.pow(inst.x - newParticle.x, 2) +
                                     Math.pow(inst.y - newParticle.y, 2) +
                                     Math.pow(inst.z - newParticle.z, 2);
+
                             if (distSqrt < radiusSquared) {
-                                return null;
+                                if (inst.hasAgeLeft()) {
+                                    //If it is still alive, we should not spawn a new one in the same place.
+                                    return null;
+                                } else {
+                                    //It's dead, but still present — remove it to make room for the new one
+                                    inst.remove();
+                                }
                             }
                         }
                     }
                 }
             }
-
             return newParticle;
         } else {
             throw new IllegalStateException("Sprite set not set for custom particle type");
