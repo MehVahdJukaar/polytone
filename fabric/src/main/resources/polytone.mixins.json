@@ -18,7 +18,7 @@
     "FabricItemGroupEntriesAccessor",
     "FogFluidRendererMixin",
     "FogRendererMixin2",
-    "GameRendererMixin",
+    "CoreShadersMixin",
     "GuiGraphicsMixin",
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",

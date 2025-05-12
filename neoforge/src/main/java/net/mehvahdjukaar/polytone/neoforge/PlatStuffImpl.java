@@ -15,10 +15,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
@@ -46,7 +43,6 @@ import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
@@ -316,12 +312,15 @@ public class PlatStuffImpl {
         }
     }
 
-    public static void registerShaders(ResourceLocation id, VertexFormat format, Consumer<ShaderInstance> shaderConsumer) {
+    public static void registerShaders(ResourceLocation id, VertexFormat format,
+                                       ShaderDefines defines,
+                                       Consumer<ShaderProgram> shaderConsumer) {
 
         Consumer<RegisterShadersEvent> eventConsumer = event -> {
             try {
-                ShaderInstance shader = new ShaderInstance(event.getResourceProvider(), id, format);
-                event.registerShader(shader, shaderConsumer);
+                ShaderProgram shader = new ShaderProgram(id, format, defines);
+                event.registerShader(shader);
+                shaderConsumer.accept(shader);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to parse shader: " + id, e);
             }

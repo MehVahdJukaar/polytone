@@ -10,7 +10,8 @@ import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.ShaderDefines;
+import net.minecraft.client.renderer.ShaderProgram;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Holder;
@@ -23,7 +24,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -229,8 +229,8 @@ public class PlatStuff {
 
 
     @ExpectPlatform
-    public static void registerShaders(ResourceLocation event, VertexFormat format,
-                                       Consumer<ShaderInstance> shaderConsumer) {
+    public static void registerShaders(ResourceLocation event, VertexFormat format, ShaderDefines defines,
+                                       Consumer<ShaderProgram> shaderConsumer) {
         throw new AssertionError();
 
     }
