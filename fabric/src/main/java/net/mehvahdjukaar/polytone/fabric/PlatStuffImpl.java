@@ -354,22 +354,4 @@ public class PlatStuffImpl {
 
         MY_CUSTOM_RESOLVERS.clear();
     }
-
-    public static final List<ShaderRecord> SHADER_REGISTRATIONS = Collections.synchronizedList(new ArrayList<>());
-
-
-    public static void registerShaders(ResourceLocation event, VertexFormat format, ShaderDefines defines, Consumer<ShaderProgram> shaderConsumer) {
-        SHADER_REGISTRATIONS.add(new ShaderRecord(event, format, defines, shaderConsumer));
-
-    }
-
-    public record ShaderRecord(ResourceLocation id, VertexFormat format, ShaderDefines defines,
-                               Consumer<ShaderProgram> shaderConsumer) {
-        public ShaderProgram create() {
-            ShaderProgram program = new ShaderProgram(id, format, defines);
-            shaderConsumer.accept(program);
-            return program;
-        }
-    }
-
 }

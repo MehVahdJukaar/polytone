@@ -18,7 +18,6 @@
     "FabricItemGroupEntriesAccessor",
     "FogFluidRendererMixin",
     "FogRendererMixin2",
-    "CoreShadersMixin",
     "GuiGraphicsMixin",
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
@@ -26,7 +25,6 @@
     "ModelManagerAccessor",
     "ParticleEngineAccessor",
     "RegistrySyncManagerMixin",
-    "ShaderInstanceMixin",
     "TerrainRendererContextMixin"
   ],
   "injectors": {

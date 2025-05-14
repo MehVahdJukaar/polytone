@@ -7,7 +7,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.caffeinemc.mods.sodium.mixin.features.render.frapi.BakedModelMixin;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
@@ -186,21 +186,29 @@ public class CustomParticleType implements CustomParticleFactory {
                 var particleRenderType = this.renderType.getParticle();
                 double radiusSquared = exclusionRadius * exclusionRadius;
                 Queue<Particle> particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
-                if(particleQueue != null) {
+
+                if (particleQueue != null) {
                     for (var p : particleQueue) {
                         if (p instanceof Instance inst && inst.type == this) {
                             //calculate distance between p and newParticle
                             double distSqrt = Math.pow(inst.x - newParticle.x, 2) +
                                     Math.pow(inst.y - newParticle.y, 2) +
                                     Math.pow(inst.z - newParticle.z, 2);
+
+
                             if (distSqrt < radiusSquared) {
-                                return null;
+                                if (inst.hasAgeLeft()) {
+                                    //If it is still alive, we should not spawn a new one in the same place.
+                                    return null;
+                                } else {
+                                    //It's dead, but still present — remove it to make room for the new one
+                                    inst.remove();
+                                }
                             }
                         }
                     }
                 }
             }
-
             return newParticle;
         } else {
             throw new IllegalStateException("Sprite set not set for custom particle type");
@@ -355,6 +363,10 @@ public class CustomParticleType implements CustomParticleFactory {
             return total;
         }
 
+        public boolean hasAgeLeft() {
+            return this.age < this.lifetime;
+        }
+
         @Override
         public void remove() {
             super.remove();
@@ -474,8 +486,8 @@ public class CustomParticleType implements CustomParticleFactory {
             return switch (this) {
                 case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
                 case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
-                case LIT -> ParticleRenderType.TERRAIN_SHEET;
-                case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE;
+                case LIT -> ParticleRenderType.TERRAIN_SHEET; // TODO: Lit is gone in 1.21.2
+                case ADDITIVE_TRANSLUCENT -> Polytone.ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE;
                 case INVISIBLE -> ParticleRenderType.NO_RENDER;
                 default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
             };
