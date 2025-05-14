@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.fabric;
 
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
@@ -14,7 +15,6 @@ import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
-import net.fabricmc.fabric.mixin.registry.sync.SimpleRegistryMixin;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -30,9 +30,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
@@ -300,7 +298,7 @@ public class PlatStuffImpl {
         var first = reg.get(model);
         if (first != null) return first;
         return reg.getOrDefault(new ModelResourceLocation(model.id(), "inventory"), mm.getMissingModel());
-       
+
          */
         return null;
     }
@@ -333,7 +331,7 @@ public class PlatStuffImpl {
 
     public static void registerColorResolver(ColorResolver colorResolver) {
         ColorResolverRegistry.register(colorResolver);
-        System.out.println("registered color resolver"+ colorResolver);
+        Polytone.LOGGER.info("registered color resolver {}", colorResolver);
 
         if (colorResolver instanceof Colormap) {
             MY_CUSTOM_RESOLVERS.add(colorResolver);
@@ -356,4 +354,22 @@ public class PlatStuffImpl {
 
         MY_CUSTOM_RESOLVERS.clear();
     }
+
+    public static final List<ShaderRecord> SHADER_REGISTRATIONS = Collections.synchronizedList(new ArrayList<>());
+
+
+    public static void registerShaders(ResourceLocation event, VertexFormat format, ShaderDefines defines, Consumer<ShaderProgram> shaderConsumer) {
+        SHADER_REGISTRATIONS.add(new ShaderRecord(event, format, defines, shaderConsumer));
+
+    }
+
+    public record ShaderRecord(ResourceLocation id, VertexFormat format, ShaderDefines defines,
+                               Consumer<ShaderProgram> shaderConsumer) {
+        public ShaderProgram create() {
+            ShaderProgram program = new ShaderProgram(id, format, defines);
+            shaderConsumer.accept(program);
+            return program;
+        }
+    }
+
 }

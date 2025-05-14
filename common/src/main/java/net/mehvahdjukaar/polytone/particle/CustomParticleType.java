@@ -186,6 +186,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 var particleRenderType = this.renderType.getParticle();
                 double radiusSquared = exclusionRadius * exclusionRadius;
                 Queue<Particle> particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
+
                 if (particleQueue != null) {
                     for (var p : particleQueue) {
                         if (p instanceof Instance inst && inst.type == this) {
@@ -193,6 +194,7 @@ public class CustomParticleType implements CustomParticleFactory {
                             double distSqrt = Math.pow(inst.x - newParticle.x, 2) +
                                     Math.pow(inst.y - newParticle.y, 2) +
                                     Math.pow(inst.z - newParticle.z, 2);
+
 
                             if (distSqrt < radiusSquared) {
                                 if (inst.hasAgeLeft()) {
@@ -255,7 +257,7 @@ public class CustomParticleType implements CustomParticleFactory {
             this.xd = xSpeed;
             this.yd = ySpeed;
             this.zd = zSpeed;
-            this.model = null;// customType.model == null ? null : PlatStuff.getBakedModel(customType.model);
+            this.model = null;// customType.model == null ? null : PlatStuff.getBakedModel(customType.model); //TODO
             ParticleInitializer initializer = customType.initializer;
             BlockPos pos = BlockPos.containing(x, y, z);
             if (initializer != null) {

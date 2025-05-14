@@ -3,15 +3,20 @@ package net.mehvahdjukaar.polytone;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderDefines;
+import net.minecraft.client.renderer.ShaderProgram;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
@@ -23,8 +28,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
@@ -64,7 +67,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static void unregisterAllCustomColorResolves(){
+    public static void unregisterAllCustomColorResolves() {
         throw new AssertionError();
     }
 
@@ -72,6 +75,7 @@ public class PlatStuff {
         void register(ResourceLocation id);
     }
 
+    @Contract
     @ExpectPlatform
     public static void addSpecialModelRegistration(Consumer<SpecialModelEvent> eventListener) {
         throw new AssertionError();
@@ -187,7 +191,7 @@ public class PlatStuff {
         unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
         ((MappedRegistry) reg).frozen = true;
 
-        if(reg.containsKey(id)){
+        if (reg.containsKey(id)) {
             int aaa = 1;
         }
 
@@ -225,12 +229,5 @@ public class PlatStuff {
     @ExpectPlatform
     public static BlockStateModel getBakedModel(ResourceLocation model) {
         throw new AssertionError();
-    }
-
-    @ExpectPlatform
-    public static void registerPipeline(ResourceLocation event, VertexFormat format,
-                                       Consumer<RenderPipeline> pipelineConsumer) {
-        throw new AssertionError();
-
     }
 }

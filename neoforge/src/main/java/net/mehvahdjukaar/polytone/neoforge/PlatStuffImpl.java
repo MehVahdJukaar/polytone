@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.neoforge;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.neoforge.*;
@@ -14,9 +15,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.RegistryAccess;
@@ -44,6 +43,7 @@ import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
+import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -310,6 +310,22 @@ public class PlatStuffImpl {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void registerShaders(ResourceLocation id, VertexFormat format,
+                                       ShaderDefines defines,
+                                       Consumer<ShaderProgram> shaderConsumer) {
+
+        Consumer<RegisterShadersEvent> eventConsumer = event -> {
+            try {
+                ShaderProgram shader = new ShaderProgram(id, format, defines);
+                event.registerShader(shader);
+                shaderConsumer.accept(shader);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to parse shader: " + id, e);
+            }
+        };
+        PolytoneForge.bus.addListener(eventConsumer);
     }
 
     private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
