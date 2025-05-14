@@ -15,11 +15,16 @@ import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
+import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
 import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.server.MinecraftServer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PolytoneFabric implements ClientModInitializer {
 
@@ -75,6 +80,10 @@ public class PolytoneFabric implements ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             Polytone.onLogOut();
         });
+
+        List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());
+        renderOrder.add(Polytone.ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE);
+        ParticleEngineAccessor.setRENDER_ORDER(renderOrder);
     }
 
 

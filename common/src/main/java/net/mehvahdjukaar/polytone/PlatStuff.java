@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
@@ -223,5 +225,12 @@ public class PlatStuff {
     @ExpectPlatform
     public static BlockStateModel getBakedModel(ResourceLocation model) {
         throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static void registerPipeline(ResourceLocation event, VertexFormat format,
+                                       Consumer<RenderPipeline> pipelineConsumer) {
+        throw new AssertionError();
+
     }
 }
