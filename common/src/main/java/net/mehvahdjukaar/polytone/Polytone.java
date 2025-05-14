@@ -162,7 +162,6 @@ public class Polytone {
 
         //ItemModelOverrideList.testTrie();
         //GenericDirectorySpriteSource.init();
-        PolytoneRenderTypes.init();
 
         PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
 

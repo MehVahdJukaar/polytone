@@ -30,3 +30,4 @@ public interface ParticleEngineAccessor {
     static List<ParticleRenderType> getRENDER_ORDER() {
         throw new UnsupportedOperationException();
     }
+}
