@@ -26,8 +26,6 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleGroup;
-import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
@@ -160,13 +158,12 @@ public class CustomParticleType implements CustomParticleFactory {
     }
 
     @Override
-    public Particle createParticle(SimpleParticleType type, ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
+    public Particle createParticle(ExtraDataParticleOptions opt, ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                                    @Nullable BlockState state) {
         if (spriteSet != null) {
             // some people might want this
 
-            Instance newParticle = new Instance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this,
-                    BuiltInRegistries.PARTICLE_TYPE.getKey(type));
+            Instance newParticle = new Instance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this);
 
             if (this.hasPhysics) {
                 for (VoxelShape voxelShape : world.getBlockCollisions(null, newParticle.getBoundingBox())) {
@@ -182,7 +179,6 @@ public class CustomParticleType implements CustomParticleFactory {
                 }
             }
             if (exclusionRadius > 0) {
-                //wont work with 3d ones
                 var particleRenderType = this.renderType.getParticle();
                 double radiusSquared = exclusionRadius * exclusionRadius;
                 Queue<Particle> particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
@@ -190,11 +186,18 @@ public class CustomParticleType implements CustomParticleFactory {
                     for (var p : particleQueue) {
                         if (p instanceof Instance inst && inst.type == this && inst.hasAgeLeft()) {
                             //calculate distance between p and newParticle
-                            double distSqrt = Math.pow(inst.x - newParticle.x, 2) +
-                                    Math.pow(inst.y - newParticle.y, 2) +
-                                    Math.pow(inst.z - newParticle.z, 2);
+                            double distSqrt = Mth.lengthSquared(
+                                    inst.x - newParticle.x,
+                                    inst.y - newParticle.y,
+                                    inst.z - newParticle.z);
                             if (distSqrt < radiusSquared) {
-                                return null;
+                                if (inst.hasAgeLeft()) {
+                                    //If it is still alive, we should not spawn a new one in the same place.
+                                    return null;
+                                } else {
+                                    //It's dead, but still present — remove it to make room for the new one
+                                    inst.remove();
+                                }
                             }
                         }
                     }
@@ -226,13 +229,10 @@ public class CustomParticleType implements CustomParticleFactory {
         protected float oQuadSize;
         protected double custom;
 
-        private ResourceLocation name;
-
         protected Instance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                           @Nullable BlockState state, CustomParticleType customType, ResourceLocation typeId) {
+                           @Nullable BlockState state, CustomParticleType customType) {
             super(level, x, y, z, xSpeed, ySpeed, zSpeed);
             this.setSize(0.1f, 0.1f);
-            this.name = typeId;
             this.type = customType;
 
             this.tickables = new ArrayList<>();
@@ -276,6 +276,9 @@ public class CustomParticleType implements CustomParticleFactory {
             }
         }
 
+        private boolean hasAgeLeft() {
+            return this.age < this.lifetime;
+        }
 
         public double getCustom() {
             return custom;
@@ -450,7 +453,7 @@ public class CustomParticleType implements CustomParticleFactory {
         public net.minecraft.client.renderer.RenderType getBlock() {
             return switch (this) {
                 case TERRAIN -> net.minecraft.client.renderer.RenderType.solid();
-                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
+                case TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT;
                 case LIT -> net.minecraft.client.renderer.RenderType.cutout();
                 case ADDITIVE_TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
                 case INVISIBLE -> net.minecraft.client.renderer.RenderType.cutout();
@@ -463,7 +466,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
                 case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
                 case LIT -> ParticleRenderType.PARTICLE_SHEET_LIT;
-                case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE;
+                case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE.get();
                 case INVISIBLE -> ParticleRenderType.NO_RENDER;
                 default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
             };
