@@ -75,10 +75,6 @@ public class PolytoneFabric implements ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             Polytone.onLogOut();
         });
-
-        List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());
-        renderOrder.add(Polytone.ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE);
-        ParticleEngineAccessor.setRENDER_ORDER(renderOrder);
     }
 
 
