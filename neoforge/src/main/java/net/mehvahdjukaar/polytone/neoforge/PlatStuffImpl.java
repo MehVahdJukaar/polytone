@@ -43,7 +43,6 @@ import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
-import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -314,7 +313,7 @@ public class PlatStuffImpl {
 
     public static void registerShaders(ResourceLocation id, VertexFormat format,
                                        ShaderDefines defines,
-                                       Consumer<ShaderProgram> shaderConsumer) {
+                                       Consumer<> shaderConsumer) {
 
         Consumer<RegisterShadersEvent> eventConsumer = event -> {
             try {

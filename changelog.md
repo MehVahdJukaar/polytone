@@ -1,8 +1,1 @@
-- due to the huge demand here's an early version of 1.21.5 polytone
-- due to astronomically huge internal render changes caused by this "minor" 1.21.5 mc version the following features are missing
-- anything that touches models (custom item models, 3d particles, fabric separate transform model, biome variant models, auto tinting for incorrectly setup optifine packs, json models offsets)
-- light texture stuff (lightmap)
-- gui modifiers might be broken
-- leash texture
-- anything related to textures/models/render types and rendering in general might be broken
-- fabric only as who is version chasing on neoforge am I right? (i have the version ready just don't want to support yet anothe one)
+- ported some changes from 1.21
