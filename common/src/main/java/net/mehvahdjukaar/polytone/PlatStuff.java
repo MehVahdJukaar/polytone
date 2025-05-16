@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone;
 
 import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -76,7 +77,10 @@ public class PlatStuff {
     public static void addSpecialModelRegistration(Consumer<SpecialModelEvent> eventListener) {
         throw new AssertionError();
     }
-
+    @ExpectPlatform
+    public static void doAddModels() {
+        throw new AssertionError();
+    }
     @Contract
     @ExpectPlatform
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
@@ -213,7 +217,7 @@ public class PlatStuff {
 
 
     @ExpectPlatform
-    public static SimpleParticleType makeParticleType(boolean forceSpawn) {
+    public static ParticleType<ExtraDataParticleOptions> makeParticleType(boolean forceSpawn) {
         throw new AssertionError();
     }
 

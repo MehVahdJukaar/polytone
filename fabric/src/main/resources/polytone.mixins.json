@@ -23,7 +23,6 @@
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
     "ModelBlockRendererMixin",
-    "ModelManagerAccessor",
     "ParticleEngineAccessor",
     "RegistrySyncManagerMixin",
     "TerrainRendererContextMixin"

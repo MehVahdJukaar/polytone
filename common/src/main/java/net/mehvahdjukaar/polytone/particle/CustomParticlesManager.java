@@ -146,7 +146,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
         for (var c : customParticleFactories.getEntries()) {
             var factory = c.getValue();
             var id = c.getKey();
-            SimpleParticleType type = PlatStuff.makeParticleType(factory.forceSpawns());
+            ParticleType<ExtraDataParticleOptions> type = PlatStuff.makeParticleType(factory.forceSpawns());
             PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
             particleEngine.register(type, factory);
         }

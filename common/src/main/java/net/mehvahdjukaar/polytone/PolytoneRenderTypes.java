@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone;
 
+import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -15,6 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.TriState;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class PolytoneRenderTypes extends RenderType {
 
@@ -25,7 +27,7 @@ public class PolytoneRenderTypes extends RenderType {
     }
 
     public static void init() {
-        PlatStuff.registerShaders(Polytone.res("particle_translucent"), DefaultVertexFormat.POSITION_TEX,
+        PlatStuff.registerShaders(Polytone.res("core/particle_translucent"), DefaultVertexFormat.POSITION_TEX,
                 ShaderDefines.EMPTY, s -> instance = s);
     }
 
@@ -44,11 +46,23 @@ public class PolytoneRenderTypes extends RenderType {
             }
     );
 
-    private static final Function<ResourceLocation, RenderType> ADDITIVE_TRANSLUCENCY = Util.memoize((resourceLocation) -> {
+    public static final RenderType ADDITIVE_TRANSLUCENT =
+                create("polytone_additive_translucent",
+                        DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS,
+                        786432, true, true,
+                        RenderType.CompositeState.builder()
+                                .setLightmapState(LIGHTMAP)
+                                .setShaderState(RENDERTYPE_TRANSLUCENT_SHADER)
+                                .setTextureState(BLOCK_SHEET_MIPPED)
+                                .setTransparencyState(ADDITIVE_TRANSLUCENT_TRANSPARENCY)
+                                .setOutputState(TRANSLUCENT_TARGET).createCompositeState(true));
+
+
+    private static final Function<ResourceLocation, RenderType> ADDITIVE_TRANSLUCENT_PARTICLE = Util.memoize((resourceLocation) -> {
         return create("polytone_additive_translucent_particle", DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS,
                 1536, false, false,
                 RenderType.CompositeState.builder()
-                        .setShaderState(PARTICLE_SHADER)
+                        .setShaderState(new ShaderStateShard(instance))
                         .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.FALSE, false))
                         .setTransparencyState(ADDITIVE_TRANSLUCENT_TRANSPARENCY)
                         .setOutputState(PARTICLES_TARGET)
@@ -57,9 +71,10 @@ public class PolytoneRenderTypes extends RenderType {
                         .createCompositeState(false));
     });
 
-    public static final ParticleRenderType PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE =
-            new ParticleRenderType("PARTICLE_SHEET_ADDITIVE_TRANSLUCENT",
-                    ADDITIVE_TRANSLUCENCY.apply(TextureAtlas.LOCATION_PARTICLES));
+    public static final Supplier<ParticleRenderType> PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE = Suppliers.memoize(() -> {
+      return   new ParticleRenderType("PARTICLE_SHEET_ADDITIVE_TRANSLUCENT",
+                ADDITIVE_TRANSLUCENT_PARTICLE.apply(TextureAtlas.LOCATION_PARTICLES));
+    });
 
 };
 

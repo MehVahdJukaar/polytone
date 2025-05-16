@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.mixins.fabric;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.mehvahdjukaar.polytone.fabric.PlatStuffImpl;
 import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.client.renderer.ShaderProgram;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,6 +25,8 @@ public abstract class CoreShadersMixin {
             }
         });
         PlatStuffImpl.SHADER_REGISTRATIONS.clear();
+
+       PlatStuffImpl. addRenderParticlesType();
 
         return newList;
     }

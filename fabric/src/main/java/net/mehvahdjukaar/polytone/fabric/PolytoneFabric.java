@@ -77,10 +77,6 @@ public class PolytoneFabric implements ClientModInitializer {
             Polytone.onLogOut();
         });
 
-
-        List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());
-        renderOrder.add(PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE);
-        ParticleEngineAccessor.setRENDER_ORDER(renderOrder);
     }
 
 
