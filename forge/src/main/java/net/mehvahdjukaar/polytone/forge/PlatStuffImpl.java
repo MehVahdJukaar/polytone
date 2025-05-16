@@ -5,8 +5,10 @@ import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import cpw.mods.modlauncher.api.INameMappingService;
+import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.mixins.forge.*;
+import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
@@ -25,9 +27,10 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -61,6 +64,7 @@ import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -87,8 +91,22 @@ public class PlatStuffImpl {
         ((ParticleEngineAccessor) particleEngine).getProviders().remove(id);
     }
 
-    public static SimpleParticleType makeParticleType(boolean forceSpawn) {
-        return new SimpleParticleType(forceSpawn);
+    public static ParticleType<ExtraDataParticleOptions> makeParticleType(boolean forceSpawn) {
+        AtomicReference<ParticleType<ExtraDataParticleOptions>> ref = new AtomicReference<>();
+        ParticleType<ExtraDataParticleOptions> instance = new ParticleType<>(forceSpawn) {
+
+            @Override
+            public MapCodec<ExtraDataParticleOptions> codec() {
+                return ExtraDataParticleOptions.codec(ref::get);
+            }
+
+            @Override
+            public StreamCodec<? super RegistryFriendlyByteBuf, ExtraDataParticleOptions> streamCodec() {
+                return ExtraDataParticleOptions.streamCodec(ref::get);
+            }
+        };
+        ref.set(instance);
+        return instance;
     }
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
@@ -423,6 +441,9 @@ public class PlatStuffImpl {
             }
         };
         FMLJavaModLoadingContext.get().getModEventBus().addListener(eventConsumer);
+    }
+
+    public static void doAddModels() {
     }
 
    // private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();

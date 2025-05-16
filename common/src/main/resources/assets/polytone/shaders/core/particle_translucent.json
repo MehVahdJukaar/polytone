@@ -4,8 +4,8 @@
         "srcrgb": "srcalpha",
         "dstrgb": "1-srcalpha"
     },
-    "vertex": "particle",
-    "fragment": "polytone:particle_translucent",
+    "vertex": "minecraft:core/particle",
+    "fragment": "polytone:core/particle_translucent",
     "attributes": [
         "Position",
         "UV0",

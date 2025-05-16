@@ -19,8 +19,10 @@ import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
+import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.utils.Targets;
@@ -32,6 +34,7 @@ import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -71,6 +74,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -266,8 +270,13 @@ public class PlatStuffImpl {
                 .getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getId(type), provider);
     }
 
-    public static SimpleParticleType makeParticleType(boolean forceSpawn) {
-        return FabricParticleTypes.simple(forceSpawn);
+    public static ParticleType<ExtraDataParticleOptions> makeParticleType(boolean forceSpawn) {
+        AtomicReference<ParticleType<ExtraDataParticleOptions>> ref = new AtomicReference<>();
+        var instance = FabricParticleTypes.complex(forceSpawn,
+                ExtraDataParticleOptions.codec(ref::get),
+                ExtraDataParticleOptions.streamCodec(ref::get));
+        ref.set(instance);
+        return instance;
     }
 
     public static void unregisterParticleProvider(ResourceLocation id) {
@@ -311,20 +320,34 @@ public class PlatStuffImpl {
         return PolytoneFabric.currentServer.registryAccess();
     }
 
+    public static BakedModel getBakedModel(ModelResourceLocation model) {
+        var mm = Minecraft.getInstance().getModelManager();
+        return mm.getModel(model.id());
+    }
+
+    private static ModelLoadingPlugin.Context hack;
+    private static Consumer<PlatStuff.SpecialModelEvent> hack2;
 
     public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
+        hack2 = eventListener;
         ModelLoadingPlugin.register(pluginContext -> {
-            eventListener.accept(new PlatStuff.SpecialModelEvent() {
-                @Override
-                public void register(ModelResourceLocation modelLocation) {
-                    pluginContext.addModels(modelLocation);
+            hack = pluginContext;
+        });
+
+    }
+
+
+    public static void doAddModels(){
+        hack2.accept(new PlatStuff.SpecialModelEvent() {
+            @Override
+            public void register(ModelResourceLocation modelLocation) {
+                hack.addModels(modelLocation);
                 }
 
                 @Override
                 public void register(ResourceLocation id) {
                     pluginContext.addModels(id);
-                }
-            });
+            }
         });
     }
 
@@ -385,4 +408,10 @@ public class PlatStuffImpl {
         }
     }
 
+    public static void addRenderParticlesType() {
+        List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());
+        renderOrder.add(PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE.get());
+        ParticleEngineAccessor.setRENDER_ORDER(renderOrder);
+
+    }
 }

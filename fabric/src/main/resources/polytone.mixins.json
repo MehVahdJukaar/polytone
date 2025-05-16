@@ -23,6 +23,7 @@
     "ModelHackMixin",
     "ModelManagerAccessor",
     "ModelRendererMixin",
+    "ModelBlockRendererMixin",
     "ParticleEngineAccessor",
     "RegistrySyncManagerMixin",
     "ShaderInstanceMixin",

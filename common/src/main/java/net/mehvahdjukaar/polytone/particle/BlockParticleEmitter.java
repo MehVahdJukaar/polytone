@@ -6,10 +6,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
+import net.mehvahdjukaar.polytone.utils.BiggerCodecs;
+import net.minecraft.core.*;
 import net.minecraft.core.particles.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -23,11 +21,13 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 public record BlockParticleEmitter(
-        ParticleType<?> particleType,
+        Holder<ParticleType<?>> particleType,
         BlockContextExpression chance,
         BlockContextExpression count,
         BlockContextExpression x,
@@ -36,13 +36,20 @@ public record BlockParticleEmitter(
         BlockContextExpression dx,
         BlockContextExpression dy,
         BlockContextExpression dz,
+        Optional<BlockContextExpression> r,
+        Optional<BlockContextExpression> g,
+        Optional<BlockContextExpression> b,
+        Optional<BlockContextExpression> a,
+        Optional<BlockContextExpression> roll,
+        Optional<BlockContextExpression> size,
+        Optional<BlockContextExpression> custom,
         RuleTest predicate,
         Optional<HolderSet<Biome>> biomes,
         SpawnLocation spawnLocation
 ) implements BlockClientTickable {
 
-    public static final Codec<BlockParticleEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("particle").forGetter(BlockParticleEmitter::particleType),
+    public static final Codec<BlockParticleEmitter> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
+            BuiltInRegistries.PARTICLE_TYPE.holderByNameCodec().fieldOf("particle").forGetter(BlockParticleEmitter::particleType),
             StrOpt.of(BlockContextExpression.CODEC,"chance", BlockContextExpression.ONE).forGetter(BlockParticleEmitter::chance),
             StrOpt.of(BlockContextExpression.CODEC, "count", BlockContextExpression.ONE).forGetter(BlockParticleEmitter::count),
             StrOpt.of(BlockContextExpression.CODEC,"x", BlockContextExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::x),
@@ -51,6 +58,13 @@ public record BlockParticleEmitter(
             StrOpt.of(BlockContextExpression.CODEC,"dx", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dx),
             StrOpt.of(BlockContextExpression.CODEC,"dy", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dy),
             StrOpt.of(BlockContextExpression.CODEC,"dz", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dz),
+            BlockContextExpression.CODEC.optionalFieldOf("red").forGetter(BlockParticleEmitter::r),
+            BlockContextExpression.CODEC.optionalFieldOf("green").forGetter(BlockParticleEmitter::g),
+            BlockContextExpression.CODEC.optionalFieldOf("blue").forGetter(BlockParticleEmitter::b),
+            BlockContextExpression.CODEC.optionalFieldOf("alpha").forGetter(BlockParticleEmitter::a),
+            BlockContextExpression.CODEC.optionalFieldOf("roll").forGetter(BlockParticleEmitter::roll),
+            BlockContextExpression.CODEC.optionalFieldOf("size").forGetter(BlockParticleEmitter::size),
+            BlockContextExpression.CODEC.optionalFieldOf("custom").forGetter(BlockParticleEmitter::custom),
             RuleTest.CODEC.optionalFieldOf("state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
             RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
             StrOpt.of(SpawnLocation.CODEC,"spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation)
@@ -69,7 +83,7 @@ public record BlockParticleEmitter(
             for (int i = 0; i < count.getValue(level, pos, state); i++) {
                 CustomParticleType.setStateHack(state);
 
-                ParticleOptions po = getParticleOptions(state);
+                ParticleOptions po = getParticleOptions(level, pos, state);
                 if (po == null) return;
                 level.addParticle(po,
                         pos.getX() + x.getValue(level, pos, state),
@@ -83,17 +97,31 @@ public record BlockParticleEmitter(
         }
     }
 
-    private @Nullable ParticleOptions getParticleOptions(BlockState state) {
+    private @Nullable ParticleOptions getParticleOptions(Level level, BlockPos pos, BlockState state) {
         ParticleOptions po;
 
-        if (particleType instanceof SimpleParticleType st) {
+        var particleTypeValue = particleType.value();
+
+        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.unwrapKey().get().location())) {
+            Map<String, Float> map = new HashMap<>();
+            r.ifPresent(exp -> map.put("red", (float) exp.getValue(level, pos, state)));
+            g.ifPresent(exp -> map.put("green", (float) exp.getValue(level, pos, state)));
+            b.ifPresent(exp -> map.put("blue", (float) exp.getValue(level, pos, state)));
+            a.ifPresent(exp -> map.put("alpha", (float) exp.getValue(level, pos, state)));
+            roll.ifPresent(exp -> map.put("roll", (float) exp.getValue(level, pos, state)));
+            size.ifPresent(exp -> map.put("size", (float) exp.getValue(level, pos, state)));
+            custom.ifPresent(exp -> map.put("custom", (float) exp.getValue(level, pos, state)));
+            return new ExtraDataParticleOptions(map, (ParticleType<ExtraDataParticleOptions>) particleTypeValue);
+        }
+
+        if (particleTypeValue instanceof SimpleParticleType st) {
             po = st;
-        } else if (particleType == ParticleTypes.BLOCK || particleType == ParticleTypes.FALLING_DUST || particleType == ParticleTypes.BLOCK_MARKER) {
-            po = new BlockParticleOption((ParticleType<BlockParticleOption>) particleType, state);
-        } else if (particleType == ParticleTypes.ITEM) {
-            po = new ItemParticleOption((ParticleType<ItemParticleOption>) particleType, state.getBlock().asItem().getDefaultInstance());
+        } else if (particleTypeValue == ParticleTypes.BLOCK || particleTypeValue == ParticleTypes.FALLING_DUST || particleTypeValue == ParticleTypes.BLOCK_MARKER || particleTypeValue == ParticleTypes.DUST_PILLAR) {
+            po = new BlockParticleOption((ParticleType<BlockParticleOption>) particleTypeValue, state);
+        } else if (particleTypeValue == ParticleTypes.ITEM) {
+            po = new ItemParticleOption((ParticleType<ItemParticleOption>) particleTypeValue, state.getBlock().asItem().getDefaultInstance());
         } else {
-            Polytone.LOGGER.error("Unsupported particle type: {}", particleType);
+            Polytone.LOGGER.error("Unsupported particle type: {}", particleTypeValue);
             return null;
         }
         return po;
