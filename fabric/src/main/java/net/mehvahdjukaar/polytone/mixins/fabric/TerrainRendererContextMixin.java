@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(TerrainRenderContext.class)
 public class TerrainRendererContextMixin {
 
-    @WrapOperation(method = "tessellateBlock",
+    @WrapOperation(method = "bufferModel",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getOffset(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/Vec3;"))
     private Vec3 polytone$modifyVisualOffset(BlockState state, BlockPos pos, Operation<Vec3> original) {
         Vec3 m = Polytone.BLOCK_MODIFIERS.maybeModifyOffset(state, pos);
