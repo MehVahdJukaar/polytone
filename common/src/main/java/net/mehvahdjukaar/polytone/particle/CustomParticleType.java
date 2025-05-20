@@ -157,7 +157,7 @@ public class CustomParticleType implements CustomParticleFactory {
             // some people might want this
 
             Instance newParticle = new Instance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this);
-
+            opt.apply(newParticle);
             if (this.hasPhysics) {
                 for (VoxelShape voxelShape : world.getBlockCollisions(null, newParticle.getBoundingBox())) {
                     if (!voxelShape.isEmpty()) {
