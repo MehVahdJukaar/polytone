@@ -1,16 +1,18 @@
 package net.mehvahdjukaar.polytone;
 
 import com.google.common.base.Suppliers;
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.SourceFactor;
+import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.Util;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderDefines;
-import net.minecraft.client.renderer.ShaderProgram;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.TriState;
@@ -20,16 +22,61 @@ import java.util.function.Supplier;
 
 public class PolytoneRenderTypes extends RenderType {
 
-    static ShaderProgram instance;
-
-    public PolytoneRenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
-        super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
-    }
-
     public static void init() {
         PlatStuff.registerShaders(Polytone.res("core/particle_translucent"), DefaultVertexFormat.POSITION_TEX,
                 ShaderDefines.EMPTY, s -> instance = s);
     }
+
+    public static final MaterialMapper PARTICLES_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_PARTICLES, "particle");
+
+    public static final RenderPipeline ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE = RenderPipelines.register(
+            RenderPipeline.builder()
+                    /* Resource Locations */
+                    .withLocation(Polytone.res("pipeline/additive_particle"))
+                    .withVertexShader(ResourceLocation.fromNamespaceAndPath("minecraft", "core/particle"))
+                    .withFragmentShader(Polytone.res("core/particle_translucent"))
+                    .withVertexFormat(DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS)
+                    /* Vertex Uniforms */
+                    .withUniform("ModelViewMat", UniformType.MATRIX4X4)
+                    .withUniform("ProjMat", UniformType.MATRIX4X4)
+                    .withUniform("FogShape", UniformType.INT)
+                    /* Fragment Uniforms */
+                    .withSampler("Sampler0")
+                    .withSampler("Sampler2")
+                    .withUniform("ColorModulator", UniformType.VEC4)
+                    .withUniform("FogStart", UniformType.FLOAT)
+                    .withUniform("FogEnd", UniformType.FLOAT)
+                    .withUniform("FogColor", UniformType.VEC4)
+                    /* Blending Functions */
+                    .withDepthWrite(false)
+                    .withCull(true)
+                    .withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE))
+                    .build()
+    );
+
+    public static final RenderType ADDITIVE_TRANSLUCENT_RENDERTYPE = RenderType.create(
+            MOD_ID + ":additive_particle",
+            4 * 1024 * 1024,
+            false,
+            true,
+            ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE,
+            RenderType.CompositeState.builder()
+                    .setTextureState(
+                            new RenderStateShard.TextureStateShard(
+                                    PARTICLES_MAPPER.sheet(),
+                                    TriState.FALSE,
+                                    false
+                            )
+                    )
+                    .setLightmapState(RenderStateShard.LIGHTMAP)
+                    .createCompositeState(RenderType.OutlineProperty.NONE)
+    );
+
+    public static final ParticleRenderType ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE = new ParticleRenderType(
+            "ADDITIVE_PARTICLE", ADDITIVE_TRANSLUCENT_RENDERTYPE
+    );
+
+
 
     protected static final TransparencyStateShard ADDITIVE_TRANSLUCENT_TRANSPARENCY = new TransparencyStateShard(
             "polytone_additive_transparency",
