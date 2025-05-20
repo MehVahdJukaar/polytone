@@ -17,7 +17,7 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 public record ExtraDataParticleOptions(Map<String, Float> extraData,
-                                       ParticleType<ExtraDataParticleOptions> type) implements ParticleOptions {
+                                       ParticleType<?> type) implements ParticleOptions {
     public static MapCodec<ExtraDataParticleOptions> codec(Supplier<ParticleType<ExtraDataParticleOptions>> typeGetter) {
         return Codec.unboundedMap(Codec.STRING, Codec.FLOAT)
                 .fieldOf("extra_data")
@@ -38,7 +38,7 @@ public record ExtraDataParticleOptions(Map<String, Float> extraData,
     }
 
     @Override
-    public ParticleType<ExtraDataParticleOptions> getType() {
+    public ParticleType<?> getType() {
         return type;
     }
 
