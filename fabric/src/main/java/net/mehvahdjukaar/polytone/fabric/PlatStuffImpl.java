@@ -2,9 +2,10 @@ package net.mehvahdjukaar.polytone.fabric;
 
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.client.model.loading.v1.ExtraModelKey;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.event.Event;
@@ -30,7 +31,9 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
@@ -53,7 +56,10 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -292,35 +298,31 @@ public class PlatStuffImpl {
 
     public static BlockStateModel getBakedModel(ResourceLocation model) {
         var mm = Minecraft.getInstance().getModelManager();
+        return mm.getModel(ExtraModelKey.create(model::toString));
+    }
 
-        /*
-        Map<ModelResourceLocation, BakedModel> reg = ((ModelManagerAccessor) mm).getBakedRegistry();
-        var first = reg.get(model);
-        if (first != null) return first;
-        return reg.getOrDefault(new ModelResourceLocation(model.id(), "inventory"), mm.getMissingModel());
+    private static ModelLoadingPlugin.Context hack;
+    private static Consumer<PlatStuff.SpecialModelEvent> hack2;
 
-         */
-        return null;
+    public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
+        hack2 = eventListener;
+        ModelLoadingPlugin.register(pluginContext -> {
+            hack = pluginContext;
+        });
+
     }
 
 
-    public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
-       /*
-        ModelLoadingPlugin.register(pluginContext -> {
-            eventListener.accept(new PlatStuff.SpecialModelEvent() {
-
-                @Override
-                public void register(ResourceLocation id) {
-                    pluginContext.modifyBlockModelBeforeBake(id);
-                }
-
-                @Override
-                public void register(ModelResourceLocation id) {
-                    pluginContext.addModels(id.id());
-                }
-            });
-        });*/
-        //TODO: 1.21.5
+    public static void doAddModels() {
+        hack2.accept(new PlatStuff.SpecialModelEvent() {
+            @Override
+            public void register(ResourceLocation id) {
+                hack.addModel(ExtraModelKey.create(id::toString),
+                        new SimpleUnbakedExtraModel<>(id, (o, o2) -> {
+                            throw new UnsupportedOperationException("Not implemented yet");
+                        }));
+            }
+        });
     }
 
     public static String getVersion() {
@@ -354,4 +356,5 @@ public class PlatStuffImpl {
 
         MY_CUSTOM_RESOLVERS.clear();
     }
+
 }

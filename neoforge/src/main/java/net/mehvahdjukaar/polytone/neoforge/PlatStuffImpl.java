@@ -329,22 +329,6 @@ public class PlatStuffImpl {
         }
     }
 
-    public static void registerShaders(ResourceLocation id, VertexFormat format,
-                                       ShaderDefines defines,
-                                       Consumer<> shaderConsumer) {
-
-        Consumer<RegisterShadersEvent> eventConsumer = event -> {
-            try {
-                ShaderProgram shader = new ShaderProgram(id, format, defines);
-                event.registerShader(shader);
-                shaderConsumer.accept(shader);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to parse shader: " + id, e);
-            }
-        };
-        PolytoneForge.bus.addListener(eventConsumer);
-    }
-
     public static void doAddModels() {
     }
 

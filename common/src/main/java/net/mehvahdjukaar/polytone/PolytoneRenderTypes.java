@@ -4,7 +4,6 @@ import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DestFactor;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.SourceFactor;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -20,11 +19,9 @@ import net.minecraft.util.TriState;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class PolytoneRenderTypes extends RenderType {
+public class PolytoneRenderTypes   {
 
     public static void init() {
-        PlatStuff.registerShaders(Polytone.res("core/particle_translucent"), DefaultVertexFormat.POSITION_TEX,
-                ShaderDefines.EMPTY, s -> instance = s);
     }
 
     public static final MaterialMapper PARTICLES_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_PARTICLES, "particle");
@@ -55,7 +52,7 @@ public class PolytoneRenderTypes extends RenderType {
     );
 
     public static final RenderType ADDITIVE_TRANSLUCENT_RENDERTYPE = RenderType.create(
-            MOD_ID + ":additive_particle",
+            Polytone.MOD_ID + ":additive_particle",
             4 * 1024 * 1024,
             false,
             true,
