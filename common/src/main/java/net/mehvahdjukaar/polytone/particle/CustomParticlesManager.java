@@ -2,8 +2,6 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
@@ -17,10 +15,8 @@ import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -120,13 +116,13 @@ public class CustomParticlesManager extends JsonPartialReloader {
                 }
 
                 if (BuiltInRegistries.PARTICLE_TYPE.get(id).isPresent()) {
-                    ParticleType oldType = BuiltInRegistries.PARTICLE_TYPE.get(id).get().value();
+                    ParticleType<?> oldType = BuiltInRegistries.PARTICLE_TYPE.get(id).get().value();
                     Polytone.LOGGER.info("Overriding particle with id {}", id);
                     var oldFactory = PlatStuff.getParticleProvider(oldType);
                     overwrittenVanillaProviders.put(oldType, oldFactory);
                     //override vanilla particle
                     try {
-                        particleEngine.register(oldType, factory);
+                        particleEngine.register(oldType, new OverridingParticleFactory<>(factory));
                     } catch (Exception e) {
                         Polytone.LOGGER.error("Can't override existing particle with ID {}. Particle type not supported", id, e);
                     }

@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.utils;
 
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -255,7 +256,6 @@ public class ExpressionUtils {
     public static String removeHex(String s) {
         // Create a Matcher object
         Matcher matcher = HEX_PATTERN.matcher(s);
-
         // StringBuffer to build the modified expression
         StringBuilder sb = new StringBuilder();
 
