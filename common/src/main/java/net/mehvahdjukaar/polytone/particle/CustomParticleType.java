@@ -184,7 +184,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 Queue<Particle> particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
                 if (particleQueue != null) {
                     for (var p : particleQueue) {
-                        if (p instanceof Instance inst && inst.type == this && inst.hasAgeLeft()) {
+                        if (p instanceof Instance inst && inst.type == this) {
                             //calculate distance between p and newParticle
                             double distSqrt = Mth.lengthSquared(
                                     inst.x - newParticle.x,
@@ -203,7 +203,6 @@ public class CustomParticleType implements CustomParticleFactory {
                     }
                 }
             }
-
             return newParticle;
         } else {
             throw new IllegalStateException("Sprite set not set for custom particle type");
