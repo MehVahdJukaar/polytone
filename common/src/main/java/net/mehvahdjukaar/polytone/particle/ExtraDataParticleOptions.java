@@ -20,7 +20,7 @@ public record ExtraDataParticleOptions(Map<String, Float> extraData,
                                        ParticleType<?> type) implements ParticleOptions {
     public static MapCodec<ExtraDataParticleOptions> codec(Supplier<ParticleType<ExtraDataParticleOptions>> typeGetter) {
         return Codec.unboundedMap(Codec.STRING, Codec.FLOAT)
-                .fieldOf("extra_data")
+                .optionalFieldOf("extra_data", Map.of())
                 .xmap(stringFloatMap -> new ExtraDataParticleOptions(stringFloatMap, typeGetter.get()), ExtraDataParticleOptions::extraData);
 
     }
