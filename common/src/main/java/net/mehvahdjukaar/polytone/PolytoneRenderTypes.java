@@ -18,7 +18,7 @@ import net.minecraft.util.TriState;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
-
+//OLD+NEw. TODO: merge
 public class PolytoneRenderTypes   {
 
     public static void init() {

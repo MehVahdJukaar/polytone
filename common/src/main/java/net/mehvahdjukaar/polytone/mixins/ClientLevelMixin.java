@@ -5,13 +5,14 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.CubicSampler;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,8 +21,6 @@ import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-
-import java.util.function.Supplier;
 
 @Mixin(ClientLevel.class)
 public abstract class ClientLevelMixin extends Level {
@@ -35,7 +34,7 @@ public abstract class ClientLevelMixin extends Level {
     public void polytone$extraParticles(Block instance, BlockState state, Level level, BlockPos pos, RandomSource random,
                                         Operation<Void> original) {
         boolean cancels = Polytone.BLOCK_MODIFIERS.maybeEmitParticle(instance, state, level, pos);
-        if(!cancels) {
+        if (!cancels) {
             original.call(instance, state, level, pos, random);
         }
     }

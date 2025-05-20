@@ -8,6 +8,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.caffeinemc.mods.sodium.mixin.features.render.frapi.BakedModelMixin;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
@@ -359,10 +360,6 @@ public class CustomParticleType implements CustomParticleFactory {
             return total;
         }
 
-        public boolean hasAgeLeft() {
-            return this.age < this.lifetime;
-        }
-
         @Override
         public void remove() {
             super.remove();
@@ -470,9 +467,9 @@ public class CustomParticleType implements CustomParticleFactory {
         public net.minecraft.client.renderer.RenderType getBlock() {
             return switch (this) {
                 case TERRAIN -> net.minecraft.client.renderer.RenderType.solid();
-                case TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT;
+                case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT;
                 case LIT -> net.minecraft.client.renderer.RenderType.cutout();
-                case ADDITIVE_TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
+                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
                 case INVISIBLE -> net.minecraft.client.renderer.RenderType.cutout();
                 default -> net.minecraft.client.renderer.RenderType.cutoutMipped();
             };
