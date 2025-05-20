@@ -108,7 +108,7 @@ public record ParticleParticleEmitter(
             roll.ifPresent(exp -> map.put("roll", (float) exp.getValue(particle, level)));
             size.ifPresent(exp -> map.put("size", (float) exp.getValue(particle, level)));
             custom.ifPresent(exp -> map.put("custom", (float) exp.getValue(particle, level)));
-            return new ExtraDataParticleOptions(map, (ParticleType<ExtraDataParticleOptions>) particleTypeValue);
+            return new ExtraDataParticleOptions(map, particleTypeValue);
         }
 
         if (particleTypeValue instanceof SimpleParticleType st) {

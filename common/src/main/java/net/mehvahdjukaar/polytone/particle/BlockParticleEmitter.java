@@ -84,10 +84,11 @@ public record BlockParticleEmitter(
 
                 ParticleOptions po = getParticleOptions(level, pos, state);
                 if (po == null) return;
+                var pp = spawnLocation.getLocation(pos, state, level.random);
                 level.addAlwaysVisibleParticle(po,
-                        pos.getX() + x.getValue(level, pos, state),
-                        pos.getY() + y.getValue(level, pos, state),
-                        pos.getZ() + z.getValue(level, pos, state),
+                        pp.x() + x.getValue(level, pos, state),
+                        pp.y() + y.getValue(level, pos, state),
+                        pp.z() + z.getValue(level, pos, state),
                         dx.getValue(level, pos, state),
                         dy.getValue(level, pos, state),
                         dz.getValue(level, pos, state)
