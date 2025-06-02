@@ -31,6 +31,22 @@ public class ExpressionUtils {
         }
     };
 
+    private static final Function RAND_INT = new Function("rand_int", 0) {
+        @Override
+        public double apply(double... args) {
+            RANDOM_SOURCE.setSeed(LAST_SEED.get());
+            return RANDOM_SOURCE.nextInt();
+        }
+    };
+
+    private static final Function RAND_LONG = new Function("rand_long", 0) {
+        @Override
+        public double apply(double... args) {
+            RANDOM_SOURCE.setSeed(LAST_SEED.get());
+            return RANDOM_SOURCE.nextInt();
+        }
+    };
+
     private static final Function GAUSSIAN = new Function("gaussian", 0) {
         @Override
         public double apply(double... args) {
@@ -201,7 +217,7 @@ public class ExpressionUtils {
         List<Function> list = new ArrayList<>();
         list.addAll(Arrays.asList(others));
         list.addAll(NOISE_FUNCS);
-        list.addAll(List.of(COS, SIN, ATAN2, RAND, GAUSSIAN, STEP, SMOOTHSTEP, MAX, MIN, LERP, RED, GREEN, BLUE, ALPHA, COLOR));
+        list.addAll(List.of(COS, SIN, ATAN2, RAND, RAND_INT, RAND_LONG, GAUSSIAN, STEP, SMOOTHSTEP, MAX, MIN, LERP, RED, GREEN, BLUE, ALPHA, COLOR));
         return list.toArray(new Function[0]);
     }
 

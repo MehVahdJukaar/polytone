@@ -71,6 +71,7 @@ public class PolytoneFabric implements ClientModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             currentServer = server;
+            addRenderParticlesType();
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
@@ -79,6 +80,11 @@ public class PolytoneFabric implements ClientModInitializer {
 
     }
 
+    public static void addRenderParticlesType() {
+        List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());
+        renderOrder.add(PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE.get());
+        ParticleEngineAccessor.setRENDER_ORDER(renderOrder);
+    }
 
     public static MinecraftServer currentServer;
 }

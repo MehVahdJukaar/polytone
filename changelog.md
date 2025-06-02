@@ -1,2 +1,4 @@
-fixed block emitter particle spawn position not being accounted for
-fixed custom particles in biomes
+- rando number or blocks is seeded same way as it is with block models. 
+- Added rand_int and rand_long functions in expressions
+- removed some logging when unregistered biomes were passed to clent colors functions, mod will crash instead as it should have been
+- improved how shaders are registered
