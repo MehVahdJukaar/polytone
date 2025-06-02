@@ -98,7 +98,7 @@ public class BlockContextExpression extends PolytoneExpression {
     }
 
     public double getValue(Level level, @NotNull BlockPos pos, BlockState state) {
-        ExpressionUtils.seedRandom(pos.hashCode() * pos.asLong());
+        ExpressionUtils.seedRandom(state.getSeed(pos));
 
         IExpression.IVars vars = expression.varBuilder();
 

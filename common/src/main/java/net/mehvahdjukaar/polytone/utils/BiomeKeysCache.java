@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.NotNull;
@@ -30,15 +29,16 @@ public class BiomeKeysCache {
                 if (biomeKey.isEmpty()) {
 
                     //tries with server biomes. This should never happen, server biomes should never be passed here
-                    biomeKey = PlatStuff.getServerRegistryAccess()
-                            .lookupOrThrow(Registries.BIOME).getResourceKey(biome);
+                   // biomeKey = PlatStuff.getServerRegistryAccess()
+                   //         .lookupOrThrow(Registries.BIOME).getResourceKey(biome);
 
-                    if (biomeKey.isPresent()) {
-                        Polytone.LOGGER.error("Polytone detected a Server Biome was passed to a getColor client side function! This is a bug! Must be caused by some other mod!");
-                        return biomeKey.get();
-                    } else {
+                  //  if (biomeKey.isPresent()) {
+                       // return PLAINS;
+                        //Polytone.LOGGER.error("Polytone detected a Server Biome was passed to a getColor client side function! This is a bug! Must be caused by some other mod!");
+                       // return biomeKey.get();
+                 //   } else {
                         throw new IllegalStateException("Failed to get biome key for biome: " + biome + " This means that biome registry returned an empty key for it. How is this possible? Was it not registered? Seriously HOW? Must be due to some mod doing unsafe stuff!! This is NOT a Polytone issue!");
-                    }
+                 //   }
                 }
                 return biomeKey.get();
             });
