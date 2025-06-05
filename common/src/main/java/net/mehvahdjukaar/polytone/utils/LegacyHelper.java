@@ -157,7 +157,7 @@ public class LegacyHelper {
     }
 
     private static boolean checkConditions(Properties prop) {
-        boolean ignored = prop.getOrDefault("polytone_ignore", false).equals(Boolean.TRUE);
+        boolean ignored = prop.getOrDefault("polytone_ignore", false).equals("true");
         if (ignored) return false;
         List<String> requireMods = List.of(prop.getProperty("require_mods", "").split(" "));
         for (String s : requireMods) {
