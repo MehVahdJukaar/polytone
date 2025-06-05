@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import loaderCommon.fabric.com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
