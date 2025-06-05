@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.mixins.fabric;
 import com.google.common.base.Preconditions;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
+import loaderCommon.fabric.com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
