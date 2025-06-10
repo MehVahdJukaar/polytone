@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.FogManager;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.FogRenderer;
@@ -22,19 +24,21 @@ public abstract class FogRendererMixin2 {
             FogManager.FogState newFog = FogManager.modifyBiomeFog(
                     RenderSystem.getShaderFogStart(), RenderSystem.getShaderFogEnd());
             if (newFog != null) {
-                FogParameters old = cir.getReturnValue();
-                cir.setReturnValue(new FogParameters(newFog.start(), newFog.end(), old.shape(), old.red(), old.green(), old.blue(), old.alpha()));
+              //  FogParameters old = cir.getReturnValue();
+              //  cir.setReturnValue(new FogParameters(newFog.start(), newFog.end(), old.shape(), old.red(), old.green(), old.blue(), old.alpha()));
             }
 
         }
         if (fogMode == FogRenderer.FogMode.FOG_TERRAIN && (fogType == FogType.WATER || fogType == FogType.LAVA)) {
             FogManager.FogState newFog = FogManager.modifyFluidFog(
-                    cir.getReturnValue().start(), cir.getReturnValue().end(), null, null);
+                    RenderSystem.getShaderFogStart(),  RenderSystem.getShaderFogEnd(), null, null);
             if (newFog != null) {
                 RenderSystem.setShaderFogStart(newFog.start());
                 RenderSystem.setShaderFogEnd(newFog.end());
             }
         }
     }
+
+
 
 }

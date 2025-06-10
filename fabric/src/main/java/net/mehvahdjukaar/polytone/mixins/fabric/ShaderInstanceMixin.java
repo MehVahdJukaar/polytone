@@ -11,16 +11,17 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(ShaderInstance.class)
 public class ShaderInstanceMixin {
 
-    @WrapOperation(method = "<init>", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/resources/ResourceLocation;withDefaultNamespace(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"))
-    private ResourceLocation polytone$namespacedShader(String location,
+
+    @WrapOperation(method = "<init>", at = @At(value = "NEW",
+            target = "(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"))
+    private ResourceLocation moonlight$namespacedShader(String location,
                                                         Operation<ResourceLocation> original,
                                                         @Local(argsOnly = true) String name) {
         if (name.contains("polytone_marker")) {
-            var res = ResourceLocation.parse(name.replace("polytone_marker", ":"));
+            var res = new ResourceLocation(name.replace("polytone_marker", ":"));
             String namespace = res.getNamespace();
             String path = res.getPath();
-            return ResourceLocation.fromNamespaceAndPath(namespace, "shaders/core/" + path + ".json");
+            return new ResourceLocation(namespace, "shaders/core/" + path + ".json");
 
         }
         return original.call(location);

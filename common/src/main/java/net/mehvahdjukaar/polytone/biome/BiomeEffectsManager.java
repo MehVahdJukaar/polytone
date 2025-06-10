@@ -121,4 +121,5 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     public BiomeEffectModifier getFogModifier(Biome value) {
         return fogParametersModifiers.get(value);
     }
+
 }

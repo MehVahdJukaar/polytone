@@ -277,11 +277,6 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
-    public static BakedModel getBakedModel(ModelResourceLocation model) {
-        throw new AssertionError();
-    }
-
 
     @ExpectPlatform
     public static void registerShaders(ResourceLocation event, VertexFormat format,

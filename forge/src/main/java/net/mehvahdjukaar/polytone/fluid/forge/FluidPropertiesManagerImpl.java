@@ -123,6 +123,7 @@ public class FluidPropertiesManagerImpl {
             return existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
         }
 
+        /*
         @Override
         public FogParameters modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, FogParameters fogParameters) {
             if (fogRadius != null || forFade != null) {
@@ -147,7 +148,7 @@ public class FluidPropertiesManagerImpl {
             }
             return existingProperties.modifyFogRender(camera, mode, renderDistance, partialTick, fogParameters);
         }
-
+*/
         @Override
         public ResourceLocation getStillTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
             return existingProperties.getStillTexture(state, getter, pos);
