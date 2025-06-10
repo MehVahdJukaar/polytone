@@ -20,6 +20,8 @@ import net.mehvahdjukaar.polytone.tabs.CreativeTabsModifiersManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
+import net.mehvahdjukaar.polytone.utils.GenericDirectorySpriteSource;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
@@ -115,7 +117,6 @@ public class Polytone {
         PolytoneRenderTypes.init();
 
         PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
-
         //TODO: cache fog and d sky color
     }
 
