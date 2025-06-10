@@ -71,7 +71,8 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
 
         Registry<Biome> biomeReg = registryAccess.registry(Registries.BIOME).get();
-        addAllWaterColors(biomeReg, registryAccess);
+        //addAllWaterColors(biomeReg, registryAccess);
+        //pribably needed for sodium hack
 
         for (var v : effectsToApply.entrySet()) {
 

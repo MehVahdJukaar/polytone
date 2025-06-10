@@ -80,8 +80,17 @@ public class PolytoneFabric implements ClientModInitializer {
             Polytone.onLoggedOut();
         });
 
+        addRenderParticlesType();
+
     }
 
 
     public static MinecraftServer currentServer;
+
+    public static void addRenderParticlesType() {
+        List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());
+        renderOrder.add(PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE);
+        ParticleEngineAccessor.setRENDER_ORDER(renderOrder);
+
+    }
 }

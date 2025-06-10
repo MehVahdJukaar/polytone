@@ -4,8 +4,8 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.serialization.Codec;
 import cpw.mods.modlauncher.api.INameMappingService;
-import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.mixins.forge.*;
 import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
@@ -28,18 +28,14 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -49,7 +45,6 @@ import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.common.CreativeModeTabRegistry;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.world.ModifiableBiomeInfo;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoader;
@@ -63,7 +58,10 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -93,16 +91,11 @@ public class PlatStuffImpl {
 
     public static ParticleType<ExtraDataParticleOptions> makeParticleType(boolean forceSpawn) {
         AtomicReference<ParticleType<ExtraDataParticleOptions>> ref = new AtomicReference<>();
-        ParticleType<ExtraDataParticleOptions> instance = new ParticleType<>(forceSpawn) {
+        ParticleType<ExtraDataParticleOptions> instance = new ParticleType<>(forceSpawn, ExtraDataParticleOptions.DESERIALIZER) {
 
             @Override
-            public MapCodec<ExtraDataParticleOptions> codec() {
+            public Codec<ExtraDataParticleOptions> codec() {
                 return ExtraDataParticleOptions.codec(ref::get);
-            }
-
-            @Override
-            public StreamCodec<? super RegistryFriendlyByteBuf, ExtraDataParticleOptions> streamCodec() {
-                return ExtraDataParticleOptions.streamCodec(ref::get);
             }
         };
         ref.set(instance);
@@ -128,13 +121,13 @@ public class PlatStuffImpl {
     }
 
 
-    public static <T extends ParticleType<?>> T  registerParticleType(ResourceLocation id, T sound) {
+    public static <T extends ParticleType<?>> T registerParticleType(ResourceLocation id, T sound) {
         ForgeRegistry<ParticleType<?>> reg = (ForgeRegistry<ParticleType<?>>) ForgeRegistries.PARTICLE_TYPES;
         registerDyn(id, sound, reg);
         return sound;
     }
 
-    public static <T extends SoundEvent>  T registerSoundEvent(ResourceLocation id, T sound) {
+    public static <T extends SoundEvent> T registerSoundEvent(ResourceLocation id, T sound) {
         ForgeRegistry<SoundEvent> reg = (ForgeRegistry<SoundEvent>) ForgeRegistries.SOUND_EVENTS;
         registerDyn(id, sound, reg);
         return sound;
@@ -172,7 +165,8 @@ public class PlatStuffImpl {
     private static final Field OWNERS;
     private static final Field HASWRAPPER;
     private static final Field OVERRIDES;
-    static{
+
+    static {
         try {
             NAMES = ForgeRegistry.class.getDeclaredField("names");
             IDS = ForgeRegistry.class.getDeclaredField("ids");
@@ -198,26 +192,26 @@ public class PlatStuffImpl {
     static <V> int remove(ForgeRegistry<V> registry, ResourceLocation key) throws Exception {
 
         // Check if the key exists in the registry
-        V value = ((BiMap<ResourceLocation, V>)NAMES.get(registry)).remove(key);
+        V value = ((BiMap<ResourceLocation, V>) NAMES.get(registry)).remove(key);
         if (value == null) {
             throw new IllegalArgumentException(String.format(Locale.ENGLISH, "The name %s is not registered in the registry.", key));
         }
 
         // Get the associated ID and remove it
         int idToRemove = registry.getID(value);
-        ((BiMap<Integer, V>)IDS.get(registry)).remove(idToRemove);
-        ((BitSet)AVAILABILITYMAP.get(registry)).clear(idToRemove);
+        ((BiMap<Integer, V>) IDS.get(registry)).remove(idToRemove);
+        ((BitSet) AVAILABILITYMAP.get(registry)).clear(idToRemove);
 
         // Remove from keys map
         ResourceKey<V> rkey = ResourceKey.create(registry.getRegistryKey(), key);
-        ((BiMap<ResourceKey, V>)KEYS.get(registry)).remove(rkey);
+        ((BiMap<ResourceKey, V>) KEYS.get(registry)).remove(rkey);
 
         // Remove from owners
         ((BiMap<?, V>) OWNERS.get(registry)).inverse().remove(value);
 
         // Remove from overrides if applicable
         if ((Boolean) HASWRAPPER.get(registry)) {
-            var overrides = ((Multimap<ResourceLocation, V>)OVERRIDES.get(registry));
+            var overrides = ((Multimap<ResourceLocation, V>) OVERRIDES.get(registry));
             if (overrides.containsKey(key)) {
                 overrides.get(key).add(value);
                 if (overrides.get(key).isEmpty()) {
@@ -446,8 +440,8 @@ public class PlatStuffImpl {
     public static void doAddModels() {
     }
 
-   // private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
-   // private static final Field COLOR_RESOLVERS;
+    // private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
+    // private static final Field COLOR_RESOLVERS;
 
 
 }

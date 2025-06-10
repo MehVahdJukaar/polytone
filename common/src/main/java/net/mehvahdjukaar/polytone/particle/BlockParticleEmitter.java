@@ -117,7 +117,7 @@ public record BlockParticleEmitter(
 
         if (particleTypeValue instanceof SimpleParticleType st) {
             po = st;
-        } else if (particleTypeValue == ParticleTypes.BLOCK || particleTypeValue == ParticleTypes.FALLING_DUST || particleTypeValue == ParticleTypes.BLOCK_MARKER || particleTypeValue == ParticleTypes.DUST_PILLAR) {
+        } else if (particleTypeValue == ParticleTypes.BLOCK || particleTypeValue == ParticleTypes.FALLING_DUST || particleTypeValue == ParticleTypes.BLOCK_MARKER || particleTypeValue == ParticleTypes.DUST) {
             po = new BlockParticleOption((ParticleType<BlockParticleOption>) particleTypeValue, state);
         } else if (particleTypeValue == ParticleTypes.ITEM) {
             po = new ItemParticleOption((ParticleType<ItemParticleOption>) particleTypeValue, state.getBlock().asItem().getDefaultInstance());

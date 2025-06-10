@@ -17,6 +17,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
+import static net.mehvahdjukaar.polytone.utils.CodecUtil.withAlternative;
+
 public class FogManager {
 
     private static final FogState ONE = new FogState(1, 1);
@@ -33,7 +35,7 @@ public class FogManager {
 
         Level level = player.level();
         //dont modify if a mob effect that modifies fog is active
-        if (FogRenderer.getPriorityFogFunction(player, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false))
+        if (FogRenderer.getPriorityFogFunction(player, mc.getDeltaFrameTime())
                 != null) return null;
         Holder<Biome> biome = level.getBiome(player.blockPosition());
         var fogMod = Polytone.BIOME_MODIFIERS.getFogModifier(biome.value());
@@ -103,8 +105,8 @@ public class FogManager {
         float get(Level level);
 
         Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> (l) -> f, fogParam -> fogParam.get(null));
-        Codec<FogParam> CODEC = Codec.withAlternative(
-                Codec.withAlternative(SIMPLE_CODEC,
+        Codec<FogParam> CODEC = withAlternative(
+                withAlternative(SIMPLE_CODEC,
                         Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
                                 .xmap(FogMap::new, FogMap::map).codec()
                 ),

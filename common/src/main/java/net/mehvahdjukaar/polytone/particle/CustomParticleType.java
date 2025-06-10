@@ -67,7 +67,6 @@ public class CustomParticleType implements CustomParticleFactory {
     private transient SpriteSet spriteSet;
 
     private boolean isValid = true;
-    private Integer tickRate;
 
     private CustomParticleType(RenderType renderType, @Nullable ResourceLocation model,
                                Vec3 offset, int light, boolean hasPhysics,  boolean killOnContact, boolean killWhenStill,
@@ -444,9 +443,9 @@ public class CustomParticleType implements CustomParticleFactory {
         public net.minecraft.client.renderer.RenderType getBlock() {
             return switch (this) {
                 case TERRAIN -> net.minecraft.client.renderer.RenderType.solid();
-                case TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT;
+                case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT;
                 case LIT -> net.minecraft.client.renderer.RenderType.cutout();
-                case ADDITIVE_TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
+                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
                 case INVISIBLE -> net.minecraft.client.renderer.RenderType.cutout();
                 default -> net.minecraft.client.renderer.RenderType.cutoutMipped();
             };
@@ -457,7 +456,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
                 case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
                 case LIT -> ParticleRenderType.PARTICLE_SHEET_LIT;
-                case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE.get();
+                case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE;
                 case INVISIBLE -> ParticleRenderType.NO_RENDER;
                 default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
             };
