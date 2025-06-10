@@ -81,7 +81,6 @@ public class PolytoneFabric implements ClientModInitializer {
         });
 
         addRenderParticlesType();
-
     }
 
 

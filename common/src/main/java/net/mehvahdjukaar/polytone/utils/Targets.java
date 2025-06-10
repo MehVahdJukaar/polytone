@@ -47,7 +47,7 @@ public record Targets(List<Entry> entries) {
         Optional<Holder.Reference<T>> implicitTarget = registry.getHolder(key);
         if (!entries.isEmpty()) {
             if (implicitTarget.isPresent()) {
-                Polytone.LOGGER.warn("Found Polytone file with explicit Targets ({}) also having a valid IMPLICIT (file path) Target ({})." +
+                Polytone.LOGGER.warn("Found Polytone file with explicit Targets ({}) also having a valid IMPLICIT (file path) Target ({}). " +
                         "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", entries, fileId);
             }
             for (var entry : entries) {

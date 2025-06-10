@@ -25,7 +25,7 @@ public class PolytoneRenderTypes extends RenderType {
     }
 
     public static void init() {
-        PlatStuff.registerShaders(Polytone.res("core/particle_translucent"), DefaultVertexFormat.POSITION_TEX,
+        PlatStuff.registerShaders(Polytone.res("particle_translucent"), DefaultVertexFormat.POSITION_TEX,
                 s -> instance = s);
     }
 
