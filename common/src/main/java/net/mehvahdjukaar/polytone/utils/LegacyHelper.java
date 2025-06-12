@@ -233,7 +233,7 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(),
-                Optional.empty(), List.of(), List.of(),List.of(),
+                Optional.empty(), List.of(), List.of(),
                 Optional.empty(), Optional.empty(),
                 false, Targets.ofIds(set), false);
     }
@@ -296,7 +296,7 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
-                List.of(), List.of(), List.of(), Optional.empty(),
+                List.of(), List.of(),  Optional.empty(),
                 Optional.empty(), false, Targets.ofOptionalIds(set), false);
     }
 
@@ -548,7 +548,7 @@ public class LegacyHelper {
             if (fogCol != null || skyCol != null) {
                 var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(),
                         Optional.empty(), Optional.empty(), Optional.empty(),
-                        Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(),
+                        Optional.ofNullable(fogCol), Optional.empty(),  Optional.ofNullable(skyCol), Optional.empty(),
                         false, false, Optional.empty(), Targets.EMPTY);
 
                 converted.put(ResourceLocation.parse(names[i]), mod);
