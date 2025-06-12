@@ -246,11 +246,11 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         optifineColormapsToBlocks.put(path, str);
     }
 
-    public boolean maybeEmitParticle(Block block, BlockState state, Level level, BlockPos pos) {
-        var m = particleAndSoundEmitters.get(block);
+    public boolean runTickers(BlockState state, Level level, BlockPos pos, TickSource source) {
+        var m = particleAndSoundEmitters.get(state.getBlock());
         if (m != null) {
             for (var p : m.tickables) {
-                p.tick(level, pos, state);
+                p.tick(level, pos, state, source);
             }
             return m.cancelExisting;
         }

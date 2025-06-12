@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.TickSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
@@ -37,5 +38,19 @@ public abstract class ParticleEngineMixin {
     @Inject(method = "reload", at = @At(value = "HEAD"))
     public void polytone$addPackSpriteSets(PreparableReloadListener.PreparationBarrier preparationBarrier, ResourceManager resourceManager, ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler, Executor backgroundExecutor, Executor gameExecutor, CallbackInfoReturnable<CompletableFuture<Void>> cir) {
         Polytone.CUSTOM_PARTICLES.addSpriteSets(resourceManager);
+    }
+
+    @ModifyArg(method = "method_18125",
+            require = 0, //low priority
+            at = @At(value = "INVOKE", target = "Lcom/google/common/collect/EvictingQueue;create(I)Lcom/google/common/collect/EvictingQueue;"))
+    private static int polytone$modifyEvictingQueueSize(int size) {
+        return size * 10;
+    }
+
+    @Inject(method = "destroy", at = @At("HEAD"))
+    public void polytone$addExtraDestroyParticles(BlockPos pos, BlockState state, CallbackInfo ci) {
+        if(!state.isAir()){
+            Polytone.BLOCK_MODIFIERS.runTickers(state, this.level, pos, TickSource.BLOCK_BROKEN);
+        }
     }
 }

@@ -5,7 +5,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
+import net.mehvahdjukaar.polytone.block.TickSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
@@ -34,6 +34,7 @@ public record BlockSoundEmitter(
         BlockContextExpression pitch,
         boolean distanceDelay,
         RuleTest predicate,
+        TickSource spawnSource,
         Optional<HolderSet<Biome>> biomes) implements BlockClientTickable {
 
     private static final Codec<SoundSource> SOUND_SOURCE_CODEC =
@@ -51,12 +52,14 @@ public record BlockSoundEmitter(
             BlockContextExpression.CODEC.optionalFieldOf("pitch", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(BlockSoundEmitter::distanceDelay),
             RuleTest.CODEC.optionalFieldOf("state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockSoundEmitter::predicate),
+            TickSource.CODEC.optionalFieldOf("spawn_source", TickSource.ANIMATE_TICK).forGetter(BlockSoundEmitter::spawnSource),
             RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockSoundEmitter::biomes)
     ).apply(i, BlockSoundEmitter::new));
 
 
     @Override
-    public void tick(Level level, BlockPos pos, BlockState state) {
+    public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
+        if (source != spawnSource) return;
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {

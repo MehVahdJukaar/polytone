@@ -25,6 +25,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                                        Optional<Boolean> forceBrightLightmap,
                                        Optional<Boolean> constantAmbientLight,
                                        Optional<IColorGetter> fogColor,
+                                       Optional<IColorGetter> terrainFogColor,
                                        Optional<IColorGetter> skyColor,
                                        Optional<IColorGetter> sunsetColor,
                                        boolean noWeatherFogDarken,
@@ -43,6 +44,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                     Codec.BOOL.optionalFieldOf("force_bright_lightmap").forGetter(DimensionEffectsModifier::forceBrightLightmap),
                     Codec.BOOL.optionalFieldOf("constant_ambient_light").forGetter(DimensionEffectsModifier::constantAmbientLight),
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
+                    Colormap.CODEC.optionalFieldOf("terrain_fog_colormap").forGetter(DimensionEffectsModifier::terrainFogColor),
                     Colormap.CODEC.optionalFieldOf("sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
                     Colormap.CODEC.optionalFieldOf("sunset_colormap").forGetter(DimensionEffectsModifier::sunsetColor),
                     Codec.BOOL.optionalFieldOf("no_weather_fog_darken", false).forGetter(DimensionEffectsModifier::noWeatherFogDarken),
@@ -53,19 +55,19 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
 
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty(), Optional.empty(),
                 false, false, Optional.empty(), Targets.EMPTY);
     }
 
     public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(),
                 false, false, Optional.empty(), Targets.EMPTY);
     }
 
     public static DimensionEffectsModifier ofSunsetColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(colormap),
+                Optional.empty(), Optional.empty(),  Optional.empty(), Optional.empty(), Optional.of(colormap),
                 false, false, Optional.empty(), Targets.EMPTY);
     }
 
@@ -78,6 +80,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                 newMod.forceBrightLightmap.isPresent() ? newMod.forceBrightLightmap : this.forceBrightLightmap,
                 newMod.constantAmbientLight.isPresent() ? newMod.constantAmbientLight : this.constantAmbientLight,
                 newMod.fogColor.isPresent() ? newMod.fogColor : this.fogColor,
+                newMod.terrainFogColor.isPresent() ? newMod.terrainFogColor : this.terrainFogColor,
                 newMod.skyColor.isPresent() ? newMod.skyColor : this.skyColor,
                 newMod.sunsetColor.isPresent() ? newMod.sunsetColor : this.sunsetColor,
                 newMod.noWeatherFogDarken | this.noWeatherFogDarken,
@@ -90,6 +93,10 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
     @Nullable
     public BlockColor getFogColormap() {
         return this.fogColor.orElse(null);
+    }
+    @Nullable
+    public BlockColor getTerrainFogColormap() {
+        return this.terrainFogColor.orElse(null);
     }
     
     @Nullable
@@ -130,7 +137,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
             effects.constantAmbientLight = this.constantAmbientLight.get();
         }
         return new DimensionEffectsModifier(oldCloud, oldGround, oldSky, oldBright, oldAmbient,
-                Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 false, false, Optional.empty(), Targets.EMPTY);
     }
 
