@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.block.TickSource;
 import net.mehvahdjukaar.polytone.utils.BiggerCodecs;
 import net.minecraft.core.*;
 import net.minecraft.core.particles.*;
@@ -12,6 +13,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -44,7 +46,8 @@ public record BlockParticleEmitter(
         Optional<BlockContextExpression> custom,
         RuleTest predicate,
         Optional<HolderSet<Biome>> biomes,
-        SpawnLocation spawnLocation
+        SpawnLocation spawnLocation,
+        TickSource spawnSource
 ) implements BlockClientTickable {
 
     public static final Codec<BlockParticleEmitter> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
@@ -66,13 +69,14 @@ public record BlockParticleEmitter(
             BlockContextExpression.CODEC.optionalFieldOf("custom").forGetter(BlockParticleEmitter::custom),
             RuleTest.CODEC.optionalFieldOf("state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
             RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
-            SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation)
+            SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation),
+            TickSource.CODEC.optionalFieldOf("tick_source", TickSource.ANIMATE_TICK).forGetter(BlockParticleEmitter::spawnSource)
     ).apply(i, BlockParticleEmitter::new));
 
 
     @Override
-    public void tick(Level level, BlockPos pos, BlockState state) {
-
+    public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
+        if (source != spawnSource) return; //only spawn particles on the correct tick source
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {
             if (biomes.isPresent()) {
@@ -111,7 +115,7 @@ public record BlockParticleEmitter(
             roll.ifPresent(exp -> map.put("roll", (float) exp.getValue(level, pos, state)));
             size.ifPresent(exp -> map.put("size", (float) exp.getValue(level, pos, state)));
             custom.ifPresent(exp -> map.put("custom", (float) exp.getValue(level, pos, state)));
-            return new ExtraDataParticleOptions(map, (ParticleType<ExtraDataParticleOptions>) particleTypeValue);
+            return new ExtraDataParticleOptions(map, particleTypeValue);
         }
 
         if (particleTypeValue instanceof SimpleParticleType st) {
@@ -127,11 +131,10 @@ public record BlockParticleEmitter(
         return po;
     }
 
-    public enum SpawnLocation {
+    public enum SpawnLocation implements StringRepresentable {
         CENTER, LOWER_CORNER, BLOCK_FACES;
 
-        public static final Codec<SpawnLocation> CODEC = Codec.STRING.xmap(s -> SpawnLocation.valueOf(s.toUpperCase(Locale.ROOT)),
-                e -> e.name().toLowerCase(Locale.ROOT));
+        public static final Codec<SpawnLocation> CODEC = StringRepresentable.fromEnum(SpawnLocation::values);
 
         Vec3 getLocation(BlockPos pos, BlockState state, RandomSource rand) {
             return switch (this) {
@@ -143,8 +146,12 @@ public record BlockParticleEmitter(
                 }
             };
         }
-    }
 
+        @Override
+        public String getSerializedName() {
+            return this.name().toLowerCase(Locale.ROOT);
+        }
+    }
 
     public static Vec3 getParticleSpawnPosOnFace(RandomSource random, BlockPos pos, Direction direction) {
         Vec3 vec3 = Vec3.atCenterOf(pos);

@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.block.TickSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
@@ -33,7 +34,7 @@ public abstract class ClientLevelMixin extends Level {
             target = "Lnet/minecraft/world/level/block/Block;animateTick(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/util/RandomSource;)V"))
     public void polytone$extraParticles(Block instance, BlockState state, Level level, BlockPos pos, RandomSource random,
                                         Operation<Void> original) {
-        boolean cancels = Polytone.BLOCK_MODIFIERS.maybeEmitParticle(instance, state, level, pos);
+        boolean cancels = Polytone.BLOCK_MODIFIERS.runTickers(state, level, pos, TickSource.ANIMATE_TICK);
         if (!cancels) {
             original.call(instance, state, level, pos, random);
         }
