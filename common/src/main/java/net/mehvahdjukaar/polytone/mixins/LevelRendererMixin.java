@@ -6,10 +6,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Final;
@@ -25,7 +23,9 @@ public class LevelRendererMixin {
     @Nullable
     private ClientLevel level;
 
-    @Shadow @Final private Minecraft minecraft;
+    @Shadow
+    @Final
+    private Minecraft minecraft;
 
     @ModifyExpressionValue(method = "renderClouds",
             require = 0,
@@ -38,7 +38,7 @@ public class LevelRendererMixin {
 
     @ModifyArg(method = "renderLevel",
             at = @At(value = "INVOKE",
-                    ordinal = 1,
+                    ordinal = 0,
                     target = "Lnet/minecraft/client/renderer/FogRenderer;setupFog(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/FogRenderer$FogMode;Lorg/joml/Vector4f;FZF)Lnet/minecraft/client/renderer/FogParameters;"))
     private Vector4f polytone$modifyTerrainFogColor(Vector4f original, @Local(argsOnly = true) Camera camera,
                                                     @Local(ordinal = 1) float partialTicks,
