@@ -16,6 +16,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.objecthunter.exp4j.Expression;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.LightLayer;
 
 public class ParticleContextExpression extends PolytoneExpression {
 
@@ -99,9 +100,8 @@ public class ParticleContextExpression extends PolytoneExpression {
             vb.setVariable(CUSTOM, i.getCustom());
 
 
-
+        BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
         if (hasPos) {
-            BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
             vb.setVariable(POS_X, pos.getX());
             vb.setVariable(POS_Y, pos.getY());
             vb.setVariable(POS_Z, pos.getZ());
@@ -113,9 +113,9 @@ public class ParticleContextExpression extends PolytoneExpression {
         if (hasRain) vb.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
 
         if (hasSkyLight)
-            vb.setVariable(SKY_LIGHT, ClientFrameTicker.getSkyLight());
+            vb.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, pos));
         if (hasBlockLight)
-            vb.setVariable(BLOCK_LIGHT, ClientFrameTicker.getBlockLight());
+            vb.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, pos));
         if (hasTemperature)
             vb.setVariable(PolytoneExpression.TEMPERATURE, ClientFrameTicker.getTemperature());
         if (hasDownfall)
