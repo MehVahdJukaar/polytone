@@ -48,7 +48,7 @@ public abstract class ParticleEngineMixin {
             require = 0, //low priority
             at = @At(value = "INVOKE", target = "Lcom/google/common/collect/EvictingQueue;create(I)Lcom/google/common/collect/EvictingQueue;"))
     private static int polytone$modifyEvictingQueueSize(int size) {
-        return size * 10;
+        return size * 50;
     }
 
     @Inject(method = "destroy", at = @At("HEAD"))
