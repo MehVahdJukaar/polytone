@@ -35,6 +35,9 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     @Shadow
     protected int inventoryLabelY;
 
+    @Shadow
+    @Nullable
+    protected Slot hoveredSlot;
     @Unique
     private Integer polytone$customLabelColor = null;
     @Unique
