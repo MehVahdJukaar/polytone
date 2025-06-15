@@ -6,7 +6,6 @@
   "mixins": [
   ],
   "client": [
-    "SodiumBlockRendererMixin",
     "AbstractContainerMenuMixin",
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
@@ -29,6 +28,7 @@
     "ParticleEngineMixin",
     "ScreenMixin",
     "SmithingScreenMixin",
+    "SodiumBlockRendererMixin",
     "SplashRendererMixin",
     "SpriteContentsMixin",
     "XpOrbMixin",

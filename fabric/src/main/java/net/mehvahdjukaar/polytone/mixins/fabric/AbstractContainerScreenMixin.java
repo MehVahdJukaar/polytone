@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
-import loaderCommon.fabric.com.seibel.distanthorizons.common.wrappers.block.BiomeWrapper;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -34,7 +33,9 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     @Shadow
     protected int inventoryLabelY;
 
-    @Shadow @Nullable protected Slot hoveredSlot;
+    @Shadow
+    @Nullable
+    protected Slot hoveredSlot;
     @Unique
     private Integer polytone$customLabelColor = null;
     @Unique
