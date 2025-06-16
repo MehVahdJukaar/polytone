@@ -108,18 +108,6 @@ public record BlockPropertyModifier(
         }
 
 
-        BlockBehaviour.OffsetFunction oldOffsetType = null;
-        boolean hasOffset = false;
-        if (offsetType.isPresent()) {
-            oldOffsetType = block.defaultBlockState().offsetFunction;
-            for (var s : block.getStateDefinition().getPossibleStates()) {
-                s.offsetFunction = offsetType.get();
-                hasOffset = true;
-            }
-        }
-        if (hasOffset) block.dynamicShape = true;
-
-
         Function<BlockState, MapColor> oldMapColor = null;
         if (mapColor.isPresent()) {
             oldMapColor = block.properties.mapColor;
