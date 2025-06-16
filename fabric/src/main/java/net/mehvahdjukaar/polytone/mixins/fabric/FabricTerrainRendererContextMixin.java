@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(TerrainRenderContext.class)
-public class TerrainRendererContextMixin {
+public class FabricTerrainRendererContextMixin {
 
     @WrapOperation(method = "bufferModel",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getOffset(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/Vec3;"))
@@ -24,3 +24,4 @@ public class TerrainRendererContextMixin {
         return original.call(state, pos);
     }
 }
+
