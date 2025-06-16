@@ -15,13 +15,13 @@ import org.spongepowered.asm.mixin.injection.At;
 public class FabricTerrainRendererContextMixin {
 
     @WrapOperation(method = "tessellateBlock",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getOffset(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/Vec3;"))
-    private Vec3 polytone$modifyVisualOffset(BlockState state, BlockPos pos, Operation<Vec3> original) {
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getOffset(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/Vec3;"))
+    private Vec3 polytone$modifyVisualOffset(BlockState state, BlockGetter blockGetter, BlockPos pos, Operation<Vec3> original) {
         Vec3 m = Polytone.BLOCK_MODIFIERS.maybeModifyOffset(state, pos);
         if (m != null) {
             return m;
         }
-        return original.call(state, pos);
+        return original.call(state, blockGetter, pos);
     }
 }
 
