@@ -2,7 +2,11 @@ package net.mehvahdjukaar.polytone.color;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -13,20 +17,25 @@ import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.border.BorderStatus;
 import net.minecraft.world.level.material.MapColor;
@@ -35,6 +44,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class ColorManager extends SingleJsonOrPropertiesReloadListener {
@@ -47,6 +57,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private final Object2IntMap<SpawnEggItem> vanillaEggsBackgrounds = new Object2IntOpenHashMap<>();
     private final Object2IntMap<SpawnEggItem> vanillaEggsHighlight = new Object2IntOpenHashMap<>();
     private final Object2IntMap<MobEffect> vanillaEffectColors = new Object2IntOpenHashMap<>();
+    private final Map<MobEffect, Function<MobEffectInstance, ParticleOptions>> vanillaEffectParticles = new HashMap<>();
     private final EnumMap<BorderStatus, Integer> vanillaBorderStatus = new EnumMap<>(BorderStatus.class);
 
     private final Map<DyeColor, Integer> customSheepColors = new EnumMap<>(DyeColor.class);
@@ -67,7 +78,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
-        super("color.properties", "colors.json",
+        super("colo_manager",
+                "color.properties", "colors.json",
                 Polytone.MOD_ID, "colormatic", "vanadium", "optifine");
     }
 
@@ -80,90 +92,100 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, Properties> properties, RegistryOps<JsonElement> ops, RegistryAccess access) {
-        //iterate from the lowest priority to highest
-        var keySet = new ArrayList<>(properties.keySet());
+    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        var keySet = new ArrayList<>(jsons.keySet());
         Lists.reverse(keySet);
+
         for (var k : keySet) {
-            Properties p = properties.get(k);
-            for (var e : p.entrySet()) {
-                if (e.getKey() instanceof String key) {
-                    String[] split = key.split("\\.");
-                    try {
-                        parseColor(split, e.getValue(), k);
-                    } catch (Exception e1) {
-                        Polytone.LOGGER.error("Failed to parse color property {} in file {}", key, k);
-                    }
-                }
+            JsonElement root = jsons.get(k);
+            try {
+                parseColorJson(root, k);
+            } catch (Exception e1) {
+                Polytone.LOGGER.error("Failed to parse color JSON in file {}", k, e1);
             }
         }
 
         regenSheepColors();
     }
 
+    private void parseColorJson(JsonElement root, ResourceLocation fileId) {
+        JsonObject obj = root.getAsJsonObject();
 
-    private void parseColor(String[] prop, Object obj, ResourceLocation colorPropFileId) {
-        if (!(obj instanceof String str)) return;
-        if (is(prop, 0, "map")) {
-            String name = get(prop, 1);
-            MapColor color = MapColorHelper.byName(name);
+        doWith(obj, "map", (k, v) -> {
+            MapColor color = MapColorHelper.byName(k);
             if (color != null) {
-                int col = parseHex(obj);
-                // save vanilla value
+                int col = parseHex(v);
                 if (!vanillaMapColors.containsKey(color)) {
                     vanillaMapColors.put(color, color.col);
                 }
                 color.col = col;
+            } else Polytone.LOGGER.warn("Unknown MapColor with name {}", k);
+        });
 
-            } else Polytone.LOGGER.warn("Unknown MapColor with name {}", name);
-        } else if (is(prop, 0, "dye")) {
-            String name = get(prop, 1);
-            DyeColor color = DyeColor.byName(name, null);
-            if (color != null) {
-                String param = get(prop, 2);
-                int col = parseHex(obj);
-                if (param == null || param.equals("diffuse")) {
-                    // save vanilla value
-                    if (!vanillaDiffuseColors.containsKey(color)) {
-                        vanillaDiffuseColors.put(color, color.getTextureDiffuseColor());
+        doWith(obj, "dye", (k, v) -> {
+            DyeColor color = DyeColor.byName(k, null);
+            if (color == null) {
+                Polytone.LOGGER.warn("Unknown DyeColor with name {}", k);
+                return;
+            }
+            for (var entry : entries(v)) {
+                String param = entry.getKey();
+                int col = parseHex(entry.getValue());
+                switch (param) {
+                    case "diffuse" -> {
+                        if (!vanillaDiffuseColors.containsKey(color)) {
+                            vanillaDiffuseColors.put(color, color.getTextureDiffuseColor());
+                        }
+                        color.textureDiffuseColor = FastColor.ARGB32.opaque(col);
                     }
-                    color.textureDiffuseColor = FastColor.ARGB32.opaque(col);
-                } else if (param.equals("firework")) {
-                    // save vanilla value
-                    if (!vanillaFireworkColors.containsKey(color)) {
-                        vanillaFireworkColors.put(color, color.fireworkColor);
+                    case "firework" -> {
+                        if (!vanillaFireworkColors.containsKey(color)) {
+                            vanillaFireworkColors.put(color, color.fireworkColor);
+                        }
+                        color.fireworkColor = col;
                     }
-                    color.fireworkColor = col;
-                } else if (param.equals("text")) {
-                    // save vanilla value
-                    if (!vanillaTextColors.containsKey(color)) {
-                        vanillaTextColors.put(color, color.textColor);
+                    case "text" -> {
+                        if (!vanillaTextColors.containsKey(color)) {
+                            vanillaTextColors.put(color, color.textColor);
+                        }
+                        color.textColor = col;
                     }
-                    color.textColor = col;
                 }
-            } else Polytone.LOGGER.warn("Unknown DyeColor with name {}", name);
-        } else if (is(prop, 0, "particle") && prop.length > 1) {
-            String s = prop[1];
-            ResourceLocation id = ResourceLocation.parse(s.replace("\\", ""));
+            }
+        });
+
+        doWith(obj, "particle", (k, v) -> {
+            ResourceLocation id = ResourceLocation.parse(k.replace("\\", ""));
             try {
                 // turn from hex to decimal if it is a single number
-                int hex = parseHex(str);
+                int hex = parseHex(v);
                 Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, String.valueOf(hex));
             } catch (Exception e) {
-                Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, str);
+                Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, v.getAsString());
             }
-        } else if (is(prop, 0, "world_border") && prop.length > 1) {
-            String name = get(prop, 1);
-            try {
-                BorderStatus status = BorderStatus.valueOf(name.toLowerCase(Locale.ROOT));
-                int col = parseHex(obj);
-                // save vanilla value
-                if (!vanillaBorderStatus.containsKey(status)) {
-                    vanillaBorderStatus.put(status, status.getColor());
-                }
-                status.color = col;
-            } catch (Exception ignored) {
-                Polytone.LOGGER.warn("Unknown BorderStatus with name {}", name);
+
+        });
+
+        doWith(obj, "world_border", (k, v) -> {
+            BorderStatus status = BorderStatus.valueOf(k.toLowerCase(Locale.ROOT));
+            int col = parseHex(v);
+            if (!vanillaBorderStatus.containsKey(status)) {
+                vanillaBorderStatus.put(status, status.getColor());
+            }
+            status.color = col;
+        });
+
+        doWith(obj, "effect", (k, v) -> {
+            ResourceLocation id = ResourceLocation.parse(k.replace("\\", ""));
+            ParticleOptions particle = get(v, "particle", ParticleTypes.CODEC);
+
+            String color = getString(v, "color");
+            Integer col = null;
+
+            if (color == null && v instanceof JsonPrimitive) {
+                col = parseHex(v);
+            } else {
+                col = parseHex(color);
             }
         } else if (is(prop, 0, "egg")) {
             if (prop.length > 2) {
@@ -200,68 +222,74 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             ResourceLocation id = ResourceLocation.parse(prop[1].replace("\\", ""));
             int col = parseHex(obj);
             if (id.getPath().equals("empty")) {
-                //TODO:
-                // PotionContents.EMPTY_COLOR = col;
+                // TODO: handle PotionContents.EMPTY_COLOR
             } else if (id.getPath().equals("water")) {
-                PotionContents.BASE_POTION_COLOR = col;
+                if (col != null)
+                    PotionContents.BASE_POTION_COLOR = col;
             } else {
                 MobEffect effect = BuiltInRegistries.MOB_EFFECT.getOptional(id).orElse(null);
                 if (effect != null) {
-                    if (!vanillaEffectColors.containsKey(effect)) {
-                        vanillaEffectColors.put(effect, effect.getColor());
+                    if(col != null) {
+                        if (!vanillaEffectColors.containsKey(effect)) {
+                            vanillaEffectColors.put(effect, effect.getColor());
+                        }
+
+                        effect.color = col;
                     }
-                    effect.color = col;
+                    if(particle != null){
+                        if (!vanillaEffectParticles.containsKey(effect)) {
+                            vanillaEffectParticles.put(effect, effect.particleFactory);
+                        }
+                        effect.particleFactory = mobEffectInstance -> particle;
+                    }
                 } else Polytone.LOGGER.warn("Unknown Mob Effect with name {}", id);
             }
-        } else if (is(prop, 0, "sheep")) {
-            String name = get(prop, 1);
-            DyeColor color = DyeColor.byName(name, null);
-            if (color != null) {
-                int col = FastColor.ARGB32.opaque(parseHex(obj));
-                customSheepColors.put(color, col);
-            } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", name);
-        } else if (is(prop, 0, "xporb")) {
-            if (is(prop, 1, "color")) {
-                xpOrbColor = new BlockContextExpression(str);
-            } else if (is(prop, 1, "red")) {
-                xpOrbColorR = new BlockContextExpression(str);
-            } else if (is(prop, 1, "green")) {
-                xpOrbColorG = new BlockContextExpression(str);
-            } else if (is(prop, 1, "blue")) {
-                xpOrbColorB = new BlockContextExpression(str);
-            }
+        });
 
-        } else if (is(prop, 0, "redstone")) {
-            String ind = get(prop, 1);
-            if (ind != null) {
-                int code = Integer.parseInt(ind);
-                if (code < RedStoneWireBlock.COLORS.length) {
-                    int col = parseHex(obj);
-                    var rgb = ColorUtils.unpack(col);
-                    RedStoneWireBlock.COLORS[code] = new Vec3(rgb[0], rgb[1], rgb[2]);
+        doWith(obj, "sheep", (k, v) -> {
+            DyeColor color = DyeColor.byName(k, null);
+            if (color != null) {
+                int col = FastColor.ARGB32.opaque(parseHex(v));
+                customSheepColors.put(color, col);
+            } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", k);
+        });
+
+        doWith(obj, "xporb", (k, v) -> {
+            switch (k) {
+                case "color" -> xpOrbColor = new BlockContextExpression(v.getAsString());
+                case "red" -> xpOrbColorR = new BlockContextExpression(v.getAsString());
+                case "green" -> xpOrbColorG = new BlockContextExpression(v.getAsString());
+                case "blue" -> xpOrbColorB = new BlockContextExpression(v.getAsString());
+            }
+        });
+
+        doWith(obj, "redstone", (k, v) -> {
+            int code = Integer.parseInt(k);
+            if (code < RedStoneWireBlock.COLORS.length) {
+                int col = parseHex(v);
+                var rgb = ColorUtils.unpack(col);
+                RedStoneWireBlock.COLORS[code] = new Vec3(rgb[0], rgb[1], rgb[2]);
                     if (code == 15) {
                         Vector3f maxPower = new Vector3f(rgb[0], rgb[1], rgb[2]);
                         net.minecraft.core.particles.DustParticleOptions.REDSTONE_PARTICLE_COLOR = maxPower;
                         ((DustParticleOptionAccessor) DustParticleOptions.REDSTONE).setColor(maxPower);
                     }
                 } else Polytone.LOGGER.warn("Redstone color index must be between 0 and 15");
-            }
-        } else if (is(prop, 0, "text")) {
-            int col = parseHex(obj);
+            });
+
+        doWith(obj, "text", (k, v) -> {
+            int col = parseHex(v);
             ChatFormatting text = null;
-            if (is(prop, 1, "splash")) {
+            if (k.equals("splash")) {
                 splash = col;
-            } else if (is(prop, 1, "xpbar")) {
+            } else if (k.equals("xpbar")) {
                 xpBar = col;
-            } else if (is(prop, 1, "code")) {
-                String s = get(prop, 2);
-                if (s != null) {
-                    int code = Integer.parseInt(s);
-                    text = ChatFormatting.getById(code);
-                }
+            } else if (k.startsWith("code:")) {
+                String s = k.substring(5);
+                int code = Integer.parseInt(s);
+                text = ChatFormatting.getById(code);
             } else {
-                String s = get(prop, 1);
-                text = ChatFormatting.getByName(s);
+                text = ChatFormatting.getByName(k);
             }
             if (text != null) {
                 if (!vanillaChatFormatting.containsKey(text)) {
@@ -271,40 +299,77 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 TextColor tc = TextColor.fromLegacyFormat(text);
                 tc.value = col;
             }
-        } else if (is(prop, 0, "palette")) {
-            if (is(prop, 1, "block")) {
-                if (prop.length > 2 && obj instanceof String) {
-                    String path = prop[2].replace("~/colormap/", colorPropFileId.getNamespace() + ":");
-                    Polytone.BLOCK_MODIFIERS.addSimpleColormap(ResourceLocation.parse(path), str);
+        });
+
+        doWith(obj, "palette", (k, v) -> {
+            if (k.equals("block") && v.isJsonObject()) {
+                for (var entry : getEntries(v.getAsJsonObject(), "block")) {
+                    String path = entry.getKey().replace("~/colormap/", fileId.getNamespace() + ":");
+                    Polytone.BLOCK_MODIFIERS.addSimpleColormap(ResourceLocation.parse(path), entry.getValue().getAsString());
                 }
             }
+        });
+    }
+
+    private static void doWith(JsonObject obj, String key, BiConsumer<String, JsonElement> entryHandler) {
+        try {
+            if (obj.has(key)) {
+                JsonObject sub = GsonHelper.getAsJsonObject(obj, key);
+                for (var entry : sub.entrySet()) {
+                    entryHandler.accept(entry.getKey(), entry.getValue());
+                }
+            }
+        } catch (JsonParseException e) {
+            throw new JsonParseException("Failed to parse color JSON for key: " + key, e);
         }
     }
 
-    private boolean is(String[] array, int index, String value) {
-        if (array.length <= index) return false;
-        return array[index].equals(value);
+    private static Set<Map.Entry<String, JsonElement>> getEntries(JsonObject element, String key) {
+        var elements = element.get(key);
+        if (elements != null && elements.isJsonObject()) {
+            return elements.getAsJsonObject().entrySet();
+        }
+        return Collections.emptySet();
     }
 
-    @Nullable
-    private String get(String[] array, int index) {
-        if (array.length <= index) return null;
-        return array[index];
+    private static <T> T get(JsonElement element, String key, Codec<T> codec) {
+        if (element instanceof JsonObject jo) {
+            JsonElement joo = jo.get(key);
+            if (joo != null) {
+                return codec.decode(JsonOps.INSTANCE, joo).getOrThrow().getFirst();
+            }
+        }
+        return null;
     }
 
-    @Nullable
-    private <T> T get(String[] array, int index, Function<String, T> fun) {
-        if (array.length <= index) return null;
-        return fun.apply(array[index]);
+    private static String getString(JsonElement element, String key) {
+        if (element instanceof JsonObject jo) {
+            JsonElement joo = jo.get(key);
+            if (joo != null && joo.isJsonPrimitive() && joo.getAsJsonPrimitive().isString()) {
+                return joo.getAsString();
+            }
+        }
+        return null;
     }
 
+    private static Set<Map.Entry<String, JsonElement>> entries(JsonElement element) {
+        if (element.isJsonObject()) {
+            return element.getAsJsonObject().entrySet();
+        }
+        return Collections.emptySet();
+    }
 
-    private static int parseHex(Object obj) {
-        if (obj instanceof String value) {
-            value = value.replace("#", "").replace("0x", "");
-            return Integer.parseInt(value.trim(), 16);
+    private static int parseHex(JsonElement obj) {
+        if (obj instanceof JsonPrimitive value) {
+            String str = value.getAsString();
+            return parseHex(str);
         }
         throw new JsonParseException("Failed to parse object " + obj + ". Expected a String");
+    }
+
+    private static int parseHex(String str) {
+        str = str.replace("#", "").replace("0x", "");
+        return Integer.parseInt(str.trim(), 16);
     }
 
     @Override
@@ -355,6 +420,27 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             TextColor tc = TextColor.fromLegacyFormat(text);
             tc.value = e.getValue();
         }
+        vanillaChatFormatting.clear();
+
+        //effects
+        for (var e : vanillaEffectColors.object2IntEntrySet()) {
+            MobEffect effect = e.getKey();
+            effect.color = e.getIntValue();
+        }
+        vanillaEffectColors.clear();
+
+        for (var e : vanillaEffectParticles.entrySet()) {
+            MobEffect effect = e.getKey();
+            effect.particleFactory = e.getValue();
+        }
+        vanillaEffectParticles.clear();
+
+        //border status
+        for (var e : vanillaBorderStatus.entrySet()) {
+            BorderStatus status = e.getKey();
+            status.color = e.getValue();
+        }
+        vanillaBorderStatus.clear();
 
         //spawn eggs
 

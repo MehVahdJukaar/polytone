@@ -30,7 +30,8 @@
     "ParticleEngineAccessor",
     "RegistrySyncManagerMixin",
     "ShaderInstanceMixin",
-    "TerrainRendererContextMixin"
+    "TerrainRendererContextMixin",
+    "RegistrySyncManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

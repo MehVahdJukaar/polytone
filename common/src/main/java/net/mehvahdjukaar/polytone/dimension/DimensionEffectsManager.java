@@ -54,7 +54,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     private boolean needsDynamicApplication = true;
 
-    private final Map<ResourceLocation, DimensionEffectsModifier> extraMods = new HashMap<>();
+    private final Map<ResourceLocation, Parsed<DimensionEffectsModifier>> extraMods = new HashMap<>();
 
     public DimensionEffectsManager() {
         super("dimension_modifiers", "dimension_effects");
@@ -84,9 +84,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
         Map<ResourceLocation, Parsed<DimensionEffectsModifier>> parsedModifiers = Utils.sortedMap();
-        for (var e : extraMods.entrySet()) {
-            parsedModifiers.put(e.getKey(), Parsed.success(e.getValue(), e.getKey()));
-        }
+        parsedModifiers.putAll(extraMods);
 
         for (var j : jsons.entrySet()) {
             JsonElement json = j.getValue();
@@ -318,7 +316,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         return this.cancelSkyWeatherDarken.getOrDefault(level.dimensionType(), false);
     }
 
-    public void addConvertedBlockProperties(Map<ResourceLocation, DimensionEffectsModifier> converted) {
+    public void addConvertedBlockProperties(Map<ResourceLocation, Parsed<DimensionEffectsModifier>> converted) {
         extraMods.clear();
         extraMods.putAll(converted);
     }

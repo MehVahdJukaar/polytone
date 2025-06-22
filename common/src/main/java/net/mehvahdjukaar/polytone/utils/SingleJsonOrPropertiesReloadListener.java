@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.utils;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.ResourceLocation;
@@ -15,48 +16,49 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public abstract class SingleJsonOrPropertiesReloadListener extends PartialReloader<Map<ResourceLocation, Properties>> {
+public abstract class SingleJsonOrPropertiesReloadListener extends PartialReloader<Map<ResourceLocation, JsonElement>> {
     private static final Gson GSON = new Gson();
-    private final String[] locations;
+    private final String[] folders;
     private final String propertiesName;
     private final String jsonName;
 
     // Instead of getting all files in a folder, it gets all files at certain locations
-    protected SingleJsonOrPropertiesReloadListener(String propertiesName, String jsonName, String... possibleLocations) {
-        super("color_manager");
-        this.locations = possibleLocations;
+    protected SingleJsonOrPropertiesReloadListener(String myName,
+                                                   String propertiesName, String jsonName,
+                                                   String... possibleFolderLocations) {
+        super(myName);
+        this.folders = possibleFolderLocations;
         this.propertiesName = propertiesName;
         this.jsonName = jsonName;
     }
 
     @Override
-    protected Map<ResourceLocation, Properties> prepare(ResourceManager resourceManager) {
-        Map<ResourceLocation, Properties> list = new HashMap<>();
-        for (String paths : locations) {
+    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
+        Map<ResourceLocation, JsonElement> jsonObjects = new HashMap<>();
+        for (String path : folders) {
 
-            //properties
-            var resources = resourceManager.listResourceStacks(paths, id -> id.getPath().endsWith(propertiesName));
 
-            for (var entrySet : resources.entrySet()) {
-                var resourceStack = entrySet.getValue();
-                ResourceLocation id = entrySet.getKey();
+            // .properties files
+            var propertiesResources = resourceManager.listResourceStacks(path, id -> id.getPath().endsWith(propertiesName));
+
+            for (var entry : propertiesResources.entrySet()) {
+                var resourceStack = entry.getValue();
+
                 for (var resource : resourceStack) {
                     try (Reader reader = resource.openAsReader()) {
                         Properties properties = new Properties();
                         properties.load(reader);
-                        //merge all. only for .properties... optifine
-                        list.merge(id, properties, (properties1, properties2) -> {
-                            properties1.putAll(properties2);
-                            return properties1;
-                        });
-                    } catch (IllegalArgumentException | IOException | JsonParseException ex) {
-                        Polytone.LOGGER.error("Couldn't parse data file {}:", resourceStack, ex);
+                        JsonObject json = PropertiesUtils.propertiesToJson(properties);
+                        jsonObjects.put(entry.getKey(), json);
+                    } catch (IOException | IllegalArgumentException ex) {
+                        Polytone.LOGGER.error("Couldn't parse .properties file {}:", resource, ex);
                     }
                 }
             }
 
             //json
-            resources = resourceManager.listResourceStacks(paths, id -> id.getPath().endsWith(jsonName));
+          var  resources = resourceManager.listResourceStacks(path,
+                  id -> id.getPath().endsWith(jsonName));
 
             for (var entrySet : resources.entrySet()) {
                 var resourceStack = entrySet.getValue();
@@ -65,18 +67,17 @@ public abstract class SingleJsonOrPropertiesReloadListener extends PartialReload
                 for (var resource : resourceStack) {
                     try (Reader reader = resource.openAsReader()) {
                         JsonElement jsonElement = GsonHelper.fromJson(GSON, reader, JsonElement.class);
-                        Properties prop = PropertiesUtils.jsonToProperties(jsonElement);
-                        if (list.containsKey(id)) {
+                        if (jsonObjects.containsKey(id)) {
                             Polytone.LOGGER.warn("Found duplicate color.json with path {}. Old one will be overwritten. Be sure to put this file in your own namespace, not minecraft one!", id);
                         }
-                        list.put(id, prop);
+                        jsonObjects.put(id, jsonElement);
                     } catch (IllegalArgumentException | IOException | JsonParseException ex) {
                         Polytone.LOGGER.error("Couldn't parse data file {}:", resource, ex);
                     }
                 }
             }
         }
-        return ImmutableMap.copyOf(list);
+        return ImmutableMap.copyOf(jsonObjects);
     }
 }
 
