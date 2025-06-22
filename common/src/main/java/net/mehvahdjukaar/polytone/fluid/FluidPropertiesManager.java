@@ -28,14 +28,14 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         super("fluid_modifiers", "fluid_properties");
     }
 
-    private Map<ResourceLocation, FluidPropertyModifier> extraModifiers;
+    private Map<ResourceLocation, Parsed<FluidPropertyModifier>> extraModifiers;
     private Map<ResourceLocation, ArrayImage> extraImages;
 
     //essentially replacing this for better mod compat
     private ColorResolver vanillaWaterColorResolver = null;
 
     // fot OF lava and water. shit code...
-    public void addConvertedBlockProperties(Map<ResourceLocation, FluidPropertyModifier> modifiers, Map<ResourceLocation, ArrayImage> textures) {
+    public void addConvertedBlockProperties(Map<ResourceLocation, Parsed<FluidPropertyModifier>> modifiers, Map<ResourceLocation, ArrayImage> textures) {
         this.extraImages = textures;
         this.extraModifiers = modifiers;
     }
@@ -68,9 +68,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
         Map<ResourceLocation, Parsed<FluidPropertyModifier>> parsedModifiers = Utils.sortedMap();
-        for (var j : extraModifiers.entrySet()) {
-            parsedModifiers.put(j.getKey(), Parsed.success(j.getValue(), j.getKey()));
-        }
+        parsedModifiers.putAll(extraModifiers);
         textures.putAll(extraImages);
 
 

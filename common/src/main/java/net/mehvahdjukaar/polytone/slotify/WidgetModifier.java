@@ -13,8 +13,8 @@ import java.util.function.Function;
 public record WidgetModifier(int xOffset, int yOffset,
                              int width,
                              Optional<String> message,
-                             Optional<Integer> targetX, Optional<Integer> targetY,
-                             Optional<Integer> targetW, Optional<Integer> targetH,
+                             Optional<IntRange> targetX, Optional<IntRange> targetY,
+                             Optional<IntRange> targetW, Optional<IntRange> targetH,
                              Optional<String> targetMessage,
                              Optional<String> targetClass) {
 
@@ -23,10 +23,10 @@ public record WidgetModifier(int xOffset, int yOffset,
             Codec.INT.optionalFieldOf("y_offset", 0).forGetter(WidgetModifier::yOffset),
             Codec.INT.optionalFieldOf("width_increment", 0).forGetter(WidgetModifier::width),
             Codec.STRING.optionalFieldOf("message").forGetter(WidgetModifier::message),
-            Codec.INT.optionalFieldOf("target_x").forGetter(WidgetModifier::targetX),
-            Codec.INT.optionalFieldOf("target_y").forGetter(WidgetModifier::targetY),
-            Codec.INT.optionalFieldOf("target_width").forGetter(WidgetModifier::targetY),
-            Codec.INT.optionalFieldOf("target_height").forGetter(WidgetModifier::targetY),
+            IntRange.CODEC.optionalFieldOf("target_x").forGetter(WidgetModifier::targetX),
+            IntRange.CODEC.optionalFieldOf("target_y").forGetter(WidgetModifier::targetY),
+            IntRange.CODEC.optionalFieldOf("target_width").forGetter(WidgetModifier::targetY),
+            IntRange.CODEC.optionalFieldOf("target_height").forGetter(WidgetModifier::targetY),
             Codec.STRING.optionalFieldOf("target_message").forGetter(WidgetModifier::targetMessage),
             Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName).optionalFieldOf("target_class_name").forGetter(WidgetModifier::targetClass)
     ).apply(i, WidgetModifier::new)).comapFlatMap(o -> {
@@ -39,10 +39,10 @@ public record WidgetModifier(int xOffset, int yOffset,
     }, Function.identity());
 
     public void maybeModify(AbstractWidget widget) {
-        if (targetX.isPresent() && widget.getX() != targetX.get()) return;
-        if (targetY.isPresent() && widget.getY() != targetY.get()) return;
-        if (targetH.isPresent() && widget.getHeight() != targetH.get()) return;
-        if (targetW.isPresent() && widget.getWidth() != targetW.get()) return;
+        if (targetX.isPresent() && !targetX.get().has(widget.getX())) return;
+        if (targetY.isPresent() && !targetY.get().has(widget.getY())) return;
+        if (targetH.isPresent() && !targetH.get().has(widget.getHeight())) return;
+        if (targetW.isPresent() && !targetW.get().has(widget.getWidth())) return;
         if (targetMessage.isPresent() && !widget.getMessage().getString().equals(targetMessage.get())) return;
         if (targetClass.isPresent()) {
             String name = targetClass.get();

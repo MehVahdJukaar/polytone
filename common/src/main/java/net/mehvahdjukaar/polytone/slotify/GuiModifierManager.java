@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.slotify;
 
 import com.google.gson.JsonElement;
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
@@ -10,9 +9,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -30,10 +27,10 @@ import java.util.*;
 
 public class GuiModifierManager extends JsonPartialReloader {
 
-    //slot modifiers
-    private final Map<MenuType<?>, Int2ObjectArrayMap<SlotModifier>> slotsByMenuId = new IdentityHashMap<>();
-    private final Map<Class<?>, Int2ObjectArrayMap<SlotModifier>> slotsByClass = new IdentityHashMap<>();
-    private final Map<String, Int2ObjectArrayMap<SlotModifier>> slotsByTitle = new HashMap<>();
+    //value modifiers
+    private final Map<MenuType<?>, Set<SlotModifier>> slotsByMenuId = new IdentityHashMap<>();
+    private final Map<Class<?>, Set<SlotModifier>> slotsByClass = new IdentityHashMap<>();
+    private final Map<String, Set<SlotModifier>> slotsByTitle = new HashMap<>();
 
     //screen modifiers
     public final Map<MenuType<?>, ScreenModifier> byMenuId = new IdentityHashMap<>();
@@ -82,9 +79,9 @@ public class GuiModifierManager extends JsonPartialReloader {
                     byClass.merge(cl, ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
 
                     if (!mod.slotModifiers().isEmpty()) {
-                        Int2ObjectArrayMap<SlotModifier> map = slotsByClass.computeIfAbsent(cl,
-                                i -> new Int2ObjectArrayMap<>());
-                        unwrapSlots(mod, map);
+                        Set<SlotModifier> map = slotsByClass.computeIfAbsent(cl,
+                                i -> new HashSet<>());
+                        map.addAll(mod.slotModifiers());
                     }
 
                 } catch (ClassNotFoundException ignored) {
@@ -101,9 +98,9 @@ public class GuiModifierManager extends JsonPartialReloader {
                     byMenuId.merge(menu.orElse(null), ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
 
                     if (!mod.slotModifiers().isEmpty()) {
-                        Int2ObjectArrayMap<SlotModifier> map = slotsByMenuId.computeIfAbsent(menu.orElse(null),
-                                i -> new Int2ObjectArrayMap<>());
-                        unwrapSlots(mod, map);
+                        Set<SlotModifier> map = slotsByMenuId.computeIfAbsent(menu.orElse(null),
+                                i -> new HashSet<>());
+                        map.addAll(mod.slotModifiers());
                     }
                 }
             } else {
@@ -112,9 +109,9 @@ public class GuiModifierManager extends JsonPartialReloader {
                 byTitle.merge(title, ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
 
                 if (!mod.slotModifiers().isEmpty()) {
-                    Int2ObjectArrayMap<SlotModifier> map = slotsByTitle.computeIfAbsent(title,
-                            i -> new Int2ObjectArrayMap<>());
-                    unwrapSlots(mod, map);
+                    Set<SlotModifier> map = slotsByTitle.computeIfAbsent(title,
+                            i -> new HashSet<>());
+                    map.addAll(mod.slotModifiers());
                 }
             }
 
@@ -126,15 +123,6 @@ public class GuiModifierManager extends JsonPartialReloader {
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         if (!slotsByMenuId.isEmpty() || !slotsByClass.isEmpty() || !slotsByTitle.isEmpty()) {
             Polytone.LOGGER.info("Loaded GUI modifiers for: {} {} {} {}", slotsByMenuId.keySet(), slotsByClass.keySet(), byMenuId.keySet(), byClass.keySet());
-        }
-    }
-
-    private static void unwrapSlots(GuiModifier mod, Int2ObjectArrayMap<SlotModifier> map) {
-        for (SlotModifier s : mod.slotModifiers()) {
-            for (int i : s.targets().getSlots()) {
-                //merging makes no sense we just keep last
-                map.merge(i, s, SlotModifier::merge);
-            }
         }
     }
 
@@ -182,57 +170,71 @@ public class GuiModifierManager extends JsonPartialReloader {
         return m;
     }
 
-    @Nullable
-    public SlotModifier getSlotModifier(AbstractContainerScreen<?> screen, Slot slot) {
-        Int2ObjectArrayMap<SlotModifier> m = null;
+    public Collection<SlotModifier> getSlotModifiers(AbstractContainerScreen<?> screen, Slot slot) {
+        Set<SlotModifier> modifies;
         var c = screen.getTitle();
-        m = slotsByTitle.get(c.getString());
-        if (m == null && c instanceof MutableComponent mc && mc.getContents() instanceof TranslatableContents tc) {
-            m = slotsByTitle.get(tc.getKey());
+        modifies = slotsByTitle.get(c.getString());
+        if (modifies == null && c instanceof MutableComponent mc && mc.getContents() instanceof TranslatableContents tc) {
+            modifies = slotsByTitle.get(tc.getKey());
         }
-        if (m == null) {
-            m = slotsByClass.get(screen.getClass());
+        if (modifies == null) {
+            modifies = slotsByClass.get(screen.getClass());
         }
-        if (m == null) slotsByClass.get(screen.getMenu().getClass());
-        if (m == null) {
+        if (modifies == null) slotsByClass.get(screen.getMenu().getClass());
+        if (modifies == null) {
             MenuType<?> type;
             try {
                 type = screen.getMenu().getType();
             } catch (Exception e) {
                 type = null;
             }
-            m = slotsByMenuId.get(type);
+            modifies = slotsByMenuId.get(type);
         }
-        if (m != null) {
-            return m.get(slot.index);
+        if (modifies != null) {
+
+            return modifies.stream().filter(m -> m.matches(slot)).toList();
         }
-        return null;
+        return Set.of();
     }
 
-    @Nullable
-    public SlotModifier getSlotModifier(AbstractContainerMenu menu, Slot slot) {
-        var m = slotsByClass.get(menu.getClass());
-        if (m == null) {
+    public Collection<SlotModifier> getSlotModifiers(AbstractContainerMenu menu, Slot slot) {
+        var modifiers = slotsByClass.get(menu.getClass());
+        if (modifiers == null) {
             MenuType<?> type;
             try {
                 type = menu.getType();
             } catch (Exception e) {
                 type = null;
             }
-            m = slotsByMenuId.get(type);
+            modifiers = slotsByMenuId.get(type);
         }
-        if (m != null) {
-            return m.get(slot.index);
+        if (modifiers != null) {
+            return modifiers.stream().filter(m -> m.matches(slot)).toList();
         }
-        return null;
+        return Set.of();
     }
 
 
     public void maybeModifySlot(AbstractContainerMenu menu, Slot slot) {
-        var mod = getSlotModifier(menu, slot);
-        if (mod != null) {
-            mod.modify(slot);
+        var mods = getSlotModifiers(menu, slot);
+        for (SlotModifier mod : mods) {
+            if (mod.matches(slot)) {
+                mod.modify(slot);
+            }
         }
     }
+
+    public boolean maybeChangeColor(AbstractContainerScreen<?> screen, @NotNull Slot slot, GuiGraphics graphics,
+                                    int x, int y, int offset) {
+        var mods = getSlotModifiers(screen, slot);
+        for (SlotModifier mod : mods) {
+            if (mod.hasCustomColor() && mod.matches(slot)) {
+                SlotModifier.renderSlotHighlight(graphics, x, y, mod.color(), mod.color2(), offset + mod.zOffset());
+                return false;
+            }
+        }
+        return true;
+    }
+
 
 }
