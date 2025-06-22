@@ -23,8 +23,7 @@
     "ItemBlockRenderTypeAccessor",
     "ModelBlockRendererMixin",
     "ParticleEngineAccessor",
-    "RegistrySyncManagerMixin",
-    "TerrainRendererContextMixin"
+    "RegistrySyncManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -188,7 +188,7 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),
                 Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
-                List.of(), List.of(), Optional.ofNullable(oldOffsetType),
+                List.of(), List.of(), Optional.empty(),
                 Optional.ofNullable(oldType),
                 false, Targets.EMPTY, false);
     }

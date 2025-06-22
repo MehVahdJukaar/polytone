@@ -13,31 +13,38 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public record SlotModifier(TargetSlots targets, int color, int color2, int xOffset, int yOffset, int zOffset,
-                           Optional<Integer> targetX, Optional<Integer> targetY, Optional<String> targetClass) {
+public record SlotModifier(Optional<IntRange> targets, int color, int color2, int xOffset, int yOffset, int zOffset,
+                           Optional<IntRange> targetX, Optional<IntRange> targetY, Optional<String> targetClass) {
 
     public static final Codec<SlotModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            TargetSlots.CODEC.fieldOf("slots").forGetter(SlotModifier::targets),
+            IntRange.CODEC.optionalFieldOf("values").forGetter(SlotModifier::targets),
             ColorUtils.CODEC.optionalFieldOf("color", -1).forGetter(SlotModifier::color),
             ColorUtils.CODEC.optionalFieldOf("color_2", -1).forGetter(SlotModifier::color2),
             Codec.INT.optionalFieldOf("x_offset", 0).forGetter(SlotModifier::xOffset),
             Codec.INT.optionalFieldOf("y_offset", 0).forGetter(SlotModifier::yOffset),
             Codec.INT.optionalFieldOf("z_offset", 0).forGetter(SlotModifier::zOffset),
-            Codec.INT.optionalFieldOf("target_x").forGetter(SlotModifier::targetX),
-            Codec.INT.optionalFieldOf("target_y").forGetter(SlotModifier::targetY),
+            IntRange.CODEC.optionalFieldOf("target_x").forGetter(SlotModifier::targetX),
+            IntRange.CODEC.optionalFieldOf("target_y").forGetter(SlotModifier::targetY),
             Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName).optionalFieldOf("target_class_name").forGetter(SlotModifier::targetClass)
     ).apply(i, SlotModifier::new));
 
     public void modify(Slot slot) {
-        if (targetX.isPresent() && slot.x != targetX.get()) return;
-        if (targetY.isPresent() && slot.y != targetY.get()) return;
+
+        slot.x += this.xOffset;
+        slot.y += this.yOffset;
+    }
+
+
+    public boolean matches(Slot slot) {
+        if (targets.isPresent() && !targets.get().has(slot.index)) return false;
+        if (targetX.isPresent() && targetX.get().has(slot.x)) return false;
+        if (targetY.isPresent() && targetY.get().has(slot.y)) return false;
         if (targetClass.isPresent()) {
             String name = targetClass.get();
             if (!slot.getClass().getSimpleName().equals(name) &&
-                    !slot.getClass().getName().equals(name)) return;
+                    !slot.getClass().getName().equals(name)) return false;
         }
-        slot.x += this.xOffset;
-        slot.y += this.yOffset;
+        return true;
     }
 
     public boolean hasCustomColor() {
@@ -61,24 +68,6 @@ public record SlotModifier(TargetSlots targets, int color, int color2, int xOffs
 
     public boolean hasOffset() {
         return xOffset != 0 || yOffset != 0;
-    }
-
-    public SlotModifier merge(SlotModifier newMod) {
-        Set<Integer> combinedSlots = new HashSet<>();
-
-        this.targets.getSlots().forEach(combinedSlots::add);
-        newMod.targets.getSlots().forEach(combinedSlots::add);
-
-        return new SlotModifier(new TargetSlots.ListTarget(new ArrayList<>(combinedSlots)),
-                newMod.hasCustomColor() ? newMod.color : this.color,
-                newMod.hasCustomColor() ? newMod.color2 : this.color,
-                newMod.hasOffset() ? newMod.xOffset : this.xOffset,
-                newMod.hasOffset() ? newMod.yOffset : this.yOffset,
-                newMod.zOffset,
-                newMod.targetX,
-                newMod.targetY,
-                newMod.targetClass
-        );
     }
 
 }
