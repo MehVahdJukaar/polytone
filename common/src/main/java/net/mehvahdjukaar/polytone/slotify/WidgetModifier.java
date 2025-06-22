@@ -14,8 +14,8 @@ import java.util.function.Function;
 public record WidgetModifier(int xOffset, int yOffset,
                              int width,
                              Optional<String> message,
-                             Optional<Integer> targetX, Optional<Integer> targetY,
-                             Optional<Integer> targetW, Optional<Integer> targetH,
+                             Optional<IntRange> targetX, Optional<IntRange> targetY,
+                             Optional<IntRange> targetW, Optional<IntRange> targetH,
                              Optional<String> targetMessage,
                              Optional<String> targetClass) {
 
@@ -24,10 +24,10 @@ public record WidgetModifier(int xOffset, int yOffset,
             StrOpt.of(Codec.INT,"y_offset", 0).forGetter(WidgetModifier::yOffset),
             StrOpt.of(Codec.INT,"width_increment", 0).forGetter(WidgetModifier::width),
             StrOpt.of(Codec.STRING,"message").forGetter(WidgetModifier::message),
-            StrOpt.of(Codec.INT,"target_x").forGetter(WidgetModifier::targetX),
-            StrOpt.of(Codec.INT,"target_y").forGetter(WidgetModifier::targetY),
-            StrOpt.of(Codec.INT,"target_width").forGetter(WidgetModifier::targetY),
-            StrOpt.of(Codec.INT,"target_height").forGetter(WidgetModifier::targetY),
+            StrOpt.of(IntRange.CODEC,"target_x").forGetter(WidgetModifier::targetX),
+            StrOpt.of(IntRange.CODEC,"target_y").forGetter(WidgetModifier::targetY),
+            StrOpt.of(IntRange.CODEC,"target_width").forGetter(WidgetModifier::targetY),
+            StrOpt.of(IntRange.CODEC,"target_height").forGetter(WidgetModifier::targetY),
             StrOpt.of(Codec.STRING,"target_message").forGetter(WidgetModifier::targetMessage),
             StrOpt.of(Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName),"target_class_name").forGetter(WidgetModifier::targetClass)
     ).apply(i, WidgetModifier::new)).comapFlatMap(o -> {
@@ -40,10 +40,10 @@ public record WidgetModifier(int xOffset, int yOffset,
     }, Function.identity());
 
     public void maybeModify(AbstractWidget widget) {
-        if (targetX.isPresent() && widget.getX() != targetX.get()) return;
-        if (targetY.isPresent() && widget.getY() != targetY.get()) return;
-        if (targetH.isPresent() && widget.getHeight() != targetH.get()) return;
-        if (targetW.isPresent() && widget.getWidth() != targetW.get()) return;
+        if (targetX.isPresent() && !targetX.get().has(widget.getX())) return;
+        if (targetY.isPresent() && !targetY.get().has(widget.getY())) return;
+        if (targetH.isPresent() && !targetH.get().has(widget.getHeight())) return;
+        if (targetW.isPresent() && !targetW.get().has(widget.getWidth())) return;
         if (targetMessage.isPresent() && !widget.getMessage().getString().equals(targetMessage.get())) return;
         if (targetClass.isPresent()) {
             String name = targetClass.get();

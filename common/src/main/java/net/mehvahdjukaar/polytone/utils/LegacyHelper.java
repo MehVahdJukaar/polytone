@@ -20,6 +20,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -124,7 +125,9 @@ public class LegacyHelper {
 
     private static boolean checkConditions(Properties prop) {
         boolean ignored = prop.getOrDefault("polytone_ignore", false).equals("true");
-        if (ignored) return false;
+        if (ignored) {
+            return false;
+        }
         List<String> requireMods = List.of(prop.getProperty("require_mods", "").split(" "));
         for (String s : requireMods) {
             if (!PlatStuff.isModLoaded(s)) {
@@ -397,7 +400,7 @@ public class LegacyHelper {
             BlockPropertyModifier modifier = parsed.getResultOrPartial();
             var colormap = modifier.getColormap();
             if (colormap instanceof Colormap c) {
-                if (!id.getNamespace().equals("minecraft")) continue;
+                //  if (!id.getNamespace().equals("minecraft")) continue;
                 String path = id.getPath();
                 if (path.contains("water") || path.contains("lava")) {
 
@@ -423,25 +426,24 @@ public class LegacyHelper {
         textures.keySet().removeAll(filteredTextures.keySet());
         parsedModifiers.keySet().removeAll(fluid.keySet());
 
-        Map<ResourceLocation, FluidPropertyModifier> converted = new HashMap<>();
+        Map<ResourceLocation, Parsed<FluidPropertyModifier>> converted = new HashMap<>();
 
         for (var f : fluid.entrySet()) {
             // ignore targets as those are block targets anyways
             var parsed = f.getValue();
-            if (parsed.isEnabled()) {
-                var mod = parsed.getResultOrPartial();
-                ResourceLocation id = f.getKey();
-                Targets targets = mod.targets();
-                targets.addSimple(id);
-                targets.addSimple(id.withPrefix("flowing_"));
-                var fogMod = Optional.ofNullable(fog.get(id.withSuffix("_fog")))
-                        .map(Parsed::getResultOrPartial);
-                FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
-                        fogMod.map(BlockPropertyModifier::getColormap),
-                        Optional.empty(), Optional.empty(),
-                        targets);
-                converted.put(id, modifier);
-            }
+            var mod = parsed.getResultOrPartial();
+            ResourceLocation id = f.getKey();
+            Targets targets = mod.targets();
+            targets.addSimple(id);
+            targets.addSimple(id.withPrefix("flowing_"));
+            var fogMod = Optional.ofNullable(fog.get(id.withSuffix("_fog")))
+                    .map(Parsed::getResultOrPartial);
+            FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
+                    fogMod.map(BlockPropertyModifier::getColormap),
+                    Optional.empty(), Optional.empty(),
+                    targets);
+            var parsedModifier = Parsed.of(modifier, id, parsed.isEnabled());
+            converted.put(id, parsedModifier);
         }
 
         Polytone.FLUID_MODIFIERS.addConvertedBlockProperties(converted, filteredTextures);
@@ -479,10 +481,12 @@ public class LegacyHelper {
     // fot OF fog and sky. shit code...
     private static void addConvertedBlockProperties(Map<ResourceLocation, Parsed<BlockPropertyModifier>> modifiers, Map<ResourceLocation, ArrayImage> textures) {
         String[] names = new String[]{"overworld", "the_nether", "the_end"};
-        Map<ResourceLocation, DimensionEffectsModifier> converted = new HashMap<>();
+        Map<ResourceLocation, Parsed<DimensionEffectsModifier>> converted = new HashMap<>();
         for (int i = 0; i <= 2; i++) {
             IColorGetter skyCol;
             IColorGetter fogCol;
+            boolean skyEnabled = true;
+            boolean fogEnabled = true;
             {
                 ResourceLocation skyKey = ResourceLocation.tryParse("sky" + i);
                 var skyMod = modifiers.get(skyKey);
@@ -492,10 +496,7 @@ public class LegacyHelper {
                 if (skyCol != null) {
                     ColormapsManager.tryAcceptingTexture(textures, skyKey, skyCol, new HashSet<>(), true);
                 }
-                //disable removed
-                if (skyMod != null && skyMod.isEnabled()) {
-                    skyCol = null;
-                }
+                skyEnabled = skyMod == null || skyMod.isEnabled();
             }
             {
                 ResourceLocation fogKey = new ResourceLocation("fog" + i);
@@ -506,10 +507,7 @@ public class LegacyHelper {
                 if (fogCol != null) {
                     ColormapsManager.tryAcceptingTexture(textures, fogKey, fogCol, new HashSet<>(), true);
                 }
-                //disable removed
-                if (fogMod != null && fogMod.isEnabled()) {
-                    fogCol = null;
-                }
+                fogEnabled = fogMod == null || fogMod.isEnabled();
             }
             if (fogCol != null || skyCol != null) {
                 var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(),
@@ -517,7 +515,10 @@ public class LegacyHelper {
                         Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(),
                         false,false, Optional.empty(), Targets.EMPTY);
 
-                converted.put(new ResourceLocation(names[i]), mod);
+                ResourceLocation id = ResourceLocation.parse(names[i]);
+                boolean enabled = fogEnabled || skyEnabled;
+                var parsedMod = Parsed.of(mod, id, enabled);
+                converted.put(id, parsedMod);
             }
         }
         Polytone.DIMENSION_MODIFIERS.addConvertedBlockProperties(converted);
