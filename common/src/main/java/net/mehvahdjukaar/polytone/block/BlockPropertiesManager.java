@@ -120,11 +120,6 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
             var prop = Parsed.parseOptionalOrPartial(BlockPropertyModifier.CODEC, BlockPropertyModifier.PARTIAL_CODEC,
                     json, ops, id, "block modifier");
-            //always have priority
-            if (parsedModifiers.containsKey(id)) {
-                Polytone.LOGGER.warn("Found duplicate block modifier with id {}. This is likely a non .json converted legacy one" +
-                        "Overriding previous one", id);
-            }
             parsedModifiers.put(id, prop);
         }
 
