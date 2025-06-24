@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.fluid;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -67,8 +68,8 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, Parsed<FluidPropertyModifier>> parsedModifiers = Utils.sortedMap();
-        parsedModifiers.putAll(extraModifiers);
+        LinkedListMultimap<ResourceLocation, Parsed<FluidPropertyModifier>> parsedModifiers =   LinkedListMultimap.create();
+        extraModifiers.forEach(parsedModifiers::put);
         textures.putAll(extraImages);
 
 
@@ -78,16 +79,11 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
             var modifier = Parsed.parseAlways(FluidPropertyModifier.CODEC, json, ops, id, "fluid modifier");
 
-            //always have priority
-            if (parsedModifiers.containsKey(id)) {
-                Polytone.LOGGER.warn("Found duplicate fluid modifier with id {}. This is likely a non .json converted legacy one" +
-                        "Overriding previous one", id);
-            }
             parsedModifiers.put(id, modifier);
         }
 
         // add all modifiers (with or without texture)
-        for (var entry : parsedModifiers.entrySet()) {
+        for (var entry : parsedModifiers.entries()) {
             ResourceLocation id = entry.getKey();
             Parsed<FluidPropertyModifier> parsed = entry.getValue();
             FluidPropertyModifier modifier = parsed.getResultOrPartial();

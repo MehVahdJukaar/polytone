@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import com.google.common.collect.LinkedListMultimap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -418,13 +419,13 @@ public class LegacyHelper {
     }
 
 
-    public static void convertOfBlockToFluidProp(Map<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers,
+    public static void convertOfBlockToFluidProp(LinkedListMultimap<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers,
                                                  Map<ResourceLocation, ArrayImage> textures) {
 
         Map<ResourceLocation, Parsed<BlockPropertyModifier>> fluid = new HashMap<>();
         Map<ResourceLocation, Parsed<BlockPropertyModifier>> fog = new HashMap<>();
         Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
-        for (var entry : parsedModifiers.entrySet()) {
+        for (var entry : parsedModifiers.entries()) {
             ResourceLocation id = entry.getKey();
             Parsed<BlockPropertyModifier> parsed = entry.getValue();
             BlockPropertyModifier modifier = parsed.getResultOrPartial();
@@ -478,13 +479,13 @@ public class LegacyHelper {
         Polytone.FLUID_MODIFIERS.addConvertedBlockProperties(converted, filteredTextures);
     }
 
-    public static void convertOfBlockToDimensionProperties(Map<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers,
+    public static void convertOfBlockToDimensionProperties(LinkedListMultimap<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers,
                                                            Map<ResourceLocation, ArrayImage> textures) {
         Map<ResourceLocation, Parsed<BlockPropertyModifier>> filtered = new HashMap<>();
         Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
         Pattern fogP = Pattern.compile("minecraft:fog[0-2]");
         Pattern skyP = Pattern.compile("minecraft:sky[0-2]");
-        for (var entry : parsedModifiers.entrySet()) {
+        for (var entry : parsedModifiers.entries()) {
             ResourceLocation id = entry.getKey();
             String stringId = id.toString();
             var modifier = entry.getValue();

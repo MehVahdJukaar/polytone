@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.block;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -85,7 +86,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         textures.putAll(LegacyHelper.convertPaths(ofTextures));
         textures.putAll(LegacyHelper.convertPaths(cmTextures));
 
-        textures.putAll(this.getImagesInDirectories(resourceManager));
+        Map<ResourceLocation, ArrayImage> myTextures = this.getImagesInDirectories(resourceManager);
+        textures.putAll(myTextures);
 
         return new Resources(
                 ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures),
@@ -100,9 +102,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         var textureCopy = new HashMap<>(resources.textures);
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers = Utils.sortedMap();
-        parsedModifiers.putAll(LegacyHelper.convertBlockProperties(resources.ofProperties, textureCopy));
-        parsedModifiers.putAll(LegacyHelper.convertInlinedPalettes(optifineColormapsToBlocks));
+        LinkedListMultimap<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers = LinkedListMultimap.create();
+        LegacyHelper.convertBlockProperties(resources.ofProperties, textureCopy).forEach(parsedModifiers::put);
+        LegacyHelper.convertInlinedPalettes(optifineColormapsToBlocks).forEach(parsedModifiers::put);
 
         LegacyHelper.convertOfBlockToFluidProp(parsedModifiers, textureCopy);
         LegacyHelper.convertOfBlockToDimensionProperties(parsedModifiers, textureCopy);
@@ -115,7 +117,6 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
             var prop = Parsed.parseOptionalOrPartial(BlockPropertyModifier.CODEC, BlockPropertyModifier.PARTIAL_CODEC,
                     json, ops, id, "block modifier");
-
             //always have priority
             if (parsedModifiers.containsKey(id)) {
                 Polytone.LOGGER.warn("Found duplicate block modifier with id {}. This is likely a non .json converted legacy one" +
@@ -126,7 +127,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
 
         // add all modifiers (with or without texture)
-        for (var entry : parsedModifiers.entrySet()) {
+        for (var entry : parsedModifiers.entries()) {
             ResourceLocation id = entry.getKey();
             Parsed<BlockPropertyModifier> result = entry.getValue();
             BlockPropertyModifier modifier = result.getResultOrPartial();
