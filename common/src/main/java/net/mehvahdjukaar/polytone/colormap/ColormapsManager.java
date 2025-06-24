@@ -211,7 +211,9 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     private static void tryAcceptingTexture(@Nullable ArrayImage selectedTexture, ResourceLocation textureLoc, Colormap colormap,
                                             Set<ResourceLocation> usedTexture, boolean strict) {
-        if (colormap.hasTexture()) return; //we already are filled
+        if (colormap.hasTexture()){
+            return; //we already are filled
+        }
         //hack. for inlined this will be the parent modifier id.
         String colormapName = colormap.inlined ? "Inlined Colormap from modifier " + textureLoc.toString() : "Colormap at " + textureLoc.toString();
 
