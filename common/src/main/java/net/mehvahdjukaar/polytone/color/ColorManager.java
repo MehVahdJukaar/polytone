@@ -177,7 +177,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             ParticleOptions particle = get(v, "particle", ParticleTypes.CODEC);
 
             String color = getString(v, "color");
-            Integer col = null;
+            Integer col;
 
             if (color == null && v instanceof JsonPrimitive) {
                 col = parseHex(v);
@@ -189,18 +189,15 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             if (id.getPath().equals("empty")) {
                 // TODO: handle PotionContents.EMPTY_COLOR
             } else if (id.getPath().equals("water")) {
-                if (col != null)
-                    PotionContents.BASE_POTION_COLOR = col;
+                PotionContents.BASE_POTION_COLOR = col;
             } else {
                 MobEffect effect = BuiltInRegistries.MOB_EFFECT.getOptional(id).orElse(null);
                 if (effect != null) {
-                    if(col != null) {
-                        if (!vanillaEffectColors.containsKey(effect)) {
-                            vanillaEffectColors.put(effect, effect.getColor());
-                        }
-
-                        effect.color = col;
+                    if (!vanillaEffectColors.containsKey(effect)) {
+                        vanillaEffectColors.put(effect, effect.getColor());
                     }
+
+                    effect.color = col;
                     if(particle != null){
                         if (!vanillaEffectParticles.containsKey(effect)) {
                             vanillaEffectParticles.put(effect, effect.particleFactory);
