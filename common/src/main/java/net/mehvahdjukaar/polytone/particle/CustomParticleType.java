@@ -63,6 +63,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private final Optional<ParticleGroup> group;
     private final boolean forceSpawn;
     private final boolean randomSprite;
+    private final RotationProvider rotationProvider;
 
     private transient SpriteSet spriteSet;
 
