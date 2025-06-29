@@ -66,15 +66,6 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
-    public interface SpecialModelEvent {
-        void register(ResourceLocation id);
-    }
-
-    @Contract
-    @ExpectPlatform
-    public static void addSpecialModelRegistration(Consumer<SpecialModelEvent> eventListener) {
-        throw new AssertionError();
-    }
     @ExpectPlatform
     public static void doAddModels() {
         throw new AssertionError();
@@ -224,8 +215,4 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
-    public static BlockStateModel getBakedModel(ResourceLocation model) {
-        throw new AssertionError();
-    }
 }

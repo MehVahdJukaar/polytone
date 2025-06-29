@@ -50,6 +50,7 @@ public class PolytoneForge {
 
     public PolytoneForge(IEventBus modBus) {
         bus = modBus;
+        ModelStuffImpl.init(bus);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             boolean iris = ModList.get().isLoaded("iris") || ModList.get().isLoaded("oculus");
             Polytone.init(!FMLEnvironment.production, true, iris);

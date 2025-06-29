@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.ModelStuff;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
@@ -17,7 +18,9 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.resources.ResourceLocation;
@@ -216,7 +219,7 @@ public class CustomParticleType implements CustomParticleFactory {
     public static class Instance extends TextureSheetParticle {
 
         protected final CustomParticleType type;
-        protected final @Nullable BlockStateModel model;
+        protected final @Nullable QuadCollection model;
         protected final SpriteSet spriteSet;
         protected final LiquidAffinity liquidAffinity;
         protected final List<ParticleTickable> tickables;
@@ -243,7 +246,7 @@ public class CustomParticleType implements CustomParticleFactory {
             this.xd = xSpeed;
             this.yd = ySpeed;
             this.zd = zSpeed;
-            this.model = null;// customType.model == null ? null : PlatStuff.getBakedModel(customType.model); //TODO
+            this.model = customType.model == null ? null : ModelStuff.getSpecialModel(customType.model);
             ParticleInitializer initializer = customType.initializer;
             BlockPos pos = BlockPos.containing(x, y, z);
             if (initializer != null) {
@@ -307,10 +310,10 @@ public class CustomParticleType implements CustomParticleFactory {
                 quaternionf.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
             }
             Vec3 vec3 = camera.getPosition();
-            float x = (float)(Mth.lerp(partialTicks, this.xo, this.x) - vec3.x());
-            float y = (float)(Mth.lerp(partialTicks, this.yo, this.y) - vec3.y());
-            float z = (float)(Mth.lerp(partialTicks, this.zo, this.z) - vec3.z());
-            this.renderRotatedModel(quaternionf,x,y,z, partialTicks);
+            float x = (float) (Mth.lerp(partialTicks, this.xo, this.x) - vec3.x());
+            float y = (float) (Mth.lerp(partialTicks, this.yo, this.y) - vec3.y());
+            float z = (float) (Mth.lerp(partialTicks, this.zo, this.z) - vec3.z());
+            this.renderRotatedModel(quaternionf, x, y, z, partialTicks);
         }
 
         private void renderRotatedModel(Quaternionf quaternion, float x, float y, float z, float partialTicks) {
@@ -327,8 +330,8 @@ public class CustomParticleType implements CustomParticleFactory {
             MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
             var consumer = bufferSource.getBuffer(type.renderType.getBlock());
 
-        //    putModelBulkData(this.model, this.getLightColor(partialTicks),
-          //          OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
+            putModelBulkData(this.model, this.getLightColor(partialTicks),
+                    OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
 
             bufferSource.endBatch();
         }
@@ -417,20 +420,11 @@ public class CustomParticleType implements CustomParticleFactory {
             }
         }
 
-        public static void putModelBulkData(BlockStateModel model, int combinedLight, int combinedOverlay,
+        public static void putModelBulkData(QuadCollection model, int combinedLight, int combinedOverlay,
                                             PoseStack poseStack, VertexConsumer buffer, float r, float g, float b, float a) {
-            RandomSource randomSource = RandomSource.create();
-          /*
-            for (Direction direction : Direction.values()) {
-                randomSource.setSeed(42L);
-                for (BakedQuad bakedQuad : model.getQuads(null, direction, randomSource)) {
-                    buffer.putBulkData(poseStack.last(), bakedQuad, r, g, b, a, combinedLight, combinedOverlay);
-                }
-            }
-            randomSource.setSeed(42L);
-            for (BakedQuad bakedQuad : model.getQuads(null, null, randomSource)) {
+            for (BakedQuad bakedQuad : model.getAll()) {
                 buffer.putBulkData(poseStack.last(), bakedQuad, r, g, b, a, combinedLight, combinedOverlay);
-            }*/
+            }
         }
 
 

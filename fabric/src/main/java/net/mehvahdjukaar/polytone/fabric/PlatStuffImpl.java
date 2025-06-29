@@ -296,23 +296,6 @@ public class PlatStuffImpl {
         return PolytoneFabric.currentServer.registryAccess();
     }
 
-    public static BlockStateModel getBakedModel(ResourceLocation model) {
-        var mm = Minecraft.getInstance().getModelManager();
-        return mm.getModel(ExtraModelKey.create(model::toString));
-    }
-
-    private static ModelLoadingPlugin.Context hack;
-    private static Consumer<PlatStuff.SpecialModelEvent> hack2;
-
-    public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
-        hack2 = eventListener;
-        ModelLoadingPlugin.register(pluginContext -> {
-            hack = pluginContext;
-        });
-
-    }
-
-
     public static void doAddModels() {
         hack2.accept(new PlatStuff.SpecialModelEvent() {
             @Override

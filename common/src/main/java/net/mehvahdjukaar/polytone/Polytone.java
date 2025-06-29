@@ -21,7 +21,6 @@ import net.mehvahdjukaar.polytone.tabs.CreativeTabsModifiersManager;
 import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
-import net.mehvahdjukaar.polytone.utils.GenericDirectorySpriteSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
@@ -44,9 +43,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 public class Polytone {
     public static final String MOD_ID = "polytone";
@@ -75,8 +72,6 @@ public class Polytone {
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
 
 
-    private static final Set<ResourceLocation> EXTRA_MODELS = new HashSet<>();
-
     public static boolean iMessedUp = false;
 
     public static boolean isDevEnv = false;
@@ -101,18 +96,9 @@ public class Polytone {
         //ItemModelOverrideList.testTrie();
         //GenericDirectorySpriteSource.init();
 
-        PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
         PolytoneRenderTypes.init();
         //TODO: cache fog and d sky color
         //TODO: custom block breaking particles
-    }
-
-    private static void addSpecialModels(PlatStuff.SpecialModelEvent event) {
-        for (var m : EXTRA_MODELS) {
-            event.register(m);
-        }
-        Polytone.LOGGER.info("Registered {} extra models", EXTRA_MODELS.size());
-        EXTRA_MODELS.clear();
     }
 
     public static ResourceLocation res(String name) {
@@ -122,6 +108,7 @@ public class Polytone {
 
     public static void onTagsReceived(HolderLookup.Provider registryAccess) {
         try {
+            ModelStuff.clear();
             COMPOUND_RELOADER.applyWithLevel(registryAccess, true);
             BiomeKeysCache.clear();
         } catch (RuntimeException e) {
@@ -173,10 +160,6 @@ public class Polytone {
                 .map(Path::getParent)
                 .map(Path::toString)
                 .findFirst();
-    }
-
-    public static void addCustomModel(ResourceLocation model) {
-        EXTRA_MODELS.add(model);
     }
 
     public static boolean isEntryDynamic(Registry<?> reg, ResourceLocation entryId) {

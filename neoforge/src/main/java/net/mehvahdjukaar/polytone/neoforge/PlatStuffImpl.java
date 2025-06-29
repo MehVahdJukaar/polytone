@@ -45,6 +45,7 @@ import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.model.standalone.StandaloneModelBaker;
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
@@ -283,18 +284,6 @@ public class PlatStuffImpl {
 
     public static RegistryAccess getServerRegistryAccess() {
         return ServerLifecycleHooks.getCurrentServer().registryAccess();
-    }
-
-    public static ItemModel getBakedModel(ResourceLocation id) {
-        ModelManager mm = Minecraft.getInstance().getModelManager();
-        return mm.getStandaloneModel(new StandaloneModelKey<>(id));
-    }
-
-    public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
-        Consumer<ModelEvent.RegisterStandalone> eventConsumer = event -> {
-            //eventListener.accept(id -> event.register(new StandaloneModelKey<ItemModel>(id)));
-        };
-        PolytoneForge.bus.addListener(eventConsumer);
     }
 
     public static String getVersion() {
