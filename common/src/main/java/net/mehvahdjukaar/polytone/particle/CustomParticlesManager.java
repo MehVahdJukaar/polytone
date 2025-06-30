@@ -10,6 +10,7 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.ModelStuff;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.slotify.GuiModifier;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.Parsed;

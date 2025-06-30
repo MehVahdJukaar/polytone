@@ -21,6 +21,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
+import net.mehvahdjukaar.polytone.slotify.BlitModifier;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.utils.Targets;
@@ -297,15 +298,7 @@ public class PlatStuffImpl {
     }
 
     public static void doAddModels() {
-        hack2.accept(new PlatStuff.SpecialModelEvent() {
-            @Override
-            public void register(ResourceLocation id) {
-                hack.addModel(ExtraModelKey.create(id::toString),
-                        new SimpleUnbakedExtraModel<>(id, (o, o2) -> {
-                            throw new UnsupportedOperationException("Not implemented yet");
-                        }));
-            }
-        });
+        ModelStuffImpl.doAdd();
     }
 
     public static String getVersion() {

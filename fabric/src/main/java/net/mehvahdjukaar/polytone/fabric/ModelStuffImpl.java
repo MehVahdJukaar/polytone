@@ -35,18 +35,27 @@ public class ModelStuffImpl {
         return null;
     }
 
+    private static ModelLoadingPlugin.Context hack = null;
+
     public static void init() {
         ModelLoadingPlugin.register(pluginContext -> {
-            for (var entry : SPECIAL_MODELS.entrySet()) {
-                var key = entry.getKey();
-                var value = entry.getValue();
-                pluginContext.addModel(value, new SimpleUnbakedExtraModel<>(
-                        key, (model, baker) -> { //same exact as forge
-                    return model.bakeTopGeometry(model.getTopTextureSlots(), baker, BlockModelRotation.X0_Y0);
-                }
-                ));
-            }
+            hack = pluginContext;
+
         });
+    }
+
+
+    public static void doAdd(){
+        for (var entry : SPECIAL_MODELS.entrySet()) {
+            var key = entry.getKey();
+            var value = entry.getValue();
+            hack.addModel(value, new SimpleUnbakedExtraModel<>(
+                    key, (model, baker) -> { //same exact as forge
+                return model.bakeTopGeometry(model.getTopTextureSlots(), baker, BlockModelRotation.X0_Y0);
+            }
+            ));
+        }
+        hack = null;
     }
 
 }

@@ -26,6 +26,7 @@ public class PolytoneFabric implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        ModelStuffImpl.init();
         FabricLoader instance = FabricLoader.getInstance();
         boolean iris = FabricLoader.getInstance().isModLoaded("iris") || FabricLoader.getInstance().isModLoaded("oculus");
         Polytone.init(instance.isDevelopmentEnvironment(), false, iris);
