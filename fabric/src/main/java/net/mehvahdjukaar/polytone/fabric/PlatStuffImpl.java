@@ -3,9 +3,6 @@ package net.mehvahdjukaar.polytone.fabric;
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.client.model.loading.v1.ExtraModelKey;
-import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
-import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.event.Event;
@@ -17,11 +14,10 @@ import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
 import net.fabricmc.loader.api.FabricLoader;
-import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
-import net.mehvahdjukaar.polytone.slotify.BlitModifier;
+import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.utils.Targets;
@@ -35,12 +31,9 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.*;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -65,7 +58,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -254,8 +247,13 @@ public class PlatStuffImpl {
                 .getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getId(type), provider);
     }
 
-    public static SimpleParticleType makeParticleType(boolean forceSpawn) {
-        return FabricParticleTypes.simple(forceSpawn);
+    public static ParticleType<ExtraDataParticleOptions> makeParticleType(boolean forceSpawn) {
+        AtomicReference<ParticleType<ExtraDataParticleOptions>> ref = new AtomicReference<>();
+        var instance = FabricParticleTypes.complex(forceSpawn,
+                ExtraDataParticleOptions.codec(ref::get),
+                ExtraDataParticleOptions.streamCodec(ref::get));
+        ref.set(instance);
+        return instance;
     }
 
     public static void unregisterParticleProvider(ResourceLocation id) {
@@ -334,11 +332,4 @@ public class PlatStuffImpl {
 
         MY_CUSTOM_RESOLVERS.clear();
     }
-
-    public static void registerShaders(ResourceLocation id, VertexFormat format, ShaderDefines defines, Consumer<ShaderProgram> shaderConsumer) {
-        ShaderProgram p = new ShaderProgram(id, format, ShaderDefines.EMPTY);
-        CoreShaders.getProgramsToPreload().add(p);
-        shaderConsumer.accept(p);
-    }
-
 }

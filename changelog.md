@@ -1,4 +1,1 @@
-- particles 3d models support the new model system
-- added custom particle rotation mode, allows to specify the 3 axis with an expression
-- added translucent additive render type for blocks. both render types dont use a custom shader anymore since vnailla one can be customized now to remove the alpha cutoff
-- ported more missing features
+random fixes
