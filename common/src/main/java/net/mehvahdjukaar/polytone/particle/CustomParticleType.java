@@ -35,6 +35,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.*;
 
@@ -74,6 +75,7 @@ public class CustomParticleType implements CustomParticleFactory {
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                boolean randomSprite,
                                int particleGroupLimit, boolean forceSpawn,
+                               RotationProvider rotation,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
                                @Nullable List<ParticleSoundEmitter> sounds,int tickRate, @Nullable List<Dynamic<?>> particles, int killSimilarInRadius) {
         this.renderType = renderType;
@@ -87,6 +89,7 @@ public class CustomParticleType implements CustomParticleFactory {
         this.hasPhysics = hasPhysics;
         this.killOnContact = killOnContact;
         this.killWhenStill = killWhenStill;
+        this.rotationProvider = rotation;
         this.liquidAffinity = liquidAffinity;
         this.forceSpawn = forceSpawn;
         this.colormap = colormap;
@@ -111,6 +114,7 @@ public class CustomParticleType implements CustomParticleFactory {
             ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("limit", 0).forGetter(c ->
                     c.group.map(ParticleGroup::getLimit).orElse(0)),
             Codec.BOOL.optionalFieldOf("force_spawn", false).forGetter(c -> c.forceSpawn),
+            RotationProvider.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationProvider),
             ParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
             Ticker.CODEC.optionalFieldOf("ticker").forGetter(c -> Optional.ofNullable(c.ticker)),
             ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
@@ -123,12 +127,14 @@ public class CustomParticleType implements CustomParticleFactory {
                                Vec3 offset, int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                boolean randomSprite,
-                               int limit, boolean forceSpawn, Optional<ParticleInitializer> initializer,
+                               int limit, boolean forceSpawn,
+                               RotationProvider rotation,
+                               Optional<ParticleInitializer> initializer,
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds,
                                int tickInterval, List<Dynamic<?>> particles, int killSimilarInRadius) {
         this(renderType, model.orElse(null), offset,
                 light, hasPhysics, killOnContact, killWhenStill,  liquidAffinity, colormap.orElse(null),
-                randomSprite, limit, forceSpawn,
+                randomSprite, limit, forceSpawn, rotation,
                 initializer.orElse(null), ticker.orElse(null), sounds, tickInterval, particles, killSimilarInRadius);
     }
 
@@ -365,22 +371,23 @@ public class CustomParticleType implements CustomParticleFactory {
         }
 
         @Override
-        public void render(VertexConsumer consumer, Camera renderInfo, float partialTicks) {
+        public void render(VertexConsumer consumer, Camera camera, float partialTicks) {
             if (this.model == null) {
-                super.render(consumer, renderInfo, partialTicks);
+                superRenderModified(consumer, camera, partialTicks);
             } else {
                 PoseStack poseStack = new PoseStack();
-                Vec3 cameraPos = renderInfo.getPosition();
+                Vec3 cameraPos = camera.getPosition();
                 float x = (float) (Mth.lerp(partialTicks, this.xo, this.x) - cameraPos.x());
                 float y = (float) (Mth.lerp(partialTicks, this.yo, this.y) - cameraPos.y());
                 float z = (float) (Mth.lerp(partialTicks, this.zo, this.z) - cameraPos.z());
-                Quaternionf quaternionf;
-                if (this.roll == 0.0F) {
-                    quaternionf = new Quaternionf();
-                } else {
-                    quaternionf = new Quaternionf();
-                    quaternionf.rotateY(Mth.lerp(partialTicks, this.oRoll, this.roll));
+
+                //same that happens in rotation
+                Quaternionf quaternionf = new Quaternionf();
+                this.type.rotationProvider.applyRotation(this, quaternionf, camera, partialTicks);
+                if (this.roll != 0.0F) {
+                    quaternionf.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
                 }
+
 
                 float size = this.getQuadSize(partialTicks);
 
@@ -400,6 +407,40 @@ public class CustomParticleType implements CustomParticleFactory {
 
             }
         }
+
+        public void superRenderModified(VertexConsumer buffer, Camera renderInfo, float partialTicks) {
+            Vec3 vec3 = renderInfo.getPosition();
+            float f = (float)(Mth.lerp((double)partialTicks, this.xo, this.x) - vec3.x());
+            float g = (float)(Mth.lerp((double)partialTicks, this.yo, this.y) - vec3.y());
+            float h = (float)(Mth.lerp((double)partialTicks, this.zo, this.z) - vec3.z());
+            //only change
+            Quaternionf quaternionf = new Quaternionf();
+            this.type.rotationProvider.applyRotation(this, quaternionf, renderInfo, partialTicks);
+            if (this.roll != 0.0F) {
+                quaternionf.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
+            }
+
+            Vector3f[] vector3fs = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)};
+            float i = this.getQuadSize(partialTicks);
+
+            for(int j = 0; j < 4; ++j) {
+                Vector3f vector3f = vector3fs[j];
+                vector3f.rotate(quaternionf);
+                vector3f.mul(i);
+                vector3f.add(f, g, h);
+            }
+
+            float k = this.getU0();
+            float l = this.getU1();
+            float m = this.getV0();
+            float n = this.getV1();
+            int o = this.getLightColor(partialTicks);
+            buffer.vertex((double)vector3fs[0].x(), (double)vector3fs[0].y(), (double)vector3fs[0].z()).uv(l, n).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
+            buffer.vertex((double)vector3fs[1].x(), (double)vector3fs[1].y(), (double)vector3fs[1].z()).uv(l, m).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
+            buffer.vertex((double)vector3fs[2].x(), (double)vector3fs[2].y(), (double)vector3fs[2].z()).uv(k, m).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
+            buffer.vertex((double)vector3fs[3].x(), (double)vector3fs[3].y(), (double)vector3fs[3].z()).uv(k, n).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
+        }
+
 
         public static void putModelBulkData(BakedModel model, int combinedLight, int combinedOverlay,
                                             PoseStack poseStack, VertexConsumer buffer, float r, float g, float b) {
