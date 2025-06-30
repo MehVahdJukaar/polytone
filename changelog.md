@@ -1,1 +1,1 @@
-- improved handling of block modifiers with the same name. Both will be parsed and applied in the right order. Especially relevant for legacy stuff conversion
+added custom rotation mode for particles
