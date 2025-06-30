@@ -1,1 +1,2 @@
-random fixes
+- fixed slot modifier "slots" field being renamed
+- fixed additive translucent render pipeline missing samplers

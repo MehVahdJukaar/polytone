@@ -5,6 +5,7 @@ import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.SourceFactor;
+import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.particle.ParticleRenderType;
@@ -27,23 +28,25 @@ public class PolytoneRenderTypes {
 
     public static final MaterialMapper PARTICLES_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_PARTICLES, "particle");
 
-    private static final BlendFunction ADDITIVE_TRANSLUCENT_BLEND = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE);
+    private static final BlendFunction ADDITIVE_TRANSLUCENT_BLEND =
+            new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE);
 
 
     public static final RenderPipeline ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.MATRICES_COLOR_FOG_SNIPPET)
+                    .withLocation(Polytone.res("pipeline/additive_particle"))
+                    .withSampler("Sampler0")
+                    .withSampler("Sampler2")
                     .withVertexShader(ResourceLocation.withDefaultNamespace("core/particle"))
                     .withFragmentShader(ResourceLocation.withDefaultNamespace("core/terrain")) //so we can use shader define. these shaders are identical
-                    .withShaderDefine("ALPHA_CUTOUT", 0.001F)
-                    .withLocation(Polytone.res("pipeline/additive_particle"))
                     .withVertexFormat(DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS)
+                    .withShaderDefine("ALPHA_CUTOUT", 0.001F)
                     /* Blending Functions */
                     .withDepthWrite(false) //??
                     .withCull(true) //??
                     .withBlend(ADDITIVE_TRANSLUCENT_BLEND)
                     .build()
     );
-
 
     public static final RenderType ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE = RenderType.create(
             Polytone.MOD_ID + ":additive_particle",
@@ -60,7 +63,7 @@ public class PolytoneRenderTypes {
                             )
                     )
                     .setLightmapState(LIGHTMAP)
-                    .setOutputState(RenderStateShard.PARTICLES_TARGET) //??
+                   // .setOutputState(RenderStateShard.PARTICLES_TARGET) //??
                     .createCompositeState(RenderType.OutlineProperty.NONE)
     );
 
@@ -89,7 +92,7 @@ public class PolytoneRenderTypes {
             RenderType.CompositeState.builder()
                     .setLightmapState(RenderStateShard.LIGHTMAP)
                     .setTextureState(RenderStateShard.BLOCK_SHEET_MIPPED)
-                    .setOutputState(RenderStateShard.PARTICLES_TARGET)
+                  //  .setOutputState(RenderStateShard.PARTICLES_TARGET)
                     .createCompositeState(RenderType.OutlineProperty.NONE));
 
 
