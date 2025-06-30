@@ -1,3 +1,4 @@
 - backported some recent changes
 - fixed lightmap sampler default_2 typo
 - fixed blit modifiers not working on partial blits
+- improved shader registration on fabric
