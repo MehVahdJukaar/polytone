@@ -70,7 +70,29 @@ public class GuiOverlayManager extends JsonPartialReloader {
         if (mod != null) {
             int ind = mod.index();
             if (ind == -1 || ind == index) {
-                mod.blitModified(gui, sprite, x, x + width, y, y + height, offset);
+                mod.blitModified(gui, sprite, x, x + width,y, y + height, offset,
+                        sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1());
+                return true;
+            }
+            index++;
+        }
+        return false;
+    }
+
+    //partial blit
+    public boolean maybeModifyBlit(GuiGraphics guiGraphics, TextureAtlasSprite sprite, int x, int y,
+                                   int offset, int textureWidth, int textureHeight,
+                                   int uPosition, int vPosition, int uWidth, int vHeight) {
+        if (!active || blitModifiers.isEmpty()) return false;
+        var mod = blitModifiers.get(sprite.contents().name());
+        if (mod != null) {
+            int ind = mod.index();
+            if (ind == -1 || ind == index) {
+                mod.blitModified(guiGraphics, sprite, x, x + uWidth, y, y + vHeight, offset,
+                        sprite.getU((float)uPosition / (float)textureWidth),
+                        sprite.getU((float)(uPosition + uWidth) / (float)textureWidth),
+                        sprite.getV((float)vPosition / (float)textureHeight),
+                        sprite.getV((float)(vPosition + vHeight) / (float)textureHeight));
                 return true;
             }
             index++;
@@ -151,6 +173,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
         }
         return false;
     }
+
 
 
     private record HeartSprites(ResourceLocation full, ResourceLocation half, ResourceLocation fullBlinking,
