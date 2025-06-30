@@ -2,6 +2,8 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.utils.CodecUtil;
+import net.mehvahdjukaar.polytone.utils.Utils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.SingleQuadParticle;
@@ -9,7 +11,7 @@ import org.joml.Quaternionf;
 
 public interface RotationProvider {
 
-    Codec<RotationProvider> CODEC = Codec.withAlternative(
+    Codec<RotationProvider> CODEC = CodecUtil.withAlternative(
             (Codec<RotationProvider>) (Object) Custom.CODEC,
             RotationMode.CODEC);
 

@@ -18,14 +18,14 @@ public record SlotModifier(Optional<IntRange> targets, int color, int color2, in
                            Optional<IntRange> targetX, Optional<IntRange> targetY, Optional<String> targetClass) {
 
     public static final Codec<SlotModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            StrOpt.of(TargetSlots.CODEC, "slots").forGetter(SlotModifier::targets),
+            StrOpt.of(IntRange.CODEC, "slots").forGetter(SlotModifier::targets),
             StrOpt.of(ColorUtils.CODEC, "color", -1).forGetter(SlotModifier::color),
             StrOpt.of(ColorUtils.CODEC, "color_2", -1).forGetter(SlotModifier::color2),
             StrOpt.of(Codec.INT, "x_offset", 0).forGetter(SlotModifier::xOffset),
             StrOpt.of(Codec.INT, "y_offset", 0).forGetter(SlotModifier::yOffset),
             StrOpt.of(Codec.INT, "z_offset", 0).forGetter(SlotModifier::zOffset),
-            StrOpt.of(Codec.INT, "target_x").forGetter(SlotModifier::targetX),
-            StrOpt.of(Codec.INT, "target_y").forGetter(SlotModifier::targetY),
+            StrOpt.of(IntRange.CODEC, "target_x").forGetter(SlotModifier::targetX),
+            StrOpt.of(IntRange.CODEC, "target_y").forGetter(SlotModifier::targetY),
             StrOpt.of(Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName), "target_class_name").forGetter(SlotModifier::targetClass)
     ).apply(i, SlotModifier::new));
 
