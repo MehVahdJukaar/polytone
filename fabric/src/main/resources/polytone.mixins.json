@@ -17,7 +17,6 @@
     "FabricTerrainRendererContextMixin",
     "FogFluidRendererMixin",
     "FogRendererMixin2",
-    "GuiGraphicsMixin",
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
     "ModelBlockRendererMixin",
