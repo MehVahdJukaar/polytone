@@ -45,7 +45,7 @@ public interface ILightmapNumberProvider {
     ILightmapNumberProvider LINEAR = BUILTIN_PROVIDERS.register("linear",
             (time, rain, thunder) -> Mth.abs(1 - 2 * time));
 
-    ILightmapNumberProvider DEFAULT_2 = BUILTIN_PROVIDERS.register("default",
+    ILightmapNumberProvider DEFAULT_2 = BUILTIN_PROVIDERS.register("default_2",
             (time, rain, thunder) -> {
                 float g = 1.0F - (Mth.cos(time * Mth.TWO_PI) * 2.0F + 0.2F);
                 g = Mth.clamp(g, 0.0F, 1.0F);
