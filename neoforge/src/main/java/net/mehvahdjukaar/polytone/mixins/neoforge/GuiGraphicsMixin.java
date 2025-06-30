@@ -22,13 +22,29 @@ public class GuiGraphicsMixin {
     @Shadow @Final
     public MultiBufferSource.BufferSource bufferSource;
 
-    @Inject(method = "blitSprite(Ljava/util/function/Function;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "blitSprite(Ljava/util/function/Function;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V",
+            at = @At(value = "INVOKE",
+                    shift = At.Shift.BEFORE,
+                    target = "Lnet/minecraft/client/gui/GuiGraphics;innerBlit(Lnet/minecraft/resources/ResourceLocation;IIIIIFFFF)V"), cancellable = true)
     public void polytone$modifyBlit(Function<ResourceLocation, RenderType> function, TextureAtlasSprite textureAtlasSprite,
                                     int x, int y, int width, int height, int color, CallbackInfo ci) {
         if (Polytone.OVERLAY_MODIFIERS.maybeModifyBlit((GuiGraphics) (Object) this, function,
                 this.bufferSource, textureAtlasSprite, x, y, width, height, color)){
             ci.cancel();
 
+        }
+    }
+
+    //cut blit
+    @Inject(method = "blitSprite(Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIIIIIII)V",
+            at = @At(value = "INVOKE",
+                    shift = At.Shift.BEFORE,
+                    target = "Lnet/minecraft/client/gui/GuiGraphics;innerBlit(Lnet/minecraft/resources/ResourceLocation;IIIIIFFFF)V"), cancellable = true)
+    public void polytone$modifyBlit(TextureAtlasSprite sprite, int textureWidth, int textureHeight, int uPosition, int vPosition,
+                                    int x, int y, int offset, int uWidth, int vHeight, CallbackInfo ci) {
+        if (Polytone.OVERLAY_MODIFIERS.maybeModifyBlit((GuiGraphics) (Object) this, sprite, x, y, offset, textureWidth, textureHeight,
+                uPosition, vPosition, uWidth, vHeight)) {
+            ci.cancel();
         }
     }
 }
