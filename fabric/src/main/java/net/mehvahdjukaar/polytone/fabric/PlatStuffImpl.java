@@ -36,9 +36,11 @@ import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -331,6 +333,12 @@ public class PlatStuffImpl {
         ColorResolverRegistryAccessor.setCustomResolvers(newSet2);
 
         MY_CUSTOM_RESOLVERS.clear();
+    }
+
+    public static void registerShaders(ResourceLocation id, VertexFormat format, ShaderDefines defines, Consumer<ShaderProgram> shaderConsumer) {
+        ShaderProgram p = new ShaderProgram(id, format, ShaderDefines.EMPTY);
+        CoreShaders.getProgramsToPreload().add(p);
+        shaderConsumer.accept(p);
     }
 
 }
