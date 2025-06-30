@@ -18,7 +18,7 @@ public record SlotModifier(Optional<IntRange> targets, int xOffset, int yOffset,
                            Optional<IntRange> targetX, Optional<IntRange> targetY, Optional<String> targetClass) {
 
     public static final Codec<SlotModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            IntRange.CODEC.optionalFieldOf("values").forGetter(SlotModifier::targets),
+            IntRange.CODEC.optionalFieldOf("slots").forGetter(SlotModifier::targets),
             Codec.INT.optionalFieldOf("x_offset", 0).forGetter(SlotModifier::xOffset),
             Codec.INT.optionalFieldOf("y_offset", 0).forGetter(SlotModifier::yOffset),
             Codec.INT.optionalFieldOf("z_offset", 0).forGetter(SlotModifier::zOffset),

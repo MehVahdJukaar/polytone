@@ -47,7 +47,7 @@ public class PolytoneRenderTypes {
 
     public static final RenderType ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE = RenderType.create(
             Polytone.MOD_ID + ":additive_particle",
-            4 * 1024 * 1024, //?? translucent particles uses 1536
+            64 * 1024, //?? translucent particles uses 1536
             false, //??
             true, //??
             ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE,
@@ -82,7 +82,7 @@ public class PolytoneRenderTypes {
     //in theory same as with particle just different shader?? and texture state
     public static final RenderType ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE = RenderType.create(
             Polytone.MOD_ID + ":additive_block",
-            786432, //no idea
+            1024*64, //no idea
             true, //crumbling ??
             true, //sorted
             ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE,
