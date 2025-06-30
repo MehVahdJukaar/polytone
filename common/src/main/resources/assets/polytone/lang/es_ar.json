@@ -1,0 +1,5 @@
+{
+  "toast.polytone.load_fail": "El paquete tiene errores. Chequeá los logs/polytone.log",
+  "toast.polytone.lazy_load_fail": "Falló la recarga tardía de recursos de Polytone",
+  "toast.polytone.early_load_fail": "Falló la recarga temprana de recursos de Polytone"
+}
