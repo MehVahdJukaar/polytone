@@ -516,7 +516,7 @@ public class LegacyHelper {
                         Optional.ofNullable(fogCol), Optional.ofNullable(skyCol), Optional.empty(),
                         false,false, Optional.empty(), Targets.EMPTY);
 
-                ResourceLocation id = ResourceLocation.parse(names[i]);
+                ResourceLocation id = new ResourceLocation(names[i]);
                 boolean enabled = fogEnabled || skyEnabled;
                 var parsedMod = Parsed.of(mod, id, enabled);
                 converted.put(id, parsedMod);

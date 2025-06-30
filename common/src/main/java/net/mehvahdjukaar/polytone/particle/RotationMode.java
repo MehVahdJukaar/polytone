@@ -2,6 +2,8 @@ package net.mehvahdjukaar.polytone.particle;
 
 
 import com.mojang.serialization.Codec;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Camera;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.util.Mth;
@@ -38,9 +40,9 @@ public enum RotationMode implements StringRepresentable, RotationProvider {
                 quaternionf.rotateY(Mth.HALF_PI);
             }
             case LOOK_AT_XYZ ->
-                    SingleQuadParticle.FacingCameraMode.LOOKAT_XYZ.setRotation(quaternionf, camera, partialTicks);
+                    FacingCameraMode.LOOKAT_XYZ.setRotation(quaternionf, camera, partialTicks);
             case LOOK_AT_Y ->
-                    SingleQuadParticle.FacingCameraMode.LOOKAT_Y.setRotation(quaternionf, camera, partialTicks);
+                    FacingCameraMode.LOOKAT_Y.setRotation(quaternionf, camera, partialTicks);
             case LOOK_AT_X -> quaternionf.set(camera.rotation().x, 0, 0.0F, camera.rotation().w);
             case LOOK_AT_Z -> quaternionf.set(0.0F, 0.0F, camera.rotation().z, camera.rotation().w);
             case LOOK_AT_XZ -> quaternionf.set(camera.rotation().x, 0, camera.rotation().z, camera.rotation().w);
@@ -77,6 +79,17 @@ public enum RotationMode implements StringRepresentable, RotationProvider {
     // in degrees
     public static double getYaw(Vec3 vec3) {
         return Math.toDegrees(Math.atan2(-vec3.x, vec3.z));
+    }
+
+    public interface FacingCameraMode {
+        FacingCameraMode LOOKAT_XYZ = (quaternionf, camera, f) -> {
+            quaternionf.set(camera.rotation());
+        };
+        FacingCameraMode LOOKAT_Y = (quaternionf, camera, f) -> {
+            quaternionf.set(0.0F, camera.rotation().y, 0.0F, camera.rotation().w);
+        };
+
+        void setRotation(Quaternionf quaternionf, Camera camera, float f);
     }
 
 }
