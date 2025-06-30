@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.neoforge;
 
-import com.github.alexmodguy.alexscaves.client.ClientProxy;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.util.Mth;
@@ -8,7 +7,8 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 public class AlexsCavesCompat {
-
+//TODO: add back
+/*
     public static float modifyGamma(float partialTicks, float gamma) {
         float biomeAmbientLight = ClientProxy.lastBiomeAmbientLightAmountPrev + (ClientProxy.lastBiomeAmbientLightAmount - ClientProxy.lastBiomeAmbientLightAmountPrev) * partialTicks;
         if(biomeAmbientLight > 0.0F){
@@ -23,5 +23,5 @@ public class AlexsCavesCompat {
             Vec3 to = ClientProxy.lastBiomeLightColorPrev.add(ClientProxy.lastBiomeLightColor.subtract(ClientProxy.lastBiomeLightColorPrev).scale(partialTicks));
             combined.set(to.x * in.x, to.y * in.y, to.z * in.z);
         }
-    }
+    }*/
 }

@@ -7,12 +7,10 @@
   ],
   "client": [
     "BuildCreativeModeTabContentsEventAccessor",
-    "SodiumBlockRendererMixin",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "CreativeModeInventoryScreenMixin",
     "CreativeTabAccessor",
-    "CurioInventoryScreenMixin",
     "GuiGraphicsMixin",
     "IClientFluidTypeExtensionsMixin",
     "InventoryScreenMixin",

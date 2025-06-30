@@ -270,15 +270,16 @@ public class PlatStuffImpl {
     public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX,
                                             int skyY, Vector3f combined) {
         //INSERTION BY AC...
-        if (AC) AlexsCavesCompat.applyACLightingColors(level, combined, partialTicks);
-
+   //     if (AC) AlexsCavesCompat.applyACLightingColors(level, combined, partialTicks);
+        //TODO: add back
         //removed in 1.20.2
         //level.effects().adjustLightmapColors(level, partialTicks, skyDarken, skyLight, flicker, torchX, skyY, combined);
     }
 
 
     public static float compatACModifyGamma(float partialTicks, float gamma) {
-        return AC ? AlexsCavesCompat.modifyGamma(partialTicks, gamma) : gamma;
+       return gamma; //TODO: add back
+        // return AC ? AlexsCavesCompat.modifyGamma(partialTicks, gamma) : gamma;
     }
 
 
