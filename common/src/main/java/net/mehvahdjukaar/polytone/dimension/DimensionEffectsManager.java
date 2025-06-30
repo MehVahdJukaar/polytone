@@ -244,6 +244,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private static final ThreadLocal<Boolean> isTerrainHack = ThreadLocal.withInitial(() -> false);
 
 
+    /*
     public Vector4f modifyTerrainFogColor(Vector4f original, ClientLevel level, Camera camera, float partialTicks, GameRenderer gameRenderer, Minecraft minecraft) {
         Colormap colormap = this.terrainFogColormaps.get(level.dimensionType());
         if (colormap == null) return original;
@@ -254,7 +255,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         );
         isTerrainHack.set(false);
         return vector4f;
-    }
+    }*/ //TODO add
 
 
     private static @NotNull Vec3 cubicSample(Vec3 center, ClientLevel level, float brightness, Colormap colormap) {

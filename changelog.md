@@ -1,1 +1,3 @@
-exclusion radius wont consider particles that are about to die
+- backported some recent changes
+- fixed lightmap sampler default_2 typo
+- fixed blit modifiers not working on partial blits

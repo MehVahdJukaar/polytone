@@ -17,9 +17,6 @@ import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -30,10 +27,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RedStoneWireBlock;
@@ -187,40 +186,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             } else {
                 col = parseHex(color);
             }
-        } else if (is(prop, 0, "egg")) {
-            if (prop.length > 2) {
-                ResourceLocation id = ResourceLocation.parse(prop[2].replace("\\", ""));
-                Item item = BuiltInRegistries.ITEM.getOptional(id).orElse(null);
-                if (item == null) {
-                    var entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
-                    if (entity != null) {
-                        item = SpawnEggItem.byId(entity);
-                    }
-                }
-                if (item == null) {
-                    item = BuiltInRegistries.ITEM.getOptional(id.withSuffix("_spawn_egg")).orElse(null);
-                }
-                if (item instanceof SpawnEggItem spawnEggItem) {
-                    int col = parseHex(obj);
 
-                    if (is(prop, 1, "shell")) {
-                        if (!vanillaEggsBackgrounds.containsKey(spawnEggItem)) {
-                            vanillaEggsBackgrounds.put(spawnEggItem, spawnEggItem.backgroundColor);
-                        }
-                        spawnEggItem.backgroundColor = col;
-                    } else if (is(prop, 1, "spots")) {
-                        if (!vanillaEggsHighlight.containsKey(spawnEggItem)) {
-                            vanillaEggsHighlight.put(spawnEggItem, spawnEggItem.highlightColor);
-                        }
-                        spawnEggItem.highlightColor = col;
-                    }
-                } else {
-                    Polytone.LOGGER.warn("Unknown or invalid Spawn Egg Item with name {}", id);
-                }
-            }
-        } else if (is(prop, 0, "potion") || is(prop, 0, "effect")) {
-            ResourceLocation id = ResourceLocation.parse(prop[1].replace("\\", ""));
-            int col = parseHex(obj);
+
             if (id.getPath().equals("empty")) {
                 // TODO: handle PotionContents.EMPTY_COLOR
             } else if (id.getPath().equals("water")) {
@@ -241,6 +208,41 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     }
                 } else Polytone.LOGGER.warn("Unknown Mob Effect with name {}", id);
             }
+        });
+
+        doWith(obj, "egg", (k, v) -> {
+            ResourceLocation id = ResourceLocation.parse(k.replace("\\", ""));
+
+            Item item = BuiltInRegistries.ITEM.getOptional(id).orElse(null);
+            if (item == null) {
+                var entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
+                if (entity != null) {
+                    item = SpawnEggItem.byId(entity);
+                }
+            }
+            if (item == null) {
+                item = BuiltInRegistries.ITEM.getOptional(id.withSuffix("_spawn_egg")).orElse(null);
+            }
+            if (item instanceof SpawnEggItem spawnEggItem) {
+
+               String shell = getString(v, "shell");
+                if (shell != null) {
+                    if (!vanillaEggsBackgrounds.containsKey(spawnEggItem)) {
+                        vanillaEggsBackgrounds.put(spawnEggItem, spawnEggItem.backgroundColor);
+                    }
+                    spawnEggItem.backgroundColor = parseHex(shell);
+                }
+                String spots = getString(v, "spots");
+                 if (spots != null) {
+                    if (!vanillaEggsHighlight.containsKey(spawnEggItem)) {
+                        vanillaEggsHighlight.put(spawnEggItem, spawnEggItem.highlightColor);
+                    }
+                    spawnEggItem.highlightColor = parseHex(spots);;
+                }
+            } else {
+                Polytone.LOGGER.warn("Unknown or invalid Spawn Egg Item with name {}", id);
+            }
+
         });
 
         doWith(obj, "sheep", (k, v) -> {
@@ -266,13 +268,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 int col = parseHex(v);
                 var rgb = ColorUtils.unpack(col);
                 RedStoneWireBlock.COLORS[code] = new Vec3(rgb[0], rgb[1], rgb[2]);
-                    if (code == 15) {
-                        Vector3f maxPower = new Vector3f(rgb[0], rgb[1], rgb[2]);
-                        net.minecraft.core.particles.DustParticleOptions.REDSTONE_PARTICLE_COLOR = maxPower;
-                        ((DustParticleOptionAccessor) DustParticleOptions.REDSTONE).setColor(maxPower);
-                    }
-                } else Polytone.LOGGER.warn("Redstone color index must be between 0 and 15");
-            });
+                if (code == 15) {
+                    Vector3f maxPower = new Vector3f(rgb[0], rgb[1], rgb[2]);
+                    net.minecraft.core.particles.DustParticleOptions.REDSTONE_PARTICLE_COLOR = maxPower;
+                    ((DustParticleOptionAccessor) DustParticleOptions.REDSTONE).setColor(maxPower);
+                }
+            } else Polytone.LOGGER.warn("Redstone color index must be between 0 and 15");
+        });
 
         doWith(obj, "text", (k, v) -> {
             int col = parseHex(v);
@@ -339,6 +341,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         return null;
     }
 
+    @Nullable
     private static String getString(JsonElement element, String key) {
         if (element instanceof JsonObject jo) {
             JsonElement joo = jo.get(key);

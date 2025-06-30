@@ -36,6 +36,8 @@ public class LevelRendererMixin {
         return f != null ? f : original;
     }
 
+    //TODO: add
+    /*
     @ModifyArg(method = "renderLevel",
             at = @At(value = "INVOKE",
                     ordinal = 0,
@@ -46,5 +48,5 @@ public class LevelRendererMixin {
 
         return Polytone.DIMENSION_MODIFIERS.modifyTerrainFogColor(original, this.level,
                 camera, partialTicks, gameRenderer, this.minecraft);
-    }
+    }*/
 }

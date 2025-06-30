@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.fabric;
 
+import com.google.common.base.Preconditions;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
@@ -85,7 +86,7 @@ public class PolytoneFabric implements ClientModInitializer {
 
     public static void addRenderParticlesType() {
         List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());
-        renderOrder.add(PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE.get());
+        renderOrder.add(Preconditions.checkNotNull(PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE));
         ParticleEngineAccessor.setRENDER_ORDER(renderOrder);
     }
 
