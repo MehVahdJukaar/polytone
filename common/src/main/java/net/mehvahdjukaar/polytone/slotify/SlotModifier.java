@@ -17,7 +17,7 @@ public record SlotModifier(Optional<IntRange> targets, int color, int color2, in
                            Optional<IntRange> targetX, Optional<IntRange> targetY, Optional<String> targetClass) {
 
     public static final Codec<SlotModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            IntRange.CODEC.optionalFieldOf("values").forGetter(SlotModifier::targets),
+            IntRange.CODEC.optionalFieldOf("slots").forGetter(SlotModifier::targets),
             ColorUtils.CODEC.optionalFieldOf("color", -1).forGetter(SlotModifier::color),
             ColorUtils.CODEC.optionalFieldOf("color_2", -1).forGetter(SlotModifier::color2),
             Codec.INT.optionalFieldOf("x_offset", 0).forGetter(SlotModifier::xOffset),
