@@ -13,7 +13,6 @@
     "CreativeModeInventoryScreenMixin",
     "CreativeTabAccessor",
     "CurioInventoryScreenMixin",
-    "GuiGraphicsMixin",
     "IClientFluidTypeExtensionsMixin",
     "InventoryScreenMixin",
     "ModelBlockRendererMixin",
