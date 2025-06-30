@@ -323,21 +323,18 @@ public class PlatStuffImpl {
     private static Consumer<PlatStuff.SpecialModelEvent> hack2;
 
     public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
-        hack2 = eventListener;
         ModelLoadingPlugin.register(pluginContext -> {
-            hack = pluginContext;
+            eventListener.accept(new PlatStuff.SpecialModelEvent() {
+                @Override
+                public void register(ModelResourceLocation id) {
+                    pluginContext.addModels(id.id());
+                }
+            });
         });
-
     }
 
-
     public static void doAddModels(){
-        hack2.accept(new PlatStuff.SpecialModelEvent() {
-            @Override
-            public void register(ModelResourceLocation id) {
-                hack.addModels(id.id());
-            }
-        });
+       // hack2.accept(id -> hack.addModels(id.id()));
     }
 
     public static String getVersion() {

@@ -121,7 +121,7 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
             c.resetWithLevel(isLogOff);
         }
     }
-
+    //gather models
     public void earlyProcess(ResourceManager resourceManager) {
         for (var c : children) {
             c.earlyProcess(resourceManager);

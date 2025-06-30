@@ -34,7 +34,6 @@ public class PolytoneFabric implements ClientModInitializer {
         boolean iris = FabricLoader.getInstance().isModLoaded("iris") || FabricLoader.getInstance().isModLoaded("oculus");
         Polytone.init(instance.isDevelopmentEnvironment(), false, iris);
 
-
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
             if (client) {
                 Polytone.onTagsReceived(registries);
