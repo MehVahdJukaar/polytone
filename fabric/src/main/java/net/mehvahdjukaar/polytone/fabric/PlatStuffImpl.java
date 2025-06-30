@@ -7,6 +7,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -370,19 +371,12 @@ public class PlatStuffImpl {
         MY_CUSTOM_RESOLVERS.clear();
     }
 
-    public static final List<ShaderRecord> SHADER_REGISTRATIONS = Collections.synchronizedList(new ArrayList<>());
 
-
-    public static void registerShaders(ResourceLocation event, VertexFormat format, Consumer<ShaderInstance> shaderConsumer) {
-        SHADER_REGISTRATIONS.add(new ShaderRecord(event, format, shaderConsumer));
+    public static void registerShaders(ResourceLocation id, VertexFormat format, Consumer<ShaderInstance> shaderConsumer) {
+        CoreShaderRegistrationCallback.EVENT.register(registrationContext -> {
+            registrationContext.register(id, format, shaderConsumer);
+        });
 
     }
-
-    public record ShaderRecord(ResourceLocation id, VertexFormat format, Consumer<ShaderInstance> shaderConsumer) {
-        public void register(ShaderInstance shader) {
-            this.shaderConsumer.accept(shader);
-        }
-    }
-
 
 }
