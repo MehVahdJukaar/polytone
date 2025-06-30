@@ -18,7 +18,6 @@ import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
@@ -32,13 +31,11 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -57,7 +54,10 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
@@ -317,7 +317,7 @@ public class PlatStuffImpl {
     }
 
 
-    public static void doAddModels(){
+    public static void doAddModels() {
         hack2.accept(new PlatStuff.SpecialModelEvent() {
             @Override
             public void register(ModelResourceLocation id) {
@@ -358,22 +358,10 @@ public class PlatStuffImpl {
         MY_CUSTOM_RESOLVERS.clear();
     }
 
-    public static final List<ShaderRecord> SHADER_REGISTRATIONS = Collections.synchronizedList(new ArrayList<>());
-
-
-    public static void registerShaders(ResourceLocation event, VertexFormat format, ShaderDefines defines, Consumer<ShaderProgram> shaderConsumer) {
-        SHADER_REGISTRATIONS.add(new ShaderRecord(event, format, defines, shaderConsumer));
-
+    public static void registerShaders(ResourceLocation id, VertexFormat format, ShaderDefines defines, Consumer<ShaderProgram> shaderConsumer) {
+        ShaderProgram p = new ShaderProgram(id, format, ShaderDefines.EMPTY);
+        CoreShaders.getProgramsToPreload().add(p);
+        shaderConsumer.accept(p);
     }
-
-    public record ShaderRecord(ResourceLocation id, VertexFormat format, ShaderDefines defines,
-                               Consumer<ShaderProgram> shaderConsumer) {
-        public ShaderProgram create() {
-            ShaderProgram program = new ShaderProgram(id, format, defines);
-            shaderConsumer.accept(program);
-            return program;
-        }
-    }
-
 
 }
