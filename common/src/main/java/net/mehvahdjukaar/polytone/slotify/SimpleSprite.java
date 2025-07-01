@@ -7,6 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -45,13 +46,19 @@ public record SimpleSprite(ResourceLocation texture, float x, float y, float wid
     //same as gui graphics inner blit
 
 
-    public static void blit(Matrix4f matrix, VertexConsumer vertexConsumer,
-                            float x1, float x2, float y1, float y2,
-                            float blitOffset, float minU, float maxU, float minV, float maxV, int color) {
+    //same as gui graphics inner blit
+    public static void blit(Matrix4f matrix, ResourceLocation atlasLoc, float x1, float x2, float y1, float y2,
+                            float blitOffset, float minU, float maxU, float minV, float maxV) {
+        RenderSystem.enableDepthTest();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderTexture(0, atlasLoc);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
-        vertexConsumer.addVertex(matrix, x1, y1, blitOffset).setUv(minU, minV).setColor(color);
-        vertexConsumer.addVertex(matrix, x1, y2, blitOffset).setUv(minU, maxV).setColor(color);
-        vertexConsumer.addVertex(matrix, x2, y2, blitOffset).setUv(maxU, maxV).setColor(color);
-        vertexConsumer.addVertex(matrix, x2, y1, blitOffset).setUv(maxU, minV).setColor(color);
+        bufferBuilder.addVertex(matrix, x1, y1, blitOffset).setUv(minU, minV);
+        bufferBuilder.addVertex(matrix, x1, y2, blitOffset).setUv(minU, maxV);
+        bufferBuilder.addVertex(matrix, x2, y2, blitOffset).setUv(maxU, maxV);
+        bufferBuilder.addVertex(matrix, x2, y1, blitOffset).setUv(maxU, minV);
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
     }
 }

@@ -36,6 +36,10 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     @Shadow
     @Nullable
     protected Slot hoveredSlot;
+    @Shadow protected int topPos;
+    @Shadow protected int leftPos;
+    @Shadow protected int imageWidth;
+    @Shadow protected int imageHeight;
     @Unique
     private Integer polytone$customLabelColor = null;
     @Unique
@@ -55,6 +59,13 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             this.inventoryLabelY += m.labelY();
             this.polytone$customTitleColor = m.titleColor();
             this.polytone$customLabelColor = m.labelColor();
+            this.leftPos += m.xOff();
+            this.topPos += m.yOff();
+            this.width += m.wOff();
+            this.imageWidth += m.wOff();
+            this.height += m.hOff();
+            this.imageHeight += m.hOff();
+
         }
     }
 

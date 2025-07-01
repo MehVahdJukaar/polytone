@@ -115,7 +115,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             JsonElement json = j.getValue();
             ResourceLocation id = j.getKey();
 
-            var prop = Parsed.parseOptionalOrPartial(BlockPropertyModifier.CODEC, BlockPropertyModifier.PARTIAL_CODEC,
+            var prop = Parsed.parseOptionalOrPartial(
+                    BlockPropertyModifier.CODEC, BlockPropertyModifier.PARTIAL_CODEC,
                     json, ops, id, "block modifier");
             parsedModifiers.put(id, prop);
         }

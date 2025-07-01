@@ -5,13 +5,16 @@ import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.dimension.DimensionTarget;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -37,6 +40,9 @@ public class Lightmap {
 
     public static final Codec<Lightmap> DIRECT_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
+                    DimensionTarget.CODEC
+                            .optionalFieldOf("targets", DimensionTarget.EMPTY)
+                            .forGetter(l -> l.targets),
                     ILightmapNumberProvider.CODEC.optionalFieldOf("sky_getter", ILightmapNumberProvider.DEFAULT)
                             .forGetter(l -> l.skyGetter),
                     ILightmapNumberProvider.CODEC.optionalFieldOf("torch_getter", ILightmapNumberProvider.DEFAULT)
@@ -53,6 +59,7 @@ public class Lightmap {
     public static final Codec<Lightmap> CODEC = new ReferenceOrDirectCodec<>(Polytone.LIGHTMAPS.byNameCodec(), DIRECT_CODEC);
 
 
+    private final DimensionTarget targets;
     private final ILightmapNumberProvider skyGetter;
     private final ILightmapNumberProvider torchGetter;
     private final boolean hasLightningColumn;
@@ -68,7 +75,7 @@ public class Lightmap {
     private long lastTime = 0;
     private boolean forceUpload = false;
 
-    public Lightmap(ILightmapNumberProvider skyGetter, ILightmapNumberProvider torchGetter,
+    public Lightmap(DimensionTarget targets, ILightmapNumberProvider skyGetter, ILightmapNumberProvider torchGetter,
                     boolean lightningColumn, double skyLerp, double torchLerp, float baseLight) {
         this.skyGetter = skyGetter;
         this.torchGetter = torchGetter;
@@ -79,11 +86,12 @@ public class Lightmap {
         long pixels = MemoryUtil.nmemAlloc(16 * 16 * 4);
         Cleaner.create().register(this, () -> MemoryUtil.nmemFree(pixels));
         this.lightmapPixels = pixels;
+        this.targets = targets;
     }
 
     //default impl
     public Lightmap() {
-        this(ILightmapNumberProvider.DEFAULT, ILightmapNumberProvider.RANDOM, true,
+        this(DimensionTarget.EMPTY, ILightmapNumberProvider.DEFAULT, ILightmapNumberProvider.RANDOM, true,
                 DEFAULT_SKY_LERP, DEFAULT_TORCH_LERP, DEFAULT_BASE_LIGHT);
     }
 
@@ -96,6 +104,10 @@ public class Lightmap {
                 throw new IllegalStateException("Lightmap cannot have more with is too small! Was " + v.width());
             }
         }
+    }
+
+    public DimensionTarget targets() {
+        return targets;
     }
 
 

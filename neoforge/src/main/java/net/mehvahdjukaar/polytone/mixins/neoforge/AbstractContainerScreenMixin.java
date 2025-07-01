@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.HopperScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -35,6 +36,10 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     @Shadow
     protected int inventoryLabelY;
     @Shadow @Nullable protected Slot hoveredSlot;
+    @Shadow protected int leftPos;
+    @Shadow protected int topPos;
+    @Shadow protected int imageWidth;
+    @Shadow protected int imageHeight;
     @Unique
     private Integer polytone$customTitleColor;
     @Unique
@@ -54,6 +59,12 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             this.inventoryLabelY += m.labelY();
             this.polytone$customTitleColor = m.titleColor();
             this.polytone$customLabelColor = m.labelColor();
+            this.leftPos += m.xOff();
+            this.topPos += m.yOff();
+            this.width += m.wOff();
+            this.imageWidth += m.wOff();
+            this.height += m.hOff();
+            this.imageHeight += m.hOff();
         }
     }
 
