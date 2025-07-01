@@ -149,7 +149,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             ColormapsManager.tryAcceptingTexture(textures, sunsetId, sunset, usedTextures, true);
 
             if (parsed.isEnabled()) {
-                addModifier(id, modifier, reg);
+                addModifier(id, modifier, access);
             }
         }
 
@@ -161,12 +161,12 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             Colormap defaultColormap = Colormap.createDefTriangle();
             ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
-            addModifier(id, DimensionEffectsModifier.ofFogColor(defaultColormap), reg);
+            addModifier(id, DimensionEffectsModifier.ofFogColor(defaultColormap), access);
         }
     }
 
-    private void addModifier(ResourceLocation fileId, DimensionEffectsModifier mod, Registry<DimensionType> reg) {
-        for (var h : mod.targets().compute(fileId, reg)) {
+    private void addModifier(ResourceLocation fileId, DimensionEffectsModifier mod, RegistryAccess registryAccess) {
+        for (var h : mod.targets().getTargets(fileId, registryAccess)) {
             effectsToApply.merge(h.unwrapKey().get().location(), mod, DimensionEffectsModifier::merge);
         }
     }

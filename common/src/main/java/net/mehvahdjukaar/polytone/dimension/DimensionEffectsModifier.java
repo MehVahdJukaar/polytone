@@ -30,8 +30,8 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                                        Optional<IColorGetter> sunsetColor,
                                        boolean noWeatherFogDarken,
                                        boolean noWeatherSkyDarken,
-                                       Optional<Lightmap> lightmap,
-                                       Targets targets) {
+                                       Optional<Lightmap> lightmap, //TODO: finish adding
+                                       DimensionTarget targets) {
 
     public static final Codec<DimensionSpecialEffects.SkyType> SKY_TYPE_CODEC = Codec.STRING
             .xmap(DimensionSpecialEffects.SkyType::valueOf, DimensionSpecialEffects.SkyType::name);
@@ -49,25 +49,25 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                     StrOpt.of(Codec.BOOL, "no_weather_fog_darken", false).forGetter(DimensionEffectsModifier::noWeatherFogDarken),
                     StrOpt.of(Codec.BOOL, "no_weather_sky_darken", false).forGetter(DimensionEffectsModifier::noWeatherSkyDarken),
                     StrOpt.of(Polytone.LIGHTMAPS.byNameCodec(), "lightmap").forGetter(DimensionEffectsModifier::lightmap),
-                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(DimensionEffectsModifier::targets)
+                    DimensionTarget.CODEC.optionalFieldOf("targets", DimensionTarget.EMPTY).forGetter(DimensionEffectsModifier::targets)
             ).apply(instance, DimensionEffectsModifier::new));
 
     public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty(),
-                false, false, Optional.empty(), Targets.EMPTY);
+                false, false, Optional.empty(), DimensionTarget.EMPTY);
     }
 
     public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(),
-                false, false, Optional.empty(), Targets.EMPTY);
+                false, false, Optional.empty(), DimensionTarget.EMPTY);
     }
 
     public static DimensionEffectsModifier ofSunsetColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(colormap),
-                false, false, Optional.empty(), Targets.EMPTY);
+                false, false, Optional.empty(), DimensionTarget.EMPTY);
     }
 
 
@@ -84,7 +84,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                 newMod.noWeatherFogDarken | this.noWeatherFogDarken,
                 newMod.noWeatherSkyDarken | this.noWeatherSkyDarken,
                 newMod.lightmap.isPresent() ? newMod.lightmap : this.lightmap,
-                newMod.targets.merge(this.targets)
+                newMod.targets //ignore, not used after merging
         );
     }
 
@@ -132,7 +132,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
         }
         return new DimensionEffectsModifier(oldCloud, oldGround, oldSky, oldBright, oldAmbient,
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                false, false, Optional.empty(), Targets.EMPTY);
+                false, false, Optional.empty(), DimensionTarget.EMPTY);
     }
 
 }

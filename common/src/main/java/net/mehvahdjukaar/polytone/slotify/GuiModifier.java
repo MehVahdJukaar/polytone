@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.utils.BiggerCodecs;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.resources.ResourceLocation;
@@ -20,16 +21,20 @@ import java.util.function.Function;
 public record GuiModifier(Type type, String target,
                           List<SlotModifier> slotModifiers,
                           int titleX, int titleY, int labelX, int labelY,
+                          int xOff, int yOff, int wOff, int hOff,
                           @Nullable Integer titleColor, @Nullable Integer labelColor,
                           List<SimpleSprite> sprites,
                           List<WidgetModifier> widgetModifiers,
                           Map<String, SpecialOffset> specialOffsets) {
 
-    public GuiModifier(Type type, String target, List<SlotModifier> slotModifiers, int titleX, int titleY, int labelX, int labelY,
-                       Optional<Integer> titleColor, Optional< Integer> labelColor,
+    public GuiModifier(Type type, String target, List<SlotModifier> slotModifiers,
+                       int titleX, int titleY, int labelX, int labelY,
+                       int xOff, int yOff, int wOff, int hOff,
+                       Optional<Integer> titleColor, Optional<Integer> labelColor,
                        List<SimpleSprite> sprites, List<WidgetModifier> widgetModifiers,
                        Map<String, SpecialOffset> specialOffsets) {
         this(type, target, slotModifiers, titleX, titleY, labelX, labelY,
+                xOff, yOff, wOff, hOff,
                 titleColor.orElse(null), labelColor.orElse(null), sprites, widgetModifiers, specialOffsets);
     }
 
@@ -47,19 +52,24 @@ public record GuiModifier(Type type, String target,
     }
 
     public static final Codec<GuiModifier> CODEC =
-            RecordCodecBuilder.<GuiModifier>create(i -> i.group(
+            RecordCodecBuilder.<GuiModifier>create(i -> BiggerCodecs.group(i,
                     StringRepresentable.fromEnum(Type::values).fieldOf("target_type").forGetter(GuiModifier::type),
                     Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName).fieldOf("target").forGetter(GuiModifier::target),
-                    StrOpt.of(SlotModifier.CODEC.listOf(), "slot_modifiers", List.of()).forGetter(GuiModifier::slotModifiers),
-                    StrOpt.of(Codec.INT, "title_x_offset", 0).forGetter(GuiModifier::titleX),
-                    StrOpt.of(Codec.INT, "title_y_offset", 0).forGetter(GuiModifier::titleY),
-                    StrOpt.of(Codec.INT, "label_x_offset", 0).forGetter(GuiModifier::labelX),
-                    StrOpt.of(Codec.INT, "label_y_offset", 0).forGetter(GuiModifier::labelY),
-                    StrOpt.of(ColorUtils.CODEC, "title_color").forGetter(g->Optional.ofNullable(g.titleColor)),
-                    StrOpt.of(ColorUtils.CODEC, "label_color").forGetter(g->Optional.ofNullable(g.labelColor)),
-                    StrOpt.of(SimpleSprite.CODEC.listOf(), "sprites", List.of()).forGetter(GuiModifier::sprites),
-                    StrOpt.of(WidgetModifier.CODEC.listOf(), "widget_modifiers", List.of()).forGetter(GuiModifier::widgetModifiers),
-                    StrOpt.of(Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC), "special_offsets", Map.of()).forGetter(GuiModifier::specialOffsets)
+                    SlotModifier.CODEC.listOf().optionalFieldOf("slot_modifiers", List.of()).forGetter(GuiModifier::slotModifiers),
+                    Codec.INT.optionalFieldOf("title_x_offset", 0).forGetter(GuiModifier::titleX),
+                    Codec.INT.optionalFieldOf("title_y_offset", 0).forGetter(GuiModifier::titleY),
+                    Codec.INT.optionalFieldOf("label_x_offset", 0).forGetter(GuiModifier::labelX),
+                    Codec.INT.optionalFieldOf("label_y_offset", 0).forGetter(GuiModifier::labelY),
+                    Codec.INT.optionalFieldOf("x_offset", 0).forGetter(GuiModifier::xOff),
+                    Codec.INT.optionalFieldOf("y_offset", 0).forGetter(GuiModifier::yOff),
+                    Codec.INT.optionalFieldOf("width_offset", 0).forGetter(GuiModifier::wOff),
+                    Codec.INT.optionalFieldOf("height_offset", 0).forGetter(GuiModifier::hOff),
+                    ColorUtils.CODEC.optionalFieldOf("title_color").forGetter(g -> Optional.ofNullable(g.titleColor)),
+                    ColorUtils.CODEC.optionalFieldOf("label_color").forGetter(g -> Optional.ofNullable(g.labelColor)),
+                    SimpleSprite.CODEC.listOf().optionalFieldOf("sprites", List.of()).forGetter(GuiModifier::sprites),
+                    SimpleText.CODEC.listOf().optionalFieldOf("texts", List.of()).forGetter(GuiModifier::textList),
+                    WidgetModifier.CODEC.listOf().optionalFieldOf("widget_modifiers", List.of()).forGetter(GuiModifier::widgetModifiers),
+                    Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC).optionalFieldOf("special_offsets", Map.of()).forGetter(GuiModifier::specialOffsets)
 
             ).apply(i, GuiModifier::new)).comapFlatMap((instance) -> {
                 if (instance.type == Type.MENU_ID) {

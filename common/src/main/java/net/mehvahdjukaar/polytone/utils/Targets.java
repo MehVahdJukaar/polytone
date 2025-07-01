@@ -1,16 +1,13 @@
 package net.mehvahdjukaar.polytone.utils;
 
-import com.google.common.base.Preconditions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.NotNull;
@@ -75,7 +72,7 @@ public record Targets(List<Entry> entries) {
         return new Targets(mergeList(entries, other.entries));
     }
 
-    public void addSimple (@NotNull ResourceLocation id) {
+    public void addSimple(@NotNull ResourceLocation id) {
         Entry simpleLocation = new SimpleLocation(id);
         this.entries.add(simpleLocation);
     }
@@ -131,7 +128,7 @@ public record Targets(List<Entry> entries) {
         public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
             Optional<Holder.Reference<T>> holder = reg.getHolder(ResourceKey.create(reg.key(), id));
             if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
-                Polytone.LOGGER.warn("Found missing ID in minecraft namespace: {}", id + ". Skipping.");
+                Polytone.LOGGER.error("Found missing ID in minecraft namespace: {}", id + ". Skipping.");
                 return List.of();
             }
             return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
