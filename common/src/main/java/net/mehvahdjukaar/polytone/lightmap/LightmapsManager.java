@@ -25,6 +25,10 @@ import java.util.Map;
 public class LightmapsManager extends JsonImgPartialReloader {
 
     public static final ResourceLocation GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
+    private static final ResourceLocation DEFAULT_LIGHTMAP = ResourceLocation.withDefaultNamespace("default");
+
+    private static final Codec<Targets> TARGET_ONLY_CODEC = Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY)
+            .codec();
 
     private final MapRegistry<Lightmap> lightmaps = new MapRegistry<>("Lightmaps");
     //TODO:
@@ -100,11 +104,19 @@ public class LightmapsManager extends JsonImgPartialReloader {
             var map = e.getValue();
             lightmap.acceptImages(map.get("normal"), map.get("rain"), map.get("thunder"));
 
-            if (parsed.isEnabled()) lightmaps.register(location, lightmap);
+            if (parsed.isEnabled()) {
+                addLightmap(location, lightmap, access);
+            }
         }
 
         if (!jsons.isEmpty()) {
             throw new IllegalStateException("Found some lightmaps .jsons with no associated textures at" + jsons);
+        }
+    }
+
+    private void addLightmap(ResourceLocation fileId, Lightmap mod, RegistryAccess access) {
+        for (var dim : mod.targets().compute(fileId, registry)) {
+            lightmaps.register(dim.unwrapKey().get().location(), mod);
         }
     }
 
@@ -129,6 +141,9 @@ public class LightmapsManager extends JsonImgPartialReloader {
             reachedMainMenuHack = true;
             lastDimension = level.dimension();
             currentLightmap = lightmaps.getValue(lastDimension.location());
+            if (currentLightmap == null) {
+                currentLightmap = lightmaps.getValue(DEFAULT_LIGHTMAP);
+            }
         }
         if (currentLightmap != null) {
             currentLightmap.applyToLightTexture(instance, lightPixels, lightTexture, minecraft,

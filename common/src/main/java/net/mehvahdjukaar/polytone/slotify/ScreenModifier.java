@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
+                             int xOff, int yOff, int wOff, int hOff,
                              @Nullable Integer titleColor, @Nullable Integer labelColor,
                              List<Renderable> extraRenderables,
                              List<WidgetModifier> widgetModifiers,
@@ -21,6 +22,7 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
         List<Renderable> lis = new ArrayList<>(original.sprites());
         lis.addAll(original.textList());
         return new ScreenModifier(original.titleX(), original.titleY(), original.labelX(), original.labelY(),
+                original.xOff(), original.yOff(), original.wOff(), original.hOff(),
                 original.titleColor(), original.labelColor(),
                 lis,
                 new ArrayList<>(original.widgetModifiers()),
@@ -33,6 +35,10 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
                 newMod.titleY != 0 ? newMod.titleY : this.titleY,
                 newMod.labelX != 0 ? newMod.labelX : this.labelX,
                 newMod.labelY != 0 ? newMod.labelY : this.labelY,
+                newMod.xOff != 0 ? newMod.xOff : this.xOff,
+                newMod.yOff != 0 ? newMod.yOff : this.yOff,
+                newMod.wOff != 0 ? newMod.wOff : this.wOff,
+                newMod.hOff != 0 ? newMod.hOff : this.hOff,
                 newMod.titleColor != null ? newMod.titleColor : this.titleColor,
                 newMod.labelColor != null ? newMod.labelColor : this.labelColor,
                 Utils.mergeList(newMod.extraRenderables, this.extraRenderables),

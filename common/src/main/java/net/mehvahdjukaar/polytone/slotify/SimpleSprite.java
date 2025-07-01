@@ -41,6 +41,8 @@ public record SimpleSprite(ResourceLocation texture, float x, float y, float wid
     //same as gui graphics inner blit
     public static void blit(Matrix4f matrix, ResourceLocation atlasLoc, float x1, float x2, float y1, float y2,
                             float blitOffset, float minU, float maxU, float minV, float maxV) {
+        RenderSystem.enableDepthTest();
+        RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderTexture(0, atlasLoc);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);

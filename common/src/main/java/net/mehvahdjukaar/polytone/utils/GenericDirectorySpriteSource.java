@@ -9,10 +9,9 @@ import net.minecraft.client.renderer.texture.atlas.SpriteSources;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.level.dimension.DimensionType;
 
 public class GenericDirectorySpriteSource implements SpriteSource {
-
-
 
     public static final MapCodec<GenericDirectorySpriteSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(
             Codec.STRING.fieldOf("source").forGetter((d) -> d.sourcePath),

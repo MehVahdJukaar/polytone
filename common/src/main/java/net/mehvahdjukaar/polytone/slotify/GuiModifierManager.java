@@ -231,12 +231,11 @@ public class GuiModifierManager extends JsonPartialReloader {
         var mods = getSlotModifiers(screen, slot);
         for (SlotModifier mod : mods) {
             if (mod.hasCustomColor() && mod.matches(slot)) {
-                SlotModifier.renderSlotHighlight(graphics, x, y, mod.color(), mod.color2(), offset + mod.zOffset());
+                mod.renderCustomHighlight(graphics, x, y, offset);
                 return false;
             }
         }
         return true;
     }
-
 
 }
