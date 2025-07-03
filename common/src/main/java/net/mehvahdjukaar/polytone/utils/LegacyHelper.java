@@ -16,6 +16,7 @@ import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsModifier;
+import net.mehvahdjukaar.polytone.dimension.DimensionTarget;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -543,7 +544,7 @@ public class LegacyHelper {
                 var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(),
                         Optional.empty(), Optional.empty(), Optional.empty(),
                         Optional.ofNullable(fogCol), Optional.empty(), Optional.ofNullable(skyCol), Optional.empty(),
-                        false, false, Optional.empty(), Targets.EMPTY);
+                        false, false, Optional.empty(), DimensionTarget.EMPTY);
 
                 ResourceLocation id = ResourceLocation.parse(names[i]);
                 boolean enabled = fogEnabled || skyEnabled;

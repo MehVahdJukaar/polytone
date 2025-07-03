@@ -27,6 +27,7 @@ import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -36,6 +37,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -43,6 +45,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 public class Polytone {
@@ -109,8 +113,12 @@ public class Polytone {
     public static void onTagsReceived(HolderLookup.Provider registryAccess) {
         try {
             ModelStuff.clear();
+            if (isDevEnv) {
+                scanAllRegistries(registryAccess);
+            }
             COMPOUND_RELOADER.applyWithLevel(registryAccess, true);
             BiomeKeysCache.clear();
+
         } catch (RuntimeException e) {
             Polytone.LOGGER.error("Failed to apply some Polytone modifiers on world load", e);
 
@@ -174,4 +182,31 @@ public class Polytone {
         }
         return false;
     }
+
+
+    private static void scanAllRegistries(HolderLookup.Provider provider) {
+        //open a file and save all IDS to it
+        var regs = List.of(
+                Registries.SOUND_EVENT, Registries.BIOME,
+                Registries.BLOCK, Registries.ITEM,
+                Registries.BLOCK_TYPE, Registries.PARTICLE_TYPE, Registries.FLUID,
+                Registries.POTION, Registries.MOB_EFFECT
+        );
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("registry_dump.txt"))) {
+            for (var v : regs) {
+
+                var reg = provider.lookupOrThrow(v);
+                for (var e : reg.listElements().toList()) {
+                    writer.write(e.getRegisteredName());
+                    writer.newLine(); // writes a newline character
+                }
+            }
+            System.out.println("File written successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
 }
