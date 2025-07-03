@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.block.BlockSetManager;
 import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsManager;
+import net.mehvahdjukaar.polytone.entity.EntityModifiersManager;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
 import net.mehvahdjukaar.polytone.item.CustomItemModelsManager;
 import net.mehvahdjukaar.polytone.item.ItemModifiersManager;
@@ -70,6 +71,7 @@ public class Polytone {
     public static final DimensionEffectsManager DIMENSION_MODIFIERS = new DimensionEffectsManager();
     public static final CustomParticlesManager CUSTOM_PARTICLES = new CustomParticlesManager();
     public static final ParticleModifiersManager PARTICLE_MODIFIERS = new ParticleModifiersManager();
+    public static final EntityModifiersManager ENTITY_MODIFIERS = new EntityModifiersManager();
     public static final SoundTypesManager SOUND_TYPES = new SoundTypesManager();
     public static final VariantTextureManager VARIANT_TEXTURES = new VariantTextureManager();
     public static final ColorManager COLORS = new ColorManager();
@@ -94,7 +96,7 @@ public class Polytone {
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
-                PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,
+                PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,ENTITY_MODIFIERS,
                 CREATIVE_TABS_MODIFIERS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
