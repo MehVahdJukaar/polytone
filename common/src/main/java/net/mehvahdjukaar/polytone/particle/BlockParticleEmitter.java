@@ -7,6 +7,9 @@ import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.block.TickSource;
 import net.mehvahdjukaar.polytone.utils.BiggerCodecs;
+import net.mehvahdjukaar.polytone.utils.ForwardAwareRegistryFixedCodec;
+import net.mehvahdjukaar.polytone.utils.LenientCodecWithLog;
+import net.mehvahdjukaar.polytone.utils.LenientHolderSetCodec;
 import net.minecraft.core.*;
 import net.minecraft.core.particles.*;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -67,8 +70,8 @@ public record BlockParticleEmitter(
             BlockContextExpression.CODEC.optionalFieldOf("roll").forGetter(BlockParticleEmitter::roll),
             BlockContextExpression.CODEC.optionalFieldOf("size").forGetter(BlockParticleEmitter::size),
             BlockContextExpression.CODEC.optionalFieldOf("custom").forGetter(BlockParticleEmitter::custom),
-            RuleTest.CODEC.optionalFieldOf("state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
-            RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
+            LenientCodecWithLog.of(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
+            ForwardAwareRegistryFixedCodec.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
             SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation),
             TickSource.CODEC.optionalFieldOf("tick_source", TickSource.ANIMATE_TICK).forGetter(BlockParticleEmitter::spawnSource)
     ).apply(i, BlockParticleEmitter::new));

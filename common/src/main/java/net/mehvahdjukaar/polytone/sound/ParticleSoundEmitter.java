@@ -5,6 +5,8 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.particle.ParticleContextExpression;
 import net.mehvahdjukaar.polytone.particle.ParticleTickable;
+import net.mehvahdjukaar.polytone.utils.ForwardAwareRegistryFixedCodec;
+import net.mehvahdjukaar.polytone.utils.LenientHolderSetCodec;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
@@ -46,7 +48,7 @@ public record ParticleSoundEmitter(
             ParticleContextExpression.CODEC.optionalFieldOf("volume", ParticleContextExpression.ONE).forGetter(ParticleSoundEmitter::volume),
             ParticleContextExpression.CODEC.optionalFieldOf("pitch", ParticleContextExpression.ONE).forGetter(ParticleSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(ParticleSoundEmitter::distanceDelay),
-            RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleSoundEmitter::biomes)
+            ForwardAwareRegistryFixedCodec.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleSoundEmitter::biomes)
     ).apply(i, ParticleSoundEmitter::new));
 
 
