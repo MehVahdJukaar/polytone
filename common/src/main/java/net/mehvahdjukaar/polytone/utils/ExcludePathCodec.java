@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 
 import java.io.BufferedWriter;
@@ -47,22 +48,4 @@ public record ExcludePathCodec<T>(Codec<T> inner) implements Codec<T> {
         return inner.encode(input, ops, prefix);
     }
 
-    public static void scanAllRegistries(HolderLookup.Provider provider) {
-        //open a file and save all IDS to it
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("registry_dump.txt"))) {
-            for (var v : provider.listRegistries().toList()) {
-
-                var reg = provider.lookupOrThrow(v.registryKey());
-                for (var e : reg.listElements().toList()) {
-                    writer.write(e.getRegisteredName());
-                    writer.newLine(); // writes a newline character
-                }
-            }
-            System.out.println("File written successfully!");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-    }
 }
