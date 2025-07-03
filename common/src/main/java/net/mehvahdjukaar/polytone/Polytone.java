@@ -37,10 +37,7 @@ import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -49,6 +46,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 public class Polytone {
     public static final String MOD_ID = "polytone";
@@ -76,6 +75,8 @@ public class Polytone {
 
     private static final Set<ResourceLocation> EXTRA_MODELS = new HashSet<>();
     private static CompoundReloader COMPOUND_RELOADER;
+
+    private static final Future<Set<ResourceLocation>> FUTURE_IDS = CompletableFuture.supplyAsync(Polytone::loadFutureIds);
 
     public static boolean iMessedUp = false;
 
@@ -120,6 +121,7 @@ public class Polytone {
         PlatStuff.addSpecialModelRegistration(Polytone::addSpecialModels);
         //TODO: cache fog and d sky color
     }
+
 
     private static void addSpecialModels(PlatStuff.SpecialModelEvent event) {
         for (var m : EXTRA_MODELS) {
@@ -210,6 +212,19 @@ public class Polytone {
         return false;
     }
 
+    public static boolean isFutureId(ResourceLocation id) {
+        try {
+            // Blocks until the future is complete, or throws if there was an error
+            var isFuture = FUTURE_IDS.get().contains(id);
+            if (isFuture) {
+                Polytone.LOGGER.error("Found an ID from a future Minecraft version ({}). Polytone will skip it but this is remains a bug of the Resource Pack. Optional entries or resource conditions should be used to maintain backward compatibility instead", id);
+            }
+            return isFuture;
+        } catch (Exception e) {
+            Polytone.LOGGER.error("Failed to check if ID is from a future version", e);
+        }
+        return false;
+    }
 
     private static void scanAllRegistries(HolderLookup.Provider provider) {
         //open a file and save all IDS to it
@@ -235,5 +250,28 @@ public class Polytone {
 
 
     }
+
+    private static Set<ResourceLocation> loadFutureIds() {
+        var res = Polytone.class.getClassLoader().getResourceAsStream("future_ids.txt");
+        //read
+        Set<ResourceLocation> futureIds = new HashSet<>();
+        if (res != null) {
+            try (var reader = new BufferedReader(new InputStreamReader(res))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    ResourceLocation id = ResourceLocation.tryParse(line);
+                    if (id != null) {
+                        futureIds.add(id);
+                    } else {
+                        Polytone.LOGGER.warn("Invalid ResourceLocation in future_ids.txt: {}", line);
+                    }
+                }
+            } catch (IOException e) {
+                Polytone.LOGGER.error("Failed to read future_ids.txt", e);
+            }
+        }
+        return futureIds;
+    }
+
 
 }

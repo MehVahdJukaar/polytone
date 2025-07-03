@@ -4,18 +4,21 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.BiggerCodecs;
+import net.mehvahdjukaar.polytone.utils.ForwardAwareRegistryFixedCodec;
+import net.mehvahdjukaar.polytone.utils.LenientCodecWithLog;
+import net.mehvahdjukaar.polytone.utils.LenientHolderSetCodec;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
-import net.minecraft.core.particles.*;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import org.jetbrains.annotations.Nullable;
@@ -62,8 +65,8 @@ public record ParticleParticleEmitter(
             ParticleContextExpression.CODEC.optionalFieldOf("roll").forGetter(ParticleParticleEmitter::roll),
             ParticleContextExpression.CODEC.optionalFieldOf("size").forGetter(ParticleParticleEmitter::size),
             ParticleContextExpression.CODEC.optionalFieldOf("custom").forGetter(ParticleParticleEmitter::custom),
-            RuleTest.CODEC.optionalFieldOf("state_predicate", AlwaysTrueTest.INSTANCE).forGetter(ParticleParticleEmitter::predicate),
-            RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleParticleEmitter::biomes)
+            LenientCodecWithLog.of(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(ParticleParticleEmitter::predicate),
+            ForwardAwareRegistryFixedCodec.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleParticleEmitter::biomes)
     ).apply(i, ParticleParticleEmitter::new));
 
 
