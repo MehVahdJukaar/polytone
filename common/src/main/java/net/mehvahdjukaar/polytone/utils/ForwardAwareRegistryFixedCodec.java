@@ -5,10 +5,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderGetter;
-import net.minecraft.core.HolderOwner;
-import net.minecraft.core.Registry;
+import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.core.*;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -18,7 +16,7 @@ import java.util.Optional;
 public final class ForwardAwareRegistryFixedCodec<E> implements Codec<Optional<Holder<E>>> {
     private final ResourceKey<? extends Registry<E>> registryKey;
 
-    public ForwardAwareRegistryFixedCodec(ResourceKey<? extends Registry<E>> registryKey) {
+    private ForwardAwareRegistryFixedCodec(ResourceKey<? extends Registry<E>> registryKey) {
         this.registryKey = registryKey;
     }
 
@@ -72,7 +70,15 @@ public final class ForwardAwareRegistryFixedCodec<E> implements Codec<Optional<H
         return "RegistryFixedCodec[" + this.registryKey + "]";
     }
 
-    public boolean isBlacklisted(ResourceLocation id) {
-        return false;
+    private boolean isBlacklisted(ResourceLocation id) {
+        return Polytone.isFutureId(id);
     }
+
+
+    public static <E> Codec<HolderSet<E>> homogeneousList(ResourceKey<? extends Registry<E>> registryKey) {
+        return LenientHolderSetCodec.create(registryKey, new ForwardAwareRegistryFixedCodec<>(registryKey), false);
+    }
+
 }
+
+

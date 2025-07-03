@@ -38,10 +38,6 @@ public class LenientHolderSetCodec<E> implements Codec<HolderSet<E>> {
 
     }
 
-    public static <E> Codec<HolderSet<E>> homogeneousListForwardAware(ResourceKey<? extends Registry<E>> registryKey) {
-        return create(registryKey, new ForwardAwareRegistryFixedCodec<>(registryKey), false);
-    }
-
     public static <E> Codec<HolderSet<E>> create(ResourceKey<? extends Registry<E>> registryKey,
                                                  Codec<Optional<Holder<E>>> holderCodec, boolean disallowSingleNonList) {
         return new LenientHolderSetCodec<>(registryKey, holderCodec, disallowSingleNonList);
