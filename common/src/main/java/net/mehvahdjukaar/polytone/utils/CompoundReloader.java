@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.server.packs.resources.SimpleReloadInstance;
@@ -17,43 +18,53 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 // Needed to reload stuff in order but still off-thread when we can in prepare
-public class CompoundReloader extends SimplePreparableReloadListener<List<Object>> {
+public class CompoundReloader implements PreparableReloadListener {
 
     private final List<PartialReloader<?>> children;
-    private final List<Object> childrenResources = new ArrayList<>();
+    private final List<?> childrenResourcesCache = new ArrayList<>();
 
     public CompoundReloader(PartialReloader<?>... reloaders) {
         children = List.of(reloaders);
     }
 
-    @Override
-    protected List<Object> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
-        //sequentially prepares all of them in order. Whole point of this is that we cant multi thread this part. This still happens off-thread
-        List<Object> list = new ArrayList<>();
-        for (var c : children) {
-            list.add(c.prepare(resourceManager));
-        }
-        return list;
-    }
 
     @Override
-    protected void apply(List<Object> object, ResourceManager resourceManager, ProfilerFiller profiler) {
-        Level level = Minecraft.getInstance().level;
-        // clear existing lazy holder sets
+    public final CompletableFuture<Void> reload(
+            PreparableReloadListener.PreparationBarrier preparationBarrier,
+            ResourceManager resourceManager,
+            ProfilerFiller preparationsProfiler,
+            ProfilerFiller reloadProfiler,
+            Executor backgroundExecutor,
+            Executor gameExecutor
+    ) {
+        List<CompletableFuture<?>> futures = children.stream()
+                .map(child -> CompletableFuture.supplyAsync(() -> child.prepare(resourceManager), backgroundExecutor))
+                .collect(Collectors.toList());
 
-        childrenResources.clear();
-        childrenResources.addAll(object);
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futures.stream().map(CompletableFuture::join).collect(Collectors.toList()))
+                .thenCompose(preparationBarrier::wait)
+                .thenAcceptAsync(preparedList -> {
+                    childrenResourcesCache.clear();
+                    childrenResourcesCache.addAll((Collection) preparedList);
+                    Level level = Minecraft.getInstance().level;
+                    // clear existing lazy holder sets
 
-        if (level != null) {
-            try {
-                applyWithLevel(level.registryAccess(), false);
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
-        }
+                    if (level != null) {
+                        try {
+                            applyWithLevel(level.registryAccess(), false);
+                        } catch (Exception e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+                }, gameExecutor);
     }
 
     public void applyWithLevel(RegistryAccess registryAccess, boolean firstLogin) {
@@ -62,10 +73,10 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
 
         RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
 
-        for (int i = 0; i < childrenResources.size(); i++) {
+        for (int i = 0; i < childrenResourcesCache.size(); i++) {
             PartialReloader<?> c = children.get(i);
             try {
-                processTyped(c, childrenResources.get(i), ops, registryAccess);
+                processTyped(c, childrenResourcesCache.get(i), ops, registryAccess);
             } catch (Exception e) {
                 String message = c + " failed to parse some resources";
                 Polytone.logException(e, message);
@@ -121,7 +132,6 @@ public class CompoundReloader extends SimplePreparableReloadListener<List<Object
             c.resetWithLevel(isLogOff);
         }
     }
-
     public void earlyProcess(ResourceManager resourceManager) {
         for (var c : children) {
             c.earlyProcess(resourceManager);
