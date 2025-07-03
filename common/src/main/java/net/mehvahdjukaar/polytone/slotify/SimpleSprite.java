@@ -33,10 +33,8 @@ public record SimpleSprite(ResourceLocation texture, float x, float y, float wid
         innerBlit(poseStack.pose().last().pose(), x, x + width, y, y + height, z);
     }
 
-
-    //same as gui graphics inner blit
-    public static void blit(Matrix4f matrix, ResourceLocation atlasLoc, float x1, float x2, float y1, float y2,
-                            float blitOffset, float minU, float maxU, float minV, float maxV) {
+    private static void innerBlit(Matrix4f matrix, float x1, float x2, float y1, float y2,
+                                  float blitOffset) {
         RenderSystem.enableDepthTest();
         RenderSystem.defaultBlendFunc();
 

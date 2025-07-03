@@ -226,12 +226,12 @@ public class Polytone {
         return false;
     }
 
-    private static void scanAllRegistries(HolderLookup.Provider provider) {
+    private static void scanAllRegistries(RegistryAccess provider) {
         //open a file and save all IDS to it
         var regs = List.of(
                 Registries.SOUND_EVENT, Registries.BIOME,
                 Registries.BLOCK, Registries.ITEM,
-                Registries.BLOCK_TYPE, Registries.PARTICLE_TYPE, Registries.FLUID,
+                Registries.PARTICLE_TYPE, Registries.FLUID,
                 Registries.POTION, Registries.MOB_EFFECT
         );
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("registry_dump.txt"))) {
@@ -239,7 +239,7 @@ public class Polytone {
 
                 var reg = provider.lookupOrThrow(v);
                 for (var e : reg.listElements().toList()) {
-                    writer.write(e.getRegisteredName());
+                    writer.write(e.key().location().toString());
                     writer.newLine(); // writes a newline character
                 }
             }

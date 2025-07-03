@@ -1,2 +1,2 @@
 - added a system to block known ids from future MC versions to cause hard failures of packs. These will be logged instead
-- added new sound types from 1.21.1
+- backported some more GUI mod changes

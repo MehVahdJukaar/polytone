@@ -12,7 +12,7 @@ public class LenientCodecWithLog<A> extends OptionalFieldCodec<A> {
     private final Codec<A> elementCodec;
 
     private LenientCodecWithLog(String name, Codec<A> elementCodec) {
-        super(name, elementCodec, true);
+        super(name, elementCodec);
         this.name = name;
         this.elementCodec = elementCodec;
     }
@@ -35,10 +35,10 @@ public class LenientCodecWithLog<A> extends OptionalFieldCodec<A> {
             return DataResult.success(Optional.empty());
         }
         final DataResult<A> parsed = elementCodec.parse(ops, value);
-        if (parsed.isError() && true) {
+        if (parsed.error().isPresent() && true) {
             Polytone.LOGGER.error("Failed to parse {}: {}. Skipping", name, parsed.error());
             return DataResult.success(Optional.empty());
         }
-        return parsed.map(Optional::of).setPartial(parsed.resultOrPartial());
+        return parsed.map(Optional::of).setPartial(parsed.resultOrPartial(s -> {}));
     }
 }

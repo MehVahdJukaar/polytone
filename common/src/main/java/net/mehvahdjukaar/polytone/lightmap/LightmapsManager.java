@@ -24,7 +24,7 @@ import java.util.Map;
 public class LightmapsManager extends JsonImgPartialReloader {
 
     public static final ResourceLocation GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
-    private static final ResourceLocation DEFAULT_LIGHTMAP = ResourceLocation.withDefaultNamespace("default");
+    private static final ResourceLocation DEFAULT_LIGHTMAP = new ResourceLocation("default");
 
     private static final Codec<Targets> TARGET_ONLY_CODEC = Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY)
             .codec();

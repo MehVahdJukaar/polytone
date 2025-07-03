@@ -18,6 +18,6 @@ def get_unique_lines(file1_path, file2_path, output_path):
 # Example usage:
 if __name__ == "__main__":
     file1 = "registry_dump_1.21.5.txt"
-    file2 = "registry_dump_1.21.txt"
+    file2 = "registry_dump_1.20.1.txt"
     output = "unique_lines.txt"
     get_unique_lines(file1, file2, output)

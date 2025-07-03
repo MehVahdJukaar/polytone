@@ -124,11 +124,6 @@ public class PolytoneSoundType extends SoundType {
         map.put("decorated_pot", SoundType.DECORATED_POT);
         map.put("decorated_pot_cracked", SoundType.DECORATED_POT_CRACKED);
         map.put("trial_spawner", SoundType.DECORATED_POT_CRACKED);
-        map.put("sponge", SoundType.SPONGE);
-        map.put("wet_sponge", SoundType.WET_SPONGE);
-        map.put("valut", SoundType.VAULT);
-        map.put("heavy_core", SoundType.HEAVY_CORE);
-        map.put("cobweb", SoundType.COBWEB);
 
         return map;
     });

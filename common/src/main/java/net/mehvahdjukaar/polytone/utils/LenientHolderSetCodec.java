@@ -22,18 +22,18 @@ public class LenientHolderSetCodec<E> implements Codec<HolderSet<E>> {
     private final Codec<Either<TagKey<E>, List<Holder<E>>>> registryAwareCodec;
 
     private static <E> Codec<List<Holder<E>>> homogenousList(Codec<Optional<Holder<E>>> holderCodec, boolean disallowInline) {
-        Codec<List<Holder<E>>> codec = holderCodec.listOf().xmap(optionals -> optionals.stream()
+        Codec<List<Holder<E>>> codec = CodecUtil.validate(holderCodec.listOf().xmap(optionals -> optionals.stream()
                         .filter(Optional::isPresent)
                         .map(Optional::get)
                         .toList(), list -> list.stream().map(Optional::of).toList())
-                .validate(ExtraCodecs.ensureHomogenous(Holder::kind));
+                , ExtraCodecs.ensureHomogenous(Holder::kind));
         if (disallowInline) return codec;
         else {
             Codec<List<Holder<E>>> singleCodec = holderCodec.xmap(
                     optional -> optional.map(List::of).orElseGet(List::of),
-                    list -> list.size() == 1 ? Optional.ofNullable(list.getFirst()) : Optional.empty()
+                    list -> list.size() == 1 ? Optional.ofNullable(list.get(0)) : Optional.empty()
             );
-            return Codec.withAlternative(codec, singleCodec);
+            return CodecUtil.withAlternative(codec, singleCodec);
         }
 
     }

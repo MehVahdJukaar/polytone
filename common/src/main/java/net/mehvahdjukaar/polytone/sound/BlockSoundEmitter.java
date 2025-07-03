@@ -11,10 +11,8 @@ import net.mehvahdjukaar.polytone.utils.LenientCodecWithLog;
 import net.mehvahdjukaar.polytone.utils.LenientHolderSetCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
@@ -55,7 +53,6 @@ public record BlockSoundEmitter(
             BlockContextExpression.CODEC.optionalFieldOf("pitch", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(BlockSoundEmitter::distanceDelay),
             LenientCodecWithLog.of( RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockSoundEmitter::predicate),
-            TickSource.CODEC.optionalFieldOf("spawn_source", TickSource.ANIMATE_TICK).forGetter(BlockSoundEmitter::spawnSource),
             ForwardAwareRegistryFixedCodec.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockSoundEmitter::biomes)
     ).apply(i, BlockSoundEmitter::new));
 

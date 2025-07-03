@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.utils;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -18,6 +19,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class CodecUtil {
+
+    public  static  <A> Codec<A> validate(Codec<A> codec, final Function<A, DataResult<A>> checker) {
+        return codec.flatXmap(checker, checker);
+    }
+
     public static <T> Codec<T> withAlternative(final Codec<T> primary, final Codec<? extends T> alternative) {
         return Codec.either(
                 primary,

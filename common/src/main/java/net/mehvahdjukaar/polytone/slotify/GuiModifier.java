@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+
 //instance persists just during deserialization. we could have used decoder only
 public record GuiModifier(Type type, String target,
                           List<SlotModifier> slotModifiers,
@@ -52,7 +53,7 @@ public record GuiModifier(Type type, String target,
     }
 
     public static final Codec<GuiModifier> CODEC =
-            RecordCodecBuilder.<GuiModifier>create(i -> BiggerCodecs.group(i,
+            RecordCodecBuilder.<GuiModifier>create(i -> i.group(
                     StringRepresentable.fromEnum(Type::values).fieldOf("target_type").forGetter(GuiModifier::type),
                     Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName).fieldOf("target").forGetter(GuiModifier::target),
                     SlotModifier.CODEC.listOf().optionalFieldOf("slot_modifiers", List.of()).forGetter(GuiModifier::slotModifiers),
@@ -67,7 +68,6 @@ public record GuiModifier(Type type, String target,
                     ColorUtils.CODEC.optionalFieldOf("title_color").forGetter(g -> Optional.ofNullable(g.titleColor)),
                     ColorUtils.CODEC.optionalFieldOf("label_color").forGetter(g -> Optional.ofNullable(g.labelColor)),
                     SimpleSprite.CODEC.listOf().optionalFieldOf("sprites", List.of()).forGetter(GuiModifier::sprites),
-                    SimpleText.CODEC.listOf().optionalFieldOf("texts", List.of()).forGetter(GuiModifier::textList),
                     WidgetModifier.CODEC.listOf().optionalFieldOf("widget_modifiers", List.of()).forGetter(GuiModifier::widgetModifiers),
                     Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC).optionalFieldOf("special_offsets", Map.of()).forGetter(GuiModifier::specialOffsets)
 
