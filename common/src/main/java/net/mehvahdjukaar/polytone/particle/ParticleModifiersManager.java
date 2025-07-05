@@ -6,26 +6,39 @@ import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
-import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.Utils;
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.gui.screens.social.PlayerEntry;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.TotemParticle;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ParticleModifiersManager extends JsonImgPartialReloader {
 
     private final Multimap<ParticleType<?>, ParticleModifier> particleModifiers = HashMultimap.create();
+    @Nullable
+    private JsonElement xpOrbReplaceJson = null;
+    @Nullable
+    private ParticleOptions xpOrbReplaceParticle = null;
 
     public ParticleModifiersManager() {
         super("particle_modifiers");
@@ -85,6 +98,15 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
 
             addModifier(id, ParticleModifier.ofColormap(defaultColormap));
         }
+
+        if (this.xpOrbReplaceJson != null) {
+
+            var v = Parsed.parseAlways(ParticleTypes.CODEC, xpOrbReplaceJson,
+                    ops, ResourceLocation.withDefaultNamespace("xp_orb"), "XP orb modifier");
+            if (v.isEnabled()) {
+                this.xpOrbReplaceParticle = v.getResultOrPartial();
+            }
+        }
     }
 
     @Override
@@ -112,4 +134,13 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
         opt.ifPresent(t -> particleModifiers.put(t, ParticleModifier.ofColor(color)));
     }
 
+    public void setXpOrbReplace(JsonElement json) {
+        this.xpOrbReplaceJson = json;
+    }
+
+    //TODO: finish or merge with entity modifiers particle emitters
+    @Nullable
+    public ParticleOptions getXpOrbReplaceParticle() {
+        return xpOrbReplaceParticle;
+    }
 }

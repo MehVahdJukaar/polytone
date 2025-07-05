@@ -12,7 +12,7 @@ import org.joml.Quaternionf;
 public interface RotationProvider {
 
     Codec<RotationProvider> CODEC = CodecUtil.withAlternative(
-            (Codec<RotationProvider>) (Object) Custom.CODEC,
+            (Codec<RotationProvider>) (Object) CustomRotation.CODEC,
             RotationMode.CODEC);
 
 
@@ -20,15 +20,15 @@ public interface RotationProvider {
 
     void applyRotation(SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks);
 
-    record Custom(ParticleContextExpression xRot,
-                  ParticleContextExpression yRot,
-                  ParticleContextExpression zRot) implements RotationProvider {
+    public static record CustomRotation(ParticleContextExpression xRot,
+                                        ParticleContextExpression yRot,
+                                        ParticleContextExpression zRot) implements RotationProvider {
 
-        public static final Codec<Custom> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                ParticleContextExpression.CODEC.optionalFieldOf("x_rot", ParticleContextExpression.ZERO).forGetter(Custom::xRot),
-                ParticleContextExpression.CODEC.optionalFieldOf("y_rot", ParticleContextExpression.ZERO).forGetter(Custom::yRot),
-                ParticleContextExpression.CODEC.optionalFieldOf("z_rot", ParticleContextExpression.ZERO).forGetter(Custom::zRot)
-        ).apply(instance, Custom::new));
+        public static final Codec<CustomRotation> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                ParticleContextExpression.CODEC.optionalFieldOf("x_rot", ParticleContextExpression.ZERO).forGetter(CustomRotation::xRot),
+                ParticleContextExpression.CODEC.optionalFieldOf("y_rot", ParticleContextExpression.ZERO).forGetter(CustomRotation::yRot),
+                ParticleContextExpression.CODEC.optionalFieldOf("z_rot", ParticleContextExpression.ZERO).forGetter(CustomRotation::zRot)
+        ).apply(instance, CustomRotation::new));
 
         @Override
         public boolean alwaysFacesCamera() {
