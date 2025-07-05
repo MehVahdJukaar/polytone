@@ -19,11 +19,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ChunkMap;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
@@ -62,6 +64,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private final Map<DyeColor, Integer> customSheepColors = new EnumMap<>(DyeColor.class);
     protected final List<Vec3> originalRedstoneWireColors = Arrays.stream(RedStoneWireBlock.COLORS).toList();
 
+    @Nullable
+    ResourceLocation xpOrbParticle;
     @Nullable
     private BlockContextExpression xpOrbColor;
     @Nullable
@@ -255,6 +259,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
         doWith(obj, "xporb", (k, v) -> {
             switch (k) {
+                case "particle_replacement" -> Polytone.PARTICLE_MODIFIERS.setXpOrbReplace(v);
                 case "color" -> xpOrbColor = new BlockContextExpression(v.getAsString());
                 case "red" -> xpOrbColorR = new BlockContextExpression(v.getAsString());
                 case "green" -> xpOrbColorG = new BlockContextExpression(v.getAsString());
@@ -383,6 +388,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         //PotionContents.EMPTY_COLOR = 16253176;
         PotionContents.BASE_POTION_COLOR = 3694022;
         xpBar = null;
+        xpOrbParticle = null;
         xpOrbColor = null;
         xpOrbColorR = null;
         xpOrbColorG = null;
@@ -471,8 +477,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         customSheepColors.clear();
     }
 
-    @Nullable
-    public float[] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
+
+    public float @Nullable [] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
         Level level = orb.level();
         var time = orb.tickCount + partialTicks;
         Vec3 position = orb.position();

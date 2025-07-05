@@ -17,27 +17,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ExperienceOrbRenderer.class)
 public class XpOrbMixin {
 
-    @Nullable
     @Unique
-    private static float[] polytone$specialColor = null;
+    private static float @Nullable [] polytone$specialColor = null;
 
     @Inject(method = "render(Lnet/minecraft/world/entity/ExperienceOrb;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At("HEAD"))
     private void polytone$startRenderOrb(ExperienceOrb entity, float entityYaw, float partialTicks, PoseStack poseStack,
-                             MultiBufferSource buffer, int packedLight,CallbackInfo ci) {
+                                         MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
         polytone$specialColor = Polytone.COLORS.getXpOrbColor(entity, partialTicks);
     }
 
     @Inject(method = "render(Lnet/minecraft/world/entity/ExperienceOrb;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At("TAIL"))
     private void polytone$endRenderOrb(ExperienceOrb entity, float entityYaw, float partialTicks, PoseStack poseStack,
-                             MultiBufferSource buffer, int packedLight,CallbackInfo ci) {
+                                       MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
         polytone$specialColor = null;
     }
 
     @Inject(method = "vertex", at = @At("HEAD"), cancellable = true)
     private static void polytone$changeColor(VertexConsumer consumer, PoseStack.Pose matrix, float x, float y, int red, int green, int blue, float texU, float texV, int packedLight, CallbackInfo ci) {
-        if(polytone$specialColor != null){
+        if (polytone$specialColor != null) {
             ci.cancel();
             consumer.addVertex(matrix, x, y, 0.0F).setColor(polytone$specialColor[0], polytone$specialColor[1],
                             polytone$specialColor[2], 0.5f)
