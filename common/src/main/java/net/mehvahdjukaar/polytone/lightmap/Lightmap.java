@@ -14,7 +14,6 @@ import net.mehvahdjukaar.polytone.dimension.DimensionTarget;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -71,6 +70,7 @@ public class Lightmap {
     private final float[][] lastSkyLine = new float[16][3];
     private final float[][] lastTorchLine = new float[16][3];
     private final long lightmapPixels;
+    private boolean lastThunderFlash = false;
 
     private long lastTime = 0;
     private boolean forceUpload = false;
@@ -195,7 +195,15 @@ public class Lightmap {
         }
         if (skyLine.length != 0 && lastSkyLine.length != 0 && skyLerp != 0) {
             float lerpDelta = 1 - (float) Math.pow(skyLerp, deltaTime);
+            if (skyFlashTime || lastThunderFlash) {
+                lerpDelta = 1; //no lerp during thunder flash
+            }
             lerpInplace(lastSkyLine, skyLine, lerpDelta);
+        }
+        if (skyFlashTime) {
+            lastThunderFlash = true;
+        } else if (lastThunderFlash) {
+            lastThunderFlash = false;
         }
 
         for (int skyY = 0; skyY < 16; ++skyY) {
