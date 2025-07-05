@@ -37,7 +37,7 @@ public class XpOrbMixin {
 
     @Inject(method = "vertex", at = @At("HEAD"), cancellable = true)
     private static void polytone$changeColor(VertexConsumer consumer, PoseStack.Pose matrix, float x, float y, int red, int green, int blue, float texU, float texV, int packedLight, CallbackInfo ci) {
-        if(polytone$specialColor != null){
+        if (polytone$specialColor != null) {
             ci.cancel();
             consumer.addVertex(matrix, x, y, 0.0F).setColor(polytone$specialColor[0], polytone$specialColor[1],
                             polytone$specialColor[2], 0.5f)
