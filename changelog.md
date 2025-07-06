@@ -1,2 +1,3 @@
-- fixed slot modifier "slots" field being renamed
-- fixed additive translucent render pipeline missing samplers
+- fixed another off by one issue in the colormap sampling code
+- added biome compound colormap type. A set of colormaps grouped by biome
+- added color_modifier parameter to colormaps
