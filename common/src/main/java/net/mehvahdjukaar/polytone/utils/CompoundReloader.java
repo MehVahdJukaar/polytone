@@ -8,11 +8,9 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.Level;
 
@@ -33,16 +31,8 @@ public class CompoundReloader implements PreparableReloadListener {
         children = List.of(reloaders);
     }
 
-
     @Override
-    public final CompletableFuture<Void> reload(
-            PreparableReloadListener.PreparationBarrier preparationBarrier,
-            ResourceManager resourceManager,
-            ProfilerFiller preparationsProfiler,
-            ProfilerFiller reloadProfiler,
-            Executor backgroundExecutor,
-            Executor gameExecutor
-    ) {
+    public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor backgroundExecutor, Executor gameExecutor) {
         List<CompletableFuture<?>> futures = children.stream()
                 .map(child -> CompletableFuture.supplyAsync(() -> child.prepare(resourceManager), backgroundExecutor))
                 .collect(Collectors.toList());
@@ -53,7 +43,7 @@ public class CompoundReloader implements PreparableReloadListener {
                 .thenAcceptAsync(preparedList -> {
                     childrenResourcesCache.clear();
                     childrenResourcesCache.addAll((Collection) preparedList);
-        Level level = Minecraft.getInstance().level;
+                    Level level = Minecraft.getInstance().level;
 
                     if (level != null) {
                         try {
@@ -130,6 +120,7 @@ public class CompoundReloader implements PreparableReloadListener {
             c.resetWithLevel(isLogOff);
         }
     }
+
     public void earlyProcess(ResourceManager resourceManager) {
         for (var c : children) {
             c.earlyProcess(resourceManager);

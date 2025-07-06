@@ -22,7 +22,7 @@ public class BiomeCompoundColorGetter implements IColorGetter {
 
     public static final Codec<BiomeCompoundColorGetter> CODEC = RecordCodecBuilder.<BiomeCompoundColorGetter>create(i -> i.group(
                     Colormap.REFERENCE_OR_EXPRESSION.fieldOf("default").forGetter(c -> c.defaultGetter),
-                    new LenientUnboundedMapCodec<>(
+                    new LenientUnboundedMapCodec<>( //not ideal but eh
                             RegistryFixedCodec.create(Registries.BIOME),
                             Colormap.REFERENCE_OR_EXPRESSION
                     ).fieldOf("biomes").forGetter(c -> c.holderMap)

@@ -1,3 +1,4 @@
 - fixed another off by one issue in the colormap sampling code
 - added biome compound colormap type. A set of colormaps grouped by biome
 - added color_modifier parameter to colormaps
+- ported some more very recent changes like gui modifier improvements or async load of resources

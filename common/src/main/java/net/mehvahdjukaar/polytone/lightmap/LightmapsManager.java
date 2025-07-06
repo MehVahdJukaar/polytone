@@ -117,7 +117,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
         }
     }
 
-    private void addLightmap(ResourceLocation fileId, Lightmap mod, RegistryAccess access) {
+    private void addLightmap(ResourceLocation fileId, Lightmap mod, HolderLookup.Provider access) {
         for (var dim : mod.targets().getTargets(fileId, access)) {
             lightmaps.register(dim.unwrapKey().get().location(), mod);
         }
