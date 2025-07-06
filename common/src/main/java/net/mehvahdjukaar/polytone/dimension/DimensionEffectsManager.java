@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
@@ -100,8 +101,6 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             }
             parsedModifiers.put(id, modifier);
         }
-        var reg = access.lookupOrThrow(Registries.DIMENSION_TYPE);
-
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
             ResourceLocation id = entry.getKey();
@@ -181,7 +180,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         }
     }
 
-    private void addModifier(ResourceLocation fileId, DimensionEffectsModifier mod, RegistryAccess registryAccess) {
+    private void addModifier(ResourceLocation fileId, DimensionEffectsModifier mod, HolderLookup.Provider registryAccess) {
         for (var h : mod.targets().getTargets(fileId, registryAccess)) {
             effectsToApply.merge(h.unwrapKey().get().location(), mod, DimensionEffectsModifier::merge);
         }

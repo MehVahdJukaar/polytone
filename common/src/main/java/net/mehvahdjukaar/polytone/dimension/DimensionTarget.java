@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -24,14 +25,14 @@ public class DimensionTarget {
         this.target = target;
     }
 
-    public Collection<Holder<DimensionType>> getTargets(ResourceLocation fileId, RegistryAccess registryAccess) {
-        var reg = registryAccess.registryOrThrow(Registries.DIMENSION_TYPE);
+    public Collection<Holder<DimensionType>> getTargets(ResourceLocation fileId, HolderLookup.Provider registryAccess) {
+        var reg = registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE);
         if (target.left().isPresent()) {
             var tt = target.left().get();
             return tt.compute(fileId, reg);
         } else {
             var template = target.right().get();
-            return reg.holders().filter(h -> template.matches(h.value()))
+            return reg.listElements().filter(h -> template.matches(h.value()))
                     .map(r -> (Holder<DimensionType>) r)
                     .toList();
         }
