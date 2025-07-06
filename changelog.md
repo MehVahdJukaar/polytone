@@ -1,2 +1,3 @@
-- added a system to block known ids from future MC versions to cause hard failures of packs. These will be logged instead
-- added new sound types from 1.21.1
+- fixed another off by one issue in the colormap sampling code
+- added biome compound colormap type. A set of colormaps grouped by biome
+- added color_modifier parameter to colormaps

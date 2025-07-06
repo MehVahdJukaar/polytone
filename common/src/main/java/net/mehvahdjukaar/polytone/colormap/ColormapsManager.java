@@ -16,7 +16,6 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
-import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -142,7 +141,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     public void add(ResourceLocation id, Colormap colormap) {
         colormaps.register(id, () -> colormap);
-        if (!colormap.hasTexture()) {
+        if (colormap.needsToFillTexture()) {
             throw new IllegalStateException("Did not find any texture png for colormap " + id);
         }
     }
@@ -151,6 +150,9 @@ public class ColormapsManager extends JsonImgPartialReloader {
     //helper methods
     public static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> availableTextures,
                                                 ResourceLocation defaultPath, BlockColor col, Set<ResourceLocation> usedTexture, boolean strict) {
+        if (col instanceof IColorGetter cg && !cg.needsToFillTexture()) {
+            return;
+        }
         if (col instanceof IndexCompoundColorGetter c) {
             tryAcceptingTextureGroup(availableTextures, defaultPath, c, usedTexture, strict);
         } else if (col instanceof Colormap c) {
@@ -175,7 +177,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
             int index = g.getIntKey();
             BlockColor inner = g.getValue();
 
-            if (inner instanceof Colormap c && !c.hasTexture()) {
+            if (inner instanceof Colormap c && c.needsToFillTexture()) {
 
                 var textureMap = textures.get(c.getTargetTexture(id));
 
@@ -205,13 +207,13 @@ public class ColormapsManager extends JsonImgPartialReloader {
             ResourceLocation textureLoc = colormap.getTargetTexture(defaultPath);
             ArrayImage texture = availableTextures.get(textureLoc);
             tryAcceptingTexture(texture, textureLoc, colormap, usedTexture, strict);
-            colormap.ID = textureLoc;
+            colormap.debugID = textureLoc;
         }
     }
 
     private static void tryAcceptingTexture(@Nullable ArrayImage selectedTexture, ResourceLocation textureLoc, Colormap colormap,
                                             Set<ResourceLocation> usedTexture, boolean strict) {
-        if (colormap.hasTexture()){
+        if (!colormap.needsToFillTexture()) {
             return; //we already are filled
         }
         //hack. for inlined this will be the parent modifier id.

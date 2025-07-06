@@ -14,6 +14,9 @@ import org.jetbrains.annotations.Nullable;
 
 public interface IColorGetter extends BlockColor, ItemColor {
 
+    default boolean needsToFillTexture(){
+        return false;
+    }
 
     default IColorGetter makeConcurrent(){
         return this;

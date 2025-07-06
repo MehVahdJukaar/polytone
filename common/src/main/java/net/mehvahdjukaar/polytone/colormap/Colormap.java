@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.colormap;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -40,7 +39,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private final boolean usesState;
 
     public boolean inlined = true;
-      ResourceLocation ID = null;
+    ResourceLocation debugID = null;
 
     private Integer defaultColor;
     private ArrayImage image = null;
@@ -50,7 +49,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
 
-    public static final Codec<Colormap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
+    static final Codec<Colormap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
             ColorUtils.CODEC.optionalFieldOf("default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
             IColormapNumberProvider.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
             IColormapNumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
@@ -65,14 +64,16 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
-    public static final Codec<IColorGetter> COLORMAP_CODEC = Codec.withAlternative(SINGLE_COLOR_CODEC,
+    public static final Codec<IColorGetter> DIRECT_REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_CODEC,
             new ReferenceOrDirectCodec<>(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
             Function.identity());
 
+    public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_CODEC,
+            Polytone.COLORMAPS.byNameCodec());
+
 
     // single or biome compound
-    public static final Codec<IColorGetter> CODEC = COLORMAP_CODEC;// Codec.either(BiomeCompoundBlockColors.DIRECT_CODEC, Colormap.COLORMAP_CODEC)
-    //  .xmap(either -> either.map(Function.identity(), Function.identity()), Either::right);
+    public static final Codec<IColorGetter> CODEC = Codec.withAlternative(Colormap.DIRECT_REFERENCE_OR_EXPRESSION, BiomeCompoundColorGetter.CODEC);
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
@@ -111,7 +112,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     @Override
     public String toString() {
         return "Colormap{" +
-                "ID=" + ID +
+                "ID=" + debugID +
                 ", triangular=" + triangular +
                 ", rounds=" + rounds +
                 ", hasBiomeBlend=" + hasBiomeBlend +
@@ -126,8 +127,9 @@ public final class Colormap implements IColorGetter, ColorResolver {
         }
     }
 
-    public boolean hasTexture() {
-        return image != null;
+    @Override
+    public boolean needsToFillTexture() {
+        return image == null;
     }
 
     ResourceLocation getExplicitTargetTexture() {
@@ -177,7 +179,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
         int sampled = sample(humidity, temperature);
 
         if (colorMult != null) {
-            sampled =  colorMult.getValue(sampled, state,pos, biome, biomeMapper, item);
+            sampled = colorMult.getValue(sampled, state, pos, biome, biomeMapper, item);
         }
         return sampled;
     }
@@ -303,4 +305,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public static Colormap createDamage() {
         return new Colormap(IColormapNumberProvider.DAMAGE, IColormapNumberProvider.ZERO, false);
     }
+
+
+    //texture stuff
 }
