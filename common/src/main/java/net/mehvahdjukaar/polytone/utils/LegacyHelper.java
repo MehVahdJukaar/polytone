@@ -104,8 +104,22 @@ public class LegacyHelper {
                 }
                 map.put(id, withCond(id, prop, BlockPropertyModifier.coloringBlocks(colormap, targets)));
             } else if (path.equals("redstone_wire")) {
-                Colormap colormap = Colormap.simple((state, level, pos, m, i) -> state != null ?  state.getValue(RedStoneWireBlock.POWER) / 15f : 0,
-                        IColormapNumberProvider.ZERO);
+                Colormap colormap = Colormap.simple(new IColormapNumberProvider() {
+                    @Override
+                    public float getValue(BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
+                        return state != null ? (1 - (state.getValue(RedStoneWireBlock.POWER) / 15f)) : 1;
+                    }
+
+                    @Override
+                    public boolean usesBiome() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean usesPos() {
+                        return false;
+                    }
+                }, IColormapNumberProvider.ZERO);
 
                 map.put(id, withCond(id, prop, BlockPropertyModifier.coloringBlocks(colormap, Blocks.REDSTONE_WIRE)));
             } else if (prop != null) {
