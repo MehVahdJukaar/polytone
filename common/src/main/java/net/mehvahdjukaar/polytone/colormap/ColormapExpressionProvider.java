@@ -18,11 +18,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 
-public final class ColormapExpressionProvider extends PolytoneExpression implements IColormapNumberProvider {
+public class ColormapExpressionProvider extends PolytoneExpression implements IColormapNumberProvider {
 
     //Keywords
-    private static final String BIOME_VALUE = "BIOME_VALUE";
-    private static final String DAMAGE = "DAMAGE";
+    protected static final String BIOME_VALUE = "BIOME_VALUE";
+    protected static final String DAMAGE = "DAMAGE";
 
     public static final Codec<ColormapExpressionProvider> CODEC = Codec.STRING.flatXmap(s -> {
         try {
@@ -32,14 +32,14 @@ public final class ColormapExpressionProvider extends PolytoneExpression impleme
         }
     }, javaxExpression -> DataResult.success(javaxExpression.getUnparsed()));
 
-    private final boolean usesBiome;
-    private final boolean hasState;
+    protected final boolean usesBiome;
+    protected final boolean hasState;
 
-    private ColormapExpressionProvider(String unparsed) {
+    protected ColormapExpressionProvider(String unparsed) {
         this(unparsed, false);
     }
 
-    private ColormapExpressionProvider(String unparsed, boolean concurrent) {
+    protected ColormapExpressionProvider(String unparsed, boolean concurrent) {
         super(unparsed, concurrent);
 
         this.usesBiome = unparsed.contains(PolytoneExpression.TEMPERATURE) || unparsed.contains(PolytoneExpression.DOWNFALL)

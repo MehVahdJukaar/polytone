@@ -46,8 +46,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private Integer defaultColor;
     private ArrayImage image = null;
     private @Nullable ResourceLocation explicitTargetTexture; //explicit targets
-    private final @Nullable Dynamic<?> lazyFallback;
-    private @Nullable IColorGetter fallback;
+    private final @Nullable ColormapColorModulatorExpression colorMult;
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
@@ -61,7 +60,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
             StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
             StrOpt.of(BiomeIdMapper.CODEC, "biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
             StrOpt.of(ResourceLocation.CODEC, "texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture)),
-            Codec.PASSTHROUGH.optionalFieldOf("fallback_colormap").forGetter(c -> Optional.empty())
+            ColormapColorModulatorExpression.CODEC.optionalFieldOf("color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult))
     ).apply(i, Colormap::new));
 
     public static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
@@ -78,19 +77,20 @@ public final class Colormap implements IColorGetter, ColorResolver {
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
-                     Optional<ResourceLocation> explicitTargetTexture, Optional<Dynamic<?>> fallback) {
+                     Optional<ResourceLocation> explicitTargetTexture, Optional<ColormapColorModulatorExpression> colorMult) {
         this.defaultColor = defaultColor.orElse(null);
         this.xGetter = xGetter;
         this.yGetter = yGetter;
         this.triangular = triangular;
         this.rounds = rounds;
+        this.colorMult = colorMult.orElse(null);
         this.usesBiome = (xGetter.usesBiome() || yGetter.usesBiome());
         this.usesPos = usesBiome || (xGetter.usesPos() || yGetter.usesPos());
         this.usesState = (xGetter.usesState() || yGetter.usesState());
         this.hasBiomeBlend = biomeBlend.orElse(usesBiome);
         this.biomeMapper = biomeMapper.orElse(BiomeIdMapper.BY_INDEX);
         this.explicitTargetTexture = explicitTargetTexture.orElse(null);
-        this.lazyFallback = fallback.orElse(null);
+
     }
 
     private Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter, boolean triangular) {
@@ -103,7 +103,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
         Colormap concurrentColormap = new Colormap(Optional.ofNullable(this.defaultColor), this.xGetter.createConcurrent(),
                 this.yGetter.createConcurrent(), this.triangular,
                 this.rounds, Optional.of(this.hasBiomeBlend), Optional.of(this.biomeMapper),
-                Optional.ofNullable(this.explicitTargetTexture), Optional.ofNullable(this.lazyFallback));
+                Optional.ofNullable(this.explicitTargetTexture), Optional.ofNullable(this.colorMult == null ? null : this.colorMult.createConcurrent()));
         if (this.image != null) concurrentColormap.acceptTexture(this.image);
         return concurrentColormap;
     }
@@ -176,9 +176,8 @@ public final class Colormap implements IColorGetter, ColorResolver {
         float humidity = Mth.clamp(yGetter.getValue(state, pos, biome, biomeMapper, item), 0, 1);
         int sampled = sample(humidity, temperature);
 
-        if (fallback != null && sampled == 0) {
-            //TODO: finish
-            //return fallback.getColor(state, l)
+        if (colorMult != null) {
+            sampled =  colorMult.getValue(sampled, state,pos, biome, biomeMapper, item);
         }
         return sampled;
     }
