@@ -46,6 +46,14 @@ public class IndexCompoundColorGetter implements IColorGetter {
         return new IndexCompoundColorGetter(newMap);
     }
 
+    @Override
+    public boolean needsToFillTexture() {
+        for (var getter : getters.values()) {
+            if (getter.needsToFillTexture()) return true;
+        }
+        return false;
+    }
+
     protected static final Codec<IndexCompoundColorGetter> DIRECT_CODEC = Codec.unboundedMap(Codec.STRING
                             .flatXmap(s -> {
                                 try {
