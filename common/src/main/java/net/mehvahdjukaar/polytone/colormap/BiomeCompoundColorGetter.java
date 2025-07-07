@@ -72,8 +72,8 @@ public class BiomeCompoundColorGetter implements IColorGetter {
     }
 
     @Override
-    public int getColor(ItemStack itemStack, int i) {
-        return defaultGetter.getColor(itemStack, i);
+    public int getItemColor(ItemStack itemStack, int i) {
+        return defaultGetter.getItemColor(itemStack, i);
     }
 
     @Override

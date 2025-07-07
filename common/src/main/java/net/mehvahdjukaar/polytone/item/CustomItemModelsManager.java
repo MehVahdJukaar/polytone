@@ -42,13 +42,14 @@ public class CustomItemModelsManager extends JsonPartialReloader {
     @Override
     protected void earlyProcess(ResourceManager resourceManager) {
         var jsons = getJsonsInDirectories(resourceManager);
+        /* //TODO: add back someday
         for (var e : Parsed.batchParseOnlyEnabled(jsons, StandaloneItemModelOverride.CODEC_MODEL_ONLY,
                 JsonOps.INSTANCE, "custom item model")) {
             var partial = e.getValue();
             if (!partial.autoModel()) {
                 Polytone.addCustomModel(partial.model());
             }
-        }
+        }*/
     }
 
     @Override
@@ -66,6 +67,7 @@ public class CustomItemModelsManager extends JsonPartialReloader {
         }
         this.itemModifiersModels.clear();
 
+        /*
         for (var v : Parsed.batchParseOnlyEnabled(jsons, StandaloneItemModelOverride.CODEC,
                 ops, "custom item model")) {
             ResourceLocation location = v.getKey();
@@ -81,7 +83,7 @@ public class CustomItemModelsManager extends JsonPartialReloader {
 
             this.itemModels.computeIfAbsent(modelOverride.getTarget(), a -> new ItemModelOverrideList())
                     .add(modelOverride);
-        }
+        }*/
     }
 
     @Override
