@@ -120,6 +120,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                     json, ops, id, "block modifier");
             parsedModifiers.put(id, prop);
         }
+        //TODO:
+        //parsedModifiers = Parsed.sortByPriority(parsedModifiers);
 
 
         // add all modifiers (with or without texture)

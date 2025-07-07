@@ -38,12 +38,9 @@ public class GuiOverlayManager extends JsonPartialReloader {
     @Override
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
-        for (var j : jsons.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
-
-            BlitModifier effect = Parsed.parseOrNull(BlitModifier.CODEC, json, ops, id, "overlay modifier");
-            if (effect == null) continue;
+        for (var j : Parsed.batchParseOnlyEnabled(jsons, BlitModifier.CODEC,
+                ops, "overlay modifier")) {
+            var effect = j.getValue();
             ResourceLocation textureId = effect.target();
             //just 1 makes sense
             if (blitModifiers.containsKey(textureId)) {
@@ -76,10 +73,9 @@ public class GuiOverlayManager extends JsonPartialReloader {
             int ind = mod.index();
             if (ind == -1 || ind == index) {
                 mod.blitModified(gui, function, buffer, sprite,
-                        x, x + width,y, y + height,
+                        x, x + width, y, y + height,
                         sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(),
                         color);
-
                 return true;
             }
             index++;
@@ -101,10 +97,10 @@ public class GuiOverlayManager extends JsonPartialReloader {
             if (ind == -1 || ind == index) {
                 mod.blitModified(gui,function, buffer, sprite,
                         x, x + uWidth, y, y + vHeight,
-                        sprite.getU((float)uPosition / (float)textureWidth),
-                        sprite.getU((float)(uPosition + uWidth) / (float)textureWidth),
-                        sprite.getV((float)vPosition / (float)textureHeight),
-                        sprite.getV((float)(vPosition + vHeight) / (float)textureHeight),
+                        sprite.getU((float) uPosition / (float) textureWidth),
+                        sprite.getU((float) (uPosition + uWidth) / (float) textureWidth),
+                        sprite.getV((float) vPosition / (float) textureHeight),
+                        sprite.getV((float) (vPosition + vHeight) / (float) textureHeight),
                         color);
                 return true;
             }
@@ -186,7 +182,6 @@ public class GuiOverlayManager extends JsonPartialReloader {
         }
         return false;
     }
-
 
 
     private record HeartSprites(ResourceLocation full, ResourceLocation half, ResourceLocation fullBlinking,

@@ -59,11 +59,8 @@ public class GuiModifierManager extends JsonPartialReloader {
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         List<GuiModifier> allModifiers = new ArrayList<>();
 
-        for (var entry : jsons.entrySet()) {
-            var json = entry.getValue();
-            var id = entry.getKey();
-            GuiModifier modifier = Parsed.parseOrNull(GuiModifier.CODEC, json, ops, id, "gui modifier");
-            if (modifier != null) allModifiers.add(modifier);
+        for (var entry : Parsed.batchParseOnlyEnabled(jsons, GuiModifier.CODEC, ops, "gui modifier")) {
+            allModifiers.add(entry.getValue());
         }
 
         for (GuiModifier mod : allModifiers) {

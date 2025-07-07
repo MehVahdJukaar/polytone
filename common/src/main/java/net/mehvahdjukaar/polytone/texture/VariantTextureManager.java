@@ -45,11 +45,10 @@ public class VariantTextureManager extends JsonPartialReloader {
 
     @Override
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        for (var j : jsons.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
-            VariantTexture variant = Parsed.parseOrNull(VariantTexture.CODEC, json, ops, id, "variant texture");
-            if (variant != null) this.addVariant(id, variant);
+        for (var e : Parsed.batchParseOnlyEnabled(jsons, VariantTexture.CODEC, ops, "variant texture")) {
+            var variant = e.getValue();
+            var id = e.getKey();
+            this.addVariant(id, variant);
         }
     }
 

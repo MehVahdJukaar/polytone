@@ -54,18 +54,8 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, Parsed<ItemModifier>> parsedModifiers = Utils.sortedMap();
-
-        for (var j : jsons.entrySet()) {
-            JsonElement json = j.getValue();
-            ResourceLocation location = j.getKey();
-
-            var modifier = Parsed.parseAlways(ItemModifier.CODEC, json, ops, location, "item modifier");
-
-            parsedModifiers.put(location, modifier);
-
-
-        }
+        Parsed.SortedMap<ItemModifier> parsedModifiers =
+                Parsed.batchParseAlways(jsons, ItemModifier.CODEC, ops, "item modifier");
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {

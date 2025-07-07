@@ -61,17 +61,11 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
         var textures = new HashMap<>(resources.textures());
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
-        Map<ResourceLocation, Parsed<ParticleModifier>> parsedModifiers = Utils.sortedMap();
-        for (var j : jsons.entrySet()) {
-            JsonElement json = j.getValue();
-            ResourceLocation id = j.getKey();
 
-            var modifier = Parsed.parseOptionalOrPartial(ParticleModifier.CODEC,
-                    ParticleModifier.PARTIAL_CODEC, json, ops, id, "particle modifier");
+        Parsed.SortedMap<ParticleModifier> parsedModifiers =
+        Parsed.batchParseOrPartial(jsons, ParticleModifier.CODEC,
+                        ParticleModifier.PARTIAL_CODEC, ops, "particle modifier");
 
-            //always have priority
-            parsedModifiers.put(id, modifier);
-        }
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {

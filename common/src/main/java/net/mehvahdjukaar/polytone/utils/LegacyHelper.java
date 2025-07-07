@@ -152,7 +152,7 @@ public class LegacyHelper {
     }
 
     private static <T> Parsed<T> withCond(ResourceLocation id, @Nullable Properties prop, T t) {
-        return Parsed.of(t, id, prop == null || checkConditions(prop));
+        return Parsed.lowPriority(t, id, prop == null || checkConditions(prop));
     }
 
     private static boolean checkConditions(Properties prop) {
@@ -473,7 +473,7 @@ public class LegacyHelper {
                         .map(Parsed::getResultOrPartial);
                 FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
                         fogMod.map(BlockPropertyModifier::getColormap),
-                        targets);var parsedModifier = Parsed.of(modifier, id, parsed.isEnabled());
+                        targets);var parsedModifier = Parsed.lowPriority(modifier, id, parsed.isEnabled());
             converted.put(id, parsedModifier);
         }
 
@@ -516,8 +516,8 @@ public class LegacyHelper {
         for (int i = 0; i <= 2; i++) {
             IColorGetter skyCol;
             IColorGetter fogCol;
-            boolean skyEnabled = true;
-            boolean fogEnabled = true;
+            boolean skyEnabled;
+            boolean fogEnabled;
             {
                 ResourceLocation skyKey = ResourceLocation.parse("sky" + i);
                 var skyMod = modifiers.get(skyKey);
@@ -548,7 +548,7 @@ public class LegacyHelper {
 
                 ResourceLocation id = ResourceLocation.parse(names[i]);
                 boolean enabled = fogEnabled || skyEnabled;
-                var parsedMod = Parsed.of(mod, id, enabled);
+                var parsedMod = Parsed.lowPriority(mod, id, enabled);
                 converted.put(id, parsedMod);
             }
         }

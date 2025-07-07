@@ -10,12 +10,9 @@ import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.*;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.FogRenderer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -33,7 +30,6 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector4f;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -85,24 +81,12 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, Parsed<DimensionEffectsModifier>> parsedModifiers = Utils.sortedMap();
+        Parsed.SortedMap<DimensionEffectsModifier> parsedModifiers =
+                Parsed.batchParseAlways(jsons, DimensionEffectsModifier.CODEC, ops, "dimension modifier");
         parsedModifiers.putAll(extraMods);
 
-        for (var j : jsons.entrySet()) {
-            JsonElement json = j.getValue();
-            ResourceLocation id = j.getKey();
-
-            var modifier = Parsed.parseAlways(DimensionEffectsModifier.CODEC,
-                    json, ops, id, "dimension modifier");
-            //always have priority
-            if (parsedModifiers.containsKey(id)) {
-                Polytone.LOGGER.warn("Found duplicate Dimension Effects file with id {}." +
-                        "Overriding previous one", id);
-            }
-            parsedModifiers.put(id, modifier);
-        }
         // add all modifiers (with or without texture)
-        for (var entry : parsedModifiers.entrySet()) {
+        for (var entry : parsedModifiers) {
             ResourceLocation id = entry.getKey();
             Parsed<DimensionEffectsModifier> parsed = entry.getValue();
             DimensionEffectsModifier modifier = parsed.getResultOrPartial();
@@ -326,7 +310,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private static float[] lastSunset = null;
 
     @Nullable
-    public Integer modifySunsetColor(int old) {
+    public float[] modifySunsetColor(float [] old) {
         Colormap colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
         if (colormap == null) return null;
         float oldAlpha = ARGB.alpha(old) / 255f;

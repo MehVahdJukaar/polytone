@@ -65,11 +65,11 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         }
         // sound types
 
-        for (var j : soundJsons.entrySet()) {
-            var json = j.getValue();
+        for (var j : Parsed.batchParseOnlyEnabled(resources.soundTypes, PolytoneSoundType.DIRECT_CODEC,
+                ops, "sound type")) {
+            var soundType = j.getValue();
             var id = j.getKey();
-            SoundType soundType = Parsed.parseOrNull(PolytoneSoundType.DIRECT_CODEC, json, ops, id, "sound type");
-            if (soundType != null) customSoundTypes.register(id, soundType);
+            customSoundTypes.register(id, soundType);
         }
 
         for (var e : customSoundEvents.getEntries()) {

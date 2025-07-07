@@ -73,13 +73,9 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         textures.putAll(extraImages);
 
 
-        for (var j : jsons.entrySet()) {
-            JsonElement json = j.getValue();
+        for (var j : Parsed.batchParseAlways(jsons, FluidPropertyModifier.CODEC, ops, "fluid modifier")) {
             ResourceLocation id = j.getKey();
-
-            var modifier = Parsed.parseAlways(FluidPropertyModifier.CODEC, json, ops, id, "fluid modifier");
-
-            parsedModifiers.put(id, modifier);
+            parsedModifiers.put(id, j.getValue());
         }
 
         // add all modifiers (with or without texture)

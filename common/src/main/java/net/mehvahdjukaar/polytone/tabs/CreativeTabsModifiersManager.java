@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.tabs;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
-import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
@@ -30,8 +29,6 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     private final Set<ResourceKey<CreativeModeTab>> needsRefresh = new HashSet<>();
 
     private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> vanillaTabs = new HashMap<>();
-
-    private final Map<ResourceLocation, JsonElement> lazyJsons = new HashMap<>();
 
     public CreativeTabsModifiersManager() {
         super("creative_tab_modifiers");
@@ -86,23 +83,14 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             PlatStuff.sortTabs();
         }
 
-        lazyJsons.clear();
-        lazyJsons.putAll(resources.tabsModifiers);
-
-        //else apply as soon as we load a level
+        for (var e : Parsed.batchParseOnlyEnabled(resources.tabsModifiers, CreativeTabModifier.CODEC,
+                ops, "creative tab modifier")) {
+            addModifier(e.getKey(), e.getValue());
+        }
     }
-
     @Override
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
-        var ops = RegistryOps.create(JsonOps.INSTANCE, access);
-        for (var j : lazyJsons.entrySet()) {
 
-            JsonElement json = j.getValue();
-            ResourceLocation id = j.getKey();
-
-            CreativeTabModifier modifier = Parsed.parseOrNull(CreativeTabModifier.CODEC, json, ops, id, "creative tab modifier");
-            if (modifier != null) addModifier(id, modifier);
-        }
         if (!modifiers.isEmpty()) {
             needsRefresh.addAll(modifiers.keySet());
         }

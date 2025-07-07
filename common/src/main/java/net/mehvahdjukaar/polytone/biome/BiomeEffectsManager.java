@@ -41,14 +41,8 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     @Override
     public void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        for (var j : jsons.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
-
-            var effect = Parsed.parseOptional(BiomeEffectModifier.CODEC,
-                    json, ops, id, "biome modifier");
-
-            effect.ifPresent(e -> this.addEffect(id, e, access));
+        for (var v : Parsed.batchParseOnlyEnabled(jsons, BiomeEffectModifier.CODEC, ops, "biome modifier")) {
+            addEffect(v.getKey(), v.getValue(), access);
         }
     }
 
