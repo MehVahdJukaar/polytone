@@ -1,3 +1,2 @@
-- fixed another off by one issue in the colormap sampling code
-- added biome compound colormap type. A set of colormaps grouped by biome
-- added color_modifier parameter to colormaps
+- added "priority" field to all jsons to specity json priority
+- fixed an issue with tint index compound colormaps not having their textures filled
