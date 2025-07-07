@@ -19,13 +19,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ChunkMap;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
@@ -204,7 +202,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     }
 
                     effect.color = col;
-                    if(particle != null){
+                    if (particle != null) {
                         if (!vanillaEffectParticles.containsKey(effect)) {
                             vanillaEffectParticles.put(effect, effect.particleFactory);
                         }
@@ -229,7 +227,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             }
             if (item instanceof SpawnEggItem spawnEggItem) {
 
-               String shell = getString(v, "shell");
+                String shell = getString(v, "shell");
                 if (shell != null) {
                     if (!vanillaEggsBackgrounds.containsKey(spawnEggItem)) {
                         vanillaEggsBackgrounds.put(spawnEggItem, spawnEggItem.backgroundColor);
@@ -237,11 +235,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     spawnEggItem.backgroundColor = parseHex(shell);
                 }
                 String spots = getString(v, "spots");
-                 if (spots != null) {
+                if (spots != null) {
                     if (!vanillaEggsHighlight.containsKey(spawnEggItem)) {
                         vanillaEggsHighlight.put(spawnEggItem, spawnEggItem.highlightColor);
                     }
-                    spawnEggItem.highlightColor = parseHex(spots);;
+                    spawnEggItem.highlightColor = parseHex(spots);
+                    ;
                 }
             } else {
                 Polytone.LOGGER.warn("Unknown or invalid Spawn Egg Item with name {}", id);
@@ -282,26 +281,30 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         });
 
         doWith(obj, "text", (k, v) -> {
-            int col = parseHex(v);
-            ChatFormatting text = null;
+            int col;
             if (k.equals("splash")) {
+                col = parseHex(v);
                 splash = col;
             } else if (k.equals("xpbar")) {
+                col = parseHex(v);
                 xpBar = col;
             } else if (k.startsWith("code:")) {
+                col = parseHex(v);
                 String s = k.substring(5);
                 int code = Integer.parseInt(s);
-                text = ChatFormatting.getById(code);
-            } else {
-                text = ChatFormatting.getByName(k);
-            }
-            if (text != null) {
-                if (!vanillaChatFormatting.containsKey(text)) {
-                    vanillaChatFormatting.put(text, text.getColor());
+                ChatFormatting text = ChatFormatting.getById(code);
+                setTextColor(text, col);
+            } else if (k.equals("code")) {
+                for (var entry : entries(v)) {
+                    String s = entry.getKey();
+                    int code = Integer.parseInt(s);
+                    ChatFormatting text = ChatFormatting.getById(code);
+                    setTextColor(text, parseHex(entry.getValue()));
                 }
-                text.color = col;
-                TextColor tc = TextColor.fromLegacyFormat(text);
-                tc.value = col;
+            } else {
+                col = parseHex(v);
+                ChatFormatting text = ChatFormatting.getByName(k);
+                setTextColor(text, col);
             }
         });
 
@@ -313,6 +316,15 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 }
             }
         });
+    }
+
+    private void setTextColor(ChatFormatting text, int col) {
+        if (!vanillaChatFormatting.containsKey(text)) {
+            vanillaChatFormatting.put(text, text.getColor());
+        }
+        text.color = col;
+        TextColor tc = TextColor.fromLegacyFormat(text);
+        tc.value = col;
     }
 
     private static void doWith(JsonObject obj, String key, BiConsumer<String, JsonElement> entryHandler) {

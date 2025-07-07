@@ -1,2 +1,3 @@
 - added "priority" field to all jsons to specity json priority
 - fixed an issue with tint index compound colormaps not having their textures filled
+- restored an old convention for text in colors.json
