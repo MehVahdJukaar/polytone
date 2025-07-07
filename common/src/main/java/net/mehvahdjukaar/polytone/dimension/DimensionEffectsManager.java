@@ -76,27 +76,12 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Map<ResourceLocation, Parsed<DimensionEffectsModifier>> parsedModifiers = Utils.sortedMap();
+        Parsed.SortedMap<DimensionEffectsModifier> parsedModifiers =
+                Parsed.batchParseAlways(jsons, DimensionEffectsModifier.CODEC, ops, "dimension modifier");
         parsedModifiers.putAll(extraMods);
 
-        for (var j : jsons.entrySet()) {
-            JsonElement json = j.getValue();
-            ResourceLocation id = j.getKey();
-
-            var modifier = Parsed.parseAlways(DimensionEffectsModifier.CODEC,
-                    json, ops, id, "dimension modifier");
-
-            //always have priority
-            if (parsedModifiers.containsKey(id)) {
-                Polytone.LOGGER.warn("Found duplicate Dimension Effects file with id {}." +
-                        "Overriding previous one", id);
-            }
-            parsedModifiers.put(id, modifier);
-        }
-        Registry<DimensionType> reg = access.registryOrThrow(Registries.DIMENSION_TYPE);
-
         // add all modifiers (with or without texture)
-        for (var entry : parsedModifiers.entrySet()) {
+        for (var entry : parsedModifiers) {
             ResourceLocation id = entry.getKey();
             Parsed<DimensionEffectsModifier> parsed = entry.getValue();
             DimensionEffectsModifier modifier = parsed.getResultOrPartial();
@@ -282,8 +267,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     private static float[] lastSunset = null;
 
-    @Nullable
-    public float[] modifySunsetColor(float [] old) {
+    public float @Nullable [] modifySunsetColor(float [] old) {
         Colormap colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
         if (colormap == null) return null;
         var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(),

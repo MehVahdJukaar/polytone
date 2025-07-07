@@ -101,17 +101,11 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
         Set<CustomParticleType> customTypes = new HashSet<>();
 
-        for (var j : jsons.entrySet()) {
+        for (var j : Parsed.batchParseOnlyEnabled(jsons, CustomOrSemiCustomParticleCodec.INSTANCE,
+                ops, "custom particle")) {
             try {
-                var json = j.getValue();
+                var factory = j.getValue();
                 var id = j.getKey();
-                CustomParticleFactory factory;
-                if (json instanceof JsonObject jo && jo.has("copy_from")) {
-                    factory = Parsed.parseOrNull(SemiCustomParticleType.CODEC, json, ops, id, "custom particle");
-                } else {
-                    factory = Parsed.parseOrNull(CustomParticleType.CODEC, json, ops, id, "custom particle");
-                }
-                if (factory == null) continue;
                 factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
 
                 if (factory instanceof CustomParticleType c) {

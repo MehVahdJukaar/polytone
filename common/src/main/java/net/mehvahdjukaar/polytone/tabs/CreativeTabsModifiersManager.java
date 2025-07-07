@@ -10,7 +10,6 @@ import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -84,13 +83,9 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             PlatStuff.registerDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, e.getKey(), e.getValue());
         }
 
-        for (var j : resources.tabsModifiers.entrySet()) {
-
-            JsonElement json = j.getValue();
-            ResourceLocation id = j.getKey();
-
-            CreativeTabModifier modifier = Parsed.parseOrNull(CreativeTabModifier.CODEC, json, ops, id, "creative tab modifier");
-            if (modifier != null) addModifier(id, modifier);
+        for (var e : Parsed.batchParseOnlyEnabled(resources.tabsModifiers, CreativeTabModifier.CODEC,
+                ops, "creative tab modifier")) {
+            addModifier(e.getKey(), e.getValue());
         }
 
         if (!customTabs.isEmpty()) {

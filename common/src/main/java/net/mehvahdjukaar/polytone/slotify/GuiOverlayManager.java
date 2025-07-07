@@ -33,12 +33,9 @@ public class GuiOverlayManager extends JsonPartialReloader {
     @Override
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
                                   RegistryAccess access) {
-        for (var j : jsons.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
-
-            BlitModifier effect = Parsed.parseOrNull(BlitModifier.CODEC, json, ops, id, "overlay modifier");
-            if (effect == null) continue;
+        for (var j : Parsed.batchParseOnlyEnabled(jsons, BlitModifier.CODEC,
+                ops, "overlay modifier")) {
+            var effect = j.getValue();
             ResourceLocation textureId = effect.target();
             //just 1 makes sense
             if (blitModifiers.containsKey(textureId)) {
