@@ -281,19 +281,15 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         });
 
         doWith(obj, "text", (k, v) -> {
-            int col;
             if (k.equals("splash")) {
-                col = parseHex(v);
-                splash = col;
+                splash = parseHex(v);
             } else if (k.equals("xpbar")) {
-                col = parseHex(v);
-                xpBar = col;
+                xpBar = parseHex(v);
             } else if (k.startsWith("code:")) {
-                col = parseHex(v);
                 String s = k.substring(5);
                 int code = Integer.parseInt(s);
                 ChatFormatting text = ChatFormatting.getById(code);
-                setTextColor(text, col);
+                setTextColor(text, parseHex(v));
             } else if (k.equals("code")) {
                 for (var entry : entries(v)) {
                     String s = entry.getKey();
@@ -302,9 +298,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     setTextColor(text, parseHex(entry.getValue()));
                 }
             } else {
-                col = parseHex(v);
                 ChatFormatting text = ChatFormatting.getByName(k);
-                setTextColor(text, col);
+                setTextColor(text, parseHex(v));
             }
         });
 
