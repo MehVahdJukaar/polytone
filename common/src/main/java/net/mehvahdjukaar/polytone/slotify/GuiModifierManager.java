@@ -9,7 +9,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -22,7 +21,6 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
-import net.minecraft.world.level.material.Fluids;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -60,11 +58,8 @@ public class GuiModifierManager extends JsonPartialReloader {
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
         List<GuiModifier> allModifiers = new ArrayList<>();
 
-        for (var entry : jsons.entrySet()) {
-            var json = entry.getValue();
-            var id = entry.getKey();
-            GuiModifier modifier = Parsed.parseOrNull(GuiModifier.CODEC, json, ops, id, "gui modifier");
-            if (modifier != null) allModifiers.add(modifier);
+        for (var entry : Parsed.batchParseOnlyEnabled(jsons, GuiModifier.CODEC, ops, "gui modifier")) {
+            allModifiers.add(entry.getValue());
         }
 
         for (GuiModifier mod : allModifiers) {
