@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.lightmap;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -132,7 +133,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
     private boolean reachedMainMenuHack = false;
 
     public boolean maybeModifyLightTexture(LightTexture instance,
-                                           GpuTexture lightmap,
+                                           GpuTextureView lightmap,
                                            Minecraft minecraft, ClientLevel level,
                                            float flicker, float partialTicks) {
         if (true) return false; //TODO: add back as shader

@@ -1,16 +1,15 @@
 package net.mehvahdjukaar.polytone.slotify;
 
 import com.google.gson.JsonElement;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -19,7 +18,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Function;
 
 public class GuiOverlayManager extends JsonPartialReloader {
 
@@ -64,15 +62,14 @@ public class GuiOverlayManager extends JsonPartialReloader {
     private int index = 0;
     private boolean active = false;
 
-    public boolean maybeModifyBlit(GuiGraphics gui, Function<ResourceLocation, RenderType> function,
-                                   MultiBufferSource.BufferSource buffer, TextureAtlasSprite sprite,
+    public boolean maybeModifyBlit(GuiGraphics gui, RenderPipeline pipeline, TextureAtlasSprite sprite,
                                    int x, int y, int width, int height, int color) {
         if (!active || blitModifiers.isEmpty()) return false;
         var mod = blitModifiers.get(sprite.contents().name());
         if (mod != null) {
             int ind = mod.index();
             if (ind == -1 || ind == index) {
-                mod.blitModified(gui, function, buffer, sprite,
+                mod.blitModified(gui, pipeline, sprite,
                         x, x + width, y, y + height,
                         sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(),
                         color);
@@ -84,8 +81,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
     }
 
     //partial blit
-    public boolean maybeModifyBlit(GuiGraphics gui,Function<ResourceLocation, RenderType> function,
-                                   MultiBufferSource.BufferSource buffer, TextureAtlasSprite sprite,
+    public boolean maybeModifyBlit(GuiGraphics gui, RenderPipeline pipeline, TextureAtlasSprite sprite,
                                    int x, int y,
                                    int textureWidth, int textureHeight,
                                    int uPosition, int vPosition, int uWidth, int vHeight,
@@ -95,7 +91,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
         if (mod != null) {
             int ind = mod.index();
             if (ind == -1 || ind == index) {
-                mod.blitModified(gui,function, buffer, sprite,
+                mod.blitModified(gui, pipeline, sprite,
                         x, x + uWidth, y, y + vHeight,
                         sprite.getU((float) uPosition / (float) textureWidth),
                         sprite.getU((float) (uPosition + uWidth) / (float) textureWidth),
@@ -177,7 +173,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
         if (heartSprites.isEmpty()) return false;
         HeartSprites sprites = heartSprites.get(actualType);
         if (sprites != null) {
-            graphics.blitSprite(RenderType::guiTextured, sprites.getSprite(bl, bl3, bl2), i, j, 9, 9);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprites.getSprite(bl, bl3, bl2), i, j, 9, 9);
             return true;
         }
         return false;

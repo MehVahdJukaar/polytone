@@ -11,10 +11,10 @@ public class SmithingScreenMixin {
 
 
     @ModifyArg(method = "renderBg", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventory(Lnet/minecraft/client/gui/GuiGraphics;FFFLorg/joml/Vector3f;Lorg/joml/Quaternionf;Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V")
+            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventory(Lnet/minecraft/client/gui/GuiGraphics;IIIIFLorg/joml/Vector3f;Lorg/joml/Quaternionf;Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V")
             , index = 1
     )
-    public float modifyRenderEntityX(float x) {
+    public int modifyRenderEntityX(int x) {
         var m = ((SlotifyScreen) this).polytone$getModifier();
         if (m != null) {
 
@@ -23,6 +23,7 @@ public class SmithingScreenMixin {
                 return x + s.x();
             }
         }
+
         return x;
     }
 

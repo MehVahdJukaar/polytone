@@ -455,7 +455,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 case TERRAIN ->RenderType.solid();
                 case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE;
                 case LIT, INVISIBLE -> RenderType.cutout();
-                case TRANSLUCENT -> RenderType.translucent();
+                case TRANSLUCENT -> RenderType.cutout();
                 default -> RenderType.cutoutMipped();
             };
         }

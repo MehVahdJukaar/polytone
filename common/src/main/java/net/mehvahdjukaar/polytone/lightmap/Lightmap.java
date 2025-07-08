@@ -5,6 +5,7 @@ import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -119,7 +120,7 @@ public class Lightmap {
     //TODO:this needs to go into a shader
     //way too much to edit to use mixins, plus we lerp so overriding entirely is probably best way anyways
     public void applyToLightTexture(LightTexture instance,
-                                    GpuTexture lightmap,
+                                    GpuTextureView lightmap,
                                     Minecraft minecraft, ClientLevel level,
                                     float flicker, float partialTicks) {
 /*

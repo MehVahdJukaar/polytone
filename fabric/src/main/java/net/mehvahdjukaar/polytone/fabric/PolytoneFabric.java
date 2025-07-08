@@ -57,12 +57,12 @@ public class PolytoneFabric implements ClientModInitializer {
                     ScreenEvents.afterRender(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) -> {
 
                         var matrices = graphics.pose();
-                        matrices.pushPose();
-                        matrices.setIdentity();
-                        matrices.translate(scaledWidth / 2F, scaledHeight / 2F, 500);
+                        matrices.pushMatrix();
+                        matrices.identity();
+                        matrices.translate(scaledWidth / 2F, scaledHeight / 2F);
 
                         ss.polytone$renderExtraSprites(graphics, mouseX, mouseY, tickDelta);
-                        matrices.popPose();
+                        matrices.popMatrix();
                     });
                 }
             }

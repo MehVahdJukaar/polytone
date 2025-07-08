@@ -142,8 +142,7 @@ public record Targets(List<Entry> entries) {
         @Override
         public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
             var holder = reg.get(ResourceKey.create((ResourceKey<? extends Registry<T>>) reg.key(), id));
-            if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
-                Polytone.LOGGER.error("Found missing ID in minecraft namespace: {}", id + ". Polytone will skip it but this is remains a bug of the Resource Pack. Optional entries or resource conditions should be used to maintain backward compatibility instead.");
+            if (holder.isEmpty() && Polytone.isFutureId(id)) {
                 return List.of();
             }
             return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));

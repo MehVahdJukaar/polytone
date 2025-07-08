@@ -17,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -175,7 +177,7 @@ public record BlockPropertyModifier(
             }//todo: fence gates
         }
         if (tintHack) {
-            Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
+            //Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
         }
 
         IRenderProperties oldRenderType = null;
@@ -196,6 +198,7 @@ public record BlockPropertyModifier(
                 false, Targets.EMPTY, false);
     }
 
+    public static final Codec<ChunkSectionLayer> SECTION_LAYER_CODEC = Codec.STRING.xmap(s -> ChunkSectionLayer.valueOf(s.toUpperCase(Locale.ROOT)), ChunkSectionLayer::label);
 
     public static final Decoder<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -234,5 +237,29 @@ public record BlockPropertyModifier(
         return (IColorGetter) tintGetter.orElse(null);
     }
 
+
+    public enum OffsetTypeR implements StringRepresentable {
+        NONE(BlockBehaviour.OffsetType.NONE),
+        XZ(BlockBehaviour.OffsetType.XZ),
+        XYZ(BlockBehaviour.OffsetType.XYZ);
+
+        public static final Codec<OffsetTypeR> CODEC = StringRepresentable.fromEnum(BlockPropertyModifier.OffsetTypeR::values);
+
+        private final BlockBehaviour.OffsetType original;
+
+        OffsetTypeR(BlockBehaviour.OffsetType offsetType) {
+            this.original = offsetType;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return this.name().toLowerCase(Locale.ROOT);
+        }
+
+        public BlockBehaviour.OffsetFunction getFunction() {
+            var p = BlockBehaviour.Properties.of().offsetType(original);
+            return p.offsetFunction != null ? p.offsetFunction : ((blockState, blockPos) -> Vec3.ZERO);
+        }
+    }
 
 }

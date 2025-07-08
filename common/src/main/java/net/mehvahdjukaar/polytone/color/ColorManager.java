@@ -12,13 +12,13 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
-import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.SimpleColor;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.mehvahdjukaar.polytone.utils.Vec3f;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.color.ColorLerper;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -32,9 +32,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RedStoneWireBlock;
@@ -60,6 +58,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private final EnumMap<BorderStatus, Integer> vanillaBorderStatus = new EnumMap<>(BorderStatus.class);
 
     private final Map<DyeColor, Integer> customSheepColors = new EnumMap<>(DyeColor.class);
+    private final Map<DyeColor, Integer> originalSheepColors = new EnumMap<>(ColorLerper.Type.SHEEP.colorByDye);
+
     protected final int[] originalRedstoneWireColors = Arrays.copyOf(RedStoneWireBlock.COLORS, RedStoneWireBlock.COLORS.length);
 
     @Nullable
@@ -100,9 +100,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Override
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var keySet = new ArrayList<>(jsons.keySet());
-        Lists.reverse(keySet);
 
-        for (var k : keySet) {
+        for (var k : Lists.reverse(keySet)) {
             JsonElement root = jsons.get(k);
             try {
                 parseColorJson(root, k);
@@ -443,13 +442,11 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     public void regenSheepColors() {
-        Sheep.COLOR_BY_DYE = new EnumMap<>(DyeColor.class);
-        for (var d : DyeColor.values()) {
-
-            Sheep.COLOR_BY_DYE.put(d, SheepAccessor.invokeCreateSheepColor(d));
-        }
-        Sheep.COLOR_BY_DYE.putAll(customSheepColors);
+        var map = new EnumMap<>(originalSheepColors);
+        map.putAll(customSheepColors);
         customSheepColors.clear();
+
+        ColorLerper.Type.SHEEP.colorByDye = map;
     }
 
     public float @Nullable [] getXpOrbColor(ExperienceOrbRenderState orb, float partialTicks) {
