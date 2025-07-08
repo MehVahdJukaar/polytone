@@ -111,16 +111,19 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
 
     public DimensionEffectsModifier applyInplace(ResourceLocation dimensionId) {
         DimensionSpecialEffects effects = PlatStuff.getDimensionEffects(dimensionId);
+
         Optional<Either<Float, BlockContextExpression>> oldCloud = Optional.empty();
+        /*
         if (this.cloudLevel.isPresent() && this.cloudLevel.get().left().isPresent()) {
             oldCloud = Optional.of(Either.left(effects.cloudLevel));
             effects.cloudLevel = this.cloudLevel.get().left().get();
-        }
+        }*/
         Optional<Boolean> oldGround = Optional.empty();
+        /*
         if (this.hasGround.isPresent()) {
             oldGround = Optional.of(effects.hasGround);
             effects.hasGround = this.hasGround.get();
-        }
+        }*/
         Optional<DimensionSpecialEffects.SkyType> oldSky = Optional.empty();
         if (this.skyType.isPresent()) {
             oldSky = Optional.of(effects.skyType);

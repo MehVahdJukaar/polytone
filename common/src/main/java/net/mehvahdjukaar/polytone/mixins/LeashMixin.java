@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -17,18 +18,15 @@ public class LeashMixin {
 
     @Inject(method = "addVertexPair", at = @At("HEAD"), cancellable = true)
     private static void polytone$modifyLeashRender(VertexConsumer vertexConsumer, Matrix4f matrix4f, float f, float g, float h, int i, int j, int k, int l, float m, float n, float o, float p, int q, boolean bl, CallbackInfo ci) {
-        //if(LeashTexture.addVertexPair(vertexConsumer, matrix4f, f, g, h, i, j, k, l, m, n, o, p, q, bl)) {
-         //   ci.cancel(); //TODO 1.21.5
-       // }
+        if (PolytoneRenderTypes.addLeashVertexPair(vertexConsumer, matrix4f, f, g, h, i, j, k, l, m, n, o, p, q, bl)) {
+            ci.cancel();
+        }
     }
 
     @WrapOperation(method = "renderLeash", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource;getBuffer(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;"))
     private static VertexConsumer polytone$modifyLeashTexture(MultiBufferSource instance, RenderType renderType, Operation<VertexConsumer> original) {
-        //   ci.cancel(); //TODO 1.21.5
-
-     //   var consumer = LeashTexture.getVertexConsumer(instance);
-      //  if (consumer != null) return consumer;
-        //else
-        return original.call(instance, renderType);
+        var consumer = PolytoneRenderTypes.getLeashVertexConsumer(instance);
+        if (consumer != null) return consumer;
+        else return original.call(instance, renderType);
     }
 }

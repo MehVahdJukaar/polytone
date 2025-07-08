@@ -16,6 +16,7 @@
     "GameRendererMixin",
     "GuiGraphicsMixin",
     "GuiMixin",
+    "GuiRenderStateMixin",
     "ItemMixin",
     "ItemOverridesMixin",
     "ItemStackMixin",
@@ -35,8 +36,7 @@
     "XpOrbMixin",
     "accessor.BiomeAccessor",
     "accessor.DustParticleOptionAccessor",
-    "accessor.ParticleAccessor",
-    "accessor.SheepAccessor"
+    "accessor.ParticleAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

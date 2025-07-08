@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.slotify;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -37,10 +38,9 @@ public record BlitModifier(ResourceLocation target, int index, int xInc, int yIn
     ).apply(i, BlitModifier::new));
 
 
-    public void blitModified(GuiGraphics gui,Function<ResourceLocation, RenderType> function,
-                             MultiBufferSource.BufferSource bufferSource,
+    public void blitModified(GuiGraphics gui, RenderPipeline pipeline,
                              TextureAtlasSprite sprite,
-                             int oldX1,  int oldX2, int oldY1,int oldY2,
+                             int oldX1, int oldX2, int oldY1, int oldY2,
                              float oldU0, float oldU1, float oldV0, float oldV1,
                              int tint) {
 
@@ -48,7 +48,7 @@ public record BlitModifier(ResourceLocation target, int index, int xInc, int yIn
 
 
         for (RelativeSprite s : extraSprites) {
-            s.render(gui.pose(), function,bufferSource,  oldX1, oldX2, oldY1, oldY2, col);
+            s.render(gui, pipeline,  oldX1, oldX2, oldY1, oldY2, col);
         }
 
         if (newTexture.isPresent()) {
@@ -69,10 +69,8 @@ public record BlitModifier(ResourceLocation target, int index, int xInc, int yIn
         oldh += heightInc;
         oldY2 = oldY1 + oldh;
 
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(function.apply(sprite.atlasLocation()));
-        SimpleSprite.blit(gui.pose().last().pose(), vertexConsumer,
-                (float) oldX1, (float) oldX2, (float) oldY1, (float) oldY2, (float) zInc, minU, maxU, minV, maxV,
-                col);
+        //TODO: add Z
+        gui.innerBlit(pipeline,sprite.atlasLocation(),  oldX1,  oldX2,  oldY1,  oldY2, minU, maxU, minV, maxV, col);
     }
 
 

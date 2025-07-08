@@ -18,6 +18,7 @@ import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.RegistryAccess;
@@ -256,11 +257,11 @@ public class PlatStuffImpl {
 
     }
 
-    public static RenderType getRenderType(Block block) {
+    public static ChunkSectionLayer getRenderType(Block block) {
         return null;
     }
 
-    public static void setRenderType(Block block, RenderType renderType) {
+    public static void setRenderType(Block block, ChunkSectionLayer renderType) {
         ItemBlockRenderTypes.setRenderLayer(block, renderType);
     }
 

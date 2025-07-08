@@ -334,7 +334,7 @@ public class LegacyHelper {
         if (b.isPresent()) {
             Block block = b.get();
             if (block != Blocks.REDSTONE_WIRE && block != Blocks.PUMPKIN_STEM && block != Blocks.MELON_STEM) {
-                Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
+                //Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
             }
         }
     }

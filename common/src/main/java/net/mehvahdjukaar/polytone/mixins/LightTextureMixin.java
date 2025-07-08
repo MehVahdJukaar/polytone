@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -26,7 +27,7 @@ public abstract class LightTextureMixin {
     @Shadow
     private boolean updateLightTexture;
 
-    @Shadow public abstract GpuTexture getTarget();
+    @Shadow public abstract GpuTextureView getTextureView();
 
     //needs to be same as alexcaves
     @Inject(
@@ -39,7 +40,7 @@ public abstract class LightTextureMixin {
             ClientLevel clientlevel = this.minecraft.level;
             if (clientlevel != null) {
                 Profiler.get().push("lightTex");
-                if (Polytone.LIGHTMAPS.maybeModifyLightTexture((LightTexture) (Object) this, getTarget(),
+                if (Polytone.LIGHTMAPS.maybeModifyLightTexture((LightTexture) (Object) this, getTextureView(),
                         minecraft, clientlevel, blockLightRedFlicker, partialTicks)) {
                     this.updateLightTexture = false;
                     ci.cancel();

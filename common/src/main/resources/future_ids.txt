@@ -1,1 +1,2 @@
 minecraft:copper_axe
+minecraft:grass

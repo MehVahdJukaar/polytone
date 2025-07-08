@@ -1,2 +1,1 @@
-- added "priority" field to all jsons to specify json priority
-- fixed an issue with tint index compound colormaps not having their textures filled
+added back leash texture

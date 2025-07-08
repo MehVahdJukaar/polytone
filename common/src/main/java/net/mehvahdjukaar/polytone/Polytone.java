@@ -19,7 +19,6 @@ import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabsModifiersManager;
-import net.mehvahdjukaar.polytone.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.utils.CompoundReloader;
 import net.minecraft.client.Minecraft;
@@ -70,7 +69,6 @@ public class Polytone {
     public static final ParticleModifiersManager PARTICLE_MODIFIERS = new ParticleModifiersManager();
     public static final EntityModifiersManager ENTITY_MODIFIERS = new EntityModifiersManager();
     public static final SoundTypesManager SOUND_TYPES = new SoundTypesManager();
-    public static final VariantTextureManager VARIANT_TEXTURES = new VariantTextureManager();
     public static final ColorManager COLORS = new ColorManager();
     public static final GuiModifierManager SLOTIFY = new GuiModifierManager();
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
@@ -91,7 +89,7 @@ public class Polytone {
         COMPOUND_RELOADER = new CompoundReloader(
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
-                BIOME_MODIFIERS, VARIANT_TEXTURES,
+                BIOME_MODIFIERS,
                 LIGHTMAPS, DIMENSION_MODIFIERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,ENTITY_MODIFIERS,
                 CREATIVE_TABS_MODIFIERS);

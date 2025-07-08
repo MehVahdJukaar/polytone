@@ -143,13 +143,15 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
     @Override
     public BakedQuadBuilderImpl lightEmission(int lightLevel) {
-        inner.material(Renderer.get().materialFinder().emissive(true).find());
+        //TODO:
+       // inner.material(Renderer.get().materialFinder().emissive(true).find());
         return this;
     }
 
     @Override
     public BakedQuadBuilder fromVanilla(BakedQuad quad) {
-        inner.fromVanilla(quad, Renderer.get().materialFinder().find(), null);
+        //TODO:
+        //inner.fromVanilla(quad, Renderer.get().materialFinder().find(), null);
         return null;
     }
 

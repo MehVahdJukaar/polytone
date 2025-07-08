@@ -14,11 +14,10 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
@@ -35,10 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector4f;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DimensionEffectsManager extends JsonImgPartialReloader {
 
@@ -239,7 +235,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         isTerrainHack.set(true);
         Vector4f vector4f = FogRenderer.computeFogColor(
                 camera, partialTicks, level, minecraft.options.getEffectiveRenderDistance(),
-                gameRenderer.getDarkenWorldAmount(partialTicks)
+                gameRenderer.getDarkenWorldAmount(partialTicks), false
         );
         isTerrainHack.set(false);
         return vector4f;
@@ -286,16 +282,15 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
 
-    @Nullable
-    public Float modifyCloudHeight(ClientLevel level) {
+    public Optional<Integer> modifyCloudHeight(ClientLevel level) {
         BlockContextExpression height = this.cloudFunctions.get(level.dimensionType());
-        if (height == null) return null;
+        if (height == null) return Optional.empty();
         BlockPos pos = ClientFrameTicker.getCameraPos();
         double v = height.getValue(level, pos, Blocks.AIR.defaultBlockState());
         if (v >= 10000) {
-            return Float.NaN;
+            return  Optional.of(Integer.MAX_VALUE);
         }
-        return (float) v;
+        return Optional.of((int) v);
     }
 
     public boolean shouldCancelFogWeatherDarken(Level level) {
