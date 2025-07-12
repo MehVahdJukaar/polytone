@@ -5,10 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
-import net.mehvahdjukaar.polytone.utils.ArrayImage;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.utils.*;
 import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -55,11 +52,11 @@ public final class Colormap implements IColorGetter, ColorResolver {
             IColormapNumberProvider.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
             IColormapNumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
             StrOpt.of(Codec.BOOL, "triangular", false).forGetter(c -> c.triangular),
-            Codec.BOOL.optionalFieldOf("rounds", true).forGetter(c -> c.rounds),
+            StrOpt.of(Codec.BOOL, "rounds", true).forGetter(c -> c.rounds),
             StrOpt.of(Codec.BOOL, "biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
             StrOpt.of(BiomeIdMapper.CODEC, "biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
             StrOpt.of(ResourceLocation.CODEC, "texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture)),
-            ColormapColorModulatorExpression.CODEC.optionalFieldOf("color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult))
+            StrOpt.of(ColormapColorModulatorExpression.CODEC, "color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult))
     ).apply(i, Colormap::new));
 
     public static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
@@ -69,12 +66,12 @@ public final class Colormap implements IColorGetter, ColorResolver {
             new ReferenceOrDirectCodec<>(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC))
             .xmap(a->a.map(b->b, c->c), Either::right);
 
-    public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_CODEC,
+    public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = CodecUtil.withAlternative(SINGLE_COLOR_CODEC,
             Polytone.COLORMAPS.byNameCodec());
 
 
     // single or biome compound
-    public static final Codec<IColorGetter> CODEC = Codec.withAlternative(Colormap.DIRECT_REFERENCE_OR_EXPRESSION, BiomeCompoundColorGetter.CODEC);
+    public static final Codec<IColorGetter> CODEC = CodecUtil.withAlternative(Colormap.DIRECT_REFERENCE_OR_EXPRESSION, BiomeCompoundColorGetter.CODEC);
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,

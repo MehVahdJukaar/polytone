@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.utils.CodecUtil;
 import net.mehvahdjukaar.polytone.utils.LenientUnboundedMapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -20,14 +21,15 @@ import java.util.Map;
 
 public class BiomeCompoundColorGetter implements IColorGetter {
 
-    public static final Codec<BiomeCompoundColorGetter> CODEC = RecordCodecBuilder.<BiomeCompoundColorGetter>create(i -> i.group(
+    public static final Codec<BiomeCompoundColorGetter> CODEC =
+            CodecUtil.validate(
+            RecordCodecBuilder.<BiomeCompoundColorGetter>create(i -> i.group(
                     Colormap.REFERENCE_OR_EXPRESSION.fieldOf("default").forGetter(c -> c.defaultGetter),
                     new LenientUnboundedMapCodec<>(
                             RegistryFixedCodec.create(Registries.BIOME),
                             Colormap.REFERENCE_OR_EXPRESSION
                     ).fieldOf("biomes").forGetter(c -> c.holderMap)
-            ).apply(i, BiomeCompoundColorGetter::new))
-            .validate(
+            ).apply(i, BiomeCompoundColorGetter::new)),
                     c -> {
                         if (c.getters.isEmpty()) {
                             return DataResult.error(() -> "Must have at least 1 tint getter");

@@ -1,2 +1,1 @@
-- added unrestricted x, y, z blockstate model transformation
-- block model cubes rotations are also unrestricted
+- ported many recent changes

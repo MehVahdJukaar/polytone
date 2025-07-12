@@ -95,7 +95,7 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
         if (this.xpOrbReplaceJson != null) {
 
             var v = Parsed.parseAlways(ParticleTypes.CODEC, xpOrbReplaceJson,
-                    ops, ResourceLocation.withDefaultNamespace("xp_orb"), "XP orb modifier");
+                    ops, new ResourceLocation("xp_orb"), "XP orb modifier");
             if (v.isEnabled()) {
                 this.xpOrbReplaceParticle = v.getResultOrPartial();
             }

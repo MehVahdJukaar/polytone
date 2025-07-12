@@ -115,7 +115,9 @@ public class Parsed<T> {
         Boolean enabled = CONDITION_CODEC.decode(ops, input).getOrThrow(
                 false, Polytone.LOGGER::error
         ).getFirst();
-        int priority = PRIORITY_CODEC.decode(ops, input).getOrThrow().getFirst();
+        int priority = PRIORITY_CODEC.decode(ops, input).getOrThrow(
+                false, Polytone.LOGGER::error
+        ).getFirst();
         T value;
         try {
             if (enabled) {
