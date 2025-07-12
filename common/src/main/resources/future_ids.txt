@@ -1,3 +1,2 @@
 minecraft:copper_axe
 minecraft:grass
-minecraft:oxeye_daise
