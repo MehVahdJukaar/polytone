@@ -1,1 +1,1 @@
-fixed broken particle type decoding from last update
+added back leash texture
