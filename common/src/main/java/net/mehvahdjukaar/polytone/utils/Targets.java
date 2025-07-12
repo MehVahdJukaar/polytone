@@ -137,8 +137,7 @@ public record Targets(List<Entry> entries) {
             ResourceKey k = reg.key();
             ResourceKey<T> key = ResourceKey.create(k, this.id);
             Optional<Holder.Reference<T>> holder = reg.get(key);
-            if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
-                Polytone.LOGGER.error("Found missing ID in minecraft namespace: {}", id + ". Polytone will skip it but this is remains a bug of the Resource Pack. Optional entries or resource conditions should be used to maintain backward compatibility instead.");
+            if (holder.isEmpty() && Polytone.isFutureId(id)) {
                 return List.of();
             }
             return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
