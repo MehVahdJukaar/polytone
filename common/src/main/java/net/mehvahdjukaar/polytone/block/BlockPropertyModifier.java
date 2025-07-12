@@ -174,7 +174,7 @@ public record BlockPropertyModifier(
             }//todo: fence gates
         }
         if (tintHack) {
-            Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
+            //Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
         }
 
         RenderType oldRenderType = null;

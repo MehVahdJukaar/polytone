@@ -9,13 +9,12 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction;
 
-accessible field net/minecraft/client/gui/GuiGraphics bufferSource Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;
-
 accessible field net/minecraft/client/renderer/RenderPipelines TERRAIN_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible field net/minecraft/client/renderer/RenderStateShard BLOCK_SHEET_MIPPED Lnet/minecraft/client/renderer/RenderStateShard$TextureStateShard;
 accessible field net/minecraft/client/renderer/RenderStateShard PARTICLES_TARGET Lnet/minecraft/client/renderer/RenderStateShard$OutputStateShard;
 accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder setOutputState (Lnet/minecraft/client/renderer/RenderStateShard$OutputStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder;
-accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_COLOR_FOG_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+
+accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_FOG_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 
 mutable field net/minecraft/client/renderer/BiomeColors WATER_COLOR_RESOLVER Lnet/minecraft/world/level/ColorResolver;
 mutable field net/minecraft/client/renderer/BiomeColors FOLIAGE_COLOR_RESOLVER Lnet/minecraft/world/level/ColorResolver;
@@ -31,8 +30,6 @@ accessible field net/minecraft/client/particle/ParticleEngine particles Ljava/ut
 accessible field net/minecraft/client/particle/Particle friction F
 accessible field net/minecraft/client/particle/Particle oRoll F
 accessible field net/minecraft/client/particle/Particle hasPhysics Z
-
-accessible method net/minecraft/client/renderer/FogRenderer getPriorityFogFunction (Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/FogRenderer$MobEffectFogFunction;
 
 
 accessible field net/minecraft/world/level/block/state/BlockBehaviour properties Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;
@@ -127,8 +124,8 @@ accessible field net/minecraft/client/particle/Particle alpha F
 accessible field net/minecraft/world/effect/MobEffect color I
 mutable field net/minecraft/world/effect/MobEffect color I
 
-accessible field net/minecraft/world/entity/animal/sheep/Sheep COLOR_BY_DYE Ljava/util/Map;
-mutable field net/minecraft/world/entity/animal/sheep/Sheep COLOR_BY_DYE Ljava/util/Map;
+accessible field net/minecraft/client/color/ColorLerper$Type colorByDye Ljava/util/Map;
+mutable field net/minecraft/client/color/ColorLerper$Type colorByDye Ljava/util/Map;
 
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase mapColor Lnet/minecraft/world/level/material/MapColor;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase mapColor Lnet/minecraft/world/level/material/MapColor;

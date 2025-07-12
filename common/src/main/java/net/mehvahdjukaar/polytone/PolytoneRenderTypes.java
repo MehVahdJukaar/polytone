@@ -35,7 +35,7 @@ public class PolytoneRenderTypes {
 
 
     public static final RenderPipeline ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE = RenderPipelines.register(
-            RenderPipeline.builder(RenderPipelines.MATRICES_COLOR_FOG_SNIPPET)
+            RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
                     .withLocation(Polytone.res("pipeline/additive_particle"))
                     .withSampler("Sampler0")
                     .withSampler("Sampler2")
@@ -60,7 +60,6 @@ public class PolytoneRenderTypes {
                     .setTextureState(
                             new RenderStateShard.TextureStateShard(
                                     PARTICLES_MAPPER.sheet(),
-                                    TriState.FALSE,
                                     false
                             )
                     )
@@ -101,7 +100,7 @@ public class PolytoneRenderTypes {
 
 
     private static final RenderPipeline LEASH_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
-                    RenderPipelines. MATRICES_COLOR_FOG_SNIPPET)
+                    RenderPipelines. MATRICES_FOG_SNIPPET)
             .withLocation("polytone/pipeline/leash")
             .withVertexShader("core/terrain")
             .withFragmentShader("core/terrain")
@@ -118,7 +117,7 @@ public class PolytoneRenderTypes {
             1536, false, false,
             LEASH_PIPELINE,
             RenderType.CompositeState.builder()
-                    .setTextureState(new RenderStateShard.TextureStateShard(LEASH_TEXTURE, TriState.FALSE, false))
+                    .setTextureState(new RenderStateShard.TextureStateShard(LEASH_TEXTURE, false))
                     .setLightmapState(LIGHTMAP)
                     .createCompositeState(RenderType.OutlineProperty.NONE)
     );
