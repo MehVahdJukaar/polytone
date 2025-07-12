@@ -10,6 +10,7 @@
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
     "AnimationMetadataSectionSerializerMixin",
+    "BlockElementDeserializerMixin",
     "ClientLevelMixin",
     "ColorResolverMixin",
     "DimensionSpecialEffectsMixin",
