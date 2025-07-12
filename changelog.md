@@ -1,2 +1,2 @@
-- added a system to block known ids from future MC versions to cause hard failures of packs. These will be logged instead
-- backported some more GUI mod changes
+- added unrestricted x, y, z blockstate model transformation
+- block model cubes rotations are also unrestricted
