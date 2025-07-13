@@ -17,6 +17,7 @@ public class ModelStuff {
         throw new AssertionError();
     }
 
+    @ExpectPlatform
     @Nullable
     public static QuadCollection getSpecialModel(ResourceLocation id) {
         throw new AssertionError();

@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.model.loading.v1.ExtraModelKey;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.Variant;
 import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.resources.ResourceLocation;

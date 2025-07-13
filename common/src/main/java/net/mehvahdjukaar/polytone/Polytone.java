@@ -116,7 +116,6 @@ public class Polytone {
 
     public static void onTagsReceived(HolderLookup.Provider registryAccess) {
         try {
-            ModelStuff.clear();
             if (isDevEnv) {
                 scanAllRegistries(registryAccess);
             }
@@ -140,6 +139,7 @@ public class Polytone {
     }
 
     public static void onEarlyPackLoad(ResourceManager manager) {
+        ModelStuff.clear();
         COMPOUND_RELOADER.earlyProcess(manager);
     }
 
