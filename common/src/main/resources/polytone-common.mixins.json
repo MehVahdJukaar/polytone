@@ -16,6 +16,7 @@
     "GameRendererMixin",
     "GuiGraphicsMixin",
     "GuiMixin",
+    "GuiRenderStateMixin",
     "ItemMixin",
     "ItemOverridesMixin",
     "ItemStackMixin",

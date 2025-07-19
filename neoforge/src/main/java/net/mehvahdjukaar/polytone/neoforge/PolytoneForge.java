@@ -10,6 +10,7 @@ import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.resources.ResourceKey;
@@ -38,6 +39,7 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -102,18 +104,19 @@ public class PolytoneForge {
         if (ss.polytone$hasSprites()) {
 
             GuiGraphics graphics = event.getGuiGraphics();
-            PoseStack poseStack = graphics.pose();
-            poseStack.pushPose();
-            poseStack.translate(screen.width / 2F, screen.height / 2F, 500);
+            graphics.nextStratum();
+            Matrix3x2fStack poseStack = graphics.pose();
+            poseStack.pushMatrix();
+            poseStack.translate(screen.width / 2F, screen.height / 2F);
             ss.polytone$renderExtraSprites(graphics, event.getMouseX(), event.getMouseY(), event.getPartialTick());
-            poseStack.popPose();
+            poseStack.popMatrix();
         }
     }
 
 
     @SubscribeEvent
     public void fogEvent(ViewportEvent.RenderFog fogEvent) {
-        if (fogEvent.getType() != FogType.NONE || fogEvent.getMode() != FogRenderer.FogMode.FOG_TERRAIN) return;
+        if (fogEvent.getType() != FogType.NONE || fogEvent.getType() != FogType.TERRAIN) return;
         Vec2 targetFog = Polytone.BIOME_MODIFIERS.modifyFogParameters(fogEvent.getNearPlaneDistance(), fogEvent.getFarPlaneDistance());
         if (targetFog != null) {
             fogEvent.setNearPlaneDistance(targetFog.x);

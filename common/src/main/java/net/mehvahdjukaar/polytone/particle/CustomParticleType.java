@@ -455,7 +455,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 case TERRAIN -> net.minecraft.client.renderer.RenderType.solid();
                 case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE;
                 case LIT -> net.minecraft.client.renderer.RenderType.cutout();
-                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
+                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.cutout();
                 case INVISIBLE -> net.minecraft.client.renderer.RenderType.cutout();
                 default -> net.minecraft.client.renderer.RenderType.cutoutMipped();
             };
