@@ -1,2 +1,2 @@
-- fixed an issue with custom models
-- and stop asking for 1.21.6, im already maintaining 4 active versions and changes there are huge
+- rollback particle render types to use again  block render type (in blocks sheet)
+- added try_foliage_color colormap
