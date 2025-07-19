@@ -275,7 +275,7 @@ public record BlockPropertyModifier(
                 case CUTOUT_MIPPED -> net.minecraft.client.renderer.RenderType.cutoutMipped();
                 case TRIPWIRE -> net.minecraft.client.renderer.RenderType.tripwire();
                 case CUTOUT -> net.minecraft.client.renderer.RenderType.cutout();
-                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
+                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.cutout();
             };
         }
 
@@ -284,7 +284,7 @@ public record BlockPropertyModifier(
             if (net.minecraft.client.renderer.RenderType.cutout() == type) return CUTOUT;
             if (net.minecraft.client.renderer.RenderType.cutoutMipped() == type) return CUTOUT_MIPPED;
             if (net.minecraft.client.renderer.RenderType.tripwire() == type) return TRIPWIRE;
-            if (net.minecraft.client.renderer.RenderType.translucent() == type) return TRANSLUCENT;
+            if (net.minecraft.client.renderer.RenderType.cutout() == type) return TRANSLUCENT;
             throw new IllegalStateException("Unknown render type value: " + type);
         }
     }

@@ -16,6 +16,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
+import java.util.Optional;
+
 @Mixin(value = LevelRenderer.class, priority = 1300)
 public class LevelRendererMixin {
 
@@ -28,13 +30,13 @@ public class LevelRendererMixin {
     private Minecraft minecraft;
 
     @ModifyExpressionValue(method = "renderLevel",
-            require = 0,
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getCloudHeight()F"))
-    private float polytone$modifyCloudHeight(float original) {
-        Float f = Polytone.DIMENSION_MODIFIERS.modifyCloudHeight(this.level);
-        return f != null ? f : original;
+                    target = "Lnet/minecraft/world/level/dimension/DimensionType;cloudHeight()Ljava/util/Optional;"))
+    private Optional<Integer> polytone$modifyCloudHeight(Optional<Integer> original) {
+        Optional<Integer> f = Polytone.DIMENSION_MODIFIERS.modifyCloudHeight(this.level);
+        return f.isPresent() ? f : original;
     }
+
 
     @ModifyArg(method = "renderLevel",
             at = @At(value = "INVOKE",
@@ -47,4 +49,6 @@ public class LevelRendererMixin {
         return Polytone.DIMENSION_MODIFIERS.modifyTerrainFogColor(original, this.level,
                 camera, partialTicks, gameRenderer, this.minecraft);
     }
+
+
 }
