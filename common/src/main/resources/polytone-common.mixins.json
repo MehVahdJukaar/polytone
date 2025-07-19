@@ -32,6 +32,7 @@
     "SodiumBlockRendererMixin",
     "SplashRendererMixin",
     "SpriteContentsMixin",
+    "VariantDeserializerMixin",
     "XpOrbMixin",
     "accessor.BiomeAccessor",
     "accessor.DustParticleOptionAccessor",
