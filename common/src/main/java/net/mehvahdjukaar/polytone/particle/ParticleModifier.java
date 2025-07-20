@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.color.block.BlockColor;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -174,13 +175,13 @@ public class ParticleModifier {
     private record Filter(@Nullable Block forBlock,
                           @Nullable Item forItem) implements Predicate<ParticleOptions> {
 
-        Filter(Optional<Block> state, Optional<Item> item) {
-            this(state.orElse(null), item.orElse(null));
+        Filter(Optional<Optional<Block>> state, Optional<Optional<Item>> item) {
+            this(state.flatMap(x -> x).orElse(null), item.flatMap(x -> x).orElse(null));
         }
 
         public static final Codec<Filter> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-                BuiltInRegistries.BLOCK.byNameCodec().optionalFieldOf("block").forGetter(p -> Optional.ofNullable(p.forBlock)),
-                BuiltInRegistries.ITEM.byNameCodec().optionalFieldOf("item").forGetter(p -> Optional.ofNullable(p.forItem))
+                CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.BLOCK).optionalFieldOf("block").forGetter(p -> Optional.of(Optional.ofNullable(p.forBlock))),
+                CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.ITEM).optionalFieldOf("item").forGetter(p -> Optional.of(Optional.ofNullable(p.forItem)))
         ).apply(instance, Filter::new));
 
         @Override

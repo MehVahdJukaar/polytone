@@ -17,6 +17,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.item.ItemModel;
@@ -45,12 +46,8 @@ import net.neoforged.neoforge.client.ColorResolverManager;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
-import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.model.standalone.StandaloneModelBaker;
-import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.joml.Vector3f;
 
 import java.lang.reflect.Field;
@@ -124,7 +121,7 @@ public class PlatStuffImpl {
 
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         //forge original biome effect object is never user and redirected by coremod
-        //we apply to the biome modifier. We dont want to change the original
+        //we apply to the biome modifier. We don't want to change the original
         ModifiableBiomeInfo modifiable = biome.modifiableBiomeInfo();
         ModifiableBiomeInfo.BiomeInfo modifiedInfo = modifiable.getModifiedBiomeInfo();
         if (modifiedInfo == null) {
@@ -281,11 +278,6 @@ public class PlatStuffImpl {
     public static float compatACModifyGamma(float partialTicks, float gamma) {
        return gamma; //TODO: add back
         // return AC ? AlexsCavesCompat.modifyGamma(partialTicks, gamma) : gamma;
-    }
-
-
-    public static RegistryAccess getServerRegistryAccess() {
-        return ServerLifecycleHooks.getCurrentServer().registryAccess();
     }
 
     public static String getVersion() {

@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(FogRenderer.class)
 public abstract class FogRendererMixin {
-
+/*
     @WrapOperation(method = "computeFogColor", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/util/CubicSampler;gaussianSampleVec3(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/util/CubicSampler$Vec3Fetcher;)Lnet/minecraft/world/phys/Vec3;"))
     private static Vec3 polytone$modifyFogColor(Vec3 center, CubicSampler.Vec3Fetcher fetcher,
@@ -46,5 +46,5 @@ public abstract class FogRendererMixin {
         }
         return original;
     }
-
+*/
 }

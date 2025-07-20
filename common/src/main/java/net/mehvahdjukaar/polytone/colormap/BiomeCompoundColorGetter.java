@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.utils.LenientUnboundedMapCodec;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -21,11 +21,13 @@ import java.util.Map;
 public class BiomeCompoundColorGetter implements IColorGetter {
 
     public static final Codec<BiomeCompoundColorGetter> CODEC = RecordCodecBuilder.<BiomeCompoundColorGetter>create(i -> i.group(
-                    Colormap.REFERENCE_OR_EXPRESSION.fieldOf("default").forGetter(c -> c.defaultGetter),
-                    new LenientUnboundedMapCodec<>( //not ideal but eh
-                            RegistryFixedCodec.create(Registries.BIOME),
-                            Colormap.REFERENCE_OR_EXPRESSION
-                    ).fieldOf("biomes").forGetter(c -> c.holderMap)
+                    Colormap.REFERENCE_OR_EXPRESSION.fieldOf("default")
+                            .forGetter(c -> c.defaultGetter),
+                    CodecUtils.lenientUnboundedMap( //not ideal but eh
+                                    RegistryFixedCodec.create(Registries.BIOME),
+                                    Colormap.REFERENCE_OR_EXPRESSION
+                            )
+                            .fieldOf("biomes").forGetter(c -> c.holderMap)
             ).apply(i, BiomeCompoundColorGetter::new))
             .validate(
                     c -> {
@@ -83,5 +85,14 @@ public class BiomeCompoundColorGetter implements IColorGetter {
             map.put(e.getKey(), e.getValue().makeConcurrent());
         }
         return new BiomeCompoundColorGetter(defaultGetter.makeConcurrent(), map);
+    }
+
+    @Override
+    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        if (biome != null) {
+            IColorGetter g = getters.get(biome);
+            if (g != null) return g.sampleColor(state, pos, biome, item);
+        }
+        return defaultGetter.sampleColor(state, pos, biome, item);
     }
 }

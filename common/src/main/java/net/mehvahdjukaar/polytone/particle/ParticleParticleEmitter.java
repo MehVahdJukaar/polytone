@@ -3,10 +3,9 @@ package net.mehvahdjukaar.polytone.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.BiggerCodecs;
-import net.mehvahdjukaar.polytone.utils.ForwardAwareRegistryFixedCodec;
-import net.mehvahdjukaar.polytone.utils.LenientCodecWithLog;
-import net.mehvahdjukaar.polytone.utils.LenientHolderSetCodec;
+import net.mehvahdjukaar.polytone.utils.codec.BiggerCodecs;
+import net.mehvahdjukaar.polytone.utils.codec.ForwardAwareRegistryFixedCodec;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -27,7 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public record ParticleParticleEmitter(
-        Holder<ParticleType<?>> particleType,
+        Optional<Holder<ParticleType<?>>> particleType,
         ParticleContextExpression chance,
         ParticleContextExpression count,
         ParticleContextExpression x,
@@ -48,7 +47,7 @@ public record ParticleParticleEmitter(
 ) implements ParticleTickable {
 
     public static final Codec<ParticleParticleEmitter> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
-            BuiltInRegistries.PARTICLE_TYPE.holderByNameCodec().fieldOf("particle").forGetter(ParticleParticleEmitter::particleType),
+            CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("particle").forGetter(ParticleParticleEmitter::particleType),
             ParticleContextExpression.CODEC.optionalFieldOf("chance", ParticleContextExpression.ONE).forGetter(ParticleParticleEmitter::chance),
             ParticleContextExpression.CODEC.optionalFieldOf("count", ParticleContextExpression.ONE).forGetter(ParticleParticleEmitter::count),
             ParticleContextExpression.CODEC.optionalFieldOf("x", ParticleContextExpression.PARTICLE_RAND).forGetter(ParticleParticleEmitter::x),
@@ -64,13 +63,14 @@ public record ParticleParticleEmitter(
             ParticleContextExpression.CODEC.optionalFieldOf("roll").forGetter(ParticleParticleEmitter::roll),
             ParticleContextExpression.CODEC.optionalFieldOf("size").forGetter(ParticleParticleEmitter::size),
             ParticleContextExpression.CODEC.optionalFieldOf("custom").forGetter(ParticleParticleEmitter::custom),
-            LenientCodecWithLog.of(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(ParticleParticleEmitter::predicate),
-            ForwardAwareRegistryFixedCodec.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleParticleEmitter::biomes)
+            CodecUtils.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(ParticleParticleEmitter::predicate),
+            CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleParticleEmitter::biomes)
     ).apply(i, ParticleParticleEmitter::new));
 
 
     @Override
     public void tick(Particle particle, Level level) {
+        if (particleType.isEmpty()) return;
         double spawnChance = chance.getValue(particle, level);
         if (level.random.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
@@ -100,9 +100,9 @@ public record ParticleParticleEmitter(
     private @Nullable ParticleOptions getParticleOptions(Particle particle, Level level) {
         ParticleOptions po;
 
-        var particleTypeValue = particleType.value();
+        var particleTypeValue = particleType.get().value();
 
-        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.unwrapKey().get().location())) {
+        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().location())) {
             Map<String, Float> map = new HashMap<>();
             r.ifPresent(exp -> map.put("red", (float) exp.getValue(particle, level)));
             g.ifPresent(exp -> map.put("green", (float) exp.getValue(particle, level)));

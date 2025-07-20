@@ -4,7 +4,8 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
-import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.utils.codec.ReferenceOrDirectCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -20,7 +21,7 @@ public interface IColormapNumberProvider {
 
     MapRegistry<IColormapNumberProvider> BUILTIN_PROVIDERS = new MapRegistry<>("Colormap Number Providers");
 
-    Codec<IColormapNumberProvider> CODEC = new ReferenceOrDirectCodec<>(BUILTIN_PROVIDERS,
+    Codec<IColormapNumberProvider> CODEC = CodecUtils.referenceOrDirect(BUILTIN_PROVIDERS,
             ColormapExpressionProvider.CODEC, true);
 
     float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,

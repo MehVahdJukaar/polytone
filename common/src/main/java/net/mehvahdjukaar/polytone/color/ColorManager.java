@@ -332,11 +332,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     private static int parseHex(JsonElement obj) {
-        if (obj instanceof JsonPrimitive value) {
-            String str = value.getAsString();
-            return parseHex(str);
-        }
-        throw new JsonParseException("Failed to parse object " + obj + ". Expected a String");
+        return ColorUtils.CODEC.decode(JsonOps.INSTANCE, obj)
+                .getOrThrow()
+                .getFirst(); // this will throw if the element is not a valid color
     }
 
     private static int parseHex(String str) {

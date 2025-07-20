@@ -48,11 +48,8 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     @Override
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
 
-        var soundJsons = resources.soundTypes;
-        var soundEvents = resources.soundEvents;
-
         //custom sound events
-        for (var e : soundEvents.entrySet()) {
+        for (var e : resources.soundEvents.entrySet()) {
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
                 if (!customSoundEvents.containsKey(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
@@ -63,6 +60,12 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                 }
             }
         }
+
+        for (var e : customSoundEvents.getEntries()) {
+            var id = e.getKey();
+            var sound = e.getValue();
+            PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id, sound);
+        }
         // sound types
 
         for (var j : Parsed.batchParseOnlyEnabled(resources.soundTypes, PolytoneSoundType.DIRECT_CODEC,
@@ -70,12 +73,6 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
             var soundType = j.getValue();
             var id = j.getKey();
             customSoundTypes.register(id, soundType);
-        }
-
-        for (var e : customSoundEvents.getEntries()) {
-            var id = e.getKey();
-            var sound = e.getValue();
-            PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id, sound);
         }
     }
 

@@ -15,13 +15,12 @@
     "FabricBlockRenderContextMixin",
     "FabricItemGroupEntriesAccessor",
     "FabricTerrainRendererContextMixin",
-    "FogFluidRendererMixin",
-    "FogRendererMixin2",
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
     "ModelBlockRendererMixin",
     "ParticleEngineAccessor",
-    "RegistrySyncManagerMixin"
+    "RegistrySyncManagerMixin",
+    "TerrainParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

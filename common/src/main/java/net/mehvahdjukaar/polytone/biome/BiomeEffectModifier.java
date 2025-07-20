@@ -4,10 +4,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.utils.AlternativeMapCodec;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.Weather;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.Music;
@@ -35,20 +36,20 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Targets targets) {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-            Codec.INT.optionalFieldOf("fog_color").forGetter(BiomeEffectModifier::fogColor),
-            Codec.INT.optionalFieldOf("water_color").forGetter(BiomeEffectModifier::waterColor),
-            Codec.INT.optionalFieldOf("water_fog_color").forGetter(BiomeEffectModifier::waterFogColor),
-            Codec.INT.optionalFieldOf("sky_color").forGetter(BiomeEffectModifier::skyColor),
-            Codec.INT.optionalFieldOf("foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
-            Codec.INT.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
+            ColorUtils.CODEC.optionalFieldOf("fog_color").forGetter(BiomeEffectModifier::fogColor),
+            ColorUtils.CODEC.optionalFieldOf("water_color").forGetter(BiomeEffectModifier::waterColor),
+            ColorUtils.CODEC.optionalFieldOf("water_fog_color").forGetter(BiomeEffectModifier::waterFogColor),
+            ColorUtils.CODEC.optionalFieldOf("sky_color").forGetter(BiomeEffectModifier::skyColor),
+            ColorUtils.CODEC.optionalFieldOf("foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
+            ColorUtils.CODEC.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
             BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
             AmbientParticleSettings.CODEC.optionalFieldOf("particle").forGetter(BiomeEffectModifier::ambientParticleSettings),
             SoundEvent.CODEC.optionalFieldOf("ambient_sound").forGetter(BiomeEffectModifier::ambientLoopSoundEvent),
             AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
             AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
             WeightedList.codec(Music.CODEC).optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
-            AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start").forGetter(BiomeEffectModifier::fogStart),
-            AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end").forGetter(BiomeEffectModifier::fogEnd),
+            CodecUtils.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start").forGetter(BiomeEffectModifier::fogStart),
+            CodecUtils.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end").forGetter(BiomeEffectModifier::fogEnd),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));
 
@@ -140,7 +141,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
 
         // freaking forge field to methods...
         //biome.specialEffects = builder.build();
-        var copy = copy(effects);
+        BiomeSpecialEffects copy = copy(effects);
         // applyInplace(biome, builder.build());
 
         applyEffects(biome, builder.build());
@@ -199,7 +200,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         //we cant replace field in biome because forge replaces it
         //we cant replace fields in the effects object becuase embeddium relies on it.
         //applyInplace(biome, modifier);
-        //we use reflections on fabric and a special hackery for forte
+        //we use reflections on fabric and a special hackery for forge
         PlatStuff.applyBiomeSurgery(biome, newEffects);
     }
 

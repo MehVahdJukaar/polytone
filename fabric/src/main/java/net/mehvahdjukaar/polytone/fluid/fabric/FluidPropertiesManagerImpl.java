@@ -6,6 +6,7 @@ import net.fabricmc.fabric.impl.registry.sync.packet.DirectRegistryPacketHandler
 import net.fabricmc.fabric.mixin.itemgroup.ItemGroupsMixin;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,7 +21,7 @@ public class FluidPropertiesManagerImpl {
         FluidRenderHandler handler = reg.get(fluid);
         if (!(handler instanceof PolytoneFluidRenderHandlerWrapper) && fluidMod.hasColormap()) {
             BlockColor c = fluidMod.getColormap();
-            if (c instanceof Colormap ccm) {
+            if (c instanceof IColorGetter ccm) {
                 c = Polytone.COLORMAPS.getOrCreateConcurrentColormap(ccm);
             }
             reg.register(fluid, new PolytoneFluidRenderHandlerWrapper(handler, c));

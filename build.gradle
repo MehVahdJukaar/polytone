@@ -85,6 +85,7 @@ subprojects {
             projectId = rootProject.mod_id
             uploadFile = tasks.remapJar
             gameVersions = versions
+            release_type = rootProject.release_type
             if (modLoader == "forge") {
                 loaders = ["neoforge"]
             } else loaders = [modLoader]

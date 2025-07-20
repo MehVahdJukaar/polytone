@@ -28,7 +28,7 @@ public class LevelRendererMixin {
     @Shadow
     @Final
     private Minecraft minecraft;
-
+/*
     @ModifyExpressionValue(method = "renderLevel",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/world/level/dimension/DimensionType;cloudHeight()Ljava/util/Optional;"))
@@ -50,5 +50,5 @@ public class LevelRendererMixin {
                 camera, partialTicks, gameRenderer, this.minecraft);
     }
 
-
+*/
 }

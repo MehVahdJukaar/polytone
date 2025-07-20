@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.utils;
+package net.mehvahdjukaar.polytone.utils.codec;
 
 import com.google.common.collect.Streams;
 import com.mojang.serialization.*;

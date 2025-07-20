@@ -1,1 +1,1 @@
-added back leash texture
+- fixed a crash wth custom models

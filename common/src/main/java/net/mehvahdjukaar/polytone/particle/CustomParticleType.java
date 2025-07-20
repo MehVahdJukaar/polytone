@@ -10,7 +10,7 @@ import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
-import net.mehvahdjukaar.polytone.utils.BiggerCodecs;
+import net.mehvahdjukaar.polytone.utils.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -175,7 +175,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 }
             }
             if (exclusionRadius > 0) {
-                var particleRenderType = this.renderType.getParticle();
+                var particleRenderType = this.getRenderType().getParticle();
                 double radiusSquared = exclusionRadius * exclusionRadius;
                 Queue<Particle> particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
 
@@ -328,7 +328,7 @@ public class CustomParticleType implements CustomParticleFactory {
             poseStack.translate(-0.5, -0.5, -0.5);
 
             MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-            var consumer = bufferSource.getBuffer(type.renderType.getBlock());
+            var consumer = bufferSource.getBuffer(type.getRenderType().getBlock());
 
             putModelBulkData(this.model, this.getLightColor(partialTicks),
                     OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
@@ -386,11 +386,6 @@ public class CustomParticleType implements CustomParticleFactory {
                 this.remove();
             }
 
-            //TODO: check for any block collision. also check this on my mods
-            if (this.hasPhysics && this.stoppedByCollision) {
-                this.remove();
-            }
-
             if (liquidAffinity != LiquidAffinity.ANY) {
                 BlockState state = level.getBlockState(BlockPos.containing(x, y, z));
                 if (liquidAffinity == LiquidAffinity.LIQUIDS ^ !state.getFluidState().isEmpty()) {
@@ -435,7 +430,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public ParticleRenderType getRenderType() {
-            return this.model == null ? type.renderType.getParticle() : ParticleRenderType.CUSTOM;
+            return this.model == null ? type.getRenderType().getParticle() : ParticleRenderType.CUSTOM;
         }
 
     }
