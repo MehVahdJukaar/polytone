@@ -13,6 +13,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
@@ -122,13 +123,13 @@ public class PlatStuff {
 
     @Contract
     @ExpectPlatform
-    public static RenderType getRenderType(Block block) {
+    public static ChunkSectionLayer getRenderType(Block block) {
         throw new AssertionError();
     }
 
     @Contract
     @ExpectPlatform
-    public static void setRenderType(Block block, RenderType renderType) {
+    public static void setRenderType(Block block, ChunkSectionLayer renderType) {
         throw new AssertionError();
     }
 

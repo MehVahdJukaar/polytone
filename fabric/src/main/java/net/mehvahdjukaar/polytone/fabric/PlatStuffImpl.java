@@ -31,6 +31,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -222,11 +223,11 @@ public class PlatStuffImpl {
     }
 
 
-    public static RenderType getRenderType(Block block) {
+    public static ChunkSectionLayer getRenderType(Block block) {
         return ItemBlockRenderTypes.getChunkRenderType(block.defaultBlockState());
     }
 
-    public static void setRenderType(Block block, RenderType renderType) {
+    public static void setRenderType(Block block, ChunkSectionLayer renderType) {
         ItemBlockRenderTypeAccessor.getTypeByBlock().put(block, renderType);
     }
 
