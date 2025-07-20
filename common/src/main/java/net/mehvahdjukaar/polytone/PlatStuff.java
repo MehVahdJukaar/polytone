@@ -22,7 +22,6 @@ import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -36,7 +35,6 @@ import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class PlatStuff {
@@ -84,6 +82,7 @@ public class PlatStuff {
     public static void doAddModels() {
         throw new AssertionError();
     }
+
     @Contract
     @ExpectPlatform
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
@@ -190,7 +189,12 @@ public class PlatStuff {
         }
         ((MappedRegistry) reg).frozen = false;
         Registry.register(reg, id, o);
-        reg.freeze();
+        var holder = reg.wrapAsHolder(o);
+        //bind holder
+        if (holder instanceof Holder.Reference<T> ref) {
+            ref.bindTags(List.of());
+        }
+        ((MappedRegistry) reg).frozen = true;
 
         return o;
     }
