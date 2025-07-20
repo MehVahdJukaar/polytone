@@ -1,18 +1,27 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import com.google.gson.JsonObject;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.math.Quadrant;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.particle.CustomParticleType;
+import net.mehvahdjukaar.polytone.particle.ParticleParticleEmitter;
 import net.mehvahdjukaar.polytone.utils.SimpleModelStateExtension;
+import net.mehvahdjukaar.polytone.utils.TransformationModelState;
 import net.minecraft.client.renderer.block.model.Variant;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +30,20 @@ import java.util.stream.Stream;
 @Mixin(Variant.SimpleModelState.class)
 public class VariantDeserializerMixin implements SimpleModelStateExtension {
 
+    @Shadow
+    @Final
+    private boolean uvLock;
+    @Unique
     private float polytone$xOffset = 0;
+    @Unique
     private float polytone$yOffset = 0;
+    @Unique
     private float polytone$zOffset = 0;
+    @Unique
     private float polytone$xRot = 0;
+    @Unique
     private float polytone$yRot = 0;
+    @Unique
     private float polytone$zRot = 0;
 
     @ModifyExpressionValue(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/codecs/RecordCodecBuilder;mapCodec(Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;"))
@@ -53,7 +71,7 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
                         })
         );
 
-        return new MapCodec<Variant.SimpleModelState>() {
+        return new MapCodec<>() {
             @Override
             public <T> Stream<T> keys(DynamicOps<T> ops) {
                 List<T> l = new ArrayList<>();
@@ -78,18 +96,18 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
         };
     }
 
-    @ModifyExpressionValue(method = "deserialize(Lcom/google/gson/JsonElement;Ljava/lang/reflect/Type;Lcom/google/gson/JsonDeserializationContext;)Lnet/minecraft/client/renderer/block/model/Variant;",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/resources/model/BlockModelRotation;getRotation()Lcom/mojang/math/Transformation;")
-    )
-    public Transformation polytone$addTranslation(Transformation original, @Local JsonObject jsonObject) {
-        float x = GsonHelper.getAsFloat(jsonObject, "xoffset", 0);
-        float y = GsonHelper.getAsFloat(jsonObject, "yoffset", 0);
-        float z = GsonHelper.getAsFloat(jsonObject, "zoffset", 0);
-        if (x == 0 && y == 0 && z == 0) return original;
-        Matrix4f mat = new Matrix4f();
-        mat.translate(x / 16f, y / 16f, z / 16f);
-        return new Transformation(mat).compose(original);
+    @Inject(method = "asModelState", at = @At(value = "HEAD"), cancellable = true)
+    public void polytone$addTranslation(CallbackInfoReturnable<ModelState> cir) {
+
+        if (polytone$xOffset != 0 || polytone$yOffset != 0 || polytone$zOffset != 0 || polytone$xRot != 0 || polytone$yRot != 0 || polytone$zRot != 0) {
+            Matrix4f mat = new Matrix4f();
+            Quaternionf quaternionf = (new Quaternionf())
+                    .rotateYXZ(-polytone$yRot * Mth.DEG_TO_RAD,
+                            -polytone$xRot * Mth.DEG_TO_RAD, -polytone$zRot * Mth.DEG_TO_RAD);
+            mat.translate(polytone$xOffset / 16f, polytone$yOffset / 16f, polytone$zOffset / 16f);
+            mat.rotate(quaternionf);
+            cir.setReturnValue(new TransformationModelState(new Transformation(mat), uvLock));
+        }
     }
 
     @Override

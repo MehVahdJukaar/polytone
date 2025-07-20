@@ -9,7 +9,6 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.ModelStuff;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.slotify.GuiModifier;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.Parsed;
@@ -144,14 +143,12 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
         //initialize recursive stuff
         for (var c : customTypes) {
-            for (var d : c.lazyParticles) {
-                try {
+            if(c.lazyParticles != null) {
+                for (var d : c.lazyParticles) {
                     c.particles.add(runCodec(ops, d));
-                } catch (Exception e) {
-                    Polytone.LOGGER.error("Failed to initialize custom particles particle emitters", e);
                 }
+                c.lazyParticles = null;
             }
-            c.lazyParticles = null;
         }
     }
 
