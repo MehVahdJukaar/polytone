@@ -1,1 +1,2 @@
-- ported many recent changes
+- added back model variant extensions
+- fixed dynamic entries not having their tags bound
