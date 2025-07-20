@@ -1,1 +1,5 @@
-added back leash texture
+- due to the obnoxious amount of constant requests here's a super early version of 1.21.6 build for yall version chasers.
+- None of the fog stuff works for obvious reasons
+- gui modifiers were also changed given again the huge changes in 1.21.6
+- many other small features EVERYWHERE dont work
+- tldr: dont use this, its buggy, just a very early release because people kept asking

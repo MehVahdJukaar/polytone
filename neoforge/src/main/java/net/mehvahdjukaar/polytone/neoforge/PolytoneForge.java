@@ -116,13 +116,14 @@ public class PolytoneForge {
 
     @SubscribeEvent
     public void fogEvent(ViewportEvent.RenderFog fogEvent) {
+        /*
         if (fogEvent.getType() != FogType.NONE || fogEvent.getType() != FogType.TERRAIN) return;
         Vec2 targetFog = Polytone.BIOME_MODIFIERS.modifyFogParameters(fogEvent.getNearPlaneDistance(), fogEvent.getFarPlaneDistance());
         if (targetFog != null) {
             fogEvent.setNearPlaneDistance(targetFog.x);
             fogEvent.setFarPlaneDistance(targetFog.y);
             fogEvent.setCanceled(true);
-        }
+        }*/
     }
 
     @SubscribeEvent
