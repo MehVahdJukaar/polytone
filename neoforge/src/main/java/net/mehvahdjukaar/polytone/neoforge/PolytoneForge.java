@@ -13,7 +13,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -119,13 +118,14 @@ public class PolytoneForge {
 
     @SubscribeEvent
     public void fogEvent(ViewportEvent.RenderFog fogEvent) {
+        /*
         if (fogEvent.getType() != FogType.NONE || fogEvent.getType() != FogType.TERRAIN) return;
         Vec2 targetFog = Polytone.BIOME_MODIFIERS.modifyFogParameters(fogEvent.getNearPlaneDistance(), fogEvent.getFarPlaneDistance());
         if (targetFog != null) {
             fogEvent.setNearPlaneDistance(targetFog.x);
             fogEvent.setFarPlaneDistance(targetFog.y);
             fogEvent.setCanceled(true);
-        }
+        }*/
     }
 
     @SubscribeEvent

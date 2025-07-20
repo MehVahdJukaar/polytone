@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TriState;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
@@ -128,7 +127,12 @@ public class PolytoneRenderTypes {
                     .createCompositeState(RenderType.OutlineProperty.NONE)
     );
 
+    private static boolean isLeashRenderOn(){
+        return true;
+    }
+
     public static VertexConsumer getLeashVertexConsumer(MultiBufferSource multiBufferSource) {
+        if (!isLeashRenderOn()) return null;
         return multiBufferSource.getBuffer(LEASH_RENDER_TYPE);
     }
 
@@ -137,7 +141,7 @@ public class PolytoneRenderTypes {
                                              int blockLight0, int blockLight1, int skyLight0, int skylight1,
                                              float y0, float y1,
                                              float dx, float dz,
-                                             int index, boolean flippedColors) {
+                                             int index, boolean flippedColors) {if (!isLeashRenderOn()) return false;
         // Calculate segment and interpolate lighting
         float segment = (float) index / 24.0F;
         int blockLight = (int) Mth.lerp(segment, (float) blockLight0, (float) blockLight1);

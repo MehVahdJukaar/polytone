@@ -7,7 +7,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.model.standalone.StandaloneModelBaker;
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +23,7 @@ public class ModelStuffImpl {
     }
 
     public static void addSpecialModel(ResourceLocation id) {
-        SPECIAL_MODELS.put(id, new StandaloneModelKey<>(id));
+    //    SPECIAL_MODELS.put(id, new StandaloneModelKey<>(id));
     }
 
     @Nullable
@@ -43,7 +42,7 @@ public class ModelStuffImpl {
 
     public static void registerExtraModels(ModelEvent.RegisterStandalone event) {
         for (var entry : SPECIAL_MODELS.values()) {
-            event.register(entry, StandaloneModelBaker.quadCollection());
+//            event.register(entry, StandaloneModelBaker.quadCollection());
         }
     }
 }

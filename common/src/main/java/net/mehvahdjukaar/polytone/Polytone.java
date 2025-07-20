@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
+import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.entity.EntityModifiersManager;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;

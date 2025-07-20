@@ -117,8 +117,8 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         if (player == null) return null;
 
         //dont modify if a mob effect that modifies fog is active
-        if (FogRenderer.getPriorityFogFunction(player, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false))
-                != null) return null;
+        //if (FogRenderer.getPriorityFogFunction(player, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false))
+          //      != null) return null;
 
         Level level = player.level();
 

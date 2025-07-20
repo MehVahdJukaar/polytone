@@ -15,8 +15,6 @@
     "FabricBlockRenderContextMixin",
     "FabricItemGroupEntriesAccessor",
     "FabricTerrainRendererContextMixin",
-    "FogFluidRendererMixin",
-    "FogRendererMixin2",
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
     "ModelBlockRendererMixin",

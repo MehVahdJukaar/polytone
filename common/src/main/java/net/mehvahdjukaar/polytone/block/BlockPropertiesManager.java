@@ -42,6 +42,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
     private final Map<Block, Boolean> terrainParticleTintOverrides = new HashMap<>();
 
+    private final Map<Block, Boolean> terrainParticleTintOverrides = new HashMap<>();
+
     //replacing vanilla color resolvers too for better mod compat
     private ColorResolver vanillaGrassColorResolver = null;
     private ColorResolver vanillaFoliageColorResolver = null;

@@ -23,6 +23,8 @@
     "ParticleEngineAccessor",
     "ParticleEngineMixin2",
     "SodiumBlockRendererMixin",
+    "TerrainParticleMixin",
+    "ParticleEngineAccessor",
     "TerrainParticleMixin"
   ],
   "injectors": {

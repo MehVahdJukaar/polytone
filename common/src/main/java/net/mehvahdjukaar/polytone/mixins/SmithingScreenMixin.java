@@ -27,6 +27,7 @@ public class SmithingScreenMixin {
         return x;
     }
 
+    /*
     @ModifyArg(method = "renderBg", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventory(Lnet/minecraft/client/gui/GuiGraphics;FFFLorg/joml/Vector3f;Lorg/joml/Quaternionf;Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V")
             , index = 2
@@ -55,5 +56,5 @@ public class SmithingScreenMixin {
             }
         }
         return z;
-    }
+    }*/
 }

@@ -68,6 +68,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 
         }
     }
+    /*
 
     @ModifyArg(method = "renderLabels",
             index = 4,
@@ -90,5 +91,5 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     private int changeLabelColor(int fontColor) {
         if (polytone$customLabelColor != null) return polytone$customLabelColor;
         return fontColor;
-    }
+    }*/
 }
