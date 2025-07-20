@@ -15,6 +15,7 @@ import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
@@ -40,7 +41,7 @@ public record BlockPropertyModifier(
         Optional<Boolean> canOcclude,
         Optional<Boolean> spawnParticlesOnBreak,
         //Optional<Object> emissiveRendering,
-        Optional<RenderType> renderType,
+        Optional<ChunkSectionLayer> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
         List<BlockParticleEmitter> particleEmitters,
         List<BlockSoundEmitter> soundEmitters,
@@ -177,10 +178,10 @@ public record BlockPropertyModifier(
             //Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
         }
 
-        RenderType oldRenderType = null;
+        ChunkSectionLayer oldRenderType = null;
         if (renderType.isPresent() && !Polytone.isForge) {
-            oldRenderType = renderType.get().fromVanilla(PlatStuff.getRenderType(block));
-            PlatStuff.setRenderType(block, renderType.get().toVanilla());
+            oldRenderType = PlatStuff.getRenderType(block);
+            PlatStuff.setRenderType(block, renderType.get());
         }
 
         // returns old properties
@@ -193,6 +194,7 @@ public record BlockPropertyModifier(
                 false, Targets.EMPTY, false);
     }
 
+    public static final Codec<ChunkSectionLayer> SECTION_LAYER_CODEC = Codec.STRING.xmap(s -> ChunkSectionLayer.valueOf(s.toUpperCase(Locale.ROOT)), ChunkSectionLayer::label);
 
     public static final Decoder<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -204,7 +206,7 @@ public record BlockPropertyModifier(
                     Codec.BOOL.optionalFieldOf("can_occlude").forGetter(BlockPropertyModifier::canOcclude),
                     Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(BlockPropertyModifier::spawnParticlesOnBreak),
                     //Codec.BOOL.optionalFieldOf("emissive_rendering").forGetter(c -> c.emissiveRendering.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
-                    StringRepresentable.fromEnum(RenderType::values).optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
+                    SECTION_LAYER_CODEC.optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
                     BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(BlockPropertyModifier::particleEmitters),
@@ -257,35 +259,4 @@ public record BlockPropertyModifier(
     }
 
 
-    private enum RenderType implements StringRepresentable {
-        SOLID,
-        CUTOUT,
-        CUTOUT_MIPPED,
-        TRIPWIRE,
-        TRANSLUCENT;
-
-        @Override
-        public String getSerializedName() {
-            return this.name().toLowerCase(Locale.ROOT);
-        }
-
-        net.minecraft.client.renderer.RenderType toVanilla() {
-            return switch (this) {
-                case SOLID -> net.minecraft.client.renderer.RenderType.solid();
-                case CUTOUT_MIPPED -> net.minecraft.client.renderer.RenderType.cutoutMipped();
-                case TRIPWIRE -> net.minecraft.client.renderer.RenderType.tripwire();
-                case CUTOUT -> net.minecraft.client.renderer.RenderType.cutout();
-                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.cutout();
-            };
-        }
-
-        RenderType fromVanilla(net.minecraft.client.renderer.RenderType type) {
-            if (net.minecraft.client.renderer.RenderType.solid() == type) return SOLID;
-            if (net.minecraft.client.renderer.RenderType.cutout() == type) return CUTOUT;
-            if (net.minecraft.client.renderer.RenderType.cutoutMipped() == type) return CUTOUT_MIPPED;
-            if (net.minecraft.client.renderer.RenderType.tripwire() == type) return TRIPWIRE;
-            if (net.minecraft.client.renderer.RenderType.cutout() == type) return TRANSLUCENT;
-            throw new IllegalStateException("Unknown render type value: " + type);
-        }
-    }
 }
