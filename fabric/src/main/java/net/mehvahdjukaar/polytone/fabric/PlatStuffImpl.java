@@ -37,6 +37,7 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -100,9 +101,13 @@ public class PlatStuffImpl {
 
     public static SoundEvent registerSoundEvent(ResourceLocation id) {
         SoundEvent event = SoundEvent.createVariableRangeEvent(id);
-        ((MappedRegistry) BuiltInRegistries.SOUND_EVENT).frozen = false;
+        ((MappedRegistry<SoundEvent>) BuiltInRegistries.SOUND_EVENT).frozen = false;
         Registry.register(BuiltInRegistries.SOUND_EVENT, id, event);
-        BuiltInRegistries.SOUND_EVENT.freeze();
+        var holder = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(event);
+        if(holder instanceof Holder.Reference<SoundEvent> ref){
+            ref.bindTags(List.of());
+        }
+        ((MappedRegistry<SoundEvent>) BuiltInRegistries.SOUND_EVENT).frozen = true;
 
         return event;
     }
