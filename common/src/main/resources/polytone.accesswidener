@@ -11,6 +11,8 @@ mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBas
 
 accessible field net/minecraft/client/gui/GuiGraphics bufferSource Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;
 
+accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Collection;)V
+
 accessible field net/minecraft/client/renderer/RenderPipelines TERRAIN_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible field net/minecraft/client/renderer/RenderStateShard BLOCK_SHEET_MIPPED Lnet/minecraft/client/renderer/RenderStateShard$TextureStateShard;
 accessible field net/minecraft/client/renderer/RenderStateShard PARTICLES_TARGET Lnet/minecraft/client/renderer/RenderStateShard$OutputStateShard;
