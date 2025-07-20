@@ -187,22 +187,29 @@ public class PlatStuff {
         if (reg.containsKey(id)) {
             throw new RuntimeException("Tried to register object with id " + id + " to registry " + reg + " but it already exists");
         }
-        ((MappedRegistry) reg).frozen = false;
-        Registry.register(reg, id, o);
-        var holder = reg.wrapAsHolder(o);
-        //bind holder
-        if (holder instanceof Holder.Reference<T> ref) {
-            ref.bindTags(List.of());
+        if (reg instanceof MappedRegistry<T> mapped) {
+            mapped.frozen = false;
+            Registry.register(reg, id, o);
+            var holder = reg.wrapAsHolder(o);
+            //bind holder
+            if (holder instanceof Holder.Reference<T> ref) {
+                ref.bindTags(List.of());
+            }
+            mapped.frozen = true;
+        } else {
+            Polytone.LOGGER.error("Unknown registry type{}", reg);
         }
-        ((MappedRegistry) reg).frozen = true;
-
         return o;
     }
 
     public static <T> void unregisterDynamic(Registry<T> reg, ResourceLocation id) {
-        ((MappedRegistry) reg).frozen = false;
-        unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
-        reg.freeze();
+        if (reg instanceof MappedRegistry<T> mapped) {
+            mapped.frozen = false;
+            unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
+            mapped.frozen = true;
+        } else {
+            Polytone.LOGGER.error("Unknown registry type{}", reg);
+        }
 
         if (reg.containsKey(id)) {
             int aaa = 1;
