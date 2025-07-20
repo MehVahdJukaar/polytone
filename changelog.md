@@ -1,2 +1,2 @@
-- rollback particle render types to use again  block render type (in blocks sheet)
-- added try_foliage_color colormap
+- added back model variant extensions
+- fixed dynamic entries not having their tags bound
