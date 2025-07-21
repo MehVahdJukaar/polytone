@@ -1,2 +1,1 @@
-- added back model variant extensions
-- fixed dynamic entries not having their tags bound
+- added direct iris compat for the 3 render pipelines the mod adds

@@ -5,18 +5,15 @@ import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.SourceFactor;
-import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TriState;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 import java.util.function.Supplier;
@@ -100,7 +97,7 @@ public class PolytoneRenderTypes {
 
 
 
-    private static final RenderPipeline LEASH_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
+    public static final RenderPipeline LEASH_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
                     RenderPipelines. MATRICES_COLOR_FOG_SNIPPET)
             .withLocation("polytone/pipeline/leash")
             .withVertexShader("core/terrain")
@@ -114,7 +111,7 @@ public class PolytoneRenderTypes {
 
     private static final ResourceLocation LEASH_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/lead.png");
 
-    private static final RenderType RENDER_TYPE = RenderType.create("polytone_leash",
+    private static final RenderType LEASH_RENDER_TYPE = RenderType.create("polytone_leash",
             1536, false, false,
             LEASH_PIPELINE,
             RenderType.CompositeState.builder()
@@ -123,8 +120,13 @@ public class PolytoneRenderTypes {
                     .createCompositeState(RenderType.OutlineProperty.NONE)
     );
 
+    private static boolean isLeashRenderOn(){
+        return true;
+    }
+
     public static VertexConsumer getLeashVertexConsumer(MultiBufferSource multiBufferSource) {
-        return multiBufferSource.getBuffer(RENDER_TYPE);
+        if (!isLeashRenderOn()) return null;
+        return multiBufferSource.getBuffer(LEASH_RENDER_TYPE);
     }
 
 
@@ -134,7 +136,7 @@ public class PolytoneRenderTypes {
                                         float y0, float y1,
                                         float dx, float dz,
                                         int index, boolean flippedColors) {
-
+        if (!isLeashRenderOn()) return false;
         // Calculate segment and interpolate lighting
         float segment = (float) index / 24.0F;
         int blockLight = (int) Mth.lerp(segment, (float) blockLight0, (float) blockLight1);

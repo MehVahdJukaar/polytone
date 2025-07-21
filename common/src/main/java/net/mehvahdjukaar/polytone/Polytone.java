@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.block.BlockSetManager;
 import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.entity.EntityModifiersManager;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
@@ -43,7 +44,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -90,7 +94,7 @@ public class Polytone {
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS, VARIANT_TEXTURES,
                 LIGHTMAPS, DIMENSION_MODIFIERS,
-                PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS,ENTITY_MODIFIERS,
+                PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
                 CREATIVE_TABS_MODIFIERS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
@@ -102,6 +106,8 @@ public class Polytone {
         //GenericDirectorySpriteSource.init();
 
         PolytoneRenderTypes.init();
+        if (iris) IrisCompat.init();
+
         //TODO: cache fog and d sky color
         //TODO: custom block breaking particles
     }
