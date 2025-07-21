@@ -122,7 +122,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
         Level level = player.level();
 
-        Holder<Biome> biome = level.getBiome(player.blockPosition());
+        Holder<Biome> biome = ClientFrameTicker.getCameraBiome();
         var fogMod = fogParametersModifiers.get(biome.value());
         Vec2 fogScalars = null;
         if (fogMod != null) {

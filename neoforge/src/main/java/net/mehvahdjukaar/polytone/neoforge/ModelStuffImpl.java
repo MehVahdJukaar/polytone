@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.neoforge;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.fog.environment.FogEnvironment;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.resources.ResourceLocation;
@@ -25,6 +26,7 @@ public class ModelStuffImpl {
 
     public static void addSpecialModel(ResourceLocation id) {
         SPECIAL_MODELS.put(id, new StandaloneModelKey<>(id));
+        FogEnvironment
     }
 
     @Nullable
