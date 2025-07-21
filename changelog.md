@@ -3,3 +3,5 @@
 - gui modifiers were also changed given again the huge changes in 1.21.6
 - many other small features EVERYWHERE dont work
 - tldr: dont use this, its buggy, just a very early release because people kept asking
+
+- removed leash render stuff

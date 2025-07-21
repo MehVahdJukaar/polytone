@@ -20,7 +20,6 @@
     "ItemMixin",
     "ItemOverridesMixin",
     "ItemStackMixin",
-    "LeashMixin",
     "LevelRendererMixin",
     "LightTextureMixin",
     "MinecraftMixin",
