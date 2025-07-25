@@ -40,9 +40,9 @@ public class ClientFrameTicker {
         cameraBiome = level.getBiome(cameraPos);
 
         deltaTime = Minecraft.getInstance().getDeltaFrameTime();
-        playerSpeed =  mc.player.getDeltaMovement().lengthSqr();
+        if (mc.player != null) playerSpeed = mc.player.getDeltaMovement().lengthSqr();
 
-      if ( mc.screen != lastScreen) {
+        if (mc.screen != lastScreen) {
             lastScreen = mc.screen;
             screenTime = 0;
         }
