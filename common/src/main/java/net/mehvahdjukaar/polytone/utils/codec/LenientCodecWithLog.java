@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.utils;
+package net.mehvahdjukaar.polytone.utils.codec;
 
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.OptionalFieldCodec;
@@ -24,7 +24,7 @@ public class LenientCodecWithLog<A> extends OptionalFieldCodec<A> {
         );
     }
 
-    public static <A> MapCodec<Optional<A>> of( Codec<A> elementCodec,String name) {
+    public static <A> MapCodec<Optional<A>> of(Codec<A> elementCodec, String name) {
         return new LenientCodecWithLog<>(name, elementCodec);
     }
 
@@ -35,7 +35,7 @@ public class LenientCodecWithLog<A> extends OptionalFieldCodec<A> {
             return DataResult.success(Optional.empty());
         }
         final DataResult<A> parsed = elementCodec.parse(ops, value);
-        if (parsed.error().isPresent() && true) {
+        if (parsed.error().isPresent()) {
             Polytone.LOGGER.error("Failed to parse {}: {}. Skipping", name, parsed.error());
             return DataResult.success(Optional.empty());
         }

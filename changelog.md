@@ -1,2 +1,2 @@
-- fixed an issue of recent updates marking all .properties files as disabled
-- once again if you are a pack maker avoid relying on .properties. Support for this format might come less in the future
+- sound events and particle types are now part of the forward compat stuff, which will make new IDs from known new mc versions be ignored (up to 1.21.6)
+- that being said proper versioning still needs to be implemented by pack authors through the use of resource conditions or optional entries

@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
@@ -28,7 +29,7 @@ import java.util.Optional;
 
 public class SemiCustomParticleType implements CustomParticleFactory {
 
-    private final ParticleType<?> copyType;
+    private final Optional<ParticleType<?>> copyType;
     private ParticleProvider<?> copyProvider = null;
     private boolean hasBeenInit = false;
     private ParticleEngine.MutableSpriteSet spriteSet = null;
@@ -36,7 +37,7 @@ public class SemiCustomParticleType implements CustomParticleFactory {
     private final boolean hasPhysics;
     private final @Nullable IColorGetter colormap;
 
-    public SemiCustomParticleType(ParticleType<?> type, Optional<ParticleInitializer> initializer,
+    public SemiCustomParticleType(Optional<ParticleType<?>> type, Optional<ParticleInitializer> initializer,
                                   boolean hasPhysics, Optional<IColorGetter> colorGetter) {
         this.copyType = type;
         this.hasPhysics = hasPhysics;
@@ -45,7 +46,7 @@ public class SemiCustomParticleType implements CustomParticleFactory {
     }
 
     public static final Codec<SemiCustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BuiltInRegistries.PARTICLE_TYPE.byNameCodec().fieldOf("copy_from").forGetter(c -> c.copyType),
+            CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("copy_from").forGetter(c -> c.copyType),
             ParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap))
@@ -53,7 +54,7 @@ public class SemiCustomParticleType implements CustomParticleFactory {
 
     @Override
     public boolean forceSpawns() {
-        return copyType.getOverrideLimiter();
+        return copyType.get().getOverrideLimiter();
     }
 
     @Override
@@ -61,15 +62,19 @@ public class SemiCustomParticleType implements CustomParticleFactory {
         this.spriteSet = mutableSpriteSet;
     }
 
+    @Nullable
     @Override
     public Particle createParticle(ExtraDataParticleOptions opt, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                                    @Nullable BlockState state) {
+        if (copyType.isEmpty()) {
+            return null;
+        }
         if (!hasBeenInit) {
             init();
         }
 
         if (copyProvider != null) {
-            var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) copyType), level, x, y, z, xSpeed, ySpeed, zSpeed);
+            var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) copyType.get()), level, x, y, z, xSpeed, ySpeed, zSpeed);
 
             BlockPos pos = BlockPos.containing(x, y, z);
 
@@ -108,7 +113,7 @@ public class SemiCustomParticleType implements CustomParticleFactory {
     private void init() {
 
         hasBeenInit = true;
-        copyProvider = PlatStuff.getParticleProvider(copyType);
+        copyProvider = PlatStuff.getParticleProvider(copyType.get());
         if (copyProvider != null) {
             try {
                 copyProvider = cloneProvider(copyProvider, spriteSet);

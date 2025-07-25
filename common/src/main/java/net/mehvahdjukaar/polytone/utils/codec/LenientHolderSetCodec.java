@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.utils;
+package net.mehvahdjukaar.polytone.utils.codec;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;

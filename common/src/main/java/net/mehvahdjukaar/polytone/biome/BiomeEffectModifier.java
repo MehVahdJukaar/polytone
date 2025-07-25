@@ -8,6 +8,13 @@ import net.mehvahdjukaar.polytone.utils.*;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.mehvahdjukaar.polytone.utils.AlternativeMapCodec;
 import net.mehvahdjukaar.polytone.utils.*;
+import net.mehvahdjukaar.polytone.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.utils.codec.AlternativeMapCodec;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.utils.Weather;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
@@ -46,8 +53,8 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             StrOpt.of(AmbientMoodSettings.CODEC, "mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
             StrOpt.of(AmbientAdditionsSettings.CODEC, "additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
             StrOpt.of(Music.CODEC, "music").forGetter(BiomeEffectModifier::backgroundMusic),
-            AlternativeMapCodec.optionalAlias(FogManager.FogParam.CODEC, "fog_fade", "fog_start").forGetter(BiomeEffectModifier::fogFade),
-            AlternativeMapCodec.optionalAlias(FogManager.FogParam.CODEC, "fog_radius", "fog_end").forGetter(BiomeEffectModifier::fogRadius),
+            CodecUtils.optionalAlias(FogManager.FogParam.CODEC, "fog_fade", "fog_start").forGetter(BiomeEffectModifier::fogFade),
+            CodecUtils.optionalAlias(FogManager.FogParam.CODEC, "fog_radius", "fog_end").forGetter(BiomeEffectModifier::fogRadius),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));
 

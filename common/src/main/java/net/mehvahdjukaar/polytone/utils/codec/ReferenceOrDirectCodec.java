@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.utils;
+package net.mehvahdjukaar.polytone.utils.codec;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
@@ -14,9 +14,7 @@ public final class ReferenceOrDirectCodec<E> implements Codec<E> {
     private final boolean bothStrings;
 
     public ReferenceOrDirectCodec(final Codec<? extends E> reference, final Codec<? extends E> direct) {
-        this.reference = (Codec<E>) reference;
-        this.direct = (Codec<E>) direct;
-        this.bothStrings = false;
+        this(reference, direct, false);
     }
 
     public ReferenceOrDirectCodec(final Codec<? extends E> reference, final Codec<? extends E> direct, boolean bothStrings) {

@@ -5,12 +5,11 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.particle.ParticleContextExpression;
 import net.mehvahdjukaar.polytone.particle.ParticleTickable;
-import net.mehvahdjukaar.polytone.utils.ForwardAwareRegistryFixedCodec;
-import net.mehvahdjukaar.polytone.utils.LenientHolderSetCodec;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.utils.codec.ForwardAwareRegistryFixedCodec;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
@@ -39,7 +38,7 @@ public record ParticleSoundEmitter(
                   s -> s.getName().toLowerCase(Locale.ROOT));
 
     public static final Codec<ParticleSoundEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("sound").forGetter(ParticleSoundEmitter::sound),
+            CodecUtils.forwardAwareSoundEvent().fieldOf("sound").forGetter(ParticleSoundEmitter::sound),
             SOUND_SOURCE_CODEC.optionalFieldOf("source", SoundSource.BLOCKS).forGetter(ParticleSoundEmitter::category),
             ParticleContextExpression.CODEC.optionalFieldOf("chance", ParticleContextExpression.ONE).forGetter(ParticleSoundEmitter::chance),
             ParticleContextExpression.CODEC.optionalFieldOf("x", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::x),
@@ -48,7 +47,7 @@ public record ParticleSoundEmitter(
             ParticleContextExpression.CODEC.optionalFieldOf("volume", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::volume),
             ParticleContextExpression.CODEC.optionalFieldOf("pitch", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(ParticleSoundEmitter::distanceDelay),
-            ForwardAwareRegistryFixedCodec.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleSoundEmitter::biomes)
+            CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleSoundEmitter::biomes)
     ).apply(i, ParticleSoundEmitter::new));
 
 

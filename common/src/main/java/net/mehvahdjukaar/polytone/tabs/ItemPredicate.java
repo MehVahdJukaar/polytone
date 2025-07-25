@@ -12,6 +12,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.List;
 import java.util.function.Function;
@@ -114,7 +115,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
     }
 
     Codec<ItemMatch> ITEM_MATCH = TYPES.register("items_match",
-            BuiltInRegistries.ITEM.byNameCodec().listOf().fieldOf("items")
+            CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.ITEM, Items.AIR).listOf().fieldOf("items")
                     .xmap(ItemMatch::new, ItemMatch::items).codec());
 
     record ItemMatch(List<Item> items) implements ItemPredicate {

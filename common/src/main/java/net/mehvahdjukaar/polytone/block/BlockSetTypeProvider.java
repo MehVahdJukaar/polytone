@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
@@ -14,7 +15,7 @@ import java.util.Optional;
 
 public interface BlockSetTypeProvider {
 
-    Codec<BlockSetTypeProvider> CODEC = new ReferenceOrDirectCodec<>(
+    Codec<BlockSetTypeProvider> CODEC = CodecUtils.referenceOrDirect(
             Polytone.BLOCK_SET.byNameCodec(), Custom.CODEC);
 
     BlockSetType getOrCreate(BlockSetType original, Optional<SoundType> customSound);
@@ -50,14 +51,14 @@ public interface BlockSetTypeProvider {
                   Optional<SoundEvent> buttonClickOn) implements BlockSetTypeProvider {
 
         public static final Codec<Custom> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "door_close").forGetter(Custom::doorClose),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "door_open").forGetter(Custom::doorOpen),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "trapdoor_close").forGetter(Custom::trapdoorClose),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "trapdoor_open").forGetter(Custom::trapdoorOpen),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "pressure_plate_click_off").forGetter(Custom::pressurePlateClickOff),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "pressure_plate_click_on").forGetter(Custom::pressurePlateClickOn),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "button_click_off").forGetter(Custom::buttonClickOff),
-                StrOpt.of(BuiltInRegistries.SOUND_EVENT.byNameCodec(), "button_click_on").forGetter(Custom::buttonClickOn)
+                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("door_close").forGetter(Custom::doorClose),
+                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("door_open").forGetter(Custom::doorOpen),
+                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("trapdoor_close").forGetter(Custom::trapdoorClose),
+                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("trapdoor_open").forGetter(Custom::trapdoorOpen),
+                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("pressure_plate_click_off").forGetter(Custom::pressurePlateClickOff),
+                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("pressure_plate_click_on").forGetter(Custom::pressurePlateClickOn),
+                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("button_click_off").forGetter(Custom::buttonClickOff),
+                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("button_click_on").forGetter(Custom::buttonClickOn)
         ).apply(instance, Custom::new));
 
         @Override

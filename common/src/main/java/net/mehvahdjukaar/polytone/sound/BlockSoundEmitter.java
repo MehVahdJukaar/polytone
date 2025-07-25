@@ -6,9 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
-import net.mehvahdjukaar.polytone.utils.ForwardAwareRegistryFixedCodec;
-import net.mehvahdjukaar.polytone.utils.LenientCodecWithLog;
-import net.mehvahdjukaar.polytone.utils.LenientHolderSetCodec;
+import net.mehvahdjukaar.polytone.utils.codec.ForwardAwareRegistryFixedCodec;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -43,7 +42,7 @@ public record BlockSoundEmitter(
                     s -> s.getName().toLowerCase(Locale.ROOT));
 
     public static final Codec<BlockSoundEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("sound").forGetter(BlockSoundEmitter::sound),
+            CodecUtils.forwardAwareSoundEvent().fieldOf("sound").forGetter(BlockSoundEmitter::sound),
             SOUND_SOURCE_CODEC.optionalFieldOf("source", SoundSource.BLOCKS).forGetter(BlockSoundEmitter::category),
             BlockContextExpression.CODEC.optionalFieldOf("chance", BlockContextExpression.ONE).forGetter(BlockSoundEmitter::chance),
             BlockContextExpression.CODEC.optionalFieldOf("x", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::x),
@@ -53,7 +52,7 @@ public record BlockSoundEmitter(
             BlockContextExpression.CODEC.optionalFieldOf("pitch", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(BlockSoundEmitter::distanceDelay),
             LenientCodecWithLog.of( RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockSoundEmitter::predicate),
-            ForwardAwareRegistryFixedCodec.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockSoundEmitter::biomes)
+            CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockSoundEmitter::biomes)
     ).apply(i, BlockSoundEmitter::new));
 
 
