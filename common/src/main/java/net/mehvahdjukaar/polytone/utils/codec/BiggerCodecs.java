@@ -1,20 +1,12 @@
-package net.mehvahdjukaar.polytone.utils;
+package net.mehvahdjukaar.polytone.utils.codec;
 
 import com.mojang.datafixers.kinds.App;
 import com.mojang.datafixers.kinds.Applicative;
 import com.mojang.datafixers.kinds.K1;
 import com.mojang.datafixers.kinds.Kind1;
-import com.mojang.datafixers.util.Function10;
 import com.mojang.datafixers.util.Function11;
 import com.mojang.datafixers.util.Function8;
 import com.mojang.datafixers.util.Function9;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.slotify.*;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 
 public class BiggerCodecs {
 

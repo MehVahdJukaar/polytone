@@ -4,7 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.utils.codec.ReferenceOrDirectCodec;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -162,14 +163,14 @@ public class PolytoneSoundType extends SoundType {
             instance.group(
                     Codec.FLOAT.optionalFieldOf("volume", 1f).forGetter(SoundType::getVolume),
                     Codec.FLOAT.optionalFieldOf("pitch", 1f).forGetter(SoundType::getPitch),
-                    BuiltInRegistries.SOUND_EVENT.holderByNameCodec().fieldOf("break_sound").forGetter(s->s.breakSoundHolder),
-                    BuiltInRegistries.SOUND_EVENT.holderByNameCodec().fieldOf("step_sound").forGetter(s->s.stepSoundHolder),
-                    BuiltInRegistries.SOUND_EVENT.holderByNameCodec().fieldOf("place_sound").forGetter(s->s.placeSoundHolder),
-                    BuiltInRegistries.SOUND_EVENT.holderByNameCodec().fieldOf("hit_sound").forGetter(s->s.hitSoundHolder),
-                    BuiltInRegistries.SOUND_EVENT.holderByNameCodec().fieldOf("fall_sound").forGetter(s->s.fallSoundHolder)
+                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("break_sound").forGetter(s->s.breakSoundHolder),
+                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("step_sound").forGetter(s->s.stepSoundHolder),
+                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("place_sound").forGetter(s->s.placeSoundHolder),
+                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("hit_sound").forGetter(s->s.hitSoundHolder),
+                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("fall_sound").forGetter(s->s.fallSoundHolder)
             ).apply(instance, PolytoneSoundType::new));
 
-    public static final Codec<SoundType> CODEC = new ReferenceOrDirectCodec<>(REFERENCE_OR_COPY_CODEC, DIRECT_CODEC);
+    public static final Codec<SoundType> CODEC = CodecUtils.referenceOrDirect(REFERENCE_OR_COPY_CODEC, DIRECT_CODEC);
 
 
     public final Holder<SoundEvent> breakSoundHolder;
