@@ -6,11 +6,12 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.block.TickSource;
-import net.mehvahdjukaar.polytone.utils.BiggerCodecs;
-import net.mehvahdjukaar.polytone.utils.ForwardAwareRegistryFixedCodec;
-import net.mehvahdjukaar.polytone.utils.LenientCodecWithLog;
-import net.mehvahdjukaar.polytone.utils.LenientHolderSetCodec;
-import net.minecraft.core.*;
+import net.mehvahdjukaar.polytone.utils.codec.BiggerCodecs;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.particles.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -31,7 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public record BlockParticleEmitter(
-        Holder<ParticleType<?>> particleType,
+        Optional<Holder<ParticleType<?>>> particleType,
         BlockContextExpression chance,
         BlockContextExpression count,
         BlockContextExpression x,
@@ -54,7 +55,7 @@ public record BlockParticleEmitter(
 ) implements BlockClientTickable {
 
     public static final Codec<BlockParticleEmitter> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
-            BuiltInRegistries.PARTICLE_TYPE.holderByNameCodec().fieldOf("particle").forGetter(BlockParticleEmitter::particleType),
+            CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("particle").forGetter(BlockParticleEmitter::particleType),
             BlockContextExpression.CODEC.optionalFieldOf("chance", BlockContextExpression.ONE).forGetter(BlockParticleEmitter::chance),
             BlockContextExpression.CODEC.optionalFieldOf("count", BlockContextExpression.ONE).forGetter(BlockParticleEmitter::count),
             BlockContextExpression.CODEC.optionalFieldOf("x", BlockContextExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::x),
@@ -70,15 +71,15 @@ public record BlockParticleEmitter(
             BlockContextExpression.CODEC.optionalFieldOf("roll").forGetter(BlockParticleEmitter::roll),
             BlockContextExpression.CODEC.optionalFieldOf("size").forGetter(BlockParticleEmitter::size),
             BlockContextExpression.CODEC.optionalFieldOf("custom").forGetter(BlockParticleEmitter::custom),
-            LenientCodecWithLog.of(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
-            ForwardAwareRegistryFixedCodec.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
+            CodecUtils.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
+            CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
             SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation),
             TickSource.CODEC.optionalFieldOf("tick_source", TickSource.ANIMATE_TICK).forGetter(BlockParticleEmitter::spawnSource)
     ).apply(i, BlockParticleEmitter::new));
 
-
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
+        if (particleType.isEmpty()) return;
         if (source != spawnSource) return; //only spawn particles on the correct tick source
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {
@@ -107,9 +108,9 @@ public record BlockParticleEmitter(
     private @Nullable ParticleOptions getParticleOptions(Level level, BlockPos pos, BlockState state) {
         ParticleOptions po;
 
-        var particleTypeValue = particleType.value();
+        var particleTypeValue = particleType.get().value();
 
-        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.unwrapKey().get().location())) {
+        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().location())) {
             Map<String, Float> map = new HashMap<>();
             r.ifPresent(exp -> map.put("red", (float) exp.getValue(level, pos, state)));
             g.ifPresent(exp -> map.put("green", (float) exp.getValue(level, pos, state)));

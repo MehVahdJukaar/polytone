@@ -1,2 +1,2 @@
-- added back model variant extensions
-- fixed dynamic entries not having their tags bound
+- sound events and particle types are now part of the forward compat stuff, which will make new IDs from known new mc versions be ignored (up to 1.21.6)
+- that being said proper versioning still needs to be implemented by pack authors through the use of resource conditions or optional entries

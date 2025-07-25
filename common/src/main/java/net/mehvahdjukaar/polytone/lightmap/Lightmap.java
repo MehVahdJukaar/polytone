@@ -8,7 +8,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.dimension.DimensionTarget;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.utils.codec.ReferenceOrDirectCodec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -47,7 +48,7 @@ public class Lightmap {
                     Codec.FLOAT.optionalFieldOf("base_light", DEFAULT_BASE_LIGHT).forGetter(l -> l.baseLight)
             ).apply(instance, Lightmap::new));
 
-    public static final Codec<Lightmap> CODEC = new ReferenceOrDirectCodec<>(Polytone.LIGHTMAPS.byNameCodec(), DIRECT_CODEC);
+    public static final Codec<Lightmap> CODEC = CodecUtils.referenceOrDirect(Polytone.LIGHTMAPS.byNameCodec(), DIRECT_CODEC);
 
 
     private final DimensionTarget targets;

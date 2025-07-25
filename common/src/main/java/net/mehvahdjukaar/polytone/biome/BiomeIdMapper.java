@@ -4,7 +4,8 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.utils.LegacyHelper;
-import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.utils.codec.ReferenceOrDirectCodec;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -15,7 +16,7 @@ import java.util.Map;
 public interface BiomeIdMapper {
 
 
-    Codec<BiomeIdMapper> CODEC = new ReferenceOrDirectCodec<>(
+    Codec<BiomeIdMapper> CODEC = CodecUtils.referenceOrDirect(
             Polytone.BIOME_ID_MAPPERS.byNameCodec(), Custom.CUSTOM_CODEC, false);
 
     BiomeIdMapper BY_INDEX = (biome) -> {
