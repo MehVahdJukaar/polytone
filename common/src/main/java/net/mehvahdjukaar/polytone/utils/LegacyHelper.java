@@ -148,7 +148,7 @@ public class LegacyHelper {
         }
         List<String> requireMods = List.of(prop.getProperty("require_mods", "").split(" "));
         for (String s : requireMods) {
-            if (!PlatStuff.isModLoaded(s)) {
+            if (!s.isEmpty() && !PlatStuff.isModLoaded(s)) {
                 return false;
             }
         }

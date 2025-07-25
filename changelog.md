@@ -1,2 +1,2 @@
-- added back model variant extensions
-- fixed dynamic entries not having their tags bound
+- fixed an issue of recent updates marking all .properties files as disabled
+- once again if you are a pack maker avoid relying on .properties. Support for this format might come less in the future

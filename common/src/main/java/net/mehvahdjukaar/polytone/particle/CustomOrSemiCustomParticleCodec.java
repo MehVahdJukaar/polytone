@@ -10,7 +10,7 @@ public class CustomOrSemiCustomParticleCodec implements Codec<CustomParticleFact
     public static final Codec<CustomParticleFactory> INSTANCE = new CustomOrSemiCustomParticleCodec();
     @Override
     public <T> DataResult<Pair<CustomParticleFactory, T>> decode(DynamicOps<T> ops, T input) {
-        if (ops.get(input, "copy_from") != null) {
+        if (ops.get(input, "copy_from").error().isEmpty()) {
             return (DataResult<Pair<CustomParticleFactory, T>>) (Object) SemiCustomParticleType.CODEC.decode(ops, input);
         } else {
             return (DataResult<Pair<CustomParticleFactory, T>>) (Object) CustomParticleType.CODEC.decode(ops, input);

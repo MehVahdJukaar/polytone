@@ -211,7 +211,6 @@ public class PlatStuff {
             }
         }
         registerFabric(reg, id, o);
-
         return o;
     }
 
@@ -231,7 +230,6 @@ public class PlatStuff {
         } else {
             Polytone.LOGGER.error("Unknown registry type{}", reg);
         }
-        return o;
     }
 
     public static <T> void unregisterDynamic(Registry<T> reg, ResourceLocation id) {
@@ -272,7 +270,7 @@ public class PlatStuff {
         } else {
             int aa = 1;
         }
-        mapped.frozen = true;
+        reg.frozen = true;
 
         return reference;
     }
