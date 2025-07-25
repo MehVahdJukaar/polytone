@@ -75,7 +75,7 @@ public record BlockParticleEmitter(
     ).apply(i, BlockParticleEmitter::new));
 
     @Override
-    public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
+    public void tick(Level level, BlockPos pos, BlockState state) {
         if (particleType.isEmpty()) return;
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {

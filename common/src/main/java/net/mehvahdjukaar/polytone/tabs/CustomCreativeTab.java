@@ -2,6 +2,8 @@ package net.mehvahdjukaar.polytone.tabs;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.utils.CodecUtil;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;

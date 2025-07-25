@@ -21,9 +21,9 @@ public class ForwardAwareByNameCodec<A> implements Codec<Optional<A>> {
     @Override
     public <T> DataResult<Pair<Optional<A>, T>> decode(DynamicOps<T> ops, T input) {
         var originalResult = original.decode(ops, input);
-        if (!originalResult.isSuccess()) {
+        if (originalResult.error().isPresent()) {
             var resResult = ResourceLocation.CODEC.decode(ops, input);
-            if (resResult.isSuccess()) {
+            if (resResult.error().isEmpty()) {
                 var res = resResult.result().orElseThrow().getFirst();
                 if (Polytone.isFutureId(res)) {
                     //return opt empty

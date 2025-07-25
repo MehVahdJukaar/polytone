@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.utils.codec.ForwardAwareRegistryFixedCodec;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.utils.codec.LenientCodecWithLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -51,7 +52,7 @@ public record BlockSoundEmitter(
             BlockContextExpression.CODEC.optionalFieldOf("volume", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::volume),
             BlockContextExpression.CODEC.optionalFieldOf("pitch", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(BlockSoundEmitter::distanceDelay),
-            LenientCodecWithLog.of( RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockSoundEmitter::predicate),
+            CodecUtils.lenientWithLog( RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockSoundEmitter::predicate),
             CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockSoundEmitter::biomes)
     ).apply(i, BlockSoundEmitter::new));
 

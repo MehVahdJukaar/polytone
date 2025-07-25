@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.utils.codec;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import net.mehvahdjukaar.polytone.utils.CodecUtil;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
@@ -79,9 +80,4 @@ public class CodecUtils {
         return new ReferenceOrDirectCodec<>(reference, direct, bothStrings);
     }
 
-    public static final Codec<ItemStack> ITEM_OR_STACK = Codec.withAlternative(ItemStack.SINGLE_ITEM_CODEC, BuiltInRegistries.ITEM.byNameCodec(),
-            Item::getDefaultInstance);
-
-    public static final Codec<List<ItemStack>> ITEMSTACK_OR_ITEMSTACK_LIST = Codec.withAlternative(ITEM_OR_STACK.listOf(), ITEM_OR_STACK,
-            List::of);
 }

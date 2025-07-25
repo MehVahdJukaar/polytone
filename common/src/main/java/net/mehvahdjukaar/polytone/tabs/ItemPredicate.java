@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.CodecUtil;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;

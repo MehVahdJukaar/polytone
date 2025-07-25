@@ -1,32 +1,18 @@
 package net.mehvahdjukaar.polytone.biome;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.utils.*;
-import net.mehvahdjukaar.polytone.utils.*;
-import net.mehvahdjukaar.polytone.utils.AlternativeMapCodec;
-import net.mehvahdjukaar.polytone.utils.*;
-import net.mehvahdjukaar.polytone.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.utils.codec.AlternativeMapCodec;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.utils.FogManager;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.Targets;
-import net.mehvahdjukaar.polytone.utils.Weather;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.random.SimpleWeightedRandomList;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.*;
-import net.minecraft.world.phys.Vec2;
 
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
 
 public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> waterColor,
                                   Optional<Integer> waterFogColor, Optional<Integer> skyColor,

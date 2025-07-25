@@ -5,10 +5,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.utils.AlternativeMapCodec;
 import net.mehvahdjukaar.polytone.utils.FogManager;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.utils.codec.AlternativeMapCodec;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.color.block.BlockColor;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,8 +24,8 @@ public record FluidPropertyModifier(Optional<? extends BlockColor> colormap, Opt
             instance.group(
                     StrOpt.of(Colormap.CODEC, "colormap").forGetter(c -> (Optional<IColorGetter>) c.colormap),
                     StrOpt.of(Colormap.CODEC, "fog_colormap").forGetter(FluidPropertyModifier::fogColormap),
-                    AlternativeMapCodec.optionalAlias( FogManager.FogParam.CODEC, "fog_fade", "fog_start").forGetter(FluidPropertyModifier::fogFade),
-                    AlternativeMapCodec.optionalAlias(FogManager.FogParam.CODEC, "fog_radius", "fog_end").forGetter(FluidPropertyModifier::fogRadius),
+                    CodecUtils.optionalAlias( FogManager.FogParam.CODEC, "fog_fade", "fog_start").forGetter(FluidPropertyModifier::fogFade),
+                    CodecUtils.optionalAlias(FogManager.FogParam.CODEC, "fog_radius", "fog_end").forGetter(FluidPropertyModifier::fogRadius),
                     Targets.CODEC.optionalFieldOf("targets", net.mehvahdjukaar.polytone.utils.Targets.EMPTY).forGetter(FluidPropertyModifier::targets)
             ).apply(instance, FluidPropertyModifier::new));
 

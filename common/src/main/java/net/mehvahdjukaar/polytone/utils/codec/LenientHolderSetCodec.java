@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import net.mehvahdjukaar.polytone.utils.CodecUtil;
 import net.minecraft.core.*;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;

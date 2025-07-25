@@ -3,6 +3,8 @@ package net.mehvahdjukaar.polytone.tabs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.CodecUtil;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.ItemStack;
