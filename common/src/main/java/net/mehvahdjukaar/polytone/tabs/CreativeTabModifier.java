@@ -7,6 +7,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -20,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static net.mehvahdjukaar.polytone.tabs.ExtraItemCodecs.ITEM_OR_STACK;
 import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
 
 public record CreativeTabModifier(
@@ -39,7 +40,7 @@ public record CreativeTabModifier(
         Targets targets) {
 
     public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
+            CodecUtils.ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
             Codec.BOOL.optionalFieldOf("search_bar").forGetter(CreativeTabModifier::search), //unused
             Codec.INT.optionalFieldOf("search_bar_width").forGetter(CreativeTabModifier::searchWidth),
             Codec.BOOL.optionalFieldOf("can_scroll").forGetter(CreativeTabModifier::canScroll),

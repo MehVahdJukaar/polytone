@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.colormap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.utils.LenientUnboundedMapCodec;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -22,7 +22,7 @@ public class BiomeCompoundColorGetter implements IColorGetter {
 
     public static final Codec<BiomeCompoundColorGetter> CODEC = RecordCodecBuilder.<BiomeCompoundColorGetter>create(i -> i.group(
                     Colormap.REFERENCE_OR_EXPRESSION.fieldOf("default").forGetter(c -> c.defaultGetter),
-                    new LenientUnboundedMapCodec<>( //not ideal but eh
+                    CodecUtils.lenientUnboundedMap( //not ideal but eh
                             RegistryFixedCodec.create(Registries.BIOME),
                             Colormap.REFERENCE_OR_EXPRESSION
                     ).fieldOf("biomes").forGetter(c -> c.holderMap)

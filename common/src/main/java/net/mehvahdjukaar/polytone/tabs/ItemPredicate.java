@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -11,6 +12,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -112,7 +114,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
     }
 
     MapCodec<ItemMatch> ITEM_MATCH = TYPES.register("items_match",
-            BuiltInRegistries.ITEM.byNameCodec().listOf().fieldOf("items")
+            CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.ITEM, Items.AIR).listOf().fieldOf("items")
                     .xmap(ItemMatch::new, ItemMatch::items));
 
     record ItemMatch(List<Item> items) implements ItemPredicate {

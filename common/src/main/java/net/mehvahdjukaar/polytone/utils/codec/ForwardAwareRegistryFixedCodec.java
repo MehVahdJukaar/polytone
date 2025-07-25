@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.utils;
+package net.mehvahdjukaar.polytone.utils.codec;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
@@ -16,7 +16,7 @@ import java.util.Optional;
 public final class ForwardAwareRegistryFixedCodec<E> implements Codec<Optional<Holder<E>>> {
     private final ResourceKey<? extends Registry<E>> registryKey;
 
-    private ForwardAwareRegistryFixedCodec(ResourceKey<? extends Registry<E>> registryKey) {
+    ForwardAwareRegistryFixedCodec(ResourceKey<? extends Registry<E>> registryKey) {
         this.registryKey = registryKey;
     }
 
@@ -72,11 +72,6 @@ public final class ForwardAwareRegistryFixedCodec<E> implements Codec<Optional<H
 
     private boolean isBlacklisted(ResourceLocation id) {
         return Polytone.isFutureId(id);
-    }
-
-
-    public static <E> Codec<HolderSet<E>> homogeneousList(ResourceKey<? extends Registry<E>> registryKey) {
-        return LenientHolderSetCodec.create(registryKey, new ForwardAwareRegistryFixedCodec<>(registryKey), false);
     }
 
 }
