@@ -6,6 +6,7 @@
   "mixins": [
   ],
   "client": [
+    "SodiumCloudRendererMixin",
     "AbstractContainerMenuMixin",
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
