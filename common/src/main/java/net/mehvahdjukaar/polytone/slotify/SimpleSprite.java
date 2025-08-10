@@ -44,6 +44,8 @@ public record SimpleSprite(ResourceLocation texture, float x, float y, float wid
         RenderSystem.enableDepthTest();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderTexture(0, atlasLoc);
+        RenderSystem.enableBlend();
+
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
