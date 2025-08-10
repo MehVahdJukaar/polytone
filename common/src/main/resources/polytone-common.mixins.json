@@ -16,6 +16,7 @@
     "DimensionSpecialEffectsMixin",
     "FogRendererMixin",
     "GameRendererMixin",
+    "GuiGraphicsMixin",
     "GuiMixin",
     "ItemMixin",
     "ItemStackMixin",
