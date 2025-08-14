@@ -1,2 +1,2 @@
-- sound events and particle types are now part of the forward compat stuff, which will make new IDs from known new mc versions be ignored (up to 1.21.6)
-- that being said proper versioning still needs to be implemented by pack authors through the use of resource conditions or optional entries
+- dimension modifier cloud height can now alger sodium clouds via ugly mixin in sodium code since it replaces all cloud renderer
+- removed lightmaps as they have not been updated yet to the new shader based system
