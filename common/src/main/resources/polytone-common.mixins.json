@@ -6,7 +6,6 @@
   "mixins": [
   ],
   "client": [
-    "SodiumCloudRendererMixin",
     "AbstractContainerMenuMixin",
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
@@ -18,6 +17,7 @@
     "GuiGraphicsMixin",
     "GuiMixin",
     "GuiRenderStateMixin",
+    "HackThatPreventsMissingSpritesToCrashMixin",
     "ItemMixin",
     "ItemOverridesMixin",
     "ItemStackMixin",
@@ -31,6 +31,7 @@
     "ScreenMixin",
     "SmithingScreenMixin",
     "SodiumBlockRendererMixin",
+    "SodiumCloudRendererMixin",
     "SplashRendererMixin",
     "SpriteContentsMixin",
     "XpOrbMixin",

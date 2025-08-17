@@ -282,11 +282,6 @@ public class PlatStuffImpl {
         // return AC ? AlexsCavesCompat.modifyGamma(partialTicks, gamma) : gamma;
     }
 
-
-    public static RegistryAccess getServerRegistryAccess() {
-        return ServerLifecycleHooks.getCurrentServer().registryAccess();
-    }
-
     public static String getVersion() {
         return ModList.get().getModContainerById(Polytone.MOD_ID)
                 .map(c -> c.getModInfo().getVersion().toString()).orElse("unknown");

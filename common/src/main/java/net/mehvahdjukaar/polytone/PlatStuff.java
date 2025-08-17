@@ -211,9 +211,5 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
-    public static RegistryAccess getServerRegistryAccess() {
-        throw new AssertionError();
-    }
 
 }
