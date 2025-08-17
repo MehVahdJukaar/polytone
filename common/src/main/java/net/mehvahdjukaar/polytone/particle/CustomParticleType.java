@@ -175,7 +175,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 }
             }
             if (exclusionRadius > 0) {
-                var particleRenderType = this.renderType.getParticle();
+                var particleRenderType = this.getRenderType().getParticle();
                 double radiusSquared = exclusionRadius * exclusionRadius;
                 Queue<Particle> particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
 
@@ -328,7 +328,7 @@ public class CustomParticleType implements CustomParticleFactory {
             poseStack.translate(-0.5, -0.5, -0.5);
 
             MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-            var consumer = bufferSource.getBuffer(type.renderType.getBlock());
+            var consumer = bufferSource.getBuffer(type.getRenderType().getBlock());
 
             putModelBulkData(this.model, this.getLightColor(partialTicks),
                     OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
@@ -435,7 +435,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public ParticleRenderType getRenderType() {
-            return this.model == null ? type.renderType.getParticle() : ParticleRenderType.CUSTOM;
+            return this.model == null ? type.getRenderType().getParticle() : ParticleRenderType.CUSTOM;
         }
 
     }

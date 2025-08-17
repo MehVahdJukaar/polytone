@@ -1,1 +1,1 @@
-- fixed an issue with sound types and sound events in 1.21.5
+- fixed translucent render type not being initialized correctly when just logging on a server

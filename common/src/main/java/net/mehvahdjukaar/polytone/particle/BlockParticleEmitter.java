@@ -79,8 +79,12 @@ public record BlockParticleEmitter(
 
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
-        if (particleType.isEmpty()) return;
-        if (source != spawnSource) return; //only spawn particles on the correct tick source
+        if (particleType.isEmpty()){
+            return;
+        }
+        if (source != spawnSource){
+            return; //only spawn particles on the correct tick source
+        }
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {
             if (biomes.isPresent()) {

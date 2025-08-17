@@ -293,10 +293,6 @@ public class PlatStuffImpl {
 
     }
 
-    public static RegistryAccess getServerRegistryAccess() {
-        return PolytoneFabric.currentServer.registryAccess();
-    }
-
     public static void doAddModels() {
         ModelStuffImpl.doAdd();
     }
