@@ -48,7 +48,7 @@ public abstract class PolytoneExpression {
             int index = (int) args[0];
             Property<?> p = properties.get(Mth.clamp(index, 0, properties.size() - 1));
             List<?> values = new ArrayList<>(p.getPossibleValues());
-            return values.indexOf(blockState.getValue(p)) / (properties.size() - 1f);
+            return values.indexOf(blockState.getValue(p)) / (values.size() - 1f);
         }
     };
 
