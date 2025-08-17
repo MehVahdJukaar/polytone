@@ -1,2 +1,1 @@
-- dimension modifier cloud height can now alger sodium clouds via ugly mixin in sodium code since it replaces all cloud renderer
-- removed lightmaps as they have not been updated yet to the new shader based system
+- fixed an issue with sound types and sound events in 1.21.5

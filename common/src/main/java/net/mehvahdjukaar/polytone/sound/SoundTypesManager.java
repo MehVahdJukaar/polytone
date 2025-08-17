@@ -60,6 +60,12 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
                 }
             }
         }
+
+        for (var e : customSoundEvents.getEntries()) {
+            var id = e.getKey();
+            var sound = e.getValue();
+            PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id, sound);
+        }
         // sound types
 
         for (var j : Parsed.batchParseOnlyEnabled(resources.soundTypes, PolytoneSoundType.DIRECT_CODEC,
@@ -67,12 +73,6 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
             var soundType = j.getValue();
             var id = j.getKey();
             customSoundTypes.register(id, soundType);
-        }
-
-        for (var e : customSoundEvents.getEntries()) {
-            var id = e.getKey();
-            var sound = e.getValue();
-            PlatStuff.registerDynamic(BuiltInRegistries.SOUND_EVENT, id, sound);
         }
     }
 
