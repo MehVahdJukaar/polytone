@@ -49,12 +49,9 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     @Override
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
 
-        var soundJsons = resources.soundTypes;
-        var soundEvents = resources.soundEvents;
-
         //custom sound events
 
-        for (var e : soundEvents.entrySet()) {
+        for (var e : resources.soundEvents.entrySet()) {
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
                 if (!customSoundEvents.containsKey(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
