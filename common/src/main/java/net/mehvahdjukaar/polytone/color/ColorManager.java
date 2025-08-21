@@ -375,6 +375,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         if (obj instanceof JsonPrimitive value) {
             String str = value.getAsString();
             return parseHex(str);
+        } else if (obj instanceof Integer i) {
+            return i;
         }
         throw new JsonParseException("Failed to parse object " + obj + ". Expected a String");
     }
