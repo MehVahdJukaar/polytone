@@ -123,7 +123,7 @@ public class PlatStuffImpl {
 
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         //forge original biome effect object is never user and redirected by coremod
-        //we apply to the biome modifier. We dont want to change the original
+        //we apply to the biome modifier. We don't want to change the original
         ModifiableBiomeInfo modifiable = biome.modifiableBiomeInfo();
         ModifiableBiomeInfo.BiomeInfo modifiedInfo = modifiable.getModifiedBiomeInfo();
         if (modifiedInfo == null) {
