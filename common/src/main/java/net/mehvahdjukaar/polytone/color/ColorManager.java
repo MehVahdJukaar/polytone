@@ -299,6 +299,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         if (obj instanceof String value) {
             value = value.replace("#", "").replace("0x", "");
             return Integer.parseInt(value.trim(), 16);
+        } else if (obj instanceof Integer i) {
+            return i;
         }
         throw new JsonParseException("Failed to parse object " + obj + ". Expected a String");
     }
