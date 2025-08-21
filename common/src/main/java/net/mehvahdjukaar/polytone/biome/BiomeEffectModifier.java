@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.biome;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.FogManager;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.Targets;
@@ -27,12 +28,12 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Targets targets) {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-            StrOpt.of(Codec.INT, "fog_color").forGetter(BiomeEffectModifier::fogColor),
-            StrOpt.of(Codec.INT, "water_color").forGetter(BiomeEffectModifier::waterColor),
-            StrOpt.of(Codec.INT, "water_fog_color").forGetter(BiomeEffectModifier::waterFogColor),
-            StrOpt.of(Codec.INT, "sky_color").forGetter(BiomeEffectModifier::skyColor),
-            StrOpt.of(Codec.INT, "foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
-            StrOpt.of(Codec.INT, "grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
+            StrOpt.of(ColorUtils.CODEC, "fog_color").forGetter(BiomeEffectModifier::fogColor),
+            StrOpt.of(ColorUtils.CODEC, "water_color").forGetter(BiomeEffectModifier::waterColor),
+            StrOpt.of(ColorUtils.CODEC, "water_fog_color").forGetter(BiomeEffectModifier::waterFogColor),
+            StrOpt.of(ColorUtils.CODEC, "sky_color").forGetter(BiomeEffectModifier::skyColor),
+            StrOpt.of(ColorUtils.CODEC, "foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
+            StrOpt.of(ColorUtils.CODEC, "grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
             StrOpt.of(BiomeSpecialEffects.GrassColorModifier.CODEC, "grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
             StrOpt.of(AmbientParticleSettings.CODEC, "particle").forGetter(BiomeEffectModifier::ambientParticleSettings),
             StrOpt.of(SoundEvent.CODEC, "ambient_sound").forGetter(BiomeEffectModifier::ambientLoopSoundEvent),
@@ -132,7 +133,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
 
         // freaking forge field to methods...
         //biome.specialEffects = builder.build();
-        var copy = copy(effects);
+        BiomeSpecialEffects copy = copy(effects);
         // applyInplace(biome, builder.build());
 
         applyEffects(biome, builder.build());
@@ -191,7 +192,7 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         //we cant replace field in biome because forge replaces it
         //we cant replace fields in the effects object becuase embeddium relies on it.
         //applyInplace(biome, modifier);
-        //we use reflections on fabric and a special hackery for forte
+        //we use reflections on fabric and a special hackery for forge
         PlatStuff.applyBiomeSurgery(biome, newEffects);
     }
 
