@@ -23,7 +23,7 @@ public class HackThatPreventsMissingSpritesFromCrashingMixin {
     @Inject(method = "get(II)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;", at = @At("HEAD"), cancellable = true)
     public void polytone$setNullSprite(int i, int j, CallbackInfoReturnable<TextureAtlasSprite> cir) {
         if (this.sprites == null) {
-            cir.setReturnValue(Sheets.BANNER_BASE.sprite());
+            cir.setReturnValue(Sheets.CHEST_LOCATION_LEFT.sprite());
         }
     }
 
@@ -32,7 +32,7 @@ public class HackThatPreventsMissingSpritesFromCrashingMixin {
     public void polytone$setNullSprite(RandomSource randomSource, CallbackInfoReturnable<TextureAtlasSprite> cir) {
         if (this.sprites == null) {
             //return random sprite instead
-            cir.setReturnValue(Sheets.BANNER_BASE.sprite());
+            cir.setReturnValue(Sheets.CHEST_LOCATION_LEFT.sprite());
         }
     }
 }
