@@ -18,6 +18,7 @@
     "GameRendererMixin",
     "GuiGraphicsMixin",
     "GuiMixin",
+    "HackThatPreventsMissingSpritesFromCrashingMixin",
     "ItemMixin",
     "ItemOverridesMixin",
     "ItemStackMixin",

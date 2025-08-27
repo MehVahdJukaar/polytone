@@ -95,7 +95,7 @@ public interface IColorGetter extends BlockColor, ItemColor {
 
         @Override
         public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
-            return ic.getItemColor(item == null ? ItemStack.EMPTY : item, 0);
+            return ic.getColor(item == null ? ItemStack.EMPTY : item, 0);
         }
     }
 
