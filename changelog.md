@@ -1,1 +1,1 @@
-- made transparency work in gui
+- added biome compound composite colormap type

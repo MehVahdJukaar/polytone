@@ -4,6 +4,7 @@ import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Camera;
@@ -39,7 +40,7 @@ public class FluidPropertiesManagerImpl {
         if (!(ext instanceof FluidExtensionWrapper)) {
             BlockColor tintColormap = prop.getColormap();
             BlockColor fogColormap = prop.getFogColormap();
-            if (tintColormap instanceof Colormap c) {
+            if (tintColormap instanceof IColorGetter c) {
                 tintColormap = Polytone.COLORMAPS.getOrCreateConcurrentColormap(c);
             }
             FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, tintColormap, fogColormap));
