@@ -15,7 +15,7 @@ import java.util.List;
 
 //don't ask why. only happens on log off after disabling the pack
 @Mixin(ParticleEngine.MutableSpriteSet.class)
-public class HackThatPreventsMissingSpritesToCrashMixin {
+public class HackThatPreventsMissingSpritesFromCrashingMixin {
 
     @Shadow
     private List<TextureAtlasSprite> sprites;
@@ -23,7 +23,7 @@ public class HackThatPreventsMissingSpritesToCrashMixin {
     @Inject(method = "get(II)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;", at = @At("HEAD"), cancellable = true)
     public void polytone$setNullSprite(int i, int j, CallbackInfoReturnable<TextureAtlasSprite> cir) {
         if (this.sprites == null) {
-            cir.setReturnValue(Sheets.BLOCKS_MAPPER.apply(ResourceLocation.withDefaultNamespace("")).sprite());
+            cir.setReturnValue(Sheets.BANNER_BASE.sprite());
         }
     }
 
@@ -31,7 +31,8 @@ public class HackThatPreventsMissingSpritesToCrashMixin {
             at = @At("HEAD"), cancellable = true)
     public void polytone$setNullSprite(RandomSource randomSource, CallbackInfoReturnable<TextureAtlasSprite> cir) {
         if (this.sprites == null) {
-            cir.setReturnValue(Sheets.BLOCKS_MAPPER.apply(ResourceLocation.withDefaultNamespace("")).sprite());
+            //return random sprite instead
+            cir.setReturnValue(Sheets.BANNER_BASE.sprite());
         }
     }
 }
