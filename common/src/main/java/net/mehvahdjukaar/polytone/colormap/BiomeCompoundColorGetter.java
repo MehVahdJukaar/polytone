@@ -24,11 +24,13 @@ public class BiomeCompoundColorGetter implements IColorGetter {
     public static final Codec<BiomeCompoundColorGetter> CODEC =
             CodecUtil.validate(
             RecordCodecBuilder.<BiomeCompoundColorGetter>create(i -> i.group(
-                    Colormap.REFERENCE_OR_EXPRESSION.fieldOf("default").forGetter(c -> c.defaultGetter),
+                    Colormap.REFERENCE_OR_EXPRESSION.fieldOf("default")
+                            .forGetter(c -> c.defaultGetter),
                     CodecUtils.lenientUnboundedMap(
-                            RegistryFixedCodec.create(Registries.BIOME),
-                            Colormap.REFERENCE_OR_EXPRESSION
-                    ).fieldOf("biomes").forGetter(c -> c.holderMap)
+                                    RegistryFixedCodec.create(Registries.BIOME),
+                                    Colormap.REFERENCE_OR_EXPRESSION
+                            )
+                            .fieldOf("biomes").forGetter(c -> c.holderMap)
             ).apply(i, BiomeCompoundColorGetter::new)),
                     c -> {
                         if (c.getters.isEmpty()) {
@@ -85,5 +87,14 @@ public class BiomeCompoundColorGetter implements IColorGetter {
             map.put(e.getKey(), e.getValue().makeConcurrent());
         }
         return new BiomeCompoundColorGetter(defaultGetter.makeConcurrent(), map);
+    }
+
+    @Override
+    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        if (biome != null) {
+            IColorGetter g = getters.get(biome);
+            if (g != null) return g.sampleColor(state, pos, biome, item);
+        }
+        return defaultGetter.sampleColor(state, pos, biome, item);
     }
 }

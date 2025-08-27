@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectModifier;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -143,7 +144,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             tryAddSpecial(f, mod);
 
             //replaces watercolor func with first colormap that targets water. good enough
-            if (fluid.value() == Fluids.WATER && mod.getColormap() instanceof Colormap c) {
+            if (fluid.value() == Fluids.WATER && mod.getColormap() instanceof ColorResolver c) {
                 vanillaWaterColorResolver = BiomeColors.WATER_COLOR_RESOLVER;
                 BiomeColors.WATER_COLOR_RESOLVER = c;
             }

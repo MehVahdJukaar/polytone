@@ -11,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -41,11 +40,12 @@ public class IndexCompoundColorGetter implements IColorGetter {
     @Override
     public IColorGetter makeConcurrent() {
         Map<Integer, IColorGetter> newMap = new HashMap<>();
-        for(var e : getters.int2ObjectEntrySet()){
+        for (var e : getters.int2ObjectEntrySet()) {
             newMap.put(e.getIntKey(), e.getValue().makeConcurrent());
         }
         return new IndexCompoundColorGetter(newMap);
     }
+
 
     @Override
     public boolean needsToFillTexture() {
@@ -119,4 +119,14 @@ public class IndexCompoundColorGetter implements IColorGetter {
         return -1;
     }
 
+
+    @Override
+    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        IColorGetter getter = getters.get(-1);
+        if (getter != null) {
+            return getter.sampleColor(state, pos, biome, item);
+
+        }
+        return -1;
+    }
 }

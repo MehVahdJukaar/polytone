@@ -9,13 +9,13 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -39,9 +39,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     private final Map<ResourceLocation, DimensionEffectsModifier> vanillaEffects = new HashMap<>();
 
-    private final Object2ObjectMap<DimensionType, Colormap> fogColormaps = new Object2ObjectArrayMap<>();
-    private final Object2ObjectMap<DimensionType, Colormap> skyColormaps = new Object2ObjectArrayMap<>();
-    private final Object2ObjectMap<DimensionType, Colormap> sunsetColormaps = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, IColorGetter> fogColormaps = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, IColorGetter> terrainFogColormaps = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, IColorGetter> skyColormaps = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, IColorGetter> sunsetColormaps = new Object2ObjectArrayMap<>();
     private final Object2ObjectMap<DimensionType, BlockContextExpression> cloudFunctions = new Object2ObjectArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelFogWeatherDarken = new Object2BooleanArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelSkyWeatherDarken = new Object2BooleanArrayMap<>();
@@ -175,13 +176,13 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             vanillaEffects.put(dimensionId, old);
 
             DimensionType dim = dimReg.get(dimensionId);
-            if (modifier.getFogColormap() instanceof Colormap c) {
+            if (modifier.getFogColormap() instanceof IColorGetter c) {
                 fogColormaps.put(dim, c);
             }
             if (modifier.getSkyColormap() instanceof Colormap c) {
                 skyColormaps.put(dim, c);
             }
-            if (modifier.getSunsetColormap() instanceof Colormap c) {
+            if (modifier.getSunsetColormap() instanceof IColorGetter c) {
                 sunsetColormaps.put(dim, c);
             }
             if (modifier.noWeatherFogDarken()) {
@@ -202,7 +203,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     @Nullable
     public Vec3 modifyFogColor(Vec3 center, ClientLevel level, float brightness) {
-        Colormap colormap = this.fogColormaps.get(level.dimensionType());
+        IColorGetter colormap = this.fogColormaps.get(level.dimensionType());
         if (colormap == null) return null;
 
         BiomeManager biomeManager = level.getBiomeManager();
@@ -227,7 +228,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     @Nullable
     public Vec3 modifySkyColor(Vec3 center, ClientLevel level) {
-        Colormap colormap = this.skyColormaps.get(level.dimensionType());
+        IColorGetter colormap = this.skyColormaps.get(level.dimensionType());
         if (colormap == null) return null;
 
         BiomeManager biomeManager = level.getBiomeManager();
@@ -268,7 +269,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private static float[] lastSunset = null;
 
     public float @Nullable [] modifySunsetColor(float [] old) {
-        Colormap colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
+        IColorGetter colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
         if (colormap == null) return null;
         var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(),
                 ClientFrameTicker.getCameraBiome().value(), null);
