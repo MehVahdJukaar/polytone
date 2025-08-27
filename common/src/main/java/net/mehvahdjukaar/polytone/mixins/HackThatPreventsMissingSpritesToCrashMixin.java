@@ -13,23 +13,24 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
-//dont ask why. only happens on log off after disabling the pack
+//don't ask why. only happens on log off after disabling the pack
 @Mixin(ParticleEngine.MutableSpriteSet.class)
 public class HackThatPreventsMissingSpritesToCrashMixin {
 
-    @Shadow private List<TextureAtlasSprite> sprites;
+    @Shadow
+    private List<TextureAtlasSprite> sprites;
 
-    @Inject(method = "get(II)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;", at = @At("HEAD"),cancellable = true)
-    public void polytone$setNullSprite(int i, int j, CallbackInfoReturnable<TextureAtlasSprite> cir){
-        if(this.sprites == null){
+    @Inject(method = "get(II)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;", at = @At("HEAD"), cancellable = true)
+    public void polytone$setNullSprite(int i, int j, CallbackInfoReturnable<TextureAtlasSprite> cir) {
+        if (this.sprites == null) {
             cir.setReturnValue(Sheets.BLOCKS_MAPPER.apply(ResourceLocation.withDefaultNamespace("")).sprite());
         }
     }
 
     @Inject(method = "get(Lnet/minecraft/util/RandomSource;)Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;",
             at = @At("HEAD"), cancellable = true)
-    public void polytone$setNullSprite(RandomSource randomSource, CallbackInfoReturnable<TextureAtlasSprite> cir){
-        if(this.sprites == null){
+    public void polytone$setNullSprite(RandomSource randomSource, CallbackInfoReturnable<TextureAtlasSprite> cir) {
+        if (this.sprites == null) {
             cir.setReturnValue(Sheets.BLOCKS_MAPPER.apply(ResourceLocation.withDefaultNamespace("")).sprite());
         }
     }

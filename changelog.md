@@ -1,1 +1,1 @@
-- fixed translucent render type not being initialized correctly when just logging on a server
+- added biome compound composite colormap type

@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -18,7 +19,6 @@ import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
@@ -46,10 +46,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     private final Map<ResourceLocation, DimensionEffectsModifier> vanillaEffects = new HashMap<>();
 
-    private final Object2ObjectMap<DimensionType, Colormap> fogColormaps = new Object2ObjectArrayMap<>();
-    private final Object2ObjectMap<DimensionType, Colormap> terrainFogColormaps = new Object2ObjectArrayMap<>();
-    private final Object2ObjectMap<DimensionType, Colormap> skyColormaps = new Object2ObjectArrayMap<>();
-    private final Object2ObjectMap<DimensionType, Colormap> sunsetColormaps = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, IColorGetter> fogColormaps = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, IColorGetter> terrainFogColormaps = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, IColorGetter> skyColormaps = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<DimensionType, IColorGetter> sunsetColormaps = new Object2ObjectArrayMap<>();
     private final Object2ObjectMap<DimensionType, BlockContextExpression> cloudFunctions = new Object2ObjectArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelFogWeatherDarken = new Object2BooleanArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelSkyWeatherDarken = new Object2BooleanArrayMap<>();
@@ -194,16 +194,16 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             vanillaEffects.put(dimensionId, old);
 
             DimensionType dim = dimReg.get(dimensionKey).get().value();
-            if (modifier.getFogColormap() instanceof Colormap c) {
+            if (modifier.getFogColormap() instanceof IColorGetter c) {
                 fogColormaps.put(dim, c);
             }
-            if (modifier.getTerrainFogColormap() instanceof Colormap c) {
+            if (modifier.getTerrainFogColormap() instanceof IColorGetter c) {
                 terrainFogColormaps.put(dim, c);
             }
-            if (modifier.getSkyColormap() instanceof Colormap c) {
+            if (modifier.getSkyColormap() instanceof IColorGetter c) {
                 skyColormaps.put(dim, c);
             }
-            if (modifier.getSunsetColormap() instanceof Colormap c) {
+            if (modifier.getSunsetColormap() instanceof IColorGetter c) {
                 sunsetColormaps.put(dim, c);
             }
             if (modifier.noWeatherFogDarken()) {
@@ -224,7 +224,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     @Nullable
     public Vec3 modifyFogColor(Vec3 center, ClientLevel level, float brightness) {
-        Colormap colormap = isTerrainHack.get() ? this.terrainFogColormaps.get(level.dimensionType()) :
+        IColorGetter colormap = isTerrainHack.get() ? this.terrainFogColormaps.get(level.dimensionType()) :
                 this.fogColormaps.get(level.dimensionType());
         if (colormap == null) return null;
         return cubicSample(center, level, brightness, colormap);
@@ -234,7 +234,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
 
     public Vector4f modifyTerrainFogColor(Vector4f original, ClientLevel level, Camera camera, float partialTicks, GameRenderer gameRenderer, Minecraft minecraft) {
-        Colormap colormap = this.terrainFogColormaps.get(level.dimensionType());
+        IColorGetter colormap = this.terrainFogColormaps.get(level.dimensionType());
         if (colormap == null) return original;
         isTerrainHack.set(true);
         Vector4f vector4f = FogRenderer.computeFogColor(
@@ -246,7 +246,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
 
-    private static @NotNull Vec3 cubicSample(Vec3 center, ClientLevel level, float brightness, Colormap colormap) {
+    private static @NotNull Vec3 cubicSample(Vec3 center, ClientLevel level, float brightness, IColorGetter colormap) {
         BiomeManager biomeManager = level.getBiomeManager();
         return level.effects().getBrightnessDependentFogColor(
                 CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
@@ -272,7 +272,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     @Nullable
     public Vec3 modifySkyColor(Vec3 center, ClientLevel level) {
-        Colormap colormap = this.skyColormaps.get(level.dimensionType());
+        IColorGetter colormap = this.skyColormaps.get(level.dimensionType());
         if (colormap == null) return null;
 
         //same as original one
@@ -315,7 +315,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     @Nullable
     public Integer modifySunsetColor(int old) {
-        Colormap colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
+        IColorGetter colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
         if (colormap == null) return null;
         float oldAlpha = ARGB.alpha(old) / 255f;
         var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(),
