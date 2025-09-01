@@ -39,6 +39,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     private final Map<Block, BlockPropertyModifier> modifiers = new HashMap<>();
     private final Map<Block, ClientTickModifier> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
 
+    private final Map<Block, Boolean> terrainParticleTintOverrides = new HashMap<>();
+
     //replacing vanilla color resolvers too for better mod compat
     private ColorResolver vanillaGrassColorResolver = null;
     private ColorResolver vanillaFoliageColorResolver = null;
@@ -63,6 +65,11 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     public boolean hasVisualOffset(BlockState state) {
         BlockPropertyModifier modifier = modifiers.get(state.getBlock());
         return modifier != null && modifier.offsetType().isPresent();
+    }
+
+    @Nullable
+    public Boolean getTerrainTintOverride(Block block) {
+        return terrainParticleTintOverrides.get(block);
     }
 
 
@@ -180,6 +187,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         modifiers.clear();
         optifineColormapsToBlocks.clear();
         particleAndSoundEmitters.clear();
+        terrainParticleTintOverrides.clear();
 
         if (vanillaGrassColorResolver != null) {
             BiomeColors.GRASS_COLOR_RESOLVER = vanillaGrassColorResolver;
@@ -193,25 +201,29 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-        for (var e : modifiers.entrySet()) {
-            Block target = e.getKey();
+        for (var modifierEntry : modifiers.entrySet()) {
+            Block target = modifierEntry.getKey();
 
-            BlockPropertyModifier value = e.getValue();
+            BlockPropertyModifier modifier = modifierEntry.getValue();
 
-            vanillaProperties.put(target, value.apply(target));
+            vanillaProperties.put(target, modifier.apply(target));
 
-            var particle = value.particleEmitters();
+            var particle = modifier.particleEmitters();
             if (!particle.isEmpty()) {
                 particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier()).addAll(particle);
             }
-            var sound = value.soundEmitters();
+            var sound = modifier.soundEmitters();
             if (!sound.isEmpty()) {
                 particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier()).addAll(sound);
             }
 
-            if (value.disableParticles()) {
+            if (modifier.disableParticles()) {
                 particleAndSoundEmitters.computeIfAbsent(target, t -> new ClientTickModifier()).cancelsExisting();
             }
+
+
+            Optional<Boolean> bool = modifier.breakingParticlesTinted();
+            bool.ifPresent(aBoolean -> terrainParticleTintOverrides.put(target, aBoolean));
         }
         if (!vanillaProperties.isEmpty()) {
             Polytone.LOGGER.info("Applied {} Block Modifiers", vanillaProperties.size());
