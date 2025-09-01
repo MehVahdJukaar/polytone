@@ -9,6 +9,7 @@
   "client": [
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
+    "BuildCreativeModeTabContentsEventAccessor",
     "CreativeModeInventoryScreenMixin",
     "CreativeTabAccessor",
     "CurioInventoryScreenMixin",
@@ -17,7 +18,8 @@
     "ModelRendererMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
-    "ParticleEngineAccessor"
+    "ParticleEngineAccessor",
+    "TerrainParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1
