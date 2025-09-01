@@ -40,7 +40,7 @@ public record BlockPropertyModifier(
         Optional<Function<BlockState, MapColor>> mapColor,
         Optional<Boolean> canOcclude,
         Optional<Boolean> spawnParticlesOnBreak,
-        //Optional<Object> emissiveRendering,
+        Optional<Boolean> breakingParticlesTinted,
         Optional<ChunkSectionLayer> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
         List<BlockParticleEmitter> particleEmitters,
@@ -59,7 +59,7 @@ public record BlockPropertyModifier(
                 newMod.mapColor.isPresent() ? newMod.mapColor() : this.mapColor(),
                 newMod.canOcclude().isPresent() ? newMod.canOcclude() : this.canOcclude(),
                 newMod.spawnParticlesOnBreak().isPresent() ? newMod.spawnParticlesOnBreak() : this.spawnParticlesOnBreak(),
-                //newMod.emissiveRendering().isPresent() ? newMod.emissiveRendering() : this.emissiveRendering(),
+                newMod.breakingParticlesTinted().isPresent() ? newMod.breakingParticlesTinted() : this.breakingParticlesTinted(),
                 newMod.renderType().isPresent() ? newMod.renderType() : this.renderType(),
                 newMod.clientLight.isPresent() ? newMod.clientLight : this.clientLight,
                 mergeList(newMod.particleEmitters, this.particleEmitters),
@@ -75,7 +75,7 @@ public record BlockPropertyModifier(
     public static BlockPropertyModifier ofBlockColor(BlockColor colormap) {
         return new BlockPropertyModifier(Optional.ofNullable(colormap),
                 Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
                 false, Targets.EMPTY, false);
@@ -93,7 +93,7 @@ public record BlockPropertyModifier(
         Targets t = net.mehvahdjukaar.polytone.utils.Targets.ofIds(blocks);
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(),
                 java.util.Optional.empty(), Optional.empty(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
                 false, t, false);
@@ -188,6 +188,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.ofNullable(oldColor), Optional.ofNullable(oldSound),
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),
+                Optional.empty(),
                 Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
                 List.of(), List.of(), Optional.empty(),
                 Optional.ofNullable(oldType),
@@ -205,7 +206,7 @@ public record BlockPropertyModifier(
                             "map_color").forGetter(BlockPropertyModifier::mapColor),
                     Codec.BOOL.optionalFieldOf("can_occlude").forGetter(BlockPropertyModifier::canOcclude),
                     Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(BlockPropertyModifier::spawnParticlesOnBreak),
-                    //Codec.BOOL.optionalFieldOf("emissive_rendering").forGetter(c -> c.emissiveRendering.flatMap(o -> Optional.ofNullable(o instanceof Boolean b ? b : null))),
+                    Codec.BOOL.optionalFieldOf("tinted_breaking_particles").forGetter(BlockPropertyModifier::breakingParticlesTinted),
                     SECTION_LAYER_CODEC.optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),

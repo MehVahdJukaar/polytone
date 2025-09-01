@@ -19,7 +19,8 @@
     "ItemBlockRenderTypeAccessor",
     "ModelBlockRendererMixin",
     "ParticleEngineAccessor",
-    "RegistrySyncManagerMixin"
+    "RegistrySyncManagerMixin",
+    "TerrainParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -6,9 +6,9 @@
   "mixins": [
   ],
   "client": [
-    "BuildCreativeModeTabContentsEventAccessor",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
+    "BuildCreativeModeTabContentsEventAccessor",
     "CreativeModeInventoryScreenMixin",
     "CreativeTabAccessor",
     "IClientFluidTypeExtensionsMixin",
@@ -16,7 +16,8 @@
     "ModelBlockRendererMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
-    "ParticleEngineAccessor"
+    "ParticleEngineAccessor",
+    "TerrainParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1
