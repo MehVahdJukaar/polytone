@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.mixins.neoforge;
+package net.mehvahdjukaar.polytone.mixins.forge;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -13,7 +13,9 @@ public abstract class TerrainParticleMixin {
 
 
     @ModifyExpressionValue(method = "<init>(Lnet/minecraft/client/multiplayer/ClientLevel;DDDDDDLnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)V",
-            at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/client/extensions/common/IClientBlockExtensions;areBreakingParticlesTinted(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/core/BlockPos;)Z")
+            require = 0,
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z")
     )
     public boolean polytone$whyIsGrassBlockHardcoded(boolean original, @Local(argsOnly = true) BlockState state) {
         Boolean b = Polytone.BLOCK_MODIFIERS.getTerrainTintOverride(state.getBlock());
