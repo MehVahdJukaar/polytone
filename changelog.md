@@ -1,1 +1,1 @@
-added tinted_breaking_particles in block modifiers
+added missing sound types
