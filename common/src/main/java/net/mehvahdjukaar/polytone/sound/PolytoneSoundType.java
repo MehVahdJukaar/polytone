@@ -107,6 +107,7 @@ public class PolytoneSoundType extends SoundType {
         map.put("froglight", SoundType.FROGLIGHT);
         map.put("frogspawn", SoundType.FROGSPAWN);
         map.put("muddy_mangrove_roots", SoundType.MUDDY_MANGROVE_ROOTS);
+        map.put("mangrove_roots ", SoundType.MANGROVE_ROOTS);
         map.put("mud", SoundType.MUD);
         map.put("mud_bricks", SoundType.MUD_BRICKS);
         map.put("packed_mud", SoundType.PACKED_MUD);
