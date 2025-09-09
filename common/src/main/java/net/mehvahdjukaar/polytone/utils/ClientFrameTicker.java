@@ -7,6 +7,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
+import org.jetbrains.annotations.Nullable;
 
 public class ClientFrameTicker {
 
@@ -21,9 +22,9 @@ public class ClientFrameTicker {
     private static float temperature;
     private static float downfall;
     private static float deltaTime;
-    private static double playerSpeed;
+    private static double playerSpeed = 0;
 
-    private static Screen lastScreen;
+    private static Screen lastScreen = null;
     private static float screenTime;
 
     public static void onRenderTick(Minecraft mc) {
@@ -40,9 +41,10 @@ public class ClientFrameTicker {
         cameraBiome = level.getBiome(cameraPos);
 
         deltaTime = Minecraft.getInstance().getDeltaTracker().getRealtimeDeltaTicks();
-        playerSpeed =  mc.player.getDeltaMovement().lengthSqr();
+        if (mc.player != null)
+            playerSpeed = mc.player.getDeltaMovement().lengthSqr();
 
-      if ( mc.screen != lastScreen) {
+        if (mc.screen != lastScreen) {
             lastScreen = mc.screen;
             screenTime = 0;
         }
@@ -92,6 +94,13 @@ public class ClientFrameTicker {
     }
 
     public static Holder<Biome> getCameraBiome() {
+        if(cameraBiome == null){
+            //mega dumb. idk why this can be called before tick
+            Minecraft mc = Minecraft.getInstance();
+            Level level = mc.level;
+            cameraPos = mc.gameRenderer.getMainCamera().getBlockPosition();
+            cameraBiome = level.getBiome(cameraPos);
+        }
         return cameraBiome;
     }
 
