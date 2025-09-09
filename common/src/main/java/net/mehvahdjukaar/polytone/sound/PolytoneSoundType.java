@@ -5,7 +5,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.utils.codec.ReferenceOrDirectCodec;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -15,10 +14,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class PolytoneSoundType extends SoundType {
 
+    //can't even get these with reflections because kid named fabric
     private static final Map<String, SoundType> SOUND_NAMES = Util.make(() -> {
         Map<String, SoundType> map = new HashMap<>();
         map.put("empty", SoundType.EMPTY);
@@ -106,6 +107,7 @@ public class PolytoneSoundType extends SoundType {
         map.put("froglight", SoundType.FROGLIGHT);
         map.put("frogspawn", SoundType.FROGSPAWN);
         map.put("muddy_mangrove_roots", SoundType.MUDDY_MANGROVE_ROOTS);
+        map.put("mangrove_roots", SoundType.MANGROVE_ROOTS);
         map.put("mud", SoundType.MUD);
         map.put("mud_bricks", SoundType.MUD_BRICKS);
         map.put("packed_mud", SoundType.PACKED_MUD);
@@ -126,9 +128,26 @@ public class PolytoneSoundType extends SoundType {
         map.put("trial_spawner", SoundType.DECORATED_POT_CRACKED);
         map.put("sponge", SoundType.SPONGE);
         map.put("wet_sponge", SoundType.WET_SPONGE);
-        map.put("valut", SoundType.VAULT);
+        map.put("vault", SoundType.VAULT);
         map.put("heavy_core", SoundType.HEAVY_CORE);
         map.put("cobweb", SoundType.COBWEB);
+        map.put("copper_bulb", SoundType.COPPER_BULB);
+        map.put("copper_grate", SoundType.COPPER_GRATE);
+        map.put("polished_tuff", SoundType.POLISHED_TUFF);
+        map.put("tuff_bricks", SoundType.TUFF_BRICKS);
+
+        if (Polytone.isForge) {
+            for (var v : SoundType.class.getDeclaredFields()) {
+                if (v.getType() == SoundType.class) {
+                    try {
+                        String name = v.getName().toLowerCase(Locale.ROOT);
+                        var st = (SoundType) v.get(null);
+                        map.put(name, st);
+                    } catch (IllegalAccessException ignored) {
+                    }
+                }
+            }
+        }
 
         return map;
     });
@@ -137,7 +156,7 @@ public class PolytoneSoundType extends SoundType {
     public static final Codec<SoundType> REFERENCE_OR_COPY_CODEC = Codec.STRING.flatXmap(s -> {
                 if (s.startsWith("copy(")) {
                     String target = s.replace("copy(", "").replace(")", "");
-                    ResourceLocation r = ResourceLocation.parse(target);
+                    ResourceLocation r = ResourceLocation.tryParse(target);
                     if (r == null) {
                         return DataResult.error(() -> "Invalid string for Sound Type Copy function: " + s + ". Expected 'copy([some_mod]:[some_block])'");
                     }
@@ -146,11 +165,11 @@ public class PolytoneSoundType extends SoundType {
                     Block b = block.get();
                     return DataResult.success(b.defaultBlockState().getSoundType());
                 }
-                var vanilla = SOUND_NAMES.get(s);
+                SoundType vanilla = SOUND_NAMES.get(s);
                 if (vanilla != null) return DataResult.success(vanilla);
-                ResourceLocation r = ResourceLocation.parse(s);
+                ResourceLocation r = ResourceLocation.tryParse(s);
                 if (r != null) {
-                    var custom = Polytone.SOUND_TYPES.getCustomSoundType(ResourceLocation.parse(s));
+                    SoundType custom = Polytone.SOUND_TYPES.getCustomSoundType(ResourceLocation.parse(s));
                     if (custom != null) return DataResult.success(custom);
                 }
                 return DataResult.error(() -> "Could not find any custom Sound Type with id " + r +
@@ -163,11 +182,11 @@ public class PolytoneSoundType extends SoundType {
             instance.group(
                     Codec.FLOAT.optionalFieldOf("volume", 1f).forGetter(SoundType::getVolume),
                     Codec.FLOAT.optionalFieldOf("pitch", 1f).forGetter(SoundType::getPitch),
-                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("break_sound").forGetter(s->s.breakSoundHolder),
-                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("step_sound").forGetter(s->s.stepSoundHolder),
-                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("place_sound").forGetter(s->s.placeSoundHolder),
-                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("hit_sound").forGetter(s->s.hitSoundHolder),
-                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("fall_sound").forGetter(s->s.fallSoundHolder)
+                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("break_sound").forGetter(s -> s.breakSoundHolder),
+                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("step_sound").forGetter(s -> s.stepSoundHolder),
+                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("place_sound").forGetter(s -> s.placeSoundHolder),
+                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("hit_sound").forGetter(s -> s.hitSoundHolder),
+                    CodecUtils.forwardAwareSoundEventHolder().fieldOf("fall_sound").forGetter(s -> s.fallSoundHolder)
             ).apply(instance, PolytoneSoundType::new));
 
     public static final Codec<SoundType> CODEC = CodecUtils.referenceOrDirect(REFERENCE_OR_COPY_CODEC, DIRECT_CODEC);
