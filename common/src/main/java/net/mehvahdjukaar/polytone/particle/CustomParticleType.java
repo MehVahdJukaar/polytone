@@ -352,11 +352,6 @@ public class CustomParticleType implements CustomParticleFactory {
                 this.remove();
             }
 
-            //TODO: check for any block collision. also check this on my mods
-            if (this.hasPhysics && this.stoppedByCollision && this.type.killWhenStill) {
-                this.remove();
-            }
-
             if (liquidAffinity != LiquidAffinity.ANY) {
                 BlockState state = level.getBlockState(BlockPos.containing(x, y, z));
                 if (liquidAffinity == LiquidAffinity.LIQUIDS ^ !state.getFluidState().isEmpty()) {
