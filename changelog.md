@@ -1,1 +1,1 @@
-added tinted_breaking_particles in block modifiers
+fixed hasty backport introdcuing a crash due to using some 1.21.1 code on forge

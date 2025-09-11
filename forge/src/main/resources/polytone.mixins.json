@@ -9,7 +9,6 @@
   "client": [
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
-    "BuildCreativeModeTabContentsEventAccessor",
     "CreativeModeInventoryScreenMixin",
     "CreativeTabAccessor",
     "CurioInventoryScreenMixin",
