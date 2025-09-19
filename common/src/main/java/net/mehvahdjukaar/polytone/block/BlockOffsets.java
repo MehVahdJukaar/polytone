@@ -45,9 +45,9 @@ public class BlockOffsets {
     private record CustomOffset(float maxX, float maxY, float maxZ) implements BlockBehaviour.OffsetFunction {
         public static final Codec<CustomOffset> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 
-                Codec.FLOAT.fieldOf("x").orElse(0.25f).forGetter(CustomOffset::maxX),
-                Codec.FLOAT.fieldOf("y").orElse(0.2f).forGetter(CustomOffset::maxY),
-                Codec.FLOAT.fieldOf("z").orElse(0.25f).forGetter(CustomOffset::maxZ)
+                Codec.FLOAT.fieldOf("max_x").orElse(0.25f).forGetter(CustomOffset::maxX),
+                Codec.FLOAT.fieldOf("max_y").orElse(0.2f).forGetter(CustomOffset::maxY),
+                Codec.FLOAT.fieldOf("max_z").orElse(0.25f).forGetter(CustomOffset::maxZ)
         ).apply(instance, CustomOffset::new));
 
         @Override
