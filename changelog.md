@@ -1,1 +1,1 @@
-added missing sound types
+better offset type
