@@ -221,8 +221,7 @@ public record BlockPropertyModifier(
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
                     BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(BlockPropertyModifier::particleEmitters),
                     BlockSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(BlockPropertyModifier::soundEmitters),
-                    OffsetTypeR.CODEC.xmap(OffsetTypeR::getFunction, offsetFunction -> OffsetTypeR.NONE)
-                            .optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
+                    BlockOffsets.CODEC.optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
                     BlockSetTypeProvider.CODEC.optionalFieldOf("block_set_type").forGetter(BlockPropertyModifier::blockSetType),
                     Codec.BOOL.optionalFieldOf("disable_particles", false).forGetter(BlockPropertyModifier::disableParticles),
                     Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BlockPropertyModifier::targets),
@@ -244,29 +243,7 @@ public record BlockPropertyModifier(
         return (IColorGetter) tintGetter.orElse(null);
     }
 
-    public enum OffsetTypeR implements StringRepresentable {
-        NONE(BlockBehaviour.OffsetType.NONE),
-        XZ(BlockBehaviour.OffsetType.XZ),
-        XYZ(BlockBehaviour.OffsetType.XYZ);
 
-        public static final Codec<OffsetTypeR> CODEC = StringRepresentable.fromEnum(BlockPropertyModifier.OffsetTypeR::values);
-
-        private final BlockBehaviour.OffsetType original;
-
-        OffsetTypeR(BlockBehaviour.OffsetType offsetType) {
-            this.original = offsetType;
-        }
-
-        @Override
-        public String getSerializedName() {
-            return this.name().toLowerCase(Locale.ROOT);
-        }
-
-        public BlockBehaviour.OffsetFunction getFunction() {
-            var p = BlockBehaviour.Properties.of().offsetType(original);
-            return p.offsetFunction != null ? p.offsetFunction : ((blockState, blockGetter, blockPos) -> Vec3.ZERO);
-        }
-    }
 
 
     private enum RenderType implements StringRepresentable {
