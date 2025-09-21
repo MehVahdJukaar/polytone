@@ -1,1 +1,3 @@
-better offset type
+- fixed an issue with additive translucne particles
+- added better offset types for blocks
+- fixed particles dying on contact when still
