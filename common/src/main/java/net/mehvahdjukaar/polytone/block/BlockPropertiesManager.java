@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.block;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
+import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
@@ -14,17 +15,20 @@ import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +40,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
     // Block ID to modifier
     private final Map<Block, BlockPropertyModifier> modifiers = new HashMap<>();
-    private final Map<Block, ClientTickModifier> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
+    private final Map<Pair<TickSource,Block>, ClientTickModifier> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
 
     private final Map<Block, Boolean> terrainParticleTintOverrides = new HashMap<>();
 
@@ -74,8 +78,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     public record Resources(Map<ResourceLocation, JsonElement> jsons,
                             Map<ResourceLocation, ArrayImage> textures,
                             Map<ResourceLocation, Properties> ofProperties) {
-    }
 
+    }
     @Override
     protected Resources prepare(ResourceManager resourceManager) {
         var jsons = this.getJsonsInDirectories(resourceManager);
@@ -250,8 +254,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
     //optifine stuff
-    private final Map<ResourceLocation, String> optifineColormapsToBlocks = new HashMap<>();
 
+    private final Map<ResourceLocation, String> optifineColormapsToBlocks = new HashMap<>();
     public void addSimpleColormap(ResourceLocation path, String str) {
         optifineColormapsToBlocks.put(path, str);
     }
@@ -268,9 +272,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
     private static class ClientTickModifier {
+
         final List<BlockClientTickable> tickables = new ArrayList<>();
         boolean cancelExisting;
-
         public void add(BlockClientTickable tickable) {
             tickables.add(tickable);
         }
@@ -281,6 +285,43 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
         public void addAll(List<? extends BlockClientTickable> emitters) {
             tickables.addAll(emitters);
+        }
+
+    }
+    public void maybeSpawnBreakParticles(BlockState state, ClientLevel level, BlockPos pos, Direction direction) {
+        var m = particleAndSoundEmitters.get(state.getBlock());
+
+        RandomSource random = level.random;
+        int i = pos.getX();
+        int j = pos.getY();
+        int k = pos.getZ();
+        float f = 0.1F;
+        AABB aABB = state.getShape(level, pos).bounds();
+        double d = (double)i + random.nextDouble() * (aABB.maxX - aABB.minX - 0.20000000298023224) + 0.10000000149011612 + aABB.minX;
+        double e = (double)j + random.nextDouble() * (aABB.maxY - aABB.minY - 0.20000000298023224) + 0.10000000149011612 + aABB.minY;
+        double g = (double)k + random.nextDouble() * (aABB.maxZ - aABB.minZ - 0.20000000298023224) + 0.10000000149011612 + aABB.minZ;
+        if (direction == Direction.DOWN) {
+            e = (double)j + aABB.minY - 0.10000000149011612;
+        }
+
+        if (direction == Direction.UP) {
+            e = (double)j + aABB.maxY + 0.10000000149011612;
+        }
+
+        if (direction == Direction.NORTH) {
+            g = (double)k + aABB.minZ - 0.10000000149011612;
+        }
+
+        if (direction == Direction.SOUTH) {
+            g = (double)k + aABB.maxZ + 0.10000000149011612;
+        }
+
+        if (direction == Direction.WEST) {
+            d = (double)i + aABB.minX - 0.10000000149011612;
+        }
+
+        if (direction == Direction.EAST) {
+            d = (double)i + aABB.maxX + 0.10000000149011612;
         }
     }
 }

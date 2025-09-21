@@ -6,11 +6,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.block.TickSource;
-import net.mehvahdjukaar.polytone.utils.codec.ForwardAwareRegistryFixedCodec;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -35,12 +33,12 @@ public record BlockSoundEmitter(
         BlockContextExpression pitch,
         boolean distanceDelay,
         RuleTest predicate,
-        TickSource spawnSource,
+        @Deprecated(forRemoval = true) TickSource spawnSource,
         Optional<HolderSet<Biome>> biomes) implements BlockClientTickable {
 
-  private static final Codec<SoundSource> SOUND_SOURCE_CODEC =
-          Codec.STRING.comapFlatMap(s -> DataResult.success(SoundSource.valueOf(s.toLowerCase(Locale.ROOT))),
-                  s -> s.getName().toLowerCase(Locale.ROOT));
+    private static final Codec<SoundSource> SOUND_SOURCE_CODEC =
+            Codec.STRING.comapFlatMap(s -> DataResult.success(SoundSource.valueOf(s.toLowerCase(Locale.ROOT))),
+                    s -> s.getName().toLowerCase(Locale.ROOT));
 
     public static final Codec<BlockSoundEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
             CodecUtils.forwardAwareSoundEvent().fieldOf("sound").forGetter(BlockSoundEmitter::sound),
@@ -76,7 +74,7 @@ public record BlockSoundEmitter(
             float v = (float) volume.getValue(level, pos, state);
             float p = (float) pitch.getValue(level, pos, state);
 
-            level.playLocalSound( vec.x, vec.y, vec.z,
+            level.playLocalSound(vec.x, vec.y, vec.z,
                     sound, category, v, p, false);
         }
     }

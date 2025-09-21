@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.TickSource;
@@ -12,6 +14,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -55,6 +58,14 @@ public abstract class ParticleEngineMixin {
     public void polytone$addExtraDestroyParticles(BlockPos pos, BlockState state, CallbackInfo ci) {
         if(!state.isAir()){
             Polytone.BLOCK_MODIFIERS.runTickers(state, this.level, pos, TickSource.BLOCK_BROKEN);
+        }
+    }
+
+    @WrapOperation(method = "crack", at = @At(value = "TAIL"))
+    public void polytone$modifyCrackParticles(ParticleEngine instance, Particle particle, Operation<Void> original,
+                                              @Local BlockState state, @Local(argsOnly = true) BlockPos pos) {
+        if(!state.isAir()){
+            Polytone.BLOCK_MODIFIERS.maybeSpawnBreakParticles(state, this.level, pos, TickSource.BLOCK_BROKEN);
         }
     }
 }
