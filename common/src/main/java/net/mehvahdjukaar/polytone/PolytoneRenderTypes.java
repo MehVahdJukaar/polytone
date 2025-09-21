@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.world.item.FishingRodItem;
 import org.lwjgl.opengl.GL13;
 
 import static com.mojang.blaze3d.vertex.DefaultVertexFormat.PARTICLE;
@@ -59,17 +60,19 @@ public class PolytoneRenderTypes extends RenderType {
     public static final ParticleRenderType ADDITIVE_TRANSLUCENT_PARTICLE = new ParticleRenderType() {
         @Override
         public void begin(BufferBuilder builder, TextureManager textureManager) {
-            Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
-            RenderSystem.activeTexture(GL13.GL_TEXTURE2);
-            RenderSystem.activeTexture(GL13.GL_TEXTURE0);
-            //because of custom render type fuckery...
-
             RenderSystem.setShader(() -> instance);
-            RenderSystem.depthMask(false);
+
+            RenderSystem.depthMask(true);
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
+
             RenderSystem.enableBlend();
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
-            builder.begin(VertexFormat.Mode.QUADS, PARTICLE);
+            builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
+
+           // Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
+            //RenderSystem.activeTexture(GL13.GL_TEXTURE2);
+            //RenderSystem.activeTexture(GL13.GL_TEXTURE0);
+            //because of custom render type fuckery...
         }
 
         @Override
