@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -31,12 +32,12 @@ public class BlockOffsets {
 
         private TypeOffset(BlockBehaviour.OffsetType type) {
             this(type, Optional.ofNullable(BlockBehaviour.Properties.of().offsetType(type)
-                    .offsetFunction).orElse((a, b) -> Vec3.ZERO));
+                    .offsetFunction).orElse((a, c, b) -> Vec3.ZERO));
         }
 
         @Override
-        public Vec3 evaluate(BlockState blockState, BlockPos blockPos) {
-            return inner.evaluate(blockState, blockPos);
+        public Vec3 evaluate(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos) {
+            return inner.evaluate(blockState,blockGetter, blockPos);
         }
     }
 
@@ -50,7 +51,7 @@ public class BlockOffsets {
         ).apply(instance, CustomOffset::new));
 
         @Override
-        public Vec3 evaluate(BlockState blockState, BlockPos blockPos) {
+        public Vec3 evaluate(BlockState blockState,BlockGetter blockGetter , BlockPos blockPos) {
             long seed = Mth.getSeed(blockPos.getX(), 0, blockPos.getZ());
             double verticalOff = ((double) ((float) (seed >> 4 & 15L) / 15.0F) - 1.0) * (double) maxY;
             double xOff = Mth.clamp(((double) ((float) (seed & 15L) / 15.0F) - 0.5) * 0.5,  (-maxX),  maxX);

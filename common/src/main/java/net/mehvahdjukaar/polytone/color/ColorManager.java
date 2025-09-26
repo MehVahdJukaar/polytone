@@ -14,7 +14,9 @@ import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
+import net.mehvahdjukaar.polytone.utils.SimpleColor;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
+import net.mehvahdjukaar.polytone.utils.Vec3f;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
@@ -74,6 +76,11 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private Integer xpBar = null;
     private Integer splash = null;
     private Integer enchantTableXp = null;
+
+    @Nullable
+    private Integer fishingLineColor = null;
+    @Nullable
+    private Vec3f fishingLineOffset = null;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -161,6 +168,20 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, String.valueOf(hex));
             } catch (Exception e) {
                 Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, v.getAsString());
+            }
+
+        });
+
+        doWith(obj, "fishing_line", (k, v) -> {
+            switch (k) {
+                case "color" -> {
+                    fishingLineColor = parseHex(v);
+                }
+                case "offset" -> {
+                    fishingLineOffset = Vec3f.CODEC.decode(JsonOps.INSTANCE, v)
+                            .getOrThrow()
+                            .getFirst();
+                }
             }
 
         });
@@ -359,6 +380,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         xpOrbColorR = null;
         xpOrbColorG = null;
         xpOrbColorB = null;
+        fishingLineOffset = null;
+        fishingLineColor = null;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();
@@ -447,4 +470,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
 
+    @Nullable
+    public Vec3f getFishingLineOffset() {
+        return fishingLineOffset;
+    }
+
+    @Nullable
+    public Integer getFishingLineColor() {
+        return fishingLineColor;
+    }
 }
