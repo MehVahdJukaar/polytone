@@ -1,3 +1,1 @@
-- fixed an issue with additive translucne particles
-- added better offset types for blocks
-- fixed particles dying on contact when still
+- you can chane color and offset of fishing line in colors.json
