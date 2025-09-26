@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
+import net.mehvahdjukaar.polytone.utils.SimpleColor;
 import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.RegistryAccess;
@@ -64,6 +65,10 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private Integer xpBar = null;
     private Integer splash = null;
     private Integer enchantTableXp = null;
+
+
+    private SimpleColor fishingLineColor = new SimpleColor(0, 0, 0, 255);
+    private Vec3 fishingLineOffset = null;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -150,6 +155,27 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     color.textColor = col;
                 }
             } else Polytone.LOGGER.warn("Unknown DyeColor with name {}", name);
+        } else if (is(prop, 0, "fishing_line")) {
+            if (is(prop, 1, "color")) {
+                fishingLineColor = new SimpleColor(parseHex(obj));
+            } else if (is(prop, 1, "offset")) {
+                //get x, y, z
+                int x = 0;
+                int y = 0;
+                int z = 0;
+                if (is(prop, 2, "x")) {
+                    x = Integer.parseInt(str);
+                } else if (is(prop, 2, "y")) {
+                    y = Integer.parseInt(str);
+                } else if (is(prop, 2, "z")) {
+                    z = Integer.parseInt(str);
+                }
+                fishingLineOffset = new Vec3(x, y, z);
+            }
+        } else if (is(prop, 0, "enchant_table")) {
+            if (is(prop, 1, "xp")) {
+                enchantTableXp = parseHex(obj);
+            }
         } else if (is(prop, 0, "particle")) {
             if (prop.length > 1) {
                 String s = prop[1];
@@ -319,6 +345,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         xpOrbColorR = null;
         xpOrbColorG = null;
         xpOrbColorB = null;
+        fishingLineOffset = null;
+        fishingLineColor = new SimpleColor(0, 0, 0, 255);
+        enchantTableXp = null;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();
@@ -384,8 +413,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         customSheepColors.clear();
     }
 
-    @Nullable
-    public float[] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
+    public float @Nullable [] getXpOrbColor(ExperienceOrb orb, float partialTicks) {
         float time = orb.tickCount + partialTicks;
         Level level = orb.level();
         Vec3 position = orb.position();
@@ -404,4 +432,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
 
+    public SimpleColor getFishingLineColor() {
+        return fishingLineColor;
+    }
+
+    @Nullable
+    public Vec3 getFishingLineOffset() {
+        return fishingLineOffset;
+    }
 }
