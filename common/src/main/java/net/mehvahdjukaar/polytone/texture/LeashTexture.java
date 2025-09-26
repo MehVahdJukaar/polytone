@@ -33,9 +33,9 @@ public class LeashTexture extends RenderType {
 
 
     @Nullable
-    public static VertexConsumer getVertexConsumer(MultiBufferSource multiBufferSource) {
+    public static RenderType getRenderType() {
         if (Polytone.iris && IrisCompat.isIrisShaderFuckerActive()) return null;
-        return multiBufferSource.getBuffer(RENDER_TYPE);
+        return RENDER_TYPE;
     }
 
     public static boolean addVertexPair(VertexConsumer vertexConsumer, Matrix4f matrix4f,
