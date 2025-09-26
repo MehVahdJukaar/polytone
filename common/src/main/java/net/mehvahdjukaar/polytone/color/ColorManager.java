@@ -68,7 +68,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
 
     private SimpleColor fishingLineColor = new SimpleColor(0, 0, 0, 255);
-    private Vec3 fishingLineOffset = null;
+    private Vector3f fishingLineOffset = new Vector3f(0,0,0);
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -160,17 +160,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 fishingLineColor = new SimpleColor(parseHex(obj));
             } else if (is(prop, 1, "offset")) {
                 //get x, y, z
-                int x = 0;
-                int y = 0;
-                int z = 0;
                 if (is(prop, 2, "x")) {
-                    x = Integer.parseInt(str);
+                    fishingLineOffset.x = Integer.parseInt(str);
                 } else if (is(prop, 2, "y")) {
-                    y = Integer.parseInt(str);
+                    fishingLineOffset.y = Integer.parseInt(str);
                 } else if (is(prop, 2, "z")) {
-                    z = Integer.parseInt(str);
+                    fishingLineOffset.z = Integer.parseInt(str);
                 }
-                fishingLineOffset = new Vec3(x, y, z);
             }
         } else if (is(prop, 0, "enchant_table")) {
             if (is(prop, 1, "xp")) {
@@ -323,12 +319,21 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     private static int parseHex(Object obj) {
         if (obj instanceof String value) {
-            value = value.replace("#", "").replace("0x", "");
-            return Integer.parseInt(value.trim(), 16);
+            value = value.replace("#", "").replace("0x", "").trim();
+
+            // If only RGB (6 digits), assume alpha = FF
+            if (value.length() == 6) {
+                value = "FF" + value;
+            } else if (value.length() != 8) {
+                throw new JsonParseException("Invalid color format: " + value);
+            }
+
+            return (int) Long.parseLong(value, 16);
         } else if (obj instanceof Integer i) {
             return i;
         }
-        throw new JsonParseException("Failed to parse object " + obj + ". Expected a String");
+
+        throw new JsonParseException("Failed to parse object " + obj + ". Expected a hex String or Integer");
     }
 
     @Override
@@ -345,7 +350,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         xpOrbColorR = null;
         xpOrbColorG = null;
         xpOrbColorB = null;
-        fishingLineOffset = null;
+        fishingLineOffset = new Vector3f();
         fishingLineColor = new SimpleColor(0, 0, 0, 255);
         enchantTableXp = null;
         // map colors
@@ -436,8 +441,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         return fishingLineColor;
     }
 
-    @Nullable
-    public Vec3 getFishingLineOffset() {
+    public Vector3f getFishingLineOffset() {
         return fishingLineOffset;
     }
 }
