@@ -12,6 +12,7 @@
     "ClientLevelMixin",
     "ColorResolverMixin",
     "DimensionSpecialEffectsMixin",
+    "FishingHookRendererMixin",
     "FogRendererMixin",
     "GameRendererMixin",
     "GuiGraphicsMixin",
