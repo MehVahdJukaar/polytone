@@ -1,1 +1,1 @@
-better offset type
+added fishing line colors and better block offsets
