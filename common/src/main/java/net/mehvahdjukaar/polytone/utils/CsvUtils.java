@@ -20,7 +20,7 @@ public class CsvUtils {
     public static Map<ResourceLocation, List<String>> parseCsv(ResourceManager resourceManager, String path) {
         Map<ResourceLocation, List<String>> idList = new HashMap<>();
         Map<ResourceLocation, List<Resource>> res = resourceManager.listResourceStacks(Polytone.MOD_ID, resourceLocation ->
-                resourceLocation.getPath().endsWith(path + ".csv"));
+                resourceLocation.getPath().endsWith( path + ".csv"));
         for (var e : res.entrySet()) {
             for (var r : e.getValue()) {
                 try (Reader reader = r.openAsReader()) {

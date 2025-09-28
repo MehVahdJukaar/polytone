@@ -57,7 +57,8 @@ public record Targets(List<Entry> entries) {
             if (implicitTarget.isPresent()) {
                 set.add(implicitTarget.get());
             } else {
-                Polytone.LOGGER.error("Found Polytone file {} with no valid implicit targets and no explicit targets from registry {}", fileId, registry);
+                Polytone.LOGGER.error("Found Polytone file {} with no valid implicit targets and no explicit targets from registry {}",
+                        fileId, registry);
             }
         }
         return set;
