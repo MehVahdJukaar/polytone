@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -79,7 +80,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
         if (!customTabs.isEmpty()) {
             Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add items to them!");
-            PlatStuff.sortTabs();
+            Minecraft.getInstance().schedule(PlatStuff::sortTabs);
         }
 
         for (var e : Parsed.batchParseOnlyEnabled(resources.tabsModifiers, CreativeTabModifier.CODEC,
