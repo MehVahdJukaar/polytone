@@ -117,6 +117,7 @@ public class Lightmap {
     }
 
     //TODO:this needs to go into a shader
+    //way too much to edit to use mixins, plus we lerp so overriding entirely is probably best way anyways
     public void applyToLightTexture(LightTexture instance,
                                     GpuTexture lightmap,
                                     Minecraft minecraft, ClientLevel level,

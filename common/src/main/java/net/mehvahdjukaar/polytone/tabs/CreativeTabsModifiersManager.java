@@ -49,7 +49,9 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     protected void resetWithLevel(boolean logOff) {
         for (var id : customTabs.keySet()) {
             PlatStuff.unregisterDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id);
-            if (logOff) PlatStuff.sortTabs();
+            if (logOff){
+                Minecraft.getInstance().tell(PlatStuff::sortTabs);
+            }
         }
         customTabs.clear();
         for (var e : vanillaTabs.entrySet()) {
@@ -81,7 +83,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
         if (!customTabs.isEmpty()) {
             Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add items to them!");
-            Minecraft.getInstance().schedule(PlatStuff::sortTabs);
+            Minecraft.getInstance().tell(PlatStuff::sortTabs);
         }
 
         for (var e : Parsed.batchParseOnlyEnabled(resources.tabsModifiers, CreativeTabModifier.CODEC,
