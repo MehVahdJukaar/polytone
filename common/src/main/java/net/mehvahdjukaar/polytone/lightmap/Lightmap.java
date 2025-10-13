@@ -101,6 +101,7 @@ public class Lightmap {
     }
 
 
+    //way too much to edit to use mixins, plus we lerp so overriding entirely is probably best way anyways
     public void applyToLightTexture(LightTexture instance,
                                     NativeImage lightPixels,
                                     DynamicTexture lightTexture,
