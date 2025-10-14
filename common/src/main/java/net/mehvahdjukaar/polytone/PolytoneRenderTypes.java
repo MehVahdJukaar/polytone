@@ -2,18 +2,26 @@ package net.mehvahdjukaar.polytone;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import org.jetbrains.annotations.NotNull;
+import org.lwjgl.opengl.GL13;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.SequencedMap;
+import java.util.function.Supplier;
+
+import static com.mojang.blaze3d.vertex.DefaultVertexFormat.PARTICLE;
 
 public class PolytoneRenderTypes extends RenderType {
-
     static ShaderInstance particleNoAlphaCutoffShader;
 
     public PolytoneRenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
@@ -76,5 +84,55 @@ public class PolytoneRenderTypes extends RenderType {
         }
     };
 
+
+
+    public static void onRenderLast() {
+        DEFERRED_BUFFER_SOURCE.endBatches();
+    }
+
+    public static final DeferredBufferSource DEFERRED_BUFFER_SOURCE = new DeferredBufferSource();
+
+    public static class DeferredBufferSource extends MultiBufferSource.BufferSource {
+        protected final Supplier<ByteBufferBuilder> bufferSupplier;
+
+        private final Collection<RenderType> delayed = new HashSet<>();
+
+        protected DeferredBufferSource() {
+            this(() -> new ByteBufferBuilder(786432), new LinkedHashMap<>());
+        }
+
+        protected DeferredBufferSource(Supplier<ByteBufferBuilder> bufferSupplier, SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers) {
+            super(bufferSupplier.get(), fixedBuffers);
+            this.bufferSupplier = bufferSupplier;
+        }
+
+        public void endBatches() {
+            if (delayed.contains(ADDITIVE_TRANSLUCENT_BLOCK)) {
+                endBatch(ADDITIVE_TRANSLUCENT_BLOCK);
+                delayed.remove(ADDITIVE_TRANSLUCENT_BLOCK);
+            }
+            if (delayed.contains(ADDITIVE_TRANSLUCENT_PARTICLE)) {
+                endBatch(ADDITIVE_TRANSLUCENT_PARTICLE);
+                delayed.remove(ADDITIVE_TRANSLUCENT_PARTICLE);
+            }
+            for (RenderType type : delayed) {
+                endBatch(type);
+            }
+        }
+
+        @Override
+        public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
+            if (!fixedBuffers.containsKey(renderType)) {
+                fixedBuffers.put(renderType, bufferSupplier.get());
+                delayed.add(renderType);
+            }
+            return super.getBuffer(renderType);
+        }
+
+        @Override
+        public void endBatch(@NotNull RenderType renderType) {
+            super.endBatch(renderType);
+        }
+    }
 
 };

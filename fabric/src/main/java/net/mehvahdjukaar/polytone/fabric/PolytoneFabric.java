@@ -50,6 +50,10 @@ public class PolytoneFabric implements ClientModInitializer {
             }
         });
 
+        WorldRenderEvents.LAST.register(context -> {
+            PolytoneRenderTypes.onRenderLast();
+        });
+
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {
                 ScreenModifier guiModifier = Polytone.SLOTIFY.getGuiModifier(screen);
