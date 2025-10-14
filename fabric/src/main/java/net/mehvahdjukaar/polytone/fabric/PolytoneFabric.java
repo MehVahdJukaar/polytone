@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
@@ -45,6 +46,10 @@ public class PolytoneFabric implements ClientModInitializer {
 
         });
 
+        WorldRenderEvents.LAST.register(context -> {
+            PolytoneRenderTypes.onRenderLast();
+        });
+
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {
                 ScreenModifier guiModifier = Polytone.SLOTIFY.getGuiModifier(screen);
@@ -77,7 +82,6 @@ public class PolytoneFabric implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             addRenderParticlesType();
         });
-
     }
 
     public static void addRenderParticlesType() {

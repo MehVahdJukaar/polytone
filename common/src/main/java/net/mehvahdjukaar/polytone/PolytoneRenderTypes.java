@@ -8,14 +8,23 @@ import com.mojang.blaze3d.platform.SourceFactor;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TriState;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.SequencedMap;
 import java.util.function.Supplier;
 
 import static net.minecraft.client.renderer.RenderStateShard.LIGHTMAP;
@@ -62,7 +71,7 @@ public class PolytoneRenderTypes {
                             )
                     )
                     .setLightmapState(LIGHTMAP)
-                   // .setOutputState(RenderStateShard.PARTICLES_TARGET) //??
+                    // .setOutputState(RenderStateShard.PARTICLES_TARGET) //??
                     .createCompositeState(RenderType.OutlineProperty.NONE)
     );
 
@@ -91,7 +100,7 @@ public class PolytoneRenderTypes {
             RenderType.CompositeState.builder()
                     .setLightmapState(RenderStateShard.LIGHTMAP)
                     .setTextureState(RenderStateShard.BLOCK_SHEET_MIPPED)
-                  //  .setOutputState(RenderStateShard.PARTICLES_TARGET)
+                    //  .setOutputState(RenderStateShard.PARTICLES_TARGET)
                     .createCompositeState(RenderType.OutlineProperty.NONE));
 
 
@@ -131,11 +140,11 @@ public class PolytoneRenderTypes {
 
 
     public static boolean addLeashVertexPair(VertexConsumer vertexConsumer, Matrix4f matrix4f,
-                                        float startX, float startY, float startZ,
-                                        int blockLight0, int blockLight1, int skyLight0, int skylight1,
-                                        float y0, float y1,
-                                        float dx, float dz,
-                                        int index, boolean flippedColors) {
+                                             float startX, float startY, float startZ,
+                                             int blockLight0, int blockLight1, int skyLight0, int skylight1,
+                                             float y0, float y1,
+                                             float dx, float dz,
+                                             int index, boolean flippedColors) {
         if (!isLeashRenderOn()) return false;
         // Calculate segment and interpolate lighting
         float segment = (float) index / 24.0F;
@@ -167,5 +176,55 @@ public class PolytoneRenderTypes {
 
         return true;
     }
+
+    public static void onRenderLast() {
+        DEFERRED_BUFFER_SOURCE.endBatches();
+    }
+
+    public static final DeferredBufferSource DEFERRED_BUFFER_SOURCE = new DeferredBufferSource();
+
+    public static class DeferredBufferSource extends MultiBufferSource.BufferSource {
+        protected final Supplier<ByteBufferBuilder> bufferSupplier;
+
+        private final Collection<RenderType> delayed = new HashSet<>();
+
+        protected DeferredBufferSource() {
+            this(() -> new ByteBufferBuilder(786432), new LinkedHashMap<>());
+        }
+
+        protected DeferredBufferSource(Supplier<ByteBufferBuilder> bufferSupplier, SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers) {
+            super(bufferSupplier.get(), fixedBuffers);
+            this.bufferSupplier = bufferSupplier;
+        }
+
+        public void endBatches() {
+            if (delayed.contains(ADDITIVE_TRANSLUCENT_BLOCK)) {
+                endBatch(ADDITIVE_TRANSLUCENT_BLOCK);
+                delayed.remove(ADDITIVE_TRANSLUCENT_BLOCK);
+            }
+            if (delayed.contains(ADDITIVE_TRANSLUCENT_PARTICLE)) {
+                endBatch(ADDITIVE_TRANSLUCENT_PARTICLE);
+                delayed.remove(ADDITIVE_TRANSLUCENT_PARTICLE);
+            }
+            for (RenderType type : delayed) {
+                endBatch(type);
+            }
+        }
+
+        @Override
+        public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
+            if (!fixedBuffers.containsKey(renderType)) {
+                fixedBuffers.put(renderType, bufferSupplier.get());
+                delayed.add(renderType);
+            }
+            return super.getBuffer(renderType);
+        }
+
+        @Override
+        public void endBatch(@NotNull RenderType renderType) {
+            super.endBatch(renderType);
+        }
+    }
+
 };
 
