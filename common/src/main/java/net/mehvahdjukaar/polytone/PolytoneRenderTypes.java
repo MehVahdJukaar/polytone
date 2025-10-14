@@ -81,8 +81,8 @@ public class PolytoneRenderTypes extends RenderType {
                     .setTextureState(PARTICLE_SHEET)
                     .setShaderState(PARTICLE_SHADER_STATE)
                     .setTransparencyState(ADDITIVE_TRANSLUCENT_TRANSPARENCY)
-                    .setOutputState(TRANSLUCENT_TARGET)
-                    .createCompositeState(true)
+                    // .setOutputState(TRANSLUCENT_TARGET)
+                    .createCompositeState(false)
     );
 
     public static final RenderType ADDITIVE_TRANSLUCENT_BLOCK = RenderType.create(
@@ -122,14 +122,8 @@ public class PolytoneRenderTypes extends RenderType {
         }
 
         public void endBatches() {
-            if (delayed.contains(ADDITIVE_TRANSLUCENT_BLOCK)) {
-                endBatch(ADDITIVE_TRANSLUCENT_BLOCK);
-                delayed.remove(ADDITIVE_TRANSLUCENT_BLOCK);
-            }
-            if (delayed.contains(ADDITIVE_TRANSLUCENT_PARTICLE)) {
-                endBatch(ADDITIVE_TRANSLUCENT_PARTICLE);
-                delayed.remove(ADDITIVE_TRANSLUCENT_PARTICLE);
-            }
+            endBatch(ADDITIVE_TRANSLUCENT_BLOCK);
+            endBatch(ADDITIVE_TRANSLUCENT_PARTICLE);
             for (RenderType type : delayed) {
                 endBatch(type);
             }
@@ -139,7 +133,8 @@ public class PolytoneRenderTypes extends RenderType {
         public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
             if (!fixedBuffers.containsKey(renderType)) {
                 fixedBuffers.put(renderType, bufferSupplier.get());
-                delayed.add(renderType);
+                if (renderType != ADDITIVE_TRANSLUCENT_BLOCK && renderType != ADDITIVE_TRANSLUCENT_PARTICLE)
+                    delayed.add(renderType);
             }
             return super.getBuffer(renderType);
         }
