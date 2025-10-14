@@ -1,1 +1,3 @@
-added fishing line colors and better block offsets
+- delayed tab sorting to prevent some concurrency issues
+- additive translucent render type is now rendering after clouds and sky. this should solve most issues with additive translucency
+- particle block models are also rendered at this stage
