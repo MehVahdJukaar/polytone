@@ -31,6 +31,7 @@ public class PolytoneRenderTypes extends RenderType {
     }
 
 
+    //unused now
     public static final ParticleRenderType PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE = new ParticleRenderType() {
 
         @Override
@@ -62,9 +63,13 @@ public class PolytoneRenderTypes extends RenderType {
     protected static final TransparencyStateShard ADDITIVE_TRANSLUCENT_TRANSPARENCY = new TransparencyStateShard("polytone:additive_translucent_transparency", () -> {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+        RenderSystem.depthMask(false); //needed for additive to avoid z fight
+
     }, () -> {
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();
+        RenderSystem.depthMask(true);
+
     });
 
     private static final TextureStateShard PARTICLE_SHEET = new TextureStateShard(TextureAtlas.LOCATION_PARTICLES, false, false);
@@ -80,6 +85,7 @@ public class PolytoneRenderTypes extends RenderType {
                     .setLightmapState(LIGHTMAP)
                     .setTextureState(PARTICLE_SHEET)
                     .setShaderState(PARTICLE_SHADER_STATE)
+                    .setWriteMaskState(WriteMaskStateShard.COLOR_WRITE)
                     .setTransparencyState(ADDITIVE_TRANSLUCENT_TRANSPARENCY)
                     // .setOutputState(TRANSLUCENT_TARGET)
                     .createCompositeState(false)
