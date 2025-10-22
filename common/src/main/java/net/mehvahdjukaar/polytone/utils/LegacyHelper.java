@@ -464,16 +464,17 @@ public class LegacyHelper {
             // ignore targets as those are block targets anyways
             var parsed = f.getValue();
 
-                var mod = parsed.getResultOrPartial();
-                ResourceLocation id = f.getKey();
-                Targets targets = mod.targets();
-                targets.addSimple(id);
-                targets.addSimple(id.withPrefix("flowing_"));
-                var fogMod = Optional.ofNullable(fog.get(id.withSuffix("_fog")))
-                        .map(Parsed::getResultOrPartial);
-                FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
-                        fogMod.map(BlockPropertyModifier::getColormap),
-                        targets);var parsedModifier = Parsed.lowPriority(modifier, id, parsed.isEnabled());
+            var mod = parsed.getResultOrPartial();
+            ResourceLocation id = f.getKey();
+            Targets targets = mod.targets();
+            targets.addSimple(id);
+            targets.addSimple(id.withPrefix("flowing_"));
+            var fogMod = Optional.ofNullable(fog.get(id.withSuffix("_fog")))
+                    .map(Parsed::getResultOrPartial);
+            FluidPropertyModifier modifier = new FluidPropertyModifier(mod.tintGetter(),
+                    fogMod.map(BlockPropertyModifier::getColormap),
+                    targets);
+            var parsedModifier = Parsed.lowPriority(modifier, id, parsed.isEnabled());
             converted.put(id, parsedModifier);
         }
 
@@ -484,8 +485,8 @@ public class LegacyHelper {
                                                            Map<ResourceLocation, ArrayImage> textures) {
         Map<ResourceLocation, Parsed<BlockPropertyModifier>> filtered = new HashMap<>();
         Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
-        Pattern fogP = Pattern.compile("minecraft:fog[0-2]");
-        Pattern skyP = Pattern.compile("minecraft:sky[0-2]");
+        Pattern fogP = Pattern.compile("minecraft:(?:fog|fogcolor)[0-2]\\b");
+        Pattern skyP = Pattern.compile("minecraft:(?:sky|skycolor)[0-2]\\b");
         for (var entry : parsedModifiers.entries()) {
             ResourceLocation id = entry.getKey();
             String stringId = id.toString();
@@ -520,7 +521,12 @@ public class LegacyHelper {
             boolean fogEnabled;
             {
                 ResourceLocation skyKey = ResourceLocation.parse("sky" + i);
+                ResourceLocation skyKey2 = ResourceLocation.parse("skycolor" + i);
                 var skyMod = modifiers.get(skyKey);
+                if (skyMod == null){
+                    skyMod = modifiers.get(skyKey2);
+                    skyKey = skyKey2;
+                }
                 ArrayImage skyImage = textures.get(skyKey);
 
                 skyCol = skyMod != null ? skyMod.getResultOrPartial().getColormap() : (skyImage == null ? null : Colormap.createDefTriangle());
@@ -531,7 +537,12 @@ public class LegacyHelper {
             }
             {
                 ResourceLocation fogKey = ResourceLocation.parse("fog" + i);
+                ResourceLocation fogKey2 = ResourceLocation.parse("fogcolor" + i);
                 var fogMod = modifiers.get(fogKey);
+                if (fogMod == null){
+                    fogMod = modifiers.get(fogKey2);
+                    fogKey = fogKey2;
+                }
                 ArrayImage fogImage = textures.get(fogKey);
 
                 fogCol = fogMod != null ? fogMod.getResultOrPartial().getColormap() : (fogImage == null ? null : Colormap.createDefTriangle());
