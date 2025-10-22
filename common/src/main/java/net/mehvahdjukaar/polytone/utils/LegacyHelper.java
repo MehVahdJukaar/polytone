@@ -471,8 +471,8 @@ public class LegacyHelper {
                                                            Map<ResourceLocation, ArrayImage> textures) {
         Map<ResourceLocation, Parsed<BlockPropertyModifier>> filtered = new HashMap<>();
         Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
-        Pattern fogP = Pattern.compile("minecraft:fog[0-2]");
-        Pattern skyP = Pattern.compile("minecraft:sky[0-2]");
+        Pattern fogP = Pattern.compile("minecraft:(?:fog|fogcolor)[0-2]\\b");
+        Pattern skyP = Pattern.compile("minecraft:(?:sky|skycolor)[0-2]\\b");
         for (var entry : parsedModifiers.entries()) {
             ResourceLocation id = entry.getKey();
             String stringId = id.toString();
@@ -507,7 +507,12 @@ public class LegacyHelper {
             boolean fogEnabled;
             {
                 ResourceLocation skyKey = ResourceLocation.tryParse("sky" + i);
+                ResourceLocation skyKey2 = ResourceLocation.parse("skycolor" + i);
                 var skyMod = modifiers.get(skyKey);
+                if (skyMod == null){
+                    skyMod = modifiers.get(skyKey2);
+                    skyKey = skyKey2;
+                }
                 ArrayImage skyImage = textures.get(skyKey);
 
                 skyCol = skyMod != null ? skyMod.getResultOrPartial().getColormap() : (skyImage == null ? null : Colormap.createDefTriangle());
@@ -518,7 +523,12 @@ public class LegacyHelper {
             }
             {
                 ResourceLocation fogKey = new ResourceLocation("fog" + i);
+                ResourceLocation fogKey2 = ResourceLocation.parse("fogcolor" + i);
                 var fogMod = modifiers.get(fogKey);
+                if (fogMod == null){
+                    fogMod = modifiers.get(fogKey2);
+                    fogKey = fogKey2;
+                }
                 ArrayImage fogImage = textures.get(fogKey);
 
                 fogCol = fogMod != null ? fogMod.getResultOrPartial().getColormap() : (fogImage == null ? null : Colormap.createDefTriangle());
