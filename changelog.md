@@ -1,1 +1,2 @@
-added custom rotation mode for particles
+- minor bug fix. 
+- this version isnt really supported anymore so avoid using it. use 1.21.5 or 1.21.1 or 1.20.1

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.utils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.Level;
@@ -40,7 +41,9 @@ public class ClientFrameTicker {
         cameraBiome = level.getBiome(cameraPos);
 
         deltaTime = Minecraft.getInstance().getDeltaTracker().getRealtimeDeltaTicks();
-        playerSpeed =  mc.player.getDeltaMovement().lengthSqr();
+        var player = mc.player;
+        if(player != null)
+            playerSpeed =  player.getDeltaMovement().lengthSqr();
 
       if ( mc.screen != lastScreen) {
             lastScreen = mc.screen;
