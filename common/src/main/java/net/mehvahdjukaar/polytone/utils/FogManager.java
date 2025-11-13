@@ -74,7 +74,7 @@ public class FogManager {
             radiusMult = 1f;
             fadeMul = 1f;
         }
-        if(radiusMult != null) {
+        if (radiusMult != null) {
             float deltaTime = ClientFrameTicker.getDeltaTime(); // Get time since last frame
             float interpolationFactor = deltaTime * 0.1f;
 

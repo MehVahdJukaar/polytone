@@ -24,8 +24,8 @@ public abstract class FogRendererMixin2 {
             FogManager.FogState newFog = FogManager.modifyBiomeFog(
                     RenderSystem.getShaderFogStart(), RenderSystem.getShaderFogEnd());
             if (newFog != null) {
-              //  FogParameters old = cir.getReturnValue();
-              //  cir.setReturnValue(new FogParameters(newFog.start(), newFog.end(), old.shape(), old.red(), old.green(), old.blue(), old.alpha()));
+                RenderSystem.setShaderFogStart(newFog.start());
+                RenderSystem.setShaderFogEnd(newFog.end());
             }
 
         }

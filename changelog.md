@@ -1,1 +1,1 @@
-- you can chane color and offset of fishing line in colors.json
+fixed biome fog modification not working on fabric
