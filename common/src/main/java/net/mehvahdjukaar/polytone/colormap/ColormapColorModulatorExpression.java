@@ -54,8 +54,8 @@ public class ColormapColorModulatorExpression {
         float blue = values[2];
 
         float newRed = this.red.map(exp -> exp.getValue(red, green, blue, state, pos, biome, mapper, stack)).orElse(red);
-        float newGreen = this.red.map(exp -> exp.getValue(red, green, blue, state, pos, biome, mapper, stack)).orElse(green);
-        float newBlue = this.red.map(exp -> exp.getValue(red, green, blue, state, pos, biome, mapper, stack)).orElse(blue);
+        float newGreen = this.green.map(exp -> exp.getValue(red, green, blue, state, pos, biome, mapper, stack)).orElse(green);
+        float newBlue = this.blue.map(exp -> exp.getValue(red, green, blue, state, pos, biome, mapper, stack)).orElse(blue);
         return ColorUtils.pack(newRed, newGreen, newBlue);
     }
 
