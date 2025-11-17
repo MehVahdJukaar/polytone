@@ -1,1 +1,1 @@
-fixed biome fog modification not working on fabric
+fixed color modulator in coolrmap just using red
