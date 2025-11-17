@@ -33,6 +33,7 @@ public class PolytoneFabric implements ClientModInitializer {
 
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> {
             if (client) {
+                //TODO: fix reload command here
                 Polytone.onTagsReceived(registries);
             }
         });
