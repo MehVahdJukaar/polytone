@@ -25,8 +25,8 @@ public class ColormapColorModulatorExpression {
     public static Codec<ColormapColorModulatorExpression> CODEC = RecordCodecBuilder.create(i ->
             i.group(
                     Exp.CODEC.optionalFieldOf("red").forGetter(c -> c.red),
-                    Exp.CODEC.optionalFieldOf("green").forGetter(c -> c.red),
-                    Exp.CODEC.optionalFieldOf("blue").forGetter(c -> c.red)
+                    Exp.CODEC.optionalFieldOf("green").forGetter(c -> c.green),
+                    Exp.CODEC.optionalFieldOf("blue").forGetter(c -> c.blue)
             ).apply(i, ColormapColorModulatorExpression::new));
 
     private final Optional<Exp> red;
