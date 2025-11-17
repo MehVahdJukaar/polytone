@@ -65,7 +65,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
     public static final Codec<IColorGetter> DIRECT_REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_CODEC,
-            CodecUtils.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
+                    CodecUtils.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
             Function.identity());
 
     public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_CODEC,
