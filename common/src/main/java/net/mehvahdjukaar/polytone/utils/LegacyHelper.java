@@ -507,7 +507,7 @@ public class LegacyHelper {
             boolean fogEnabled;
             {
                 ResourceLocation skyKey = ResourceLocation.tryParse("sky" + i);
-                ResourceLocation skyKey2 = ResourceLocation.parse("skycolor" + i);
+                ResourceLocation skyKey2 = ResourceLocation.tryParse("skycolor" + i);
                 var skyMod = modifiers.get(skyKey);
                 if (skyMod == null){
                     skyMod = modifiers.get(skyKey2);
@@ -523,7 +523,7 @@ public class LegacyHelper {
             }
             {
                 ResourceLocation fogKey = new ResourceLocation("fog" + i);
-                ResourceLocation fogKey2 = ResourceLocation.parse("fogcolor" + i);
+                ResourceLocation fogKey2 = new ResourceLocation("fogcolor" + i);
                 var fogMod = modifiers.get(fogKey);
                 if (fogMod == null){
                     fogMod = modifiers.get(fogKey2);
