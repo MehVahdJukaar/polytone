@@ -130,8 +130,8 @@ public class Polytone {
         try {
             if (isDevEnv) {
                 scanAllRegistries(registryAccess);
-            }
-            COMPOUND_RELOADER.applyWithLevel(registryAccess, true);
+            }//always clear as fabric fires tag loaded even on reload command
+            COMPOUND_RELOADER.applyWithLevel(registryAccess, false);
             BiomeKeysCache.clear();
 
         } catch (RuntimeException e) {
