@@ -1,1 +1,1 @@
-fixed color modulator in coolrmap just using red
+fixed dynamic registration not clearing one field from the registries causing rare issues
