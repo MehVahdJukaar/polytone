@@ -61,34 +61,38 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
     @Override
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        Set<ResourceLocation> newTabsToRegister = new HashSet<>();
-
+        for (var e : resources.extraTabs.entrySet()) {
+            for (var str : e.getValue()) {
+                ResourceLocation id = e.getKey().withPath(str);
+                registerNewTab(id);
+            }
+        }
         for (var e : Parsed.batchParseOnlyEnabled(resources.tabsModifiers, CreativeTabModifier.CODEC,
                 ops, "creative tab modifier")) {
             ResourceLocation id = e.getKey();
             CreativeTabModifier mod = e.getValue();
             if (mod.registerTab()) {
-                newTabsToRegister.add(id);
+                registerNewTab(id);
             }
             addModifier(e.getKey(), e.getValue());
         }
-        for (var e : resources.extraTabs.entrySet()) {
-            for (var str : e.getValue()) {
-                ResourceLocation id = e.getKey().withPath(str);
-                newTabsToRegister.add(id);
-            }
+        if (!customTabs.isEmpty()) {
+            Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add items to them!");
+            Minecraft.getInstance().tell(PlatStuff::sortTabs);
         }
 
-        for (var id : newTabsToRegister) {
-            ResourceKey<CreativeModeTab> key = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id);
-            if (!customTabs.containsKey(id) && !BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(key)) {
-                CreativeModeTab tab = PlatStuff.createCreativeTab(id);
-                customTabs.register(id, tab);
-                PlatStuff.registerDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id, tab);
-            } else {
-                Polytone.LOGGER.error("Creative Tab with id {} already exists! Ignoring.", id);
-            }
+    }
+
+    private void registerNewTab(ResourceLocation id) {
+        ResourceKey<CreativeModeTab> key = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id);
+        if (!customTabs.containsKey(id) && !BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(key)) {
+            CreativeModeTab tab = PlatStuff.createCreativeTab(id);
+            customTabs.register(id, tab);
+            PlatStuff.registerDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id, tab);
+        } else {
+            Polytone.LOGGER.error("Creative Tab with id {} already exists! Ignoring.", id);
         }
+    }
 
         if (!customTabs.isEmpty()) {
             Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add items to them!");
