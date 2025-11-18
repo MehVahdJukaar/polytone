@@ -6,10 +6,12 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -40,7 +42,8 @@ public class CustomItemModelsManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void earlyProcess(ResourceManager resourceManager) {
+    protected void earlyProcess(PreparableReloadListener.SharedState sharedState) {
+        var resourceManager = sharedState.resourceManager();
         var jsons = getJsonsInDirectories(resourceManager);
         /* //TODO: add back someday
         for (var e : Parsed.batchParseOnlyEnabled(jsons, StandaloneItemModelOverride.CODEC_MODEL_ONLY,

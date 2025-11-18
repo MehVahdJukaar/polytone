@@ -5,18 +5,15 @@ import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.SourceFactor;
-import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.util.TriState;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 import java.util.function.Supplier;
@@ -70,8 +67,7 @@ public class PolytoneRenderTypes {
 
 
     public static final Supplier<ParticleRenderType> PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE = Suppliers.memoize(() ->
-            new ParticleRenderType("PARTICLE_SHEET_ADDITIVE_TRANSLUCENT",
-                    ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE));
+            new ParticleRenderType("PARTICLE_SHEET_ADDITIVE_TRANSLUCENT"));
 
 
     //block. Used to render 3d model for particles
@@ -127,17 +123,12 @@ public class PolytoneRenderTypes {
     }
 
 
-    public static boolean addLeashVertexPair(VertexConsumer vertexConsumer, Matrix4f matrix4f,
-                                        float startX, float startY, float startZ,
-                                        int blockLight0, int blockLight1, int skyLight0, int skylight1,
-                                        float y0, float y1,
-                                        float dx, float dz,
-                                        int index, boolean flippedColors) {
+    public static boolean addLeashVertexPair(VertexConsumer vertexConsumer, Matrix4f matrix4f, float startX, float startY, float startZ, float yOffset, float dx, float dz, int index, boolean bl, EntityRenderState.LeashState leashState) {
 
         // Calculate segment and interpolate lighting
         float segment = (float) index / 24.0F;
-        int blockLight = (int) Mth.lerp(segment, (float) blockLight0, (float) blockLight1);
-        int skyLight = (int) Mth.lerp(segment, (float) skyLight0, (float) skylight1);
+        int blockLight = (int) Mth.lerp(segment, (float) leashState.startBlockLight, (float) leashState.endBlockLight);
+        int skyLight = (int) Mth.lerp(segment, (float) leashState.startSkyLight, (float) leashState.endSkyLight);
         int light = LightTexture.pack(blockLight, skyLight);
 
         // Calculate vertex positions
@@ -151,18 +142,19 @@ public class PolytoneRenderTypes {
         float u2 = 1.0f;     // V-coordinate for the second vertex
 
         // Apply vertex attributes
-        vertexConsumer.addVertex(matrix4f, z - dx, aa + y1, ab + dz)
+        vertexConsumer.addVertex(matrix4f, z - dx, aa, ab + dz)
                 .setColor(1, 1, 1, 1f)
                 .setLight(light)
                 .setUv(u1, segment);
 
-        vertexConsumer.addVertex(matrix4f, z + dx, aa + y0 - y1, ab - dz)
+        vertexConsumer.addVertex(matrix4f, z + dx, aa + yOffset, ab - dz)
                 .setColor(1, 1, 1, 1f)
                 .setLight(light)
                 .setUv(u2, segment);
 
 
         return true;
+
     }
 };
 

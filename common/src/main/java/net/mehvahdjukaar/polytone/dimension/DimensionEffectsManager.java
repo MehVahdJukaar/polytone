@@ -233,7 +233,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         Colormap colormap = this.terrainFogColormaps.get(level.dimensionType());
         if (colormap == null) return original;
         isTerrainHack.set(true);
-        Vector4f vector4f = FogRenderer.computeFogColor(
+        Vector4f vector4f = Minecraft.getInstance().gameRenderer.fogRenderer.computeFogColor(
                 camera, partialTicks, level, minecraft.options.getEffectiveRenderDistance(),
                 gameRenderer.getDarkenWorldAmount(partialTicks), false
         );
@@ -313,9 +313,13 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         Colormap colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
         if (colormap == null) return null;
         float oldAlpha = ARGB.alpha(old) / 255f;
-        var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(),
-                ClientFrameTicker.getCameraBiome().value(), null);
+        var cameraPos = ClientFrameTicker.getCameraPos();
+        if (cameraPos == null) return null;
+        var cameraBiome = ClientFrameTicker.getCameraBiome();
+        if (cameraBiome == null) return null;
 
+        var color = colormap.sampleColor(null, cameraPos, cameraBiome.value(), null);
+        
         float deltaTime = ClientFrameTicker.getDeltaTime(); // Get time since last frame
         float interpolationFactor = deltaTime * 0.1f;
 

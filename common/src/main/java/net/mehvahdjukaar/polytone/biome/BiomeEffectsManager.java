@@ -116,13 +116,18 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         Player player = mc.player;
         if (player == null) return null;
 
-        //dont modify if a mob effect that modifies fog is active
-        if (FogRenderer.getPriorityFogFunction(player, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false))
-                != null) return null;
 
+
+        //dont modify if a mob effect that modifies fog is active
+        /*
+             TODO: This is fairly complicated now since it would have to check all the fog environments to see
+             which are instances of MobEffectFogEnvironment and are currently applied.
+        if (FogRenderer.getPriorityFogFunction(player, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false))
+                != null) return null;  */
         Level level = player.level();
 
         Holder<Biome> biome = ClientFrameTicker.getCameraBiome();
+        if (biome == null) return null;
         var fogMod = fogParametersModifiers.get(biome.value());
         Vec2 fogScalars = null;
         if (fogMod != null) {

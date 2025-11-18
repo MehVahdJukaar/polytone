@@ -4,7 +4,6 @@ import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
@@ -26,22 +25,19 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
@@ -76,8 +72,8 @@ public class PlatStuffImpl {
                 return name;
             }
 
-            public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor executor, Executor executor2) {
-                return this.inner.get().reload(preparationBarrier, resourceManager, executor, executor2);
+            public CompletableFuture<Void> reload(SharedState sharedState,Executor backgroundExecutor, PreparationBarrier preparationBarrier,  Executor executor2) {
+                return this.inner.get().reload(sharedState, backgroundExecutor, preparationBarrier, executor2);
             }
         });
     }
@@ -95,8 +91,11 @@ public class PlatStuffImpl {
         return FabricLoader.getInstance().isModLoaded(namespace);
     }
 
+    //    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation id) {
     public static DimensionSpecialEffects getDimensionEffects(ResourceLocation id) {
-        return DimensionRenderingRegistry.getDimensionEffects(id);
+        return DimensionSpecialEffects.EFFECTS.get(id);
+//        return DimensionRenderingRegistry.getDimensionEffects(id);
+//    }
     }
 
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
@@ -131,6 +130,8 @@ public class PlatStuffImpl {
                 Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(
                         BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(tab).get(), entries));
             });
+            event.register(POLYTONE_PHASE, (tab, entries) -> Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(
+                    BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(tab).get(), entries)));
 
         }
     }
@@ -239,12 +240,12 @@ public class PlatStuffImpl {
     }
 
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
-        return ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine)
+        return ((ParticleResourcesAccessor) Minecraft.getInstance().particleResources)
                 .getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getId(type));
     }
 
     public static void setParticleProvider(ParticleType<?> type, ParticleProvider<?> provider) {
-        ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine)
+        ((ParticleResourcesAccessor) Minecraft.getInstance().particleResources)
                 .getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getId(type), provider);
     }
 
@@ -259,8 +260,8 @@ public class PlatStuffImpl {
 
     public static void unregisterParticleProvider(ResourceLocation id) {
         var type = BuiltInRegistries.PARTICLE_TYPE.get(id);
-        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
-        ((ParticleEngineAccessor) particleEngine)
+        ParticleResources particleResources = Minecraft.getInstance().particleResources;
+        ((ParticleResourcesAccessor) particleResources)
                 .getProviders().remove(BuiltInRegistries.PARTICLE_TYPE.getId(type.get().value()));
     }
 
@@ -334,3 +335,4 @@ public class PlatStuffImpl {
         MY_CUSTOM_RESOLVERS.clear();
     }
 }
+

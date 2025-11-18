@@ -173,7 +173,7 @@ public class Lightmap {
         Vector3f skyColor = (new Vector3f(skyDarken, skyDarken, 1.0F))
                 .lerp(new Vector3f(1.0F, 1.0F, 1.0F), 0.35F);
         float blockLightFlicker = flicker + 1.5F;
-        //boolean endBright = level.effects().forceBrightLightmap();
+        //boolean endBright = level.effects().hasEndFlashes();
         DimensionType dimensionType = level.dimensionType();
 
         float darkenWorldAmount = minecraft.gameRenderer.getDarkenWorldAmount(partialTicks);

@@ -30,6 +30,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -138,7 +139,7 @@ public class Polytone {
     }
 
     public static void onEarlyPackLoad(ResourceManager manager) {
-        COMPOUND_RELOADER.earlyProcess(manager);
+        COMPOUND_RELOADER.earlyProcess(new PreparableReloadListener.SharedState(manager));
     }
 
     public static void logException(Exception e, String message) {

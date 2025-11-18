@@ -86,7 +86,7 @@ public class Parsed<T> {
         if (ignore) {
             return false;
         }
-        if (version.isPresent() && !version.get().matches(SharedConstants.VERSION_STRING)) {
+        if (version.isPresent() && !version.get().matches(SharedConstants.getCurrentVersion().id())) {
             return false;
         }
         for (String s : modList) {

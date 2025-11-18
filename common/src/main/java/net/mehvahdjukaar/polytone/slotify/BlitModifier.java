@@ -9,7 +9,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
@@ -52,7 +55,8 @@ public record BlitModifier(ResourceLocation target, int index, int xInc, int yIn
         }
 
         if (newTexture.isPresent()) {
-            sprite = Minecraft.getInstance().getGuiSprites().getSprite(newTexture.get());
+            var material = new Material(Sheets.GUI_SHEET, newTexture.get());
+            sprite = gui.getSprite(material);
         }
         float minU = u0 == -1 ? oldU0 : u0;
         float maxU = u1 == -1 ? oldU1 : u1;

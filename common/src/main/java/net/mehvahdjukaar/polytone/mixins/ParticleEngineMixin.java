@@ -39,22 +39,22 @@ public abstract class ParticleEngineMixin {
         return original;
     }
 
-    @Inject(method = "reload", at = @At(value = "HEAD"))
-    public void polytone$addPackSpriteSets(PreparableReloadListener.PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor executor, Executor executor2, CallbackInfoReturnable<CompletableFuture<Void>> cir) {
-        Polytone.CUSTOM_PARTICLES.addSpriteSets(resourceManager);
-    }
-
-    @ModifyArg(method = "method_18125",
-            require = 0, //low priority
-            at = @At(value = "INVOKE", target = "Lcom/google/common/collect/EvictingQueue;create(I)Lcom/google/common/collect/EvictingQueue;"))
-    private static int polytone$modifyEvictingQueueSize(int size) {
-        return size * 50;
-    }
-
-    @Inject(method = "destroy", at = @At("HEAD"))
-    public void polytone$addExtraDestroyParticles(BlockPos pos, BlockState state, CallbackInfo ci) {
-        if(!state.isAir()){
-            Polytone.BLOCK_MODIFIERS.runTickers(state, this.level, pos, TickSource.BLOCK_BROKEN);
-        }
-    }
+//    @Inject(method = "reload", at = @At(value = "HEAD"))
+//    public void polytone$addPackSpriteSets(PreparableReloadListener.PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor executor, Executor executor2, CallbackInfoReturnable<CompletableFuture<Void>> cir) {
+//        Polytone.CUSTOM_PARTICLES.addSpriteSets(resourceManager);
+//    }
+//
+//    @ModifyArg(method = "method_18125",
+//            require = 0, //low priority
+//            at = @At(value = "INVOKE", target = "Lcom/google/common/collect/EvictingQueue;create(I)Lcom/google/common/collect/EvictingQueue;"))
+//    private static int polytone$modifyEvictingQueueSize(int size) {
+//        return size * 50;
+//    }
+//
+//    @Inject(method = "destroy", at = @At("HEAD"))
+//    public void polytone$addExtraDestroyParticles(BlockPos pos, BlockState state, CallbackInfo ci) {
+//        if(!state.isAir()){
+//            Polytone.BLOCK_MODIFIERS.runTickers(state, this.level, pos, TickSource.BLOCK_BROKEN);
+//        }
+//    }
 }
