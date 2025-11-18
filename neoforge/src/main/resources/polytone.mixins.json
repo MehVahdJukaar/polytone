@@ -6,8 +6,6 @@
   "mixins": [
   ],
   "client": [
-    "BuildCreativeModeTabContentsEventAccessor",
-    "SodiumBlockRendererMixin",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "BuildCreativeModeTabContentsEventAccessor",
@@ -22,6 +20,8 @@
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
     "ParticleEngineAccessor",
+    "ParticleEngineMixin2",
+    "SodiumBlockRendererMixin",
     "TerrainParticleMixin"
   ],
   "injectors": {

@@ -61,6 +61,7 @@ public abstract class ParticleEngineMixin {
         }
     }
 
+    //fabric only since neo its deprecated
     @Inject(method = "render", at = @At("HEAD"))
     public void onRenderLast(LightTexture lightTexture, Camera camera, float partialTick, CallbackInfo ci) {
         PolytoneRenderTypes.cacheMatrices();
