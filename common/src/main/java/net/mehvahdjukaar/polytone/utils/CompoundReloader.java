@@ -10,7 +10,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.Level;
 
@@ -32,9 +31,9 @@ public class CompoundReloader implements PreparableReloadListener {
     }
 
     @Override
-    public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor backgroundExecutor, Executor gameExecutor) {
+    public CompletableFuture<Void> reload(SharedState sharedState, Executor backgroundExecutor, PreparationBarrier preparationBarrier,  Executor gameExecutor) {
         List<CompletableFuture<?>> futures = children.stream()
-                .map(child -> CompletableFuture.supplyAsync(() -> child.prepare(resourceManager), backgroundExecutor))
+                .map(child -> CompletableFuture.supplyAsync(() -> child.prepare(sharedState), backgroundExecutor))
                 .collect(Collectors.toList());
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
@@ -121,9 +120,9 @@ public class CompoundReloader implements PreparableReloadListener {
         }
     }
 
-    public void earlyProcess(ResourceManager resourceManager) {
+    public void earlyProcess(SharedState sharedState) {
         for (var c : children) {
-            c.earlyProcess(resourceManager);
+            c.earlyProcess(sharedState);
         }
         PlatStuff.doAddModels();
     }

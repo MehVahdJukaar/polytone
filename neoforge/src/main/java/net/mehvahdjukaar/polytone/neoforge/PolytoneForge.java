@@ -12,7 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -56,9 +56,9 @@ public class PolytoneForge {
     public PolytoneForge(IEventBus modBus) {
         bus = modBus;
         ModelStuffImpl.init(bus);
-        if (FMLEnvironment.dist == Dist.CLIENT) {
+        if (FMLEnvironment.getDist() == Dist.CLIENT) {
             boolean iris = ModList.get().isLoaded("iris") || ModList.get().isLoaded("oculus");
-            Polytone.init(!FMLEnvironment.production, true, iris);
+            Polytone.init(!FMLEnvironment.isProduction(), true, iris);
             NeoForge.EVENT_BUS.register(this);
             modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
         } else {
@@ -116,12 +116,14 @@ public class PolytoneForge {
 
     @SubscribeEvent
     public void fogEvent(ViewportEvent.RenderFog fogEvent) {
-        if (fogEvent.getType() != FogType.NONE || fogEvent.getType() != FogType.TERRAIN) return;
+        // dannyb - this call would always return, since if fogtype is TERRAIN the first part is true (TERRAIN != NONE) , and if fogtype is not TERRAIN (including NONE) the second part is true (all other fogtype != TERRAIN).
+        //        if (fogEvent.getType() != FogType.NONE || fogEvent.getType() != FogType.TERRAIN) return;
         Vec2 targetFog = Polytone.BIOME_MODIFIERS.modifyFogParameters(fogEvent.getNearPlaneDistance(), fogEvent.getFarPlaneDistance());
         if (targetFog != null) {
             fogEvent.setNearPlaneDistance(targetFog.x);
             fogEvent.setFarPlaneDistance(targetFog.y);
-            fogEvent.setCanceled(true);
+            // dannyb - no longer exists
+            // fogEvent.setCanceled(true);
         }
     }
 

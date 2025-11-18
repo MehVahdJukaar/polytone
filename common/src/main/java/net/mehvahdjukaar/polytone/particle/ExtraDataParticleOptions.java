@@ -42,7 +42,7 @@ public record ExtraDataParticleOptions(Map<String, Float> extraData,
         return type;
     }
 
-    public void apply(Particle particle) {
+    public void apply(SingleQuadParticle particle) {
         if (extraData.isEmpty()) return;
         Float rot = extraData.get("roll");
         if (rot != null) {

@@ -15,8 +15,9 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(FogRenderer.class)
 public abstract class FogRendererMixin {
 
-    @WrapOperation(method = "computeFogColor", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/util/CubicSampler;gaussianSampleVec3(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/util/CubicSampler$Vec3Fetcher;)Lnet/minecraft/world/phys/Vec3;"))
+    // TODO: - need to be setupfog on atomospheric environment now
+//    @WrapOperation(method = "computeFogColor", at = @At(value = "INVOKE",
+//            target = "Lnet/minecraft/util/CubicSampler;gaussianSampleVec3(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/util/CubicSampler$Vec3Fetcher;)Lnet/minecraft/world/phys/Vec3;"))
     private static Vec3 polytone$modifyFogColor(Vec3 center, CubicSampler.Vec3Fetcher fetcher,
                                                 Operation<Vec3> original, @Local(argsOnly = true) ClientLevel level,
                                                 @Local(argsOnly = true) int renderDistanceChunks,
@@ -29,8 +30,8 @@ public abstract class FogRendererMixin {
     }
 
 
-    @ModifyExpressionValue(method = "computeFogColor", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"))
+//    @ModifyExpressionValue(method = "computeFogColor", at = @At(value = "INVOKE",
+//            target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"))
     private static float polytone$modifyRainFog(float original, @Local(argsOnly = true) ClientLevel level) {
         if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelFogWeatherDarken(level)) {
             return 0;
@@ -38,8 +39,8 @@ public abstract class FogRendererMixin {
         return original;
     }
 
-    @ModifyExpressionValue(method = "computeFogColor", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F"))
+//    @ModifyExpressionValue(method = "computeFogColor", at = @At(value = "INVOKE",
+//            target = "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F"))
     private static float polytone$modifyThunderFog(float original, @Local(argsOnly = true) ClientLevel level) {
         if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelFogWeatherDarken(level)) {
             return 0;

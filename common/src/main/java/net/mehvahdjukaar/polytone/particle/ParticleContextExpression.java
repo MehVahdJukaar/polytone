@@ -49,7 +49,7 @@ public class ParticleContextExpression extends PolytoneExpression {
 
     private final boolean hasCustom;
 
-    public ParticleContextExpression(String expression){
+    public ParticleContextExpression(String expression) {
         this(expression, false);
     }
 
@@ -78,16 +78,19 @@ public class ParticleContextExpression extends PolytoneExpression {
     public double getValue(Particle particle, Level level) {
         IExpression.IVars vb = expression.varBuilder();
         vb.setVariable(LIFE, particle.getLifetime());
+        if (particle instanceof SingleQuadParticle sqp) {
 
-        int pack = ColorUtils.pack(particle.rCol, particle.gCol, particle.bCol);
-        vb.setVariable(COLOR, pack);
+            int pack = ColorUtils.pack(sqp.rCol, sqp.gCol, sqp.bCol);
+            vb.setVariable(COLOR, pack);
 
-        vb.setVariable(RED, particle.rCol);
-        vb.setVariable(GREEN, particle.gCol);
-        vb.setVariable(BLUE, particle.bCol);
+            vb.setVariable(RED, sqp.rCol);
+            vb.setVariable(GREEN, sqp.gCol);
+            vb.setVariable(BLUE, sqp.bCol);
+            vb.setVariable(ALPHA, sqp.alpha);
+            vb.setVariable(SIZE, sqp.quadSize);
+            vb.setVariable(ROLL, sqp.roll);
+        }
         vb.setVariable(SPEED, Mth.length(particle.xd, particle.yd, particle.zd));
-        vb.setVariable(ALPHA, particle.alpha);
-        vb.setVariable(SIZE, ((SingleQuadParticle) particle).quadSize);
         vb.setVariable(DX, particle.xd);
         vb.setVariable(DY, particle.yd);
         vb.setVariable(DZ, particle.zd);
@@ -95,7 +98,6 @@ public class ParticleContextExpression extends PolytoneExpression {
         vb.setVariable(Y, particle.y);
         vb.setVariable(Z, particle.z);
         vb.setVariable(AGE, particle.age);
-        vb.setVariable(ROLL, particle.roll);
         if (hasCustom && particle instanceof CustomParticleType.Instance i)
             vb.setVariable(CUSTOM, i.getCustom());
 

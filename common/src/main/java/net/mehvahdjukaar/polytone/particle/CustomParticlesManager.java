@@ -16,11 +16,13 @@ import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.HashMap;
@@ -45,7 +47,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     //just gathers the custom models if any are there
     @Override
-    public void earlyProcess(ResourceManager resourceManager) {
+    public void earlyProcess(PreparableReloadListener.SharedState sharedState) {
+        var resourceManager = sharedState.resourceManager();
         var jsons = this.getJsonsInDirectories(resourceManager);
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
@@ -76,14 +79,15 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     // not ideal
     public void addSpriteSets(ResourceManager resourceManager) {
-        ParticleEngine engine = Minecraft.getInstance().particleEngine;
+        ParticleResources resources = Minecraft.getInstance().particleEngine.resourceManager;
         for (var v : customParticleFactories.keySet()) {
             //never remove them as it could crash with old already spawner particles. not ideal
-            //engine.spriteSets.remove(v);
+            //resources.spriteSets.remove(v);
         }
         var jsons = this.getJsonsInDirectories(resourceManager);
         for (var v : jsons.keySet()) {
-            engine.spriteSets.put(v, new ParticleEngine.MutableSpriteSet());
+
+            resources.spriteSets.put(v, new ParticleResources.MutableSpriteSet());
         }
     }
 
@@ -95,7 +99,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
     @Override
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
-        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
+        ParticleResources particleResources = Minecraft.getInstance().particleEngine.resourceManager;
 
         Set<CustomParticleType> customTypes = new HashSet<>();
 
@@ -104,7 +108,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
             try {
                 var factory = j.getValue();
                 var id = j.getKey();
-                factory.setSpriteSet(Minecraft.getInstance().particleEngine.spriteSets.get(id));
+                factory.setSpriteSet(particleResources.spriteSets.get(id));
 
                 if (factory instanceof CustomParticleType c) {
                     customTypes.add(c);
@@ -117,7 +121,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
                     overwrittenVanillaProviders.put(oldType, oldFactory);
                     //override vanilla particle
                     try {
-                        particleEngine.register(oldType, new OverridingParticleFactory<>(factory));
+                        particleResources.register(oldType, new OverridingParticleFactory<>(factory));
                     } catch (Exception e) {
                         Polytone.LOGGER.error("Can't override existing particle with ID {}. Particle type not supported", id, e);
                     }
@@ -139,7 +143,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
             var id = c.getKey();
             ParticleType<ExtraDataParticleOptions> type = PlatStuff.makeParticleType(factory.forceSpawns());
             PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
-            particleEngine.register(type, factory);
+            particleResources.register(type, factory);
         }
 
         //initialize recursive stuff

@@ -21,6 +21,7 @@
     "ItemBlockRenderTypeAccessor",
     "ModelBlockRendererMixin",
     "ParticleEngineAccessor",
+    "ParticleResourcesAccessor",
     "RegistrySyncManagerMixin"
   ],
   "injectors": {
