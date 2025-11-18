@@ -4,10 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.CsvUtils;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
-import net.mehvahdjukaar.polytone.utils.Parsed;
-import net.mehvahdjukaar.polytone.utils.PartialReloader;
+import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -48,7 +45,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     protected void resetWithLevel(boolean logOff) {
         for (var id : customTabs.keySet()) {
             PlatStuff.unregisterDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id);
-            if (logOff){
+            if (logOff) {
                 Minecraft.getInstance().tell(PlatStuff::sortTabs);
             }
         }
@@ -63,21 +60,34 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
     @Override
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        Set<ResourceLocation> newTabsToRegister = new HashSet<>();
+
+        for (var e : Parsed.batchParseOnlyEnabled(resources.tabsModifiers, CreativeTabModifier.CODEC,
+                ops, "creative tab modifier")) {
+            ResourceLocation id = e.getKey();
+            CreativeTabModifier mod = e.getValue();
+            if (mod.registerTab()) {
+                newTabsToRegister.add(id);
+            }
+            addModifier(e.getKey(), e.getValue());
+        }
+
         for (var e : resources.extraTabs.entrySet()) {
-            for (var s : e.getValue()) {
-                ResourceLocation id = e.getKey().withPath(s);
-                ResourceKey<CreativeModeTab> key = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id);
-                if (!customTabs.containsKey(id) && !BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(key)) {
-                    CreativeModeTab tab = PlatStuff.createCreativeTab(id);
-                    customTabs.register(id, tab);
-                } else {
-                    Polytone.LOGGER.error("Creative Tab with id {} already exists! Ignoring.", id);
-                }
+            for (var str : e.getValue()) {
+                ResourceLocation id = e.getKey().withPath(str);
+                newTabsToRegister.add(id);
             }
         }
 
-        for (var e : customTabs.getEntries()) {
-            PlatStuff.registerDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, e.getKey(), e.getValue());
+        for (var id : newTabsToRegister) {
+            ResourceKey<CreativeModeTab> key = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id);
+            if (!customTabs.containsKey(id) && !BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(key)) {
+                CreativeModeTab tab = PlatStuff.createCreativeTab(id);
+                customTabs.register(id, tab);
+                PlatStuff.registerDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id, tab);
+            } else {
+                Polytone.LOGGER.error("Creative Tab with id {} already exists! Ignoring.", id);
+            }
         }
 
         if (!customTabs.isEmpty()) {
@@ -85,10 +95,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             Minecraft.getInstance().tell(PlatStuff::sortTabs);
         }
 
-        for (var e : Parsed.batchParseOnlyEnabled(resources.tabsModifiers, CreativeTabModifier.CODEC,
-                ops, "creative tab modifier")) {
-            addModifier(e.getKey(), e.getValue());
-        }
+
     }
 
     @Override
@@ -105,7 +112,11 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     }
 
     private void addModifier(ResourceLocation fileId, CreativeTabModifier mod) {
-        for (var tab : mod.targets().compute(fileId, BuiltInRegistries.CREATIVE_MODE_TAB)) {
+        Targets targets = mod.targets();
+        if (mod.registerTab()) {
+            targets = Targets.ofIds(fileId);
+        }
+        for (var tab : targets.compute(fileId, BuiltInRegistries.CREATIVE_MODE_TAB)) {
             ResourceKey<CreativeModeTab> key = tab.unwrapKey().get();
             modifiers.merge(key, mod, CreativeTabModifier::merge);
 
