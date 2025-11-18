@@ -25,6 +25,14 @@ public record Targets(List<Entry> entries) {
 
     public static final Targets EMPTY = new Targets(List.of());
 
+    public static Targets ofIds(ResourceLocation... blocks) {
+        List<Entry> entries = new ArrayList<>();
+        for (ResourceLocation id : blocks) {
+            entries.add(new SimpleLocation(id));
+        }
+        return new Targets(entries);
+    }
+
     public static Targets ofIds(Set<ResourceLocation> blocks) {
         List<Entry> entries = new ArrayList<>();
         for (ResourceLocation id : blocks) {
