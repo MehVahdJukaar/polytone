@@ -12,6 +12,8 @@ mutable field net/minecraft/client/renderer/BiomeColors GRASS_COLOR_RESOLVER Lne
 
 accessible class net/minecraft/client/renderer/block/model/BlockElement$Deserializer
 
+accessible field net/minecraft/core/MappedRegistry holdersInOrder Ljava/util/List;
+
 mutable field net/minecraft/world/entity/player/Player inventoryMenu Lnet/minecraft/world/inventory/InventoryMenu;
 accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;IZZLnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
 #particle clear

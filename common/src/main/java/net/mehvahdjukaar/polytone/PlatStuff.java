@@ -20,7 +20,6 @@ import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -35,6 +34,7 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -244,6 +244,7 @@ public class PlatStuff {
         }
         unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
     }
+
     @ExpectPlatform
     public static void unregisterParticleType(ResourceLocation id) {
         throw new AssertionError();
@@ -267,6 +268,11 @@ public class PlatStuff {
             reg.byValue.remove(value);
             reg.byId.remove(reference);
             reg.toId.removeInt(value);
+            if (reg.holdersInOrder != null) {
+                List<Holder.Reference<T>> list = new ArrayList<>(reg.holdersInOrder);
+                list.remove(reference);
+                reg.holdersInOrder = list;
+            }
         } else {
             int aa = 1;
         }
