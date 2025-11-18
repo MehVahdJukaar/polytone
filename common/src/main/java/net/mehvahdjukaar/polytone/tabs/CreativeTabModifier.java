@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.tabs;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -38,14 +39,15 @@ public record CreativeTabModifier(
         Optional<List<ResourceLocation>> afterTabs,
         List<ItemPredicate> removals,
         List<ItemAddition> additions,
+        boolean registerTab,
         Targets targets) {
 
     public static final Codec<Component> COMPONENT_CODEC = Codec.either(ExtraCodecs.COMPONENT, ExtraCodecs.FLAT_COMPONENT).xmap(
             e -> e.map(Function.identity(), Function.identity()), Either::left
     );
 
-    public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            StrOpt.of(CodecUtil.ITEM_OR_STACK, "icon").forGetter(CreativeTabModifier::icon),
+    public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.<CreativeTabModifier>create(i -> i.group(
+                    StrOpt.of(CodecUtil.ITEM_OR_STACK, "icon").forGetter(CreativeTabModifier::icon),
             StrOpt.of(Codec.BOOL, "search_bar").forGetter(CreativeTabModifier::search), //unused
             StrOpt.of(Codec.INT, "search_bar_width").forGetter(CreativeTabModifier::searchWidth),
             StrOpt.of(Codec.BOOL, "can_scroll").forGetter(CreativeTabModifier::canScroll),
@@ -56,9 +58,15 @@ public record CreativeTabModifier(
             StrOpt.of(ResourceLocation.CODEC.listOf(), "before_tabs").forGetter(CreativeTabModifier::beforeTabs),
             StrOpt.of(ResourceLocation.CODEC.listOf(), "after_tabs").forGetter(CreativeTabModifier::afterTabs),
             StrOpt.of(ItemPredicate.CODEC.listOf(), "removals", List.of()).forGetter(CreativeTabModifier::removals),
-            StrOpt.of(ItemAddition.CODEC.listOf(), "additions", List.of()).forGetter(CreativeTabModifier::additions),
-            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)
-    ).apply(i, CreativeTabModifier::new));
+            StrOpt.of(ItemAddition.CODEC.listOf(), "additions", List.of()).forGetter(CreativeTabModifier::additions),Codec.BOOL.optionalFieldOf("create_new", false).forGetter(CreativeTabModifier::registerTab),
+                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)
+            ).apply(i, CreativeTabModifier::new))
+            .validate(m -> {
+                if (m.registerTab && (!m.removals.isEmpty() || m.targets != Targets.EMPTY)) {
+                    return DataResult.error(() -> "Modifiers that register new creative tabs cannot have item removals or target existing tabs.");
+                }
+                return DataResult.success(m);
+            });
 
 
     public CreativeTabModifier merge(CreativeTabModifier newMod) {
@@ -75,6 +83,7 @@ public record CreativeTabModifier(
                 newMod.afterTabs.isPresent() ? newMod.afterTabs : this.afterTabs,
                 mergeList(newMod.removals, this.removals),
                 mergeList(newMod.additions, this.additions),
+                this.registerTab || newMod.registerTab,
                 this.targets.merge(newMod.targets)
         );
     }
@@ -114,6 +123,5 @@ public record CreativeTabModifier(
         }
         return PlatStuff.modifyTab(this, tab);
     }
-
 
 }

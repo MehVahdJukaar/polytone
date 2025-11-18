@@ -220,6 +220,7 @@ public class PlatStuffImpl {
                 Optional.ofNullable(oldAfterTabs),
                 List.of(),
                 List.of(),
+                false,
                 Targets.EMPTY
         );
     }
