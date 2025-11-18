@@ -3,6 +3,8 @@ package net.mehvahdjukaar.polytone;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -11,6 +13,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL13;
 
 import java.util.Collection;
@@ -87,10 +90,23 @@ public class PolytoneRenderTypes extends RenderType {
 
 
     public static void onRenderLast() {
-        DEFERRED_BUFFER_SOURCE.endBatches();
+        if (lastModelViewMatrix != null) {
+            Matrix4f last = new Matrix4f(RenderSystem.getModelViewMatrix());
+            RenderSystem.getModelViewMatrix().set(lastModelViewMatrix);
+            DEFERRED_BUFFER_SOURCE.endBatches();
+            RenderSystem.getModelViewMatrix().set(last);
+        }else {
+            DEFERRED_BUFFER_SOURCE.endBatches();
+        }
     }
 
     public static final DeferredBufferSource DEFERRED_BUFFER_SOURCE = new DeferredBufferSource();
+
+    private static Matrix4f lastModelViewMatrix;
+
+    public static void cacheMatrices() {
+        lastModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
+    }
 
     public static class DeferredBufferSource extends MultiBufferSource.BufferSource {
         protected final Supplier<ByteBufferBuilder> bufferSupplier;

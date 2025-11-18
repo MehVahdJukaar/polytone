@@ -92,7 +92,7 @@ public class PolytoneForge {
     }
 
     @SubscribeEvent
-    public void renderScreen(RenderLevelStageEvent event) {
+    public void renderStageEventAfterLevel(RenderLevelStageEvent event) {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) {
             PolytoneRenderTypes.onRenderLast();
         }
