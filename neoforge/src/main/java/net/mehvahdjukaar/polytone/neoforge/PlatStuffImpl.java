@@ -48,6 +48,7 @@ import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import org.joml.Vector3f;
@@ -162,7 +163,7 @@ public class PlatStuffImpl {
     }
 
     public static RegistryAccess hackyGetRegistryAccess() {
-        if (FMLEnvironment.dist == Dist.CLIENT &&
+        if (FMLEnvironment.getDist() == Dist.CLIENT &&
                 RenderSystem.isOnRenderThread()) {
             ClientLevel level = Minecraft.getInstance().level;
             if (level != null) return level.registryAccess();

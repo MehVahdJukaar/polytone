@@ -9,15 +9,13 @@ import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.particle.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -31,7 +29,7 @@ public class SemiCustomParticleType implements CustomParticleFactory {
     private final Optional<ParticleType<?>> copyType;
     private ParticleProvider<?> copyProvider = null;
     private boolean hasBeenInit = false;
-    private ParticleEngine.MutableSpriteSet spriteSet = null;
+    private SpriteSet spriteSet = null;
     private final @Nullable ParticleInitializer initializer;
     private final boolean hasPhysics;
     private final @Nullable IColorGetter colormap;
@@ -57,14 +55,14 @@ public class SemiCustomParticleType implements CustomParticleFactory {
     }
 
     @Override
-    public void setSpriteSet(ParticleEngine.MutableSpriteSet mutableSpriteSet) {
-        this.spriteSet = mutableSpriteSet;
+    public void setSpriteSet(SpriteSet spriteSet) {
+        this.spriteSet = spriteSet;
     }
 
     @Nullable
     @Override
-    public Particle createParticle(ExtraDataParticleOptions opt, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                                   @Nullable BlockState state) {
+    public Particle createParticleWithState(ExtraDataParticleOptions opt, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
+                                   @Nullable BlockState state, RandomSource random) {
         try {
             if (copyType.isEmpty()) {
                 return null;
@@ -74,23 +72,24 @@ public class SemiCustomParticleType implements CustomParticleFactory {
             }
 
             if (copyProvider != null) {
-                var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) copyType.get()), level, x, y, z, xSpeed, ySpeed, zSpeed);
+                var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) copyType.get()), level, x, y, z, xSpeed, ySpeed, zSpeed, random);
 
                 BlockPos pos = BlockPos.containing(x, y, z);
 
                 //initialize
-                if (initializer != null && particle instanceof SingleQuadParticle sp) {
-                    initializer.initialize(sp, level, state, pos);
-                }
+                if (initializer != null && particle instanceof SingleQuadParticle sqp) {
+                    initializer.initialize(sqp, level, state, pos);
 
-                opt.apply(particle);
+
+                opt.apply(sqp);
+            }
 
                 if (particle != null) {
                     particle.hasPhysics = this.hasPhysics;
 
-                    if (this.colormap != null) {
+                    if (this.colormap != null&& particle instanceof SingleQuadParticle sqp) {
                         float[] unpack = ColorUtils.unpack(this.colormap.getColor(state, level, pos, 0));
-                        particle.setColor(unpack[0], unpack[1], unpack[2]);
+                        sqp.setColor(unpack[0], unpack[1], unpack[2]);
                     }
 
                     if (this.hasPhysics) {

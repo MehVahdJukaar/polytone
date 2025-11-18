@@ -1,12 +1,15 @@
 package net.mehvahdjukaar.polytone.neoforge;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.fog.environment.FogEnvironment;
+import net.minecraft.client.resources.model.ModelDebugName;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.model.standalone.SimpleUnbakedStandaloneModel;
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,7 +26,13 @@ public class ModelStuffImpl {
     }
 
     public static void addSpecialModel(ResourceLocation id) {
-    //    SPECIAL_MODELS.put(id, new StandaloneModelKey<>(id));
+        SPECIAL_MODELS.put(id, new StandaloneModelKey<>(new ModelDebugName() {
+            @Override
+            public String debugName() {
+                return id.toString();
+            }
+        }));
+
     }
 
     @Nullable
@@ -36,13 +45,13 @@ public class ModelStuffImpl {
         return null;
     }
 
-    public static void init(IEventBus bus){
+    public static void init(IEventBus bus) {
         bus.addListener(ModelStuffImpl::registerExtraModels);
     }
 
     public static void registerExtraModels(ModelEvent.RegisterStandalone event) {
-        for (var entry : SPECIAL_MODELS.values()) {
-//            event.register(entry, StandaloneModelBaker.quadCollection());
+        for (var entry : SPECIAL_MODELS.entrySet()) {
+//            event.register(entry.getValue(), SimpleUnbakedStandaloneModel.quadCollection(entry.getKey()));
         }
     }
 }

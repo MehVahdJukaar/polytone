@@ -33,6 +33,7 @@
     "ModelBlockRendererMixin",
     "ModelManagerMixin",
     "ParticleEngineMixin",
+    "ParticleResourcesMixin",
     "ScreenMixin",
     "SmithingScreenMixin",
     "SodiumBlockRendererMixin",
@@ -43,7 +44,7 @@
     "XpOrbMixin",
     "accessor.BiomeAccessor",
     "accessor.DustParticleOptionAccessor",
-    "accessor.ParticleAccessor"
+    "accessor.ParticleAccessor",
   ],
   "injectors": {
     "defaultRequire": 1

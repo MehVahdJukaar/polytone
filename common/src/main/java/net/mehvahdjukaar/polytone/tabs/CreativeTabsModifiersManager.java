@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.*;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
@@ -13,6 +14,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -34,7 +36,8 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
 
     @Override
-    public Resources prepare(ResourceManager resourceManager) {
+    public Resources prepare(PreparableReloadListener.SharedState sharedState) {
+        var resourceManager = sharedState.resourceManager();
         var jsons = getJsonsInDirectories(resourceManager);
 
         var types = CsvUtils.parseCsv(resourceManager, "creative_tabs");

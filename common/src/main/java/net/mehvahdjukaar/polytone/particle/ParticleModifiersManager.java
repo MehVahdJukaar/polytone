@@ -13,6 +13,7 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.gui.screens.social.PlayerEntry;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.client.particle.TotemParticle;
 import net.minecraft.core.RegistryAccess;
@@ -49,9 +50,11 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
     }
 
     public void maybeModify(ParticleOptions options, Level level, @NotNull Particle particle) {
-        var mod = particleModifiers.get(options.getType());
-        for (var modifier : mod) {
-            modifier.modify(particle, level, options);
+        if (particle instanceof SingleQuadParticle sqp) {
+            var mod = particleModifiers.get(options.getType());
+            for (var modifier : mod) {
+                modifier.modify(sqp, level, options);
+            }
         }
     }
 

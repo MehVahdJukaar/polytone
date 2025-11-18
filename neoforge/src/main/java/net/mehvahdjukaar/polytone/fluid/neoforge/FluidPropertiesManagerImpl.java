@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -120,7 +121,11 @@ public class FluidPropertiesManagerImpl {
             return existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
         }
 
-
+        //TODO: add back
+//        @Override
+//        public FogParameters modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, FogParameters fogParameters) {
+//            return existingProperties.modifyFogRender(camera, mode, renderDistance, partialTick, fogParameters);
+//        }
 
         @Override
         public ResourceLocation getStillTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {

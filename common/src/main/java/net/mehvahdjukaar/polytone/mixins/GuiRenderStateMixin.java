@@ -1,11 +1,14 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.mojang.logging.LogUtils;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.GuiDepthTarget;
 import net.mehvahdjukaar.polytone.utils.GuiDepthTargetAware;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.gui.render.state.ScreenArea;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -76,13 +79,13 @@ public abstract class GuiRenderStateMixin implements GuiDepthTargetAware {
             current = current.up;
             depth++;
         }
-
+        /* Not possible anymore
         // Traverse down to target node (if possible)
         while (depth > nodeIndex && current.down != null) {
             current = current.down;
             depth--;
         }
-
+*/
         // Check if current satisfies the predicate
         if (predicate.test(current)) {
             this.current = current;
@@ -94,20 +97,22 @@ public abstract class GuiRenderStateMixin implements GuiDepthTargetAware {
 
         if (addAbove) {
             // Insert above
-            newNode.down = current;
+            /*newNode.down = current;*/
             newNode.up = current.up;
-            if (current.up != null) {
+            /*if (current.up != null) {
                 current.up.down = newNode;
-            }
+            }*/
             current.up = newNode;
         } else {
+            Polytone.LOGGER.error("Can't insert below anymore!");
+            /*
             // Insert below
             newNode.up = current;
             newNode.down = current.down;
             if (current.down != null) {
                 current.down.up = newNode;
             }
-            current.down = newNode;
+            current.down = newNode; */
         }
 
         this.current = newNode;

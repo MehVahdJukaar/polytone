@@ -38,16 +38,16 @@ public class LevelRendererMixin {
     }
 
 
-    @ModifyArg(method = "renderLevel",
-            at = @At(value = "INVOKE",
-                    ordinal = 0,
-                    target = "Lnet/minecraft/client/renderer/FogRenderer;setupFog(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/FogRenderer$FogMode;Lorg/joml/Vector4f;FZF)Lnet/minecraft/client/renderer/FogParameters;"))
+//    @ModifyArg(method = "renderLevel",
+//            at = @At(value = "INVOKE",
+//                    ordinal = 0,
+//                    target = "Lnet/minecraft/client/renderer/fog/environment/FogEnvironment;setupFog(Lnet/minecraft/client/renderer/fog/FogData;Lnet/minecraft/client/renderer/FogRenderer$FogMode;Lorg/joml/Vector4f;FZF)Lnet/minecraft/client/renderer/FogParameters;"))
     private Vector4f polytone$modifyTerrainFogColor(Vector4f original, @Local(argsOnly = true) Camera camera,
                                                     @Local(ordinal = 1) float partialTicks,
                                                     @Local(argsOnly = true) GameRenderer gameRenderer) {
-
-        return Polytone.DIMENSION_MODIFIERS.modifyTerrainFogColor(original, this.level,
-                camera, partialTicks, gameRenderer, this.minecraft);
+        return original;
+//        return Polytone.DIMENSION_MODIFIERS.modifyTerrainFogColor(original, this.level,
+//                camera, partialTicks, gameRenderer, this.minecraft);
     }
 
 */

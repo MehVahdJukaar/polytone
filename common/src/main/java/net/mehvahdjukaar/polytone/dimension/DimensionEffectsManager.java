@@ -234,7 +234,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         IColorGetter colormap = this.terrainFogColormaps.get(level.dimensionType());
         if (colormap == null) return original;
         isTerrainHack.set(true);
-      //  Vector4f vector4f = FogRenderer.computeFogColor(
+      //  Vector4f vector4f = Minecraft.getInstance().gameRenderer.fogRenderer.computeFogColor(
         //        camera, partialTicks, level, minecraft.options.getEffectiveRenderDistance(),
           //      gameRenderer.getDarkenWorldAmount(partialTicks), false
         //);

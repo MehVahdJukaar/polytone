@@ -11,6 +11,7 @@ import net.minecraft.client.color.block.BlockColor;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -117,7 +118,7 @@ public class ParticleModifier {
         return this.targets;
     }
 
-    public void modify(@NotNull Particle particle, Level level, ParticleOptions options) {
+    public void modify(@NotNull SingleQuadParticle particle, Level level, ParticleOptions options) {
         if (filter != null) {
             if (!filter.test(options)) return;
         }

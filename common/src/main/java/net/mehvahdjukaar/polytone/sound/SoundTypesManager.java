@@ -13,6 +13,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.SoundType;
@@ -37,7 +38,8 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     }
 
     @Override
-    protected Resources prepare(ResourceManager resourceManager) {
+    protected Resources prepare(PreparableReloadListener.SharedState sharedState) {
+        var resourceManager = sharedState.resourceManager();
         var jsons = getJsonsInDirectories(resourceManager);
 
         var types = CsvUtils.parseCsv(resourceManager, "sound_events");

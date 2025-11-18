@@ -15,6 +15,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -42,7 +43,8 @@ public class LightmapsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected Resources prepare(ResourceManager resourceManager) {
+    protected Resources prepare(PreparableReloadListener.SharedState sharedState) {
+        var resourceManager = sharedState.resourceManager();
         var jsons = this.getJsonsInDirectories(resourceManager);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
