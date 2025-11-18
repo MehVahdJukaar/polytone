@@ -208,13 +208,8 @@ public class PlatStuff {
             reg.byId.remove(reference);
             reg.toId.removeInt(value);
             reg.registrationInfos.remove(key);
-            if (reg.holdersInOrder != null) {
-                List<Holder.Reference<T>> list = new ArrayList<>(reg.holdersInOrder);
-                list.remove(reference);
-                reg.holdersInOrder = list;
-            }
         } else {
-            int aa = 1;
+            Polytone.LOGGER.error("Tried to unregister object with key {} from registry {} but it does not exist", key, reg);
         }
         return reference;
     }

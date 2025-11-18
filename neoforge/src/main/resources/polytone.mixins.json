@@ -17,6 +17,8 @@
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
     "ParticleEngineAccessor",
+    "ParticleEngineMixin2",
+    "SodiumBlockRendererMixin",
     "TerrainParticleMixin"
   ],
   "injectors": {
