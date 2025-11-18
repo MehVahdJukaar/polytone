@@ -3,10 +3,13 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.block.TickSource;
+import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -53,8 +56,13 @@ public abstract class ParticleEngineMixin {
 
     @Inject(method = "destroy", at = @At("HEAD"))
     public void polytone$addExtraDestroyParticles(BlockPos pos, BlockState state, CallbackInfo ci) {
-        if(!state.isAir()){
+        if (!state.isAir()) {
             Polytone.BLOCK_MODIFIERS.runTickers(state, this.level, pos, TickSource.BLOCK_BROKEN);
         }
+    }
+
+    @Inject(method = "render", at = @At("HEAD"))
+    public void onRenderLast(LightTexture lightTexture, Camera camera, float partialTick, CallbackInfo ci) {
+        PolytoneRenderTypes.cacheMatrices();
     }
 }
