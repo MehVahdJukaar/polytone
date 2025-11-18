@@ -15,6 +15,7 @@ import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -206,6 +208,11 @@ public class PlatStuff {
             reg.byId.remove(reference);
             reg.toId.removeInt(value);
             reg.registrationInfos.remove(key);
+            if (reg.holdersInOrder != null) {
+                List<Holder.Reference<T>> list = new ArrayList<>(reg.holdersInOrder);
+                list.remove(reference);
+                reg.holdersInOrder = list;
+            }
         } else {
             int aa = 1;
         }

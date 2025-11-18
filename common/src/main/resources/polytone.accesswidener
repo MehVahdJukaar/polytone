@@ -25,6 +25,10 @@ mutable field net/minecraft/client/renderer/BiomeColors GRASS_COLOR_RESOLVER Lne
 
 accessible field net/minecraft/world/effect/MobEffect particleFactory Ljava/util/function/Function;
 mutable field net/minecraft/world/effect/MobEffect particleFactory Ljava/util/function/Function;
+accessible class net/minecraft/client/renderer/block/model/BlockElement$Deserializer
+
+accessible field net/minecraft/core/MappedRegistry holdersInOrder Ljava/util/List;
+
 mutable field net/minecraft/world/entity/player/Player inventoryMenu Lnet/minecraft/world/inventory/InventoryMenu;
 
 #particle clear
