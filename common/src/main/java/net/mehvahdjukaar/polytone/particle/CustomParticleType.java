@@ -353,6 +353,9 @@ public class CustomParticleType implements CustomParticleFactory {
             }
             if (spriteSet != null) this.setSpriteFromAge(spriteSet);
             super.tick();
+            //interpolate our states
+            this.oRoll = this.roll;
+            this.oQuadSize = this.quadSize;
 
             boolean isTickTime = this.age % this.type.tickRate == 0;
 
@@ -530,11 +533,9 @@ public class CustomParticleType implements CustomParticleFactory {
 
         private void tick(CustomParticleType.Instance particle, ClientLevel level) {
             if (this.roll != null) {
-                particle.oRoll = particle.roll;
                 particle.roll = (float) this.roll.getValue(particle, level);
             }
             if (this.size != null) {
-                particle.oQuadSize = particle.quadSize;
                 particle.quadSize = (float) this.size.getValue(particle, level);
             }
             if (this.red != null) {
