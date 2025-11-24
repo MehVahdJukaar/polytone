@@ -34,6 +34,8 @@ public class MapRegistry<T> implements Codec<T> {
     }
 
     public <B extends T> T register(ResourceLocation name, B value) {
+        //override
+        this.map.remove(name);
         this.map.put(name, value);
         if(!orderedKeys.contains(name)){
             orderedKeys.add(name);
