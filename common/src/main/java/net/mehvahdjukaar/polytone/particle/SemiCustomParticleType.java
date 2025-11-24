@@ -65,46 +65,48 @@ public class SemiCustomParticleType implements CustomParticleFactory {
     @Override
     public Particle createParticle(ExtraDataParticleOptions opt, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                                    @Nullable BlockState state) {
-        if (copyType.isEmpty()) {
-            return null;
-        }
-        if (!hasBeenInit) {
-            init();
-        }
-
-        if (copyProvider != null) {
-            var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) copyType.get()), level, x, y, z, xSpeed, ySpeed, zSpeed);
-
-            BlockPos pos = BlockPos.containing(x, y, z);
-
-            //initialize
-            if (initializer != null && particle instanceof SingleQuadParticle sp) {
-                initializer.initialize(sp, level, state, pos);
+        try {
+            if (copyType.isEmpty()) {
+                return null;
+            }
+            if (!hasBeenInit) {
+                init();
             }
 
-            opt.apply(particle);
+            if (copyProvider != null) {
+                var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) copyType.get()), level, x, y, z, xSpeed, ySpeed, zSpeed);
 
-            if (particle != null) {
-                particle.hasPhysics = this.hasPhysics;
+                BlockPos pos = BlockPos.containing(x, y, z);
 
-                if (this.colormap != null) {
-                    float[] unpack = ColorUtils.unpack(this.colormap.getColor(state, level, pos, 0));
-                    particle.setColor(unpack[0], unpack[1], unpack[2]);
+                //initialize
+                if (initializer != null && particle instanceof SingleQuadParticle sp) {
+                    initializer.initialize(sp, level, state, pos);
                 }
 
-                if (this.hasPhysics) {
-                    for (VoxelShape voxelShape : level.getBlockCollisions(null, particle.getBoundingBox())) {
-                        if (!voxelShape.isEmpty()) {
-                            return null;
+                opt.apply(particle);
+
+                if (particle != null) {
+                    particle.hasPhysics = this.hasPhysics;
+
+                    if (this.colormap != null) {
+                        float[] unpack = ColorUtils.unpack(this.colormap.getColor(state, level, pos, 0));
+                        particle.setColor(unpack[0], unpack[1], unpack[2]);
+                    }
+
+                    if (this.hasPhysics) {
+                        for (VoxelShape voxelShape : level.getBlockCollisions(null, particle.getBoundingBox())) {
+                            if (!voxelShape.isEmpty()) {
+                                return null;
+                            }
                         }
                     }
                 }
+
+
+                return particle;
             }
-
-
-
-
-            return particle;
+        }catch (Exception e){
+            Polytone.LOGGER.error("Failed to create semi custom particle of type {}. This likely means the particle itself is invalid and not supported. The resource pack that adds it HAS TO change it.", copyType, e);
         }
         return null;
     }
