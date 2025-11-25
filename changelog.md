@@ -1,1 +1,2 @@
-- fixed an issue where delaued relayed rendered system for additive translucent was not caching the matrix stack state, leading to unpredictable and incorrect visuals in some cases 
+fixed an issue with languages
+fixed lightmaps not overriding multiple lightmaps to the same dimensions without rejecting the pack
