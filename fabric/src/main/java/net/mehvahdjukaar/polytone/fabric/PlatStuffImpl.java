@@ -278,7 +278,8 @@ public class PlatStuffImpl {
         var type = BuiltInRegistries.PARTICLE_TYPE.get(id);
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
         ((ParticleEngineAccessor) particleEngine)
-                .getProviders().remove(BuiltInRegistries.PARTICLE_TYPE.getId(type));
+                .getProviders()
+                .remove(BuiltInRegistries.PARTICLE_TYPE.getId(type));
     }
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,
