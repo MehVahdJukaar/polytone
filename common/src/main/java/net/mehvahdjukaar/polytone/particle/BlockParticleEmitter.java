@@ -17,6 +17,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -132,11 +133,14 @@ public record BlockParticleEmitter(
         return po;
     }
 
-    public enum SpawnLocation {
+    public enum SpawnLocation implements StringRepresentable {
         CENTER, LOWER_CORNER, BLOCK_FACES;
 
-        public static final Codec<SpawnLocation> CODEC = Codec.STRING.xmap(s -> SpawnLocation.valueOf(s.toUpperCase(Locale.ROOT)),
-                e -> e.name().toLowerCase(Locale.ROOT));
+        @Override
+        public String getSerializedName() {
+            return this.name().toLowerCase(Locale.ROOT);
+        }
+        public static final Codec<SpawnLocation> CODEC = StringRepresentable.fromEnum(SpawnLocation::values);
 
         Vec3 getLocation(BlockPos pos, BlockState state, RandomSource rand) {
             return switch (this) {
