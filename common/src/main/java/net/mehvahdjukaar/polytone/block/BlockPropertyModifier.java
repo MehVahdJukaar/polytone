@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.block;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -16,6 +17,7 @@ import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
@@ -23,7 +25,6 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +42,7 @@ public record BlockPropertyModifier(
         Optional<Boolean> canOcclude,
         Optional<Boolean> spawnParticlesOnBreak,
         Optional<Boolean> breakingParticlesTinted,
-        Optional<RenderType> renderType,
+        Optional<IRenderProperties> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
         List<BlockParticleEmitter> particleEmitters,
         List<BlockSoundEmitter> soundEmitters,
@@ -190,16 +191,17 @@ public record BlockPropertyModifier(
             Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
         }
 
-        RenderType oldRenderType = null;
-        if (renderType.isPresent() && !Polytone.isForge) {
-            oldRenderType = renderType.get().fromVanilla(PlatStuff.getRenderType(block));
-            PlatStuff.setRenderType(block, renderType.get().toVanilla());
+        IRenderProperties oldRenderType = null;
+        if (renderType.isPresent()) {
+            oldRenderType = IRenderProperties.wrapVanilla(PlatStuff.getRenderType(block));
+            IRenderProperties o = renderType.get();
+            PlatStuff.setRenderType(block, o.toVanilla());
         }
 
         // returns old properties
         return new BlockPropertyModifier(Optional.ofNullable(oldColor), Optional.ofNullable(oldSound),
                 Optional.ofNullable(oldMapColor),
-                Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),Optional.empty(), Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
+                Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak), Optional.empty(), Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
                 List.of(), List.of(),
                 Optional.empty(), Optional.ofNullable(oldType), false, Targets.EMPTY, false);
     }
@@ -215,7 +217,7 @@ public record BlockPropertyModifier(
                     StrOpt.of(Codec.BOOL, "can_occlude").forGetter(BlockPropertyModifier::canOcclude),
                     StrOpt.of(Codec.BOOL, "spawn_particles_on_break").forGetter(BlockPropertyModifier::spawnParticlesOnBreak),
                     Codec.BOOL.optionalFieldOf("tinted_breaking_particles").forGetter(BlockPropertyModifier::breakingParticlesTinted),
-                    StringRepresentable.fromEnum(RenderType::values).optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
+                    IRenderProperties.CODEC.optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
                     BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(BlockPropertyModifier::particleEmitters),
@@ -243,37 +245,4 @@ public record BlockPropertyModifier(
     }
 
 
-
-
-    private enum RenderType implements StringRepresentable {
-        SOLID,
-        CUTOUT,
-        CUTOUT_MIPPED,
-        TRIPWIRE,
-        TRANSLUCENT;
-
-        @Override
-        public String getSerializedName() {
-            return this.name().toLowerCase(Locale.ROOT);
-        }
-
-        net.minecraft.client.renderer.RenderType toVanilla() {
-            return switch (this) {
-                case SOLID -> net.minecraft.client.renderer.RenderType.solid();
-                case CUTOUT_MIPPED -> net.minecraft.client.renderer.RenderType.cutoutMipped();
-                case TRIPWIRE -> net.minecraft.client.renderer.RenderType.tripwire();
-                case CUTOUT -> net.minecraft.client.renderer.RenderType.cutout();
-                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
-            };
-        }
-
-        RenderType fromVanilla(net.minecraft.client.renderer.RenderType type) {
-            if (net.minecraft.client.renderer.RenderType.solid() == type) return SOLID;
-            if (net.minecraft.client.renderer.RenderType.cutout() == type) return CUTOUT;
-            if (net.minecraft.client.renderer.RenderType.cutoutMipped() == type) return CUTOUT_MIPPED;
-            if (net.minecraft.client.renderer.RenderType.tripwire() == type) return TRIPWIRE;
-            if (net.minecraft.client.renderer.RenderType.translucent() == type) return TRANSLUCENT;
-            throw new IllegalStateException("Unknown render type value: " + type);
-        }
-    }
 }

@@ -6,20 +6,15 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.world.item.FishingRodItem;
-import org.lwjgl.opengl.GL13;
-
-import static com.mojang.blaze3d.vertex.DefaultVertexFormat.PARTICLE;
 
 public class PolytoneRenderTypes extends RenderType {
 
-    static ShaderInstance instance;
+    static ShaderInstance particleNoAlphaCutoffShader;
 
     public PolytoneRenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
         super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
@@ -27,7 +22,7 @@ public class PolytoneRenderTypes extends RenderType {
 
     public static void init() {
         PlatStuff.registerShaders(Polytone.res("particle_translucent"), DefaultVertexFormat.POSITION_TEX,
-                s -> instance = s);
+                s -> particleNoAlphaCutoffShader = s);
     }
 
     protected static final TransparencyStateShard ADDITIVE_TRANSLUCENT_TRANSPARENCY = new TransparencyStateShard(
@@ -60,7 +55,7 @@ public class PolytoneRenderTypes extends RenderType {
     public static final ParticleRenderType ADDITIVE_TRANSLUCENT_PARTICLE = new ParticleRenderType() {
         @Override
         public void begin(BufferBuilder builder, TextureManager textureManager) {
-            RenderSystem.setShader(() -> instance);
+            RenderSystem.setShader(() -> particleNoAlphaCutoffShader);
 
             RenderSystem.depthMask(true);
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
@@ -69,10 +64,6 @@ public class PolytoneRenderTypes extends RenderType {
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
             builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
 
-           // Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
-            //RenderSystem.activeTexture(GL13.GL_TEXTURE2);
-            //RenderSystem.activeTexture(GL13.GL_TEXTURE0);
-            //because of custom render type fuckery...
         }
 
         @Override

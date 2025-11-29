@@ -23,6 +23,7 @@ import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.RegistryAccess;
@@ -40,6 +41,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.DimensionSpecialEffectsManager;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
@@ -371,12 +373,16 @@ public class PlatStuffImpl {
                 .get().getModInfo().getVersion().toString();
     }
 
-    public static RenderType getRenderType(Block block) {
-        return null;
+    public static Object getRenderType(Block block) {
+        return ItemBlockRenderTypes.getRenderLayers(block.defaultBlockState());
     }
 
-    public static void setRenderType(Block block, RenderType renderType) {
-        ItemBlockRenderTypes.setRenderLayer(block, renderType);
+    public static void setRenderType(Block block, Object renderType) {
+        if (renderType instanceof RenderType rt) {
+            ItemBlockRenderTypes.setRenderLayer(block, rt);
+        }else if (renderType instanceof ChunkRenderTypeSet st) {
+            ItemBlockRenderTypes.setRenderLayer(block, st);
+        }
     }
 
     private static final boolean AC = ModList.get().isLoaded("alexscaves");

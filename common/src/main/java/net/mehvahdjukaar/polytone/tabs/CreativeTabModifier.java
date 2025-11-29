@@ -7,9 +7,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.CodecUtil;
-import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -46,27 +45,30 @@ public record CreativeTabModifier(
             e -> e.map(Function.identity(), Function.identity()), Either::left
     );
 
-    public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.<CreativeTabModifier>create(i -> i.group(
-                    StrOpt.of(CodecUtil.ITEM_OR_STACK, "icon").forGetter(CreativeTabModifier::icon),
-            StrOpt.of(Codec.BOOL, "search_bar").forGetter(CreativeTabModifier::search), //unused
-            StrOpt.of(Codec.INT, "search_bar_width").forGetter(CreativeTabModifier::searchWidth),
-            StrOpt.of(Codec.BOOL, "can_scroll").forGetter(CreativeTabModifier::canScroll),
-            StrOpt.of(Codec.BOOL, "show_title").forGetter(CreativeTabModifier::showTitle),
-            StrOpt.of(COMPONENT_CODEC, "name").forGetter(CreativeTabModifier::name),
-            StrOpt.of(ResourceLocation.CODEC, "background").forGetter(CreativeTabModifier::backGroundLocation),
-            StrOpt.of(ResourceLocation.CODEC, "tabs_image").forGetter(CreativeTabModifier::tabsImage),
-            StrOpt.of(ResourceLocation.CODEC.listOf(), "before_tabs").forGetter(CreativeTabModifier::beforeTabs),
-            StrOpt.of(ResourceLocation.CODEC.listOf(), "after_tabs").forGetter(CreativeTabModifier::afterTabs),
-            StrOpt.of(ItemPredicate.CODEC.listOf(), "removals", List.of()).forGetter(CreativeTabModifier::removals),
-            StrOpt.of(ItemAddition.CODEC.listOf(), "additions", List.of()).forGetter(CreativeTabModifier::additions),Codec.BOOL.optionalFieldOf("create_new", false).forGetter(CreativeTabModifier::registerTab),
-                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)
-            ).apply(i, CreativeTabModifier::new))
-            .validate(m -> {
-                if (m.registerTab && (!m.removals.isEmpty() || m.targets != Targets.EMPTY)) {
-                    return DataResult.error(() -> "Modifiers that register new creative tabs cannot have item removals or target existing tabs.");
-                }
-                return DataResult.success(m);
-            });
+    public static final Codec<CreativeTabModifier> CODEC =
+            ExtraCodecs.validate(
+                    RecordCodecBuilder.<CreativeTabModifier>create(i -> i.group(
+                            StrOpt.of(CodecUtil.ITEM_OR_STACK, "icon").forGetter(CreativeTabModifier::icon),
+                            StrOpt.of(Codec.BOOL, "search_bar").forGetter(CreativeTabModifier::search), //unused
+                            StrOpt.of(Codec.INT, "search_bar_width").forGetter(CreativeTabModifier::searchWidth),
+                            StrOpt.of(Codec.BOOL, "can_scroll").forGetter(CreativeTabModifier::canScroll),
+                            StrOpt.of(Codec.BOOL, "show_title").forGetter(CreativeTabModifier::showTitle),
+                            StrOpt.of(COMPONENT_CODEC, "name").forGetter(CreativeTabModifier::name),
+                            StrOpt.of(ResourceLocation.CODEC, "background").forGetter(CreativeTabModifier::backGroundLocation),
+                            StrOpt.of(ResourceLocation.CODEC, "tabs_image").forGetter(CreativeTabModifier::tabsImage),
+                            StrOpt.of(ResourceLocation.CODEC.listOf(), "before_tabs").forGetter(CreativeTabModifier::beforeTabs),
+                            StrOpt.of(ResourceLocation.CODEC.listOf(), "after_tabs").forGetter(CreativeTabModifier::afterTabs),
+                            StrOpt.of(ItemPredicate.CODEC.listOf(), "removals", List.of()).forGetter(CreativeTabModifier::removals),
+                            StrOpt.of(ItemAddition.CODEC.listOf(), "additions", List.of()).forGetter(CreativeTabModifier::additions),
+                            Codec.BOOL.optionalFieldOf("create_new", false).forGetter(CreativeTabModifier::registerTab),
+                            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)
+                    ).apply(i, CreativeTabModifier::new)),
+                    m -> {
+                        if (m.registerTab && (!m.removals.isEmpty() || m.targets != Targets.EMPTY)) {
+                            return DataResult.error(() -> "Modifiers that register new creative tabs cannot have item removals or target existing tabs.");
+                        }
+                        return DataResult.success(m);
+                    });
 
 
     public CreativeTabModifier merge(CreativeTabModifier newMod) {
