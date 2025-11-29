@@ -7,14 +7,19 @@ import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.entity.raid.Raid;
+import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -132,13 +137,16 @@ public interface ItemPredicate extends Predicate<ItemStack> {
 
     MapCodec<ItemStackMatch> ITEMSTACK_MATCH = TYPES.register("itemstack_match",
             ItemStack.SINGLE_ITEM_CODEC.fieldOf("itemstack")
-                    .xmap(ItemStackMatch::new, ItemStackMatch::items));
+                    .xmap(ItemStackMatch::new, ItemStackMatch::item));
 
-    record ItemStackMatch(ItemStack items) implements ItemPredicate {
+    record ItemStackMatch(ItemStack item) implements ItemPredicate {
 
         @Override
         public boolean test(ItemStack stack) {
-            return ItemStack.matches(items, stack);
+            if(stack.getItem() == Items.WHITE_BANNER){
+                int aa = 1;
+            }
+            return ItemStackHelper.matchItemsLenientBytes(item, stack);
         }
 
         @Override
@@ -169,6 +177,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
             return ID_MATCH;
         }
     }
+
 
 }
 

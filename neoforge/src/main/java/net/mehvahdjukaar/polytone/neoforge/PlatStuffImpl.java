@@ -17,6 +17,12 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.item.ItemModel;
@@ -37,6 +43,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.api.distmarker.Dist;
+import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -259,12 +266,16 @@ public class PlatStuffImpl {
 
     }
 
-    public static RenderType getRenderType(Block block) {
-        return null;
+    public static Object getRenderType(Block block) {
+        return ItemBlockRenderTypes.getRenderLayers(block.defaultBlockState());
     }
 
-    public static void setRenderType(Block block, RenderType renderType) {
-        ItemBlockRenderTypes.setRenderLayer(block, renderType);
+    public static void setRenderType(Block block, Object renderType) {
+        if (renderType instanceof RenderType rt) {
+            ItemBlockRenderTypes.setRenderLayer(block, rt);
+        }else if (renderType instanceof ChunkRenderTypeSet st) {
+            ItemBlockRenderTypes.setRenderLayer(block, st);
+        }
     }
 
     private static final boolean AC = ModList.get().isLoaded("alexscaves");

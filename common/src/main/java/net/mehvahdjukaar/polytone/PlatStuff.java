@@ -120,13 +120,13 @@ public class PlatStuff {
 
     @Contract
     @ExpectPlatform
-    public static RenderType getRenderType(Block block) {
+    public static Object getRenderType(Block block) {
         throw new AssertionError();
     }
 
     @Contract
     @ExpectPlatform
-    public static void setRenderType(Block block, RenderType renderType) {
+    public static void setRenderType(Block block, Object renderType) {
         throw new AssertionError();
     }
 

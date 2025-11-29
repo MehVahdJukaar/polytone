@@ -9,6 +9,9 @@ import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.utils.CodecUtil;
+import net.mehvahdjukaar.polytone.utils.StrOpt;
+import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -41,8 +44,10 @@ public record CreativeTabModifier(
         boolean registerTab,
         Targets targets) {
 
-    public static final Codec<CreativeTabModifier> CODEC = RecordCodecBuilder.<CreativeTabModifier>create(i -> i.group(
-                    CodecUtils.ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
+    public static final Codec<CreativeTabModifier> CODEC =
+            ExtraCodecs.validate(
+                    RecordCodecBuilder.<CreativeTabModifier>create(i -> i.group(
+                            CodecUtils.ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
                     Codec.BOOL.optionalFieldOf("search_bar").forGetter(CreativeTabModifier::search), //unused
                     Codec.INT.optionalFieldOf("search_bar_width").forGetter(CreativeTabModifier::searchWidth),
                     Codec.BOOL.optionalFieldOf("can_scroll").forGetter(CreativeTabModifier::canScroll),
@@ -56,13 +61,13 @@ public record CreativeTabModifier(
                     ItemAddition.CODEC.listOf().optionalFieldOf("additions", List.of()).forGetter(CreativeTabModifier::additions),
                     Codec.BOOL.optionalFieldOf("create_new", false).forGetter(CreativeTabModifier::registerTab),
                     Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)
-            ).apply(i, CreativeTabModifier::new))
-            .validate(m -> {
-                if (m.registerTab && (!m.removals.isEmpty() || m.targets != Targets.EMPTY)) {
-                    return DataResult.error(() -> "Modifiers that register new creative tabs cannot have item removals or target existing tabs.");
-                }
-                return DataResult.success(m);
-            });
+            ).apply(i, CreativeTabModifier::new)),
+                    m -> {
+                        if (m.registerTab && (!m.removals.isEmpty() || m.targets != Targets.EMPTY)) {
+                            return DataResult.error(() -> "Modifiers that register new creative tabs cannot have item removals or target existing tabs.");
+                        }
+                        return DataResult.success(m);
+                    });
 
 
     public CreativeTabModifier merge(CreativeTabModifier newMod) {
