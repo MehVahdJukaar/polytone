@@ -12,7 +12,9 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.NotNull;
 
@@ -138,15 +140,11 @@ public record Targets(List<Entry> entries) {
         public static final Codec<SimpleLocation> SIMPLE_CODEC = ResourceLocation.CODEC
                 .xmap(SimpleLocation::new, s -> s.id);
 
-        public SimpleLocation(ResourceLocation id) {
-            this.id = Preconditions.checkNotNull(id);
-        }
-
-        public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
-            ResourceKey k = reg.key();
-            ResourceKey<T> key = ResourceKey.create(k, this.id);
-            Optional<Holder.Reference<T>> holder = reg.get(key);
-            if (holder.isEmpty() && Polytone.isFutureId(id)) {
+        @Override
+        public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
+            var holder = reg.getHolder(id);
+            if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
+                Polytone.LOGGER.error("Found missing ID in minecraft namespace: {}", id + ". Polytone will skip it but this is remains a bug of the Resource Pack. Optional entries or resource conditions should be used to maintain backward compatibility instead.");
                 return List.of();
             }
             return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
@@ -164,10 +162,9 @@ public record Targets(List<Entry> entries) {
 
 
         @Override
-        public <T> Iterable<Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
-            ResourceKey k = reg.key();
-            TagKey<T> key = TagKey.create(k, id);
-            return reg.getOrThrow(key);
+        public <T> Iterable<Holder<T>> get(Registry<T> reg) {
+            TagKey<T> key = TagKey.create(reg.key(), id);
+            return reg.getTag(key).orElseThrow(() -> new IllegalStateException("Tag not found: " + id));
         }
 
         @Override
