@@ -17,7 +17,9 @@ import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,9 +83,19 @@ public class PolytoneFabric implements ClientModInitializer {
             Polytone.onLoggedOut();
         });
 
+
+        ClientTickEvents.END_WORLD_TICK.register((level) -> {
+            var currentLevelKey = level.dimension();
+            if (currentLevel != currentLevelKey) {
+                currentLevel = currentLevelKey;
+                Polytone.onDimChanged(level);
+            }
+        });
+
         addRenderParticlesType();
     }
 
+    private static ResourceKey<Level> currentLevel = null;
 
     public static MinecraftServer currentServer;
 

@@ -12,11 +12,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FogType;
-import net.minecraft.world.phys.Vec2;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.ScreenEvent;
@@ -26,6 +27,7 @@ import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -102,6 +104,12 @@ public class PolytoneForge {
         }
     }
 
+    @SubscribeEvent
+    public void onDimChanged(PlayerEvent.PlayerChangedDimensionEvent event) {
+        Level level = event.getEntity().level().registryAccess()
+                .registryOrThrow(Registries.DIMENSION).getOrThrow(event.getTo());
+        Polytone.onDimChanged(level);
+    }
 
     @SubscribeEvent
     public void onLevelUnload(ClientPlayerNetworkEvent.LoggingOut event) {

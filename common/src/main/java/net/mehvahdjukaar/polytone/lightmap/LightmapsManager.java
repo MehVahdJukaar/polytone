@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +30,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
     private static final Codec<Targets> TARGET_ONLY_CODEC = Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY)
             .codec();
 
+    //lightmap id to lightmap
     private final MapRegistry<Lightmap> lightmaps = new MapRegistry<>("Lightmaps");
 
     private ResourceKey<Level> lastDimension = null;
@@ -112,7 +114,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
     }
 
     private void addLightmap(ResourceLocation fileId, Lightmap mod, RegistryAccess access) {
-        for (var dim : mod.targets().getTargets(fileId, access)) {
+        for (var dim : mod.targets().compute(fileId, access)) {
             lightmaps.register(dim.unwrapKey().get().location(), mod);
         }
     }
@@ -137,7 +139,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
         if (lastDimension != level.dimension()) {
             reachedMainMenuHack = true;
             lastDimension = level.dimension();
-            currentLightmap = lightmaps.getValue(lastDimension.location());
+            currentLightmap = findLightmapForLevel(level);
             if (currentLightmap == null) {
                 currentLightmap = lightmaps.getValue(DEFAULT_LIGHTMAP);
             }
@@ -149,6 +151,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
         }
         return false;
     }
+
 
     private boolean usingGuiLightmap = false;
 
@@ -165,5 +168,19 @@ public class LightmapsManager extends JsonImgPartialReloader {
 
     public Codec<Lightmap> byNameCodec() {
         return lightmaps;
+    }
+
+    private @Nullable Lightmap findLightmapForLevel(Level level) {
+        var currentDimHolder = level.dimensionTypeRegistration();
+        RegistryAccess access = level.registryAccess();
+        for (var v : lightmaps.getEntries()) {
+            ResourceLocation modId = v.getKey();
+            Lightmap modifier = v.getValue();
+            var targets = modifier.targets().compute(modId, access);
+            if (targets.contains(currentDimHolder)) {
+                return modifier;
+            }
+        }
+        return null;
     }
 }

@@ -1,2 +1,1 @@
-- render types alterations also work on forge (still you shouldnt use them as forge has render types modificaiton builtin in models themselves)
-- made item stack match lenient when compating bytes and integers as converting from json to nbt actually loses some data. thanks mojang
+- lightmaps and dim modifiers no longer parse all dimensions when pack is loaded as dimension registry isnt snynced. should fix working on custom dims
