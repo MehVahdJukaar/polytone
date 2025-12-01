@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -45,7 +46,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     }
 
     private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod, RegistryAccess access) {
-        Registry<Biome> registry = access.registryOrThrow(Registries.BIOME);
+        HolderLookup.RegistryLookup<Biome> registry = access.lookupOrThrow(Registries.BIOME);
         for (var biome : mod.targets().compute(pathId, registry)) {
             effectsToApply.merge(biome.unwrapKey().get().location(), mod, BiomeEffectModifier::merge);
         }

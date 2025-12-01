@@ -6,9 +6,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,10 +48,11 @@ public record Targets(List<Entry> entries) {
         return new Targets(entries);
     }
 
-    public <T> Collection<Holder<T>> compute(ResourceLocation fileId, Registry<T> registry) {
+    public <T> Collection<Holder<T>> compute(ResourceLocation fileId, HolderLookup.RegistryLookup<T> registry) {
 
         Set<Holder<T>> set = new HashSet<>();
-        Optional<Holder.Reference<T>> implicitTarget = registry.getHolder(fileId);
+        ResourceKey<T> registryKey = ResourceKey.create((ResourceKey) registry.key(), fileId);
+        Optional<Holder.Reference<T>> implicitTarget = registry.get(registryKey);
         if (!entries.isEmpty()) {
             if (implicitTarget.isPresent()) {
                 Polytone.LOGGER.warn("Found Polytone file with explicit Targets ({}) also having a valid IMPLICIT (file path) Target ({})." +
@@ -87,7 +91,7 @@ public record Targets(List<Entry> entries) {
     }
 
     private interface Entry {
-        <T> Iterable<? extends Holder<T>> get(Registry<T> reg);
+        <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg);
     }
 
     private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = Codec.withAlternative(
@@ -106,7 +110,7 @@ public record Targets(List<Entry> entries) {
         ).apply(i, OptionalEntry::new));
 
         @Override
-        public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
+        public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
             try {
                 return entry.get(reg);
             } catch (IllegalStateException e) {
@@ -129,8 +133,9 @@ public record Targets(List<Entry> entries) {
                 .xmap(SimpleLocation::new, s -> s.id);
 
         @Override
-        public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
-            var holder = reg.getHolder(id);
+        public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
+            ResourceKey<T> key = ResourceKey.create((ResourceKey) reg.key(), id);
+            var holder = reg.get(key);
             if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
                 Polytone.LOGGER.error("Found missing ID in minecraft namespace: {}", id + ". Polytone will skip it but this is remains a bug of the Resource Pack. Optional entries or resource conditions should be used to maintain backward compatibility instead.");
                 return List.of();
@@ -150,9 +155,9 @@ public record Targets(List<Entry> entries) {
 
 
         @Override
-        public <T> Iterable<Holder<T>> get(Registry<T> reg) {
-            TagKey<T> key = TagKey.create(reg.key(), id);
-            return reg.getTag(key).orElseThrow(() -> new IllegalStateException("Tag not found: " + id));
+        public <T> Iterable<Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
+            TagKey<T> key = TagKey.create((ResourceKey) reg.key(), id);
+            return reg.get(key).orElseThrow(() -> new IllegalStateException("Tag not found: " + id));
         }
 
         @Override
@@ -168,8 +173,8 @@ public record Targets(List<Entry> entries) {
         );
 
         @Override
-        public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
-            return reg.holders().filter(e -> regex.matcher(e.key().location().toString())
+        public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
+            return reg.listElements().filter(e -> regex.matcher(e.key().location().toString())
                     .matches()).toList();
         }
 
