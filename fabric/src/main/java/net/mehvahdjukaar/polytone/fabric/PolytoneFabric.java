@@ -84,18 +84,8 @@ public class PolytoneFabric implements ClientModInitializer {
         });
 
 
-        ClientTickEvents.END_WORLD_TICK.register((level) -> {
-            var currentLevelKey = level.dimension();
-            if (currentLevel != currentLevelKey) {
-                currentLevel = currentLevelKey;
-                Polytone.onDimChanged(level);
-            }
-        });
-
         addRenderParticlesType();
     }
-
-    private static ResourceKey<Level> currentLevel = null;
 
     public static MinecraftServer currentServer;
 

@@ -105,13 +105,6 @@ public class PolytoneForge {
     }
 
     @SubscribeEvent
-    public void onDimChanged(PlayerEvent.PlayerChangedDimensionEvent event) {
-        Level level = event.getEntity().level().registryAccess()
-                .registryOrThrow(Registries.DIMENSION).getOrThrow(event.getTo());
-        Polytone.onDimChanged(level);
-    }
-
-    @SubscribeEvent
     public void onLevelUnload(ClientPlayerNetworkEvent.LoggingOut event) {
         Polytone.onLoggedOut();
     }

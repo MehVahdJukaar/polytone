@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -170,13 +171,12 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         //apply to current dimension
         Level level = Minecraft.getInstance().level;
         if (level != null) {
-            onDimensionChanged(level, access);
+            onDimensionChanged(level.dimensionTypeRegistration(), access);
         }
     }
 
-    public void onDimensionChanged(Level level, RegistryAccess access) {
-        DimensionType currentDim = level.dimensionType();
-        var currentDimHolder = level.dimensionTypeRegistration();
+    public void onDimensionChanged(Holder<DimensionType> currentDimHolder, RegistryAccess access) {
+        DimensionType currentDim = currentDimHolder.value();
         ResourceLocation currentDimId = currentDimHolder.unwrapKey().get().location();
 
         for (var v : dimensionEffects.getEntries()) {

@@ -1,12 +1,15 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.dimension.DimensionType;
 
 public class ClientFrameTicker {
 
@@ -23,12 +26,17 @@ public class ClientFrameTicker {
     private static float deltaTime;
     private static double playerSpeed;
 
+    private static DimensionType lastDImType;
     private static Screen lastScreen;
     private static float screenTime;
 
     public static void onRenderTick(Minecraft mc) {
         Level level = mc.level;
         if (level == null) return;
+        if (level.dimensionType() != lastDImType) {
+            lastDImType = level.dimensionType();
+            Polytone.onDimChanged(level);
+        }
         float partialTicks = mc.getFrameTime();
 
         time = level.getGameTime() + partialTicks;

@@ -279,6 +279,6 @@ public class Polytone {
 
 
     public static void onDimChanged(Level to) {
-        DIMENSION_MODIFIERS.onDimensionChanged(to, to.registryAccess());
+        DIMENSION_MODIFIERS.onDimensionChanged(to.dimensionTypeRegistration(), to.registryAccess());
     }
 }
