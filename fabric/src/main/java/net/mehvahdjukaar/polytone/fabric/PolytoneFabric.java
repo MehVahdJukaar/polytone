@@ -18,6 +18,9 @@ import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +86,8 @@ public class PolytoneFabric implements ClientModInitializer {
             addRenderParticlesType();
         });
     }
+
+    public static MinecraftServer currentServer;
 
     public static void addRenderParticlesType() {
         List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());

@@ -18,6 +18,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
@@ -42,9 +44,12 @@ import java.util.Set;
 
 public class DimensionEffectsManager extends JsonImgPartialReloader {
 
-    private final Map<ResourceLocation, DimensionEffectsModifier> effectsToApply = new HashMap<>();
+    //we cant store dimensions here since the dimension registry isnt synced to the client
+    //!!map of dimension modifier IDs to modifiers
+    private final MapRegistry< DimensionEffectsModifier> dimensionEffects = new MapRegistry<>("Dimension Effects Modifiers");
 
-    private final Map<ResourceLocation, DimensionEffectsModifier> vanillaEffects = new HashMap<>();
+    //map of dimension ID to modifier
+    private final Map<ResourceLocation, DimensionEffectsModifier> alteredVanillaEffects = new HashMap<>();
 
     private final Object2ObjectMap<DimensionType, IColorGetter> fogColormaps = new Object2ObjectArrayMap<>();
     private final Object2ObjectMap<DimensionType, IColorGetter> terrainFogColormaps = new Object2ObjectArrayMap<>();
@@ -68,7 +73,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
         //Dimensions are NOT reloaded with world load. we need to reset vanilla stuff once we have a level
         //whatever happens, we always clear stuff to apply
-        effectsToApply.clear();
+        dimensionEffects.clear();
         fogColormaps.clear();
         skyColormaps.clear();
         sunsetColormaps.clear();
@@ -169,9 +174,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     private void addModifier(ResourceLocation fileId, DimensionEffectsModifier mod, HolderLookup.Provider registryAccess) {
-        for (var h : mod.targets().getTargets(fileId, registryAccess)) {
-            effectsToApply.merge(h.unwrapKey().get().location(), mod, DimensionEffectsModifier::merge);
-        }
+        dimensionEffects.register(fileId, mod);
     }
 
     @Override
@@ -179,47 +182,57 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         if (!isLogIn && !needsDynamicApplication) return;
         needsDynamicApplication = false;
 
-        for (var v : vanillaEffects.entrySet()) {
+        //reset vanilla
+        for (var v : alteredVanillaEffects.entrySet()) {
             v.getValue().applyInplace(v.getKey());
         }
 
-        var dimReg = registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE);
+        //apply to current dimension
+        Level level = Minecraft.getInstance().level;
+        if (level != null) {
+            onDimensionChanged(level.dimensionTypeRegistration(), access);
+        }
+    }
 
-        for (var v : effectsToApply.entrySet()) {
-            ResourceLocation dimensionId = v.getKey();
+    public void onDimensionChanged(Holder<DimensionType> currentDimHolder, RegistryAccess access) {
+        DimensionType currentDim = currentDimHolder.value();
+        ResourceLocation currentDimId = currentDimHolder.unwrapKey().get().location();
+
+        for (var v : dimensionEffects.getEntries()) {
+            ResourceLocation modId = v.getKey();
             var dimensionKey = ResourceKey.create(Registries.DIMENSION_TYPE, dimensionId);
             DimensionEffectsModifier modifier = v.getValue();
-            var old = modifier.applyInplace(dimensionId);
+            var targets = modifier.targets().compute(modId, access);
+            if (!targets.contains(currentDimHolder)) continue;
 
-            vanillaEffects.put(dimensionId, old);
+            var old = modifier.applyInplace(currentDimId);
 
-            DimensionType dim = dimReg.get(dimensionKey).get().value();
+            alteredVanillaEffects.put(currentDimId, old);
+
             if (modifier.getFogColormap() instanceof IColorGetter c) {
-                fogColormaps.put(dim, c);
+                fogColormaps.put(currentDim, c);
             }
             if (modifier.getTerrainFogColormap() instanceof IColorGetter c) {
                 terrainFogColormaps.put(dim, c);
             }
             if (modifier.getSkyColormap() instanceof IColorGetter c) {
-                skyColormaps.put(dim, c);
+                skyColormaps.put(currentDim, c);
             }
             if (modifier.getSunsetColormap() instanceof IColorGetter c) {
-                sunsetColormaps.put(dim, c);
+                sunsetColormaps.put(currentDim, c);
             }
             if (modifier.noWeatherFogDarken()) {
-                cancelFogWeatherDarken.put(dim, true);
+                cancelFogWeatherDarken.put(currentDim, true);
             }
             if (modifier.noWeatherSkyDarken()) {
-                cancelSkyWeatherDarken.put(dim, true);
+                cancelSkyWeatherDarken.put(currentDim, true);
             }
             if (modifier.cloudLevel().isPresent() && modifier.cloudLevel().get().right().isPresent()) {
-                cloudFunctions.put(dim, modifier.cloudLevel().get().right().get());
+                cloudFunctions.put(currentDim, modifier.cloudLevel().get().right().get());
             }
+            Polytone.LOGGER.info("Applied Custom Dimension Effects Modifier '{}' to dimension '{}'", modId, currentDimHolder);
         }
-        if (!vanillaEffects.isEmpty())
-            Polytone.LOGGER.info("Applied {} Dimension Modifiers", vanillaEffects.size());
         //we don't clear effects to apply because we need to re apply on world reload
-
     }
 
     @Nullable

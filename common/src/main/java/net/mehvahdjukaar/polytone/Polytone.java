@@ -33,8 +33,10 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -252,4 +254,8 @@ public class Polytone {
         return futureIds;
     }
 
+
+    public static void onDimChanged(Level to) {
+        DIMENSION_MODIFIERS.onDimensionChanged(to.dimensionTypeRegistration(), to.registryAccess());
+    }
 }
