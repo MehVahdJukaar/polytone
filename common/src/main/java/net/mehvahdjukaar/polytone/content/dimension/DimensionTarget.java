@@ -24,7 +24,7 @@ public class DimensionTarget {
         this.target = target;
     }
 
-    public Collection<Holder<DimensionType>> getTargets(Identifier fileId, HolderLookup.Provider registryAccess) {
+    public Collection<Holder<DimensionType>> compute(Identifier fileId, HolderLookup.Provider registryAccess) {
         var reg = registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE);
         if (target.left().isPresent()) {
             var tt = target.left().get();
