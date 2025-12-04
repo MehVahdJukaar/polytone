@@ -141,12 +141,12 @@ public record BlockParticleEmitter(
 
     public enum SpawnLocation implements StringRepresentable {
         CENTER, LOWER_CORNER, BLOCK_FACES;
+        public static final Codec<SpawnLocation> CODEC = StringRepresentable.fromEnum(SpawnLocation::values);
 
         @Override
         public String getSerializedName() {
             return this.name().toLowerCase(Locale.ROOT);
         }
-        public static final Codec<SpawnLocation> CODEC = StringRepresentable.fromEnum(SpawnLocation::values);
 
         Vec3 getLocation(BlockPos pos, BlockState state, RandomSource rand) {
             return switch (this) {
@@ -157,11 +157,6 @@ public record BlockParticleEmitter(
                     yield getParticleSpawnPosOnFace(rand, pos, dir);
                 }
             };
-        }
-
-        @Override
-        public String getSerializedName() {
-            return this.name().toLowerCase(Locale.ROOT);
         }
     }
 

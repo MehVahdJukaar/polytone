@@ -143,10 +143,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
 
         @Override
         public boolean test(ItemStack stack) {
-            if(stack.getItem() == Items.WHITE_BANNER){
-                int aa = 1;
-            }
-            return ItemStackHelper.matchItemsLenientBytes(item, stack);
+            return ItemStack.isSameItemSameComponents(item, stack);
         }
 
         @Override

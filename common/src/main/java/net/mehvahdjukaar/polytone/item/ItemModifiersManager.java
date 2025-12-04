@@ -87,7 +87,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
     }
 
     private void addModifier(ResourceLocation id, ItemModifier mod) {
-        for (var item : mod.targets().compute(id, BuiltInRegistries.ITEM)) {
+        for (var item : mod.targets().compute(id, BuiltInRegistries.ITEM.asLookup())) {
             var i = item.value();
             modifiers.merge(i, mod, ItemModifier::merge);
 
