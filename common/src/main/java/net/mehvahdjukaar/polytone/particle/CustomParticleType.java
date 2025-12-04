@@ -15,6 +15,7 @@ import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.mehvahdjukaar.polytone.utils.codec.BiggerCodecs;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;

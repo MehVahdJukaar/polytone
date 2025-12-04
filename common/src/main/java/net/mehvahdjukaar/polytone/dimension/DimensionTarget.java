@@ -25,13 +25,13 @@ public class DimensionTarget {
     }
 
     public Collection<Holder<DimensionType>> getTargets(ResourceLocation fileId, RegistryAccess registryAccess) {
-        var reg = registryAccess.registryOrThrow(Registries.DIMENSION_TYPE);
+        var reg = registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE);
         if (target.left().isPresent()) {
             var tt = target.left().get();
             return tt.compute(fileId, reg);
         } else {
             var template = target.right().get();
-            return reg.holders().filter(h -> template.matches(h.value()))
+            return reg.listElements().filter(h -> template.matches(h.value()))
                     .map(r -> (Holder<DimensionType>) r)
                     .toList();
         }

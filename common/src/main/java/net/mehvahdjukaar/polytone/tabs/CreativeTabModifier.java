@@ -7,9 +7,6 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.utils.CodecUtil;
-import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -46,7 +43,6 @@ public record CreativeTabModifier(
             Function.identity());
 
     public static final Codec<CreativeTabModifier> CODEC =
-            ExtraCodecs.validate(
                     RecordCodecBuilder.<CreativeTabModifier>create(i -> i.group(
                             CodecUtils.ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
                     Codec.BOOL.optionalFieldOf("search_bar").forGetter(CreativeTabModifier::search), //unused
@@ -62,7 +58,8 @@ public record CreativeTabModifier(
                     ItemAddition.CODEC.listOf().optionalFieldOf("additions", List.of()).forGetter(CreativeTabModifier::additions),
                     Codec.BOOL.optionalFieldOf("create_new", false).forGetter(CreativeTabModifier::registerTab),
                     Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)
-            ).apply(i, CreativeTabModifier::new)),
+            ).apply(i, CreativeTabModifier::new))
+            .validate(
                     m -> {
                         if (m.registerTab && (!m.removals.isEmpty() || m.targets != Targets.EMPTY)) {
                             return DataResult.error(() -> "Modifiers that register new creative tabs cannot have item removals or target existing tabs.");

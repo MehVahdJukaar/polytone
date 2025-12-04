@@ -174,7 +174,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
 
     private void addModifier(ResourceLocation fileId, BlockPropertyModifier mod) {
-        for (var block : mod.targets().compute(fileId, BuiltInRegistries.BLOCK)) {
+        for (var block : mod.targets().compute(fileId, BuiltInRegistries.BLOCK.asLookup())) {
             modifiers.merge(block.value(), mod, BlockPropertyModifier::merge);
         }
     }

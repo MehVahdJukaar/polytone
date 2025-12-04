@@ -113,7 +113,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         if (mod.registerTab()) {
             targets = Targets.ofIds(fileId);
         }
-        for (var tab : targets.compute(fileId, BuiltInRegistries.CREATIVE_MODE_TAB)) {
+        for (var tab : targets.compute(fileId, BuiltInRegistries.CREATIVE_MODE_TAB.asLookup())) {
             ResourceKey<CreativeModeTab> key = tab.unwrapKey().get();
             modifiers.merge(key, mod, CreativeTabModifier::merge);
 
