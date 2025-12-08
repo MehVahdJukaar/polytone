@@ -16,6 +16,7 @@
     "GuiGraphicsMixin",
     "IClientFluidTypeExtensionsMixin",
     "InventoryScreenMixin",
+    "ItemBlockRenderTypesMixin",
     "ItemColorsAccessor",
     "ModelRendererMixin",
     "ModifiableBiomeAccessor",

@@ -19,45 +19,9 @@ configurations {
     developmentFabric.extendsFrom common
 }
 
-dependencies {
-    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
-    modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
-
-    common(project(path: ":common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
-
-    implementation include( "net.objecthunter:exp4j:${exp4j_version}")
-
-   // modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
-    //modImplementation "curse.maven:continuity-531351:5425853"
-    modCompileOnly("curse.maven:sodium-394468:6211305")
-   // modImplementation "curse.maven:distant-horizons-508933:6387715"
-}
-
-
-
 processResources {
-    // input variables of this task:
-    var replaceProperties = [
-            minecraft_version    : minecraft_version,
-            minecraft_min_version: minecraft_min_version,
-            minecraft_max_version: minecraft_max_version,
-
-            mod_id               : mod_id,
-            mod_name             : mod_name,
-            mod_version          : mod_version,
-            mod_license          : mod_license,
-            mod_authors          : mod_authors,
-            mod_description      : mod_description,
-            mod_credits          : mod_credits,
-            mod_homepage         : mod_homepage,
-            mod_github           : mod_github
-    ]
-    // setting them as input
-    inputs.properties replaceProperties
-
     filesMatching("fabric.mod.json") {
-        expand replaceProperties + [project: project]
+        expand rootProject.ext.replaceProperties + [project: project]
     }
 }
 
@@ -69,10 +33,13 @@ shadowJar {
 }
 
 remapJar {
+    exclude '**/example/**'
+
     injectAccessWidener = true
     input.set shadowJar.archiveFile
     dependsOn shadowJar
-    archiveClassifier = "fabric"
+    archiveClassifier = null
+    archiveClassifier = 'fabric'
 }
 
 jar {
@@ -83,6 +50,12 @@ sourcesJar {
     def commonSources = project(":common").sourcesJar
     dependsOn commonSources
     from commonSources.archiveFile.map { zipTree(it) }
+
+    archiveClassifier = "fabric-sources"
+}
+
+remapSourcesJar{
+    archiveClassifier = "fabric-sources"
 }
 
 components.java {
@@ -98,24 +71,20 @@ publishing {
             from components.java
         }
     }
+}
 
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-    repositories {
-        // Add repositories to publish to here.
-        maven {
-            url = "https://www.cursemaven.com"
-            allowInsecureProtocol = true
-        }
-        maven {
-            name = "TerraformersMC"
-            url = "https://maven.terraformersmc.com/releases"
-        }
-        maven {
-            url = "https://maven.shedaniel.me"
-        }
-    }
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+
+    common(project(path: ":common", configuration: "namedElements")) { transitive false }
+    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
+
+    implementation include( "net.objecthunter:exp4j:${exp4j_version}")
+
+   // modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
+    //modImplementation "curse.maven:continuity-531351:5425853"
+    modCompileOnly("curse.maven:sodium-394468:6211305")
+   // modImplementation "curse.maven:distant-horizons-508933:6387715"
 }
-repositories {
-    maven { url "https://maven.shedaniel.me/" }
-    maven { url "https://maven.terraformersmc.com/releases" }
-}
+
