@@ -1,2 +1,2 @@
-- render types alterations also work on forge (still you shouldnt use them as forge has render types modificaiton builtin in models themselves)
-- made item stack match lenient when compating bytes and integers as converting from json to nbt actually loses some data. thanks mojang
+- fixed neoforge LAN
+- ported some fixes from 1.20

@@ -270,12 +270,16 @@ public class PlatStuffImpl {
         return ItemBlockRenderTypes.getRenderLayers(block.defaultBlockState());
     }
 
+    public static boolean dontCheckLoading = false;
+
     public static void setRenderType(Block block, Object renderType) {
+        dontCheckLoading = true;
         if (renderType instanceof RenderType rt) {
             ItemBlockRenderTypes.setRenderLayer(block, rt);
         }else if (renderType instanceof ChunkRenderTypeSet st) {
             ItemBlockRenderTypes.setRenderLayer(block, st);
         }
+        dontCheckLoading= false;
     }
 
     private static final boolean AC = ModList.get().isLoaded("alexscaves");
