@@ -203,14 +203,14 @@ public class Polytone {
         EXTRA_MODELS.add(model);
     }
 
-    public static boolean isEntryDynamic(Registry<?> reg, ResourceLocation entryId) {
-        if (reg == BuiltInRegistries.CREATIVE_MODE_TAB) {
+    public static boolean isEntryDynamic(ResourceKey<? extends Registry<?>> reg, ResourceLocation entryId) {
+        if (reg == Registries.CREATIVE_MODE_TAB) {
             return CREATIVE_TABS_MODIFIERS.isDynamicTab(entryId);
         }
-        if (reg == BuiltInRegistries.PARTICLE_TYPE) {
+        if (reg == Registries.PARTICLE_TYPE) {
             return CUSTOM_PARTICLES.isDynamicParticle(entryId);
         }
-        if (reg == BuiltInRegistries.SOUND_EVENT) {
+        if (reg == Registries.SOUND_EVENT) {
             return SOUND_TYPES.isDynamicSound(entryId);
         }
         return false;

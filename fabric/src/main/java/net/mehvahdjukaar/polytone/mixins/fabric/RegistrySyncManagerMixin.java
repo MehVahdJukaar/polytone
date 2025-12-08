@@ -20,6 +20,6 @@ public class RegistrySyncManagerMixin {
     private static boolean polytone$omitPolytoneDynamicEntries(Object2IntMap instance, Object o, int i,
                                                                @Local Registry<?> registryId,
                                                                @Local(ordinal = 1) ResourceLocation entryId) {
-        return !Polytone.isEntryDynamic(registryId, entryId);
+        return !Polytone.isEntryDynamic(registryId.key(), entryId);
     }
 }
