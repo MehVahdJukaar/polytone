@@ -1,2 +1,1 @@
-- fixed neoforge LAN
-- ported some fixes from 1.20
+- added serene season compat "SEASON" variable
