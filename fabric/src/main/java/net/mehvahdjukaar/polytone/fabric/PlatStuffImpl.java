@@ -59,11 +59,13 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
+import sereneseasons.api.season.SeasonHelper;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -254,6 +256,12 @@ public class PlatStuffImpl {
 
     public static float compatACModifyGamma(float partialTicks, float gamma) {
         return gamma;
+    }
+
+    private static final boolean SS = FabricLoader.getInstance().isModLoaded("sereneseasons");
+
+    public static float compatSSGetSeason(Level level) {
+        return SS ? (SeasonHelper.getSeasonState(level).getSubSeason().ordinal() / 11f) : 1f;
     }
 
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
