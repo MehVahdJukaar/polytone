@@ -39,6 +39,7 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -60,6 +61,7 @@ import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.joml.Vector3f;
+import sereneseasons.api.season.SeasonHelper;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -296,8 +298,32 @@ public class PlatStuffImpl {
 
 
     public static float compatACModifyGamma(float partialTicks, float gamma) {
-       return gamma; //TODO: add back
+        return gamma; //TODO: add back
         // return AC ? AlexsCavesCompat.modifyGamma(partialTicks, gamma) : gamma;
+    }
+
+
+    private static final boolean SS = ModList.get().isLoaded("sereneseasons");
+
+    public static float compatSSGetSeason(Level level) {
+        return SS ? (SeasonHelper.getSeasonState(level).getSubSeason().ordinal() / 11f) : 1f;
+    }
+
+
+    public static RegistryAccess getServerRegistryAccess() {
+        return ServerLifecycleHooks.getCurrentServer().registryAccess();
+    }
+
+    public static BakedModel getBakedModel(ModelResourceLocation id) {
+        ModelManager mm = Minecraft.getInstance().getModelManager();
+        return mm.getModel(id);
+    }
+
+    public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
+        Consumer<ModelEvent.RegisterAdditional> eventConsumer = event -> {
+            eventListener.accept(event::register);
+        };
+        PolytoneForge.bus.addListener(eventConsumer);
     }
 
     public static String getVersion() {

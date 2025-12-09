@@ -86,5 +86,6 @@ dependencies {
     //modImplementation "curse.maven:continuity-531351:5425853"
     modCompileOnly("curse.maven:sodium-394468:6211305")
    // modImplementation "curse.maven:distant-horizons-508933:6387715"
+    modCompileOnly "curse.maven:serene-seasons-291874:6182595"
 }
 

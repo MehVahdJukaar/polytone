@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -14,6 +15,7 @@ public class ClientFrameTicker {
     private static double timeOfDay;
     private static double dayTime;
     private static float rainAndThunder;
+    private static float season;
     private static int skyLight;
     private static int blockLight;
     private static BlockPos cameraPos = BlockPos.ZERO;
@@ -35,6 +37,7 @@ public class ClientFrameTicker {
         dayTime = level.dimensionType().fixedTime().orElse(level.getDayTime()) + partialTicks;
         timeOfDay = level.getTimeOfDay(partialTicks);
         rainAndThunder = level.getRainLevel(partialTicks) * 0.5f + level.getThunderLevel(partialTicks) * 0.5f;
+        season = PlatStuff.compatSSGetSeason(level);
 
         cameraPos = mc.gameRenderer.getMainCamera().getBlockPosition();
         cameraBiome = level.getBiome(cameraPos);
@@ -113,5 +116,9 @@ public class ClientFrameTicker {
 
     public static float getGuiTime() {
         return screenTime;
+    }
+
+    public static float getSeason() {
+        return season;
     }
 }

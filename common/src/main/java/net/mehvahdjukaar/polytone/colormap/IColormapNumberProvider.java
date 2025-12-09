@@ -178,4 +178,25 @@ public interface IColormapNumberProvider {
         }
     });
 
+    IColormapNumberProvider SEASON = BUILTIN_PROVIDERS.register("season", new IColormapNumberProvider() {
+        @Override
+        public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+            return 1 - ClientFrameTicker.getSeason();
+        }
+
+        @Override
+        public boolean usesBiome() {
+            return false;
+        }
+
+        @Override
+        public boolean usesPos() {
+            return false;
+        }
+
+        @Override
+        public boolean usesState() {
+            return false;
+        }
+    });
 }

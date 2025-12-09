@@ -101,6 +101,7 @@ public class ColormapExpressionProvider extends PolytoneExpression implements IC
         if (hasDayTime) vb.setVariable(PolytoneExpression.DAY_TIME, ClientFrameTicker.getDayTime());
         if (hasSunTime) vb.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
         if (hasRain) vb.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+        if (hasSeason) vb.setVariable(PolytoneExpression.SEASON, ClientFrameTicker.getSeason());
 
         if (hasSkyLight)
             vb.setVariable(SKY_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.SKY, pos));
