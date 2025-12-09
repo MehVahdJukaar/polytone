@@ -66,6 +66,7 @@ public class BlockContextExpression extends PolytoneExpression {
         if (hasDayTime) vb.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
         if (hasSunTime) vb.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
         if (hasRain) vb.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+        if (hasSeason) vb.setVariable(SEASON, ClientFrameTicker.getSeason());
 
         if (hasSkyLight) vb.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, p));
         if (hasBlockLight) vb.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, p));
@@ -111,6 +112,7 @@ public class BlockContextExpression extends PolytoneExpression {
         if (hasDayTime) vars.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
         if (hasSunTime) vars.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
         if (hasRain) vars.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
+        if (hasSeason) vars.setVariable(SEASON, ClientFrameTicker.getSeason());
 
         if (hasSkyLight) vars.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, pos));
         if (hasBlockLight) vars.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, pos));

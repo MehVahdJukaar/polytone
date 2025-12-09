@@ -37,6 +37,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -58,6 +60,7 @@ import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import org.joml.Vector3f;
+import sereneseasons.api.season.SeasonHelper;
 
 import java.lang.reflect.Field;
 import java.util.BitSet;
@@ -403,6 +406,13 @@ public class PlatStuffImpl {
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
         return ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine).getProviders()
                 .get(BuiltInRegistries.PARTICLE_TYPE.getKey(type));
+    }
+
+
+    private static final boolean SS = ModList.get().isLoaded("sereneseasons");
+
+    public static float compatSSGetSeason(Level level) {
+        return SS ? (SeasonHelper.getSeasonState(level).getSubSeason().ordinal() / 11f) : 1f;
     }
 
 

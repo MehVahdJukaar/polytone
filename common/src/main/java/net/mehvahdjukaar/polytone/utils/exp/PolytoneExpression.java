@@ -19,6 +19,7 @@ public abstract class PolytoneExpression {
     protected static final String DAY_TIME = "DAY_TIME";
     protected static final String SUN_TIME = "SUN_TIME";
     protected static final String RAIN = "RAIN";
+    protected static final String SEASON = "SEASON";
 
     // at pos stuff
     protected static final String POS_X = "POS_X";
@@ -76,6 +77,7 @@ public abstract class PolytoneExpression {
     protected final boolean hasDayTime;
     protected final boolean hasSunTime;
     protected final boolean hasRain;
+    protected final boolean hasSeason;
 
     protected final boolean hasSkyLight;
     protected final boolean hasBlockLight;
@@ -111,6 +113,7 @@ public abstract class PolytoneExpression {
         this.hasDayTime = unparsed.contains(DAY_TIME);
         this.hasSunTime = unparsed.contains(SUN_TIME);
         this.hasRain = unparsed.contains(RAIN);
+        this.hasSeason = unparsed.contains(SEASON);
 
         this.hasSkyLight = unparsed.contains(SKY_LIGHT);
         this.hasBlockLight = unparsed.contains(BLOCK_LIGHT);
@@ -127,7 +130,7 @@ public abstract class PolytoneExpression {
     protected abstract PolytoneExpression createConcurrent();
 
     protected void buildVars(VarBuilder builder) {
-        builder.addAll(POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, SUN_TIME, TIME,
+        builder.addAll(POS_X, POS_Y, POS_Z, RAIN, DAY_TIME, SUN_TIME, TIME, SEASON,
                 TEMPERATURE, DOWNFALL, BLOCK_LIGHT, SKY_LIGHT,
                 DISTANCE_SQUARED, PLAYER_X, PLAYER_Y, PLAYER_Z, PLAYER_SPEED_SQUARED, RENDER_DISTANCE);
     }
