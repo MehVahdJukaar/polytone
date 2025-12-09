@@ -29,6 +29,7 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -161,6 +162,11 @@ public class PlatStuff {
 
     @ExpectPlatform
     public static float compatACModifyGamma(float partialTicks, float gamma) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static float compatSSGetSeason(Level level) {
         throw new AssertionError();
     }
 
