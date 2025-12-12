@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
@@ -158,7 +158,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         @Override
         public boolean test(ItemStack stack) {
             Item item = stack.getItem();
-            ResourceLocation id = item.builtInRegistryHolder().key().location();
+            Identifier id = item.builtInRegistryHolder().key().identifier();
             return namespace.matcher(id.getNamespace()).find() && path.matcher(id.getPath()).find();
         }
 

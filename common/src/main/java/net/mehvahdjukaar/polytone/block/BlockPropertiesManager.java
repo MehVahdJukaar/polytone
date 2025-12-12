@@ -18,7 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.ColorResolver;
@@ -65,9 +65,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         return modifier != null && modifier.offsetType().isPresent();
     }
 
-    public record Resources(Map<ResourceLocation, JsonElement> jsons,
-                            Map<ResourceLocation, ArrayImage> textures,
-                            Map<ResourceLocation, Properties> ofProperties) {
+    public record Resources(Map<Identifier, JsonElement> jsons,
+                            Map<Identifier, ArrayImage> textures,
+                            Map<Identifier, Properties> ofProperties) {
     }
 
     @Override
@@ -75,13 +75,13 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         var resourceManager = sharedState.resourceManager();
         var jsons = this.getJsonsInDirectories(resourceManager);
 
-        Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
+        Map<Identifier, ArrayImage> textures = new HashMap<>();
 
-        Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.scanDirectory(resourceManager, "optifine/colormap");
-        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.scanDirectory(resourceManager, "colormatic/colormap");
+        Map<Identifier, ArrayImage> ofTextures = ArrayImage.scanDirectory(resourceManager, "optifine/colormap");
+        Map<Identifier, ArrayImage> cmTextures = ArrayImage.scanDirectory(resourceManager, "colormatic/colormap");
 
-        Map<ResourceLocation, Properties> ofProperties = PropertiesUtils.gatherProperties(resourceManager, "optifine/colormap");
-        Map<ResourceLocation, JsonElement> ofJsons = new HashMap<>();
+        Map<Identifier, Properties> ofProperties = PropertiesUtils.gatherProperties(resourceManager, "optifine/colormap");
+        Map<Identifier, JsonElement> ofJsons = new HashMap<>();
         scanDirectory(resourceManager, "optifine/colormap", GSON, ofJsons);
 
         ofJsons.forEach((k, v) -> ofProperties.put(k, PropertiesUtils.jsonToProperties(v)));
@@ -89,7 +89,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         textures.putAll(LegacyHelper.convertPaths(ofTextures));
         textures.putAll(LegacyHelper.convertPaths(cmTextures));
 
-        Map<ResourceLocation, ArrayImage> myTextures = this.getImagesInDirectories(resourceManager);
+        Map<Identifier, ArrayImage> myTextures = this.getImagesInDirectories(resourceManager);
         textures.putAll(myTextures);
 
         return new Resources(
@@ -103,9 +103,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         var jsons = resources.jsons();
         var textures = ArrayImage.groupTextures(resources.textures());
         var textureCopy = new HashMap<>(resources.textures);
-        Set<ResourceLocation> usedTextures = new HashSet<>();
+        Set<Identifier> usedTextures = new HashSet<>();
 
-        LinkedListMultimap<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers = LinkedListMultimap.create();
+        LinkedListMultimap<Identifier, Parsed<BlockPropertyModifier>> parsedModifiers = LinkedListMultimap.create();
         LegacyHelper.convertBlockProperties(resources.ofProperties, textureCopy).forEach(parsedModifiers::put);
         LegacyHelper.convertInlinedPalettes(optifineColormapsToBlocks).forEach(parsedModifiers::put);
 
@@ -116,7 +116,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         // parse jsons
         for (var j : jsons.entrySet()) {
             JsonElement json = j.getValue();
-            ResourceLocation id = j.getKey();
+            Identifier id = j.getKey();
 
             var prop = Parsed.parseOptionalOrPartial(
                     BlockPropertyModifier.CODEC, BlockPropertyModifier.PARTIAL_CODEC,
@@ -129,7 +129,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entries()) {
-            ResourceLocation id = entry.getKey();
+            Identifier id = entry.getKey();
             Parsed<BlockPropertyModifier> result = entry.getValue();
             BlockPropertyModifier modifier = result.getResultOrPartial();
 
@@ -151,7 +151,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
         // creates default modifiers for orphaned textures without one
         for (var entry : textures.entrySet()) {
-            ResourceLocation id = entry.getKey();
+            Identifier id = entry.getKey();
 
             ArrayImage.Group image = entry.getValue();
 
@@ -165,7 +165,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
 
-    private void addModifier(ResourceLocation fileId, BlockPropertyModifier mod) {
+    private void addModifier(Identifier fileId, BlockPropertyModifier mod) {
         for (var block : mod.targets().compute(fileId, BuiltInRegistries.BLOCK)) {
             modifiers.merge(block.value(), mod, BlockPropertyModifier::merge);
         }
@@ -192,7 +192,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
     @Override
-    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
+    protected void applyWithLevel( HolderLookup.Provider access, boolean isLogIn) {
         for (var e : modifiers.entrySet()) {
             Block target = e.getKey();
 
@@ -240,9 +240,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
     //optifine stuff
-    private final Map<ResourceLocation, String> optifineColormapsToBlocks = new HashMap<>();
+    private final Map<Identifier, String> optifineColormapsToBlocks = new HashMap<>();
 
-    public void addSimpleColormap(ResourceLocation path, String str) {
+    public void addSimpleColormap(Identifier path, String str) {
         optifineColormapsToBlocks.put(path, str);
     }
 

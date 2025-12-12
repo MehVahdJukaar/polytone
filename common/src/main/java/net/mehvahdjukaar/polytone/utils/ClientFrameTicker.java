@@ -32,6 +32,7 @@ public class ClientFrameTicker {
         float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
         time = level.getGameTime() + partialTicks;
+        // This is now something like level.dimensionType().timelines().get().value().getCurrentTicks()
         dayTime = level.dimensionType().fixedTime().orElse(level.getDayTime()) + partialTicks;
         timeOfDay = level.getTimeOfDay(partialTicks);
         rainAndThunder = level.getRainLevel(partialTicks) * 0.5f + level.getThunderLevel(partialTicks) * 0.5f;

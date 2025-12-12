@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.CubicSampler;
+import net.minecraft.world.attribute.GaussianSampler;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -38,33 +38,5 @@ public abstract class ClientLevelMixin extends Level {
         if (!cancels) {
             original.call(instance, state, level, pos, random);
         }
-    }
-
-    @WrapOperation(method = "getSkyColor", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/util/CubicSampler;gaussianSampleVec3(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/util/CubicSampler$Vec3Fetcher;)Lnet/minecraft/world/phys/Vec3;"))
-    private Vec3 polytone$modifySkyColor(Vec3 center, CubicSampler.Vec3Fetcher fetcher,
-                                         Operation<Vec3> original) {
-        Vec3 modified = Polytone.DIMENSION_MODIFIERS.modifySkyColor(center, (ClientLevel) (Object) this);
-        if (modified != null) return modified;
-        return original.call(center, fetcher);
-    }
-
-
-    @ModifyExpressionValue(method = "getSkyColor", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"))
-    private float polytone$modifyRainSkyDarken(float original) {
-        if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelSkyWeatherDarken(this)) {
-            return 0;
-        }
-        return original;
-    }
-
-    @ModifyExpressionValue(method = "getSkyColor", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/multiplayer/ClientLevel;getThunderLevel(F)F"))
-    private float polytone$modifyThunderSkyDarken(float original) {
-        if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelSkyWeatherDarken(this)) {
-            return 0;
-        }
-        return original;
     }
 }

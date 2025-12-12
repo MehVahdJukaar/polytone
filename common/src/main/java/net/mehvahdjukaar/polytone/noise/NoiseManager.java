@@ -11,8 +11,9 @@ import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class NoiseManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
         for (var e : jsons.entrySet()) {
             var id = e.getKey();
@@ -51,6 +52,6 @@ public class NoiseManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
+    protected void applyWithLevel( HolderLookup.Provider access, boolean isLogIn) {
     }
 }

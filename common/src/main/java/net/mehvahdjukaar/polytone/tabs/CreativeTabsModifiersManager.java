@@ -15,11 +15,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.level.Level;
 
 import java.util.*;
 
@@ -66,7 +67,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         for (var e : resources.extraTabs.entrySet()) {
             for (var s : e.getValue()) {
-                ResourceLocation id = e.getKey().withPath(s);
+                Identifier id = e.getKey().withPath(s);
                 ResourceKey<CreativeModeTab> key = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id);
                 if (!customTabs.containsKey(id) && !BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(key)) {
                     CreativeModeTab tab = PlatStuff.createCreativeTab(id);
@@ -92,7 +93,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         }
     }
     @Override
-    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
+    protected void applyWithLevel( HolderLookup.Provider access, boolean isLogIn) {
 
         if (!modifiers.isEmpty()) {
             needsRefresh.addAll(modifiers.keySet());
@@ -104,7 +105,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         }
     }
 
-    private void addModifier(ResourceLocation fileId, CreativeTabModifier mod) {
+    private void addModifier(Identifier fileId, CreativeTabModifier mod) {
         for (var tab : mod.targets().compute(fileId, BuiltInRegistries.CREATIVE_MODE_TAB)) {
             ResourceKey<CreativeModeTab> key = tab.unwrapKey().get();
             modifiers.merge(key, mod, CreativeTabModifier::merge);
@@ -121,18 +122,18 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             if (access != null) {
                 CreativeTabModifier v = mod.applyItemsAndAttributes(event, access);
                 //dont add custom tabs here!
-                if (!customTabs.containsKey(tab.location())) vanillaTabs.put(tab, v);
+                if (!customTabs.containsKey(tab.identifier())) vanillaTabs.put(tab, v);
             }
         }
     }
 
-    public boolean isDynamicTab(ResourceLocation entryId) {
+    public boolean isDynamicTab(Identifier entryId) {
         return customTabs.containsKey(entryId);
     }
 
 
-    public record Resources(Map<ResourceLocation, JsonElement> tabsModifiers,
-                            Map<ResourceLocation, List<String>> extraTabs) {
+    public record Resources(Map<Identifier, JsonElement> tabsModifiers,
+                            Map<Identifier, List<String>> extraTabs) {
     }
 
 }

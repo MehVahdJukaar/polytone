@@ -14,10 +14,11 @@ import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
@@ -31,14 +32,14 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         super("fluid_modifiers", "fluid_properties");
     }
 
-    private Map<ResourceLocation, Parsed<FluidPropertyModifier>> extraModifiers;
-    private Map<ResourceLocation, ArrayImage> extraImages;
+    private Map<Identifier, Parsed<FluidPropertyModifier>> extraModifiers;
+    private Map<Identifier, ArrayImage> extraImages;
 
     //essentially replacing this for better mod compat
     private ColorResolver vanillaWaterColorResolver = null;
 
     // fot OF lava and water. shit code...
-    public void addConvertedBlockProperties(Map<ResourceLocation, Parsed<FluidPropertyModifier>> modifiers, Map<ResourceLocation, ArrayImage> textures) {
+    public void addConvertedBlockProperties(Map<Identifier, Parsed<FluidPropertyModifier>> modifiers, Map<Identifier, ArrayImage> textures) {
         this.extraImages = textures;
         this.extraModifiers = modifiers;
     }
@@ -48,11 +49,11 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         var resourceManager = sharedState.resourceManager();
         var jsons = this.getJsonsInDirectories(resourceManager);
 
-        Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
+        Map<Identifier, ArrayImage> textures = new HashMap<>();
 
-        //Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
+        //Map<Identifier, ArrayImage> ofTextures = ArrayImage.gatherImages(resourceManager, "optifine/colormap");
         //LegacyHelper.filterOfFluidTextures(ofTextures);
-        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.scanDirectory(resourceManager, "colormatic/colormap");
+        Map<Identifier, ArrayImage> cmTextures = ArrayImage.scanDirectory(resourceManager, "colormatic/colormap");
 
         //textures.putAll(LegacyHelper.convertPaths(ofTextures));
         textures.putAll(LegacyHelper.convertPaths(cmTextures));
@@ -69,21 +70,21 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         var jsons = resources.jsons();
         var textures = new HashMap<>(resources.textures());
 
-        Set<ResourceLocation> usedTextures = new HashSet<>();
+        Set<Identifier> usedTextures = new HashSet<>();
 
-        LinkedListMultimap<ResourceLocation, Parsed<FluidPropertyModifier>> parsedModifiers =   LinkedListMultimap.create();
+        LinkedListMultimap<Identifier, Parsed<FluidPropertyModifier>> parsedModifiers =   LinkedListMultimap.create();
         extraModifiers.forEach(parsedModifiers::put);
         textures.putAll(extraImages);
 
 
         for (var j : Parsed.batchParseAlways(jsons, FluidPropertyModifier.CODEC, ops, "fluid modifier")) {
-            ResourceLocation id = j.getKey();
+            Identifier id = j.getKey();
             parsedModifiers.put(id, j.getValue());
         }
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entries()) {
-            ResourceLocation id = entry.getKey();
+            Identifier id = entry.getKey();
             Parsed<FluidPropertyModifier> parsed = entry.getValue();
             FluidPropertyModifier modifier = parsed.getResultOrPartial();
 
@@ -103,7 +104,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         textures.keySet().removeAll(usedTextures);
 
         for (var t : textures.entrySet()) {
-            ResourceLocation id = t.getKey();
+            Identifier id = t.getKey();
             Colormap defaultColormap = Colormap.createDefTriangle();
             ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
@@ -113,7 +114,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
+    protected void applyWithLevel( HolderLookup.Provider access, boolean isLogIn) {
         if (!modifiers.isEmpty()) {
             Polytone.LOGGER.info("Applied {} Fluid Modifiers", modifiers.size());
         }
@@ -129,7 +130,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
         vanillaWaterColorResolver = null;
     }
 
-    private void addModifier(ResourceLocation pathId, FluidPropertyModifier mod) {
+    private void addModifier(Identifier pathId, FluidPropertyModifier mod) {
         for (var fluid : mod.targets().compute(pathId, BuiltInRegistries.FLUID)) {
             var f = fluid.value();
             modifiers.merge(f, mod, FluidPropertyModifier::merge);

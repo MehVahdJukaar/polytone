@@ -35,7 +35,7 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
@@ -64,11 +64,11 @@ public class PlatStuffImpl {
         return true;
     }
 
-    public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final ResourceLocation name) {
+    public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final Identifier name) {
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new IdentifiableResourceReloadListener() {
             private final Supplier<PreparableReloadListener> inner = Suppliers.memoize(listener::get);
 
-            public ResourceLocation getFabricId() {
+            public Identifier getFabricId() {
                 return name;
             }
 
@@ -91,12 +91,6 @@ public class PlatStuffImpl {
         return FabricLoader.getInstance().isModLoaded(namespace);
     }
 
-    //    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation id) {
-    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation id) {
-        return DimensionSpecialEffects.EFFECTS.get(id);
-//        return DimensionRenderingRegistry.getDimensionEffects(id);
-//    }
-    }
 
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         try {
@@ -119,7 +113,7 @@ public class PlatStuffImpl {
     }
 
     private static final Set<ResourceKey<CreativeModeTab>> addedCallbacks = new HashSet<>();
-    private static final ResourceLocation POLYTONE_PHASE = Polytone.res("modify_tabs");
+    private static final Identifier POLYTONE_PHASE = Polytone.res("modify_tabs");
 
     public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
         if (!addedCallbacks.contains(key)) {
@@ -175,14 +169,14 @@ public class PlatStuffImpl {
             acc.setShowTitle(mod.showTitle().get());
         }
 
-        ResourceLocation oldTabsImage = null;
+        Identifier oldTabsImage = null;
 
-        ResourceLocation oldBackgroundLocation = null;
+        Identifier oldBackgroundLocation = null;
 
 
-        List<ResourceLocation> oldBeforeTabs = null;
+        List<Identifier> oldBeforeTabs = null;
 
-        List<ResourceLocation> oldAfterTabs = null;
+        List<Identifier> oldAfterTabs = null;
         return new CreativeTabModifier(
                 Optional.ofNullable(oldIcon),
                 Optional.ofNullable(oldSearch),
@@ -205,7 +199,7 @@ public class PlatStuffImpl {
         CreativeModeTabs.validate();
     }
 
-    public static CreativeModeTab createCreativeTab(ResourceLocation id) {
+    public static CreativeModeTab createCreativeTab(Identifier id) {
         return FabricItemGroup.builder().title(Component.literal(id.toString())).build();
     }
 
@@ -258,7 +252,7 @@ public class PlatStuffImpl {
         return instance;
     }
 
-    public static void unregisterParticleProvider(ResourceLocation id) {
+    public static void unregisterParticleProvider(Identifier id) {
         var type = BuiltInRegistries.PARTICLE_TYPE.get(id);
         ParticleResources particleResources = Minecraft.getInstance().particleResources;
         ((ParticleResourcesAccessor) particleResources)

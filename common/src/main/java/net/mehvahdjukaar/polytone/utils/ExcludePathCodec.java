@@ -6,7 +6,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -16,9 +16,9 @@ import java.util.Set;
 
 public record ExcludePathCodec<T>(Codec<T> inner) implements Codec<T> {
 
-    private static final Set<ResourceLocation> EXCLUDED_PATHS = Set.of(
-            ResourceLocation.fromNamespaceAndPath("polytone", "excluded_path_1"),
-            ResourceLocation.fromNamespaceAndPath("polytone", "excluded_path_2")
+    private static final Set<Identifier> EXCLUDED_PATHS = Set.of(
+            Identifier.fromNamespaceAndPath("polytone", "excluded_path_1"),
+            Identifier.fromNamespaceAndPath("polytone", "excluded_path_2")
     );
 
     private static final Codec<List<String>> ID_CODEC = Codec.withAlternative(
@@ -31,7 +31,7 @@ public record ExcludePathCodec<T>(Codec<T> inner) implements Codec<T> {
         if (id.isSuccess()) {
             var idList = id.getOrThrow().getFirst();
             var filtered = idList.stream().filter(s -> {
-                        ResourceLocation res = ResourceLocation.tryParse(s);
+                        Identifier res = Identifier.tryParse(s);
                         return res == null || !EXCLUDED_PATHS.contains(res);
                     }
             ).toList();

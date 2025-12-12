@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -24,7 +24,7 @@ import java.util.Map;
 public class GuiOverlayManager extends JsonPartialReloader {
 
     private final Map<Gui.HeartType, HeartSprites> heartSprites = new EnumMap<>(Gui.HeartType.class);
-    private final Map<ResourceLocation, BlitModifier> blitModifiers = new HashMap<>();
+    private final Map<Identifier, BlitModifier> blitModifiers = new HashMap<>();
 
     public GuiOverlayManager() {
         super("overlay_modifiers");
@@ -36,12 +36,12 @@ public class GuiOverlayManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
         for (var j : Parsed.batchParseOnlyEnabled(jsons, BlitModifier.CODEC,
                 ops, "overlay modifier")) {
             var effect = j.getValue();
-            ResourceLocation textureId = effect.target();
+            Identifier textureId = effect.target();
             //just 1 makes sense
             if (blitModifiers.containsKey(textureId)) {
                 Polytone.LOGGER.warn("Overlay Modifier with texture id {} already exists. Overwriting", textureId);
@@ -56,7 +56,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
     }
 
     @Override
-    protected Map<ResourceLocation, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
+    protected Map<Identifier, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
         var resourceManager = sharedState.resourceManager();
         reloadHearths(resourceManager);
         return super.prepare(sharedState);
@@ -123,20 +123,20 @@ public class GuiOverlayManager extends JsonPartialReloader {
         for (var h : Gui.HeartType.values()) {
             if (h != Gui.HeartType.CONTAINER && h != Gui.HeartType.NORMAL) {
                 String name = h.name().toLowerCase(Locale.ROOT);
-                ResourceLocation fullRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_full.png");
-                ResourceLocation halfRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_half.png");
+                Identifier fullRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_full.png");
+                Identifier halfRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_half.png");
                 if (manager.getResource(fullRes).isPresent() && manager.getResource(halfRes).isPresent()) {
-                    ResourceLocation fullBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_full_blinking.png");
+                    Identifier fullBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_full_blinking.png");
                     var fullBlinking = manager.getResource(fullBlinkingRes);
-                    ResourceLocation halfBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_half_blinking.png");
+                    Identifier halfBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_half_blinking.png");
                     var halfBlinking = manager.getResource(halfBlinkingRes);
-                    ResourceLocation hardcoreFullRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full.png");
+                    Identifier hardcoreFullRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full.png");
                     var hardcoreFull = manager.getResource(hardcoreFullRes);
-                    ResourceLocation hardcoreFullBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full_blinking.png");
+                    Identifier hardcoreFullBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full_blinking.png");
                     var hardcoreFullBlinking = manager.getResource(hardcoreFullBlinkingRes);
-                    ResourceLocation hardcoreHalfRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half.png");
+                    Identifier hardcoreHalfRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half.png");
                     var hardcoreHalf = manager.getResource(hardcoreHalfRes);
-                    ResourceLocation hardcoreHalfBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half_blinking.png");
+                    Identifier hardcoreHalfBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half_blinking.png");
                     var hardcoreHalfBlinking = manager.getResource(hardcoreHalfBlinkingRes);
 
                     if (fullBlinking.isEmpty()) {
@@ -183,12 +183,12 @@ public class GuiOverlayManager extends JsonPartialReloader {
     }
 
 
-    private record HeartSprites(ResourceLocation full, ResourceLocation half, ResourceLocation fullBlinking,
-                                ResourceLocation halfBlinking, ResourceLocation hardcoreFull,
-                                ResourceLocation hardcoreHalf, ResourceLocation hardcoreFullBlinking,
-                                ResourceLocation hardcoreHalfBlinking) {
+    private record HeartSprites(Identifier full, Identifier half, Identifier fullBlinking,
+                                Identifier halfBlinking, Identifier hardcoreFull,
+                                Identifier hardcoreHalf, Identifier hardcoreFullBlinking,
+                                Identifier hardcoreHalfBlinking) {
 
-        public ResourceLocation getSprite(boolean bl, boolean bl2, boolean bl3) {
+        public Identifier getSprite(boolean bl, boolean bl2, boolean bl3) {
             if (!bl) {
                 if (bl2) {
                     return bl3 ? this.halfBlinking : this.half;

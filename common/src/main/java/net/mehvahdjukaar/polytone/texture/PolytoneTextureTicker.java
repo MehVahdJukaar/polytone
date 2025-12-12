@@ -10,7 +10,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
-
+/* FIXME - animationstate */
 public class PolytoneTextureTicker implements SpriteTicker {
 
     private final SpriteContents.AnimatedTexture animationInfo;

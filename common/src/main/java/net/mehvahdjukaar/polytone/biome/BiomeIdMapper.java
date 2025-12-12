@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.utils.LegacyHelper;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.biome.Biome;
 
 import java.util.Map;
@@ -29,11 +29,11 @@ public interface BiomeIdMapper {
     record Custom(Map<ResourceKey<Biome>, Float> map, float textureSize) implements BiomeIdMapper {
 
         public Custom(Map<ResourceKey<Biome>, Float> map) {
-            this(map, map.getOrDefault(ResourceKey.create(Registries.BIOME, ResourceLocation.withDefaultNamespace("texture_size")), 1f));
+            this(map, map.getOrDefault(ResourceKey.create(Registries.BIOME, Identifier.withDefaultNamespace("texture_size")), 1f));
         }
 
-        public static final Codec<Custom> CUSTOM_CODEC = Codec.unboundedMap(ResourceLocation.CODEC
-                                .xmap(r -> ResourceKey.create(Registries.BIOME, r), ResourceKey::location),
+        public static final Codec<Custom> CUSTOM_CODEC = Codec.unboundedMap(Identifier.CODEC
+                                .xmap(r -> ResourceKey.create(Registries.BIOME, r), ResourceKey::identifier),
                         Codec.FLOAT)
                 .xmap(Custom::new, Custom::map);
 

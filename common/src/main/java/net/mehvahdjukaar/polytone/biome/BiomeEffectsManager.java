@@ -13,7 +13,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -39,13 +39,13 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     private final Map<Biome, BiomeEffectModifier> fogParametersModifiers = new HashMap<>();
 
     @Override
-    public void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    public void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         for (var v : Parsed.batchParseOnlyEnabled(jsons, BiomeEffectModifier.CODEC, ops, "biome modifier")) {
             addEffect(v.getKey(), v.getValue(), access);
         }
     }
 
-    private void addEffect(ResourceLocation pathId, BiomeEffectModifier mod, HolderLookup.Provider access) {
+    private void addEffect(Identifier pathId, BiomeEffectModifier mod, HolderLookup.Provider access) {
         var registry = access.lookupOrThrow(Registries.BIOME);
         for (var biome : mod.targets().compute(pathId, registry)) {
             effectsToApply.merge(biome.unwrapKey().get(), mod, BiomeEffectModifier::merge);
@@ -54,7 +54,7 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     // we need registry ops here since special effects use registry stuff...
     @Override
-    public void applyWithLevel(HolderLookup.Provider registryAccess, boolean isLogIn) {
+    public void applyWithLevel( HolderLookup.Provider registryAccess, boolean isLogIn) {
         if (!isLogIn && !needsDynamicApplication) return;
 
         needsDynamicApplication = false;

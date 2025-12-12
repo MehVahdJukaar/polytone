@@ -12,10 +12,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +34,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     }
 
     @Nullable
-    public SoundType getCustomSoundType(ResourceLocation resourceLocation) {
+    public SoundType getCustomSoundType(Identifier resourceLocation) {
         return customSoundTypes.getValue(resourceLocation);
     }
 
@@ -56,7 +57,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         //custom sound events
         for (var e : soundEvents.entrySet()) {
             for (var s : e.getValue()) {
-                ResourceLocation id = e.getKey().withPath(s);
+                Identifier id = e.getKey().withPath(s);
                 if (!customSoundEvents.containsKey(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
                     SoundEvent newSound = SoundEvent.createVariableRangeEvent(id);
                     customSoundEvents.register(id, newSound);
@@ -82,7 +83,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     }
 
     @Override
-    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
+    protected void applyWithLevel( HolderLookup.Provider access, boolean isLogIn) {
         if (!customSoundEvents.isEmpty()) {
             Polytone.LOGGER.info("Registered {} custom Sound Events from Resource Packs: {}", customSoundEvents.size(), customSoundEvents + ". Remember to add them to sounds.json!");
             //this is bad
@@ -94,19 +95,19 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     @Override
     protected void resetWithLevel(boolean logOff) {
         for(var e : customSoundEvents.getEntries()) {
-            ResourceLocation id  = e.getKey();
+            Identifier id  = e.getKey();
             PlatStuff.unregisterDynamic(BuiltInRegistries.SOUND_EVENT, id);
         }
         customSoundTypes.clear();
         customSoundEvents.clear();
     }
 
-    public boolean isDynamicSound(ResourceLocation entryId) {
+    public boolean isDynamicSound(Identifier entryId) {
         return customSoundEvents.containsKey(entryId);
     }
 
-    public record Resources(Map<ResourceLocation, JsonElement> soundTypes,
-                            Map<ResourceLocation, List<String>> soundEvents) {
+    public record Resources(Map<Identifier, JsonElement> soundTypes,
+                            Map<Identifier, List<String>> soundEvents) {
     }
 
 }

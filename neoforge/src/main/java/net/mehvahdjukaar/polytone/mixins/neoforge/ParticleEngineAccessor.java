@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins.neoforge;
 
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -12,6 +12,6 @@ import java.util.Map;
 public interface ParticleEngineAccessor {
 
     @Accessor("providers")
-    Map<ResourceLocation, ParticleProvider<?>> getProviders();
+    Map<Identifier, ParticleProvider<?>> getProviders();
 
 }

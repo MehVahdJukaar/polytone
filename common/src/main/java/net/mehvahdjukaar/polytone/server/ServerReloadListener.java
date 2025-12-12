@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.PartialReloader;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -23,9 +23,9 @@ public abstract class ServerReloadListener extends PartialReloader implements Pr
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
-        for (Map.Entry<ResourceLocation, JsonElement> entry : object.entrySet()) {
-            ResourceLocation id = entry.getKey();
+    protected void apply(Map<Identifier, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
+        for (Map.Entry<Identifier, JsonElement> entry : object.entrySet()) {
+            Identifier id = entry.getKey();
             JsonElement json = entry.getValue();
             // do something with the json
             ServerBlockModifier prop = ServerBlockModifier.CODEC.decode(ops, json)

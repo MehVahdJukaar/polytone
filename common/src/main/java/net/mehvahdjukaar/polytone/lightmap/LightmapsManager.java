@@ -18,7 +18,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
@@ -29,8 +29,8 @@ import java.util.Map;
 
 public class LightmapsManager extends JsonImgPartialReloader {
 
-    public static final ResourceLocation GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
-    private static final ResourceLocation DEFAULT_LIGHTMAP = ResourceLocation.withDefaultNamespace("default");
+    public static final Identifier GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
+    private static final Identifier DEFAULT_LIGHTMAP = Identifier.withDefaultNamespace("default");
 
     private static final Codec<Targets> TARGET_ONLY_CODEC = Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY)
             .codec();
@@ -51,10 +51,10 @@ public class LightmapsManager extends JsonImgPartialReloader {
         var resourceManager = sharedState.resourceManager();
         var jsons = this.getJsonsInDirectories(resourceManager);
 
-        Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
+        Map<Identifier, ArrayImage> textures = new HashMap<>();
 
-        Map<ResourceLocation, ArrayImage> ofTextures = ArrayImage.scanDirectory(resourceManager, "optifine/lightmap");
-        Map<ResourceLocation, ArrayImage> cmTextures = ArrayImage.scanDirectory(resourceManager, "colormatic/lightmap");
+        Map<Identifier, ArrayImage> ofTextures = ArrayImage.scanDirectory(resourceManager, "optifine/lightmap");
+        Map<Identifier, ArrayImage> cmTextures = ArrayImage.scanDirectory(resourceManager, "colormatic/lightmap");
 
         textures.putAll(LegacyHelper.convertPaths(ofTextures));
         textures.putAll(LegacyHelper.convertPaths(cmTextures));
@@ -71,12 +71,12 @@ public class LightmapsManager extends JsonImgPartialReloader {
         lastDimension = null;
         currentLightmap = null;
 
-        Map<ResourceLocation, Map<String, ArrayImage>> grouped = new HashMap<>();
+        Map<Identifier, Map<String, ArrayImage>> grouped = new HashMap<>();
         for (var e : images.entrySet()) {
             ArrayImage value = e.getValue();
             int height = value.height();
 
-            ResourceLocation location = e.getKey();
+            Identifier location = e.getKey();
             if (height != 16 && height != 32 && height != 64) {
                 throw new IllegalStateException("Lightmap must be either 16, 32 or 64 pixels tall. Provided one at " + location + " was " + height + " pixels");
             } else {
@@ -94,7 +94,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
         }
 
         for (var e : grouped.entrySet()) {
-            ResourceLocation location = e.getKey();
+            Identifier location = e.getKey();
 
             JsonElement j = jsons.remove(location);
             Parsed<Lightmap> parsed;
@@ -120,9 +120,9 @@ public class LightmapsManager extends JsonImgPartialReloader {
         }
     }
 
-    private void addLightmap(ResourceLocation fileId, Lightmap mod, HolderLookup.Provider access) {
+    private void addLightmap(Identifier fileId, Lightmap mod, HolderLookup.Provider access) {
         for (var dim : mod.targets().getTargets(fileId, access)) {
-            lightmaps.register(dim.unwrapKey().get().location(), mod);
+            lightmaps.register(dim.unwrapKey().get().identifier(), mod);
         }
     }
 
@@ -145,7 +145,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
         if (lastDimension != level.dimension()) {
             reachedMainMenuHack = true;
             lastDimension = level.dimension();
-            currentLightmap = lightmaps.getValue(lastDimension.location());
+            currentLightmap = lightmaps.getValue(lastDimension.identifier());
             if (currentLightmap == null) {
                 currentLightmap = lightmaps.getValue(DEFAULT_LIGHTMAP);
             }

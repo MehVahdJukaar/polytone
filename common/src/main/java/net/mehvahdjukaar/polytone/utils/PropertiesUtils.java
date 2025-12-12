@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.utils;
 import com.google.gson.*;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.io.IOException;
@@ -72,16 +72,16 @@ public class PropertiesUtils {
 
         current.addProperty(parts[parts.length - 1], value);
     }
-    public static Map<ResourceLocation, Properties> gatherProperties(ResourceManager resourceManager, String path) {
+    public static Map<Identifier, Properties> gatherProperties(ResourceManager resourceManager, String path) {
 
         FileToIdConverter converter = new FileToIdConverter(path, ".properties");
-        Map<ResourceLocation, Properties> map = new HashMap<>();
+        Map<Identifier, Properties> map = new HashMap<>();
         var res = converter.listMatchingResources(resourceManager);
         for (var e : res.entrySet()) {
             try (Reader reader = e.getValue().openAsReader()) {
                 Properties properties = new Properties();
                 properties.load(reader);
-                ResourceLocation fileId = converter.fileToId(e.getKey());
+                Identifier fileId = converter.fileToId(e.getKey());
 
                 map.put(fileId, properties);
             } catch (IllegalArgumentException | IOException | JsonParseException ex) {

@@ -32,8 +32,8 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
             ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(Partial::model)
     ).apply(instance, Partial::new));
 
-    public record Partial(ModelResourceLocation model, boolean autoModel) {
-        public Partial(ModelResourceLocation model) {
+    public record Partial(ModelIdentifier model, boolean autoModel) {
+        public Partial(ModelIdentifier model) {
             this(model, model.toString().equals("minecraft:generated"));
         }
     }
@@ -41,7 +41,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
     private final Item item;
     private final boolean autoModel;
 
-    public StandaloneItemModelOverride(Optional<Dynamic<?>> components, ModelResourceLocation model,
+    public StandaloneItemModelOverride(Optional<Dynamic<?>> components, ModelIdentifier model,
                                        Optional<Integer> stackCount, Optional<Pattern> pattern,
                                        Optional<CompoundTag> entityTag, Optional<ColormapExpressionProvider> expression,
                                        Map<DataComponentType<?>, CompoundTag> nbtMatchers,
@@ -52,7 +52,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
     }
 
     // ugly
-    public void setModel(ModelResourceLocation model) {
+    public void setModel(ModelIdentifier model) {
         this.model = model;
     }
 

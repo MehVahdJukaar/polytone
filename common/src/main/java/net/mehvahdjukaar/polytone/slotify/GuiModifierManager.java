@@ -16,7 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -39,7 +39,7 @@ public class GuiModifierManager extends JsonPartialReloader {
     public final Map<String, ScreenModifier> byTitle = new HashMap<>();
 
 
-    private static final ResourceLocation INVENTORY = ResourceLocation.parse("inventory");
+    private static final Identifier INVENTORY = Identifier.parse("inventory");
 
     public GuiModifierManager() {
         super("gui_modifiers");
@@ -56,7 +56,7 @@ public class GuiModifierManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         List<GuiModifier> allModifiers = new ArrayList<>();
 
         for (var entry : Parsed.batchParseOnlyEnabled(jsons, GuiModifier.CODEC, ops, "gui modifier")) {
@@ -88,7 +88,7 @@ public class GuiModifierManager extends JsonPartialReloader {
 
 
             } else if (mod.targetsMenuId()) {
-                ResourceLocation menuId = ResourceLocation.parse(mod.target());
+                Identifier menuId = Identifier.parse(mod.target());
                 boolean isInventory = menuId.equals(INVENTORY);
                 Optional<MenuType<?>> menu = BuiltInRegistries.MENU.getOptional(menuId);
 

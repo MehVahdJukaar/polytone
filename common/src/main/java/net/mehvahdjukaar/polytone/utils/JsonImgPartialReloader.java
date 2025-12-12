@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.utils;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -24,8 +24,8 @@ public abstract class JsonImgPartialReloader extends PartialReloader<JsonImgPart
         return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures));
     }
 
-    public record Resources(Map<ResourceLocation, JsonElement> jsons,
-                            Map<ResourceLocation, ArrayImage> textures) {
+    public record Resources(Map<Identifier, JsonElement> jsons,
+                            Map<Identifier, ArrayImage> textures) {
     }
 
 

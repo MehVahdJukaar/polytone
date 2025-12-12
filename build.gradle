@@ -68,7 +68,6 @@ subprojects {
             it.officialMojangMappings {
                 setNameSyntheticMembers(false)
             }
-           // it.parchment("org.parchmentmc.data:parchment-${parchment_version}")
         }
     }
 
@@ -150,8 +149,6 @@ allprojects {
         mavenCentral()
 
         mavenLocal()
-
-        maven { url "https://maven.parchmentmc.org" }
 
         maven {
             url = "https://www.cursemaven.com"

@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.*;
 
@@ -36,8 +36,8 @@ public class Utils {
     }
 
     //inverse ordered alphabetical map for resource locations
-    public static <T> Map<ResourceLocation, T> sortedMap() {
-        return new TreeMap<>(Comparator.comparing(ResourceLocation::toString).reversed());
+    public static <T> Map<Identifier, T> sortedMap() {
+        return new TreeMap<>(Comparator.comparing(Identifier::toString).reversed());
     }
 
 

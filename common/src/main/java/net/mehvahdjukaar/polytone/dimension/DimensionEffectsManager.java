@@ -21,9 +21,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.CubicSampler;
+import net.minecraft.world.attribute.GaussianSampler;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -38,9 +38,9 @@ import java.util.*;
 
 public class DimensionEffectsManager extends JsonImgPartialReloader {
 
-    private final Map<ResourceLocation, DimensionEffectsModifier> effectsToApply = new HashMap<>();
+    private final Map<Identifier, DimensionEffectsModifier> effectsToApply = new HashMap<>();
 
-    private final Map<ResourceLocation, DimensionEffectsModifier> vanillaEffects = new HashMap<>();
+    private final Map<Identifier, DimensionEffectsModifier> vanillaEffects = new HashMap<>();
 
     private final Object2ObjectMap<DimensionType, Colormap> fogColormaps = new Object2ObjectArrayMap<>();
     private final Object2ObjectMap<DimensionType, Colormap> terrainFogColormaps = new Object2ObjectArrayMap<>();
@@ -52,7 +52,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     private boolean needsDynamicApplication = true;
 
-    private final Map<ResourceLocation, Parsed<DimensionEffectsModifier>> extraMods = new HashMap<>();
+    private final Map<Identifier, Parsed<DimensionEffectsModifier>> extraMods = new HashMap<>();
 
     public DimensionEffectsManager() {
         super("dimension_modifiers", "dimension_effects");
@@ -79,7 +79,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         var jsons = resources.jsons();
         var textures = new HashMap<>(resources.textures());
 
-        Set<ResourceLocation> usedTextures = new HashSet<>();
+        Set<Identifier> usedTextures = new HashSet<>();
 
         Parsed.SortedMap<DimensionEffectsModifier> parsedModifiers =
                 Parsed.batchParseAlways(jsons, DimensionEffectsModifier.CODEC, ops, "dimension modifier");
@@ -87,7 +87,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers) {
-            ResourceLocation id = entry.getKey();
+            Identifier id = entry.getKey();
             Parsed<DimensionEffectsModifier> parsed = entry.getValue();
             DimensionEffectsModifier modifier = parsed.getResultOrPartial();
 
@@ -105,28 +105,28 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             }
 
             // if sky is not defined BUT they have a valid texture create a colormap for it
-            ResourceLocation skyId = id.withSuffix("_sky");
+            Identifier skyId = id.withSuffix("_sky");
             if (textures.containsKey(skyId) && sky == null) {
                 modifier = modifier.merge(DimensionEffectsModifier.ofSkyColor(Colormap.createDefTriangle()));
                 sky = modifier.getSkyColormap();
             }
 
             // if fog is not defined BUT they have a valid texture create a colormap for it
-            ResourceLocation fogId = id.withSuffix("_fog");
+            Identifier fogId = id.withSuffix("_fog");
             if (textures.containsKey(fogId) && sky == null) {
                 modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.createDefTriangle()));
                 fog = modifier.getFogColormap();
             }
 
             // if sunset is not defined BUT they have a valid texture create a colormap for it
-            ResourceLocation sunsetId = id.withSuffix("_sunset");
+            Identifier sunsetId = id.withSuffix("_sunset");
             if (textures.containsKey(sunsetId) && sunset == null) {
                 modifier = modifier.merge(DimensionEffectsModifier.ofSunsetColor(Colormap.createTimeStrip()));
                 sunset = modifier.getSunsetColormap();
             }
 
             // if terrain fog is not defined BUT they have a valid texture create a colormap for it
-            ResourceLocation terrainFogId = id.withSuffix("_terrain_fog");
+            Identifier terrainFogId = id.withSuffix("_terrain_fog");
             if (textures.containsKey(terrainFogId) && terrainFog == null) {
                 modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.createDefTriangle()));
                 terrainFog = modifier.getTerrainFogColormap();
@@ -156,7 +156,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         textures.keySet().removeAll(usedTextures);
 
         for (var t : textures.entrySet()) {
-            ResourceLocation id = t.getKey();
+            Identifier id = t.getKey();
             Colormap defaultColormap = Colormap.createDefTriangle();
             ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
@@ -164,32 +164,38 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         }
     }
 
-    private void addModifier(ResourceLocation fileId, DimensionEffectsModifier mod, HolderLookup.Provider registryAccess) {
+    private void addModifier(Identifier fileId, DimensionEffectsModifier mod, HolderLookup.Provider registryAccess) {
         for (var h : mod.targets().getTargets(fileId, registryAccess)) {
-            effectsToApply.merge(h.unwrapKey().get().location(), mod, DimensionEffectsModifier::merge);
+            effectsToApply.merge(h.unwrapKey().get().identifier(), mod, DimensionEffectsModifier::merge);
         }
     }
 
     @Override
-    protected void applyWithLevel(HolderLookup.Provider registryAccess, boolean isLogIn) {
+    protected void applyWithLevel( HolderLookup.Provider registryAccess, boolean isLogIn) {
         if (!isLogIn && !needsDynamicApplication) return;
         needsDynamicApplication = false;
-
-        for (var v : vanillaEffects.entrySet()) {
-            v.getValue().applyInplace(v.getKey());
-        }
-
         var dimReg = registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE);
 
+        for (var v : vanillaEffects.entrySet()) {
+            Identifier dimensionId = v.getKey();
+            var dimensionKey = ResourceKey.create(Registries.DIMENSION_TYPE, dimensionId);
+            DimensionType dim = dimReg.get(dimensionKey).get().value();
+            v.getValue().applyInplace(v);
+        }
+
+
         for (var v : effectsToApply.entrySet()) {
-            ResourceLocation dimensionId = v.getKey();
+            Identifier dimensionId = v.getKey();
             var dimensionKey = ResourceKey.create(Registries.DIMENSION_TYPE, dimensionId);
             DimensionEffectsModifier modifier = v.getValue();
-            var old = modifier.applyInplace(dimensionId);
+            DimensionType dim = dimReg.get(dimensionKey).get().value();
+            var attributes = dim.attributes();
+            var old = modifier.applyInplace(dim);
 
             vanillaEffects.put(dimensionId, old);
 
-            DimensionType dim = dimReg.get(dimensionKey).get().value();
+
+
             if (modifier.getFogColormap() instanceof Colormap c) {
                 fogColormaps.put(dim, c);
             }
@@ -245,7 +251,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private static @NotNull Vec3 cubicSample(Vec3 center, ClientLevel level, float brightness, Colormap colormap) {
         BiomeManager biomeManager = level.getBiomeManager();
         return level.effects().getBrightnessDependentFogColor(
-                CubicSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
+                GaussianSampler.gaussianSampleVec3(center, (qx, qy, qz) -> {
                     var biome = biomeManager.getNoiseBiomeAtQuart(qx, qy, qz).value();
                     // will override all biome modifiers ones
                     //int fogColor = biome.getFogColor();
@@ -301,7 +307,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         return this.cancelSkyWeatherDarken.getOrDefault(level.dimensionType(), false);
     }
 
-    public void addConvertedBlockProperties(Map<ResourceLocation, Parsed<DimensionEffectsModifier>> converted) {
+    public void addConvertedBlockProperties(Map<Identifier, Parsed<DimensionEffectsModifier>> converted) {
         extraMods.clear();
         extraMods.putAll(converted);
     }

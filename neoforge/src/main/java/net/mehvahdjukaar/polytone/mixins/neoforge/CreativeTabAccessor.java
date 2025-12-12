@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins.neoforge;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,18 +28,18 @@ public interface CreativeTabAccessor {
 
     @Mutable
     @Accessor("tabsImage")
-    void setTabsImage(ResourceLocation tabsImage);
+    void setTabsImage(Identifier tabsImage);
 
     @Accessor("backgroundTexture")
-    void setBackgroundTexture(ResourceLocation back);
+    void setBackgroundTexture(Identifier back);
 
     @Mutable
     @Accessor("tabsBefore")
-    void setBeforeTabs(List<ResourceLocation> beforeTabs);
+    void setBeforeTabs(List<Identifier> beforeTabs);
 
     @Mutable
     @Accessor("tabsAfter")
-    void setAfterTabs(List<ResourceLocation> afterTabs);
+    void setAfterTabs(List<Identifier> afterTabs);
 
 
     @Accessor("iconItemStack")

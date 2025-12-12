@@ -13,7 +13,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -87,22 +87,22 @@ public class FluidPropertiesManagerImpl {
         }
 
         @Override
-        public ResourceLocation getStillTexture() {
+        public Identifier getStillTexture() {
             return existingProperties.getStillTexture();
         }
 
         @Override
-        public ResourceLocation getFlowingTexture() {
+        public Identifier getFlowingTexture() {
             return existingProperties.getFlowingTexture();
         }
 
         @Override
-        public @Nullable ResourceLocation getOverlayTexture() {
+        public @Nullable Identifier getOverlayTexture() {
             return existingProperties.getOverlayTexture();
         }
 
         @Override
-        public @Nullable ResourceLocation getRenderOverlayTexture(Minecraft mc) {
+        public @Nullable Identifier getRenderOverlayTexture(Minecraft mc) {
             return existingProperties.getRenderOverlayTexture(mc);
         }
 
@@ -126,32 +126,32 @@ public class FluidPropertiesManagerImpl {
 //        }
 
         @Override
-        public ResourceLocation getStillTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
+        public Identifier getStillTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
             return existingProperties.getStillTexture(state, getter, pos);
         }
 
         @Override
-        public ResourceLocation getFlowingTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
+        public Identifier getFlowingTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
             return existingProperties.getFlowingTexture(state, getter, pos);
         }
 
         @Override
-        public ResourceLocation getOverlayTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
+        public Identifier getOverlayTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
             return existingProperties.getOverlayTexture(state, getter, pos);
         }
 
         @Override
-        public ResourceLocation getStillTexture(FluidStack stack) {
+        public Identifier getStillTexture(FluidStack stack) {
             return existingProperties.getStillTexture(stack);
         }
 
         @Override
-        public ResourceLocation getOverlayTexture(FluidStack stack) {
+        public Identifier getOverlayTexture(FluidStack stack) {
             return existingProperties.getOverlayTexture(stack);
         }
 
         @Override
-        public ResourceLocation getFlowingTexture(FluidStack stack) {
+        public Identifier getFlowingTexture(FluidStack stack) {
             return existingProperties.getFlowingTexture(stack);
         }
     }

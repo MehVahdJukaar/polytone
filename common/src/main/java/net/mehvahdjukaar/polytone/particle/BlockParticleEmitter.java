@@ -109,7 +109,7 @@ public record BlockParticleEmitter(
 
         var particleTypeValue = particleType.value();
 
-        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.unwrapKey().get().location())) {
+        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.unwrapKey().get().identifier())) {
             Map<String, Float> map = new HashMap<>();
             r.ifPresent(exp -> map.put("red", (float) exp.getValue(level, pos, state)));
             g.ifPresent(exp -> map.put("green", (float) exp.getValue(level, pos, state)));

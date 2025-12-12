@@ -13,7 +13,7 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import org.jetbrains.annotations.Nullable;
@@ -61,20 +61,20 @@ public class ColormapsManager extends JsonImgPartialReloader {
     @Override
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         //builtin stuff
-        colormaps.register(ResourceLocation.parse("grass_color"), () -> GRASS_COLOR);
-        colormaps.register(ResourceLocation.parse("foliage_color"), () -> FOLIAGE_COLOR);
-        colormaps.register(ResourceLocation.parse("water_color"), () -> WATER_COLOR);
+        colormaps.register(Identifier.parse("grass_color"), () -> GRASS_COLOR);
+        colormaps.register(Identifier.parse("foliage_color"), () -> FOLIAGE_COLOR);
+        colormaps.register(Identifier.parse("water_color"), () -> WATER_COLOR);
         //These create new incomplete ones every time
-        colormaps.register(ResourceLocation.parse("biome_sample"), Colormap::createDefSquare);
-        colormaps.register(ResourceLocation.parse("triangular_biome_sample"), Colormap::createDefTriangle);
-        colormaps.register(ResourceLocation.parse("fixed"), Colormap::createFixed);
-        colormaps.register(ResourceLocation.parse("grid"), Colormap::createBiomeId);
-        colormaps.register(ResourceLocation.parse("damage"), Colormap::createDamage);
+        colormaps.register(Identifier.parse("biome_sample"), Colormap::createDefSquare);
+        colormaps.register(Identifier.parse("triangular_biome_sample"), Colormap::createDefTriangle);
+        colormaps.register(Identifier.parse("fixed"), Colormap::createFixed);
+        colormaps.register(Identifier.parse("grid"), Colormap::createBiomeId);
+        colormaps.register(Identifier.parse("damage"), Colormap::createDamage);
 
         var jsons = resources.jsons();
         var textures = new HashMap<>(resources.textures());
 
-        Set<ResourceLocation> usedTextures = new HashSet<>();
+        Set<Identifier> usedTextures = new HashSet<>();
 
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
@@ -109,7 +109,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
         textures.keySet().removeAll(usedTextures);
 
         for (var t : textures.entrySet()) {
-            ResourceLocation id = t.getKey();
+            Identifier id = t.getKey();
             Colormap defaultColormap = Colormap.createDefTriangle();
             defaultColormap.inlined = false;
             tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
@@ -137,7 +137,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
         PlatStuff.unregisterAllCustomColorResolves();
     }
 
-    public void add(ResourceLocation id, Colormap colormap) {
+    public void add(Identifier id, Colormap colormap) {
         colormaps.register(id, () -> colormap);
         if (colormap.needsToFillTexture()) {
             throw new IllegalStateException("Did not find any texture png for colormap " + id);
@@ -146,8 +146,8 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
 
     //helper methods
-    public static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> availableTextures,
-                                                ResourceLocation defaultPath, BlockColor col, Set<ResourceLocation> usedTexture, boolean strict) {
+    public static void tryAcceptingTextureGroup(Map<Identifier, ArrayImage.Group> availableTextures,
+                                                Identifier defaultPath, BlockColor col, Set<Identifier> usedTexture, boolean strict) {
         if (col instanceof IColorGetter cg && !cg.needsToFillTexture()) {
             return;
         }
@@ -158,17 +158,17 @@ public class ColormapsManager extends JsonImgPartialReloader {
         }
     }
 
-    private static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> availableTextures,
-                                                 ResourceLocation defaultPath, Colormap c, Set<ResourceLocation> usedTexture, boolean strict) {
-        ResourceLocation textureLoc = c.getTargetTexture(defaultPath);
+    private static void tryAcceptingTextureGroup(Map<Identifier, ArrayImage.Group> availableTextures,
+                                                 Identifier defaultPath, Colormap c, Set<Identifier> usedTexture, boolean strict) {
+        Identifier textureLoc = c.getTargetTexture(defaultPath);
         ArrayImage.Group group = availableTextures.get(textureLoc);
         ArrayImage texture = group != null ? group.getDefault() : null;
         tryAcceptingTexture(texture, textureLoc, c, usedTexture, strict);
     }
 
-    private static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> textures,
-                                                 ResourceLocation id, IndexCompoundColorGetter colormap,
-                                                 Set<ResourceLocation> usedTextures, boolean strict) {
+    private static void tryAcceptingTextureGroup(Map<Identifier, ArrayImage.Group> textures,
+                                                 Identifier id, IndexCompoundColorGetter colormap,
+                                                 Set<Identifier> usedTextures, boolean strict) {
         var blockColorGetters = colormap.getGetters();
 
         for (var g : blockColorGetters.int2ObjectEntrySet()) {
@@ -198,19 +198,19 @@ public class ColormapsManager extends JsonImgPartialReloader {
         }
     }
 
-    public static void tryAcceptingTexture(Map<ResourceLocation, ArrayImage> availableTextures,
-                                           ResourceLocation defaultPath,
-                                           @Nullable Object col, Set<ResourceLocation> usedTexture, boolean strict) {
+    public static void tryAcceptingTexture(Map<Identifier, ArrayImage> availableTextures,
+                                           Identifier defaultPath,
+                                           @Nullable Object col, Set<Identifier> usedTexture, boolean strict) {
         if (col instanceof Colormap colormap) {
-            ResourceLocation textureLoc = colormap.getTargetTexture(defaultPath);
+            Identifier textureLoc = colormap.getTargetTexture(defaultPath);
             ArrayImage texture = availableTextures.get(textureLoc);
             tryAcceptingTexture(texture, textureLoc, colormap, usedTexture, strict);
             colormap.debugID = textureLoc;
         }
     }
 
-    private static void tryAcceptingTexture(@Nullable ArrayImage selectedTexture, ResourceLocation textureLoc, Colormap colormap,
-                                            Set<ResourceLocation> usedTexture, boolean strict) {
+    private static void tryAcceptingTexture(@Nullable ArrayImage selectedTexture, Identifier textureLoc, Colormap colormap,
+                                            Set<Identifier> usedTexture, boolean strict) {
         if (!colormap.needsToFillTexture()) {
             return; //we already are filled
         }
@@ -224,7 +224,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
             }
             colormap.acceptTexture(selectedTexture);
         } else {
-            ResourceLocation explTarget = colormap.getExplicitTargetTexture();
+            Identifier explTarget = colormap.getExplicitTargetTexture();
             if (explTarget != null) {
                 Polytone.LOGGER.error("Could not resolve explicit texture at location {}.png. Skipping", explTarget);
             }

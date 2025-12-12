@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.texture.atlas.SpriteSources;
 import net.minecraft.client.renderer.texture.atlas.sources.SingleFile;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.dimension.DimensionType;
 
@@ -40,7 +40,7 @@ public abstract class GenericDirectorySpriteSource implements SpriteSource {
     public void run(ResourceManager resourceManager, SpriteSource.Output output) {
         FileToIdConverter fileToIdConverter = new FileToIdConverter(this.sourcePath, ".png");
         fileToIdConverter.listMatchingResources(resourceManager).forEach((resourceLocation, resource) -> {
-            ResourceLocation resourceLocation2 = fileToIdConverter.fileToId(resourceLocation).withPrefix(this.idPrefix);
+            Identifier resourceLocation2 = fileToIdConverter.fileToId(resourceLocation).withPrefix(this.idPrefix);
             output.add(resourceLocation2, resource);
         });
     }

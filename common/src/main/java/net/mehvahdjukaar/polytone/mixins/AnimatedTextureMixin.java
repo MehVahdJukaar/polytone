@@ -1,10 +1,10 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import net.mehvahdjukaar.polytone.texture.DayTimeTexture;
 import net.mehvahdjukaar.polytone.texture.PolytoneTextureTicker;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.texture.SpriteContents;
-import net.minecraft.client.renderer.texture.SpriteTicker;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,6 +22,10 @@ public abstract class AnimatedTextureMixin implements DayTimeTexture {
     @Shadow
     @Final
     SpriteContents field_28469;
+
+    @Shadow
+    public abstract SpriteContents.AnimationState createAnimationState(GpuBufferSlice gpuBufferSlice, int m);
+
     @Unique
     private Mode polytone$mode = Mode.VANILLA;
     @Unique
@@ -52,9 +56,12 @@ public abstract class AnimatedTextureMixin implements DayTimeTexture {
         return polytone$dayDuration;
     }
 
-    @Inject(method = "createTicker", at = @At("HEAD"), cancellable = true)
+    /* FIXME - use createanimationstate */
+
+    @Inject(method = "createAnimationState", at = @At("HEAD"), cancellable = true)
     public void polytone$modifyTicker(CallbackInfoReturnable<SpriteTicker> cir) {
         if (polytone$mode != Mode.VANILLA) {
+
             var t = new PolytoneTextureTicker((SpriteContents.AnimatedTexture) (Object) this, this.field_28469,
                     this.interpolateFrames, this.polytone$dayDuration, this.polytone$mode);
             cir.setReturnValue(t);

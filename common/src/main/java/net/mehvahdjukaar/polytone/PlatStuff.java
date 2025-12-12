@@ -10,8 +10,6 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.Holder;
@@ -21,7 +19,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.ColorResolver;
@@ -48,7 +46,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final ResourceLocation name) {
+    public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final Identifier name) {
         throw new AssertionError();
     }
 
@@ -84,11 +82,6 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation type) {
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         throw new AssertionError();
     }
@@ -110,7 +103,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static CreativeModeTab createCreativeTab(ResourceLocation id) {
+    public static CreativeModeTab createCreativeTab(Identifier id) {
         throw new AssertionError();
     }
 
@@ -160,12 +153,12 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static void unregisterParticleProvider(ResourceLocation id) {
+    public static void unregisterParticleProvider(Identifier id) {
         throw new AssertionError();
     }
 
 
-    public static <T> T registerDynamic(Registry<T> reg, ResourceLocation id, T o) {
+    public static <T> T registerDynamic(Registry<T> reg, Identifier id, T o) {
         if (reg.containsKey(id)) {
             throw new RuntimeException("Tried to register object with id " + id + " to registry " + reg + " but it already exists");
         }
@@ -176,7 +169,7 @@ public class PlatStuff {
         return o;
     }
 
-    public static <T> void unregisterDynamic(Registry<T> reg, ResourceLocation id) {
+    public static <T> void unregisterDynamic(Registry<T> reg, Identifier id) {
         ((MappedRegistry) reg).frozen = false;
         unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
         ((MappedRegistry) reg).frozen = true;
@@ -194,7 +187,7 @@ public class PlatStuff {
         if (reference != null) {
             T value = reference.value();
 
-            reg.byLocation.remove(key.location());
+            reg.byLocation.remove(key.identifier());
             reg.byValue.remove(value);
             reg.byId.remove(reference);
             reg.toId.removeInt(value);

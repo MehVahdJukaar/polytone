@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.QuadCollection;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -15,18 +15,18 @@ import java.util.Map;
 public class ModelStuffImpl {
 
     //DUMB
-    private static final Map<ResourceLocation, ExtraModelKey<QuadCollection>> SPECIAL_MODELS = new HashMap<>();
+    private static final Map<Identifier, ExtraModelKey<QuadCollection>> SPECIAL_MODELS = new HashMap<>();
 
     public static void clear() {
         SPECIAL_MODELS.clear();
     }
 
-    public static void addSpecialModel(ResourceLocation id) {
+    public static void addSpecialModel(Identifier id) {
         SPECIAL_MODELS.put(id, ExtraModelKey.create(id::toString));
     }
 
     @Nullable
-    public static QuadCollection getSpecialModel(ResourceLocation id) {
+    public static QuadCollection getSpecialModel(Identifier id) {
         var key = SPECIAL_MODELS.get(id);
         if (key != null) {
             var mm = Minecraft.getInstance().getModelManager();

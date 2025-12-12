@@ -18,12 +18,12 @@ import net.mehvahdjukaar.polytone.colormap.IColormapNumberProvider;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsModifier;
 import net.mehvahdjukaar.polytone.dimension.DimensionTarget;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
@@ -54,12 +54,12 @@ public class LegacyHelper {
             }
     );
 
-    public static <T> Map<ResourceLocation, T> convertPaths(Map<ResourceLocation, T> map) {
-        Map<ResourceLocation, T> toUpdate = new HashMap<>();
-        List<ResourceLocation> toRemove = new ArrayList<>();
+    public static <T> Map<Identifier, T> convertPaths(Map<Identifier, T> map) {
+        Map<Identifier, T> toUpdate = new HashMap<>();
+        List<Identifier> toRemove = new ArrayList<>();
         for (var entry : map.entrySet()) {
-            ResourceLocation id = entry.getKey();
-            ResourceLocation newPath = convertPath(id);
+            Identifier id = entry.getKey();
+            Identifier newPath = convertPath(id);
             if (!newPath.equals(id)) {
                 toUpdate.put(newPath, entry.getValue());
                 toRemove.add(id);
@@ -70,22 +70,22 @@ public class LegacyHelper {
         return map;
     }
 
-    public static ResourceLocation convertPath(ResourceLocation id) {
+    public static Identifier convertPath(Identifier id) {
         String path = PATHS.get(id.getPath());
         return path == null ? id : id.withPath(path);
     }
 
 
-    public static Map<ResourceLocation, Parsed<BlockPropertyModifier>> convertBlockProperties(
-            Map<ResourceLocation, Properties> ofProperties, Map<ResourceLocation, ArrayImage> textures) {
+    public static Map<Identifier, Parsed<BlockPropertyModifier>> convertBlockProperties(
+            Map<Identifier, Properties> ofProperties, Map<Identifier, ArrayImage> textures) {
 
-        List<ResourceLocation> ids = new ArrayList<>();
+        List<Identifier> ids = new ArrayList<>();
         ids.addAll(ofProperties.keySet());
         ids.addAll(textures.keySet());
 
-        Map<ResourceLocation, Parsed<BlockPropertyModifier>> map = new HashMap<>();
+        Map<Identifier, Parsed<BlockPropertyModifier>> map = new HashMap<>();
 
-        for (ResourceLocation id : ids) {
+        for (Identifier id : ids) {
             @Nullable Properties prop = ofProperties.get(id);
             String path = id.getPath();
 
@@ -151,7 +151,7 @@ public class LegacyHelper {
 
     }
 
-    private static <T> Parsed<T> withCond(ResourceLocation id, @Nullable Properties prop, T t) {
+    private static <T> Parsed<T> withCond(Identifier id, @Nullable Properties prop, T t) {
         return Parsed.lowPriority(t, id, prop == null || checkConditions(prop));
     }
 
@@ -184,7 +184,7 @@ public class LegacyHelper {
                                                               Optional<Integer> yoffset, Optional<String> sourceTexture,
                                                               boolean forceTint) {
 
-        Set<ResourceLocation> set = new HashSet<>();
+        Set<Identifier> set = new HashSet<>();
         Colormap colormap;
         if (!targets.isEmpty()) {
             set = targets.stream()
@@ -197,7 +197,7 @@ public class LegacyHelper {
                         } catch (Exception ignored) {
                         }
                         return true;
-                    }).map(ResourceLocation::tryParse)
+                    }).map(Identifier::tryParse)
                     .collect(Collectors.toSet());
             if (forceTint) set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
 
@@ -218,7 +218,7 @@ public class LegacyHelper {
             if (sourceTexture.isPresent()) {
 
                 // assumes id is minecraft. Not ideal.. too bad
-                ResourceLocation id = ResourceLocation.parse("none");
+                Identifier id = Identifier.parse("none");
                 String source = sourceTexture.get().replace("~/colormap/", id.getNamespace() + ":");
                 if (source.contains("./")) {
                     // resolve relative paths
@@ -227,7 +227,7 @@ public class LegacyHelper {
                     String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
                     source = source.replace("./", id.getNamespace() + ":" + directoryPath);
                 }
-                colormap.setExplicitTargetTexture(ResourceLocation.parse(source));
+                colormap.setExplicitTargetTexture(Identifier.parse(source));
             }
         }
         return new BlockPropertyModifier(Optional.of(colormap),
@@ -240,8 +240,8 @@ public class LegacyHelper {
     }
 
 
-    public static BlockPropertyModifier convertOFProperty(Properties properties, ResourceLocation id) {
-        Set<ResourceLocation> set;
+    public static BlockPropertyModifier convertOFProperty(Properties properties, Identifier id) {
+        Set<Identifier> set;
         Colormap colormap;
         boolean forceTint = Boolean.parseBoolean(properties.getProperty("force_tint", "true"));
         var targets = properties.getProperty("blocks");
@@ -256,7 +256,7 @@ public class LegacyHelper {
                         } catch (Exception ignored) {
                         }
                         return true;
-                    }).map(ResourceLocation::parse)
+                    }).map(Identifier::parse)
                     .collect(Collectors.toSet());
             if (forceTint) set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
         } else set = Set.of();
@@ -290,7 +290,7 @@ public class LegacyHelper {
                     String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
                     source = (id.getNamespace() + ":" + directoryPath) + source.replace("./", "");
                 }
-                colormap.setExplicitTargetTexture(ResourceLocation.parse(source));
+                colormap.setExplicitTargetTexture(Identifier.parse(source));
             }
         }
         return new BlockPropertyModifier(Optional.of(colormap),
@@ -301,20 +301,20 @@ public class LegacyHelper {
                 Optional.empty(), false, Targets.ofOptionalIds(set), false);
     }
 
-    public static Map<ResourceLocation, Parsed<BlockPropertyModifier>> convertInlinedPalettes(
-            Map<ResourceLocation, String> inlineColormaps) {
-        Map<ResourceLocation, Parsed<BlockPropertyModifier>> map = new HashMap<>();
+    public static Map<Identifier, Parsed<BlockPropertyModifier>> convertInlinedPalettes(
+            Map<Identifier, String> inlineColormaps) {
+        Map<Identifier, Parsed<BlockPropertyModifier>> map = new HashMap<>();
 
         int k = 0;
         for (var special : inlineColormaps.entrySet()) {
-            ResourceLocation texturePath = special.getKey();
+            Identifier texturePath = special.getKey();
             Colormap colormap = Colormap.createDefTriangle();
             colormap.setExplicitTargetTexture(texturePath);
 
-            Set<ResourceLocation> blockTargets = new HashSet<>();
+            Set<Identifier> blockTargets = new HashSet<>();
             for (var name : special.getValue().split(" ")) {
                 if (name.isEmpty()) continue;
-                ResourceLocation blockId = ResourceLocation.parse(name);
+                Identifier blockId = Identifier.parse(name);
                 blockTargets.add(blockId);
                 forceBlockToHaveTintIndex(blockId);
             }
@@ -322,14 +322,14 @@ public class LegacyHelper {
                 BlockPropertyModifier mod = BlockPropertyModifier.coloringBlocks(colormap, blockTargets);
 
                 // unique id just because
-                ResourceLocation id = texturePath.withSuffix("-color_prop_palette_" + k++);
+                Identifier id = texturePath.withSuffix("-color_prop_palette_" + k++);
                 map.put(id, Parsed.success(mod, id));
             }
         }
         return map;
     }
 
-    private static void forceBlockToHaveTintIndex(ResourceLocation blockId) {
+    private static void forceBlockToHaveTintIndex(Identifier blockId) {
         var b = BuiltInRegistries.BLOCK.getOptional(blockId);
         if (b.isPresent()) {
             Block block = b.get();
@@ -416,18 +416,18 @@ public class LegacyHelper {
     });
 
     private static ResourceKey<Biome> biomeResKey(String endBarrens) {
-        return ResourceKey.create(Registries.BIOME, ResourceLocation.parse(endBarrens));
+        return ResourceKey.create(Registries.BIOME, Identifier.parse(endBarrens));
     }
 
 
-    public static void convertOfBlockToFluidProp(LinkedListMultimap<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers,
-                                                 Map<ResourceLocation, ArrayImage> textures) {
+    public static void convertOfBlockToFluidProp(LinkedListMultimap<Identifier, Parsed<BlockPropertyModifier>> parsedModifiers,
+                                                 Map<Identifier, ArrayImage> textures) {
 
-        Map<ResourceLocation, Parsed<BlockPropertyModifier>> fluid = new HashMap<>();
-        Map<ResourceLocation, Parsed<BlockPropertyModifier>> fog = new HashMap<>();
-        Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
+        Map<Identifier, Parsed<BlockPropertyModifier>> fluid = new HashMap<>();
+        Map<Identifier, Parsed<BlockPropertyModifier>> fog = new HashMap<>();
+        Map<Identifier, ArrayImage> filteredTextures = new HashMap<>();
         for (var entry : parsedModifiers.entries()) {
-            ResourceLocation id = entry.getKey();
+            Identifier id = entry.getKey();
             Parsed<BlockPropertyModifier> parsed = entry.getValue();
             BlockPropertyModifier modifier = parsed.getResultOrPartial();
             var colormap = modifier.getColormap();
@@ -439,7 +439,7 @@ public class LegacyHelper {
                     if (path.endsWith("_fog") || path.contains("under")) fog.put(id, parsed);
                     else fluid.put(id, parsed);
 
-                    ResourceLocation targetTexture = c.getTargetTexture(id);
+                    Identifier targetTexture = c.getTargetTexture(id);
                     //uglyyy
                     c.setExplicitTargetTexture(LegacyHelper.convertPath(targetTexture));
                     if (textures.containsKey(targetTexture)) {
@@ -449,7 +449,7 @@ public class LegacyHelper {
             }
         }
         for (var v : textures.entrySet()) {
-            ResourceLocation id = v.getKey();
+            Identifier id = v.getKey();
             if (id.getNamespace().equals("minecraft") && (id.getPath().contains("water") || id.getPath().contains("lava"))) {
                 filteredTextures.put(id, v.getValue());
             }
@@ -458,14 +458,14 @@ public class LegacyHelper {
         textures.keySet().removeAll(filteredTextures.keySet());
         parsedModifiers.keySet().removeAll(fluid.keySet());
 
-        Map<ResourceLocation, Parsed<FluidPropertyModifier>> converted = new HashMap<>();
+        Map<Identifier, Parsed<FluidPropertyModifier>> converted = new HashMap<>();
 
         for (var f : fluid.entrySet()) {
             // ignore targets as those are block targets anyways
             var parsed = f.getValue();
 
                 var mod = parsed.getResultOrPartial();
-                ResourceLocation id = f.getKey();
+                Identifier id = f.getKey();
                 Targets targets = mod.targets();
                 targets.addSimple(id);
                 targets.addSimple(id.withPrefix("flowing_"));
@@ -480,14 +480,14 @@ public class LegacyHelper {
         Polytone.FLUID_MODIFIERS.addConvertedBlockProperties(converted, filteredTextures);
     }
 
-    public static void convertOfBlockToDimensionProperties(LinkedListMultimap<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers,
-                                                           Map<ResourceLocation, ArrayImage> textures) {
-        Map<ResourceLocation, Parsed<BlockPropertyModifier>> filtered = new HashMap<>();
-        Map<ResourceLocation, ArrayImage> filteredTextures = new HashMap<>();
+    public static void convertOfBlockToDimensionProperties(LinkedListMultimap<Identifier, Parsed<BlockPropertyModifier>> parsedModifiers,
+                                                           Map<Identifier, ArrayImage> textures) {
+        Map<Identifier, Parsed<BlockPropertyModifier>> filtered = new HashMap<>();
+        Map<Identifier, ArrayImage> filteredTextures = new HashMap<>();
         Pattern fogP = Pattern.compile("minecraft:fog[0-2]");
         Pattern skyP = Pattern.compile("minecraft:sky[0-2]");
         for (var entry : parsedModifiers.entries()) {
-            ResourceLocation id = entry.getKey();
+            Identifier id = entry.getKey();
             String stringId = id.toString();
             var modifier = entry.getValue();
             if (fogP.matcher(stringId).matches() || skyP.matcher(stringId).matches()) {
@@ -495,7 +495,7 @@ public class LegacyHelper {
             }
         }
         for (var entry : textures.entrySet()) {
-            ResourceLocation id = entry.getKey();
+            Identifier id = entry.getKey();
             String stringId = id.toString();
             ArrayImage modifier = entry.getValue();
             if (fogP.matcher(stringId).matches() || skyP.matcher(stringId).matches()) {
@@ -510,16 +510,16 @@ public class LegacyHelper {
     }
 
     // fot OF fog and sky. shit code...
-    private static void addConvertedBlockProperties(Map<ResourceLocation, Parsed<BlockPropertyModifier>> modifiers, Map<ResourceLocation, ArrayImage> textures) {
+    private static void addConvertedBlockProperties(Map<Identifier, Parsed<BlockPropertyModifier>> modifiers, Map<Identifier, ArrayImage> textures) {
         String[] names = new String[]{"overworld", "the_nether", "the_end"};
-        Map<ResourceLocation, Parsed<DimensionEffectsModifier>> converted = new HashMap<>();
+        Map<Identifier, Parsed<DimensionEffectsModifier>> converted = new HashMap<>();
         for (int i = 0; i <= 2; i++) {
             IColorGetter skyCol;
             IColorGetter fogCol;
             boolean skyEnabled;
             boolean fogEnabled;
             {
-                ResourceLocation skyKey = ResourceLocation.parse("sky" + i);
+                Identifier skyKey = Identifier.parse("sky" + i);
                 var skyMod = modifiers.get(skyKey);
                 ArrayImage skyImage = textures.get(skyKey);
 
@@ -530,7 +530,7 @@ public class LegacyHelper {
                 skyEnabled = skyMod == null || skyMod.isEnabled();
             }
             {
-                ResourceLocation fogKey = ResourceLocation.parse("fog" + i);
+                Identifier fogKey = Identifier.parse("fog" + i);
                 var fogMod = modifiers.get(fogKey);
                 ArrayImage fogImage = textures.get(fogKey);
 
@@ -546,7 +546,7 @@ public class LegacyHelper {
                         Optional.ofNullable(fogCol), Optional.empty(), Optional.ofNullable(skyCol), Optional.empty(),
                         false, false, Optional.empty(), DimensionTarget.EMPTY);
 
-                ResourceLocation id = ResourceLocation.parse(names[i]);
+                Identifier id = Identifier.parse(names[i]);
                 boolean enabled = fogEnabled || skyEnabled;
                 var parsedMod = Parsed.lowPriority(mod, id, enabled);
                 converted.put(id, parsedMod);

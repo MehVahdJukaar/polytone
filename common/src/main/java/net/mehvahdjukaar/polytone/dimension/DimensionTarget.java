@@ -7,7 +7,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.dimension.DimensionType;
 
 import java.util.Collection;
@@ -25,7 +25,7 @@ public class DimensionTarget {
         this.target = target;
     }
 
-    public Collection<Holder<DimensionType>> getTargets(ResourceLocation fileId, HolderLookup.Provider registryAccess) {
+    public Collection<Holder<DimensionType>> getTargets(Identifier fileId, HolderLookup.Provider registryAccess) {
         var reg = registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE);
         if (target.left().isPresent()) {
             var tt = target.left().get();

@@ -10,15 +10,16 @@ import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.Weather;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.sounds.Music;
+
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.*;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.attribute.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,11 +27,11 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
                                   Optional<Integer> waterFogColor, Optional<Integer> skyColor,
                                   Optional<Integer> foliageColorOverride, Optional<Integer> grassColorOverride,
                                   Optional<BiomeSpecialEffects.GrassColorModifier> grassColorModifier,
-                                  Optional<AmbientParticleSettings> ambientParticleSettings,
+                                  Optional<AmbientParticle> ambientParticleSettings,
                                   Optional<Holder<SoundEvent>> ambientLoopSoundEvent,
                                   Optional<AmbientMoodSettings> ambientMoodSettings,
                                   Optional<AmbientAdditionsSettings> ambientAdditionsSettings,
-                                  Optional<WeightedList<Music>> backgroundMusic,
+                                  Optional<BackgroundMusic> backgroundMusic,
                                   Optional<FogParam> fogStart, Optional<FogParam> fogEnd,
                                   Targets targets) {
 
@@ -42,23 +43,15 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
             Codec.INT.optionalFieldOf("foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
             Codec.INT.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
             BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
-            AmbientParticleSettings.CODEC.optionalFieldOf("particle").forGetter(BiomeEffectModifier::ambientParticleSettings),
+            AmbientParticle.CODEC.optionalFieldOf("particle").forGetter(BiomeEffectModifier::ambientParticleSettings),
             SoundEvent.CODEC.optionalFieldOf("ambient_sound").forGetter(BiomeEffectModifier::ambientLoopSoundEvent),
             AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter(BiomeEffectModifier::ambientMoodSettings),
             AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter(BiomeEffectModifier::ambientAdditionsSettings),
-            WeightedList.codec(Music.CODEC).optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
+            BackgroundMusic.CODEC.optionalFieldOf("music").forGetter(BiomeEffectModifier::backgroundMusic),
             AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start").forGetter(BiomeEffectModifier::fogStart),
             AlternativeMapCodec.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end").forGetter(BiomeEffectModifier::fogEnd),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));
-
-    public static BiomeEffectModifier ofWaterColor(int waterColor) {
-        return new BiomeEffectModifier(Optional.empty(), Optional.of(waterColor),
-                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY);
-    }
 
     // Other has priority
     public BiomeEffectModifier merge(BiomeEffectModifier newMod) {
@@ -86,55 +79,25 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         //on forge this will get the modified ones if they exist
         BiomeSpecialEffects effects = biome.getSpecialEffects();
         var builder = getBuilder(effects);
+        var attributes = biome.getAttributes();
 
-        Optional<Integer> newFoliageColorOverride = effects.getFoliageColorOverride();
+        Optional<Integer> newFoliageColorOverride = effects.foliageColorOverride();
         if (foliageColorOverride.isPresent()) {
             newFoliageColorOverride = foliageColorOverride;
         }
         newFoliageColorOverride.ifPresent(builder::foliageColorOverride);
 
-        Optional<Integer> newGrassColorOverride = effects.getGrassColorOverride();
+        Optional<Integer> newGrassColorOverride = effects.grassColorOverride();
         if (grassColorOverride.isPresent()) {
             newGrassColorOverride = grassColorOverride;
         }
         newGrassColorOverride.ifPresent(builder::grassColorOverride);
 
-        BiomeSpecialEffects.GrassColorModifier newGrassColorModifier = effects.getGrassColorModifier();
+        BiomeSpecialEffects.GrassColorModifier newGrassColorModifier = effects.grassColorModifier();
         if (grassColorModifier.isPresent()) {
             newGrassColorModifier = grassColorModifier.get();
         }
         builder.grassColorModifier(newGrassColorModifier);
-
-
-        Optional<AmbientParticleSettings> newParticle = effects.getAmbientParticleSettings();
-        if (ambientParticleSettings.isPresent()) {
-            newParticle = ambientParticleSettings;
-        }
-        newParticle.ifPresent(builder::ambientParticle);
-
-        Optional<Holder<SoundEvent>> newAmbientSound = effects.getAmbientLoopSoundEvent();
-        if (ambientLoopSoundEvent.isPresent()) {
-            newAmbientSound = ambientLoopSoundEvent;
-        }
-        newAmbientSound.ifPresent(builder::ambientLoopSound);
-
-        Optional<AmbientMoodSettings> newMood = effects.getAmbientMoodSettings();
-        if (ambientMoodSettings.isPresent()) {
-            newMood = ambientMoodSettings;
-        }
-        newMood.ifPresent(builder::ambientMoodSound);
-
-        Optional<AmbientAdditionsSettings> newAdditions = effects.getAmbientAdditionsSettings();
-        if (ambientAdditionsSettings.isPresent()) {
-            newAdditions = ambientAdditionsSettings;
-        }
-        newAdditions.ifPresent(builder::ambientAdditionsSound);
-
-        Optional<WeightedList<Music>> newMusic = effects.getBackgroundMusic();
-        if (backgroundMusic.isPresent()) {
-            newMusic = backgroundMusic;
-        }
-        newMusic.ifPresent(builder::backgroundMusic);
 
         // merged and saved old. now we can apply
 
@@ -144,6 +107,22 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         // applyInplace(biome, builder.build());
 
         applyEffects(biome, builder.build());
+        // Apply the attribute based effects now
+        // TODO - should we just apply override modifiers? What is the practical difference?
+        var attributeBuilder = EnvironmentAttributeMap.builder().putAll(biome.getAttributes());
+        skyColor.ifPresent(value -> attributeBuilder.set(EnvironmentAttributes.SKY_COLOR, value));
+        fogColor.ifPresent(value -> attributeBuilder.set(EnvironmentAttributes.FOG_COLOR, value));
+        waterFogColor.ifPresent(value -> attributeBuilder.set(EnvironmentAttributes.WATER_FOG_COLOR, value));
+        ambientParticleSettings.ifPresent(value -> attributeBuilder.set(EnvironmentAttributes.AMBIENT_PARTICLES, List.of(value)));
+        backgroundMusic.ifPresent(value -> attributeBuilder.set(EnvironmentAttributes.BACKGROUND_MUSIC, value));
+
+        // FIXME - we need to create a partial override attribute modifier and attach it to the
+        // ambient sound attribute, so that we can just hand it partially null records and let
+        // it do overrides of the parts that are non-null.
+//        var newAmbientSounds = new AmbientSounds(ambientLoopSoundEvent, ambientMoodSettings,
+//                List.of(ambientAdditionsSettings.orElse(null)));
+
+        biome.attributes = attributeBuilder.build();
         //return a copy of the old effects
         return copy;
     }
@@ -151,47 +130,22 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
     private BiomeSpecialEffects.Builder getBuilder(BiomeSpecialEffects effects) {
         var builder = new BiomeSpecialEffects.Builder();
 
-        int newFog = effects.getFogColor();
-        if (fogColor.isPresent()) {
-            newFog = fogColor.get();
-        }
-        builder.fogColor(newFog);
-
-        int newWaterColor = effects.getWaterColor();
+        int newWaterColor = effects.waterColor();
         if (waterColor.isPresent()) {
             newWaterColor = waterColor.get();
         }
         builder.waterColor(newWaterColor);
-
-        int newWaterFogColor = effects.getWaterFogColor();
-        if (waterFogColor.isPresent()) {
-            newWaterFogColor = waterFogColor.get();
-        }
-        builder.waterFogColor(newWaterFogColor);
-
-
-        int newSkyColor = effects.getSkyColor();
-        if (skyColor.isPresent()) {
-            newSkyColor = skyColor.get();
-        }
-        builder.skyColor(newSkyColor);
         return builder;
     }
 
     private BiomeSpecialEffects copy(BiomeSpecialEffects effects) {
         var builder = new BiomeSpecialEffects.Builder();
-        builder.fogColor(effects.getFogColor());
-        builder.waterColor(effects.getWaterColor());
-        builder.waterFogColor(effects.getWaterFogColor());
-        builder.skyColor(effects.getSkyColor());
-        effects.getFoliageColorOverride().ifPresent(builder::foliageColorOverride);
-        effects.getGrassColorOverride().ifPresent(builder::grassColorOverride);
-        builder.grassColorModifier(effects.getGrassColorModifier());
-        effects.getAmbientParticleSettings().ifPresent(builder::ambientParticle);
-        effects.getAmbientLoopSoundEvent().ifPresent(builder::ambientLoopSound);
-        effects.getAmbientMoodSettings().ifPresent(builder::ambientMoodSound);
-        effects.getAmbientAdditionsSettings().ifPresent(builder::ambientAdditionsSound);
-        effects.getBackgroundMusic().ifPresent(builder::backgroundMusic);
+
+        // FIXME - no longer here
+        builder.waterColor(effects.waterColor());
+        effects.foliageColorOverride().ifPresent(builder::foliageColorOverride);
+        effects.grassColorOverride().ifPresent(builder::grassColorOverride);
+        builder.grassColorModifier(effects.grassColorModifier());
         return builder.build();
     }
 
@@ -201,24 +155,6 @@ public record BiomeEffectModifier(Optional<Integer> fogColor, Optional<Integer> 
         //applyInplace(biome, modifier);
         //we use reflections on fabric and a special hackery for forte
         PlatStuff.applyBiomeSurgery(biome, newEffects);
-    }
-
-    private static void applyInplace(Biome biome, BiomeSpecialEffects newEffects) {
-        //we cant replcate biome effects object so we set its fields
-        //we cant do this either because embeddium doesnt like it
-        var oldEffects = biome.getSpecialEffects();
-        oldEffects.fogColor = -1;//newEffects.getFogColor();
-        oldEffects.waterColor = newEffects.getWaterColor();
-        oldEffects.waterFogColor = newEffects.getWaterFogColor();
-        oldEffects.skyColor = -1;//newEffects.getSkyColor();
-        oldEffects.foliageColorOverride = newEffects.getFoliageColorOverride();
-        oldEffects.grassColorOverride = Optional.of(-1);//newEffects.getGrassColorOverride();
-        oldEffects.grassColorModifier = newEffects.getGrassColorModifier();
-        oldEffects.ambientParticleSettings = newEffects.getAmbientParticleSettings();
-        oldEffects.ambientLoopSoundEvent = newEffects.getAmbientLoopSoundEvent();
-        oldEffects.ambientMoodSettings = newEffects.getAmbientMoodSettings();
-        oldEffects.ambientAdditionsSettings = newEffects.getAmbientAdditionsSettings();
-        oldEffects.backgroundMusic = newEffects.getBackgroundMusic();
     }
 
     public boolean modifyFogParameter() {

@@ -25,7 +25,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleLimit;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -43,11 +43,11 @@ import java.util.*;
 public class CustomParticleType implements CustomParticleFactory {
 
     private static BlockState STATE_HACK = Blocks.AIR.defaultBlockState();
-    private static SingleQuadParticle.Layer CUSTOM_LAYER = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT);
+    private static SingleQuadParticle.Layer CUSTOM_LAYER = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_TERRAIN);
     private static SingleQuadParticle.Layer ADDITIVE_TRANSLUCENT = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE);
 
     private final RenderType renderType;
-    private final @Nullable ResourceLocation model;
+    private final @Nullable Identifier model;
     private final @Nullable ParticleInitializer initializer;
     private final @Nullable Ticker ticker;
     private final List<ParticleSoundEmitter> sounds;
@@ -74,7 +74,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private boolean isValid = true;
 
     private CustomParticleType(RenderType renderType, RotationProvider rotationProvider,
-                               @Nullable ResourceLocation model, Vec3 offset,
+                               @Nullable Identifier model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                boolean randomSprite,
@@ -107,7 +107,7 @@ public class CustomParticleType implements CustomParticleFactory {
             RenderType.CODEC.optionalFieldOf("render_type", RenderType.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
             RotationProvider.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationProvider),
-            ResourceLocation.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model)),
+            Identifier.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model)),
             Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(c -> c.offset),
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
@@ -128,7 +128,7 @@ public class CustomParticleType implements CustomParticleFactory {
     ).apply(i, CustomParticleType::new));
 
     private CustomParticleType(RenderType renderType, RotationProvider rotationProvider,
-                               Optional<ResourceLocation> model, Vec3 offset,
+                               Optional<Identifier> model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                boolean randomSprite,
@@ -146,7 +146,7 @@ public class CustomParticleType implements CustomParticleFactory {
     }
 
     @Override
-    public @Nullable ResourceLocation getCustomModel() {
+    public @Nullable Identifier getCustomModel() {
         return this.model;
     }
 
@@ -461,14 +461,13 @@ public class CustomParticleType implements CustomParticleFactory {
 
         public static final Codec<RenderType> CODEC = StringRepresentable.fromEnum(RenderType::values);
 
-        public net.minecraft.client.renderer.RenderType getBlock() {
+        public net.minecraft.client.renderer.rendertype.RenderType getBlock() {
             return switch (this) {
-                case TERRAIN -> net.minecraft.client.renderer.RenderType.solid();
+                case TERRAIN -> net.minecraft.client.renderer.rendertype.RenderTypes.solidMovingBlock();
                 case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE;
-                case LIT -> net.minecraft.client.renderer.RenderType.cutout();
-                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.cutout();
-                case INVISIBLE -> net.minecraft.client.renderer.RenderType.cutout();
-                default -> net.minecraft.client.renderer.RenderType.cutoutMipped();
+                case LIT, TRANSLUCENT, INVISIBLE -> net.minecraft.client.renderer.rendertype.RenderTypes.cutoutMovingBlock();
+                // Cutout mipped is no longer existing
+                default -> net.minecraft.client.renderer.rendertype.RenderTypes.cutoutMovingBlock();
             };
         }
 
@@ -599,8 +598,8 @@ public class CustomParticleType implements CustomParticleFactory {
     }
 
 
-    public static final Codec<Optional<ResourceLocation>> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
-            ResourceLocation.CODEC.optionalFieldOf("model").forGetter(e -> e)
+    public static final Codec<Optional<Identifier>> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
+            Identifier.CODEC.optionalFieldOf("model").forGetter(e -> e)
     ).apply(i, r -> r));
 }
 

@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public abstract class SingleJsonOrPropertiesReloadListener extends PartialReloader<Map<ResourceLocation, JsonElement>> {
+public abstract class SingleJsonOrPropertiesReloadListener extends PartialReloader<Map<Identifier, JsonElement>> {
     private static final Gson GSON = new Gson();
     private final String[] folders;
     private final String propertiesName;
@@ -35,9 +35,9 @@ public abstract class SingleJsonOrPropertiesReloadListener extends PartialReload
     }
 
     @Override
-    protected Map<ResourceLocation, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
+    protected Map<Identifier, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
         var resourceManager = sharedState.resourceManager();
-        Map<ResourceLocation, JsonElement> jsonObjects = new HashMap<>();
+        Map<Identifier, JsonElement> jsonObjects = new HashMap<>();
         for (String path : folders) {
 
 
@@ -65,7 +65,7 @@ public abstract class SingleJsonOrPropertiesReloadListener extends PartialReload
 
             for (var entrySet : resources.entrySet()) {
                 var resourceStack = entrySet.getValue();
-                ResourceLocation id = entrySet.getKey();
+                Identifier id = entrySet.getKey();
                 //dont merge. too bad. jsons should have unique names here
                 for (var resource : resourceStack) {
                     try (Reader reader = resource.openAsReader()) {

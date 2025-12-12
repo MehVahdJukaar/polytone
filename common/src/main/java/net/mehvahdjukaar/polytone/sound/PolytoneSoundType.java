@@ -5,10 +5,10 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ReferenceOrDirectCodec;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -136,7 +136,7 @@ public class PolytoneSoundType extends SoundType {
     public static final Codec<SoundType> REFERENCE_OR_COPY_CODEC = Codec.STRING.flatXmap(s -> {
                 if (s.startsWith("copy(")) {
                     String target = s.replace("copy(", "").replace(")", "");
-                    ResourceLocation r = ResourceLocation.parse(target);
+                    Identifier r = Identifier.parse(target);
                     if (r == null) {
                         return DataResult.error(() -> "Invalid string for Sound Type Copy function: " + s + ". Expected 'copy([some_mod]:[some_block])'");
                     }
@@ -147,9 +147,9 @@ public class PolytoneSoundType extends SoundType {
                 }
                 var vanilla = SOUND_NAMES.get(s);
                 if (vanilla != null) return DataResult.success(vanilla);
-                ResourceLocation r = ResourceLocation.parse(s);
+                Identifier r = Identifier.parse(s);
                 if (r != null) {
-                    var custom = Polytone.SOUND_TYPES.getCustomSoundType(ResourceLocation.parse(s));
+                    var custom = Polytone.SOUND_TYPES.getCustomSoundType(Identifier.parse(s));
                     if (custom != null) return DataResult.success(custom);
                 }
                 return DataResult.error(() -> "Could not find any custom Sound Type with id " + r +

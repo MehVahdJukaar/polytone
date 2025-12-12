@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.fabricmc.fabric.impl.registry.sync.RegistrySyncManager;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -19,7 +19,7 @@ public class RegistrySyncManagerMixin {
             at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2IntMap;put(Ljava/lang/Object;I)I"))
     private static boolean polytone$omitPolytoneDynamicEntries(Object2IntMap instance, Object o, int i,
                                                                @Local Registry<?> registryId,
-                                                               @Local(ordinal = 1) ResourceLocation entryId) {
+                                                               @Local(ordinal = 1) Identifier entryId) {
         return !Polytone.isEntryDynamic(registryId, entryId);
     }
 }

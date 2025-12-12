@@ -9,7 +9,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.*;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
 
@@ -34,7 +34,7 @@ public final class ForwardAwareRegistryFixedCodec<E> implements Codec<Optional<H
 
                 return holder.unwrap().map(
                         (resourceKey) ->
-                                ResourceLocation.CODEC.encode(resourceKey.location(), ops, value),
+                                Identifier.CODEC.encode(resourceKey.identifier(), ops, value),
                         (object) -> DataResult.error(() -> "Elements from registry " + this.registryKey + " can't be serialized to a value"));
             }
         }
@@ -47,9 +47,9 @@ public final class ForwardAwareRegistryFixedCodec<E> implements Codec<Optional<H
             Optional<HolderGetter<E>> optional = registryOps.getter(this.registryKey);
             if (optional.isPresent()) {
                 HolderGetter<E> registry = optional.get();
-                return ResourceLocation.CODEC.decode(dynamicOps, object)
+                return Identifier.CODEC.decode(dynamicOps, object)
                         .flatMap((pair) -> {
-                            ResourceLocation resourceLocation = pair.getFirst();
+                            Identifier resourceLocation = pair.getFirst();
                             ResourceKey<E> resKey = ResourceKey.create(this.registryKey, resourceLocation);
                             Optional<Holder.Reference<E>> eReference = registry.get(resKey);
                             if (eReference.isPresent()) {
@@ -70,7 +70,7 @@ public final class ForwardAwareRegistryFixedCodec<E> implements Codec<Optional<H
         return "RegistryFixedCodec[" + this.registryKey + "]";
     }
 
-    private boolean isBlacklisted(ResourceLocation id) {
+    private boolean isBlacklisted(Identifier id) {
         return Polytone.isFutureId(id);
     }
 

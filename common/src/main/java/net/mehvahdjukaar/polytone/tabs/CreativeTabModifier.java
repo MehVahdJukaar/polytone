@@ -11,7 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 
@@ -30,10 +30,10 @@ public record CreativeTabModifier(
         Optional<Boolean> canScroll,
         Optional<Boolean> showTitle,
         Optional<Component> name,
-        Optional<ResourceLocation> backGroundLocation,
-        Optional<ResourceLocation> tabsImage,
-        Optional<List<ResourceLocation>> beforeTabs,
-        Optional<List<ResourceLocation>> afterTabs,
+        Optional<Identifier> backGroundLocation,
+        Optional<Identifier> tabsImage,
+        Optional<List<Identifier>> beforeTabs,
+        Optional<List<Identifier>> afterTabs,
         List<ItemPredicate> removals,
         List<ItemAddition> additions,
         Targets targets) {
@@ -45,10 +45,10 @@ public record CreativeTabModifier(
             Codec.BOOL.optionalFieldOf("can_scroll").forGetter(CreativeTabModifier::canScroll),
             Codec.BOOL.optionalFieldOf("show_title").forGetter(CreativeTabModifier::showTitle),
             ComponentSerialization.CODEC.optionalFieldOf("name").forGetter(CreativeTabModifier::name),
-            ResourceLocation.CODEC.optionalFieldOf("background").forGetter(CreativeTabModifier::backGroundLocation),
-            ResourceLocation.CODEC.optionalFieldOf("tabs_image").forGetter(CreativeTabModifier::tabsImage),
-            ResourceLocation.CODEC.listOf().optionalFieldOf("before_tabs").forGetter(CreativeTabModifier::beforeTabs),
-            ResourceLocation.CODEC.listOf().optionalFieldOf("after_tabs").forGetter(CreativeTabModifier::afterTabs),
+            Identifier.CODEC.optionalFieldOf("background").forGetter(CreativeTabModifier::backGroundLocation),
+            Identifier.CODEC.optionalFieldOf("tabs_image").forGetter(CreativeTabModifier::tabsImage),
+            Identifier.CODEC.listOf().optionalFieldOf("before_tabs").forGetter(CreativeTabModifier::beforeTabs),
+            Identifier.CODEC.listOf().optionalFieldOf("after_tabs").forGetter(CreativeTabModifier::afterTabs),
             ItemPredicate.CODEC.listOf().optionalFieldOf("removals", List.of()).forGetter(CreativeTabModifier::removals),
             ItemAddition.CODEC.listOf().optionalFieldOf("additions", List.of()).forGetter(CreativeTabModifier::additions),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)

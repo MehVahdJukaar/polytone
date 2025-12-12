@@ -11,8 +11,11 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.lightmap.Lightmap;
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
+import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -20,7 +23,7 @@ import java.util.Optional;
 
 public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpression>> cloudLevel,
                                        Optional<Boolean> hasGround,
-                                       Optional<DimensionSpecialEffects.SkyType> skyType,
+                                       Optional<DimensionType.Skybox> skyType,
                                        Optional<Boolean> hasEndFlashes,
                                        Optional<Boolean> constantAmbientLight,
                                        Optional<IColorGetter> fogColor,
@@ -32,14 +35,11 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                                        Optional<Lightmap> lightmap, //TODO: finish adding
                                        DimensionTarget targets) {
 
-    public static final Codec<DimensionSpecialEffects.SkyType> SKY_TYPE_CODEC = Codec.STRING
-            .xmap(DimensionSpecialEffects.SkyType::valueOf, DimensionSpecialEffects.SkyType::name);
-
     public static final Decoder<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     Codec.either(Codec.FLOAT, BlockContextExpression.CODEC).optionalFieldOf("cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
                     Codec.BOOL.optionalFieldOf("has_ground").forGetter(DimensionEffectsModifier::hasGround),
-                    SKY_TYPE_CODEC.optionalFieldOf("sky_type").forGetter(DimensionEffectsModifier::skyType),
+                    DimensionType.Skybox.CODEC.optionalFieldOf("sky_type").forGetter(DimensionEffectsModifier::skyType),
                     Codec.BOOL.optionalFieldOf("force_bright_lightmap").forGetter(DimensionEffectsModifier::hasEndFlashes),
                     Codec.BOOL.optionalFieldOf("constant_ambient_light").forGetter(DimensionEffectsModifier::constantAmbientLight),
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
@@ -108,32 +108,19 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
         return this.sunsetColor.orElse(null);
     }
 
-    public DimensionEffectsModifier applyInplace(ResourceLocation dimensionId) {
-        DimensionSpecialEffects effects = PlatStuff.getDimensionEffects(dimensionId);
+    public DimensionEffectsModifier applyInplace(Level level, DimensionType dimension) {
+        var attributes = dimension.attributes();
+        var environmentSystem = level.environmentAttributes();
 
-        Optional<Either<Float, BlockContextExpression>> oldCloud = Optional.empty();
-        /*
-        if (this.cloudLevel.isPresent() && this.cloudLevel.get().left().isPresent()) {
-            oldCloud = Optional.of(Either.left(effects.cloudLevel));
-            effects.cloudLevel = this.cloudLevel.get().left().get();
-        }*/
-        Optional<Boolean> oldGround = Optional.empty();
-        /*
-        if (this.hasGround.isPresent()) {
-            oldGround = Optional.of(effects.hasGround);
-            effects.hasGround = this.hasGround.get();
-        }*/
-        Optional<DimensionSpecialEffects.SkyType> oldSky = Optional.empty();
+        Optional<DimensionType.Skybox> oldSky = Optional.empty();
         if (this.skyType.isPresent()) {
-            oldSky = Optional.of(effects.skyType);
-            effects.skyType = this.skyType.get();
+            oldSky = Optional.of(dimension.skybox());
+            dimension.skybox = this.skyType.get();
         }
 
-        Optional<Boolean> oldEndFlashes = Optional.empty();
-        if (this.hasEndFlashes.isPresent()) {
-            oldEndFlashes = Optional.of(effects.hasEndFlashes());
-            effects.hasEndFlashes = this.hasEndFlashes.get();
-        }
+        // hasEndFlashes is automatically true if the skybox is in the end, we can't directly
+        // control it without overriding the method
+
         Optional<Boolean> oldAmbient = Optional.empty();
         if (this.constantAmbientLight.isPresent()) {
             oldAmbient = Optional.of(effects.constantAmbientLight);

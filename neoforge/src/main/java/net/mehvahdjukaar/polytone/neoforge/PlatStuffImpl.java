@@ -28,7 +28,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -64,7 +64,7 @@ public class PlatStuffImpl {
         return !ModLoader.hasErrors();
     }
 
-    public static void addClientReloadListener(Supplier<PreparableReloadListener> listener, ResourceLocation location) {
+    public static void addClientReloadListener(Supplier<PreparableReloadListener> listener, Identifier location) {
         Consumer<AddClientReloadListenersEvent> eventConsumer = (event) -> {
             event.addListener(location, listener.get());
         };
@@ -81,7 +81,7 @@ public class PlatStuffImpl {
         engine.getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getKey(type), provider);
     }
 
-    public static void unregisterParticleProvider(ResourceLocation id) {
+    public static void unregisterParticleProvider(Identifier id) {
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
         ((ParticleEngineAccessor) particleEngine).getProviders().remove(id);
     }
@@ -117,9 +117,6 @@ public class PlatStuffImpl {
         return ModList.get().isLoaded(namespace);
     }
 
-    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation id) {
-        return DimensionSpecialEffectsManager.getForType(id);
-    }
 
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         //forge original biome effect object is never user and redirected by coremod
@@ -171,7 +168,7 @@ public class PlatStuffImpl {
     }
 
 
-    public static CreativeModeTab createCreativeTab(ResourceLocation id) {
+    public static CreativeModeTab createCreativeTab(Identifier id) {
         return CreativeModeTab.builder().title(Component.translatable(id.toString())).build();
     }
 
@@ -212,26 +209,26 @@ public class PlatStuffImpl {
             acc.setShowTitle(mod.showTitle().get());
         }
 
-        ResourceLocation oldTabsImage = null;
+        Identifier oldTabsImage = null;
         if (mod.tabsImage().isPresent()) {
             oldTabsImage = tab.getTabsImage();
             acc.setTabsImage(mod.tabsImage().get());
         }
 
-        ResourceLocation oldBackgroundLocation = null;
+        Identifier oldBackgroundLocation = null;
         if (mod.backGroundLocation().isPresent()) {
             oldBackgroundLocation = tab.getBackgroundTexture();
             acc.setBackgroundTexture(mod.backGroundLocation().get());
         }
 
 
-        List<ResourceLocation> oldBeforeTabs = null;
+        List<Identifier> oldBeforeTabs = null;
         if (mod.beforeTabs().isPresent()) {
             oldBeforeTabs = tab.tabsBefore;
             acc.setBeforeTabs(mod.beforeTabs().get());
         }
 
-        List<ResourceLocation> oldAfterTabs = null;
+        List<Identifier> oldAfterTabs = null;
         if (mod.afterTabs().isPresent()) {
             oldAfterTabs = tab.tabsAfter;
             acc.setAfterTabs(mod.afterTabs().get());

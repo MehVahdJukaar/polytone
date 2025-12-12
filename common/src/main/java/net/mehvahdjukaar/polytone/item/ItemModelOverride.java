@@ -17,7 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
@@ -42,11 +42,11 @@ public class ItemModelOverride {
     protected final CompoundTag entityTag;
     @Nullable
     protected final ColormapExpressionProvider expression;
-    protected ModelResourceLocation model;
+    protected ModelIdentifier model;
     protected DataComponentMap decodedComponents;
     protected Map<DataComponentType<?>, CompoundTag> nbtMatchers;
 
-    protected static final Codec<Map<ResourceLocation, Float>> ITEM_PREDICATE_CODEC = Codec.unboundedMap(ResourceLocation.CODEC, Codec.FLOAT);
+    protected static final Codec<Map<Identifier, Float>> ITEM_PREDICATE_CODEC = Codec.unboundedMap(Identifier.CODEC, Codec.FLOAT);
 
     protected static final UnboundedMapCodec<DataComponentType<?>, CompoundTag> NBT_COMPONENTS_CODEC = Codec.unboundedMap(DataComponentType.CODEC, CompoundTag.CODEC);
 
@@ -64,10 +64,10 @@ public class ItemModelOverride {
             ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(Partial::model)
     ).apply(instance, Partial::new));
 
-    public record Partial(ModelResourceLocation model) {
+    public record Partial(ModelIdentifier model) {
     }
 
-    public ItemModelOverride(Optional<Dynamic<?>> lazyComponent, ModelResourceLocation model, Optional<Integer> stackCount,
+    public ItemModelOverride(Optional<Dynamic<?>> lazyComponent, ModelIdentifier model, Optional<Integer> stackCount,
                              Optional<Pattern> pattern, Optional<CompoundTag> entityTag,
                              Optional<ColormapExpressionProvider> expression,
                              Map<DataComponentType<?>,CompoundTag> nbtMatchers) {
@@ -80,7 +80,7 @@ public class ItemModelOverride {
         this.nbtMatchers = nbtMatchers;
     }
 
-    public ItemModelOverride(DataComponentMap map, ModelResourceLocation model) {
+    public ItemModelOverride(DataComponentMap map, ModelIdentifier model) {
         this.lazyComponent = null;
         this.model = model;
         this.stackCount = null;
@@ -105,7 +105,7 @@ public class ItemModelOverride {
                 .getFirst();
     }
 
-    public ModelResourceLocation model() {
+    public ModelIdentifier model() {
         return this.model;
     }
 
