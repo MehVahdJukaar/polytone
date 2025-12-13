@@ -8,11 +8,8 @@ import com.mojang.blaze3d.platform.SourceFactor;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -107,6 +104,7 @@ public class PolytoneRenderTypes {
 
 
 
+    public static final RenderPipeline FISHING_ROD_PIPELINE = null; //TODO: here
 
     public static final RenderPipeline LEASH_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
                     RenderPipelines. MATRICES_COLOR_FOG_SNIPPET)
@@ -131,15 +129,9 @@ public class PolytoneRenderTypes {
                     .createCompositeState(RenderType.OutlineProperty.NONE)
     );
 
-    private static boolean isLeashRenderOn(){
-        return true;
-    }
-
     public static VertexConsumer getLeashVertexConsumer(MultiBufferSource multiBufferSource) {
-        if (!isLeashRenderOn()) return null;
         return multiBufferSource.getBuffer(LEASH_RENDER_TYPE);
     }
-
 
     public static boolean addLeashVertexPair(VertexConsumer vertexConsumer, Matrix4f matrix4f,
                                              float startX, float startY, float startZ,
@@ -147,7 +139,6 @@ public class PolytoneRenderTypes {
                                              float y0, float y1,
                                              float dx, float dz,
                                              int index, boolean flippedColors) {
-        if (!isLeashRenderOn()) return false;
         // Calculate segment and interpolate lighting
         float segment = (float) index / 24.0F;
         int blockLight = (int) Mth.lerp(segment, (float) blockLight0, (float) blockLight1);
@@ -213,8 +204,8 @@ public class PolytoneRenderTypes {
         }
 
         public void endBatches() {
-            endBatch(ADDITIVE_TRANSLUCENT_BLOCK);
-            endBatch(ADDITIVE_TRANSLUCENT_PARTICLE);
+            endBatch(ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE);
+            endBatch(ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE);
             for (RenderType type : delayed) {
                 endBatch(type);
             }
@@ -224,8 +215,9 @@ public class PolytoneRenderTypes {
         public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
             if (!fixedBuffers.containsKey(renderType)) {
                 fixedBuffers.put(renderType, bufferSupplier.get());
-                if (renderType != ADDITIVE_TRANSLUCENT_BLOCK && renderType != ADDITIVE_TRANSLUCENT_PARTICLE)
+                if (renderType != ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE && renderType != ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE) {
                     delayed.add(renderType);
+                }
             }
             return super.getBuffer(renderType);
         }

@@ -47,7 +47,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         for (var id : customTabs.keySet()) {
             PlatStuff.unregisterDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id);
             if (logOff) {
-                Minecraft.getInstance().tell(PlatStuff::sortTabs);
+                Minecraft.getInstance().schedule(PlatStuff::sortTabs);
             }
         }
         customTabs.clear();
@@ -78,9 +78,8 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         }
         if (!customTabs.isEmpty()) {
             Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add items to them!");
-            Minecraft.getInstance().tell(PlatStuff::sortTabs);
+            Minecraft.getInstance().schedule(PlatStuff::sortTabs);
         }
-
     }
 
     private void registerNewTab(ResourceLocation id) {
@@ -94,13 +93,6 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         }
     }
 
-        if (!customTabs.isEmpty()) {
-            Polytone.LOGGER.info("Registered {} custom Creative Tabs from Resource Packs: {}", customTabs.size(), customTabs + ". Remember to add items to them!");
-            Minecraft.getInstance().tell(PlatStuff::sortTabs);
-        }
-
-
-    }
     @Override
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
 
@@ -119,7 +111,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         if (mod.registerTab()) {
             targets = Targets.ofIds(fileId);
         }
-        for (var tab : targets.compute(fileId, BuiltInRegistries.CREATIVE_MODE_TAB.asLookup())) {
+        for (var tab : targets.compute(fileId, BuiltInRegistries.CREATIVE_MODE_TAB)) {
             ResourceKey<CreativeModeTab> key = tab.unwrapKey().get();
             modifiers.merge(key, mod, CreativeTabModifier::merge);
 
@@ -134,7 +126,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             RegistryAccess access = PlatStuff.hackyGetRegistryAccess();
             if (access != null) {
                 CreativeTabModifier v = mod.applyItemsAndAttributes(event, access);
-                //dont add custom tabs here!
+                //don't add custom tabs here!
                 if (!customTabs.containsKey(tab.location())) vanillaTabs.put(tab, v);
             }
         }

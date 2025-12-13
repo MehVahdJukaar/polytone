@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import org.joml.Matrix4f;
@@ -24,8 +25,8 @@ public class LeashMixin {
 
     @WrapOperation(method = "renderLeash", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource;getBuffer(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;"))
     private static VertexConsumer polytone$modifyLeashTexture(MultiBufferSource instance, RenderType renderType, Operation<VertexConsumer> original) {
-        var consumer = PolytoneRenderTypes.getLeashVertexConsumer(instance);
+        VertexConsumer consumer = PolytoneRenderTypes.getLeashVertexConsumer(instance);
         if (consumer != null) return consumer;
-        else return original.call();
+        else return original.call(instance, renderType);
     }
 }

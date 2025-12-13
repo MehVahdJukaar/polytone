@@ -115,7 +115,7 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
 
 
     private void addModifier(ResourceLocation pathId, ParticleModifier mod) {
-        for (var particle : mod.targets().compute(pathId, BuiltInRegistries.PARTICLE_TYPE.asLookup())) {
+        for (var particle : mod.targets().compute(pathId, BuiltInRegistries.PARTICLE_TYPE)) {
             //can have multiple
             particleModifiers.put(particle.value(), mod);
         }

@@ -12,8 +12,6 @@ import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -40,7 +38,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
     // Block ID to modifier
     private final Map<Block, BlockPropertyModifier> modifiers = new HashMap<>();
-    private final Map<Pair<TickSource,Block>, ClientTickModifier> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
+    private final Map< Block, ClientTickModifier> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
 
     private final Map<Block, Boolean> terrainParticleTintOverrides = new HashMap<>();
 
@@ -80,6 +78,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                             Map<ResourceLocation, Properties> ofProperties) {
 
     }
+
     @Override
     protected Resources prepare(ResourceManager resourceManager) {
         var jsons = this.getJsonsInDirectories(resourceManager);
@@ -175,7 +174,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
 
     private void addModifier(ResourceLocation fileId, BlockPropertyModifier mod) {
-        for (var block : mod.targets().compute(fileId, BuiltInRegistries.BLOCK.asLookup())) {
+        for (var block : mod.targets().compute(fileId, BuiltInRegistries.BLOCK)) {
             modifiers.merge(block.value(), mod, BlockPropertyModifier::merge);
         }
     }
@@ -256,6 +255,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     //optifine stuff
 
     private final Map<ResourceLocation, String> optifineColormapsToBlocks = new HashMap<>();
+
     public void addSimpleColormap(ResourceLocation path, String str) {
         optifineColormapsToBlocks.put(path, str);
     }
@@ -275,6 +275,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
         final List<BlockClientTickable> tickables = new ArrayList<>();
         boolean cancelExisting;
+
         public void add(BlockClientTickable tickable) {
             tickables.add(tickable);
         }
@@ -288,6 +289,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         }
 
     }
+
     public void maybeSpawnBreakParticles(BlockState state, ClientLevel level, BlockPos pos, Direction direction) {
         var m = particleAndSoundEmitters.get(state.getBlock());
 
@@ -297,31 +299,31 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         int k = pos.getZ();
         float f = 0.1F;
         AABB aABB = state.getShape(level, pos).bounds();
-        double d = (double)i + random.nextDouble() * (aABB.maxX - aABB.minX - 0.20000000298023224) + 0.10000000149011612 + aABB.minX;
-        double e = (double)j + random.nextDouble() * (aABB.maxY - aABB.minY - 0.20000000298023224) + 0.10000000149011612 + aABB.minY;
-        double g = (double)k + random.nextDouble() * (aABB.maxZ - aABB.minZ - 0.20000000298023224) + 0.10000000149011612 + aABB.minZ;
+        double d = (double) i + random.nextDouble() * (aABB.maxX - aABB.minX - 0.20000000298023224) + 0.10000000149011612 + aABB.minX;
+        double e = (double) j + random.nextDouble() * (aABB.maxY - aABB.minY - 0.20000000298023224) + 0.10000000149011612 + aABB.minY;
+        double g = (double) k + random.nextDouble() * (aABB.maxZ - aABB.minZ - 0.20000000298023224) + 0.10000000149011612 + aABB.minZ;
         if (direction == Direction.DOWN) {
-            e = (double)j + aABB.minY - 0.10000000149011612;
+            e = (double) j + aABB.minY - 0.10000000149011612;
         }
 
         if (direction == Direction.UP) {
-            e = (double)j + aABB.maxY + 0.10000000149011612;
+            e = (double) j + aABB.maxY + 0.10000000149011612;
         }
 
         if (direction == Direction.NORTH) {
-            g = (double)k + aABB.minZ - 0.10000000149011612;
+            g = (double) k + aABB.minZ - 0.10000000149011612;
         }
 
         if (direction == Direction.SOUTH) {
-            g = (double)k + aABB.maxZ + 0.10000000149011612;
+            g = (double) k + aABB.maxZ + 0.10000000149011612;
         }
 
         if (direction == Direction.WEST) {
-            d = (double)i + aABB.minX - 0.10000000149011612;
+            d = (double) i + aABB.minX - 0.10000000149011612;
         }
 
         if (direction == Direction.EAST) {
-            d = (double)i + aABB.maxX + 0.10000000149011612;
+            d = (double) i + aABB.maxX + 0.10000000149011612;
         }
     }
 }

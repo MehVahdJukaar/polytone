@@ -32,12 +32,12 @@ public class BlockOffsets {
 
         private TypeOffset(BlockBehaviour.OffsetType type) {
             this(type, Optional.ofNullable(BlockBehaviour.Properties.of().offsetType(type)
-                    .offsetFunction).orElse((a, c, b) -> Vec3.ZERO));
+                    .offsetFunction).orElse((a, b) -> Vec3.ZERO));
         }
 
         @Override
-        public Vec3 evaluate(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos) {
-            return inner.evaluate(blockState,blockGetter, blockPos);
+        public Vec3 evaluate(BlockState blockState, BlockPos blockPos) {
+            return inner.evaluate(blockState, blockPos);
         }
     }
 
@@ -51,7 +51,8 @@ public class BlockOffsets {
         ).apply(instance, CustomOffset::new));
 
         @Override
-        public Vec3 evaluate(BlockState blockState,BlockGetter blockGetter , BlockPos blockPos) {
+        public Vec3 evaluate(BlockState blockState , BlockPos blockPos) {
+            //same stuff that blocks do
             long seed = Mth.getSeed(blockPos.getX(), 0, blockPos.getZ());
             double verticalOff = ((double) ((float) (seed >> 4 & 15L) / 15.0F) - 1.0) * (double) maxY;
             double xOff = Mth.clamp(((double) ((float) (seed & 15L) / 15.0F) - 0.5) * 0.5,  (-maxX),  maxX);

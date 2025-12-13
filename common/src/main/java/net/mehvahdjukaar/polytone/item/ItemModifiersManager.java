@@ -87,8 +87,8 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
     }
 
     private void addModifier(ResourceLocation id, ItemModifier mod) {
-        for (var item : mod.targets().compute(id, BuiltInRegistries.ITEM.asLookup())) {
-            var i = item.value();
+        for (var holder : mod.targets().compute(id, BuiltInRegistries.ITEM)) {
+            Item i = holder.value();
             modifiers.merge(i, mod, ItemModifier::merge);
 
           //  Polytone.ITEM_MODELS.addModelFromModifier(i, mod.customModels());

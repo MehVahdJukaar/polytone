@@ -128,8 +128,8 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     private void addModifier(ResourceLocation pathId, FluidPropertyModifier mod) {
-        for (var fluid : mod.targets().compute(pathId, BuiltInRegistries.FLUID.asLookup())) {
-            var f = fluid.value();
+        for (var fluid : mod.targets().compute(pathId, BuiltInRegistries.FLUID)) {
+            Fluid f = fluid.value();
             modifiers.merge(f, mod, FluidPropertyModifier::merge);
             tryAddSpecial(f, mod);
 

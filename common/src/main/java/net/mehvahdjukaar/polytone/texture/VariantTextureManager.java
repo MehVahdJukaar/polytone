@@ -46,9 +46,7 @@ public class VariantTextureManager extends JsonPartialReloader {
     @Override
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         for (var e : Parsed.batchParseOnlyEnabled(jsons, VariantTexture.CODEC, ops, "variant texture")) {
-            var variant = e.getValue();
-            var id = e.getKey();
-            this.addVariant(id, variant);
+            this.addVariant(e.getKey(), e.getValue());
         }
     }
 
@@ -58,8 +56,8 @@ public class VariantTextureManager extends JsonPartialReloader {
     }
 
     private void addVariant(ResourceLocation pathId, VariantTexture mod) {
-        for (var b : mod.targets().compute(pathId, BuiltInRegistries.BLOCK.asLookup())) {
-            var old = blocksWithVariants.put(b.value(), mod);
+        for (var b : mod.targets().compute(pathId, BuiltInRegistries.BLOCK)) {
+            VariantTexture old = blocksWithVariants.put(b.value(), mod);
             if (old != null) {
                 Polytone.LOGGER.warn("Found 2 Variant Textures jsons with same targets ({}). Overriding", pathId);
             }

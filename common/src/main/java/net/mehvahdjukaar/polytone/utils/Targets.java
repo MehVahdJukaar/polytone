@@ -54,8 +54,7 @@ public record Targets(List<Entry> entries) {
     public <T> Collection<Holder<T>> compute(ResourceLocation fileId, HolderLookup.RegistryLookup<T> registry) {
 
         Set<Holder<T>> set = new HashSet<>();
-        ResourceKey regKey = registry.key();
-        ResourceKey<T> key = ResourceKey.create(regKey, fileId);
+        ResourceKey<T> key = ResourceKey.create((ResourceKey<? extends Registry<T>>) registry.key(), fileId);
         Optional<Holder.Reference<T>> implicitTarget = registry.get(key);
         if (!entries.isEmpty()) {
             if (implicitTarget.isPresent()) {
@@ -141,8 +140,8 @@ public record Targets(List<Entry> entries) {
                 .xmap(SimpleLocation::new, s -> s.id);
 
         @Override
-        public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
-            var holder = reg.getHolder(id);
+        public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
+            var holder = reg.get(ResourceKey.create((ResourceKey<? extends Registry<T>>) reg.key(), id));
             if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
                 Polytone.LOGGER.error("Found missing ID in minecraft namespace: {}", id + ". Polytone will skip it but this is remains a bug of the Resource Pack. Optional entries or resource conditions should be used to maintain backward compatibility instead.");
                 return List.of();
@@ -162,9 +161,9 @@ public record Targets(List<Entry> entries) {
 
 
         @Override
-        public <T> Iterable<Holder<T>> get(Registry<T> reg) {
-            TagKey<T> key = TagKey.create(reg.key(), id);
-            return reg.getTag(key).orElseThrow(() -> new IllegalStateException("Tag not found: " + id));
+        public <T> Iterable<Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
+            TagKey<T> key = TagKey.create((ResourceKey<? extends Registry<T>>) reg.key(), id);
+            return reg.get(key).orElseThrow(() -> new IllegalStateException("Tag not found: " + id));
         }
 
         @Override

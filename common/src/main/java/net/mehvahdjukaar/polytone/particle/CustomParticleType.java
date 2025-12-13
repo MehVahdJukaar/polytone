@@ -11,7 +11,6 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.mehvahdjukaar.polytone.utils.codec.BiggerCodecs;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -19,6 +18,7 @@ import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -452,20 +452,18 @@ public class CustomParticleType implements CustomParticleFactory {
 
         public RenderType getBlock() {
             return switch (this) {
-                case TERRAIN -> net.minecraft.client.renderer.RenderType.solid();
+                case TERRAIN ->RenderType.solid();
                 case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE;
-                case LIT -> net.minecraft.client.renderer.RenderType.cutout();
-                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
-                case INVISIBLE -> net.minecraft.client.renderer.RenderType.cutout();
-                default -> net.minecraft.client.renderer.RenderType.cutoutMipped();
+                case LIT, INVISIBLE -> RenderType.cutout();
+                case TRANSLUCENT -> RenderType.translucent();
+                default -> RenderType.cutoutMipped();
             };
         }
 
         public ParticleRenderType getParticle() {
             return switch (this) {
-                case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
+                case TERRAIN, LIT -> ParticleRenderType.TERRAIN_SHEET;
                 case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
-                case LIT -> ParticleRenderType.TERRAIN_SHEET;
                 case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE.get();
                 case INVISIBLE -> ParticleRenderType.NO_RENDER;
                 default -> ParticleRenderType.PARTICLE_SHEET_OPAQUE;
@@ -481,7 +479,7 @@ public class CustomParticleType implements CustomParticleFactory {
          //   if(true)return original;
             if (this == ADDITIVE_TRANSLUCENT) {
                 return PolytoneRenderTypes.DEFERRED_BUFFER_SOURCE.getBuffer(
-                        PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE);
+                        PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE);
             } else return original;
         }
 

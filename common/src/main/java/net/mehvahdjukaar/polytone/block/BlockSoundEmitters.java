@@ -7,14 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//TODO: idk
 public class BlockSoundEmitters {
 
-    public static final Codec<BlockSoundEmitter> LEGACY_CODEC = BlockSoundEmitter.CODEC.listOf().xmap(
-            list ->{
-                var map = new HashMap<TickSource, BlockSoundEmitter>();
-                
-            }
-    )
 
     private Map<TickSource, List<BlockSoundEmitter>> emittersBySource;
 
