@@ -25,7 +25,7 @@ public class BlockElementDeserializerMixin {
     }
 
     @Inject(method = "getRotation", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/model/BlockElement$Deserializer;getAxis(Lcom/google/gson/JsonObject;)Lnet/minecraft/core/Direction$Axis;",
-            shift = At.Shift.BEFORE))
+            shift = At.Shift.BEFORE), cancellable = true)
     public void polytone$unRestrictRotation(JsonObject json, CallbackInfoReturnable<BlockElementRotation> cir,
                                             @Local(ordinal = 1) JsonObject rotObj, @Local Vector3f offset) {
         if (rotObj.has("x") || rotObj.has("y") || rotObj.has("z")) {
