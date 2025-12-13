@@ -2,8 +2,6 @@ package net.mehvahdjukaar.polytone.lightmap;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
-import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -12,8 +10,6 @@ import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
@@ -139,7 +135,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
                                            GpuTexture lightmap,
                                            Minecraft minecraft, ClientLevel level,
                                            float flicker, float partialTicks) {
-        if(true)return false; //TODO: add back as shader
+        if (true) return false; //TODO: add back as shader
         if (lastDimension != level.dimension()) {
             reachedMainMenuHack = true;
             lastDimension = level.dimension();
