@@ -103,9 +103,6 @@ public class PolytoneRenderTypes {
                     .createCompositeState(RenderType.OutlineProperty.NONE));
 
 
-
-    public static final RenderPipeline FISHING_ROD_PIPELINE = null; //TODO: here
-
     public static final RenderPipeline LEASH_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
                     RenderPipelines. MATRICES_COLOR_FOG_SNIPPET)
             .withLocation("polytone/pipeline/leash")
