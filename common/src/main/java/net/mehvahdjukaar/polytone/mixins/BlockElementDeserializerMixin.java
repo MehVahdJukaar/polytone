@@ -36,7 +36,7 @@ public class BlockElementDeserializerMixin {
             float z = GsonHelper.getAsFloat(rotObj, "z", 0);
             var rot = new Vector3f(x, y, z);
             ((IExtendedBlockElementRotation)(Object) blockElementRotation).setRotation(rot);
-
+            cir.setReturnValue(blockElementRotation);
         }
     }
 }
