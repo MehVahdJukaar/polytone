@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.block.BlockSetManager;
 import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.entity.EntityModifiersManager;
@@ -86,10 +87,9 @@ public class Polytone {
 
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
-    public static boolean iris = false;
 
     //todo: cutout not working. splash color not working, 1.20 color accessor crash
-    public static void init(boolean devEnv, boolean forge, boolean iris) {
+    public static void init(boolean devEnv, boolean forge) {
         COMPOUND_RELOADER = new CompoundReloader(
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
@@ -102,13 +102,12 @@ public class Polytone {
                 res("polytone_stuff"));
         isDevEnv = devEnv;
         isForge = forge;
-        Polytone.iris = iris;
 
         //ItemModelOverrideList.testTrie();
         //GenericDirectorySpriteSource.init();
 
         PolytoneRenderTypes.init();
-        if (iris) IrisCompat.init();
+        if (CompatHandler.IRIS) IrisCompat.init();
 
         //TODO: cache fog and d sky color
         //TODO: custom block breaking particles

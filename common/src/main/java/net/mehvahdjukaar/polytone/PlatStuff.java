@@ -142,11 +142,6 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static float compatSSGetSeason(Level level) {
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
     public static void updateSearchTrees(SessionSearchTrees sessionSearchTrees, List<CreativeModeTab> needsTreeUpdated) {
         throw new AssertionError();
     }

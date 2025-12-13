@@ -1,10 +1,4 @@
-package net.mehvahdjukaar.polytone.neoforge;
-
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
+package net.mehvahdjukaar.polytone.compat.neoforge;
 
 public class AlexsCavesCompat {
 //TODO: add back

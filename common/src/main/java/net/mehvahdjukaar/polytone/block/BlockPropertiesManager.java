@@ -290,7 +290,9 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
     }
 
+    //TODO: add this
     public void maybeSpawnBreakParticles(BlockState state, ClientLevel level, BlockPos pos, Direction direction) {
+        if(true)return;
         var m = particleAndSoundEmitters.get(state.getBlock());
 
         RandomSource random = level.random;

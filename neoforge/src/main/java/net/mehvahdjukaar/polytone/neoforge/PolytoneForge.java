@@ -52,8 +52,7 @@ public class PolytoneForge {
         bus = modBus;
         ModelStuffImpl.init(bus);
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            boolean iris = ModList.get().isLoaded("iris") || ModList.get().isLoaded("oculus");
-            Polytone.init(!FMLEnvironment.production, true, iris);
+            Polytone.init(!FMLEnvironment.production, true);
             NeoForge.EVENT_BUS.register(this);
             modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
         } else {

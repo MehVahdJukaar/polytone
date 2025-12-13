@@ -12,7 +12,9 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -68,13 +70,13 @@ public abstract class ParticleEngineMixin {
     public void polytone$modifyCrackParticles(ParticleEngine instance, Particle particle, Operation<Void> original,
                                               @Local BlockState state, @Local(argsOnly = true) BlockPos pos) {
         if(!state.isAir()){
-            Polytone.BLOCK_MODIFIERS.maybeSpawnBreakParticles(state, this.level, pos, TickSource.BLOCK_BROKEN);
+            Polytone.BLOCK_MODIFIERS.maybeSpawnBreakParticles(state, this.level, pos, Direction.UP);
         }
     }
 
     //fabric only since neo its deprecated
     @Inject(method = "render", at = @At("HEAD"))
-    public void onRenderLast(LightTexture lightTexture, Camera camera, float partialTick, CallbackInfo ci) {
+    public void onRenderLast(Camera camera, float f, MultiBufferSource.BufferSource bufferSource, CallbackInfo ci) {
         PolytoneRenderTypes.cacheMatrices();
     }
 }

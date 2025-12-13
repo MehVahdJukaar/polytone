@@ -20,11 +20,8 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
@@ -53,14 +50,10 @@ import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
-import net.neoforged.neoforge.client.model.standalone.StandaloneModelBaker;
-import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.joml.Vector3f;
-import sereneseasons.api.season.SeasonHelper;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -277,9 +270,7 @@ public class PlatStuffImpl {
         dontCheckLoading = true;
         if (renderType instanceof RenderType rt) {
             ItemBlockRenderTypes.setRenderLayer(block, rt);
-        }else if (renderType instanceof ChunkRenderTypeSet st) {
-            ItemBlockRenderTypes.setRenderLayer(block, st);
-        }
+        } //TODO: this might not cut it anymore in 1.21.5 too bad, one should use forge method instead
         dontCheckLoading= false;
     }
 
@@ -302,11 +293,6 @@ public class PlatStuffImpl {
     }
 
 
-    private static final boolean SS = ModList.get().isLoaded("sereneseasons");
-
-    public static float compatSSGetSeason(Level level) {
-        return SS ? (SeasonHelper.getSeasonState(level).getSubSeason().ordinal() / 11f) : 1f;
-    }
 
 
     public static RegistryAccess getServerRegistryAccess() {
