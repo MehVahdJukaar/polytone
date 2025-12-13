@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.utils;
 
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.compat.FabricSeasonsCompat;
 import net.mehvahdjukaar.polytone.compat.SereneSeasonsCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -39,7 +40,7 @@ public class ClientFrameTicker {
         dayTime = level.dimensionType().fixedTime().orElse(level.getDayTime()) + partialTicks;
         timeOfDay = level.getTimeOfDay(partialTicks);
         rainAndThunder = level.getRainLevel(partialTicks) * 0.5f + level.getThunderLevel(partialTicks) * 0.5f;
-        season = CompatHandler.SS ? SereneSeasonsCompat.getSeason(level) : 1;
+        season = CompatHandler.SS ? SereneSeasonsCompat.getSeason(level) : (CompatHandler.FS ? FabricSeasonsCompat.getSeason(level) : 0f);
 
         cameraPos = mc.gameRenderer.getMainCamera().getBlockPosition();
         cameraBiome = level.getBiome(cameraPos);

@@ -66,17 +66,19 @@ public abstract class ParticleEngineMixin {
         }
     }
 
+    //fabric only since neo its deprecated
+
+    @Inject(method = "render", at = @At("HEAD"))
+    public void onRenderLast(Camera camera, float f, MultiBufferSource.BufferSource bufferSource, CallbackInfo ci) {
+        PolytoneRenderTypes.cacheMatrices();
+    }
+
+    /*
     @WrapOperation(method = "crack", at = @At(value = "TAIL"))
     public void polytone$modifyCrackParticles(ParticleEngine instance, Particle particle, Operation<Void> original,
                                               @Local BlockState state, @Local(argsOnly = true) BlockPos pos) {
         if(!state.isAir()){
             Polytone.BLOCK_MODIFIERS.maybeSpawnBreakParticles(state, this.level, pos, Direction.UP);
         }
-    }
-
-    //fabric only since neo its deprecated
-    @Inject(method = "render", at = @At("HEAD"))
-    public void onRenderLast(Camera camera, float f, MultiBufferSource.BufferSource bufferSource, CallbackInfo ci) {
-        PolytoneRenderTypes.cacheMatrices();
-    }
+    }*/
 }

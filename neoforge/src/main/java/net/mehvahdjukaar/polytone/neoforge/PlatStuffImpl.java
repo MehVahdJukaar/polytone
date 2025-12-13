@@ -20,9 +20,6 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.renderer.*;
-import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -44,7 +41,6 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
-import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.ColorResolverManager;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
@@ -261,7 +257,7 @@ public class PlatStuffImpl {
     }
 
     public static Object getRenderType(Block block) {
-        return ItemBlockRenderTypes.getRenderLayers(block.defaultBlockState());
+        return ItemBlockRenderTypes.getChunkRenderType(block.defaultBlockState());
     }
 
     public static boolean dontCheckLoading = false;
@@ -274,13 +270,10 @@ public class PlatStuffImpl {
         dontCheckLoading= false;
     }
 
-    private static final boolean AC = ModList.get().isLoaded("alexscaves");
-
-
     public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX,
                                             int skyY, Vector3f combined) {
         //INSERTION BY AC...
-   //     if (AC) AlexsCavesCompat.applyACLightingColors(level, combined, partialTicks);
+   //     if (CompatHandler.ALEX_CAVES) AlexsCavesCompat.applyACLightingColors(level, combined, partialTicks);
         //TODO: add back
         //removed in 1.20.2
         //level.effects().adjustLightmapColors(level, partialTicks, skyDarken, skyLight, flicker, torchX, skyY, combined);
@@ -290,25 +283,6 @@ public class PlatStuffImpl {
     public static float compatACModifyGamma(float partialTicks, float gamma) {
         return gamma; //TODO: add back
         // return AC ? AlexsCavesCompat.modifyGamma(partialTicks, gamma) : gamma;
-    }
-
-
-
-
-    public static RegistryAccess getServerRegistryAccess() {
-        return ServerLifecycleHooks.getCurrentServer().registryAccess();
-    }
-
-    public static BakedModel getBakedModel(ModelResourceLocation id) {
-        ModelManager mm = Minecraft.getInstance().getModelManager();
-        return mm.getModel(id);
-    }
-
-    public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
-        Consumer<ModelEvent.RegisterAdditional> eventConsumer = event -> {
-            eventListener.accept(event::register);
-        };
-        PolytoneForge.bus.addListener(eventConsumer);
     }
 
     public static String getVersion() {
