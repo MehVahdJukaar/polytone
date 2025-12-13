@@ -16,11 +16,11 @@ import org.spongepowered.asm.mixin.injection.At;
 public class FaceBakeryMixin {
 
     @WrapOperation(method = "applyElementRotation", at = @At(value = "INVOKE", target = "Lorg/joml/Quaternionf;rotationAxis(FLorg/joml/Vector3fc;)Lorg/joml/Quaternionf;"))
-    public Quaternionf polytone$unRestrictRotationAngle(Quaternionf instance, float angle, Vector3fc axis, Operation<Quaternionf> original,
-                                                        @Local(argsOnly = true) BlockElementRotation partRotation) {
+    private static Quaternionf polytone$unRestrictRotationAngle(Quaternionf instance, float angle, Vector3fc axis, Operation<Quaternionf> original,
+                                                                @Local(argsOnly = true) BlockElementRotation partRotation) {
         Vector3fc rot = ((IExtendedBlockElementRotation) (Object) partRotation).getRotation();
         if (rot != null) {
-            return instance.rotateYXZ(Mth.DEG_TO_RAD * rot.y(), Mth.DEG_TO_RAD * rot.x(), Mth.DEG_TO_RAD * rot.z());
+            return instance.rotateXYZ(Mth.DEG_TO_RAD * rot.x(), Mth.DEG_TO_RAD * rot.y(), Mth.DEG_TO_RAD * rot.z());
         }
         return original.call(instance, angle, axis);
     }

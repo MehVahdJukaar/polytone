@@ -139,6 +139,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
                                            GpuTexture lightmap,
                                            Minecraft minecraft, ClientLevel level,
                                            float flicker, float partialTicks) {
+        if(true)return false; //TODO: add back as shader
         if (lastDimension != level.dimension()) {
             reachedMainMenuHack = true;
             lastDimension = level.dimension();
