@@ -1,1 +1,1 @@
-- added serene season compat "SEASON" variable
+model rotations can use x y z rotations instead of axis one
