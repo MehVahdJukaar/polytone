@@ -93,7 +93,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         }
     }
     @Override
-    protected void applyWithLevel( HolderLookup.Provider access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
 
         if (!modifiers.isEmpty()) {
             needsRefresh.addAll(modifiers.keySet());

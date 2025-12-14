@@ -22,14 +22,12 @@ public abstract class GameRendererMixin {
             target = "(Lnet/minecraft/client/Minecraft;Lnet/minecraft/client/gui/render/state/GuiRenderState;)Lnet/minecraft/client/gui/GuiGraphics;"))
     private void polytone$messWithGui(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(true);
-        lightTexture.turnOnLightLayer();
         Polytone.OVERLAY_MODIFIERS.onStartRenderingOverlay();
     }
 
     @Inject(method = "render", at = @At(value = "TAIL"))
     private void polytone$resetGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(false);
-        lightTexture.turnOnLightLayer();
         Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
     }
 

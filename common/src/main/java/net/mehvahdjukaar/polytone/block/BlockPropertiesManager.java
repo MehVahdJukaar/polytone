@@ -192,7 +192,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
     @Override
-    protected void applyWithLevel( HolderLookup.Provider access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         for (var e : modifiers.entrySet()) {
             Block target = e.getKey();
 

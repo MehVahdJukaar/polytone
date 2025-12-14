@@ -2,6 +2,8 @@ package net.mehvahdjukaar.polytone.dimension;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.dimension.DimensionType;
 
 import java.util.Optional;
@@ -32,7 +34,11 @@ public record DimensionTemplate(Optional<Long> fixedTime, Optional<Boolean> hasS
     );
 
     public boolean matches(DimensionType dimensionType){
-        if (this.fixedTime.isPresent() && !this.fixedTime.get().equals(dimensionType.fixedTime().orElse(0))) {
+
+        var dimAttributes = dimensionType.attributes();
+        // Dimension fixed time is now a boolean, we can't compare the actual fixed time values directly
+        // without the environmentattributesystem reader
+        if (this.fixedTime.isPresent() && !dimensionType.hasFixedTime()) {
             return false;
         }
         if( this.hasSkyLight.isPresent() && !this.hasSkyLight.get().equals(dimensionType.hasSkyLight())) {
@@ -41,19 +47,25 @@ public record DimensionTemplate(Optional<Long> fixedTime, Optional<Boolean> hasS
         if (this.hasCeiling.isPresent() && !this.hasCeiling.get().equals(dimensionType.hasCeiling())) {
             return false;
         }
-        if (this.ultraWarm.isPresent() && !this.ultraWarm.get().equals(dimensionType.ultraWarm())) {
+        // Ultrawarm became WATER_EVAPORATES, FAST_LAVA, and DEFAULT_DRIPSTONE_PARTICLE
+        // We just check if the first two exist
+        var dimensionIsUltraWarm = dimAttributes.get(EnvironmentAttributes.WATER_EVAPORATES) != null || dimAttributes.get(EnvironmentAttributes.FAST_LAVA) != null;
+        if (this.ultraWarm.isPresent() && !this.ultraWarm.get().equals(dimensionIsUltraWarm)) {
             return false;
         }
-        if (this.natural.isPresent() && !this.natural.get().equals(dimensionType.natural())) {
-            return false;
-        }
+        // Natural is just gone now
+//        if (this.natural.isPresent() && !this.natural.get().equals(dimensionType.natural())) {
+//            return false;
+//        }
         if (this.coordinateScale.isPresent() && !this.coordinateScale.get().equals(dimensionType.coordinateScale())) {
             return false;
         }
-        if (this.bedWorks.isPresent() && !this.bedWorks.get().equals(dimensionType.bedWorks())) {
+        var dimensionIsBedWorks = dimAttributes.get(EnvironmentAttributes.BED_RULE) != null;
+        if (this.bedWorks.isPresent() && !this.bedWorks.get().equals(dimensionIsBedWorks)) {
             return false;
         }
-        if (this.respawnAnchorWorks.isPresent() && !this.respawnAnchorWorks.get().equals(dimensionType.respawnAnchorWorks())) {
+        var dimensionIsRespawnAnchorWorks = dimAttributes.get(EnvironmentAttributes.RESPAWN_ANCHOR_WORKS) != null;
+        if (this.respawnAnchorWorks.isPresent() && !this.respawnAnchorWorks.get().equals(dimensionIsRespawnAnchorWorks)) {
             return false;
         }
         if (this.minY.isPresent() && !this.minY.get().equals(dimensionType.minY())) {

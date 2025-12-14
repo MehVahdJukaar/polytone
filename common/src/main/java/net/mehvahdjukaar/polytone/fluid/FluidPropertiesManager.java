@@ -114,7 +114,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel( HolderLookup.Provider access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         if (!modifiers.isEmpty()) {
             Polytone.LOGGER.info("Applied {} Fluid Modifiers", modifiers.size());
         }

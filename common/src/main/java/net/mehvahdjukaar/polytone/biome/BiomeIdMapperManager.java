@@ -49,7 +49,7 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel( HolderLookup.Provider access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
 
     }
 

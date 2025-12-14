@@ -106,7 +106,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void applyWithLevel( HolderLookup.Provider access, boolean isLogIn) {
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         for (var e : modifiers.entrySet()) {
             Item target = e.getKey();
 

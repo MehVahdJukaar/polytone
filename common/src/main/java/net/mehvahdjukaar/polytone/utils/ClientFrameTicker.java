@@ -32,18 +32,26 @@ public class ClientFrameTicker {
         float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
         time = level.getGameTime() + partialTicks;
-        // This is now something like level.dimensionType().timelines().get().value().getCurrentTicks()
-        dayTime = level.dimensionType().fixedTime().orElse(level.getDayTime()) + partialTicks;
-        timeOfDay = level.getTimeOfDay(partialTicks);
+        long fixedTime = level.getDayTime();
+        //fixed time is now a boolean and not an amount
+        if (level.dimensionType().hasFixedTime()) {
+            if (level.dimension().equals(Level.NETHER)) {
+                fixedTime = 18000L;
+            } else if (level.dimension().equals(Level.END)) {
+                fixedTime = 6000L;
+            }
+        }
+        dayTime = fixedTime + partialTicks;
+        timeOfDay = dayTime;
         rainAndThunder = level.getRainLevel(partialTicks) * 0.5f + level.getThunderLevel(partialTicks) * 0.5f;
 
-        cameraPos = mc.gameRenderer.getMainCamera().getBlockPosition();
+        cameraPos = mc.gameRenderer.getMainCamera().blockPosition();
         cameraBiome = level.getBiome(cameraPos);
 
         deltaTime = Minecraft.getInstance().getDeltaTracker().getRealtimeDeltaTicks();
-        playerSpeed =  mc.player.getDeltaMovement().lengthSqr();
+        playerSpeed = mc.player.getDeltaMovement().lengthSqr();
 
-      if ( mc.screen != lastScreen) {
+        if (mc.screen != lastScreen) {
             lastScreen = mc.screen;
             screenTime = 0;
         }
