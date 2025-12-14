@@ -2,23 +2,25 @@ package net.mehvahdjukaar.polytone.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 public interface CustomParticleFactory extends ParticleProvider<ExtraDataParticleOptions> {
 
-    void setSpriteSet(ParticleEngine.MutableSpriteSet spriteSet);
+    void setSpriteSet(SpriteSet spriteSet);
 
     @Nullable
-    Particle createParticle(ExtraDataParticleOptions type, ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                            @Nullable BlockState state);
+    Particle createParticleWithState(ExtraDataParticleOptions type, ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
+                            @Nullable BlockState state, RandomSource random);
 
     @Nullable
-    default Particle createParticle(ExtraDataParticleOptions type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-        return createParticle(type, level, x, y, z, xSpeed, ySpeed, zSpeed, null);
+    @Override
+    default Particle createParticle(ExtraDataParticleOptions type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
+        return createParticleWithState(type, level, x, y, z, xSpeed, ySpeed, zSpeed, null, random);
     }
 
 

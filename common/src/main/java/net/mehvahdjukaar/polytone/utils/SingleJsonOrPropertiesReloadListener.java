@@ -6,7 +6,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 
@@ -33,7 +35,8 @@ public abstract class SingleJsonOrPropertiesReloadListener extends PartialReload
     }
 
     @Override
-    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
+    protected Map<ResourceLocation, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
+        var resourceManager = sharedState.resourceManager();
         Map<ResourceLocation, JsonElement> jsonObjects = new HashMap<>();
         for (String path : folders) {
 

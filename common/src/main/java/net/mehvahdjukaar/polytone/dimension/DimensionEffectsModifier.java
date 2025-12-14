@@ -10,7 +10,6 @@ import net.mehvahdjukaar.polytone.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.lightmap.Lightmap;
-import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.resources.ResourceLocation;
@@ -22,7 +21,7 @@ import java.util.Optional;
 public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpression>> cloudLevel,
                                        Optional<Boolean> hasGround,
                                        Optional<DimensionSpecialEffects.SkyType> skyType,
-                                       Optional<Boolean> forceBrightLightmap,
+                                       Optional<Boolean> hasEndFlashes,
                                        Optional<Boolean> constantAmbientLight,
                                        Optional<IColorGetter> fogColor,
                                        Optional<IColorGetter> terrainFogColor,
@@ -41,7 +40,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                     Codec.either(Codec.FLOAT, BlockContextExpression.CODEC).optionalFieldOf("cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
                     Codec.BOOL.optionalFieldOf("has_ground").forGetter(DimensionEffectsModifier::hasGround),
                     SKY_TYPE_CODEC.optionalFieldOf("sky_type").forGetter(DimensionEffectsModifier::skyType),
-                    Codec.BOOL.optionalFieldOf("force_bright_lightmap").forGetter(DimensionEffectsModifier::forceBrightLightmap),
+                    Codec.BOOL.optionalFieldOf("force_bright_lightmap").forGetter(DimensionEffectsModifier::hasEndFlashes),
                     Codec.BOOL.optionalFieldOf("constant_ambient_light").forGetter(DimensionEffectsModifier::constantAmbientLight),
                     Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
                     Colormap.CODEC.optionalFieldOf("terrain_fog_colormap").forGetter(DimensionEffectsModifier::terrainFogColor),
@@ -77,7 +76,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                 newMod.cloudLevel.isPresent() ? newMod.cloudLevel : this.cloudLevel,
                 newMod.hasGround.isPresent() ? newMod.hasGround : this.hasGround,
                 newMod.skyType.isPresent() ? newMod.skyType : this.skyType,
-                newMod.forceBrightLightmap.isPresent() ? newMod.forceBrightLightmap : this.forceBrightLightmap,
+                newMod.hasEndFlashes.isPresent() ? newMod.hasEndFlashes : this.hasEndFlashes,
                 newMod.constantAmbientLight.isPresent() ? newMod.constantAmbientLight : this.constantAmbientLight,
                 newMod.fogColor.isPresent() ? newMod.fogColor : this.fogColor,
                 newMod.terrainFogColor.isPresent() ? newMod.terrainFogColor : this.terrainFogColor,
@@ -129,17 +128,18 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
             oldSky = Optional.of(effects.skyType);
             effects.skyType = this.skyType.get();
         }
-        Optional<Boolean> oldBright = Optional.empty();
-        if (this.forceBrightLightmap.isPresent()) {
-            oldBright = Optional.of(effects.forceBrightLightmap);
-            effects.forceBrightLightmap = this.forceBrightLightmap.get();
+
+        Optional<Boolean> oldEndFlashes = Optional.empty();
+        if (this.hasEndFlashes.isPresent()) {
+            oldEndFlashes = Optional.of(effects.hasEndFlashes());
+            effects.hasEndFlashes = this.hasEndFlashes.get();
         }
         Optional<Boolean> oldAmbient = Optional.empty();
         if (this.constantAmbientLight.isPresent()) {
             oldAmbient = Optional.of(effects.constantAmbientLight);
             effects.constantAmbientLight = this.constantAmbientLight.get();
         }
-        return new DimensionEffectsModifier(oldCloud, oldGround, oldSky, oldBright, oldAmbient,
+        return new DimensionEffectsModifier(oldCloud, oldGround, oldSky, oldEndFlashes, oldAmbient,
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 false, false, Optional.empty(), DimensionTarget.EMPTY);
     }

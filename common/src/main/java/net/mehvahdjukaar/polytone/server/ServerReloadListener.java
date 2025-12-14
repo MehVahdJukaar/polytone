@@ -35,7 +35,7 @@ public abstract class ServerReloadListener extends PartialReloader implements Pr
     }
 
     @Override
-    protected Object prepare(ResourceManager resourceManager) {
+    protected Object prepare(PreparableReloadListener.SharedState sharedState) {
         return null;
     }
 

@@ -8,6 +8,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
@@ -101,11 +102,11 @@ public abstract class PartialReloader<T> {
         return ArrayImage.groupTextures(this.getImagesInDirectories(manager));
     }
 
-    protected void earlyProcess(ResourceManager resourceManager) {
+    protected void earlyProcess(PreparableReloadListener.SharedState sharedState) {
 
     }
 
-    protected abstract T prepare(ResourceManager resourceManager);
+    protected abstract T prepare(PreparableReloadListener.SharedState sharedState);
 
     protected abstract void parseWithLevel(T obj, RegistryOps<JsonElement> ops, HolderLookup.Provider access);
 

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -12,6 +13,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.EnumMap;
@@ -54,9 +56,10 @@ public class GuiOverlayManager extends JsonPartialReloader {
     }
 
     @Override
-    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
+    protected Map<ResourceLocation, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
+        var resourceManager = sharedState.resourceManager();
         reloadHearths(resourceManager);
-        return super.prepare(resourceManager);
+        return super.prepare(sharedState);
     }
 
     private int index = 0;

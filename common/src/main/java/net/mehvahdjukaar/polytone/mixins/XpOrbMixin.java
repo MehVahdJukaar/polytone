@@ -5,9 +5,11 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.ExperienceOrbRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.ExperienceOrb;
 import org.jetbrains.annotations.Nullable;
@@ -23,15 +25,15 @@ public class XpOrbMixin {
     @Unique
     private static float @Nullable [] polytone$specialColor = null;
 
-    @Inject(method = "render(Lnet/minecraft/client/renderer/entity/state/ExperienceOrbRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+    @Inject(method = "submit(Lnet/minecraft/client/renderer/entity/state/ExperienceOrbRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
             at = @At("HEAD"))
-    private void polytone$startRenderOrb(ExperienceOrbRenderState experienceOrbRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
+    private void polytone$startRenderOrb(ExperienceOrbRenderState experienceOrbRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
         polytone$specialColor = Polytone.COLORS.getXpOrbColor(experienceOrbRenderState, Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false));
     }
 
-    @Inject(method = "render(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+    @Inject(method = "submit(Lnet/minecraft/client/renderer/entity/state/ExperienceOrbRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
             at = @At("TAIL"))
-    private void polytone$endRenderOrb(EntityRenderState entityRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
+    private void polytone$endRenderOrb(ExperienceOrbRenderState experienceOrbRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
         polytone$specialColor = null;
     }
 
