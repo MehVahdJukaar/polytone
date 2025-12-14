@@ -111,7 +111,7 @@ subprojects {
     def modLoader = project.name
     def changelogFile = rootProject.file("changelog.md")
     def changelogText = changelogFile.exists() ? changelogFile.text : ""
-    def mcVersions = listGameVersions(minecraft_min_version, minecraft_version)
+    def mcVersions = listGameVersions(minecraft_min_version, minecraft_max_version)
     def cfToken = providers.environmentVariable("CURSEFORGE_TOKEN")
     def mrToken = providers.environmentVariable("MODRINTH_TOKEN")
 
@@ -189,15 +189,21 @@ ext.replaceProperties = [
 
 // --- Utils
 static def listGameVersions(String minVersion, String maxVersion) {
-// minVersion like "1.20", maxVersion like "1.20.4"
     def versions = []
-    versions << minVersion
-    int endPatch = Integer.parseInt(maxVersion.split('\\.')[2])
-    for (int i = 1; i <= endPatch; i++) {
-        versions << "${minVersion}.${i}"
+
+    def minParts = minVersion.split('\\.')
+    def maxParts = maxVersion.split('\\.')
+
+    int startPatch = Integer.parseInt(minParts[2])
+    int endPatch   = Integer.parseInt(maxParts[2])
+
+    for (int i = startPatch; i <= endPatch; i++) {
+        versions << "${minParts[0]}.${minParts[1]}.${i}"
     }
+
     return versions
 }
+
 
 tasks.register('buildAndPublishAll') {
     dependsOn ':clean'
