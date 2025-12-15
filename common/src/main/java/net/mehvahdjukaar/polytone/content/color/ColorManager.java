@@ -73,6 +73,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private BlockContextExpression xpOrbColorB;
 
     private Integer xpBar = null;
+    private Integer xpBarBack = null;
     private Integer splash = null;
     private Integer enchantTableXp = null;
 
@@ -90,6 +91,10 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     public Integer getXpBar() {
         return xpBar;
+    }
+
+    public Integer getXpBarBackground() {
+        return xpBarBack;
     }
 
     public Integer getSplash() {
@@ -265,7 +270,16 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             if (k.equals("splash")) {
                 splash = parseHex(v);
             } else if (k.equals("xpbar")) {
-                xpBar = parseHex(v);
+                if (v instanceof JsonPrimitive) {
+                    xpBar = parseHex(v);
+                } else {
+                    for (var e : entries(v)) {
+                        switch (e.getKey()) {
+                            case "foreground" -> xpBar = parseHex(e.getValue());
+                            case "background" -> xpBarBack = parseHex(e.getValue());
+                        }
+                    }
+                }
             } else if (k.startsWith("code:")) {
                 String s = k.substring(5);
                 int code = Integer.parseInt(s);

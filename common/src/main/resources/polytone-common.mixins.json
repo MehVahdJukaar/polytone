@@ -14,13 +14,13 @@
     "ClientLevelMixin",
     "ColorResolverMixin",
     "DimensionSpecialEffectsMixin",
+    "ExperienceBarRendererMixin",
     "FaceBakeryMixin",
     "FishingHookRendererMixin",
     "FogRendererMixin",
     "GameRendererMixin",
     "GuiGraphicsMixin",
     "GuiMixin",
-    "HackThatPreventsMissingSpritesToCrashMixin",
     "GuiRenderStateMixin",
     "HackThatPreventsMissingSpritesToCrashMixin",
     "ItemMixin",
@@ -44,7 +44,7 @@
     "XpOrbMixin",
     "accessor.BiomeAccessor",
     "accessor.DustParticleOptionAccessor",
-    "accessor.ParticleAccessor",
+    "accessor.ParticleAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
