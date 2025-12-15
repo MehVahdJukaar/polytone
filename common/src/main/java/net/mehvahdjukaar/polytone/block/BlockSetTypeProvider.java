@@ -7,17 +7,24 @@ import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
+import net.minecraft.world.level.block.state.properties.WoodType;
 
 import java.util.Optional;
 
 public interface BlockSetTypeProvider {
 
     Codec<BlockSetTypeProvider> CODEC = CodecUtils.referenceOrDirect(
-            Polytone.BLOCK_SET.byNameCodec(), Custom.CODEC);
+            CodecUtils.withAlternatives(Polytone.BLOCK_SET.byNameCodec(),
+                    Vanilla.CODEC, VanillaWood.CODEC), Custom.CODEC);
 
     BlockSetType getOrCreate(BlockSetType original, Optional<SoundType> customSound);
 
+    WoodType getOrCreateWood(WoodType original, Optional<SoundType> customSound);
+
     record Vanilla(BlockSetType vanilla) implements BlockSetTypeProvider {
+
+        private static final Codec<BlockSetTypeProvider.Vanilla> CODEC = BlockSetType.CODEC.xmap(
+                Vanilla::new, Vanilla::vanilla);
 
         @Override
         public BlockSetType getOrCreate(BlockSetType original, Optional<SoundType> customSound) {
@@ -42,13 +49,63 @@ public interface BlockSetTypeProvider {
                     vanilla.buttonClickOn()
             );
         }
+
+
+        @Override
+        public WoodType getOrCreateWood(WoodType original, Optional<SoundType> customSound) {
+            //find wood type with same block type
+            for (var w : WoodType.values().toList()) {
+                if (w.setType() == vanilla && (customSound.isEmpty() || w.soundType() == customSound.get())) {
+                    return w;
+                }
+            }
+
+            BlockSetType blockSetType = this.getOrCreate(original.setType(), customSound);
+            return new WoodType(blockSetType.name(),
+                    blockSetType,
+                    customSound.orElse(original.soundType()),
+                    customSound.orElse(original.hangingSignSoundType()),
+                    original.fenceGateOpen(),
+                    original.fenceGateClose()
+            );
+        }
     }
 
+    record VanillaWood(WoodType vanillaWood) implements BlockSetTypeProvider {
+        private static final Codec<BlockSetTypeProvider.VanillaWood> CODEC = WoodType.CODEC.xmap(
+                VanillaWood::new, VanillaWood::vanillaWood);
+
+        @Override
+        public BlockSetType getOrCreate(BlockSetType original, Optional<SoundType> customSound) {
+            return new Vanilla(vanillaWood.setType()).getOrCreate(original, customSound);
+        }
+
+        @Override
+        public WoodType getOrCreateWood(WoodType original, Optional<SoundType> customSound) {
+            if (customSound.isEmpty()) {
+                return vanillaWood;
+            }
+            var set = new Vanilla(vanillaWood.setType()).getOrCreate(original.setType(), customSound);
+            return new WoodType(
+                    set.name(),
+                    set,
+                    customSound.orElse(vanillaWood.soundType()),
+                    customSound.orElse(vanillaWood.hangingSignSoundType()),
+                    vanillaWood.fenceGateOpen(),
+                    vanillaWood.fenceGateClose()
+            );
+        }
+    }
+
+    //both sound type and block type
     record Custom(Optional<SoundEvent> doorClose, Optional<SoundEvent> doorOpen,
                   Optional<SoundEvent> trapdoorClose, Optional<SoundEvent> trapdoorOpen,
                   Optional<SoundEvent> pressurePlateClickOff, Optional<SoundEvent> pressurePlateClickOn,
                   Optional<SoundEvent> buttonClickOff,
-                  Optional<SoundEvent> buttonClickOn) implements BlockSetTypeProvider {
+                  Optional<SoundEvent> buttonClickOn,
+                  Optional<SoundEvent> fanceGateOpen,
+                  Optional<SoundEvent> fanceGateClose
+    ) implements BlockSetTypeProvider {
 
         public static final Codec<Custom> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
                 CodecUtils.forwardAwareSoundEvent().optionalFieldOf("door_close").forGetter(Custom::doorClose),
@@ -58,8 +115,11 @@ public interface BlockSetTypeProvider {
                 CodecUtils.forwardAwareSoundEvent().optionalFieldOf("pressure_plate_click_off").forGetter(Custom::pressurePlateClickOff),
                 CodecUtils.forwardAwareSoundEvent().optionalFieldOf("pressure_plate_click_on").forGetter(Custom::pressurePlateClickOn),
                 CodecUtils.forwardAwareSoundEvent().optionalFieldOf("button_click_off").forGetter(Custom::buttonClickOff),
-                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("button_click_on").forGetter(Custom::buttonClickOn)
+                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("button_click_on").forGetter(Custom::buttonClickOn),
+                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("fence_gate_open").forGetter(Custom::fanceGateOpen),
+                CodecUtils.forwardAwareSoundEvent().optionalFieldOf("fence_gate_close").forGetter(Custom::fanceGateClose)
         ).apply(instance, Custom::new));
+
 
         @Override
         public BlockSetType getOrCreate(BlockSetType original, Optional<SoundType> customSound) {
@@ -78,6 +138,18 @@ public interface BlockSetTypeProvider {
                     pressurePlateClickOn.orElse(original.pressurePlateClickOn()),
                     buttonClickOff.orElse(original.buttonClickOff()),
                     buttonClickOn.orElse(original.buttonClickOn())
+            );
+        }
+
+        @Override
+        public WoodType getOrCreateWood(WoodType original, Optional<SoundType> customSound) {
+            BlockSetType blockSetType = this.getOrCreate(original.setType(), customSound);
+            return new WoodType(blockSetType.name(),
+                    blockSetType,
+                    customSound.orElse(original.soundType()),
+                    customSound.orElse(original.hangingSignSoundType()),
+                    fanceGateOpen.orElse(original.fenceGateOpen()),
+                    fanceGateClose.orElse(original.fenceGateClose())
             );
         }
     }

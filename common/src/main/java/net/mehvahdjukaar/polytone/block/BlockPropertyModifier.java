@@ -172,21 +172,25 @@ public record BlockPropertyModifier(
 
         BlockSetTypeProvider oldType = null;
         if (blockSetType.isPresent()) {
+            BlockSetTypeProvider provider = blockSetType.get();
             if (block instanceof DoorBlock db) {
                 oldType = new BlockSetTypeProvider.Vanilla(db.type);
-                db.type = blockSetType.get().getOrCreate(db.type(), soundType);
+                db.type = provider.getOrCreate(db.type(), soundType);
             } else if (block instanceof TrapDoorBlock tb) {
                 oldType = new BlockSetTypeProvider.Vanilla(tb.type);
-                tb.type = blockSetType.get().getOrCreate(tb.type, soundType);
+                tb.type = provider.getOrCreate(tb.type, soundType);
             } else if (block instanceof ButtonBlock bb) {
                 oldType = new BlockSetTypeProvider.Vanilla(bb.type);
-                bb.type = blockSetType.get().getOrCreate(bb.type, soundType);
+                bb.type = provider.getOrCreate(bb.type, soundType);
             } else if (block instanceof PressurePlateBlock ppb) {
                 oldType = new BlockSetTypeProvider.Vanilla(ppb.type);
-                ppb.type = blockSetType.get().getOrCreate(ppb.type, soundType);
+                ppb.type = provider.getOrCreate(ppb.type, soundType);
             } else if (block instanceof FenceGateBlock fg) {
-                oldType = new BlockSetTypeProvider.Vanilla(fg.type);
-                fg.type = blockSetType.get().getOrCreate(fg.type, soundType);
+                oldType = new BlockSetTypeProvider.VanillaWood(fg.type);
+                fg.type = provider.getOrCreateWood(fg.type, soundType);
+            } else if (block instanceof SignBlock sb) {
+                oldType = new BlockSetTypeProvider.VanillaWood(sb.type);
+                sb.type = provider.getOrCreateWood(sb.type, soundType);
             }
         }
         if (tintHack) {
