@@ -27,13 +27,11 @@ public class SmithingScreenMixin {
         return x;
     }
 
-    //TODO: add back
-    /*
     @ModifyArg(method = "renderBg", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventory(Lnet/minecraft/client/gui/GuiGraphics;FFFLorg/joml/Vector3f;Lorg/joml/Quaternionf;Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V")
+            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventory(Lnet/minecraft/client/gui/GuiGraphics;IIIIFLorg/joml/Vector3f;Lorg/joml/Quaternionf;Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V")
             , index = 2
     )
-    public float modifyRenderEntityY(float y) {
+    public int modifyRenderEntityY(int y) {
         var m = ((SlotifyScreen) this).polytone$getModifier();
         if (m != null) {
             var s = m.getSpecial("player");
@@ -45,17 +43,17 @@ public class SmithingScreenMixin {
     }
 
     @ModifyArg(method = "renderBg", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventory(Lnet/minecraft/client/gui/GuiGraphics;FFFLorg/joml/Vector3f;Lorg/joml/Quaternionf;Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V")
-            , index = 3
+            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventory(Lnet/minecraft/client/gui/GuiGraphics;IIIIFLorg/joml/Vector3f;Lorg/joml/Quaternionf;Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V")
+            , index = 5
     )
     public float modifyRenderEntityScale(float z) {
         var m = ((SlotifyScreen) this).polytone$getModifier();
         if (m != null) {
             var s = m.getSpecial("player");
             if (s != null) {
-                return z + s.z();
+                return z + s.scale();
             }
         }
         return z;
-    }*/
+    }
 }
