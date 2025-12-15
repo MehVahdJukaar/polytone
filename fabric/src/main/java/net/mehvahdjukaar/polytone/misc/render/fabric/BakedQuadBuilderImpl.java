@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.misc.fabric;
+package net.mehvahdjukaar.polytone.misc.render.fabric;
 
 import com.google.common.base.Preconditions;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;

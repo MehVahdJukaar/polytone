@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.fluid.fabric;
+package net.mehvahdjukaar.polytone.content.fluid.fabric;
 
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.minecraft.client.color.block.BlockColor;

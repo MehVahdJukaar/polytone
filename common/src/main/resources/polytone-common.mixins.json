@@ -4,14 +4,13 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "BlockElementRotationMixin",
-    "ParticleUtilsMixin"
   ],
   "client": [
     "AbstractContainerMenuMixin",
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
     "BlockElementDeserializerMixin",
+    "BlockElementRotationMixin",
     "ClientLevelMixin",
     "ColorResolverMixin",
     "ContextualBarRendererMixin",
@@ -27,6 +26,7 @@
     "ItemMixin",
     "ItemOverridesMixin",
     "ItemStackMixin",
+    "LeashMixin",
     "LevelRendererMixin",
     "LightTextureMixin",
     "MinecraftMixin",

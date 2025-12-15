@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.misc.fabric;
+package net.mehvahdjukaar.polytone.misc.render.fabric;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.mehvahdjukaar.polytone.misc.render.BakedQuadBuilder;

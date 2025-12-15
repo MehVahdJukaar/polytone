@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.fluid.neoforge;
+package net.mehvahdjukaar.polytone.content.fluid.neoforge;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;

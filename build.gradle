@@ -188,11 +188,11 @@ ext.replaceProperties = [
 ]
 
 // --- Utils
-static def listGameVersions(String minVersion, String maxVersion) {
+static def listGameVersions(String minInclusive, String maxExclusive) {
     def versions = []
 
-    def minParts = minVersion.split('\\.')
-    def maxParts = maxVersion.split('\\.')
+    def minParts = minInclusive.split('\\.')
+    def maxParts = maxExclusive.split('\\.')
 
     int startPatch = Integer.parseInt(minParts[2])
     int endPatch   = Integer.parseInt(maxParts[2])

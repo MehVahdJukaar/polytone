@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.misc.fabric;
+package net.mehvahdjukaar.polytone.misc.render.fabric;
 
 /* //TODO 1.21.5
 public class SeparateTransformsModel extends BlockModel {

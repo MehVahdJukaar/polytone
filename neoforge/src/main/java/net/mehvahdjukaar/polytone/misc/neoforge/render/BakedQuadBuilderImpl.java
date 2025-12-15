@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.misc.neoforge;
+package net.mehvahdjukaar.polytone.misc.neoforge.render;
 
 import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.vertex.VertexConsumer;
