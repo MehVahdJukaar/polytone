@@ -29,7 +29,7 @@ import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
 public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Optional<IColorGetter> barColor,
                            Optional<Rarity> rarity,
-                           List<Component> tooltips,
+                           List<TooltipAddition> tooltips,
                            List<Pattern> removedTooltips,
                            List<ItemModelOverride> customModels,
                            Targets targets) {
@@ -38,7 +38,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> (Optional<IColorGetter>) b.tintGetter),
             Colormap.CODEC.optionalFieldOf("bar_color").forGetter(ItemModifier::barColor),
             Rarity.CODEC.optionalFieldOf("rarity").forGetter(ItemModifier::rarity),
-            CreativeTabModifier.COMPONENT_CODEC.listOf().optionalFieldOf("tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
+            TooltipAddition.CODEC.listOf().optionalFieldOf("tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
             ExtraCodecs.PATTERN.listOf().optionalFieldOf("removed_tooltips", List.of()).forGetter(ItemModifier::removedTooltips),
             ItemModelOverride.CODEC.listOf().optionalFieldOf("custom_models", List.of()).forGetter(ItemModifier::customModels),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(ItemModifier::targets)
@@ -123,8 +123,17 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
 
     public void modifyTooltips(List<Component> tooltips) {
         tooltips.removeIf(t -> removedTooltips.stream().anyMatch(p -> p.matcher(t.getString()).matches()));
-        for (var t : this.tooltips) {
-            tooltips.add(0,t);
+        for (TooltipAddition ta : this.tooltips) {
+            int position = ta.position();
+            Component tooltip = ta.component();
+            //insert at position. if <=0 insert first, if >=size insert last
+            if (position <= 0) {
+                tooltips.addFirst(tooltip);
+            } else if (position >= tooltips.size()) {
+                tooltips.add(tooltip);
+            } else {
+                tooltips.add(position, tooltip);
+            }
         }
     }
 
