@@ -2,10 +2,9 @@ package net.mehvahdjukaar.polytone.dimension;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.misc.Targets;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.dimension.DimensionType;

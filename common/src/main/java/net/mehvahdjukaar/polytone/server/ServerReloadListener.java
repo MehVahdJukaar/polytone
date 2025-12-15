@@ -1,19 +1,7 @@
 package net.mehvahdjukaar.polytone.server;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.mojang.serialization.DynamicOps;
-import net.mehvahdjukaar.polytone.block.BlockPropertyModifier;
-import net.mehvahdjukaar.polytone.utils.PartialReloader;
-import net.minecraft.resources.ResourceLocation;
+import net.mehvahdjukaar.polytone.misc.reloader.PartialReloader;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.util.profiling.ProfilerFiller;
-
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 public abstract class ServerReloadListener extends PartialReloader implements PreparableReloadListener {
 

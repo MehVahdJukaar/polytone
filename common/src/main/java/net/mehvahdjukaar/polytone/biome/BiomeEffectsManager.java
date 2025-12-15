@@ -2,11 +2,10 @@ package net.mehvahdjukaar.polytone.biome;
 
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
-import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.misc.Parsed;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;

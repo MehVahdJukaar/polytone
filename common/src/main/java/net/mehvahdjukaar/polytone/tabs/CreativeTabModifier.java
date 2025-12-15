@@ -5,11 +5,10 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.misc.Targets;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
-import net.minecraft.core.RegistryAccess;
+import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -21,9 +20,8 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
-import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
+import static net.mehvahdjukaar.polytone.misc.data.ListUtils.mergeList;
 
 public record CreativeTabModifier(
         Optional<ItemStack> icon,

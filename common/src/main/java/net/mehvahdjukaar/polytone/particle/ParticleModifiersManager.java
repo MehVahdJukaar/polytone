@@ -6,17 +6,11 @@ import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
-import net.mehvahdjukaar.polytone.utils.Parsed;
-import net.mehvahdjukaar.polytone.utils.Utils;
+import net.mehvahdjukaar.polytone.misc.reloader.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.misc.Parsed;
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.gui.screens.social.PlayerEntry;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
-import net.minecraft.core.BlockPos;
-import net.minecraft.client.particle.TotemParticle;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
@@ -24,17 +18,12 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class ParticleModifiersManager extends JsonImgPartialReloader {

@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.slotify;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.mehvahdjukaar.polytone.utils.Utils;
+import net.mehvahdjukaar.polytone.misc.data.ListUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
@@ -41,9 +40,9 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
                 newMod.hOff != 0 ? newMod.hOff : this.hOff,
                 newMod.titleColor != null ? newMod.titleColor : this.titleColor,
                 newMod.labelColor != null ? newMod.labelColor : this.labelColor,
-                Utils.mergeList(newMod.extraRenderables, this.extraRenderables),
-                Utils.mergeList(newMod.widgetModifiers, this.widgetModifiers),
-                Utils.mergedMap(newMod.specialOffsets, this.specialOffsets)
+                ListUtils.mergeList(newMod.extraRenderables, this.extraRenderables),
+                ListUtils.mergeList(newMod.widgetModifiers, this.widgetModifiers),
+                ListUtils.mergedMap(newMod.specialOffsets, this.specialOffsets)
         );
     }
 

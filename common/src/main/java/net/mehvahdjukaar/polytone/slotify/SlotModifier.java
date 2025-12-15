@@ -1,18 +1,11 @@
 package net.mehvahdjukaar.polytone.slotify;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.world.inventory.Slot;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 public record SlotModifier(Optional<IntRange> targets, int xOffset, int yOffset, int zOffset,
                            Optional<IntRange> targetX, Optional<IntRange> targetY, Optional<String> targetClass) {

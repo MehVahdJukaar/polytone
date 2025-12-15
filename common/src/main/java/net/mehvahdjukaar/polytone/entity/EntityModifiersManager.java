@@ -1,9 +1,8 @@
 package net.mehvahdjukaar.polytone.entity;
 
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;

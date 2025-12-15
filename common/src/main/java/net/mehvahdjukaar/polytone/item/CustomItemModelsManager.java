@@ -1,23 +1,14 @@
 package net.mehvahdjukaar.polytone.item;
 
 import com.google.gson.JsonElement;
-import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
-import net.mehvahdjukaar.polytone.utils.Parsed;
-import net.minecraft.client.Minecraft;
+import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.StringReader;
 import java.util.*;

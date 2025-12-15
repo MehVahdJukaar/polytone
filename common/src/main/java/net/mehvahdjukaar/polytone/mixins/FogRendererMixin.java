@@ -12,6 +12,7 @@ import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
+
 @Mixin(FogRenderer.class)
 public abstract class FogRendererMixin {
 
@@ -47,5 +48,5 @@ public abstract class FogRendererMixin {
         }
         return original;
     }
-*/
+
 }

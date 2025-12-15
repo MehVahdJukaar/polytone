@@ -2,10 +2,8 @@ package net.mehvahdjukaar.polytone.biome;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
-import net.mehvahdjukaar.polytone.utils.LegacyHelper;
-import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.utils.codec.ReferenceOrDirectCodec;
+import net.mehvahdjukaar.polytone.misc.LegacyHelper;
+import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;

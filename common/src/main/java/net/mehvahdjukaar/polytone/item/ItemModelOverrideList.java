@@ -1,25 +1,5 @@
 package net.mehvahdjukaar.polytone.item;
 
-import com.google.common.base.Suppliers;
-import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.utils.DepthSearchTrie;
-import net.mehvahdjukaar.polytone.utils.FrequencyOrderedCollection;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.component.TypedDataComponent;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Supplier;
-
 
 public class ItemModelOverrideList {
 /*

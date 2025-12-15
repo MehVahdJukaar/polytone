@@ -2,20 +2,17 @@ package net.mehvahdjukaar.polytone.particle;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.mehvahdjukaar.polytone.utils.exp.PolytoneExpression;
-import net.mehvahdjukaar.polytone.utils.exp.IExpression;
+import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.misc.ColorUtils;
+import net.mehvahdjukaar.polytone.misc.exp.ExpressionUtils;
+import net.mehvahdjukaar.polytone.misc.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.misc.exp.IExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.objecthunter.exp4j.Expression;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.LightLayer;
 
 public class ParticleContextExpression extends PolytoneExpression {

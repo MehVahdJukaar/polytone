@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.utils.IExtendedBlockElementRotation;
+import net.mehvahdjukaar.polytone.misc.IExtendedBlockElementRotation;
 import net.minecraft.client.renderer.block.model.BlockElementRotation;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;

@@ -3,13 +3,14 @@ package net.mehvahdjukaar.polytone.block;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
-import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
-import net.mehvahdjukaar.polytone.utils.*;
-import net.minecraft.client.Minecraft;
+import net.mehvahdjukaar.polytone.misc.*;
+import net.mehvahdjukaar.polytone.misc.data.ArrayImage;
+import net.mehvahdjukaar.polytone.misc.data.PropertiesUtils;
+import net.mehvahdjukaar.polytone.misc.reloader.PartialReloader;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BiomeColors;
@@ -20,7 +21,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
@@ -41,8 +41,6 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     // Block ID to modifier
     private final Map<Block, BlockPropertyModifier> modifiers = new HashMap<>();
     private final Map< Block, ClientTickModifier> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
-
-    private final Map<Block, Boolean> terrainParticleTintOverrides = new HashMap<>();
 
     private final Map<Block, Boolean> terrainParticleTintOverrides = new HashMap<>();
 

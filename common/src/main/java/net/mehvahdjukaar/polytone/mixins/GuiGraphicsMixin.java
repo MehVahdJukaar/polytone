@@ -2,8 +2,8 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.GuiDepthTarget;
-import net.mehvahdjukaar.polytone.utils.GuiDepthTargetAware;
+import net.mehvahdjukaar.polytone.slotify.GuiDepthTarget;
+import net.mehvahdjukaar.polytone.slotify.GuiDepthTargetAware;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;

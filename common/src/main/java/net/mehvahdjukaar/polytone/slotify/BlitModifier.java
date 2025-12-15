@@ -1,23 +1,17 @@
 package net.mehvahdjukaar.polytone.slotify;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.minecraft.client.Minecraft;
+import net.mehvahdjukaar.polytone.misc.ColorUtils;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 public record BlitModifier(ResourceLocation target, int index, int xInc, int yInc, int zInc, int widthInc, int heightInc,
                            float u0, float v0, float u1, float v1, int color, Optional<ResourceLocation> newTexture,

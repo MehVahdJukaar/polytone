@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.fluid.fabric;
 
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;

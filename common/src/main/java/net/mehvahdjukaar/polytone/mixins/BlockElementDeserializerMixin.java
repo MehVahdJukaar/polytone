@@ -2,12 +2,11 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.google.gson.JsonObject;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.mehvahdjukaar.polytone.utils.IExtendedBlockElementRotation;
+import net.mehvahdjukaar.polytone.misc.IExtendedBlockElementRotation;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementRotation;
 import net.minecraft.core.Direction;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

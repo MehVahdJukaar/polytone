@@ -2,11 +2,11 @@ package net.mehvahdjukaar.polytone.block;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.mehvahdjukaar.polytone.utils.exp.PolytoneExpression;
-import net.mehvahdjukaar.polytone.utils.exp.IExpression;
+import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.misc.ColorUtils;
+import net.mehvahdjukaar.polytone.misc.exp.ExpressionUtils;
+import net.mehvahdjukaar.polytone.misc.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.misc.exp.IExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;

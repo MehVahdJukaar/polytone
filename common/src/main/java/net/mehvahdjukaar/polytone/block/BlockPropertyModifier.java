@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.block;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -12,20 +11,17 @@ import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.sound.BlockSoundEmitter;
 import net.mehvahdjukaar.polytone.sound.PolytoneSoundType;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.misc.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +30,7 @@ import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
-import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
+import static net.mehvahdjukaar.polytone.misc.data.ListUtils.mergeList;
 
 public record BlockPropertyModifier(
         Optional<? extends BlockColor> tintGetter,
@@ -43,7 +39,7 @@ public record BlockPropertyModifier(
         Optional<Boolean> canOcclude,
         Optional<Boolean> spawnParticlesOnBreak,
         Optional<Boolean> breakingParticlesTinted,
-        Optional<IRenderProperties> renderType,
+        Optional<ChunkSectionLayer> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
         List<BlockParticleEmitter> particleEmitters,
         List<BlockSoundEmitter> soundEmitters,
@@ -90,7 +86,7 @@ public record BlockPropertyModifier(
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
-        Targets t = net.mehvahdjukaar.polytone.utils.Targets.ofIds(blocks);
+        Targets t = net.mehvahdjukaar.polytone.misc.Targets.ofIds(blocks);
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
@@ -178,11 +174,11 @@ public record BlockPropertyModifier(
             //Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
         }
 
-        IRenderProperties oldRenderType = null;
+        ChunkSectionLayer oldRenderType = null;
         if (renderType.isPresent()) {
-            oldRenderType = IRenderProperties.wrapVanilla(PlatStuff.getRenderType(block));
-            IRenderProperties o = renderType.get();
-            PlatStuff.setRenderType(block, o.toVanilla());
+            oldRenderType = PlatStuff.getRenderType(block);
+            ChunkSectionLayer o = renderType.get();
+            PlatStuff.setRenderType(block, o);
         }
 
         // returns old properties
@@ -208,7 +204,7 @@ public record BlockPropertyModifier(
                     Codec.BOOL.optionalFieldOf("can_occlude").forGetter(BlockPropertyModifier::canOcclude),
                     Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(BlockPropertyModifier::spawnParticlesOnBreak),
                     Codec.BOOL.optionalFieldOf("tinted_breaking_particles").forGetter(BlockPropertyModifier::breakingParticlesTinted),
-                    IRenderProperties.CODEC.optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
+                    SECTION_LAYER_CODEC.optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
                     BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(BlockPropertyModifier::particleEmitters),
