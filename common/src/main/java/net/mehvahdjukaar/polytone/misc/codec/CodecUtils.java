@@ -81,6 +81,16 @@ public class CodecUtils {
         return new ReferenceOrDirectCodec<>(reference, direct, bothStrings);
     }
 
+    @SafeVarargs
+    public static <A> Codec<A> withAlternatives(Codec<A> primary, Codec<? extends A> ...secondary) {
+        Codec<? super A> codec = primary;
+        for (Codec<? extends A> c : secondary) {
+            codec = Codec.withAlternative(codec, c);
+        }
+        return (Codec<A>) codec;
+    }
+
+
     public static final Codec<ItemStack> ITEM_OR_STACK = Codec.withAlternative(ItemStack.SINGLE_ITEM_CODEC, BuiltInRegistries.ITEM.byNameCodec(),
             Item::getDefaultInstance);
 
