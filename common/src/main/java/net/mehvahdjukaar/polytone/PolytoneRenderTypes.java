@@ -74,7 +74,7 @@ public class PolytoneRenderTypes {
 
 
     public static final Supplier<ParticleRenderType> PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE = Suppliers.memoize(() ->
-            new ParticleRenderType("PARTICLE_SHEET_ADDITIVE_TRANSLUCENT"));
+            new ParticleRenderType("particle_additive_translucent"));
 
 
     //block. Used to render 3d model for particles
