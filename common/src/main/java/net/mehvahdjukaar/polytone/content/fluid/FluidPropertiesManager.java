@@ -10,7 +10,7 @@ import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.misc.LegacyHelper;
 import net.mehvahdjukaar.polytone.misc.Parsed;
 import net.mehvahdjukaar.polytone.misc.Targets;
-import net.mehvahdjukaar.polytone.misc.data.ArrayImage;
+import net.mehvahdjukaar.polytone.misc.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.misc.reloader.JsonImgPartialReloader;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;

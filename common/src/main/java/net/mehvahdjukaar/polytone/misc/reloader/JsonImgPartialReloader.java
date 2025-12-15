@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.misc.reloader;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.polytone.misc.data.ArrayImage;
+import net.mehvahdjukaar.polytone.misc.struc.ArrayImage;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 

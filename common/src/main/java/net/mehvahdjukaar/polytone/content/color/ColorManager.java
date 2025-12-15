@@ -12,7 +12,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.misc.ColorUtils;
-import net.mehvahdjukaar.polytone.misc.data.Vec3f;
+import net.mehvahdjukaar.polytone.misc.struc.Vec3f;
 import net.mehvahdjukaar.polytone.misc.reloader.SingleJsonOrPropertiesReloadListener;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.minecraft.ChatFormatting;

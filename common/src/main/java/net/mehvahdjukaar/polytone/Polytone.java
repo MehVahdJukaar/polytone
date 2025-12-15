@@ -86,7 +86,6 @@ public class Polytone {
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
 
-    //todo: cutout not working. splash color not working, 1.20 color accessor crash
     public static void init(boolean devEnv, boolean forge) {
         COMPOUND_RELOADER = new CompoundReloader(
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,

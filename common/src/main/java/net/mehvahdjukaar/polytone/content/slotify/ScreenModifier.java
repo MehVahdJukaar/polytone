@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
-import net.mehvahdjukaar.polytone.misc.data.ListUtils;
+import net.mehvahdjukaar.polytone.misc.struc.ListUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;

@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.misc.data.MapRegistry;
+import net.mehvahdjukaar.polytone.misc.struc.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;

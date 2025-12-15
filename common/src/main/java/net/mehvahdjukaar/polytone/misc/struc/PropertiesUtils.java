@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.misc.data;
+package net.mehvahdjukaar.polytone.misc.struc;
 
 import com.google.gson.*;
 import net.mehvahdjukaar.polytone.Polytone;

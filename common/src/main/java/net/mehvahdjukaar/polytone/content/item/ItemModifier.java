@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static net.mehvahdjukaar.polytone.misc.data.ListUtils.mergeList;
+import static net.mehvahdjukaar.polytone.misc.struc.ListUtils.mergeList;
 
 public record ItemModifier(Optional<IColorGetter> barColor,
                            Optional<Rarity> rarity,

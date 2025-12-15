@@ -9,9 +9,9 @@ import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.misc.LegacyHelper;
 import net.mehvahdjukaar.polytone.misc.Parsed;
-import net.mehvahdjukaar.polytone.misc.data.ArrayImage;
-import net.mehvahdjukaar.polytone.misc.data.PropertiesUtils;
 import net.mehvahdjukaar.polytone.misc.reloader.PartialReloader;
+import net.mehvahdjukaar.polytone.misc.struc.ArrayImage;
+import net.mehvahdjukaar.polytone.misc.struc.PropertiesUtils;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BiomeColors;
@@ -41,7 +41,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
     // Block ID to modifier
     private final Map<Block, BlockPropertyModifier> modifiers = new HashMap<>();
-    private final Map< Block, ClientTickModifier> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
+    private final Map<Block, ClientTickModifier> particleAndSoundEmitters = new Object2ObjectOpenHashMap<>();
 
     private final Map<Block, Boolean> terrainParticleTintOverrides = new HashMap<>();
 
@@ -126,17 +126,12 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
 
         // parse jsons
-        for (var j : jsons.entrySet()) {
-            JsonElement json = j.getValue();
-            ResourceLocation id = j.getKey();
-
-            var prop = Parsed.parseOptionalOrPartial(
-                    BlockPropertyModifier.CODEC, BlockPropertyModifier.PARTIAL_CODEC,
-                    json, ops, id, "block modifier");
-            parsedModifiers.put(id, prop);
+        var parsedJsons = Parsed.batchParseOrPartial(jsons,
+                BlockPropertyModifier.CODEC, BlockPropertyModifier.PARTIAL_CODEC,
+                ops, "block modifier");
+        for (var entry : parsedJsons.entrySet()) {
+            parsedModifiers.put(entry.getKey(), entry.getValue());
         }
-        //TODO:
-        //parsedModifiers = Parsed.sortByPriority(parsedModifiers);
 
 
         // add all modifiers (with or without texture)
@@ -296,7 +291,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
 
     //TODO: add this
     public void maybeSpawnBreakParticles(BlockState state, ClientLevel level, BlockPos pos, Direction direction) {
-        if(true)return;
+        if (true) return;
         var m = particleAndSoundEmitters.get(state.getBlock());
 
         RandomSource random = level.random;

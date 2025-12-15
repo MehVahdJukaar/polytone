@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.misc.ColorUtils;
 import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.misc.data.ArrayImage;
+import net.mehvahdjukaar.polytone.misc.struc.ArrayImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;

@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.misc.data.PropertiesUtils;
+import net.mehvahdjukaar.polytone.misc.struc.PropertiesUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.util.GsonHelper;

@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static net.mehvahdjukaar.polytone.misc.data.ListUtils.mergeList;
+import static net.mehvahdjukaar.polytone.misc.struc.ListUtils.mergeList;
 
 public record CreativeTabModifier(
         Optional<ItemStack> icon,

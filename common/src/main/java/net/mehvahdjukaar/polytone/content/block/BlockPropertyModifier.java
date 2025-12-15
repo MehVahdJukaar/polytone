@@ -30,7 +30,7 @@ import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
-import static net.mehvahdjukaar.polytone.misc.data.ListUtils.mergeList;
+import static net.mehvahdjukaar.polytone.misc.struc.ListUtils.mergeList;
 
 public record BlockPropertyModifier(
         Optional<? extends BlockColor> tintGetter,

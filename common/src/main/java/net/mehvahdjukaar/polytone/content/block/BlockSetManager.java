@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.block;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.misc.data.MapRegistry;
+import net.mehvahdjukaar.polytone.misc.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;

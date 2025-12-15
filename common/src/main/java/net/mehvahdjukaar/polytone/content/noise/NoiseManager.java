@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.misc.data.MapRegistry;
+import net.mehvahdjukaar.polytone.misc.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.misc.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
 import net.minecraft.core.HolderLookup;

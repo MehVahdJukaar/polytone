@@ -54,9 +54,10 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
 
         Set<ResourceLocation> usedTextures = new HashSet<>();
 
-        Parsed.SortedMap<ParticleModifier> parsedModifiers =
-        Parsed.batchParseOrPartial(jsons, ParticleModifier.CODEC,
-                        ParticleModifier.PARTIAL_CODEC, ops, "particle modifier");
+        Parsed.SortedMap<ParticleModifier> parsedModifiers = Parsed.batchParseOrPartial(jsons,
+                ParticleModifier.CODEC,
+                ParticleModifier.PARTIAL_CODEC,
+                ops, "particle modifier");
 
 
         // add all modifiers (with or without texture)

@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static net.mehvahdjukaar.polytone.misc.data.ListUtils.mergeList;
+import static net.mehvahdjukaar.polytone.misc.struc.ListUtils.mergeList;
 
 public record Targets(List<Entry> entries) {
 

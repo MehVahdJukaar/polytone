@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.lightmap;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.misc.data.MapRegistry;
+import net.mehvahdjukaar.polytone.misc.struc.MapRegistry;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 

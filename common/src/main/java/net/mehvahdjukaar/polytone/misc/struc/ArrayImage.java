@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.misc.data;
+package net.mehvahdjukaar.polytone.misc.struc;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;

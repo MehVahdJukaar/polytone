@@ -10,7 +10,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
 import net.mehvahdjukaar.polytone.misc.Parsed;
-import net.mehvahdjukaar.polytone.misc.data.MapRegistry;
+import net.mehvahdjukaar.polytone.misc.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleProvider;

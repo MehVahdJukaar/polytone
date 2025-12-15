@@ -7,7 +7,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.misc.data.VersionRange;
+import net.mehvahdjukaar.polytone.misc.struc.VersionRange;
 import net.minecraft.SharedConstants;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -102,12 +102,12 @@ public class Parsed<T> {
         return parseOptionalOrPartial(codec, codec, input, ops, id, jsonTypeName);
     }
 
-    public static <T, J> Parsed<T> parseOptional(Decoder<T> codec, J input, DynamicOps<J> ops,
+    private static <T, J> Parsed<T> parseOptional(Decoder<T> codec, J input, DynamicOps<J> ops,
                                                  ResourceLocation id, String jsonTypeName) {
         return parseOptionalOrPartial(codec, null, input, ops, id, jsonTypeName);
     }
 
-    public static <T, J> Parsed<T> parseOptionalOrPartial(Decoder<T> fullCodec, @Nullable Decoder<T> partialCodec, J input, DynamicOps<J> ops,
+    private static <T, J> Parsed<T> parseOptionalOrPartial(Decoder<T> fullCodec, @Nullable Decoder<T> partialCodec, J input, DynamicOps<J> ops,
                                                           ResourceLocation id, String jsonTypeName) {
         Boolean enabled = CONDITION_CODEC.decode(ops, input).getOrThrow().getFirst();
         int priority = PRIORITY_CODEC.decode(ops, input).getOrThrow().getFirst();
@@ -126,23 +126,23 @@ public class Parsed<T> {
     }
 
     // when partial codec is null it will give empty parsed on condition failure
-    public static <A, J> SortedMap<A> batchParseOrPartial(java.util.Map<ResourceLocation, J> jsons,
+    public static <A, J> SortedMap<A> batchParseOrPartial(Map<ResourceLocation, J> jsons,
                                                           Decoder<A> fullCodec,
                                                           @Nullable Decoder<A> codecWhenConditionIsNotMet,
-                                                          DynamicOps<J> ops, String jsonTypeName) {
-        SortedMap<A> treeMap = new SortedMap<>(jsonTypeName);
+                                                          DynamicOps<J> ops, String readableTypeName) {
+        SortedMap<A> treeMap = new SortedMap<>(readableTypeName);
         for (var e : jsons.entrySet()) {
             J json = e.getValue();
             ResourceLocation id = e.getKey();
-            Parsed<A> parsed = Parsed.parseOptionalOrPartial(fullCodec, codecWhenConditionIsNotMet, json, ops, id, jsonTypeName);
+            Parsed<A> parsed = Parsed.parseOptionalOrPartial(fullCodec, codecWhenConditionIsNotMet, json, ops, id, readableTypeName);
             treeMap.put(id, parsed);
         }
         return treeMap;
     }
 
     public static <A, J> SortedMap<A> batchParseAlways(java.util.Map<ResourceLocation, J> jsons,
-                                                       Decoder<A> codec, DynamicOps<J> ops, String jsonTypeName) {
-        return batchParseOrPartial(jsons, codec, codec, ops, jsonTypeName);
+                                                       Decoder<A> codec, DynamicOps<J> ops, String readableTypeName) {
+        return batchParseOrPartial(jsons, codec, codec, ops, readableTypeName);
     }
 
     public static <A, J> Iterable<Map.Entry<ResourceLocation, A>> batchParseOnlyEnabled(java.util.Map<ResourceLocation, J> jsons,
@@ -155,10 +155,10 @@ public class Parsed<T> {
 
     public static class SortedMap<V> implements Iterable<Map.Entry<ResourceLocation, Parsed<V>>> {
         private final LinkedHashMap<ResourceLocation, Parsed<V>> map = new LinkedHashMap<>();
-        private final String name;
+        private final String readableName;
 
         public SortedMap(String name) {
-            this.name = name;
+            this.readableName = name;
         }
 
         public void put(ResourceLocation key, Parsed<V> value) {
@@ -168,7 +168,7 @@ public class Parsed<T> {
             if (existing == null) {
                 map.put(key, value);
             } else if (value.priority > existing.priority) {
-                Polytone.LOGGER.warn("Found duplicate {}  file with id {}. Overriding previous one", name, key);
+                Polytone.LOGGER.warn("Found duplicate {}  file with id {}. Overriding previous one", readableName, key);
                 map.put(key, value);
             }
         }
