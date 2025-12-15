@@ -188,22 +188,29 @@ ext.replaceProperties = [
 ]
 
 // --- Utils
-static def listGameVersions(String minInclusive, String maxExclusive) {
-    def versions = []
-
+static List<String> listGameVersions(String minInclusive, String maxExclusive) {
     def minParts = minInclusive.split('\\.')
     def maxParts = maxExclusive.split('\\.')
 
-    int startPatch = Integer.parseInt(minParts[2])
-    int endPatch   = Integer.parseInt(maxParts[2])
+    if (minParts.size() != 3 || maxParts.size() != 3) {
+        throw new IllegalArgumentException("Versions must be in MAJOR.MINOR.PATCH format")
+    }
 
-    for (int i = startPatch; i <= endPatch; i++) {
+    if (minParts[0] != maxParts[0] || minParts[1] != maxParts[1]) {
+        throw new IllegalArgumentException("Major and minor versions must match")
+    }
+
+    int startPatch = minParts[2] as int
+    int endPatch   = maxParts[2] as int
+
+    def versions = []
+
+    for (int i = startPatch; i < endPatch; i++) { // exclusive
         versions << "${minParts[0]}.${minParts[1]}.${i}"
     }
 
     return versions
 }
-
 
 tasks.register('buildAndPublishAll') {
     dependsOn ':clean'
