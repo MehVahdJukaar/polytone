@@ -383,7 +383,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     @Override
     protected void resetWithLevel(boolean logOff) {
-        //TODO:
+        //TODO: potion empty
         //PotionContents.EMPTY_COLOR = 16253176;
         PotionContents.BASE_POTION_COLOR = 3694022;
         xpBar = null;

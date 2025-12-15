@@ -13,7 +13,8 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 import java.util.Optional;
 
-public record BlitModifier(ResourceLocation target, int index, int xInc, int yInc, int zInc, int widthInc, int heightInc,
+public record BlitModifier(ResourceLocation target, int index, int xInc, int yInc, int zInc, int widthInc,
+                           int heightInc,
                            float u0, float v0, float u1, float v1, int color, Optional<ResourceLocation> newTexture,
                            List<RelativeSprite> extraSprites) {
 
@@ -45,7 +46,7 @@ public record BlitModifier(ResourceLocation target, int index, int xInc, int yIn
 
 
         for (RelativeSprite s : extraSprites) {
-            s.render(gui, pipeline,  oldX1, oldX2, oldY1, oldY2, col);
+            s.render(gui, pipeline, oldX1, oldX2, oldY1, oldY2, col);
         }
 
         if (newTexture.isPresent()) {
@@ -68,7 +69,7 @@ public record BlitModifier(ResourceLocation target, int index, int xInc, int yIn
         oldY2 = oldY1 + oldh;
 
         //TODO: add Z
-        gui.innerBlit(pipeline,sprite.atlasLocation(),  oldX1,  oldX2,  oldY1,  oldY2, minU, maxU, minV, maxV, col);
+        gui.innerBlit(pipeline, sprite.atlasLocation(), oldX1, oldX2, oldY1, oldY2, minU, maxU, minV, maxV, col);
     }
 
 

@@ -31,7 +31,7 @@ public abstract class ScreenMixin implements SlotifyScreen {
     @Override
     public void polytone$renderExtraSprites(GuiGraphics poseStack, int mouseX, int mouseY, float partialTicks) {
         if (polytone$modifier != null) {
-            polytone$modifier.renderExtrs(poseStack, mouseX, mouseY, partialTicks);
+            polytone$modifier.renderExtras(poseStack, mouseX, mouseY, partialTicks);
         }
     }
 

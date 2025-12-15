@@ -183,8 +183,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 }
             }
             if (exclusionRadius > 0) {
-                //TODO: verify this is correct
-                var particleRenderType = ParticleRenderType.SINGLE_QUADS;
+                ParticleRenderType particleRenderType = ParticleRenderType.SINGLE_QUADS;
                 double radiusSquared = exclusionRadius * exclusionRadius;
                 var  particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
 
