@@ -11,6 +11,8 @@ mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBas
 
 accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Collection;)V
 
+accessible field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
+
 accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;IZZLnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
 mutable field net/minecraft/client/renderer/BiomeColors WATER_COLOR_RESOLVER Lnet/minecraft/world/level/ColorResolver;
 mutable field net/minecraft/client/renderer/BiomeColors FOLIAGE_COLOR_RESOLVER Lnet/minecraft/world/level/ColorResolver;

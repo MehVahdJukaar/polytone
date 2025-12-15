@@ -184,6 +184,9 @@ public record BlockPropertyModifier(
             } else if (block instanceof PressurePlateBlock ppb) {
                 oldType = new BlockSetTypeProvider.Vanilla(ppb.type);
                 ppb.type = blockSetType.get().getOrCreate(ppb.type, soundType);
+            } else if (block instanceof FenceGateBlock fg) {
+                oldType = new BlockSetTypeProvider.Vanilla(fg.type);
+                fg.type = blockSetType.get().getOrCreate(fg.type, soundType);
             }
         }
         if (tintHack) {
