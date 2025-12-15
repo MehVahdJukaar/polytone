@@ -52,8 +52,6 @@ public record BlockPropertyModifier(
         Boolean disableParticles,
         @NotNull Targets targets,
         boolean tintHack) {
-    //TODO: add is soid for occlusion
-    // Other has priority
     public BlockPropertyModifier merge(BlockPropertyModifier newMod) {
         return new BlockPropertyModifier(
                 newMod.tintGetter.isPresent() ? newMod.tintGetter() : this.tintGetter(),
@@ -235,31 +233,6 @@ public record BlockPropertyModifier(
     @Nullable
     public IColorGetter getColormap() {
         return (IColorGetter) tintGetter.orElse(null);
-    }
-
-
-    public enum OffsetTypeR implements StringRepresentable {
-        NONE(BlockBehaviour.OffsetType.NONE),
-        XZ(BlockBehaviour.OffsetType.XZ),
-        XYZ(BlockBehaviour.OffsetType.XYZ);
-
-        public static final Codec<OffsetTypeR> CODEC = StringRepresentable.fromEnum(BlockPropertyModifier.OffsetTypeR::values);
-
-        private final BlockBehaviour.OffsetType original;
-
-        OffsetTypeR(BlockBehaviour.OffsetType offsetType) {
-            this.original = offsetType;
-        }
-
-        @Override
-        public String getSerializedName() {
-            return this.name().toLowerCase(Locale.ROOT);
-        }
-
-        public BlockBehaviour.OffsetFunction getFunction() {
-            var p = BlockBehaviour.Properties.of().offsetType(original);
-            return p.offsetFunction != null ? p.offsetFunction : ((blockState, blockPos) -> Vec3.ZERO);
-        }
     }
 
 }
