@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "BlockElementRotationMixin"
+    "BlockElementRotationMixin",
+    "ParticleUtilsMixin"
   ],
   "client": [
     "AbstractContainerMenuMixin",
@@ -13,8 +14,8 @@
     "BlockElementDeserializerMixin",
     "ClientLevelMixin",
     "ColorResolverMixin",
+    "ContextualBarRendererMixin",
     "DimensionSpecialEffectsMixin",
-    "ExperienceBarRendererMixin",
     "FaceBakeryMixin",
     "FishingHookRendererMixin",
     "FogRendererMixin",
@@ -33,6 +34,7 @@
     "ModelBlockRendererMixin",
     "ModelManagerMixin",
     "ParticleEngineMixin",
+    "ParticleGroupMixin",
     "ParticleResourcesMixin",
     "ScreenMixin",
     "SmithingScreenMixin",

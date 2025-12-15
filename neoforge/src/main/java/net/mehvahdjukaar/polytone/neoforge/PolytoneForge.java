@@ -92,6 +92,11 @@ public class PolytoneForge {
     public void renderStageEventAfterLevel(RenderLevelStageEvent.AfterLevel event) {
         PolytoneRenderTypes.onRenderLast();
     }
+    @SubscribeEvent
+    public void renderStageEventAfterLevel(RenderLevelStageEvent.AfterParticles event) {
+        PolytoneRenderTypes.cacheMatrices();
+    }
+
 
     @SubscribeEvent
     public void renderScreen(ScreenEvent.Render.Post event) {

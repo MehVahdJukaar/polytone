@@ -16,13 +16,9 @@
     "InventoryScreenMixin",
     "ModelBlockRendererMixin",
     "ItemBlockRenderTypesMixin",
-    "ItemColorsAccessor",
-    "ModelRendererMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
     "ParticleEngineAccessor",
-    "ParticleEngineMixin2",
-    "SodiumBlockRendererMixin",
     "TerrainParticleMixin",
     "ParticleEngineAccessor",
     "TerrainParticleMixin"

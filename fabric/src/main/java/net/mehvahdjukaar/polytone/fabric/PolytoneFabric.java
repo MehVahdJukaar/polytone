@@ -38,6 +38,14 @@ public class PolytoneFabric implements ClientModInitializer {
         WorldRenderEvents.START_MAIN.register((context) ->
                 ClientFrameTicker.onRenderTick(context.gameRenderer().getMinecraft()));
 
+        WorldRenderEvents.END_MAIN.register(context -> {
+            PolytoneRenderTypes.onRenderLast();
+        });
+
+        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+            PolytoneRenderTypes.cacheMatrices(); //might not be enough. needs to be after particles but we dont have it
+        });
+
         ClientTickEvents.START_CLIENT_TICK.register((client) -> {
             if (client.level != null) {
                 ClientFrameTicker.onTick(client.level);
@@ -45,9 +53,6 @@ public class PolytoneFabric implements ClientModInitializer {
 
         });
 
-        WorldRenderEvents.END_MAIN.register(context -> {
-            PolytoneRenderTypes.onRenderLast();
-        });
 
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {

@@ -1,14 +1,13 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.contextualbar.ContextualBarRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(ContextualBarRenderer.class)
-public class ExperienceBarRendererMixin {
+public interface ContextualBarRendererMixin {
 
     @ModifyArg(method = "renderExperienceLevel", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V",
