@@ -1,7 +1,8 @@
-package net.mehvahdjukaar.polytone.content.item;
+package net.mehvahdjukaar.polytone.item;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 

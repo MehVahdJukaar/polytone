@@ -20,7 +20,7 @@ public class FaceBakeryMixin {
                                                         @Local(argsOnly = true) BlockElementRotation partRotation) {
         Vector3fc rot = ((IExtendedBlockElementRotation) (Object) partRotation).getRotation();
         if (rot != null) {
-            return instance.rotateYXZ(Mth.DEG_TO_RAD * rot.y(), Mth.DEG_TO_RAD * rot.x(), Mth.DEG_TO_RAD * rot.z());
+            return instance.rotateZYX(Mth.DEG_TO_RAD * rot.z(), Mth.DEG_TO_RAD * rot.y(), Mth.DEG_TO_RAD * rot.x());
         }
         return original.call(instance, angle, axis);
     }

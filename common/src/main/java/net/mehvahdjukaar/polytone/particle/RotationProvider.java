@@ -18,9 +18,9 @@ public interface RotationProvider {
 
     void applyRotation(SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks);
 
-    public static record CustomRotation(ParticleContextExpression xRot,
-                                        ParticleContextExpression yRot,
-                                        ParticleContextExpression zRot) implements RotationProvider {
+    record CustomRotation(ParticleContextExpression xRot,
+                                 ParticleContextExpression yRot,
+                                 ParticleContextExpression zRot) implements RotationProvider {
 
         public static final Codec<CustomRotation> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ParticleContextExpression.CODEC.optionalFieldOf("x_rot", ParticleContextExpression.ZERO).forGetter(CustomRotation::xRot),
