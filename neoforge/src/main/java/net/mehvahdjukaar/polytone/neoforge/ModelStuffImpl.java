@@ -51,7 +51,7 @@ public class ModelStuffImpl {
 
     public static void registerExtraModels(ModelEvent.RegisterStandalone event) {
         for (var entry : SPECIAL_MODELS.entrySet()) {
-//            event.register(entry.getValue(), SimpleUnbakedStandaloneModel.quadCollection(entry.getKey()));
+            event.register(entry.getValue(), SimpleUnbakedStandaloneModel.quadCollection(entry.getKey()));
         }
     }
 }
