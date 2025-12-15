@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
+import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.minecraft.client.gui.screens.inventory.SmithingScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

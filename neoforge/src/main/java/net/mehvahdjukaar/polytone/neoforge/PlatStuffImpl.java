@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.mixins.neoforge.*;
-import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
-import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.misc.Targets;
+import net.mehvahdjukaar.polytone.mixins.neoforge.*;
+import net.mehvahdjukaar.polytone.content.particle.ExtraDataParticleOptions;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -16,9 +16,8 @@ import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -256,22 +255,19 @@ public class PlatStuffImpl {
         return null;
     }
 
-    public static void setRenderType(Block block, ChunkSectionLayer renderType) {
-        ItemBlockRenderTypes.setRenderLayer(block, renderType);
-    }
+    public static boolean dontCheckLoading = false;
 
-    public static void setRenderType(Block block, Object renderType) {
+    public static void setRenderType(Block block, ChunkSectionLayer renderType) {
         dontCheckLoading = true;
-        if (renderType instanceof RenderType rt) {
-            ItemBlockRenderTypes.setRenderLayer(block, rt);
-        } //TODO: this might not cut it anymore in 1.21.5 too bad, one should use forge method instead
-        dontCheckLoading= false;
+        ItemBlockRenderTypes.setRenderLayer(block, renderType);
+        //TODO: this might not cut it anymore in 1.21.5 too bad, one should use forge method instead
+        dontCheckLoading = false;
     }
 
     public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX,
                                             int skyY, Vector3f combined) {
         //INSERTION BY AC...
-   //     if (CompatHandler.ALEX_CAVES) AlexsCavesCompat.applyACLightingColors(level, combined, partialTicks);
+        //     if (CompatHandler.ALEX_CAVES) AlexsCavesCompat.applyACLightingColors(level, combined, partialTicks);
         //TODO: add back
         //removed in 1.20.2
         //level.effects().adjustLightmapColors(level, partialTicks, skyDarken, skyLight, flicker, torchX, skyY, combined);
@@ -313,9 +309,6 @@ public class PlatStuffImpl {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static void doAddModels() {
     }
 
     private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();

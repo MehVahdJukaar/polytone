@@ -2,8 +2,8 @@ package net.mehvahdjukaar.polytone.fluid.neoforge;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
+import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
+import net.mehvahdjukaar.polytone.content.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.misc.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;

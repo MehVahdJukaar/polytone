@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.misc.reloader;
 import com.google.common.base.Stopwatch;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
-import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.SpecialModelsHandler;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -124,6 +124,6 @@ public class CompoundReloader implements PreparableReloadListener {
         for (var c : children) {
             c.earlyProcess(sharedState);
         }
-        PlatStuff.doAddModels();
+        SpecialModelsHandler.finalizeAdditions();
     }
 }

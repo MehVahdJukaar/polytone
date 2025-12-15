@@ -2,12 +2,12 @@ package net.mehvahdjukaar.polytone.neoforge;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
-import net.mehvahdjukaar.polytone.item.IPolytoneItem;
-import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
-import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
-import net.mehvahdjukaar.polytone.tabs.ItemPredicate;
-import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
+import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
+import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
+import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
+import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -46,7 +46,7 @@ public class PolytoneForge {
 
     public PolytoneForge(IEventBus modBus) {
         bus = modBus;
-        ModelStuffImpl.init(bus);
+        SpecialModelsHandlerImpl.init(bus);
         if (FMLEnvironment.getDist() == Dist.CLIENT) {
             Polytone.init(!FMLEnvironment.isProduction(), true);
             NeoForge.EVENT_BUS.register(this);
@@ -88,10 +88,8 @@ public class PolytoneForge {
     }
 
     @SubscribeEvent
-    public void renderStageEventAfterLevel(RenderLevelStageEvent event) {
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) {
-            PolytoneRenderTypes.onRenderLast();
-        }
+    public void renderStageEventAfterLevel(RenderLevelStageEvent.AfterLevel event) {
+        PolytoneRenderTypes.onRenderLast();
     }
 
     @SubscribeEvent

@@ -1,27 +1,27 @@
 package net.mehvahdjukaar.polytone;
 
-import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
-import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
-import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
-import net.mehvahdjukaar.polytone.block.BlockSetManager;
-import net.mehvahdjukaar.polytone.color.ColorManager;
-import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
+import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapperManager;
+import net.mehvahdjukaar.polytone.content.block.BlockPropertiesManager;
+import net.mehvahdjukaar.polytone.content.block.BlockSetManager;
+import net.mehvahdjukaar.polytone.content.color.ColorManager;
+import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
-import net.mehvahdjukaar.polytone.dimension.DimensionEffectsManager;
-import net.mehvahdjukaar.polytone.entity.EntityModifiersManager;
-import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
-import net.mehvahdjukaar.polytone.item.CustomItemModelsManager;
-import net.mehvahdjukaar.polytone.item.ItemModifiersManager;
-import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
-import net.mehvahdjukaar.polytone.noise.NoiseManager;
-import net.mehvahdjukaar.polytone.particle.CustomParticlesManager;
-import net.mehvahdjukaar.polytone.particle.ParticleModifiersManager;
-import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
-import net.mehvahdjukaar.polytone.slotify.GuiOverlayManager;
-import net.mehvahdjukaar.polytone.sound.SoundTypesManager;
-import net.mehvahdjukaar.polytone.tabs.CreativeTabsModifiersManager;
-import net.mehvahdjukaar.polytone.biome.BiomeKeysCache;
+import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsManager;
+import net.mehvahdjukaar.polytone.content.entity.EntityModifiersManager;
+import net.mehvahdjukaar.polytone.content.fluid.FluidPropertiesManager;
+import net.mehvahdjukaar.polytone.content.item.CustomItemModelsManager;
+import net.mehvahdjukaar.polytone.content.item.ItemModifiersManager;
+import net.mehvahdjukaar.polytone.content.lightmap.LightmapsManager;
+import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
+import net.mehvahdjukaar.polytone.content.particle.CustomParticlesManager;
+import net.mehvahdjukaar.polytone.content.particle.ParticleModifiersManager;
+import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
+import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
+import net.mehvahdjukaar.polytone.content.sound.SoundTypesManager;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabsModifiersManager;
+import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.misc.reloader.CompoundReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -141,7 +141,7 @@ public class Polytone {
     }
 
     public static void onEarlyPackLoad(ResourceManager manager) {
-        ModelStuff.clear();
+        SpecialModelsHandler.clear();
         COMPOUND_RELOADER.earlyProcess(new PreparableReloadListener.SharedState(manager));
     }
 

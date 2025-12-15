@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.texture.DayTimeTexture;
-import net.mehvahdjukaar.polytone.texture.PolytoneTextureTicker;
+import net.mehvahdjukaar.polytone.content.texture.DayTimeTexture;
+import net.mehvahdjukaar.polytone.content.texture.PolytoneTextureTicker;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.SpriteTicker;

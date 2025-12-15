@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.item.IPolytoneItem;
-import net.mehvahdjukaar.polytone.item.ItemModifier;
+import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
+import net.mehvahdjukaar.polytone.content.item.ItemModifier;
 import net.minecraft.world.item.Item;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;

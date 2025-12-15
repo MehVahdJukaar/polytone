@@ -14,11 +14,11 @@ import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
+import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
-import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
-import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
-import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
+import net.mehvahdjukaar.polytone.content.particle.ExtraDataParticleOptions;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
+import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.misc.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -297,10 +297,6 @@ public class PlatStuffImpl {
             acc.getSearchTabStacks().removeIf(target);
         }
 
-    }
-
-    public static void doAddModels() {
-        ModelStuffImpl.doAdd();
     }
 
     public static String getVersion() {

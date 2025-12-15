@@ -1,8 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
-import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
+import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
+import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;

@@ -1,36 +1,33 @@
 package net.mehvahdjukaar.polytone;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
-import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
+import net.mehvahdjukaar.polytone.content.particle.ExtraDataParticleOptions;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -63,11 +60,6 @@ public class PlatStuff {
 
     @ExpectPlatform
     public static void unregisterAllCustomColorResolves() {
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
-    public static void doAddModels() {
         throw new AssertionError();
     }
 
@@ -179,7 +171,7 @@ public class PlatStuff {
             }
             mapped.frozen = true;
         } else {
-            Polytone.LOGGER.error("Unknown registry type{}", reg);
+            Polytone.LOGGER.error("Unknown registry type {}", reg);
         }
         return o;
     }
@@ -190,13 +182,8 @@ public class PlatStuff {
             unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
             mapped.frozen = true;
         } else {
-            Polytone.LOGGER.error("Unknown registry type{}", reg);
+            Polytone.LOGGER.error("Unknown registry type {}", reg);
         }
-
-        if (reg.containsKey(id)) {
-            int aaa = 1;
-        }
-
     }
 
     private static <T> Holder.Reference<T> unRegister(MappedRegistry<T> reg, ResourceKey<T> key) {
@@ -223,5 +210,20 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @ExpectPlatform
+    public static void clear() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static void addSpecialModel(ResourceLocation id) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    @Nullable
+    public static QuadCollection getSpecialModel(ResourceLocation id) {
+        throw new AssertionError();
+    }
 
 }
