@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.fabric;
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.biome.v1.BiomeModificationContext;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -12,6 +13,7 @@ import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
+import net.fabricmc.fabric.mixin.dimension.DimensionOptionsRegistryHolderMixin;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
@@ -27,6 +29,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleResources;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.RegistryAccess;
@@ -92,9 +95,9 @@ public class PlatStuffImpl {
         return FabricLoader.getInstance().isModLoaded(namespace);
     }
 
-//    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation id) {
-//        return DimensionRenderingRegistry.getDimensionEffects(id);
-//    }
+    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation id) {
+        return DimensionSpecialEffects.EFFECTS.get(id);
+    }
 
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         try {
@@ -330,4 +333,5 @@ public class PlatStuffImpl {
 
         MY_CUSTOM_RESOLVERS.clear();
     }
+
 }

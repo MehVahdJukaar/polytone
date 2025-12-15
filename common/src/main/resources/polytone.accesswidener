@@ -10,6 +10,7 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockState
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction;
 
 accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Collection;)V
+accessible field net/minecraft/client/renderer/DimensionSpecialEffects EFFECTS Lit/unimi/dsi/fastutil/objects/Object2ObjectMap;
 
 accessible field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
 mutable field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
