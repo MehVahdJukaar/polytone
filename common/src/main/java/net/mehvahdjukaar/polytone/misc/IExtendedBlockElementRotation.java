@@ -8,6 +8,4 @@ public interface IExtendedBlockElementRotation {
 
     void setRotation(Vector3f axis);
 
-
-
 }

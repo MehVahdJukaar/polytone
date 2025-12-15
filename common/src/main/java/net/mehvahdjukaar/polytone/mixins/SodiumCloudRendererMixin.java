@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.caffeinemc.mods.sodium.client.render.immediate.CloudRenderer;

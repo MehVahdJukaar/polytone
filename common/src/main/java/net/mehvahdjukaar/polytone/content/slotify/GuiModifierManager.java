@@ -2,8 +2,8 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.misc.Parsed;
+import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;

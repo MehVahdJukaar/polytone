@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.content.tabs;
 
 
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;

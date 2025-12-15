@@ -1,7 +1,5 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;

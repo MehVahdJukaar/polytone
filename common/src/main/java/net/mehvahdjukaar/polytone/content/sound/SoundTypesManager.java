@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.misc.Parsed;
 import net.mehvahdjukaar.polytone.misc.data.CsvUtils;
 import net.mehvahdjukaar.polytone.misc.data.MapRegistry;
-import net.mehvahdjukaar.polytone.misc.Parsed;
 import net.mehvahdjukaar.polytone.misc.reloader.PartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
@@ -18,7 +18,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.SoundType;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resources> {
 

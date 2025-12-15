@@ -1,13 +1,14 @@
 package net.mehvahdjukaar.polytone;
 
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapperManager;
+import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.content.block.BlockSetManager;
 import net.mehvahdjukaar.polytone.content.color.ColorManager;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.compat.CompatHandler;
-import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.content.entity.EntityModifiersManager;
 import net.mehvahdjukaar.polytone.content.fluid.FluidPropertiesManager;
@@ -21,7 +22,6 @@ import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.content.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabsModifiersManager;
-import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.misc.reloader.CompoundReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
