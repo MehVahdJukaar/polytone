@@ -66,18 +66,18 @@ public class PlatStuffImpl {
     }
 
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
-        return ((ParticleEngineAccessor) Minecraft.getInstance().particleEngine)
-                .getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getKey(type));
+        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
+        return particleEngine.resourceManager.getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getKey(type));
     }
 
     public static void setParticleProvider(ParticleType<?> type, ParticleProvider<?> provider) {
-        ParticleEngineAccessor engine = (ParticleEngineAccessor) Minecraft.getInstance().particleEngine;
-        engine.getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getKey(type), provider);
+        ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
+        particleEngine.resourceManager.getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getKey(type), provider);
     }
 
     public static void unregisterParticleProvider(ResourceLocation id) {
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
-        ((ParticleEngineAccessor) particleEngine).getProviders().remove(id);
+        particleEngine.resourceManager.getProviders().remove(id);
     }
 
     public static ParticleType<ExtraDataParticleOptions> makeParticleType(boolean forceSpawn) {
