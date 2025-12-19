@@ -45,7 +45,7 @@ public abstract class GuiRenderStateMixin implements GuiDepthTargetAware {
     }
 
 
-    @Inject(method = "findAppropriateNode", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "findAppropriateNode", at = @At("HEAD"))
     public void polytone$findOrSqueezeInNewNode(ScreenArea screenArea, CallbackInfoReturnable<Boolean> cir) {
         if (polytone$wantedNodeTarget == null) return;
         ScreenRectangle screenRectangle = screenArea.bounds();

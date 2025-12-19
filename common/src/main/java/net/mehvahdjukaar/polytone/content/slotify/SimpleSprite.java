@@ -4,9 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Optional;
@@ -30,12 +28,9 @@ public record SimpleSprite(ResourceLocation texture, int x, int y, int width, in
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        var material = new Material(Sheets.GUI_SHEET, texture);
-        TextureAtlasSprite sprite = guiGraphics.getSprite(material);
         Runnable render = () -> {
-            guiGraphics.blit(texture,
-                    x, x + width, y, y + height,
-                    sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1());
+            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, texture,
+                    x, x + width, y, y + height);
         };
         GuiDepthTarget.renderAt(depth, guiGraphics, render);
 
