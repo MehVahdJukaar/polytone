@@ -18,10 +18,7 @@
     "ItemBlockRenderTypesMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
-    "ParticleEngineAccessor",
     "TerrainParticleMixin",
-    "ParticleEngineAccessor",
-    "TerrainParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1
