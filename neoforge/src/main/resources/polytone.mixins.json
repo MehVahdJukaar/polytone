@@ -14,11 +14,11 @@
     "CreativeTabAccessor",
     "IClientFluidTypeExtensionsMixin",
     "InventoryScreenMixin",
-    "ModelBlockRendererMixin",
     "ItemBlockRenderTypesMixin",
+    "ModelBlockRendererMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
-    "TerrainParticleMixin",
+    "TerrainParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

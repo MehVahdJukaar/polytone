@@ -1,1 +1,1 @@
-fixed an issue with dimension mods
+fixed fabrix mixin due to fabric being stupid
