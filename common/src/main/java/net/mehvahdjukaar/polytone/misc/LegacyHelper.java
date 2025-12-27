@@ -20,7 +20,7 @@ import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsModifier;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionTarget;
 import net.mehvahdjukaar.polytone.content.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.misc.struc.ArrayImage;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
