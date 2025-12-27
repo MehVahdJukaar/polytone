@@ -8,6 +8,8 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.jspecify.annotations.NonNull;
 
 import java.util.function.Consumer;
 
