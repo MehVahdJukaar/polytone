@@ -8,7 +8,6 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.Holder;
@@ -75,10 +74,10 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
-    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation type) {
-        throw new AssertionError();
-    }
+//    @ExpectPlatform
+    public static DimensionSpecialEffects getDimensionEffects(Identifier type) {
+//        throw new AssertionError();
+//    }
 
     @ExpectPlatform
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {

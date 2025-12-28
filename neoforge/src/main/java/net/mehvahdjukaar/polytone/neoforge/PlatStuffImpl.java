@@ -15,7 +15,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.RegistryAccess;
@@ -40,7 +39,6 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.ColorResolverManager;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
-import net.neoforged.neoforge.client.DimensionSpecialEffectsManager;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
@@ -111,9 +109,9 @@ public class PlatStuffImpl {
         return ModList.get().isLoaded(namespace);
     }
 
-    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation id) {
-        return DimensionSpecialEffectsManager.getForType(id);
-    }
+    public static DimensionSpecialEffects getDimensionEffects(Identifier id) {
+//        return DimensionSpecialEffectsManager.getForType(id);
+//    }
 
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         //forge original biome effect object is never user and redirected by coremod

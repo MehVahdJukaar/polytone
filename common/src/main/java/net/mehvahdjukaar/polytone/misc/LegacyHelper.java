@@ -16,7 +16,6 @@ import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IColormapNumberProvider;
-import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsModifier;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionTarget;
 import net.mehvahdjukaar.polytone.content.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.misc.struc.ArrayImage;
@@ -513,58 +512,58 @@ public class LegacyHelper {
     }
 
     // fot OF fog and sky. shit code...
-    private static void addConvertedBlockProperties(Map<ResourceLocation, Parsed<BlockPropertyModifier>> modifiers, Map<ResourceLocation, ArrayImage> textures) {
-        String[] names = new String[]{"overworld", "the_nether", "the_end"};
-        Map<ResourceLocation, Parsed<DimensionEffectsModifier>> converted = new HashMap<>();
-        for (int i = 0; i <= 2; i++) {
-            IColorGetter skyCol;
-            IColorGetter fogCol;
-            boolean skyEnabled;
-            boolean fogEnabled;
-            {
-                ResourceLocation skyKey = ResourceLocation.parse("sky" + i);
-                ResourceLocation skyKey2 = ResourceLocation.parse("skycolor" + i);
-                var skyMod = modifiers.get(skyKey);
-                if (skyMod == null){
-                    skyMod = modifiers.get(skyKey2);
-                    skyKey = skyKey2;
-                }
-                ArrayImage skyImage = textures.get(skyKey);
-
-                skyCol = skyMod != null ? skyMod.getResultOrPartial().getColormap() : (skyImage == null ? null : Colormap.createDefTriangle());
-                if (skyCol != null) {
-                    ColormapsManager.tryAcceptingTexture(textures, skyKey, skyCol, new HashSet<>(), true);
-                }
-                skyEnabled = skyMod == null || skyMod.isEnabled();
-            }
-            {
-                ResourceLocation fogKey = ResourceLocation.parse("fog" + i);
-                ResourceLocation fogKey2 = ResourceLocation.parse("fogcolor" + i);
-                var fogMod = modifiers.get(fogKey);
-                if (fogMod == null){
-                    fogMod = modifiers.get(fogKey2);
-                    fogKey = fogKey2;
-                }
-                ArrayImage fogImage = textures.get(fogKey);
-
-                fogCol = fogMod != null ? fogMod.getResultOrPartial().getColormap() : (fogImage == null ? null : Colormap.createDefTriangle());
-                if (fogCol != null) {
-                    ColormapsManager.tryAcceptingTexture(textures, fogKey, fogCol, new HashSet<>(), true);
-                }
-                fogEnabled = fogMod == null || fogMod.isEnabled();
-            }
-            if (fogCol != null || skyCol != null) {
-                var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(),
-                        Optional.empty(), Optional.empty(), Optional.empty(),
-                        Optional.ofNullable(fogCol), Optional.empty(), Optional.ofNullable(skyCol), Optional.empty(),
-                        false, false, Optional.empty(), DimensionTarget.EMPTY);
-
-                ResourceLocation id = ResourceLocation.parse(names[i]);
-                boolean enabled = fogEnabled || skyEnabled;
-                var parsedMod = Parsed.lowPriority(mod, id, enabled);
-                converted.put(id, parsedMod);
-            }
-        }
-        Polytone.DIMENSION_MODIFIERS.addConvertedBlockProperties(converted);
+    private static void addConvertedBlockProperties(Map<Identifier, Parsed<BlockPropertyModifier>> modifiers, Map<Identifier, ArrayImage> textures) {
+//        String[] names = new String[]{"overworld", "the_nether", "the_end"};
+//        Map<Identifier, Parsed<DimensionEffectsModifier>> converted = new HashMap<>();
+//        for (int i = 0; i <= 2; i++) {
+//            IColorGetter skyCol;
+//            IColorGetter fogCol;
+//            boolean skyEnabled;
+//            boolean fogEnabled;
+//            {
+//                Identifier skyKey = Identifier.parse("sky" + i);
+//                Identifier skyKey2 = Identifier.parse("skycolor" + i);
+//                var skyMod = modifiers.get(skyKey);
+//                if (skyMod == null){
+//                    skyMod = modifiers.get(skyKey2);
+//                    skyKey = skyKey2;
+//                }
+//                ArrayImage skyImage = textures.get(skyKey);
+//
+//                skyCol = skyMod != null ? skyMod.getResultOrPartial().getColormap() : (skyImage == null ? null : Colormap.createDefTriangle());
+//                if (skyCol != null) {
+//                    ColormapsManager.tryAcceptingTexture(textures, skyKey, skyCol, new HashSet<>(), true);
+//                }
+//                skyEnabled = skyMod == null || skyMod.isEnabled();
+//            }
+//            {
+//                Identifier fogKey = Identifier.parse("fog" + i);
+//                Identifier fogKey2 = Identifier.parse("fogcolor" + i);
+//                var fogMod = modifiers.get(fogKey);
+//                if (fogMod == null){
+//                    fogMod = modifiers.get(fogKey2);
+//                    fogKey = fogKey2;
+//                }
+//                ArrayImage fogImage = textures.get(fogKey);
+//
+//                fogCol = fogMod != null ? fogMod.getResultOrPartial().getColormap() : (fogImage == null ? null : Colormap.createDefTriangle());
+//                if (fogCol != null) {
+//                    ColormapsManager.tryAcceptingTexture(textures, fogKey, fogCol, new HashSet<>(), true);
+//                }
+//                fogEnabled = fogMod == null || fogMod.isEnabled();
+//            }
+//            if (fogCol != null || skyCol != null) {
+//                var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(),
+//                        Optional.empty(), Optional.empty(), Optional.empty(),
+//                        Optional.ofNullable(fogCol), Optional.empty(), Optional.ofNullable(skyCol), Optional.empty(),
+//                        false, false, Optional.empty(), DimensionTarget.EMPTY);
+//
+//                Identifier id = Identifier.parse(names[i]);
+//                boolean enabled = fogEnabled || skyEnabled;
+//                var parsedMod = Parsed.lowPriority(mod, id, enabled);
+//                converted.put(id, parsedMod);
+//            }
+//        }
+//        Polytone.DIMENSION_MODIFIERS.addConvertedBlockProperties(converted);
     }
 }
