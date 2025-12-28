@@ -1,6 +1,9 @@
 package net.mehvahdjukaar.polytone.neoforge;
 
+import com.github.alexthe666.citadel.repack.jaad.Main;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import cpw.mods.cl.ModuleClassLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
@@ -23,8 +26,10 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
@@ -94,7 +99,7 @@ public class PolytoneForge {
 
     @SubscribeEvent
     public void renderStageEventAfterLevel(RenderLevelStageEvent event) {
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL ) {
             PolytoneRenderTypes.onRenderLast();
         }
     }

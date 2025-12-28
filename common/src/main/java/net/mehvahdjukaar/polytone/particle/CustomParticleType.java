@@ -469,7 +469,6 @@ public class CustomParticleType implements CustomParticleFactory {
         }
 
         public VertexConsumer modifyParticleConsumer(VertexConsumer original) {
-         //   if(true)return original;
             if (this == ADDITIVE_TRANSLUCENT) {
                 return PolytoneRenderTypes.DEFERRED_BUFFER_SOURCE.getBuffer(
                         PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE);

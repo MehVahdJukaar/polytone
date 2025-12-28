@@ -5,9 +5,11 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -66,8 +68,11 @@ public class CompoundReloader implements PreparableReloadListener {
     }
 
     public void applyWithLevel(RegistryAccess registryAccess, boolean firstLogin) {
+        Minecraft mc = Minecraft.getInstance();
+
         Stopwatch stopwatch = Stopwatch.createStarted();
         resetWithLevel(false);
+
 
         RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
 
@@ -101,7 +106,7 @@ public class CompoundReloader implements PreparableReloadListener {
         Polytone.LOGGER.info("Reloaded Polytone Resources in {} ms", stopwatch.elapsed().toMillis());
 
         //refresh player inventory menu as its the only one its not re made. needed for value mod. ugly
-        var player = Minecraft.getInstance().player;
+        var player = mc.player;
         if (player != null) {
             var container = player.containerMenu;
             var inv = player.inventoryMenu;
@@ -111,8 +116,12 @@ public class CompoundReloader implements PreparableReloadListener {
                     player.containerMenu = player.inventoryMenu;
                 }
             }
+
+            if (mc.options.graphicsMode().get() == GraphicsStatus.FABULOUS) {
+                player.sendSystemMessage(Component.translatable("message.polytone.fabulous_warning") );
+            }
         }
-        Level level = Minecraft.getInstance().level;
+        Level level = mc.level;
         if (level instanceof ClientLevel cl) {
             cl.clearTintCaches();
         }

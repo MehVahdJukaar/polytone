@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -13,7 +12,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL30;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -33,21 +32,23 @@ public class PolytoneRenderTypes extends RenderType {
     }
 
 
-    //unused now
+    //kind of not used since particle render type modify buffer replaces it
     public static final ParticleRenderType PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE = new ParticleRenderType() {
 
         @Override
         public BufferBuilder begin(Tesselator builder, TextureManager textureManager) {
+          /*
             Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
             RenderSystem.activeTexture(GL13.GL_TEXTURE2);
             RenderSystem.activeTexture(GL13.GL_TEXTURE0);
             //because of custom render type fuckery...
-
             RenderSystem.setShader(() -> noAlphaCutoffShader);
-            RenderSystem.depthMask(false);
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
+            RenderSystem.depthMask(false);
             RenderSystem.enableBlend();
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+
+           */
             return builder.begin(VertexFormat.Mode.QUADS, PARTICLE);
         }
 
@@ -71,7 +72,6 @@ public class PolytoneRenderTypes extends RenderType {
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.depthMask(true);
-
     });
 
     private static final TextureStateShard PARTICLE_SHEET = new TextureStateShard(TextureAtlas.LOCATION_PARTICLES, false, false);
@@ -89,7 +89,7 @@ public class PolytoneRenderTypes extends RenderType {
                     .setShaderState(PARTICLE_SHADER_STATE)
                     .setWriteMaskState(WriteMaskStateShard.COLOR_WRITE)
                     .setTransparencyState(ADDITIVE_TRANSLUCENT_TRANSPARENCY)
-                    // .setOutputState(TRANSLUCENT_TARGET)
+                    // .setOutputState(CLOUDS_TARGET) //for fabulous. it will draw this onto its own target
                     .createCompositeState(false)
     );
 
@@ -104,7 +104,7 @@ public class PolytoneRenderTypes extends RenderType {
                     .setShaderState(RENDERTYPE_TRANSLUCENT_SHADER)
                     .setTextureState(BLOCK_SHEET_MIPPED)
                     .setTransparencyState(ADDITIVE_TRANSLUCENT_TRANSPARENCY)
-                    .setOutputState(TRANSLUCENT_TARGET)
+                    //  .setOutputState(TRANSLUCENT_TARGET)
                     .createCompositeState(true)
     );
 
@@ -115,7 +115,7 @@ public class PolytoneRenderTypes extends RenderType {
             RenderSystem.getModelViewMatrix().set(lastModelViewMatrix);
             DEFERRED_BUFFER_SOURCE.endBatches();
             RenderSystem.getModelViewMatrix().set(last);
-        }else {
+        } else {
             DEFERRED_BUFFER_SOURCE.endBatches();
         }
     }
@@ -143,11 +143,15 @@ public class PolytoneRenderTypes extends RenderType {
         }
 
         public void endBatches() {
+            //just making sure
+            int currentFB = GlStateManager.getBoundFramebuffer();
+            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
             endBatch(ADDITIVE_TRANSLUCENT_BLOCK);
             endBatch(ADDITIVE_TRANSLUCENT_PARTICLE);
             for (RenderType type : delayed) {
                 endBatch(type);
             }
+            GlStateManager._glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, currentFB);
         }
 
         @Override

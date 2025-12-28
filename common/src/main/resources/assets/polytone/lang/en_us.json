@@ -1,5 +1,6 @@
 {
   "toast.polytone.load_fail": "Pack has errors. Check logs/polytone.log",
   "toast.polytone.lazy_load_fail": "Polytone Late Resource Reload failed",
-  "toast.polytone.early_load_fail": "Polytone Early Resource Reload failed"
+  "toast.polytone.early_load_fail": "Polytone Early Resource Reload failed",
+  "message.polytone.fabulous_warning": "Fabulous Graphics detected! Some polytone features may not work correctly with it enabled."
 }

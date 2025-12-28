@@ -1,1 +1,1 @@
-model rotations can use x y z rotations instead of axis one
+added a warning when fabulous mode is enabled
