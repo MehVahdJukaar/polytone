@@ -18,8 +18,11 @@ public abstract class FishingHookRendererMixin {
 
     @Inject(method = "stringVertex",
             at = @At(value = "HEAD"))
-    private static void polytone$changeLineOffset(float x, float y, float z, VertexConsumer consumer, PoseStack.Pose pose, float f, float g, CallbackInfo ci,
-                                                  @Local(ordinal = 0, argsOnly = true) LocalFloatRef xR, @Local(ordinal = 1, argsOnly = true) LocalFloatRef yR, @Local(ordinal = 2, argsOnly = true) LocalFloatRef zR) {
+    private static void polytone$changeLineOffset(float f, float g, float h, VertexConsumer vertexConsumer,
+                                                  PoseStack.Pose pose, float i, float j, float k, CallbackInfo ci,
+                                                  @Local(ordinal = 0, argsOnly = true) LocalFloatRef xR,
+                                                  @Local(ordinal = 1, argsOnly = true) LocalFloatRef yR,
+                                                  @Local(ordinal = 2, argsOnly = true) LocalFloatRef zR) {
         var offset = Polytone.COLORS.getFishingLineOffset();
         if (offset == null) return;
         xR.set((xR.get() + offset.x()));
