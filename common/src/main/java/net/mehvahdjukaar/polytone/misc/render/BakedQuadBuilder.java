@@ -57,7 +57,7 @@ public interface BakedQuadBuilder extends VertexConsumer {
 
 
     @Override
-    default BakedQuadBuilder addVertex(Matrix4f matrix, float x, float y, float z) {
+    default @NonNull BakedQuadBuilder addVertex(Matrix4fc matrix, float x, float y, float z) {
         VertexConsumer.super.addVertex(matrix, x, y, z);
         return this;
     }
