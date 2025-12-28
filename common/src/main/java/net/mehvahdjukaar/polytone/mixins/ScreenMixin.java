@@ -23,7 +23,7 @@ public abstract class ScreenMixin implements SlotifyScreen {
     private ScreenModifier polytone$modifier = null;
 
     //we cant access screen title during consturciton so we delay
-    @Inject(method = "init(Lnet/minecraft/client/Minecraft;II)V", at = @At("TAIL"))
+    @Inject(method = "init(II)V", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
         polytone$modifier = Polytone.SLOTIFY.getGuiModifier((Screen) (Object) this);
     }
