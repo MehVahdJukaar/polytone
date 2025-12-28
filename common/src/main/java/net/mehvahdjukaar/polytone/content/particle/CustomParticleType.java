@@ -20,8 +20,9 @@ import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.BlockPos;
@@ -46,7 +47,7 @@ import java.util.Optional;
 public class CustomParticleType implements CustomParticleFactory {
 
     private static BlockState STATE_HACK = Blocks.AIR.defaultBlockState();
-    private static SingleQuadParticle.Layer CUSTOM_LAYER = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT);
+    private static SingleQuadParticle.Layer CUSTOM_LAYER = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_TERRAIN);
     private static SingleQuadParticle.Layer ADDITIVE_TRANSLUCENT = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE);
 
     private final RenderMode renderType;
@@ -464,11 +465,12 @@ public class CustomParticleType implements CustomParticleFactory {
 
         public RenderType getBlock() {
             return switch (this) {
-                case TERRAIN ->RenderType.solid();
+                case TERRAIN -> RenderTypes.solidMovingBlock();
                 case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE;
-                case LIT, INVISIBLE -> RenderType.cutout();
-                case TRANSLUCENT -> RenderType.cutout();
-                default -> RenderType.cutoutMipped();
+                case LIT, INVISIBLE -> RenderTypes.cutoutMovingBlock();
+                case TRANSLUCENT -> RenderTypes.cutoutMovingBlock();
+                // default was cutout mipped but it no longer exists
+                default -> RenderTypes.cutoutMovingBlock();
             };
         }
 
@@ -486,19 +488,19 @@ public class CustomParticleType implements CustomParticleFactory {
             return this.name().toLowerCase(Locale.ROOT);
         }
 
-        public VertexConsumer modifyParticleConsumer(VertexConsumer original) {
-         //   if(true)return original;
-            if (this == ADDITIVE_TRANSLUCENT) {
-                return PolytoneRenderTypes.DEFERRED_BUFFER_SOURCE.getBuffer(
-                        PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE);
-            } else return original;
-        }
-
-        public VertexConsumer modifyBlockConsumer(VertexConsumer original) {
-            return PolytoneRenderTypes.DEFERRED_BUFFER_SOURCE.getBuffer(
-                    this.getBlock()
-            );
-        }
+//        public VertexConsumer modifyParticleConsumer(VertexConsumer original) {
+//         //   if(true)return original;
+//            if (this == ADDITIVE_TRANSLUCENT) {
+//                return PolytoneRenderTypes.DEFERRED_BUFFER_SOURCE.getBuffer(
+//                        PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE);
+//            } else return original;
+//        }
+//
+//        public VertexConsumer modifyBlockConsumer(VertexConsumer original) {
+//            return PolytoneRenderTypes.DEFERRED_BUFFER_SOURCE.getBuffer(
+//                    this.getBlock()
+//            );
+//        }
     }
 
     //TODO: merge this and particle modifier
