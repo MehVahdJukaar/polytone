@@ -8,7 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,31 +21,31 @@ public record Targets(List<Entry> entries) {
 
     public static final Targets EMPTY = new Targets(List.of());
 
-    public static Targets ofIds(ResourceLocation... blocks) {
+    public static Targets ofIds(Identifier... blocks) {
         List<Entry> entries = new ArrayList<>();
-        for (ResourceLocation id : blocks) {
+        for (Identifier id : blocks) {
             entries.add(new SimpleLocation(id));
         }
         return new Targets(entries);
     }
 
-    public static Targets ofIds(Set<ResourceLocation> blocks) {
+    public static Targets ofIds(Set<Identifier> blocks) {
         List<Entry> entries = new ArrayList<>();
-        for (ResourceLocation id : blocks) {
+        for (Identifier id : blocks) {
             entries.add(new SimpleLocation(id));
         }
         return new Targets(entries);
     }
 
-    public static Targets ofOptionalIds(Set<ResourceLocation> blocks) {
+    public static Targets ofOptionalIds(Set<Identifier> blocks) {
         List<Entry> entries = new ArrayList<>();
-        for (ResourceLocation id : blocks) {
+        for (Identifier id : blocks) {
             entries.add(new OptionalEntry(new SimpleLocation(id), false));
         }
         return new Targets(entries);
     }
 
-    public <T> Collection<Holder<T>> compute(ResourceLocation fileId, HolderLookup.RegistryLookup<T> registry) {
+    public <T> Collection<Holder<T>> compute(Identifier fileId, HolderLookup.RegistryLookup<T> registry) {
 
         Set<Holder<T>> set = new HashSet<>();
         ResourceKey<T> key = ResourceKey.create((ResourceKey<? extends Registry<T>>) registry.key(), fileId);
@@ -81,12 +81,12 @@ public record Targets(List<Entry> entries) {
         return new Targets(mergeList(entries, other.entries));
     }
 
-    public void addSimple(@NotNull ResourceLocation id) {
+    public void addSimple(@NotNull Identifier id) {
         Entry simpleLocation = new SimpleLocation(id);
         this.entries.add(simpleLocation);
     }
 
-    public void addTag(ResourceLocation id) {
+    public void addTag(Identifier id) {
         Entry tagLocation = new TagLocation(id);
         this.entries.add(tagLocation);
     }
@@ -129,8 +129,8 @@ public record Targets(List<Entry> entries) {
         }
     }
 
-    private record SimpleLocation(@NotNull ResourceLocation id) implements Entry {
-        public static final Codec<SimpleLocation> SIMPLE_CODEC = ResourceLocation.CODEC
+    private record SimpleLocation(@NotNull Identifier id) implements Entry {
+        public static final Codec<SimpleLocation> SIMPLE_CODEC = Identifier.CODEC
                 .xmap(SimpleLocation::new, s -> s.id);
 
         @Override
@@ -144,10 +144,10 @@ public record Targets(List<Entry> entries) {
 
     }
 
-    private record TagLocation(ResourceLocation id) implements Entry {
+    private record TagLocation(Identifier id) implements Entry {
         public static final Codec<TagLocation> TAG_CODEC = com.mojang.serialization.Codec.STRING.flatXmap(s -> {
                     if (s.startsWith("#")) {
-                        return ResourceLocation.read(s.substring(1)).map(TagLocation::new);
+                        return Identifier.read(s.substring(1)).map(TagLocation::new);
                     } else return DataResult.error(() -> "Tag location must start with #");
                 },
                 id -> DataResult.success(id.toString()));

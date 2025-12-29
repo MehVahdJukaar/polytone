@@ -5,16 +5,16 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
 
-public record SimpleSprite(ResourceLocation texture, int x, int y, int width, int height,
+public record SimpleSprite(Identifier texture, int x, int y, int width, int height,
                            Optional<GuiDepthTarget> depth,
                            Optional<String> tooltip) implements Renderable {//, Optional<ScreenSupplier> screenSupp) {
 
     public static final Codec<SimpleSprite> CODEC = RecordCodecBuilder.create(i -> i.group(
-            ResourceLocation.CODEC.fieldOf("texture").forGetter(SimpleSprite::texture),
+            Identifier.CODEC.fieldOf("texture").forGetter(SimpleSprite::texture),
             Codec.INT.fieldOf("x").forGetter(SimpleSprite::x),
             Codec.INT.fieldOf("y").forGetter(SimpleSprite::y),
             Codec.INT.fieldOf("width").forGetter(SimpleSprite::width),

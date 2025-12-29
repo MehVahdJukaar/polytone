@@ -185,7 +185,7 @@ mutable field net/minecraft/client/renderer/DimensionSpecialEffects hasEndFlashe
 accessible field net/minecraft/client/renderer/DimensionSpecialEffects constantAmbientLight Z
 mutable field net/minecraft/client/renderer/DimensionSpecialEffects constantAmbientLight Z
 
-accessible method net/minecraft/client/gui/GuiGraphics innerBlit (Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/ResourceLocation;IIIIFFFFI)V
+accessible method net/minecraft/client/gui/GuiGraphics innerBlit (Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIFFFFI)V
 accessible class net/minecraft/client/gui/render/state/GuiRenderState$Node
 accessible method net/minecraft/client/gui/render/state/GuiRenderState$Node <init> (Lnet/minecraft/client/gui/render/state/GuiRenderState$Node;)V
 accessible method net/minecraft/client/renderer/fog/FogRenderer computeFogColor (Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IFZ)Lorg/joml/Vector4f;

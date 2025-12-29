@@ -7,16 +7,16 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
 
-public record RelativeSprite(ResourceLocation texture, int x, int y, Optional<GuiDepthTarget> depth, int width,
+public record RelativeSprite(Identifier texture, int x, int y, Optional<GuiDepthTarget> depth, int width,
                              int height) {
 
 
     public static final Codec<RelativeSprite> CODEC = RecordCodecBuilder.create(i -> i.group(
-            ResourceLocation.CODEC.fieldOf("texture").forGetter(RelativeSprite::texture),
+            Identifier.CODEC.fieldOf("texture").forGetter(RelativeSprite::texture),
             Codec.INT.optionalFieldOf("x_inc", 0).forGetter(RelativeSprite::x),
             Codec.INT.optionalFieldOf("y_inc", 0).forGetter(RelativeSprite::y),
             GuiDepthTarget.CODEC.optionalFieldOf("depth").forGetter(RelativeSprite::depth),

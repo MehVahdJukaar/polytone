@@ -17,7 +17,7 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -52,7 +52,7 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
         var jsons = resources.jsons();
         var textures = new HashMap<>(resources.textures());
 
-        Set<ResourceLocation> usedTextures = new HashSet<>();
+        Set<Identifier> usedTextures = new HashSet<>();
 
         Parsed.SortedMap<ParticleModifier> parsedModifiers = Parsed.batchParseOrPartial(jsons,
                 ParticleModifier.CODEC,
@@ -62,7 +62,7 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
-            ResourceLocation id = entry.getKey();
+            Identifier id = entry.getKey();
             Parsed<ParticleModifier> parsed = entry.getValue();
             ParticleModifier modifier = parsed.getResultOrPartial();
 
@@ -82,7 +82,7 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
         textures.keySet().removeAll(usedTextures);
 
         for (var t : textures.entrySet()) {
-            ResourceLocation id = t.getKey();
+            Identifier id = t.getKey();
             Colormap defaultColormap = Colormap.createDefTriangle();
             ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
 
@@ -92,7 +92,7 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
         if (this.xpOrbReplaceJson != null) {
 
             var v = Parsed.parseAlways(ParticleTypes.CODEC, xpOrbReplaceJson,
-                    ops, ResourceLocation.withDefaultNamespace("xp_orb"), "XP orb modifier");
+                    ops, Identifier.withDefaultNamespace("xp_orb"), "XP orb modifier");
             if (v.isEnabled()) {
                 this.xpOrbReplaceParticle = v.getResultOrPartial();
             }
@@ -107,7 +107,7 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
     }
 
 
-    private void addModifier(ResourceLocation pathId, ParticleModifier mod) {
+    private void addModifier(Identifier pathId, ParticleModifier mod) {
         for (var particle : mod.targets().compute(pathId, BuiltInRegistries.PARTICLE_TYPE)) {
             //can have multiple
             particleModifiers.put(particle.value(), mod);
@@ -119,7 +119,7 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
         particleModifiers.clear();
     }
 
-    public void addCustomParticleColor(ResourceLocation id, String color) {
+    public void addCustomParticleColor(Identifier id, String color) {
         var opt = BuiltInRegistries.PARTICLE_TYPE.getOptional(id);
         opt.ifPresent(t -> particleModifiers.put(t, ParticleModifier.ofColor(color)));
     }

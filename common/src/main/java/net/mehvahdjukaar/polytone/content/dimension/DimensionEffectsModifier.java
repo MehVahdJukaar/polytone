@@ -12,7 +12,7 @@ import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -108,7 +108,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
         return this.sunsetColor.orElse(null);
     }
 
-    public DimensionEffectsModifier applyInplace(ResourceLocation dimensionId) {
+    public DimensionEffectsModifier applyInplace(Identifier dimensionId) {
         DimensionSpecialEffects effects = PlatStuff.getDimensionEffects(dimensionId);
 
         Optional<Either<Float, BlockContextExpression>> oldCloud = Optional.empty();

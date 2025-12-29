@@ -29,7 +29,7 @@ public abstract class GenericDirectorySpriteSource implements SpriteSource {
     public void run(ResourceManager resourceManager, SpriteSource.Output output) {
         FileToIdConverter fileToIdConverter = new FileToIdConverter(this.sourcePath, ".png");
         fileToIdConverter.listMatchingResources(resourceManager).forEach((resourceLocation, resource) -> {
-            ResourceLocation resourceLocation2 = fileToIdConverter.fileToId(resourceLocation).withPrefix(this.idPrefix);
+            Identifier resourceLocation2 = fileToIdConverter.fileToId(resourceLocation).withPrefix(this.idPrefix);
             output.add(resourceLocation2, resource);
         });
     }

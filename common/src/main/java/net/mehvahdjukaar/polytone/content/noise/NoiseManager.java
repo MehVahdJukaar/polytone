@@ -9,7 +9,7 @@ import net.mehvahdjukaar.polytone.misc.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 
@@ -35,7 +35,7 @@ public class NoiseManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
         for (var e : jsons.entrySet()) {
             var id = e.getKey();

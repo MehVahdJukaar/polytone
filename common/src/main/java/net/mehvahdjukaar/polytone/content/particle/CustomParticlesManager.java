@@ -19,7 +19,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -95,7 +95,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
         ParticleResources particleResources = Minecraft.getInstance().particleEngine.resourceManager;
 
@@ -164,7 +164,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
         return customParticleFactories;
     }
 
-    public boolean isDynamicParticle(ResourceLocation entryId) {
+    public boolean isDynamicParticle(Identifier entryId) {
         return customParticleFactories.containsKey(entryId);
     }
 }

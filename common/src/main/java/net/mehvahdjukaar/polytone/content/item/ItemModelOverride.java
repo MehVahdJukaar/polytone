@@ -16,7 +16,7 @@ public class ItemModelOverride {
     protected DataComponentMap decodedComponents;
     protected Map<DataComponentType<?>, CompoundTag> nbtMatchers;
 
-    protected static final Codec<Map<ResourceLocation, Float>> ITEM_PREDICATE_CODEC = Codec.unboundedMap(ResourceLocation.CODEC, Codec.FLOAT);
+    protected static final Codec<Map<Identifier, Float>> ITEM_PREDICATE_CODEC = Codec.unboundedMap(Identifier.CODEC, Codec.FLOAT);
 
     protected static final UnboundedMapCodec<DataComponentType<?>, CompoundTag> NBT_COMPONENTS_CODEC = Codec.unboundedMap(DataComponentType.CODEC, CompoundTag.CODEC);
 

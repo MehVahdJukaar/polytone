@@ -9,7 +9,7 @@ import net.mehvahdjukaar.polytone.misc.reloader.JsonImgPartialReloader;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
 import java.util.HashMap;
@@ -34,7 +34,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
         var jsons = getJsonsInDirectories(resourceManager);
         for (var e : jsons.entrySet()) {
             var json = e.getValue();
-            ResourceLocation id = e.getKey();
+            Identifier id = e.getKey();
             var partial = ItemModifier.CODEC_ONLY_MODELS.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Item Modifier with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
@@ -49,18 +49,18 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
         var jsons = resources.jsons();
         var textures = new HashMap<>(resources.textures());
 
-        Set<ResourceLocation> usedTextures = new HashSet<>();
+        Set<Identifier> usedTextures = new HashSet<>();
 
         Parsed.SortedMap<ItemModifier> parsedModifiers =
                 Parsed.batchParseAlways(jsons, ItemModifier.CODEC, ops, "item modifier");
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
-            ResourceLocation tintId = entry.getKey();
+            Identifier tintId = entry.getKey();
             Parsed<ItemModifier> result = entry.getValue();
             ItemModifier modifier = result.getResultOrPartial();
 
-            ResourceLocation barId = tintId.withSuffix("_bar");
+            Identifier barId = tintId.withSuffix("_bar");
             if (!modifier.hasBarColor() && textures.containsKey(barId)) {
                 //if this map doesn't have a bar colormap defined, we set it to the default impl IF there's a texture it can use
                 modifier = modifier.merge(ItemModifier.ofBarColor(Colormap.createDamage()));
@@ -76,14 +76,14 @@ public class ItemModifiersManager extends JsonImgPartialReloader {
         textures.keySet().removeAll(usedTextures);
 
         for (var t : textures.entrySet()) {
-            ResourceLocation id = t.getKey();
+            Identifier id = t.getKey();
             Colormap defaultColormap = Colormap.createDamage();
             ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
             addModifier(id, ItemModifier.ofBarColor(defaultColormap));
         }
     }
 
-    private void addModifier(ResourceLocation id, ItemModifier mod) {
+    private void addModifier(Identifier id, ItemModifier mod) {
         for (var holder : mod.targets().compute(id, BuiltInRegistries.ITEM)) {
             Item i = holder.value();
             modifiers.merge(i, mod, ItemModifier::merge);

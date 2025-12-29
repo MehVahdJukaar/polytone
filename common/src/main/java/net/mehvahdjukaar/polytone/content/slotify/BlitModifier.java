@@ -8,18 +8,18 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 import java.util.Optional;
 
-public record BlitModifier(ResourceLocation target, int index, int xInc, int yInc, int zInc, int widthInc,
+public record BlitModifier(Identifier target, int index, int xInc, int yInc, int zInc, int widthInc,
                            int heightInc,
-                           float u0, float v0, float u1, float v1, int color, Optional<ResourceLocation> newTexture,
+                           float u0, float v0, float u1, float v1, int color, Optional<Identifier> newTexture,
                            List<RelativeSprite> extraSprites) {
 
     public static final Codec<BlitModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            ResourceLocation.CODEC.fieldOf("texture").forGetter(BlitModifier::target),
+            Identifier.CODEC.fieldOf("texture").forGetter(BlitModifier::target),
             Codec.INT.optionalFieldOf("index", -1).forGetter(BlitModifier::index),
             Codec.INT.optionalFieldOf("x_inc", 0).forGetter(BlitModifier::xInc),
             Codec.INT.optionalFieldOf("y_inc", 0).forGetter(BlitModifier::yInc),
@@ -31,7 +31,7 @@ public record BlitModifier(ResourceLocation target, int index, int xInc, int yIn
             Codec.FLOAT.optionalFieldOf("u1", -1f).forGetter(BlitModifier::u1),
             Codec.FLOAT.optionalFieldOf("v1", -1f).forGetter(BlitModifier::v1),
             ColorUtils.CODEC.optionalFieldOf("color", -1).forGetter(BlitModifier::color),
-            ResourceLocation.CODEC.optionalFieldOf("new_texture").forGetter(BlitModifier::newTexture),
+            Identifier.CODEC.optionalFieldOf("new_texture").forGetter(BlitModifier::newTexture),
             RelativeSprite.CODEC.listOf().optionalFieldOf("overlays", List.of()).forGetter(BlitModifier::extraSprites)
     ).apply(i, BlitModifier::new));
 

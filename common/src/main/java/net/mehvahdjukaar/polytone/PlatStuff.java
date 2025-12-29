@@ -17,7 +17,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.ColorResolver;
@@ -44,7 +44,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final ResourceLocation name) {
+    public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final Identifier name) {
         throw new AssertionError();
     }
 
@@ -76,7 +76,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static DimensionSpecialEffects getDimensionEffects(ResourceLocation type) {
+    public static DimensionSpecialEffects getDimensionEffects(Identifier type) {
         throw new AssertionError();
     }
 
@@ -102,7 +102,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static CreativeModeTab createCreativeTab(ResourceLocation id) {
+    public static CreativeModeTab createCreativeTab(Identifier id) {
         throw new AssertionError();
     }
 
@@ -152,12 +152,12 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static void unregisterParticleProvider(ResourceLocation id) {
+    public static void unregisterParticleProvider(Identifier id) {
         throw new AssertionError();
     }
 
 
-    public static <T> T registerDynamic(Registry<T> reg, ResourceLocation id, T o) {
+    public static <T> T registerDynamic(Registry<T> reg, Identifier id, T o) {
         if (reg.containsKey(id)) {
             throw new RuntimeException("Tried to register object with id " + id + " to registry " + reg + " but it already exists");
         }
@@ -176,7 +176,7 @@ public class PlatStuff {
         return o;
     }
 
-    public static <T> void unregisterDynamic(Registry<T> reg, ResourceLocation id) {
+    public static <T> void unregisterDynamic(Registry<T> reg, Identifier id) {
         if (reg instanceof MappedRegistry<T> mapped) {
             mapped.frozen = false;
             unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
@@ -216,13 +216,13 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static void addSpecialModel(ResourceLocation id) {
+    public static void addSpecialModel(Identifier id) {
         throw new AssertionError();
     }
 
     @ExpectPlatform
     @Nullable
-    public static QuadCollection getSpecialModel(ResourceLocation id) {
+    public static QuadCollection getSpecialModel(Identifier id) {
         throw new AssertionError();
     }
 

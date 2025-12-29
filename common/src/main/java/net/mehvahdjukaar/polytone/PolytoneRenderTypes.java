@@ -14,7 +14,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
@@ -43,8 +43,8 @@ public class PolytoneRenderTypes {
                     .withLocation(Polytone.res("pipeline/additive_particle"))
                     .withSampler("Sampler0")
                     .withSampler("Sampler2")
-                    .withVertexShader(ResourceLocation.withDefaultNamespace("core/particle"))
-                    .withFragmentShader(ResourceLocation.withDefaultNamespace("core/terrain")) //so we can use shader define. these shaders are identical
+                    .withVertexShader(Identifier.withDefaultNamespace("core/particle"))
+                    .withFragmentShader(Identifier.withDefaultNamespace("core/terrain")) //so we can use shader define. these shaders are identical
                     .withVertexFormat(DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS)
                     .withShaderDefine("ALPHA_CUTOUT", 0.001F)
                     /* Blending Functions */
@@ -112,7 +112,7 @@ public class PolytoneRenderTypes {
             .build());
 
 
-    private static final ResourceLocation LEASH_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/lead.png");
+    private static final Identifier LEASH_TEXTURE = Identifier.withDefaultNamespace("textures/entity/lead.png");
 
     private static final RenderType LEASH_RENDER_TYPE = RenderType.create("polytone_leash",
             1536, false, false,

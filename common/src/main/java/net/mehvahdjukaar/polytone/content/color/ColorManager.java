@@ -26,7 +26,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
@@ -62,7 +62,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     protected final int[] originalRedstoneWireColors = Arrays.copyOf(RedStoneWireBlock.COLORS, RedStoneWireBlock.COLORS.length);
 
     @Nullable
-    ResourceLocation xpOrbParticle;
+    Identifier xpOrbParticle;
     @Nullable
     private BlockContextExpression xpOrbColor;
     @Nullable
@@ -102,7 +102,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var keySet = new ArrayList<>(jsons.keySet());
 
         for (var k : Lists.reverse(keySet)) {
@@ -117,7 +117,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         regenSheepColors();
     }
 
-    private void parseColorJson(JsonElement root, ResourceLocation fileId) {
+    private void parseColorJson(JsonElement root, Identifier fileId) {
         JsonObject obj = root.getAsJsonObject();
 
         doWith(obj, "map", (k, v) -> {
@@ -164,7 +164,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         });
 
         doWith(obj, "particle", (k, v) -> {
-            ResourceLocation id = ResourceLocation.parse(k.replace("\\", ""));
+            Identifier id = Identifier.parse(k.replace("\\", ""));
             try {
                 // turn from hex to decimal if it is a single number
                 int hex = parseHex(v);
@@ -199,7 +199,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         });
 
         doWith(obj, "effect", (k, v) -> {
-            ResourceLocation id = ResourceLocation.parse(k.replace("\\", ""));
+            Identifier id = Identifier.parse(k.replace("\\", ""));
             ParticleOptions particle = get(v, "particle", ParticleTypes.CODEC);
 
             String color = getString(v, "color");
@@ -302,7 +302,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             if (k.equals("block") && v.isJsonObject()) {
                 for (var entry : getEntries(v.getAsJsonObject(), "block")) {
                     String path = entry.getKey().replace("~/colormap/", fileId.getNamespace() + ":");
-                    Polytone.BLOCK_MODIFIERS.addSimpleColormap(ResourceLocation.parse(path), entry.getValue().getAsString());
+                    Polytone.BLOCK_MODIFIERS.addSimpleColormap(Identifier.parse(path), entry.getValue().getAsString());
                 }
             }
         });

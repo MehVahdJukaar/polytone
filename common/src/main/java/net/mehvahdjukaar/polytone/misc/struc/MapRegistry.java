@@ -7,7 +7,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -16,8 +16,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class MapRegistry<T> implements Codec<T> {
-    private final BiMap<ResourceLocation, T> map = HashBiMap.create();
-    private final List<ResourceLocation> orderedKeys = new ArrayList<>();
+    private final BiMap<Identifier, T> map = HashBiMap.create();
+    private final List<Identifier> orderedKeys = new ArrayList<>();
     private final String name;
 
     public MapRegistry(String name) {
@@ -32,7 +32,7 @@ public class MapRegistry<T> implements Codec<T> {
         return new CodecMap<>(name);
     }
 
-    public <B extends T> T register(ResourceLocation name, B value) {
+    public <B extends T> T register(Identifier name, B value) {
         //override
         this.map.remove(name);
         this.map.put(name, value);
@@ -43,35 +43,35 @@ public class MapRegistry<T> implements Codec<T> {
     }
 
     public <B extends T> T register(String name, B value) {
-        this.register(ResourceLocation.parse(name), value);
+        this.register(Identifier.parse(name), value);
         return value;
     }
 
-    public void unregister(ResourceLocation name){
+    public void unregister(Identifier name){
         this.map.remove(name);
         this.orderedKeys.remove(name);
     }
 
     @Nullable
-    public T getValue(ResourceLocation name) {
+    public T getValue(Identifier name) {
         return this.map.get(name);
     }
 
     @Nullable
     public T getValue(String name) {
-        return this.getValue(ResourceLocation.parse(name));
+        return this.getValue(Identifier.parse(name));
     }
 
     @Nullable
-    public ResourceLocation getKey(T value) {
+    public Identifier getKey(T value) {
         return this.map.inverse().get(value);
     }
 
-    public Set<ResourceLocation> keySet() {
+    public Set<Identifier> keySet() {
         return this.map.keySet();
     }
 
-    public List<ResourceLocation> orderedKeys(){
+    public List<Identifier> orderedKeys(){
         return orderedKeys;
     }
 
@@ -79,17 +79,17 @@ public class MapRegistry<T> implements Codec<T> {
         return this.map.values();
     }
 
-    public Set<Map.Entry<ResourceLocation, T>> getEntries() {
+    public Set<Map.Entry<Identifier, T>> getEntries() {
         return this.map.entrySet();
     }
 
-    public boolean containsKey(ResourceLocation name) {
+    public boolean containsKey(Identifier name) {
         return this.map.containsKey(name);
     }
 
     public <U> DataResult<Pair<T, U>> decode(DynamicOps<U> ops, U json) {
-        return ResourceLocation.CODEC.decode(ops, json).flatMap(pair -> {
-            ResourceLocation id = pair.getFirst();
+        return Identifier.CODEC.decode(ops, json).flatMap(pair -> {
+            Identifier id = pair.getFirst();
             T value = this.getValue(id);
             return value == null ? DataResult.error(() ->
                     "Could not find any entry with key '" + id + "' in registry [" + name + "] \n Known keys: " + this.keySet()) :
@@ -98,7 +98,7 @@ public class MapRegistry<T> implements Codec<T> {
     }
 
     public <U> DataResult<U> encode(T object, DynamicOps<U> ops, U prefix) {
-        ResourceLocation id = this.getKey(object);
+        Identifier id = this.getKey(object);
         return id == null ? DataResult.error(() -> "Could not find element '" + object + "' in registry [" + name + "]") :
                 ops.mergeToPrimitive(prefix, ops.createString(id.toString()));
     }
@@ -123,13 +123,13 @@ public class MapRegistry<T> implements Codec<T> {
             super(name);
         }
 
-        public <B extends T> MapCodec<B> register(ResourceLocation name, MapCodec<B> value) {
+        public <B extends T> MapCodec<B> register(Identifier name, MapCodec<B> value) {
             super.register(name, value);
             return value;
         }
 
         public <B extends T> MapCodec<B> register(String name, MapCodec<B> value) {
-            return this.register(ResourceLocation.parse(name), value);
+            return this.register(Identifier.parse(name), value);
         }
     }
 }

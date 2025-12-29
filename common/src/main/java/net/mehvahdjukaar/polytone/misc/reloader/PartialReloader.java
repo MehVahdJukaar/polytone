@@ -9,7 +9,7 @@ import net.mehvahdjukaar.polytone.misc.struc.ListUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -36,11 +36,11 @@ public abstract class PartialReloader<T> {
         return StringUtils.capitalize(names[0].replace("_", " ") + " Reloader");
     }
 
-    protected Map<ResourceLocation, JsonElement> getJsonsInDirectories(ResourceManager resourceManager) {
+    protected Map<Identifier, JsonElement> getJsonsInDirectories(ResourceManager resourceManager) {
         // resources given by the resource manager won't be sorted by pack ordering so we at least sort them by name
-        Map<ResourceLocation, JsonElement> jsons = ListUtils.sortedMap();
+        Map<Identifier, JsonElement> jsons = ListUtils.sortedMap();
         for (String name : names) {
-            Map<ResourceLocation, JsonElement> js = new HashMap<>();
+            Map<Identifier, JsonElement> js = new HashMap<>();
             scanDirectory(resourceManager, Polytone.MOD_ID + "/" + name, GSON, js);
             greedyAddAll(js, jsons);
         }
@@ -48,12 +48,12 @@ public abstract class PartialReloader<T> {
         return jsons;
     }
 
-    public static void scanDirectory(ResourceManager resourceManager, String string, Gson gson, Map<ResourceLocation, JsonElement> map) {
+    public static void scanDirectory(ResourceManager resourceManager, String string, Gson gson, Map<Identifier, JsonElement> map) {
         FileToIdConverter fileToIdConverter = FileToIdConverter.json(string);
 
-        for (Map.Entry<ResourceLocation, Resource> entry : fileToIdConverter.listMatchingResources(resourceManager).entrySet()) {
-            ResourceLocation resourceLocation = entry.getKey();
-            ResourceLocation resourceLocation2 = fileToIdConverter.fileToId(resourceLocation);
+        for (Map.Entry<Identifier, Resource> entry : fileToIdConverter.listMatchingResources(resourceManager).entrySet()) {
+            Identifier resourceLocation = entry.getKey();
+            Identifier resourceLocation2 = fileToIdConverter.fileToId(resourceLocation);
 
             try {
                 Reader reader = entry.getValue().openAsReader();
@@ -82,7 +82,7 @@ public abstract class PartialReloader<T> {
         }
     }
 
-    private static <T> void greedyAddAll(Map<ResourceLocation, T> js, Map<ResourceLocation, T> jsons) {
+    private static <T> void greedyAddAll(Map<Identifier, T> js, Map<Identifier, T> jsons) {
         for (var entry : js.entrySet()) {
             var r = entry.getKey();
             var j = entry.getValue();
@@ -90,17 +90,17 @@ public abstract class PartialReloader<T> {
         }
     }
 
-    protected Map<ResourceLocation, ArrayImage> getImagesInDirectories(ResourceManager resourceManager) {
-        Map<ResourceLocation, ArrayImage> images = new HashMap<>();
+    protected Map<Identifier, ArrayImage> getImagesInDirectories(ResourceManager resourceManager) {
+        Map<Identifier, ArrayImage> images = new HashMap<>();
         for (String name : names) {
-            Map<ResourceLocation, ArrayImage> im = new HashMap<>();
+            Map<Identifier, ArrayImage> im = new HashMap<>();
             ArrayImage.scanDirectory(resourceManager, Polytone.MOD_ID + "/" + name, im);
             greedyAddAll(im, images);
         }
         return images;
     }
 
-    protected Map<ResourceLocation, ArrayImage.Group> getGroupedImagesInDirectories(ResourceManager manager) {
+    protected Map<Identifier, ArrayImage.Group> getGroupedImagesInDirectories(ResourceManager manager) {
         return ArrayImage.groupTextures(this.getImagesInDirectories(manager));
     }
 
