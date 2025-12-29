@@ -47,7 +47,7 @@ public enum RotationMode implements StringRepresentable, RotationProvider {
             case MOVEMENT_ALIGNED -> {
                 Vec3 dir = new Vec3(particle.xd, particle.yd, particle.zd).normalize();
 
-                Vec3 cameraLook = new Vec3(camera.getLookVector());
+                Vec3 cameraLook = new Vec3(camera.forwardVector());
                 Vec3 cross = dir.cross(cameraLook);
 
                 double pitch = getPitch(dir);

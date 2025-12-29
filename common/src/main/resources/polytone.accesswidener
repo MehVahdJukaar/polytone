@@ -8,7 +8,6 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties offsetFunction Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction;
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction;
-
 accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Collection;)V
 
 accessible field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
@@ -17,6 +16,7 @@ accessible field net/minecraft/world/level/block/SignBlock type Lnet/minecraft/w
 mutable field net/minecraft/world/level/block/SignBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
 
 accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_FOG_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible method net/minecraft/client/renderer/rendertype/RenderType create (Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;
 
 mutable field net/minecraft/client/renderer/BiomeColors WATER_COLOR_RESOLVER Lnet/minecraft/world/level/ColorResolver;
 mutable field net/minecraft/client/renderer/BiomeColors FOLIAGE_COLOR_RESOLVER Lnet/minecraft/world/level/ColorResolver;
@@ -181,3 +181,7 @@ mutable field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorModi
 
 
 
+accessible field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
+mutable field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
+accessible field net/minecraft/world/level/block/SignBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
+mutable field net/minecraft/world/level/block/SignBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;

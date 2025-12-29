@@ -47,20 +47,4 @@ public abstract class LightTextureMixin {
             }
         }
     }
-
-    @Inject(method = "turnOnLightLayer", at = @At(value = "HEAD"), cancellable = true)
-    public void polytone$useGuiLightmap(CallbackInfo ci) {
-        if (Polytone.LIGHTMAPS.isGui()) {
-            //TODO 1.21.5:
-            /*
-            RenderSystem.setShaderTexture(2, LightmapsManager.GUI_LIGHTMAP);
-            RenderSystem.bindTextureForSetup(Minecraft.getInstance().getTextureManager().getTexture(LightmapsManager.GUI_LIGHTMAP).getId());
-            RenderSystem.texParameter(3553, 10241, 9729);
-            RenderSystem.texParameter(3553, 10240, 9729);
-            ci.cancel();
-
-             */
-        }
-
-    }
 }

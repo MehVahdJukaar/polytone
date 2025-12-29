@@ -57,7 +57,7 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
                                 Codec.FLOAT.optionalFieldOf("zoffset", 0f).forGetter(a -> ((SimpleModelStateExtension) (Object) a).polytone$getZOffset())
                         )
                         .apply(instance, (t1, t2, t3, t4, t5, t6, t8) -> {
-                            var state = new Variant.SimpleModelState(Quadrant.R0, Quadrant.R0, t4);
+                            var state = new Variant.SimpleModelState(Quadrant.R0, Quadrant.R0, Quadrant.R0, t4);
                             ((SimpleModelStateExtension) (Object) state).polytone$setXRot(t1);
                             ((SimpleModelStateExtension) (Object) state).polytone$setYRot(t2);
                             ((SimpleModelStateExtension) (Object) state).polytone$setZRot(t3);

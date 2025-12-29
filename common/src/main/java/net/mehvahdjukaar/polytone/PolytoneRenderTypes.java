@@ -13,6 +13,8 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -25,7 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.SequencedMap;
 import java.util.function.Supplier;
 
-import static net.minecraft.client.renderer.RenderStateShard.LIGHTMAP;
 
 public class PolytoneRenderTypes {
 
@@ -56,21 +57,13 @@ public class PolytoneRenderTypes {
 
     public static final RenderType ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE = RenderType.create(
             Polytone.MOD_ID + ":additive_particle",
-            64 * 1024, //?? translucent particles uses 1536
-            false, //??
-            true, //??
-            ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE,
-            RenderType.CompositeState.builder()
-                    .setTextureState(
-                            new RenderStateShard.TextureStateShard(
-                                    PARTICLES_MAPPER.sheet(),
-                                    false
-                            )
-                    )
-                    .setLightmapState(LIGHTMAP)
-                    // .setOutputState(RenderStateShard.PARTICLES_TARGET) //??
-                    .createCompositeState(RenderType.OutlineProperty.NONE)
-    );
+            RenderSetup.builder(ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE)
+                    .bufferSize(64 * 1024)
+                    .useLightmap()
+                    .withTexture("Sampler0", PARTICLES_MAPPER.sheet())
+                    .setOutline(RenderSetup.OutlineProperty.NONE)
+                    .sortOnUpload()
+                    .createRenderSetup());
 
 
     public static final Supplier<ParticleRenderType> PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE = Suppliers.memoize(() ->
@@ -87,18 +80,16 @@ public class PolytoneRenderTypes {
     );
 
     //in theory same as with particle just different shader?? and texture state
+    // Mip map strategy is now part of texture creation.
     public static final RenderType ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE = RenderType.create(
             Polytone.MOD_ID + ":additive_block",
-            1024*64, //no idea
-            true, //crumbling ??
-            true, //sorted
-            ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE,
-            RenderType.CompositeState.builder()
-                    .setLightmapState(RenderStateShard.LIGHTMAP)
-                    .setTextureState(RenderStateShard.BLOCK_SHEET_MIPPED)
-                    //  .setOutputState(RenderStateShard.PARTICLES_TARGET)
-                    .createCompositeState(RenderType.OutlineProperty.NONE));
-
+            RenderSetup.builder(ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE)
+                    .bufferSize(64 * 1024)
+                    .affectsCrumbling()
+                    .sortOnUpload()
+                    .useLightmap()
+                    .setOutline(RenderSetup.OutlineProperty.NONE)
+                    .createRenderSetup());
 
     public static final RenderPipeline LEASH_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
                     RenderPipelines. MATRICES_FOG_SNIPPET)
@@ -114,14 +105,15 @@ public class PolytoneRenderTypes {
 
     private static final Identifier LEASH_TEXTURE = Identifier.withDefaultNamespace("textures/entity/lead.png");
 
-    private static final RenderType LEASH_RENDER_TYPE = RenderType.create("polytone_leash",
-            1536, false, false,
-            LEASH_PIPELINE,
-            RenderType.CompositeState.builder()
-                    .setTextureState(new RenderStateShard.TextureStateShard(LEASH_TEXTURE, false))
-                    .setLightmapState(LIGHTMAP)
-                    .createCompositeState(RenderType.OutlineProperty.NONE)
-    );
+    private static final RenderType LEASH_RENDER_TYPE = RenderType.create(
+            "polytone_leash",
+            RenderSetup.builder(LEASH_PIPELINE)
+                    .bufferSize(1536)
+                    .withTexture("Sampler0", LEASH_TEXTURE)
+                    .useLightmap()
+                    .setOutline(RenderSetup.OutlineProperty.NONE)
+                    .createRenderSetup());
+
 
     private static boolean isLeashRenderOn(){
         return true;
@@ -170,63 +162,62 @@ public class PolytoneRenderTypes {
 
     }
 
-    public static void onRenderLast() {
-        if (lastModelViewMatrix != null) {
-            Matrix4f last = new Matrix4f(RenderSystem.getModelViewMatrix());
-            RenderSystem.getModelViewMatrix().set(lastModelViewMatrix);
-            DEFERRED_BUFFER_SOURCE.endBatches();
-            RenderSystem.getModelViewMatrix().set(last);
-        }else {
-            DEFERRED_BUFFER_SOURCE.endBatches();
-        }
-    }
-
-    public static final DeferredBufferSource DEFERRED_BUFFER_SOURCE = new DeferredBufferSource();
-
-    private static Matrix4f lastModelViewMatrix;
-
-    public static void cacheMatrices() {
-        lastModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
-    }
-
-    public static class DeferredBufferSource extends MultiBufferSource.BufferSource {
-        protected final Supplier<ByteBufferBuilder> bufferSupplier;
-
-        private final Collection<RenderType> delayed = new HashSet<>();
-
-        protected DeferredBufferSource() {
-            this(() -> new ByteBufferBuilder(786432), new LinkedHashMap<>());
-        }
-
-        protected DeferredBufferSource(Supplier<ByteBufferBuilder> bufferSupplier, SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers) {
-            super(bufferSupplier.get(), fixedBuffers);
-            this.bufferSupplier = bufferSupplier;
-        }
-
-        public void endBatches() {
-            endBatch(ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE);
-            endBatch(ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE);
-            for (RenderType type : delayed) {
-                endBatch(type);
-            }
-        }
-
-        @Override
-        public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
-            if (!fixedBuffers.containsKey(renderType)) {
-                fixedBuffers.put(renderType, bufferSupplier.get());
-                if (renderType != ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE && renderType != ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE) {
-                    delayed.add(renderType);
-                }
-            }
-            return super.getBuffer(renderType);
-        }
-
-        @Override
-        public void endBatch(@NotNull RenderType renderType) {
-            super.endBatch(renderType);
-        }
-    }
-
+//    public static void onRenderLast() {
+//        if (lastModelViewMatrix != null) {
+//            Matrix4f last = new Matrix4f(RenderSystem.getModelViewMatrix());
+//            RenderSystem.getModelViewMatrix().set(lastModelViewMatrix);
+//            DEFERRED_BUFFER_SOURCE.endBatches();
+//            RenderSystem.getModelViewMatrix().set(last);
+//        }else {
+//            DEFERRED_BUFFER_SOURCE.endBatches();
+//        }
+//    }
+//
+//    public static final DeferredBufferSource DEFERRED_BUFFER_SOURCE = new DeferredBufferSource();
+//
+//    private static Matrix4f lastModelViewMatrix;
+//
+//    public static void cacheMatrices() {
+//        lastModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
+//    }
+//
+//    public static class DeferredBufferSource extends MultiBufferSource.BufferSource {
+//        protected final Supplier<ByteBufferBuilder> bufferSupplier;
+//
+//        private final Collection<RenderType> delayed = new HashSet<>();
+//
+//        protected DeferredBufferSource() {
+//            this(() -> new ByteBufferBuilder(786432), new LinkedHashMap<>());
+//        }
+//
+//        protected DeferredBufferSource(Supplier<ByteBufferBuilder> bufferSupplier, SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers) {
+//            super(bufferSupplier.get(), fixedBuffers);
+//            this.bufferSupplier = bufferSupplier;
+//        }
+//
+//        public void endBatches() {
+//            endBatch(ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE);
+//            endBatch(ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE);
+//            for (RenderType type : delayed) {
+//                endBatch(type);
+//            }
+//        }
+//
+//        @Override
+//        public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
+//            if (!fixedBuffers.containsKey(renderType)) {
+//                fixedBuffers.put(renderType, bufferSupplier.get());
+//                if (renderType != ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE && renderType != ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE) {
+//                    delayed.add(renderType);
+//                }
+//            }
+//            return super.getBuffer(renderType);
+//        }
+//
+//        @Override
+//        public void endBatch(@NotNull RenderType renderType) {
+//            super.endBatch(renderType);
+//        }
+//    }
 };
 

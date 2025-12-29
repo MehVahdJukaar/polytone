@@ -16,14 +16,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Pseudo
 @Mixin(CloudRenderer.class)
 public class SodiumCloudRendererMixin {
-
-
-    @Inject(method = "render",
-            require = 0,
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/Camera;getPosition()Lnet/minecraft/world/phys/Vec3;"))
-    private void polytone$whyDoesSodiumHaveToReplaceEntireClasses(Camera camera, ClientLevel level, Matrix4f projectionMatrix, Matrix4f modelView, float ticks, float tickDelta, int color, CallbackInfo ci, @Local(ordinal = 2) LocalFloatRef height) {
-        var f = Polytone.DIMENSION_MODIFIERS.modifyCloudHeight(level);
-        f.ifPresent(height::set);
-    }
+//
+//
+//    @Inject(method = "render",
+//            require = 0,
+//            at = @At(value = "INVOKE",
+//                    target = "Lnet/minecraft/client/Camera;getPosition()Lnet/minecraft/world/phys/Vec3;"))
+//    private void polytone$whyDoesSodiumHaveToReplaceEntireClasses(Camera camera, ClientLevel level, Matrix4f projectionMatrix, Matrix4f modelView, float ticks, float tickDelta, int color, CallbackInfo ci, @Local(ordinal = 2) LocalFloatRef height) {
+//        var f = Polytone.DIMENSION_MODIFIERS.modifyCloudHeight(level);
+//        f.ifPresent(height::set);
+//    }
 }

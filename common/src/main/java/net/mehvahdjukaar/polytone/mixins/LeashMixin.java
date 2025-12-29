@@ -1,11 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.LeashFeatureRenderer;
 import org.joml.Matrix4f;
@@ -24,10 +21,13 @@ public class LeashMixin {
         }
     }
 
-    @WrapOperation(method = "renderLeash", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource;getBuffer(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;"))
-    private static VertexConsumer polytone$modifyLeashTexture(MultiBufferSource instance, RenderType renderType, Operation<VertexConsumer> original) {
-        VertexConsumer consumer = PolytoneRenderTypes.getLeashVertexConsumer(instance);
-        if (consumer != null) return consumer;
-        else return original.call(instance, renderType);
+    // We now inject at the top of the method, and cancel if we overwrote it.
+    @Inject(method = "renderLeash", at = @At("HEAD"))
+    private static void polytone$modifyLeashTexture(Matrix4f matrix4f, MultiBufferSource instance, EntityRenderState.LeashState leashState, CallbackInfo ci) {
+      /* FIXME(dannyb) - need to figure out what we want to do here */
+        /*
+        var consumer = PolytoneRenderTypes.getLeashVertexConsumer(instance);
+        if (consumer != null) ci.cancel();*/
+
     }
 }

@@ -9,7 +9,9 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(SplashRenderer.class)
 public class SplashRendererMixin {
 
-    @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/ARGB;color(FI)I"))
+
+    // TODO(dannyb): This is now in the color style field
+//    @ModifyExpressionValue(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/ARGB;color(FI)I"))
     public int polytone$changeSplashColor(int original) {
 
         var newCol = Polytone.COLORS.getSplash();

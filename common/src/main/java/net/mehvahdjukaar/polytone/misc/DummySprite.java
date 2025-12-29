@@ -11,7 +11,7 @@ public class DummySprite extends TextureAtlasSprite {
     public static final DummySprite INSTANCE = new DummySprite();
 
     private DummySprite() {
-        super(LOCATION, new SpriteContents(LOCATION, new FrameSize(1, 1), new NativeImage(1, 1, false)), 1, 1, 0, 0);
+        super(LOCATION, new SpriteContents(LOCATION, new FrameSize(1, 1), new NativeImage(1, 1, false)), 1, 1, 0, 0, 0);
     }
 
     public float getU(float u) {

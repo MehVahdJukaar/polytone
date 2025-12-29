@@ -5,7 +5,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;

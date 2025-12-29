@@ -22,7 +22,7 @@ public record ItemModelParticleEmitter(ParticleContextExpression exp) {
         Minecraft mc = Minecraft.getInstance();
         Camera camera = mc.gameRenderer.getMainCamera();
 
-        Vec3 camPos = camera.getPosition();
+        Vec3 camPos = camera.position();
         Quaternionf camRot = new Quaternionf(camera.rotation()).conjugate(); // invert the view rotation
 
         // Construct world-space camera matrix: apply rotation first, then translation

@@ -15,7 +15,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.RegistryAccess;
@@ -111,8 +110,8 @@ public class PlatStuffImpl {
     }
 
     public static DimensionSpecialEffects getDimensionEffects(Identifier id) {
-        return DimensionSpecialEffectsManager.getForType(id);
-    }
+//        return DimensionSpecialEffectsManager.getForType(id);
+//    }
 
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         //forge original biome effect object is never user and redirected by coremod
