@@ -46,6 +46,19 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));
 
+    private static BiomeEffectModifier wrapVanilla(BiomeSpecialEffects effects, EnvironmentAttributeMap attributes) {
+        return new BiomeEffectModifier(
+                Optional.of(effects.waterColor()),
+                effects.foliageColorOverride(),
+                effects.dryFoliageColorOverride(),
+                effects.grassColorOverride(),
+                Optional.of(effects.grassColorModifier()),
+                attributes,
+                List.of(),
+                Targets.EMPTY
+        );
+    }
+
     // Other has priority
     public BiomeEffectModifier merge(BiomeEffectModifier newMod) {
         return new BiomeEffectModifier(
@@ -64,7 +77,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     }
 
     //Returns vanilla attributes that got replaced
-    public EnvironmentAttributeMap modifyAttributeMap(Biome biome) {
+    private EnvironmentAttributeMap modifyAttributeMap(Biome biome) {
         EnvironmentAttributeMap currentMap = biome.getAttributes();
         var builder = EnvironmentAttributeMap.builder();
 
@@ -72,19 +85,19 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
             return currentMap;
         }
 
-        for (EnvironmentAttribute<?> key : currentMap.keySet()){
+        for (EnvironmentAttribute<?> key : currentMap.keySet()) {
             if (!attributeRemovals.contains(key)) {
                 builder.set(key, currentMap.get(key));
             }
         }
-
-        return builder.build();
+        biome.attributes = builder.build();
+        return currentMap;
     }
 
 
     //Returns vanilla effect that got replaced
-    public BiomeSpecialEffects modifySpecialEffects(Biome biome) {
-        //on forge this will get the modified ones if they exist
+    private BiomeSpecialEffects modifySpecialEffects(Biome biome) {
+        // on forge this will get the (server side) modified ones if they exist
         BiomeSpecialEffects specialEffects = biome.getSpecialEffects();
         var builder = new BiomeSpecialEffects.Builder();
         boolean changed = false;
@@ -129,12 +142,17 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
         // merged and saved old. now we can apply
 
         // freaking forge field to methods...
-        //biome.specialEffects = builder.build();
+        // biome.specialEffects = builder.build();
         BiomeSpecialEffects copy = copy(specialEffects);
         // applyInplace(biome, builder.build());
 
-        applyEffects(biome, builder.build());
-        //return a copy of the old effects
+
+        //we cant replace field in biome because forge replaces it
+        //we cant replace fields in the effects object becuase embeddium relies on it.
+        //applyInplace(biome, modifier);
+        //we use reflections on fabric and a special hackery for forge
+        PlatStuff.applyBiomeSurgery(biome, builder.build());
+        // return a copy of the old effects
         return copy;
     }
 
@@ -148,14 +166,15 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
         return builder.build();
     }
 
-    public static void applyEffects(Biome biome, BiomeSpecialEffects newEffects) {
-        //we cant replace field in biome because forge replaces it
-        //we cant replace fields in the effects object becuase embeddium relies on it.
-        //applyInplace(biome, modifier);
-        //we use reflections on fabric and a special hackery for forge
-        PlatStuff.applyBiomeSurgery(biome, newEffects);
+    //Returns vanilla effects that got replaced
+    public BiomeEffectModifier apply(Biome biome) {
+        EnvironmentAttributeMap oldAttribute = modifyAttributeMap(biome);
+        BiomeSpecialEffects oldEffects = modifySpecialEffects(biome);
+
+        return wrapVanilla(oldEffects, oldAttribute);
     }
 
+    /*
     private static void applyInplace(Biome biome, BiomeSpecialEffects newEffects) {
         //we cant replcate biome effects object so we set its fields
         //we cant do this either because embeddium doesnt like it
@@ -165,7 +184,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
         oldEffects.foliageColorOverride = newEffects.getFoliageColorOverride();
         oldEffects.grassColorOverride = Optional.of(-1);//newEffects.getGrassColorOverride();
         oldEffects.grassColorModifier = newEffects.getGrassColorModifier();
-    }
+    }*/
 
     public interface FogParam {
         float get(Level level);

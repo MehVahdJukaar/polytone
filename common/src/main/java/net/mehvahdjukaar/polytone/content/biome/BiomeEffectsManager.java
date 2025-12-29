@@ -2,52 +2,40 @@ package net.mehvahdjukaar.polytone.content.biome;
 
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.misc.Parsed;
 import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeSpecialEffects;
-import net.minecraft.world.phys.Vec2;
-import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class BiomeEffectsManager extends JsonPartialReloader {
 
-    private final Map<ResourceKey<Biome>, BiomeSpecialEffects> vanillaEffects = new HashMap<>();
-
-    private final Map<ResourceKey<Biome>, BiomeEffectModifier> effectsToApply = new HashMap<>();
+    private final Map<Biome, BiomeEffectModifier> vanillaEffects = new HashMap<>();
+    private final Map<Biome, BiomeEffectModifier> effectsToApply = new HashMap<>();
     private boolean needsDynamicApplication = true;
 
     public BiomeEffectsManager() {
         super("biome_modifiers", "biome_effects");
     }
 
-    private final Map<Biome, BiomeEffectModifier> fogParametersModifiers = new HashMap<>();
-
     @Override
     public void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-         for (var v : Parsed.batchParseOnlyEnabled(jsons, BiomeEffectModifier.CODEC, ops, "biome modifier")) {
-             addEffect(v.getKey(), v.getValue(), access);
-         }
+        for (var v : Parsed.batchParseOnlyEnabled(jsons, BiomeEffectModifier.CODEC, ops, "biome modifier")) {
+            addEffect(v.getKey(), v.getValue(), access);
+        }
     }
 
     private void addEffect(Identifier pathId, BiomeEffectModifier mod, HolderLookup.Provider access) {
         HolderLookup.RegistryLookup<Biome> registry = access.lookupOrThrow(Registries.BIOME);
         for (var biome : mod.targets().compute(pathId, registry)) {
-            effectsToApply.merge(biome.unwrapKey().get(), mod, BiomeEffectModifier::merge);
+            effectsToApply.merge(biome.value(), mod, BiomeEffectModifier::merge);
         }
     }
 
@@ -60,27 +48,17 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         if (isLogIn) vanillaEffects.clear();
 
 
-        var biomeReg = registryAccess.lookupOrThrow(Registries.BIOME);
-
         for (var v : effectsToApply.entrySet()) {
-
-            var biomeId = v.getKey();
+            Biome biome = v.getKey();
             BiomeEffectModifier modifier = v.getValue();
-            var biome = biomeReg.get(biomeId);
-            if (biome.isPresent()) {
-                var old = modifier.apply(biome.get().value());
+            BiomeEffectModifier old = modifier.apply(biome);
 
-                vanillaEffects.put(biomeId, old);
-
-                if (modifier.modifyFogParameter()) {
-                    fogParametersModifiers.put(biome.get().value(), modifier);
-                }
-            }
+            vanillaEffects.put(biome, old);
         }
-        if (!vanillaEffects.isEmpty())
+        if (!vanillaEffects.isEmpty()) {
             Polytone.LOGGER.info("Applied {} Custom Biome Effects Properties", vanillaEffects.size());
+        }
         //we don't clear effects to apply because we need to re apply on world reload
-
     }
 
     @Override
@@ -88,10 +66,10 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         this.needsDynamicApplication = true;
         Level level = Minecraft.getInstance().level;
         if (level != null) {
-            Registry<Biome> biomeReg = level.registryAccess().lookupOrThrow(Registries.BIOME);
             for (var v : vanillaEffects.entrySet()) {
-                var biome = biomeReg.getOptional(v.getKey());
-                biome.ifPresent(bio -> BiomeEffectModifier.applyEffects(bio, v.getValue()));
+                Biome biome = v.getKey();
+                BiomeEffectModifier biomeModifier = v.getValue();
+                biomeModifier.apply(biome);
             }
             //reset all
         }
@@ -101,52 +79,5 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
         //whatever happens, we always clear stuff to apply
         effectsToApply.clear();
-
-        fogParametersModifiers.clear();
-    }
-
-
-    private static float lastFogDistanceMult = 1;
-    private static float lastFogEndMult = 1;
-
-    public Vec2 modifyFogParameters(float originalNearPlane, float originalFarPlane) {
-        Minecraft mc = Minecraft.getInstance();
-        Player player = mc.player;
-        if (player == null) return null;
-
-
-
-        //dont modify if a mob effect that modifies fog is active
-        /*
-             TODO: This is fairly complicated now since it would have to check all the fog environments to see
-             which are instances of MobEffectFogEnvironment and are currently applied.
-        if (FogRenderer.getPriorityFogFunction(player, mc.getDeltaTracker().getGameTimeDeltaPartialTick(false))
-                != null) return null;  */
-        Level level = player.level();
-
-        Holder<Biome> biome = level.getBiome(player.blockPosition());
-        var fogMod = fogParametersModifiers.get(biome.value());
-        Vec2 fogScalars = null;
-        if (fogMod != null) {
-            fogScalars = fogMod.modifyFogParameters(level);
-        }
-
-        if (fogScalars == null && (Mth.abs(lastFogDistanceMult - 1) > 0.02f || Mth.abs(lastFogEndMult - 1) > 0.02f)) {
-            fogScalars = new Vec2(1, 1);
-        }
-        if (fogScalars != null) {
-            float deltaTime = ClientFrameTicker.getDeltaTime(); // Get time since last frame
-            float interpolationFactor = deltaTime * 0.1f;
-
-            // Interpolate towards the fogScalars values
-            lastFogDistanceMult = Mth.lerp(interpolationFactor, lastFogDistanceMult, fogScalars.x);
-            lastFogEndMult = Mth.lerp(interpolationFactor, lastFogEndMult, fogScalars.y);
-            //fogEvent.scaleNearPlaneDistance(1);
-            float distance = originalFarPlane - originalNearPlane;
-
-            return new Vec2((originalFarPlane - distance * lastFogDistanceMult) * lastFogEndMult, originalFarPlane * lastFogEndMult);
-        }
-
-        return null;
     }
 }
