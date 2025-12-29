@@ -74,10 +74,10 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
-//    @ExpectPlatform
+    @ExpectPlatform
     public static DimensionSpecialEffects getDimensionEffects(Identifier type) {
-//        throw new AssertionError();
-//    }
+        throw new AssertionError();
+    }
 
     @ExpectPlatform
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {

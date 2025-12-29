@@ -1,27 +1,23 @@
 package net.mehvahdjukaar.polytone.fabric;
 
-import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.biome.v1.BiomeModificationContext;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
-import net.fabricmc.fabric.mixin.dimension.DimensionOptionsRegistryHolderMixin;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.mehvahdjukaar.polytone.content.particle.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.misc.Targets;
+import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -29,15 +25,14 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleResources;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
@@ -57,8 +52,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -69,17 +62,7 @@ public class PlatStuffImpl {
     }
 
     public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final Identifier name) {
-        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new IdentifiableResourceReloadListener() {
-            private final Supplier<PreparableReloadListener> inner = Suppliers.memoize(listener::get);
-
-            public Identifier getFabricId() {
-                return name;
-            }
-
-            public CompletableFuture<Void> reload(SharedState sharedState,Executor backgroundExecutor, PreparationBarrier preparationBarrier,  Executor executor2) {
-                return this.inner.get().reload(sharedState, backgroundExecutor, preparationBarrier, executor2);
-            }
-        });
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(name, listener.get());
     }
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
@@ -101,19 +84,19 @@ public class PlatStuffImpl {
 
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         try {
-            field.setAccessible(true);
-            field.set(biome, newEffects);
+            biomeSpecialEffectsField.setAccessible(true);
+            biomeSpecialEffectsField.set(biome, newEffects);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
     }
 
-    private static Field field;
+    private static Field biomeSpecialEffectsField;
 
     static {
         for (var f : Biome.class.getDeclaredFields()) {
             if (f.getType() == BiomeSpecialEffects.class) {
-                field = f;
+                biomeSpecialEffectsField = f;
                 break;
             }
         }

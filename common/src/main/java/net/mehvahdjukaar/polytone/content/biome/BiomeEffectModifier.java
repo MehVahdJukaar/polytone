@@ -9,15 +9,20 @@ import net.mehvahdjukaar.polytone.misc.ColorUtils;
 import net.mehvahdjukaar.polytone.misc.Targets;
 import net.mehvahdjukaar.polytone.misc.Weather;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.*;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.phys.Vec2;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static net.mehvahdjukaar.polytone.misc.struc.ListUtils.mergeList;
 
 public record BiomeEffectModifier(Optional<Integer> waterColor,
                                   Optional<Integer> foliageColorOverride,
@@ -25,6 +30,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                                   Optional<Integer> grassColorOverride,
                                   Optional<BiomeSpecialEffects.GrassColorModifier> grassColorModifier,
                                   EnvironmentAttributeMap environmentAttributes,
+                                  List<EnvironmentAttribute<?>> attributeRemovals,
                                   Targets targets) {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
@@ -33,8 +39,10 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
             ColorUtils.CODEC.optionalFieldOf("dry_foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
             ColorUtils.CODEC.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
             BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
-            EnvironmentAttributeMap.CODEC.optionalFieldOf("attributes",
+            EnvironmentAttributeMap.CODEC.optionalFieldOf("attributes", //additions
                     EnvironmentAttributeMap.EMPTY).forGetter(BiomeEffectModifier::environmentAttributes),
+            BuiltInRegistries.ENVIRONMENT_ATTRIBUTE.byNameCodec().listOf().optionalFieldOf("attribute_removals",
+                    List.of()).forGetter(BiomeEffectModifier::attributeRemovals), //removals
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));
 
@@ -50,45 +58,73 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                         .putAll(this.environmentAttributes)
                         .putAll(newMod.environmentAttributes)
                         .build(),
+                mergeList(this.attributeRemovals, newMod.attributeRemovals),
                 this.targets.merge(newMod.targets)
         );
     }
 
+    //Returns vanilla attributes that got replaced
+    public EnvironmentAttributeMap modifyAttributeMap(Biome biome) {
+        EnvironmentAttributeMap currentMap = biome.getAttributes();
+        var builder = EnvironmentAttributeMap.builder();
+
+        if (attributeRemovals.isEmpty() && environmentAttributes == EnvironmentAttributeMap.EMPTY) {
+            return currentMap;
+        }
+
+        for (EnvironmentAttribute<?> key : currentMap.keySet()){
+            if (!attributeRemovals.contains(key)) {
+                builder.set(key, currentMap.get(key));
+            }
+        }
+
+        return builder.build();
+    }
+
+
     //Returns vanilla effect that got replaced
-    public BiomeSpecialEffects apply(Biome biome) {
+    public BiomeSpecialEffects modifySpecialEffects(Biome biome) {
         //on forge this will get the modified ones if they exist
         BiomeSpecialEffects specialEffects = biome.getSpecialEffects();
         var builder = new BiomeSpecialEffects.Builder();
+        boolean changed = false;
 
         int newWaterColor = specialEffects.waterColor();
         if (waterColor.isPresent()) {
             newWaterColor = waterColor.get();
+            changed = true;
         }
         builder.waterColor(newWaterColor);
 
         Optional<Integer> newFoliageColorOverride = specialEffects.foliageColorOverride;
         if (foliageColorOverride.isPresent()) {
             newFoliageColorOverride = foliageColorOverride;
+            changed = true;
         }
         newFoliageColorOverride.ifPresent(builder::foliageColorOverride);
 
         Optional<Integer> newDryFoliageColorOverride = specialEffects.foliageColorOverride;
         if (dryFoliageColorOverride.isPresent()) {
             newDryFoliageColorOverride = dryFoliageColorOverride;
+            changed = true;
         }
         newDryFoliageColorOverride.ifPresent(builder::dryFoliageColorOverride);
 
         Optional<Integer> newGrassColorOverride = specialEffects.grassColorOverride;
         if (grassColorOverride.isPresent()) {
             newGrassColorOverride = grassColorOverride;
+            changed = true;
         }
         newGrassColorOverride.ifPresent(builder::grassColorOverride);
 
         BiomeSpecialEffects.GrassColorModifier newGrassColorModifier = specialEffects.grassColorModifier;
         if (grassColorModifier.isPresent()) {
             newGrassColorModifier = grassColorModifier.get();
+            changed = true;
         }
         builder.grassColorModifier(newGrassColorModifier);
+
+        if (!changed) return specialEffects;
 
         // merged and saved old. now we can apply
 
