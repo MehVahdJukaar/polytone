@@ -10,16 +10,11 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockState
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction;
 
 accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Collection;)V
-accessible field net/minecraft/client/renderer/DimensionSpecialEffects EFFECTS Lit/unimi/dsi/fastutil/objects/Object2ObjectMap;
 
 accessible field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
 mutable field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
 accessible field net/minecraft/world/level/block/SignBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
 mutable field net/minecraft/world/level/block/SignBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
-
-accessible field net/minecraft/client/renderer/RenderPipelines TERRAIN_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
-accessible field net/minecraft/client/renderer/RenderStateShard BLOCK_SHEET_MIPPED Lnet/minecraft/client/renderer/RenderStateShard$TextureStateShard;
-accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder setOutputState (Lnet/minecraft/client/renderer/RenderStateShard$OutputStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder;
 
 accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_FOG_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 
@@ -97,15 +92,12 @@ mutable field net/minecraft/world/item/Item components Lnet/minecraft/core/compo
 
 # texture stuff
 accessible class net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
-accessible class net/minecraft/client/renderer/texture/SpriteContents$InterpolationData
 accessible class net/minecraft/client/renderer/texture/SpriteContents$FrameInfo
 accessible field net/minecraft/client/renderer/texture/SpriteContents byMipLevel [Lcom/mojang/blaze3d/platform/NativeImage;
 accessible field net/minecraft/client/renderer/texture/SpriteContents$FrameInfo index I
 accessible field net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture frames Ljava/util/List;
-accessible method net/minecraft/client/renderer/texture/SpriteContents upload (IIII[Lcom/mojang/blaze3d/platform/NativeImage;Lcom/mojang/blaze3d/textures/GpuTexture;)V
 accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameX (I)I
 accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameY (I)I
-accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture uploadFrame (IIILcom/mojang/blaze3d/textures/GpuTexture;)V
 accessible field net/minecraft/client/renderer/texture/SpriteContents$FrameInfo time I
 
 accessible field net/minecraft/client/particle/Particle stoppedByCollision Z
@@ -145,14 +137,6 @@ accessible method net/minecraft/client/renderer/LightTexture calculateDarknessSc
 
 # Shaders
 accessible method net/minecraft/client/renderer/RenderPipelines register (Lcom/mojang/blaze3d/pipeline/RenderPipeline;)Lcom/mojang/blaze3d/pipeline/RenderPipeline;
-accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;IZZLcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
-accessible class net/minecraft/client/renderer/RenderType$CompositeState
-accessible class net/minecraft/client/renderer/RenderType$OutlineProperty
-accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder createCompositeState (Lnet/minecraft/client/renderer/RenderType$OutlineProperty;)Lnet/minecraft/client/renderer/RenderType$CompositeState;
-accessible class net/minecraft/client/renderer/RenderStateShard$TextureStateShard
-accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder setTextureState (Lnet/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder;
-accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder setLightmapState (Lnet/minecraft/client/renderer/RenderStateShard$LightmapStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder;
-accessible field net/minecraft/client/renderer/RenderStateShard LIGHTMAP Lnet/minecraft/client/renderer/RenderStateShard$LightmapStateShard;
 
 #ok
 
@@ -178,17 +162,9 @@ accessible field net/minecraft/core/MappedRegistry frozen Z
 accessible method net/minecraft/client/particle/ParticleResources register (Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/client/particle/ParticleProvider;)V
 accessible method net/minecraft/world/level/biome/Biome getTemperature (Lnet/minecraft/core/BlockPos;I)F
 
-accessible field net/minecraft/client/renderer/DimensionSpecialEffects skyType Lnet/minecraft/client/renderer/DimensionSpecialEffects$SkyType;
-mutable field net/minecraft/client/renderer/DimensionSpecialEffects skyType Lnet/minecraft/client/renderer/DimensionSpecialEffects$SkyType;
-accessible field net/minecraft/client/renderer/DimensionSpecialEffects hasEndFlashes Z
-mutable field net/minecraft/client/renderer/DimensionSpecialEffects hasEndFlashes Z
-accessible field net/minecraft/client/renderer/DimensionSpecialEffects constantAmbientLight Z
-mutable field net/minecraft/client/renderer/DimensionSpecialEffects constantAmbientLight Z
-
 accessible method net/minecraft/client/gui/GuiGraphics innerBlit (Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIFFFFI)V
 accessible class net/minecraft/client/gui/render/state/GuiRenderState$Node
 accessible method net/minecraft/client/gui/render/state/GuiRenderState$Node <init> (Lnet/minecraft/client/gui/render/state/GuiRenderState$Node;)V
-accessible method net/minecraft/client/renderer/fog/FogRenderer computeFogColor (Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IFZ)Lorg/joml/Vector4f;
 accessible field net/minecraft/client/renderer/fog/FogRenderer FOG_ENVIRONMENTS Ljava/util/List;
 accessible field net/minecraft/client/renderer/GameRenderer fogRenderer Lnet/minecraft/client/renderer/fog/FogRenderer;
 
@@ -196,33 +172,12 @@ accessible field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COL
 mutable field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
 
 
-# freaking forge field to method...mutable
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects fogColor I
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects fogColor I
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects waterColor I
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects waterColor I
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects waterFogColor I
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects waterFogColor I
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects skyColor I
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects skyColor I
-
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects foliageColorOverride Ljava/util/Optional;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects foliageColorOverride Ljava/util/Optional;
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorOverride Ljava/util/Optional;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorOverride Ljava/util/Optional;
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorModifier Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorModifier Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects ambientParticleSettings Ljava/util/Optional;
 
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects ambientParticleSettings Ljava/util/Optional;
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects ambientLoopSoundEvent Ljava/util/Optional;
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects ambientLoopSoundEvent Ljava/util/Optional;
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects ambientMoodSettings Ljava/util/Optional;
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects ambientMoodSettings Ljava/util/Optional;
-
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects ambientAdditionsSettings Ljava/util/Optional;
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects ambientAdditionsSettings Ljava/util/Optional;
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects backgroundMusic Ljava/util/Optional;
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects backgroundMusic Ljava/util/Optional;
 
 
