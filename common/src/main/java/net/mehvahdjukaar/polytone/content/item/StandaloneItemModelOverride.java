@@ -18,7 +18,7 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
             ModelResHelper.MODEL_RES_CODEC.fieldOf("model").forGetter(Partial::model)
     ).apply(instance, Partial::new));
 
-    public record Partial(ModelResourceLocation model, boolean autoModel) {
+    public record Partial(Mode model, boolean autoModel) {
         public Partial(ModelResourceLocation model) {
             this(model, model.toString().equals("minecraft:generated"));
         }

@@ -121,21 +121,21 @@ public class ItemModelOverrideList {
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("staff"))
                         .build(),
-                ResourceLocation.tryParse("staff")
+                Identifier.tryParse("staff")
         ));
 
         list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.MAX_STACK_SIZE, 1)
                         .build(),
-                ResourceLocation.tryParse("shield")
+                Identifier.tryParse("shield")
         ));
 
         list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.BASE_COLOR, DyeColor.BLACK)
                         .build(),
-                ResourceLocation.tryParse("banner")
+                Identifier.tryParse("banner")
         ));
 
         // Combinations of key-value pairs
@@ -144,7 +144,7 @@ public class ItemModelOverrideList {
                         .set(DataComponents.CUSTOM_NAME, Component.literal("spear"))
                         .set(DataComponents.MAX_STACK_SIZE, 1)
                         .build(),
-                ResourceLocation.tryParse("spear")
+                Identifier.tryParse("spear")
         ));
 
         list.add(new ItemModelOverride(
@@ -152,7 +152,7 @@ public class ItemModelOverrideList {
                         .set(DataComponents.BASE_COLOR, DyeColor.BLACK)
                         .set(DataComponents.MAX_STACK_SIZE, 2)
                         .build(),
-                ResourceLocation.tryParse("flag")
+                Identifier.tryParse("flag")
         ));
 
         list.add(new ItemModelOverride(
@@ -160,21 +160,21 @@ public class ItemModelOverrideList {
                         .set(DataComponents.CUSTOM_NAME, Component.literal("axe"))
                         .set(DataComponents.MAX_STACK_SIZE, 3)
                         .build(),
-                ResourceLocation.tryParse("axe")
+                Identifier.tryParse("axe")
         ));
 
         list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("pickaxe"))
                         .build(),
-                ResourceLocation.tryParse("pickaxe")
+                Identifier.tryParse("pickaxe")
         ));
 
         list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("gun"))
                         .build(),
-                ResourceLocation.tryParse("gun")
+                Identifier.tryParse("gun")
         ));
 
         // Additional combinations with variations
@@ -183,7 +183,7 @@ public class ItemModelOverrideList {
                         .set(DataComponents.BASE_COLOR, DyeColor.RED)
                         .set(DataComponents.MAX_STACK_SIZE, 5)
                         .build(),
-                ResourceLocation.tryParse("red_flag")
+                Identifier.tryParse("red_flag")
         ));
 
         list.add(new ItemModelOverride(
@@ -192,28 +192,28 @@ public class ItemModelOverrideList {
                         .set(DataComponents.MAX_STACK_SIZE, 1)
                         .set(DataComponents.BASE_COLOR, DyeColor.BLUE)
                         .build(),
-                ResourceLocation.tryParse("blue_sword")
+                Identifier.tryParse("blue_sword")
         ));
 
         list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("sword"))
                         .build(),
-                ResourceLocation.tryParse("blue_sword_test")
+                Identifier.tryParse("blue_sword_test")
         ));
 
         list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.CUSTOM_NAME, Component.literal("helmet"))
                         .build(),
-                ResourceLocation.tryParse("helmet")
+                Identifier.tryParse("helmet")
         ));
 
         list.add(new ItemModelOverride(
                 DataComponentMap.builder()
                         .set(DataComponents.BASE_COLOR, DyeColor.GREEN)
                         .build(),
-                ResourceLocation.tryParse("green_item")
+                Identifier.tryParse("green_item")
         ));
 
         // Insert all test data into the trie

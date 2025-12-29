@@ -11,7 +11,7 @@ import net.mehvahdjukaar.polytone.misc.struc.ArrayImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -39,11 +39,11 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private final boolean usesState;
 
     public boolean inlined = true;
-    ResourceLocation debugID = null;
+    Identifier debugID = null;
 
     private Integer defaultColor;
     private ArrayImage image = null;
-    private @Nullable ResourceLocation explicitTargetTexture; //explicit targets
+    private @Nullable Identifier explicitTargetTexture; //explicit targets
     private final @Nullable ColormapColorModulatorExpression colorMult;
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
@@ -57,7 +57,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
             Codec.BOOL.optionalFieldOf("rounds", true).forGetter(c -> c.rounds),
             Codec.BOOL.optionalFieldOf("biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
             BiomeIdMapper.CODEC.optionalFieldOf("biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
-            ResourceLocation.CODEC.optionalFieldOf("texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture)),
+            Identifier.CODEC.optionalFieldOf("texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture)),
             ColormapColorModulatorExpression.CODEC.optionalFieldOf("color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult))
     ).apply(i, Colormap::new));
 
@@ -77,7 +77,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
 
     private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
-                     Optional<ResourceLocation> explicitTargetTexture, Optional<ColormapColorModulatorExpression> colorMult) {
+                     Optional<Identifier> explicitTargetTexture, Optional<ColormapColorModulatorExpression> colorMult) {
         this.defaultColor = defaultColor.orElse(null);
         this.xGetter = xGetter;
         this.yGetter = yGetter;
@@ -132,15 +132,15 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return image == null;
     }
 
-    ResourceLocation getExplicitTargetTexture() {
+    Identifier getExplicitTargetTexture() {
         return explicitTargetTexture;
     }
 
-    public ResourceLocation getTargetTexture(ResourceLocation def) {
+    public Identifier getTargetTexture(Identifier def) {
         return explicitTargetTexture != null ? explicitTargetTexture : def;
     }
 
-    public void setExplicitTargetTexture(ResourceLocation imageTarget) {
+    public void setExplicitTargetTexture(Identifier imageTarget) {
         this.explicitTargetTexture = imageTarget.withPath(imageTarget.getPath().replace(".png", ""));
     }
 

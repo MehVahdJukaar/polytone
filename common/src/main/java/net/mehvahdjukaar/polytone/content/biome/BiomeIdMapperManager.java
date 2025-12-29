@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.misc.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Map;
 
@@ -26,7 +26,7 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
         for (var j : jsons.entrySet()) {
             var json = j.getValue();

@@ -4,7 +4,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +25,7 @@ public interface CustomParticleFactory extends ParticleProvider<ExtraDataParticl
 
 
     @Nullable
-    default ResourceLocation getCustomModel() {
+    default Identifier getCustomModel() {
         return null;
     }
 

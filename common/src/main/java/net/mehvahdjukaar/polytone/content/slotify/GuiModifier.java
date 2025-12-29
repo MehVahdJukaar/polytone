@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.misc.ColorUtils;
 import net.mehvahdjukaar.polytone.misc.codec.BiggerCodecs;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,7 +74,7 @@ public record GuiModifier(Type type, String target,
 
             ).apply(i, GuiModifier::new)).comapFlatMap((instance) -> {
                 if (instance.type == Type.MENU_ID) {
-                    var error = ResourceLocation.read(instance.target).error();
+                    var error = Identifier.read(instance.target).error();
                     if (error.isPresent()) return DataResult.error(() -> error.get().message());
                 }
                 if ((instance.type == Type.SCREEN_CLASS || instance.type == Type.SCREEN_TITLE) &&

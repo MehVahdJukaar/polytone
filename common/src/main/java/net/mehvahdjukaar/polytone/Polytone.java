@@ -31,7 +31,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.apache.logging.log4j.LogManager;
@@ -79,7 +79,7 @@ public class Polytone {
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
 
 
-    private static final Future<Set<ResourceLocation>> FUTURE_IDS = CompletableFuture.supplyAsync(Polytone::loadFutureIds);
+    private static final Future<Set<Identifier>> FUTURE_IDS = CompletableFuture.supplyAsync(Polytone::loadFutureIds);
 
     public static boolean iMessedUp = false;
 
@@ -109,8 +109,8 @@ public class Polytone {
         //TODO: custom block breaking particles
     }
 
-    public static ResourceLocation res(String name) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);
+    public static Identifier res(String name) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, name);
     }
 
 
@@ -174,7 +174,7 @@ public class Polytone {
                 .findFirst();
     }
 
-    public static boolean isEntryDynamic(Registry<?> reg, ResourceLocation entryId) {
+    public static boolean isEntryDynamic(Registry<?> reg, Identifier entryId) {
         if (reg == BuiltInRegistries.CREATIVE_MODE_TAB) {
             return CREATIVE_TABS_MODIFIERS.isDynamicTab(entryId);
         }
@@ -187,7 +187,7 @@ public class Polytone {
         return false;
     }
 
-    public static boolean isFutureId(ResourceLocation id) {
+    public static boolean isFutureId(Identifier id) {
         try {
             // Blocks until the future is complete, or throws if there was an error
             var isFuture = FUTURE_IDS.get().contains(id);
@@ -226,19 +226,19 @@ public class Polytone {
 
     }
 
-    private static Set<ResourceLocation> loadFutureIds() {
+    private static Set<Identifier> loadFutureIds() {
         var res = Polytone.class.getClassLoader().getResourceAsStream("future_ids.txt");
         //read
-        Set<ResourceLocation> futureIds = new HashSet<>();
+        Set<Identifier> futureIds = new HashSet<>();
         if (res != null) {
             try (var reader = new BufferedReader(new InputStreamReader(res))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    ResourceLocation id = ResourceLocation.tryParse(line);
+                    Identifier id = Identifier.tryParse(line);
                     if (id != null) {
                         futureIds.add(id);
                     } else {
-                        Polytone.LOGGER.warn("Invalid ResourceLocation in future_ids.txt: {}", line);
+                        Polytone.LOGGER.warn("Invalid Identifier in future_ids.txt: {}", line);
                     }
                 }
             } catch (IOException e) {

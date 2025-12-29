@@ -24,7 +24,7 @@ public abstract class GuiGraphicsMixin implements GuiDepthTargetAware {
     @Inject(method = "blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V",
             at = @At(value = "INVOKE",
                     shift = At.Shift.BEFORE,
-                    target = "Lnet/minecraft/client/gui/GuiGraphics;innerBlit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/ResourceLocation;IIIIFFFFI)V"), cancellable = true)
+                    target = "Lnet/minecraft/client/gui/GuiGraphics;innerBlit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIFFFFI)V"), cancellable = true)
     public void polytone$modifyBlit(RenderPipeline pipeline, TextureAtlasSprite sprite,
                                     int x, int y, int width, int height, int color, CallbackInfo ci) {
         if (Polytone.OVERLAY_MODIFIERS.maybeModifyBlit((GuiGraphics) (Object) this, pipeline,
@@ -37,7 +37,7 @@ public abstract class GuiGraphicsMixin implements GuiDepthTargetAware {
     @Inject(method = "blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIIIIIII)V",
             at = @At(value = "INVOKE",
                     shift = At.Shift.BEFORE,
-                    target = "Lnet/minecraft/client/gui/GuiGraphics;innerBlit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/ResourceLocation;IIIIFFFFI)V"), cancellable = true)
+                    target = "Lnet/minecraft/client/gui/GuiGraphics;innerBlit(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIFFFFI)V"), cancellable = true)
     public void polytone$modifyBlit(RenderPipeline pipeline, TextureAtlasSprite sprite, int textureWidth, int textureHeight, int uPosition, int vPosition,
                                     int x, int y, int uWidth, int vHeight, int color, CallbackInfo ci) {
         if (Polytone.OVERLAY_MODIFIERS.maybeModifyBlit((GuiGraphics) (Object) this, pipeline,

@@ -10,7 +10,11 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockState
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction;
 accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Collection;)V
 
-accessible field net/minecraft/client/renderer/RenderPipelines TERRAIN_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
+mutable field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
+accessible field net/minecraft/world/level/block/SignBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
+mutable field net/minecraft/world/level/block/SignBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
+
 accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_FOG_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible method net/minecraft/client/renderer/rendertype/RenderType create (Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;
 
@@ -133,6 +137,7 @@ accessible method net/minecraft/client/renderer/LightTexture calculateDarknessSc
 
 # Shaders
 accessible method net/minecraft/client/renderer/RenderPipelines register (Lcom/mojang/blaze3d/pipeline/RenderPipeline;)Lcom/mojang/blaze3d/pipeline/RenderPipeline;
+
 #ok
 
 accessible field net/minecraft/ChatFormatting color Ljava/lang/Integer;
@@ -156,8 +161,7 @@ accessible field net/minecraft/core/MappedRegistry frozen Z
 
 accessible method net/minecraft/client/particle/ParticleResources register (Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/client/particle/ParticleProvider;)V
 accessible method net/minecraft/world/level/biome/Biome getTemperature (Lnet/minecraft/core/BlockPos;I)F
-accessible field net/minecraft/world/level/biome/Biome attributes Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
-mutable field net/minecraft/world/level/biome/Biome attributes Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
+
 accessible method net/minecraft/client/gui/GuiGraphics innerBlit (Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIFFFFI)V
 accessible class net/minecraft/client/gui/render/state/GuiRenderState$Node
 accessible method net/minecraft/client/gui/render/state/GuiRenderState$Node <init> (Lnet/minecraft/client/gui/render/state/GuiRenderState$Node;)V
@@ -168,16 +172,14 @@ accessible field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COL
 mutable field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
 
 
-# freaking forge field to method...mutable
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects waterColor I
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects waterColor I
-
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects foliageColorOverride Ljava/util/Optional;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects foliageColorOverride Ljava/util/Optional;
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorOverride Ljava/util/Optional;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorOverride Ljava/util/Optional;
 accessible field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorModifier Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorModifier Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
+
+
 
 accessible field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
 mutable field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;

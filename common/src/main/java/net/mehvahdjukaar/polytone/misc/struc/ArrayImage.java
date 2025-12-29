@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
@@ -23,19 +23,19 @@ public record ArrayImage(int[][] pixels, int width, int height) {
         this(matrix, matrix[0].length, matrix.length);
     }
 
-    public static  Map<ResourceLocation, ArrayImage> scanDirectory(ResourceManager manager, String path) {
-        Map<ResourceLocation, ArrayImage> map = new HashMap<>();
+    public static  Map<Identifier, ArrayImage> scanDirectory(ResourceManager manager, String path) {
+        Map<Identifier, ArrayImage> map = new HashMap<>();
         scanDirectory(manager, path, map);
         return map;
     }
 
-    public static void scanDirectory(ResourceManager manager, String path, Map<ResourceLocation, ArrayImage> map) {
+    public static void scanDirectory(ResourceManager manager, String path, Map<Identifier, ArrayImage> map) {
 
         FileToIdConverter helper = new FileToIdConverter(path, ".png");
 
-        for (Map.Entry<ResourceLocation, Resource> entry : helper.listMatchingResources(manager).entrySet()) {
-            ResourceLocation fileId = entry.getKey();
-            ResourceLocation id = helper.fileToId(fileId);
+        for (Map.Entry<Identifier, Resource> entry : helper.listMatchingResources(manager).entrySet()) {
+            Identifier fileId = entry.getKey();
+            Identifier id = helper.fileToId(fileId);
 
             try (InputStream inputStream = entry.getValue().open();
                  NativeImage nativeImage = NativeImage.read(inputStream)) {
@@ -76,12 +76,12 @@ public record ArrayImage(int[][] pixels, int width, int height) {
         }
     }
 
-    public static Map<ResourceLocation, Group> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
-        Map<ResourceLocation, Group> groupedMap = new LinkedHashMap<>();
+    public static Map<Identifier, Group> groupTextures(Map<Identifier, ArrayImage> texturesColormap) {
+        Map<Identifier, Group> groupedMap = new LinkedHashMap<>();
 
         Pattern pattern = Pattern.compile("(\\D+)(_\\d+)?");
         for (var e : texturesColormap.entrySet()) {
-            ResourceLocation id = e.getKey();
+            Identifier id = e.getKey();
             String str = id.getPath();
             Matcher matcher = pattern.matcher(str);
             if (matcher.matches()) {

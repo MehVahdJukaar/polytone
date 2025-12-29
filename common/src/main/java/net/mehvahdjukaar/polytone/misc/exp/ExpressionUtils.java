@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.misc.exp;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -220,10 +220,10 @@ public class ExpressionUtils {
         return list.toArray(new Function[0]);
     }
 
-    public static void regenNoiseFunctions(Set<Map.Entry<ResourceLocation, PerlinSimplexNoise>> noises) {
+    public static void regenNoiseFunctions(Set<Map.Entry<Identifier, PerlinSimplexNoise>> noises) {
         NOISE_FUNCS.clear();
         for (var e : noises) {
-            ResourceLocation res = e.getKey();
+            Identifier res = e.getKey();
             PerlinSimplexNoise noise = e.getValue();
             String key = "noise_" + res.getNamespace() + "_" + res.getPath();
             NOISE_FUNCS.add(new Function(key, 2) {

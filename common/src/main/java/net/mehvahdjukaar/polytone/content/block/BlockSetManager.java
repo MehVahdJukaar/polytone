@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.misc.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 
 import java.util.Map;
@@ -34,11 +34,11 @@ public class BlockSetManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
         //copy vanilla
         BlockSetType.values().forEach(type ->
-                blockSetTypes.register(ResourceLocation.parse(type.name()),
+                blockSetTypes.register(Identifier.parse(type.name()),
                         new BlockSetTypeProvider.Vanilla(type)));
         for (var j : jsons.entrySet()) {
             var json = j.getValue();

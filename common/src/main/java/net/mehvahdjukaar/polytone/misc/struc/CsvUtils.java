@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.misc.struc;
 
 import com.google.gson.JsonParseException;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -17,9 +17,9 @@ import java.util.Map;
 public class CsvUtils {
 
 
-    public static Map<ResourceLocation, List<String>> parseCsv(ResourceManager resourceManager, String path) {
-        Map<ResourceLocation, List<String>> idList = new HashMap<>();
-        Map<ResourceLocation, List<Resource>> res = resourceManager.listResourceStacks(Polytone.MOD_ID, resourceLocation ->
+    public static Map<Identifier, List<String>> parseCsv(ResourceManager resourceManager, String path) {
+        Map<Identifier, List<String>> idList = new HashMap<>();
+        Map<Identifier, List<Resource>> res = resourceManager.listResourceStacks(Polytone.MOD_ID, resourceLocation ->
                 resourceLocation.getPath().endsWith( path + ".csv"));
         for (var e : res.entrySet()) {
             for (var r : e.getValue()) {
@@ -29,7 +29,7 @@ public class CsvUtils {
                             .map(line -> line.split(",")) // Splitting by comma
                             .flatMap(Arrays::stream)
                             .map(String::trim)
-                            .filter(v -> ResourceLocation.tryParse(v) != null && !v.isEmpty())// Removing extra spaces
+                            .filter(v -> Identifier.tryParse(v) != null && !v.isEmpty())// Removing extra spaces
                             .toList();
                     if (!lines.isEmpty()) idList.put(e.getKey(), lines);
                 } catch (IllegalArgumentException | IOException | JsonParseException ex) {
