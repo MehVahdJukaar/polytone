@@ -2,11 +2,13 @@ package net.mehvahdjukaar.polytone.content.dimension;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.attribute.modifier.AttributeModifier;
+import org.jspecify.annotations.NonNull;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,13 +21,11 @@ public class EnvironmentAttributeMapMod {
     private final Set<EnvironmentAttribute<?>> entriesToRemove;
 
     public static final EnvironmentAttributeMapMod EMPTY = new EnvironmentAttributeMapMod(Map.of());
-    @SuppressWarnings("unchecked")
+
     public static final Codec<EnvironmentAttributeMapMod> CODEC = Codec.lazyInitialized(
             () -> Codec.dispatchedMap(
                     EnvironmentAttributes.CODEC,
-                    Util.memoize((EnvironmentAttribute<?> attr) ->
-                            (Codec<Either<Removal, EnvironmentAttributeMap.Entry<?, ?>>>) (Object)
-                                    Codec.either(Removal.CODEC, EnvironmentAttributeMap.Entry.createCodec(attr))
+                    Util.memoize((EnvironmentAttribute<?> attr) -> Codec.either(Removal.CODEC, createEntryCodec(attr))
                     )
             ).xmap(EnvironmentAttributeMapMod::new,
                     mod -> mod.entriesToReplace.entrySet()
@@ -37,6 +37,17 @@ public class EnvironmentAttributeMapMod {
                             )
             ));
 
+    @SuppressWarnings("unchecked")
+    private static <Value> Codec<EnvironmentAttributeMap.Entry<?, ?>> createEntryCodec(EnvironmentAttribute<Value> environmentAttribute) {
+        Codec<AttributeModifier<Value, ?>> attributeModifierCodec = ExtendedAttributeMod.extendCodec(environmentAttribute.type());
+        Codec<EnvironmentAttributeMap.Entry<Value, ?>> codec = attributeModifierCodec.dispatch("modifier", EnvironmentAttributeMap.Entry::modifier,
+                Util.memoize((attributeModifier) ->
+                        EnvironmentAttributeMap.Entry.createFullCodec(environmentAttribute, attributeModifier)));
+        return Codec.either(environmentAttribute.valueCodec(), codec).xmap((either) ->
+                either.map((object) -> new EnvironmentAttributeMap.Entry<>(object, AttributeModifier.override()),
+                        (entry) -> entry), (entry) -> entry.modifier() ==
+                AttributeModifier.override() ? (Either) Either.left(entry.argument()) : (Either) Either.right(entry));
+    }
 
     private EnvironmentAttributeMapMod(Map<EnvironmentAttribute<?>,
             Either<Removal, EnvironmentAttributeMap.Entry<?, ?>>> entries) {
@@ -59,6 +70,11 @@ public class EnvironmentAttributeMapMod {
         this.entriesToRemove = entriesToRemove;
     }
 
+
+    public boolean isEmpty() {
+        return entriesToReplace.isEmpty() && entriesToRemove.isEmpty();
+    }
+
     public static EnvironmentAttributeMapMod wrapVanilla(EnvironmentAttributeMap attributes) {
         return new EnvironmentAttributeMapMod(EnvironmentAttributeMap.builder().putAll(attributes).entries, Set.of());
     }
@@ -74,6 +90,7 @@ public class EnvironmentAttributeMapMod {
     }
 
     public EnvironmentAttributeMap modify(EnvironmentAttributeMap original) {
+        if (isEmpty()) return original;
         EnvironmentAttributeMap.Builder builder = EnvironmentAttributeMap.builder();
         //add original entries except removed ones
         for (var key : original.keySet()) {
@@ -87,9 +104,14 @@ public class EnvironmentAttributeMapMod {
     }
 
 
-    private enum Removal {
+    private enum Removal implements StringRepresentable {
         UNIT;
-        public static final Codec<Removal> CODEC = MapCodec.unitCodec(UNIT);
+        public static final Codec<Removal> CODEC = StringRepresentable.fromEnum(Removal::values);
+
+        @Override
+        public @NonNull String getSerializedName() {
+            return "REMOVE";
+        }
     }
 
 }

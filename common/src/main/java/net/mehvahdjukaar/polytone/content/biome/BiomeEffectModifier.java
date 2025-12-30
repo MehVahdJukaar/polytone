@@ -34,7 +34,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
             ColorUtils.CODEC.optionalFieldOf("dry_foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
             ColorUtils.CODEC.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
             BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
-            EnvironmentAttributeMapMod.CODEC.optionalFieldOf("attribute_modifiers", //additions
+            EnvironmentAttributeMapMod.CODEC.optionalFieldOf("attributes_modifiers",
                     EnvironmentAttributeMapMod.EMPTY).forGetter(BiomeEffectModifier::environmentAttributesMod),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));

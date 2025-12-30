@@ -14,6 +14,7 @@ accessible field net/minecraft/world/level/biome/Biome attributes Lnet/minecraft
 mutable field net/minecraft/world/level/biome/Biome attributes Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
 accessible field net/minecraft/world/attribute/EnvironmentAttributeMap$Builder entries Ljava/util/Map;
 accessible method net/minecraft/world/attribute/EnvironmentAttributeMap$Entry createCodec (Lnet/minecraft/world/attribute/EnvironmentAttribute;)Lcom/mojang/serialization/Codec;
+accessible method net/minecraft/world/attribute/EnvironmentAttributeMap$Entry createFullCodec (Lnet/minecraft/world/attribute/EnvironmentAttribute;Lnet/minecraft/world/attribute/modifier/AttributeModifier;)Lcom/mojang/serialization/MapCodec;
 
 accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_FOG_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible method net/minecraft/client/renderer/rendertype/RenderType create (Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;

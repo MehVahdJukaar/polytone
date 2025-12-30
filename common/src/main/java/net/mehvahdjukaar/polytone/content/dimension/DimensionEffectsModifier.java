@@ -7,22 +7,17 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.level.dimension.DimensionType;
+import org.jspecify.annotations.NonNull;
 
-import java.util.List;
 import java.util.Optional;
-
-import static net.mehvahdjukaar.polytone.misc.struc.ListUtils.mergeList;
 
 
 //these used to be dimension special effects modifiers
 //now they are a per dimension environment effect modifier. we essentially modify dimension type
 //TODO: timelines?
-public record DimensionEffectsModifier(EnvironmentAttributeMap environmentAttributes,
-                                       List<EnvironmentAttribute<?>> attributeRemovals,
+public record DimensionEffectsModifier(EnvironmentAttributeModifications attributeModifications,
                                        Optional<DimensionType.Skybox> skybox,
                                        Optional<DimensionType.CardinalLightType> cardinalLightType,
                                        Optional<Float> ambientLight,
@@ -32,10 +27,8 @@ public record DimensionEffectsModifier(EnvironmentAttributeMap environmentAttrib
 
     public static final Decoder<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    EnvironmentAttributeMap.CODEC.optionalFieldOf("attributes",
-                            EnvironmentAttributeMap.EMPTY).forGetter(DimensionEffectsModifier::environmentAttributes),
-                    BuiltInRegistries.ENVIRONMENT_ATTRIBUTE.byNameCodec().listOf().optionalFieldOf("attributes_removals",
-                            List.of()).forGetter(DimensionEffectsModifier::attributeRemovals),
+                    EnvironmentAttributeModifications.CODEC.optionalFieldOf("attributes_modifiers",
+                            EnvironmentAttributeModifications.EMPTY).forGetter(DimensionEffectsModifier::attributeModifications),
                     DimensionType.Skybox.CODEC.optionalFieldOf("skybox").forGetter(DimensionEffectsModifier::skybox),
                     DimensionType.CardinalLightType.CODEC.optionalFieldOf("cardinal_light").forGetter(DimensionEffectsModifier::cardinalLightType),
                     Codec.FLOAT.optionalFieldOf("ambient_light").forGetter(DimensionEffectsModifier::ambientLight),
@@ -48,11 +41,7 @@ public record DimensionEffectsModifier(EnvironmentAttributeMap environmentAttrib
 
     public DimensionEffectsModifier merge(DimensionEffectsModifier newMod) {
         return new DimensionEffectsModifier(
-                EnvironmentAttributeMap.builder()
-                        .putAll(this.environmentAttributes)
-                        .putAll(newMod.environmentAttributes)
-                        .build(),
-                mergeList(this.attributeRemovals, newMod.attributeRemovals),
+                this.attributeModifications.merge(newMod.attributeModifications),
                 newMod.skybox.or(this::skybox),
                 newMod.cardinalLightType.or(this::cardinalLightType),
                 newMod.ambientLight.or(this::ambientLight),
@@ -65,18 +54,7 @@ public record DimensionEffectsModifier(EnvironmentAttributeMap environmentAttrib
     //Returns vanilla attributes that got replaced
     private EnvironmentAttributeMap modifyAttributeMap(DimensionType dimension) {
         EnvironmentAttributeMap currentMap = dimension.attributes();
-        var builder = EnvironmentAttributeMap.builder();
-
-        if (attributeRemovals.isEmpty() && environmentAttributes == EnvironmentAttributeMap.EMPTY) {
-            return currentMap;
-        }
-
-        for (EnvironmentAttribute<?> key : currentMap.keySet()) {
-            if (!attributeRemovals.contains(key)) {
-                builder.set(key, currentMap.get(key));
-            }
-        }
-        dimension.attributes = builder.build();
+        ((DimensionTypeAccessor) (Object) dimension).setAttributes(attributeModifications.baseMod.modify(currentMap));
         return currentMap;
     }
 
@@ -111,7 +89,8 @@ public record DimensionEffectsModifier(EnvironmentAttributeMap environmentAttrib
 
         EnvironmentAttributeMap oldAttributes = modifyAttributeMap(dimension);
 
-        return new DimensionEffectsModifier(oldAttributes, List.of(),
+        return new DimensionEffectsModifier(
+                EnvironmentAttributeModifications.baseOnly(EnvironmentAttributeMapMod.wrapVanilla(oldAttributes)),
                 oldSky,
                 oldCloud,
                 oldAmbient,
@@ -119,6 +98,52 @@ public record DimensionEffectsModifier(EnvironmentAttributeMap environmentAttrib
                 Optional.empty(), DimensionTarget.EMPTY);
 
 
+    }
+
+
+    private record EnvironmentAttributeModifications(EnvironmentAttributeMapMod baseMod,
+                                                     EnvironmentAttributeMapMod rainMod,
+                                                     EnvironmentAttributeMapMod thunderMod,
+                                                     EnvironmentAttributeMapMod postProcess) { //here we dont use removals
+
+        public static final Codec<EnvironmentAttributeModifications> DIRECT_CODEC = RecordCodecBuilder.create(
+                instance -> instance.group(
+                        EnvironmentAttributeMapMod.CODEC.optionalFieldOf("base",
+                                EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.baseMod),
+                        EnvironmentAttributeMapMod.CODEC.optionalFieldOf("rain",
+                                EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.rainMod),
+                        EnvironmentAttributeMapMod.CODEC.optionalFieldOf("thunder",
+                                EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.thunderMod),
+                        EnvironmentAttributeMapMod.CODEC.optionalFieldOf("post_process",
+                                EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.postProcess)
+                ).apply(instance, EnvironmentAttributeModifications::new)
+        );
+
+        public static final Codec<EnvironmentAttributeModifications> CODEC = Codec.withAlternative(DIRECT_CODEC,
+                EnvironmentAttributeMapMod.CODEC.xmap(EnvironmentAttributeModifications::baseOnly,
+                        m -> m.baseMod
+                )
+        );
+
+        private static @NonNull EnvironmentAttributeModifications baseOnly(EnvironmentAttributeMapMod mod) {
+            return new EnvironmentAttributeModifications(
+                    mod,
+                    EnvironmentAttributeMapMod.EMPTY,
+                    EnvironmentAttributeMapMod.EMPTY,
+                    EnvironmentAttributeMapMod.EMPTY
+            );
+        }
+
+        public static final EnvironmentAttributeModifications EMPTY = baseOnly(EnvironmentAttributeMapMod.EMPTY);
+
+        public EnvironmentAttributeModifications merge(EnvironmentAttributeModifications newMod) {
+            return new EnvironmentAttributeModifications(
+                    this.baseMod.merge(newMod.baseMod),
+                    this.rainMod.merge(newMod.rainMod),
+                    this.thunderMod.merge(newMod.thunderMod),
+                    this.postProcess.merge(newMod.postProcess)
+            );
+        }
     }
 
 }
