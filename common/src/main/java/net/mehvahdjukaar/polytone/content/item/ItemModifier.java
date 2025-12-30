@@ -4,12 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.misc.Targets;
-import net.minecraft.client.renderer.fog.environment.FogEnvironment;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static net.mehvahdjukaar.polytone.misc.struc.ListUtils.mergeList;
+import static net.mehvahdjukaar.polytone.common.struc.ListUtils.mergeList;
 
 public record ItemModifier(Optional<IColorGetter> barColor,
                            Optional<Rarity> rarity,

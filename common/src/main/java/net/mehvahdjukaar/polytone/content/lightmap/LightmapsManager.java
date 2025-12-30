@@ -6,16 +6,17 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.misc.LegacyHelper;
-import net.mehvahdjukaar.polytone.misc.Parsed;
-import net.mehvahdjukaar.polytone.misc.Targets;
-import net.mehvahdjukaar.polytone.misc.struc.ArrayImage;
-import net.mehvahdjukaar.polytone.misc.struc.MapRegistry;
-import net.mehvahdjukaar.polytone.misc.reloader.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.common.LegacyHelper;
+import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.Targets;
+import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
+import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
@@ -123,7 +124,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
 
     private void addLightmap(Identifier fileId, Lightmap mod, HolderLookup.Provider access) {
         for (var dim : mod.targets().compute(fileId, access)) {
-            lightmaps.register(dim.unwrapKey().get().location(), mod);
+            lightmaps.register(dim.unwrapKey().get().identifier(), mod);
         }
     }
 
@@ -185,7 +186,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
         var currentDimHolder = level.dimensionTypeRegistration();
         RegistryAccess access = level.registryAccess();
         for (var v : lightmaps.getEntries()) {
-            ResourceLocation modId = v.getKey();
+            Identifier modId = v.getKey();
             Lightmap modifier = v.getValue();
             var targets = modifier.targets().compute(modId, access);
             if (targets.contains(currentDimHolder)) {

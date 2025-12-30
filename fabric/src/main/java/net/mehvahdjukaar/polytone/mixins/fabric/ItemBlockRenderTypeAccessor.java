@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.world.level.block.Block;
 import org.spongepowered.asm.mixin.Mixin;

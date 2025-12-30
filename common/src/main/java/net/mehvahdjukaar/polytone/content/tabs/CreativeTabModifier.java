@@ -5,8 +5,8 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.misc.Targets;
-import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.Targets;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static net.mehvahdjukaar.polytone.misc.struc.ListUtils.mergeList;
+import static net.mehvahdjukaar.polytone.common.struc.ListUtils.mergeList;
 
 public record CreativeTabModifier(
         Optional<ItemStack> icon,

@@ -2,9 +2,9 @@ package net.mehvahdjukaar.polytone.content.colormap;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
-import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.misc.struc.MapRegistry;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static net.mehvahdjukaar.polytone.misc.ColorUtils.getClimateSettings;
+import static net.mehvahdjukaar.polytone.common.ColorUtils.getClimateSettings;
 
 public interface IColormapNumberProvider {
 

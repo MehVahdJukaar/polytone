@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.colormap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;

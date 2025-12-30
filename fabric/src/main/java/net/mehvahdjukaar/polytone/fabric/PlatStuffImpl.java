@@ -16,7 +16,7 @@ import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.particle.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
-import net.mehvahdjukaar.polytone.misc.Targets;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;

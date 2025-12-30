@@ -20,6 +20,8 @@ accessible field net/minecraft/world/attribute/EnvironmentAttributeMap$Builder e
 accessible method net/minecraft/world/attribute/EnvironmentAttributeMap$Entry createCodec (Lnet/minecraft/world/attribute/EnvironmentAttribute;)Lcom/mojang/serialization/Codec;
 accessible method net/minecraft/world/attribute/EnvironmentAttributeMap$Entry createFullCodec (Lnet/minecraft/world/attribute/EnvironmentAttribute;Lnet/minecraft/world/attribute/modifier/AttributeModifier;)Lcom/mojang/serialization/MapCodec;
 
+accessible field net/minecraft/client/renderer/RenderPipelines TERRAIN_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+
 accessible field net/minecraft/client/multiplayer/ClientLevel environmentAttributes Lnet/minecraft/world/attribute/EnvironmentAttributeSystem;
 mutable field net/minecraft/client/multiplayer/ClientLevel environmentAttributes Lnet/minecraft/world/attribute/EnvironmentAttributeSystem;
 

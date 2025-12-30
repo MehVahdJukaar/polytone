@@ -15,11 +15,9 @@ import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
 import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
-import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;

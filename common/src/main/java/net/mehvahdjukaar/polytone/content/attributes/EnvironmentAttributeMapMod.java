@@ -95,7 +95,7 @@ public class EnvironmentAttributeMapMod {
         //add original entries except removed ones
         for (var key : original.keySet()) {
             if (!entriesToRemove.contains(key)) {
-                builder.set(key, original.get(key));
+                builder.entries.put(key, original.get(key));
             }
         }
         //add new entries

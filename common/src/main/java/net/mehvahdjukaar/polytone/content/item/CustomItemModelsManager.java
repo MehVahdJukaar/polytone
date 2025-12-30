@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.item;
 
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;

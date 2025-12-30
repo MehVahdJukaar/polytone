@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
-import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;

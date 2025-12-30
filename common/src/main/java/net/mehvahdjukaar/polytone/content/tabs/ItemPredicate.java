@@ -3,8 +3,8 @@ package net.mehvahdjukaar.polytone.content.tabs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.misc.struc.MapRegistry;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -160,7 +160,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
         @Override
         public boolean test(ItemStack stack) {
             Item item = stack.getItem();
-            Identifier id = item.builtInRegistryHolder().key().location();
+            Identifier id = item.builtInRegistryHolder().key().identifier();
             return namespace.matcher(id.getNamespace()).find() && path.matcher(id.getPath()).find();
         }
 

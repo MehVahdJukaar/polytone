@@ -6,8 +6,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
-import net.mehvahdjukaar.polytone.misc.codec.BiggerCodecs;
-import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -114,7 +114,7 @@ public record BlockParticleEmitter(
 
         var particleTypeValue = particleType.get().value();
 
-        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().location())) {
+        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().identifier())) {
             Map<String, Float> map = new HashMap<>();
             r.ifPresent(exp -> map.put("red", (float) exp.getValue(level, pos, state)));
             g.ifPresent(exp -> map.put("green", (float) exp.getValue(level, pos, state)));

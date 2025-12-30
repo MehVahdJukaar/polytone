@@ -3,8 +3,8 @@ package net.mehvahdjukaar.polytone.content.dimension;
 
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.misc.Parsed;
-import net.mehvahdjukaar.polytone.misc.reloader.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;

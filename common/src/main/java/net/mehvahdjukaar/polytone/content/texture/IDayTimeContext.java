@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.texture;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;

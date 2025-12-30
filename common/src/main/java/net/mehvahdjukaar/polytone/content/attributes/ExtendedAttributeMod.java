@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.attributes;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.attribute.AttributeType;
 import net.minecraft.world.attribute.AttributeTypes;
@@ -20,13 +20,13 @@ public class ExtendedAttributeMod {
 
         Codec<AttributeModifier<V, ?>> original = type.modifierCodec();
         if (type == AttributeTypes.FLOAT) {
-            return Codec.withAlternative(original, (Codec<? extends AttributeModifier<V, ?>>) FLOAT_EXP_CODEC);
+            return Codec.withAlternative(original, (Codec<? extends AttributeModifier<V, ?>>)(Object) FLOAT_EXP_CODEC);
         }
         if (type == AttributeTypes.RGB_COLOR) {
-            return Codec.withAlternative(original, (Codec<? extends AttributeModifier<V, ?>>) INT_EXP_CODEC);
+            return Codec.withAlternative(original, (Codec<? extends AttributeModifier<V, ?>>)(Object) INT_EXP_CODEC);
         }
         if (type == AttributeTypes.ARGB_COLOR) {
-            return Codec.withAlternative(original, (Codec<? extends AttributeModifier<V, ?>>) INT_EXP_CODEC);
+            return Codec.withAlternative(original, (Codec<? extends AttributeModifier<V, ?>>)(Object) INT_EXP_CODEC);
         }
         return original;
     }

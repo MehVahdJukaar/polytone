@@ -1,10 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.content.texture.IDayTimeContext;
-import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.SpriteContents;
-import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

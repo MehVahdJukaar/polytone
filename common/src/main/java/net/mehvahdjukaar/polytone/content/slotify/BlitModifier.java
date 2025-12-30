@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.slotify;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.misc.ColorUtils;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;

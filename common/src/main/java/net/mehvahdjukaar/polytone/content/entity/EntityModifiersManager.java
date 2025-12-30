@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.entity;
 
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.polytone.misc.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;

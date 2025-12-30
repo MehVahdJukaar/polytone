@@ -162,62 +162,62 @@ public class PolytoneRenderTypes {
 
     }
 
-//    public static void onRenderLast() {
-//        if (lastModelViewMatrix != null) {
-//            Matrix4f last = new Matrix4f(RenderSystem.getModelViewMatrix());
-//            RenderSystem.getModelViewMatrix().set(lastModelViewMatrix);
-//            DEFERRED_BUFFER_SOURCE.endBatches();
-//            RenderSystem.getModelViewMatrix().set(last);
-//        }else {
-//            DEFERRED_BUFFER_SOURCE.endBatches();
-//        }
-//    }
-//
-//    public static final DeferredBufferSource DEFERRED_BUFFER_SOURCE = new DeferredBufferSource();
-//
-//    private static Matrix4f lastModelViewMatrix;
-//
-//    public static void cacheMatrices() {
-//        lastModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
-//    }
-//
-//    public static class DeferredBufferSource extends MultiBufferSource.BufferSource {
-//        protected final Supplier<ByteBufferBuilder> bufferSupplier;
-//
-//        private final Collection<RenderType> delayed = new HashSet<>();
-//
-//        protected DeferredBufferSource() {
-//            this(() -> new ByteBufferBuilder(786432), new LinkedHashMap<>());
-//        }
-//
-//        protected DeferredBufferSource(Supplier<ByteBufferBuilder> bufferSupplier, SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers) {
-//            super(bufferSupplier.get(), fixedBuffers);
-//            this.bufferSupplier = bufferSupplier;
-//        }
-//
-//        public void endBatches() {
-//            endBatch(ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE);
-//            endBatch(ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE);
-//            for (RenderType type : delayed) {
-//                endBatch(type);
-//            }
-//        }
-//
-//        @Override
-//        public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
-//            if (!fixedBuffers.containsKey(renderType)) {
-//                fixedBuffers.put(renderType, bufferSupplier.get());
-//                if (renderType != ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE && renderType != ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE) {
-//                    delayed.add(renderType);
-//                }
-//            }
-//            return super.getBuffer(renderType);
-//        }
-//
-//        @Override
-//        public void endBatch(@NotNull RenderType renderType) {
-//            super.endBatch(renderType);
-//        }
-//    }
+    public static void onRenderLast() {
+        if (lastModelViewMatrix != null) {
+            Matrix4f last = new Matrix4f(RenderSystem.getModelViewMatrix());
+            RenderSystem.getModelViewMatrix().set(lastModelViewMatrix);
+            DEFERRED_BUFFER_SOURCE.endBatches();
+            RenderSystem.getModelViewMatrix().set(last);
+        }else {
+            DEFERRED_BUFFER_SOURCE.endBatches();
+        }
+    }
+
+    public static final DeferredBufferSource DEFERRED_BUFFER_SOURCE = new DeferredBufferSource();
+
+    private static Matrix4f lastModelViewMatrix;
+
+    public static void cacheMatrices() {
+        lastModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
+    }
+
+    public static class DeferredBufferSource extends MultiBufferSource.BufferSource {
+        protected final Supplier<ByteBufferBuilder> bufferSupplier;
+
+        private final Collection<RenderType> delayed = new HashSet<>();
+
+        protected DeferredBufferSource() {
+            this(() -> new ByteBufferBuilder(786432), new LinkedHashMap<>());
+        }
+
+        protected DeferredBufferSource(Supplier<ByteBufferBuilder> bufferSupplier, SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers) {
+            super(bufferSupplier.get(), fixedBuffers);
+            this.bufferSupplier = bufferSupplier;
+        }
+
+        public void endBatches() {
+            endBatch(ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE);
+            endBatch(ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE);
+            for (RenderType type : delayed) {
+                endBatch(type);
+            }
+        }
+
+        @Override
+        public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
+            if (!fixedBuffers.containsKey(renderType)) {
+                fixedBuffers.put(renderType, bufferSupplier.get());
+                if (renderType != ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE && renderType != ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE) {
+                    delayed.add(renderType);
+                }
+            }
+            return super.getBuffer(renderType);
+        }
+
+        @Override
+        public void endBatch(@NotNull RenderType renderType) {
+            super.endBatch(renderType);
+        }
+    }
 };
 

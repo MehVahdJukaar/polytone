@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.tabs;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;

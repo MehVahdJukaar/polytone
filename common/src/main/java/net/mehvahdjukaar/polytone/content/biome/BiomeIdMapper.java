@@ -2,8 +2,8 @@ package net.mehvahdjukaar.polytone.content.biome;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.misc.LegacyHelper;
-import net.mehvahdjukaar.polytone.misc.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.LegacyHelper;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
@@ -32,7 +32,7 @@ public interface BiomeIdMapper {
         }
 
         public static final Codec<Custom> CUSTOM_CODEC = Codec.unboundedMap(Identifier.CODEC
-                                .xmap(r -> ResourceKey.create(Registries.BIOME, r), ResourceKey::location),
+                                .xmap(r -> ResourceKey.create(Registries.BIOME, r), ResourceKey::identifier),
                         Codec.FLOAT)
                 .xmap(Custom::new, Custom::map);
 

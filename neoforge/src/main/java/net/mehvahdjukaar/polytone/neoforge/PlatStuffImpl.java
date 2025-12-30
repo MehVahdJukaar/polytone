@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.misc.Targets;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.mixins.neoforge.*;
 import net.mehvahdjukaar.polytone.content.particle.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;

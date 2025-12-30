@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.misc.DummySprite;
+import net.mehvahdjukaar.polytone.common.DummySprite;
 import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.RandomSource;

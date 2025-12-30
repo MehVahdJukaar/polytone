@@ -4,10 +4,10 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "EnvironmentSystemMixin",
-    "accessor.DimensionTypeAccessor"
   ],
   "client": [
+    "EnvironmentSystemMixin",
+    "accessor.DimensionTypeAccessor",
     "AbstractContainerMenuMixin",
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",

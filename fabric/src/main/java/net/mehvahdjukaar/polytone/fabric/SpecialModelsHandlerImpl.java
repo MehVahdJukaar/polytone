@@ -50,7 +50,7 @@ public class SpecialModelsHandlerImpl {
             var value = entry.getValue();
             hack.addModel(value, new SimpleUnbakedExtraModel<>(
                     key, (model, baker) -> { //same exact as forge
-                return model.bakeTopGeometry(model.getTopTextureSlots(), baker, BlockModelRotation.X0_Y0);
+                return model.bakeTopGeometry(model.getTopTextureSlots(), baker, BlockModelRotation.IDENTITY);
             }
             ));
         }
