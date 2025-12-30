@@ -87,8 +87,6 @@ public class PolytoneFabric implements ClientModInitializer {
         });
     }
 
-    public static MinecraftServer currentServer;
-
     public static void addRenderParticlesType() {
         List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());
         renderOrder.add(PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE.get());
