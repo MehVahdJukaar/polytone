@@ -2,12 +2,15 @@ package net.mehvahdjukaar.polytone.content.texture;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-public interface DayTimeTexture {
+public interface IDayTimeContext {
 
     Mode polytone$getMode();
 
@@ -41,6 +44,28 @@ public interface DayTimeTexture {
             } else {
                 return VANILLA;
             }
+        }
+
+        public @Nullable Float getDelta(float timeCycleDuration) {
+            Level level = Minecraft.getInstance().level;
+            if (level == null) return null;
+
+            return switch (this) {
+                case WEATHER -> {
+                    float rainAndThunder = ClientFrameTicker.getRainAndThunder() * 2 / 3f;
+                    yield rainAndThunder + 1 / 6;
+                }
+                //needs to fall in between those 2 so we dont get interpolation as this stuff doesnt loop back
+                case GAME_TIME -> {
+                    double gameTime = level.getGameTime() % timeCycleDuration;
+                    yield (float) (gameTime / timeCycleDuration);
+                }
+                case SCREEN_TIME -> Math.min(1, (ClientFrameTicker.getGuiTime() / timeCycleDuration));
+                default -> {
+                    double dayTime = ClientFrameTicker.getDayTime() % timeCycleDuration;
+                    yield (float) (dayTime / timeCycleDuration);
+                }
+            };
         }
     }
 }

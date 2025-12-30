@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.content.texture.DayTimeTexture;
+import net.mehvahdjukaar.polytone.content.texture.IDayTimeContext;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.function.Function;
 
 @Mixin(AnimationMetadataSection.class)
-public class AnimationMetadataSectionMixin implements DayTimeTexture {
+public class AnimationMetadataSectionMixin implements IDayTimeContext {
     @Unique
     private Mode polytone$mode = Mode.VANILLA;
     @Unique
@@ -54,13 +54,13 @@ public class AnimationMetadataSectionMixin implements DayTimeTexture {
                 instance.group(
                                 MapCodec.assumeMapUnsafe(original).forGetter(Function.identity()),
                                 Mode.CODEC.optionalFieldOf("mode", Mode.VANILLA).forGetter(a->
-                                        ((DayTimeTexture)(Object)a).polytone$getMode()),
+                                        ((IDayTimeContext)(Object)a).polytone$getMode()),
                                 Codec.INT.optionalFieldOf("time_cycle_duration", SharedConstants.TICKS_PER_GAME_DAY).forGetter(a->
-                                        ((DayTimeTexture)(Object)a).polytone$getTimeCycleDuration())
+                                        ((IDayTimeContext)(Object)a).polytone$getTimeCycleDuration())
                         )
                         .apply(instance, (typeInstance, mode, time) -> {
-                            ((DayTimeTexture)(Object)typeInstance).polytone$setMode(mode);
-                            ((DayTimeTexture)(Object)typeInstance).polytone$setTimeCycleDuration(time);
+                            ((IDayTimeContext)(Object)typeInstance).polytone$setMode(mode);
+                            ((IDayTimeContext)(Object)typeInstance).polytone$setTimeCycleDuration(time);
                             return typeInstance;
                         })
         );

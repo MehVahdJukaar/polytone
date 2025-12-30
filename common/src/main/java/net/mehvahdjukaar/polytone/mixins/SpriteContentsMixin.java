@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.mehvahdjukaar.polytone.content.texture.DayTimeTexture;
+import net.mehvahdjukaar.polytone.content.texture.IDayTimeContext;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,11 +15,11 @@ public class SpriteContentsMixin {
     @ModifyReturnValue(method = "createAnimatedTexture", at = @At("RETURN"))
     public SpriteContents.AnimatedTexture polytone$addWorldTimeTextureData(SpriteContents.AnimatedTexture original,
                                                                            @Local(argsOnly = true) AnimationMetadataSection metadata) {
-        if(original != null) {
-            ((DayTimeTexture) original).polytone$setMode(
-                    ((DayTimeTexture)(Object) metadata).polytone$getMode());
-            ((DayTimeTexture) original).polytone$setTimeCycleDuration(
-                    ((DayTimeTexture)(Object) metadata).polytone$getTimeCycleDuration());
+        if (original != null) {
+            ((IDayTimeContext) original).polytone$setMode(
+                    ((IDayTimeContext) (Object) metadata).polytone$getMode());
+            ((IDayTimeContext) original).polytone$setTimeCycleDuration(
+                    ((IDayTimeContext) (Object) metadata).polytone$getTimeCycleDuration());
         }
         return original;
     }
