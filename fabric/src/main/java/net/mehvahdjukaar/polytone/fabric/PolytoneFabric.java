@@ -85,12 +85,7 @@ public class PolytoneFabric implements ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             Polytone.onLoggedOut();
         });
-
-
-        addRenderParticlesType();
     }
-
-    public static MinecraftServer currentServer;
 
     public static void addRenderParticlesType() {
         List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());
