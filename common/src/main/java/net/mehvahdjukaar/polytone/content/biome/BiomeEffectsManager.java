@@ -75,4 +75,10 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         //whatever happens, we always clear stuff to apply
         effectsToApply.clear();
     }
+
+    public boolean hasModifiedAttributes() {
+        return effectsToApply.values().stream().anyMatch(
+                m -> !m.environmentAttributesMod().isEmpty()
+        );
+    }
 }

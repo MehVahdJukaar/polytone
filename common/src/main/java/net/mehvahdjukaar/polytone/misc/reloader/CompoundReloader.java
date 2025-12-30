@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
+import net.mehvahdjukaar.polytone.content.attributes.EnvironmentAttributesHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.HolderLookup;
@@ -58,6 +59,8 @@ public class CompoundReloader implements PreparableReloadListener {
         Stopwatch stopwatch = Stopwatch.createStarted();
         resetWithLevel(false);
 
+        EnvironmentAttributesHandler.reset();
+
         RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
 
         for (int i = 0; i < childrenResourcesCache.size(); i++) {
@@ -105,6 +108,9 @@ public class CompoundReloader implements PreparableReloadListener {
         if (level instanceof ClientLevel cl) {
             cl.clearTintCaches();
         }
+
+        EnvironmentAttributesHandler.refresh();
+
     }
 
     @SuppressWarnings("all")

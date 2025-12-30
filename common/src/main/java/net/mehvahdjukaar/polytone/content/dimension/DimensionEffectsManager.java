@@ -118,4 +118,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     public void addPostLayers(EnvironmentAttributeSystem.Builder builder, Level level) {
 
     }
+
+    public boolean hasModifiedAttributes() {
+        return effectsToApply.values().stream().anyMatch(
+                m -> !m.attributeModifications().isEmpty());
+    }
 }

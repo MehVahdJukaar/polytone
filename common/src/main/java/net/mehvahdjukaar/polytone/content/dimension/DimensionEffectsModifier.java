@@ -4,9 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
-import net.minecraft.core.Holder;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.level.dimension.DimensionType;
 import org.jspecify.annotations.NonNull;
@@ -100,7 +100,7 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
     }
 
 
-    private record EnvironmentAttributeModifications(EnvironmentAttributeMapMod baseMod,
+    public record EnvironmentAttributeModifications(EnvironmentAttributeMapMod baseMod,
                                                      EnvironmentAttributeMapMod rainMod,
                                                      EnvironmentAttributeMapMod thunderMod,
                                                      EnvironmentAttributeMapMod postProcess) { //here we dont use removals
@@ -142,6 +142,10 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
                     this.thunderMod.merge(newMod.thunderMod),
                     this.postProcess.merge(newMod.postProcess)
             );
+        }
+
+        public boolean isEmpty() {
+          return  baseMod.isEmpty() && rainMod.isEmpty() && thunderMod.isEmpty() && postProcess.isEmpty();
         }
     }
 

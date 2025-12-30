@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.content.dimension.EnvironmentAttributeMapMod;
+import net.mehvahdjukaar.polytone.content.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.misc.ColorUtils;
 import net.mehvahdjukaar.polytone.misc.Targets;

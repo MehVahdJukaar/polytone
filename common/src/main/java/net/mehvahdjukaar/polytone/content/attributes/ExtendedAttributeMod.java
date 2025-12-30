@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.dimension;
+package net.mehvahdjukaar.polytone.content.attributes;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;

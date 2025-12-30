@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.dimension;
+package net.mehvahdjukaar.polytone.content.attributes;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
