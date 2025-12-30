@@ -1,0 +1,5 @@
+{
+  "toast.polytone.load_fail": "Paket hataları içeriyor. logs/polytone.log dosyasını kontrol edin",
+  "toast.polytone.lazy_load_fail": "Polytone Geç Kaynak Yüklemesi başarısız oldu",
+  "toast.polytone.early_load_fail": "Polytone Erken Kaynak Yüklemesi başarısız oldu"
+}
