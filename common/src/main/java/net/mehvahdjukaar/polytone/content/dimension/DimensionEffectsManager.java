@@ -23,8 +23,6 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     private final Map<Identifier, DimensionEffectsModifier> vanillaEffects = new HashMap<>();
 
-    private boolean needsDynamicApplication = true;
-
     private final Map<Identifier, Parsed<DimensionEffectsModifier>> extraMods = new HashMap<>();
 
     public DimensionEffectsManager() {
@@ -33,8 +31,6 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     @Override
     protected void resetWithLevel(boolean logOff) {
-        needsDynamicApplication = true;
-
         //Dimensions are NOT reloaded with world load. we need to reset vanilla stuff once we have a level
         //whatever happens, we always clear stuff to apply
         effectsToApply.clear();
@@ -44,9 +40,6 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     @Override
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var jsons = resources.jsons();
-        var textures = new HashMap<>(resources.textures());
-
-        Set<Identifier> usedTextures = new HashSet<>();
 
         Parsed.SortedMap<DimensionEffectsModifier> parsedModifiers =
                 Parsed.batchParseAlways(jsons, DimensionEffectsModifier.CODEC, ops, "dimension modifier");
@@ -73,11 +66,8 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     @Override
     protected void applyWithLevel(HolderLookup.Provider registryAccess, boolean isLogIn) {
-        if (!isLogIn && !needsDynamicApplication) return;
-        needsDynamicApplication = false;
-
         for (var v : vanillaEffects.entrySet()) {
-            v.getValue().applyInplace(v.getKey());
+            v.getValue().apply(v.getKey());
         }
 
         var dimReg = registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE);
@@ -96,6 +86,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         if (!vanillaEffects.isEmpty())
             Polytone.LOGGER.info("Applied {} Dimension Modifiers", vanillaEffects.size());
         //we don't clear effects to apply because we need to re apply on world reload
+
+    }
+
+    public void applyOnDimensionChanged(){
 
     }
 

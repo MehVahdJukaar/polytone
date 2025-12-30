@@ -58,9 +58,8 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
         return currentMap;
     }
 
-    public DimensionEffectsModifier apply(Holder<DimensionType> dimensionHolder) {
+    public DimensionEffectsModifier apply(DimensionType dimension) {
 
-        DimensionType dimension = dimensionHolder.value();
         DimensionTypeAccessor accessor = (DimensionTypeAccessor) (Object) dimension;
 
         Optional<Boolean> oldHasSkylight = Optional.empty();

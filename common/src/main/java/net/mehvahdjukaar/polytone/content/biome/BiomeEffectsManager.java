@@ -19,7 +19,6 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     private final Map<Biome, BiomeEffectModifier> vanillaEffects = new HashMap<>();
     private final Map<Biome, BiomeEffectModifier> effectsToApply = new HashMap<>();
-    private boolean needsDynamicApplication = true;
 
     public BiomeEffectsManager() {
         super("biome_modifiers", "biome_effects");
@@ -42,11 +41,8 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     // we need registry ops here since special effects use registry stuff...
     @Override
     public void applyWithLevel(HolderLookup.Provider registryAccess, boolean isLogIn) {
-        if (!isLogIn && !needsDynamicApplication) return;
 
-        needsDynamicApplication = false;
         if (isLogIn) vanillaEffects.clear();
-
 
         for (var v : effectsToApply.entrySet()) {
             Biome biome = v.getKey();
@@ -63,7 +59,6 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     @Override
     public void resetWithLevel(boolean isLogOff) {
-        this.needsDynamicApplication = true;
         Level level = Minecraft.getInstance().level;
         if (level != null) {
             for (var v : vanillaEffects.entrySet()) {

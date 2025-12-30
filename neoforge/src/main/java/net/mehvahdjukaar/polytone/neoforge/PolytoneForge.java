@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.block.model.ItemModelGenerator;
+import net.minecraft.client.renderer.fog.environment.FogEnvironment;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -26,6 +27,7 @@ import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.apache.logging.log4j.LogManager;
@@ -46,6 +48,7 @@ public class PolytoneForge {
     static IEventBus bus;
 
     public PolytoneForge(IEventBus modBus) {
+
         bus = modBus;
         SpecialModelsHandlerImpl.init(bus);
         if (FMLEnvironment.getDist() == Dist.CLIENT) {
@@ -114,25 +117,10 @@ public class PolytoneForge {
         }
     }
 
-
-    @SubscribeEvent
-    public void fogEvent(ViewportEvent.RenderFog fogEvent) {
-        // dannyb - this call would always return, since if fogtype is TERRAIN the first part is true (TERRAIN != NONE) , and if fogtype is not TERRAIN (including NONE) the second part is true (all other fogtype != TERRAIN).
-        //        if (fogEvent.getType() != FogType.NONE || fogEvent.getType() != FogType.TERRAIN) return;
-        Vec2 targetFog = Polytone.BIOME_MODIFIERS.modifyFogParameters(fogEvent.getNearPlaneDistance(), fogEvent.getFarPlaneDistance());
-        if (targetFog != null) {
-            fogEvent.setNearPlaneDistance(targetFog.x);
-            fogEvent.setFarPlaneDistance(targetFog.y);
-            // dannyb - no longer exists
-            // fogEvent.setCanceled(true);
-        }
-    }
-
     @SubscribeEvent
     public void onLevelUnload(ClientPlayerNetworkEvent.LoggingOut event) {
         Polytone.onLogOut();
     }
-
 
     public void modifyCreativeTabs(BuildCreativeModeTabContentsEvent event) {
         Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(event));
