@@ -5,23 +5,24 @@ import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.misc.Parsed;
 import net.mehvahdjukaar.polytone.misc.reloader.JsonImgPartialReloader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     private final Map<Identifier, DimensionEffectsModifier> effectsToApply = new HashMap<>();
 
-    private final Map<Identifier, DimensionEffectsModifier> vanillaEffects = new HashMap<>();
+    private final Map<Identifier, DimensionEffectsModifier> alteredVanillaEffects = new HashMap<>();
 
     private final Map<Identifier, Parsed<DimensionEffectsModifier>> extraMods = new HashMap<>();
 
@@ -59,39 +60,54 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     private void addModifier(Identifier fileId, DimensionEffectsModifier mod, HolderLookup.Provider registryAccess) {
-        for (var h : mod.targets().getTargets(fileId, registryAccess)) {
+        for (var h : mod.targets().compute(fileId, registryAccess)) {
             effectsToApply.merge(h.unwrapKey().get().identifier(), mod, DimensionEffectsModifier::merge);
         }
     }
 
     @Override
-    protected void applyWithLevel(HolderLookup.Provider registryAccess, boolean isLogIn) {
-        for (var v : vanillaEffects.entrySet()) {
-            v.getValue().apply(v.getKey());
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
+
+        //reset vanilla
+        var entries = alteredVanillaEffects.entrySet().iterator();
+        while (entries.hasNext()) {
+            var v = entries.next();
+            Identifier key = v.getKey();
+            var dimensionKey = ResourceKey.create(Registries.DIMENSION_TYPE, key);
+            var dimType = access.lookupOrThrow(Registries.DIMENSION_TYPE).get(dimensionKey);
+            if (dimType.isPresent()) {
+                DimensionEffectsModifier oldMod = v.getValue();
+                oldMod.apply(dimType.get().value());
+                entries.remove();
+            }
         }
 
-        var dimReg = registryAccess.lookupOrThrow(Registries.DIMENSION_TYPE);
+        //apply to current dimension
+        Level level = Minecraft.getInstance().level;
+        if (level != null) {
+            onDimensionChanged(level.dimensionTypeRegistration(), access);
+        }
+    }
+
+    public void onDimensionChanged(Holder<DimensionType> currentDimHolder, HolderLookup.Provider access) {
+        DimensionType currentDim = currentDimHolder.value();
+        Identifier currentDimId = currentDimHolder.unwrapKey().get().identifier();
 
         for (var v : effectsToApply.entrySet()) {
-            Identifier dimensionId = v.getKey();
-            var dimensionKey = ResourceKey.create(Registries.DIMENSION_TYPE, dimensionId);
+            Identifier modId = v.getKey();
             DimensionEffectsModifier modifier = v.getValue();
-            var old = modifier.applyInplace(dimensionId);
+            var targets = modifier.targets().compute(modId, access);
+            if (!targets.contains(currentDimHolder)) continue;
 
-            vanillaEffects.put(dimensionId, old);
+            DimensionEffectsModifier old = modifier.apply(currentDim);
 
-            DimensionType dim = dimReg.get(dimensionKey).get().value();
+            alteredVanillaEffects.put(currentDimId, old);
 
+            Polytone.LOGGER.info("Applied Custom Dimension Effects Modifier '{}' to dimension '{}'", modId, currentDimHolder);
         }
-        if (!vanillaEffects.isEmpty())
-            Polytone.LOGGER.info("Applied {} Dimension Modifiers", vanillaEffects.size());
         //we don't clear effects to apply because we need to re apply on world reload
-
     }
 
-    public void applyOnDimensionChanged(){
-
-    }
 
     public void addConvertedBlockProperties(Map<Identifier, Parsed<DimensionEffectsModifier>> converted) {
         extraMods.clear();
