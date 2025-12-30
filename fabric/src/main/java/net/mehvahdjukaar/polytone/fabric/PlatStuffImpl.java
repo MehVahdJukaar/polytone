@@ -78,10 +78,6 @@ public class PlatStuffImpl {
         return FabricLoader.getInstance().isModLoaded(namespace);
     }
 
-//    public static DimensionSpecialEffects getDimensionEffects(Identifier id) {
-//        return DimensionSpecialEffects.EFFECTS.get(id);
-//    }
-
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         try {
             biomeSpecialEffectsField.setAccessible(true);

@@ -1,147 +1,124 @@
-//package net.mehvahdjukaar.polytone.content.dimension;
-//
-//import com.mojang.datafixers.util.Either;
-//import com.mojang.serialization.Codec;
-//import com.mojang.serialization.Decoder;
-//import com.mojang.serialization.codecs.RecordCodecBuilder;
-//import net.mehvahdjukaar.polytone.PlatStuff;
-//import net.mehvahdjukaar.polytone.Polytone;
-//import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
-//import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-//import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
-//import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
-//import net.minecraft.client.color.block.BlockColor;
-//import net.minecraft.client.renderer.DimensionSpecialEffects;
-//import net.minecraft.resources.Identifier;
-//import org.jetbrains.annotations.Nullable;
-//
-//import java.util.Optional;
-//
-//
-//public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpression>> cloudLevel,
-//                                       Optional<Boolean> hasGround,
-//                                       Optional<DimensionSpecialEffects.SkyType> skyType,
-//                                       Optional<Boolean> hasEndFlashes,
-//                                       Optional<Boolean> constantAmbientLight,
-//                                       Optional<IColorGetter> fogColor,
-//                                       Optional<IColorGetter> terrainFogColor,
-//                                       Optional<IColorGetter> skyColor,
-//                                       Optional<IColorGetter> sunsetColor,
-//                                       boolean noWeatherFogDarken,
-//                                       boolean noWeatherSkyDarken,
-//                                       Optional<Lightmap> lightmap, //TODO: finish adding
-//                                       DimensionTarget targets) {
-//
-//    public static final Codec<DimensionSpecialEffects.SkyType> SKY_TYPE_CODEC = Codec.STRING
-//            .xmap(DimensionSpecialEffects.SkyType::valueOf, DimensionSpecialEffects.SkyType::name);
-//
-//    public static final Decoder<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
-//            instance.group(
-//                    Codec.either(Codec.FLOAT, BlockContextExpression.CODEC).optionalFieldOf("cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
-//                    Codec.BOOL.optionalFieldOf("has_ground").forGetter(DimensionEffectsModifier::hasGround),
-//                    SKY_TYPE_CODEC.optionalFieldOf("sky_type").forGetter(DimensionEffectsModifier::skyType),
-//                    Codec.BOOL.optionalFieldOf("force_bright_lightmap").forGetter(DimensionEffectsModifier::hasEndFlashes),
-//                    Codec.BOOL.optionalFieldOf("constant_ambient_light").forGetter(DimensionEffectsModifier::constantAmbientLight),
-//                    Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(DimensionEffectsModifier::fogColor),
-//                    Colormap.CODEC.optionalFieldOf("terrain_fog_colormap").forGetter(DimensionEffectsModifier::terrainFogColor),
-//                    Colormap.CODEC.optionalFieldOf("sky_colormap").forGetter(DimensionEffectsModifier::skyColor),
-//                    Colormap.CODEC.optionalFieldOf("sunset_colormap").forGetter(DimensionEffectsModifier::sunsetColor),
-//                    Codec.BOOL.optionalFieldOf("no_weather_fog_darken", false).forGetter(DimensionEffectsModifier::noWeatherFogDarken),
-//                    Codec.BOOL.optionalFieldOf("no_weather_sky_darken", false).forGetter(DimensionEffectsModifier::noWeatherSkyDarken),
-//                    Polytone.LIGHTMAPS.byNameCodec().optionalFieldOf("lightmap").forGetter(DimensionEffectsModifier::lightmap),
-//                    DimensionTarget.CODEC.optionalFieldOf("targets", DimensionTarget.EMPTY).forGetter(DimensionEffectsModifier::targets)
-//            ).apply(instance, DimensionEffectsModifier::new));
-//
-//    public static DimensionEffectsModifier ofFogColor(Colormap colormap) {
-//        return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-//                Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty(), Optional.empty(),
-//                false, false, Optional.empty(), DimensionTarget.EMPTY);
-//    }
-//
-//    public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
-//        return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-//                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(),
-//                false, false, Optional.empty(), DimensionTarget.EMPTY);
-//    }
-//
-//    public static DimensionEffectsModifier ofSunsetColor(Colormap colormap) {
-//        return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-//                Optional.empty(), Optional.empty(),  Optional.empty(), Optional.empty(), Optional.of(colormap),
-//                false, false, Optional.empty(), DimensionTarget.EMPTY);
-//    }
-//
-//
-//    public DimensionEffectsModifier merge(DimensionEffectsModifier newMod) {
-//        return new DimensionEffectsModifier(
-//                newMod.cloudLevel.isPresent() ? newMod.cloudLevel : this.cloudLevel,
-//                newMod.hasGround.isPresent() ? newMod.hasGround : this.hasGround,
-//                newMod.skyType.isPresent() ? newMod.skyType : this.skyType,
-//                newMod.hasEndFlashes.isPresent() ? newMod.hasEndFlashes : this.hasEndFlashes,
-//                newMod.constantAmbientLight.isPresent() ? newMod.constantAmbientLight : this.constantAmbientLight,
-//                newMod.fogColor.isPresent() ? newMod.fogColor : this.fogColor,
-//                newMod.terrainFogColor.isPresent() ? newMod.terrainFogColor : this.terrainFogColor,
-//                newMod.skyColor.isPresent() ? newMod.skyColor : this.skyColor,
-//                newMod.sunsetColor.isPresent() ? newMod.sunsetColor : this.sunsetColor,
-//                newMod.noWeatherFogDarken | this.noWeatherFogDarken,
-//                newMod.noWeatherSkyDarken | this.noWeatherSkyDarken,
-//                newMod.lightmap.isPresent() ? newMod.lightmap : this.lightmap,
-//                newMod.targets //ignore, not used after merging
-//        );
-//    }
-//
-//    @Nullable
-//    public BlockColor getFogColormap() {
-//        return this.fogColor.orElse(null);
-//    }
-//    @Nullable
-//    public BlockColor getTerrainFogColormap() {
-//        return this.terrainFogColor.orElse(null);
-//    }
-//
-//    @Nullable
-//    public BlockColor getSkyColormap() {
-//        return this.skyColor.orElse(null);
-//    }
-//
-//    @Nullable
-//    public BlockColor getSunsetColormap() {
-//        return this.sunsetColor.orElse(null);
-//    }
-//
-//    public DimensionEffectsModifier applyInplace(Identifier dimensionId) {
-//        DimensionSpecialEffects effects = PlatStuff.getDimensionEffects(dimensionId);
-//
-//        Optional<Either<Float, BlockContextExpression>> oldCloud = Optional.empty();
-//        /*
-//        if (this.cloudLevel.isPresent() && this.cloudLevel.get().left().isPresent()) {
-//            oldCloud = Optional.of(Either.left(effects.cloudLevel));
-//            effects.cloudLevel = this.cloudLevel.get().left().get();
-//        }*/
-//        Optional<Boolean> oldGround = Optional.empty();
-//        /*
-//        if (this.hasGround.isPresent()) {
-//            oldGround = Optional.of(effects.hasGround);
-//            effects.hasGround = this.hasGround.get();
-//        }*/
-//        Optional<DimensionSpecialEffects.SkyType> oldSky = Optional.empty();
-//        if (this.skyType.isPresent()) {
-//            oldSky = Optional.of(effects.skyType);
-//            effects.skyType = this.skyType.get();
-//        }
-//
-//        Optional<Boolean> oldEndFlashes = Optional.empty();
-//        if (this.hasEndFlashes.isPresent()) {
-//            oldEndFlashes = Optional.of(effects.hasEndFlashes());
-//            effects.hasEndFlashes = this.hasEndFlashes.get();
-//        }
-//        Optional<Boolean> oldAmbient = Optional.empty();
-//        if (this.constantAmbientLight.isPresent()) {
-//            oldAmbient = Optional.of(effects.constantAmbientLight);
-//            effects.constantAmbientLight = this.constantAmbientLight.get();
-//        }
-//        return new DimensionEffectsModifier(oldCloud, oldGround, oldSky, oldEndFlashes, oldAmbient,
-//                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-//                false, false, Optional.empty(), DimensionTarget.EMPTY);
-//    }
-//
-//}
+package net.mehvahdjukaar.polytone.content.dimension;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.Decoder;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
+import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.attribute.EnvironmentAttributeMap;
+import net.minecraft.world.level.dimension.DimensionType;
+
+import java.util.List;
+import java.util.Optional;
+
+import static net.mehvahdjukaar.polytone.misc.struc.ListUtils.mergeList;
+
+
+//these used to be dimension special effects modifiers
+//now they are a per dimension environment effect modifier. we essentially modify dimension type
+//TODO: timelines?
+public record DimensionEffectsModifier(EnvironmentAttributeMap environmentAttributes,
+                                       List<EnvironmentAttribute<?>> attributeRemovals,
+                                       Optional<DimensionType.Skybox> skybox,
+                                       Optional<DimensionType.CardinalLightType> cardinalLightType,
+                                       Optional<Float> ambientLight,
+                                       Optional<Boolean> hasSkylight,
+                                       Optional<Lightmap> lightmap, //TODO: finish adding
+                                       DimensionTarget targets) {
+
+    public static final Decoder<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    EnvironmentAttributeMap.CODEC.optionalFieldOf("attributes",
+                            EnvironmentAttributeMap.EMPTY).forGetter(DimensionEffectsModifier::environmentAttributes),
+                    BuiltInRegistries.ENVIRONMENT_ATTRIBUTE.byNameCodec().listOf().optionalFieldOf("attributes_removals",
+                            List.of()).forGetter(DimensionEffectsModifier::attributeRemovals),
+                    DimensionType.Skybox.CODEC.optionalFieldOf("skybox").forGetter(DimensionEffectsModifier::skybox),
+                    DimensionType.CardinalLightType.CODEC.optionalFieldOf("cardinal_light").forGetter(DimensionEffectsModifier::cardinalLightType),
+                    Codec.FLOAT.optionalFieldOf("ambient_light").forGetter(DimensionEffectsModifier::ambientLight),
+                    Codec.BOOL.optionalFieldOf("has_skylight").forGetter(DimensionEffectsModifier::hasSkylight),
+
+                    Polytone.LIGHTMAPS.byNameCodec().optionalFieldOf("lightmap").forGetter(DimensionEffectsModifier::lightmap),
+                    DimensionTarget.CODEC.optionalFieldOf("targets", DimensionTarget.EMPTY).forGetter(DimensionEffectsModifier::targets)
+            ).apply(instance, DimensionEffectsModifier::new));
+
+
+    public DimensionEffectsModifier merge(DimensionEffectsModifier newMod) {
+        return new DimensionEffectsModifier(
+                EnvironmentAttributeMap.builder()
+                        .putAll(this.environmentAttributes)
+                        .putAll(newMod.environmentAttributes)
+                        .build(),
+                mergeList(this.attributeRemovals, newMod.attributeRemovals),
+                newMod.skybox.or(this::skybox),
+                newMod.cardinalLightType.or(this::cardinalLightType),
+                newMod.ambientLight.or(this::ambientLight),
+                newMod.hasSkylight.or(this::hasSkylight),
+                newMod.lightmap.or(this::lightmap),
+                newMod.targets //ignore, not used after merging
+        );
+    }
+
+    //Returns vanilla attributes that got replaced
+    private EnvironmentAttributeMap modifyAttributeMap(DimensionType dimension) {
+        EnvironmentAttributeMap currentMap = dimension.attributes();
+        var builder = EnvironmentAttributeMap.builder();
+
+        if (attributeRemovals.isEmpty() && environmentAttributes == EnvironmentAttributeMap.EMPTY) {
+            return currentMap;
+        }
+
+        for (EnvironmentAttribute<?> key : currentMap.keySet()) {
+            if (!attributeRemovals.contains(key)) {
+                builder.set(key, currentMap.get(key));
+            }
+        }
+        dimension.attributes = builder.build();
+        return currentMap;
+    }
+
+    public DimensionEffectsModifier apply(Holder<DimensionType> dimensionHolder) {
+
+        DimensionType dimension = dimensionHolder.value();
+        DimensionTypeAccessor accessor = (DimensionTypeAccessor) (Object) dimension;
+
+        Optional<Boolean> oldHasSkylight = Optional.empty();
+        if (this.hasSkylight.isPresent()) {
+            oldHasSkylight = Optional.of(dimension.hasSkyLight());
+            accessor.setHasSkyLight(this.hasSkylight.get());
+        }
+
+        Optional<Float> oldAmbient = Optional.empty();
+        if (this.ambientLight.isPresent()) {
+            oldAmbient = Optional.of(dimension.ambientLight());
+            accessor.setAmbientLight(this.ambientLight.get());
+        }
+
+        Optional<DimensionType.Skybox> oldSky = Optional.empty();
+        if (this.skybox.isPresent()) {
+            oldSky = Optional.of(dimension.skybox());
+            accessor.setSkybox(this.skybox.get());
+        }
+
+        Optional<DimensionType.CardinalLightType> oldCloud = Optional.empty();
+        if (this.cardinalLightType.isPresent()) {
+            oldCloud = Optional.of(dimension.cardinalLightType());
+            accessor.setCardinalLightType(this.cardinalLightType.get());
+        }
+
+        EnvironmentAttributeMap oldAttributes = modifyAttributeMap(dimension);
+
+        return new DimensionEffectsModifier(oldAttributes, List.of(),
+                oldSky,
+                oldCloud,
+                oldAmbient,
+                oldHasSkylight,
+                Optional.empty(), DimensionTarget.EMPTY);
+
+
+    }
+
+}

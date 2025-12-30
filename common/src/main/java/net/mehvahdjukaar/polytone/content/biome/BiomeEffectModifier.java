@@ -4,33 +4,28 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.content.dimension.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.polytone.misc.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.misc.ColorUtils;
 import net.mehvahdjukaar.polytone.misc.Targets;
 import net.mehvahdjukaar.polytone.misc.Weather;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Blocks;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static net.mehvahdjukaar.polytone.misc.struc.ListUtils.mergeList;
 
 public record BiomeEffectModifier(Optional<Integer> waterColor,
                                   Optional<Integer> foliageColorOverride,
                                   Optional<Integer> dryFoliageColorOverride,
                                   Optional<Integer> grassColorOverride,
                                   Optional<BiomeSpecialEffects.GrassColorModifier> grassColorModifier,
-                                  EnvironmentAttributeMap environmentAttributes,
-                                  List<EnvironmentAttribute<?>> attributeRemovals,
+                                  EnvironmentAttributeMapMod environmentAttributesMod,
                                   Targets targets) {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
@@ -39,10 +34,8 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
             ColorUtils.CODEC.optionalFieldOf("dry_foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
             ColorUtils.CODEC.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
             BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
-            EnvironmentAttributeMap.CODEC.optionalFieldOf("attributes", //additions
-                    EnvironmentAttributeMap.EMPTY).forGetter(BiomeEffectModifier::environmentAttributes),
-            BuiltInRegistries.ENVIRONMENT_ATTRIBUTE.byNameCodec().listOf().optionalFieldOf("attribute_removals",
-                    List.of()).forGetter(BiomeEffectModifier::attributeRemovals), //removals
+            EnvironmentAttributeMapMod.CODEC.optionalFieldOf("attribute_modifiers", //additions
+                    EnvironmentAttributeMapMod.EMPTY).forGetter(BiomeEffectModifier::environmentAttributesMod),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));
 
@@ -53,8 +46,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                 effects.dryFoliageColorOverride(),
                 effects.grassColorOverride(),
                 Optional.of(effects.grassColorModifier()),
-                attributes,
-                List.of(),
+                EnvironmentAttributeMapMod.wrapVanilla(attributes),
                 Targets.EMPTY
         );
     }
@@ -67,11 +59,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                 newMod.dryFoliageColorOverride.or(this::dryFoliageColorOverride),
                 newMod.grassColorOverride.or(this::grassColorOverride),
                 newMod.grassColorModifier.or(this::grassColorModifier),
-                EnvironmentAttributeMap.builder()
-                        .putAll(this.environmentAttributes)
-                        .putAll(newMod.environmentAttributes)
-                        .build(),
-                mergeList(this.attributeRemovals, newMod.attributeRemovals),
+                this.environmentAttributesMod.merge(newMod.environmentAttributesMod),
                 this.targets.merge(newMod.targets)
         );
     }
@@ -79,18 +67,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     //Returns vanilla attributes that got replaced
     private EnvironmentAttributeMap modifyAttributeMap(Biome biome) {
         EnvironmentAttributeMap currentMap = biome.getAttributes();
-        var builder = EnvironmentAttributeMap.builder();
-
-        if (attributeRemovals.isEmpty() && environmentAttributes == EnvironmentAttributeMap.EMPTY) {
-            return currentMap;
-        }
-
-        for (EnvironmentAttribute<?> key : currentMap.keySet()) {
-            if (!attributeRemovals.contains(key)) {
-                builder.set(key, currentMap.get(key));
-            }
-        }
-        biome.attributes = builder.build();
+        biome.attributes = environmentAttributesMod.modify(currentMap);
         return currentMap;
     }
 

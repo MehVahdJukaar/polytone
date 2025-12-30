@@ -109,9 +109,6 @@ public class PlatStuffImpl {
         return ModList.get().isLoaded(namespace);
     }
 
-    public static DimensionSpecialEffects getDimensionEffects(Identifier id) {
-//        return DimensionSpecialEffectsManager.getForType(id);
-//    }
 
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         //forge original biome effect object is never user and redirected by coremod
@@ -268,7 +265,7 @@ public class PlatStuffImpl {
         //     if (CompatHandler.ALEX_CAVES) AlexsCavesCompat.applyACLightingColors(level, combined, partialTicks);
         //TODO: add back
         //removed in 1.20.2
-        //level.effects().adjustLightmapColors(level, partialTicks, skyDarken, skyLight, flicker, torchX, skyY, combined);
+        //level.effects().adjustLightmapColors(level, partialTicks, skyDarken, hasSkylight, flicker, torchX, skyY, combined);
     }
 
 

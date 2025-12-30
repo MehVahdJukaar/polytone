@@ -105,7 +105,6 @@ public class Polytone {
         PolytoneRenderTypes.init();
         if (CompatHandler.IRIS) IrisCompat.init();
 
-        //TODO: cache fog and d sky color
         //TODO: custom block breaking particles
     }
 

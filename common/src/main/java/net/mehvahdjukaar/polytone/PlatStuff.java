@@ -75,11 +75,6 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static DimensionSpecialEffects getDimensionEffects(Identifier type) {
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         throw new AssertionError();
     }
@@ -192,7 +187,7 @@ public class PlatStuff {
         if (reference != null) {
             T value = reference.value();
 
-            reg.byLocation.remove(key.location());
+            reg.byLocation.remove(key.identifier());
             reg.byValue.remove(value);
             reg.byId.remove(reference);
             reg.toId.removeInt(value);
