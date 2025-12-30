@@ -132,7 +132,7 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
             if (access != null) {
                 CreativeTabModifier v = mod.applyItemsAndAttributes(event, access);
                 //don't add custom tabs here!
-                if (!customTabs.containsKey(tab.location())) vanillaTabs.put(tab, v);
+                if (!customTabs.containsKey(tab.identifier())) vanillaTabs.put(tab, v);
             }
         }
     }

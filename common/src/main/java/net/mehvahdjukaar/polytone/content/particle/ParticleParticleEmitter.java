@@ -101,7 +101,7 @@ public record ParticleParticleEmitter(
 
         var particleTypeValue = particleType.get().value();
 
-        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().location())) {
+        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().identifier())) {
             Map<String, Float> map = new HashMap<>();
             r.ifPresent(exp -> map.put("red", (float) exp.getValue(particle, level)));
             g.ifPresent(exp -> map.put("green", (float) exp.getValue(particle, level)));

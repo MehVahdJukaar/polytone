@@ -72,7 +72,7 @@ public class LenientHolderSetCodec<E> implements Codec<HolderSet<E>> {
         return input.get(tagKey).map(e -> DataResult.success((HolderSet<E>) e))
                 .orElseGet(() -> DataResult.error(() -> {
                     String var10000 = String.valueOf(tagKey.location());
-                    return "Missing tag: '" + var10000 + "' in '" + tagKey.registry().location() + "'";
+                    return "Missing tag: '" + var10000 + "' in '" + tagKey.registry().identifier() + "'";
                 }));
     }
 

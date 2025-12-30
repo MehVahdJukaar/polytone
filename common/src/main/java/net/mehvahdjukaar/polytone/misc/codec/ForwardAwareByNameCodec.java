@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
 
@@ -22,7 +22,7 @@ public class ForwardAwareByNameCodec<A> implements Codec<Optional<A>> {
     public <T> DataResult<Pair<Optional<A>, T>> decode(DynamicOps<T> ops, T input) {
         var originalResult = original.decode(ops, input);
         if (!originalResult.isSuccess()) {
-            var resResult = ResourceLocation.CODEC.decode(ops, input);
+            var resResult = Identifier.CODEC.decode(ops, input);
             if (resResult.isSuccess()) {
                 var res = resResult.result().orElseThrow().getFirst();
                 if (Polytone.isFutureId(res)) {

@@ -37,7 +37,7 @@ public final class ForwardAwareRegistryFixedCodec<E> implements Codec<Optional<H
 
                 return holder.unwrap().map(
                         (resourceKey) ->
-                                Identifier.CODEC.encode(resourceKey.location(), ops, value),
+                                Identifier.CODEC.encode(resourceKey.identifier(), ops, value),
                         (object) -> DataResult.error(() -> "Elements from registry " + this.registryKey + " can't be serialized to a value"));
             }
         }
