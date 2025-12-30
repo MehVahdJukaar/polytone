@@ -8,6 +8,9 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(SmithingScreen.class)
 public class SmithingScreenMixin {
+
+    //TODO: add back
+
 // TODO(dannyb) Figure out where these are now
 
 //    @ModifyArg(method = "renderBg", at = @At(value = "INVOKE",

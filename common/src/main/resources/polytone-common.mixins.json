@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
+    "EnvironmentSystemMixin",
     "accessor.DimensionTypeAccessor"
   ],
   "client": [
@@ -28,7 +29,6 @@
     "LightTextureMixin",
     "MinecraftMixin",
     "ModelBakeryMixin",
-    "ModelBlockRendererMixin",
     "ModelManagerMixin",
     "ParticleEngineMixin",
     "ParticleGroupMixin",
@@ -36,8 +36,6 @@
     "ScreenMixin",
     "SmithingScreenMixin",
     "SodiumBlockRendererMixin",
-    "SodiumCloudRendererMixin",
-    "SplashRendererMixin",
     "SpriteContentsMixin",
     "VariantDeserializerMixin",
     "XpOrbMixin",

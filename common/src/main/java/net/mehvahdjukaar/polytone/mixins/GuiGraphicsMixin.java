@@ -48,7 +48,7 @@ public abstract class GuiGraphicsMixin implements GuiDepthTargetAware {
     }
 
     @Override
-    public void renderInNode(GuiDepthTarget nodeTarget, Runnable renderFunction) {
-        ((GuiDepthTargetAware) this.guiRenderState).renderInNode(nodeTarget, renderFunction);
+    public void polytone$renderInNode(GuiDepthTarget nodeTarget, Runnable renderFunction) {
+        ((GuiDepthTargetAware) this.guiRenderState).polytone$renderInNode(nodeTarget, renderFunction);
     }
 }

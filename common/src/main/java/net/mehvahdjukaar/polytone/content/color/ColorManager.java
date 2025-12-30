@@ -12,21 +12,24 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.misc.ColorUtils;
-import net.mehvahdjukaar.polytone.misc.struc.Vec3f;
 import net.mehvahdjukaar.polytone.misc.reloader.SingleJsonOrPropertiesReloadListener;
+import net.mehvahdjukaar.polytone.misc.struc.Vec3f;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.ColorLerper;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
+import net.minecraft.client.resources.SplashManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
@@ -61,6 +64,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     protected final int[] originalRedstoneWireColors = Arrays.copyOf(RedStoneWireBlock.COLORS, RedStoneWireBlock.COLORS.length);
 
+    protected final Style originalSplash = SplashManager.DEFAULT_STYLE;
+
     @Nullable
     Identifier xpOrbParticle;
     @Nullable
@@ -74,7 +79,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     private Integer xpBar = null;
     private Integer xpBarBack = null;
-    private Integer splash = null;
     private Integer enchantTableXp = null;
 
     @Nullable
@@ -95,10 +99,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     public Integer getXpBarBackground() {
         return xpBarBack;
-    }
-
-    public Integer getSplash() {
-        return splash;
     }
 
     @Override
@@ -123,7 +123,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         doWith(obj, "map", (k, v) -> {
             MapColor color = MapColorHelper.byName(k);
             if (color != null) {
-                int col = parseHex(v);
+                int col = parseColor(v);
                 if (!vanillaMapColors.containsKey(color)) {
                     vanillaMapColors.put(color, color.col);
                 }
@@ -139,7 +139,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             }
             for (var entry : entries(v)) {
                 String param = entry.getKey();
-                int col = parseHex(entry.getValue());
+                int col = parseColor(entry.getValue());
                 switch (param) {
                     case "diffuse" -> {
                         if (!vanillaDiffuseColors.containsKey(color)) {
@@ -167,7 +167,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             Identifier id = Identifier.parse(k.replace("\\", ""));
             try {
                 // turn from hex to decimal if it is a single number
-                int hex = parseHex(v);
+                int hex = parseColor(v);
                 Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, String.valueOf(hex));
             } catch (Exception e) {
                 Polytone.PARTICLE_MODIFIERS.addCustomParticleColor(id, v.getAsString());
@@ -178,7 +178,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         doWith(obj, "fishing_line", (k, v) -> {
             switch (k) {
                 case "color" -> {
-                    fishingLineColor = parseHex(v);
+                    fishingLineColor = parseColor(v);
                 }
                 case "offset" -> {
                     fishingLineOffset = Vec3f.CODEC.decode(JsonOps.INSTANCE, v)
@@ -191,7 +191,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
         doWith(obj, "world_border", (k, v) -> {
             BorderStatus status = BorderStatus.valueOf(k.toLowerCase(Locale.ROOT));
-            int col = parseHex(v);
+            int col = parseColor(v);
             if (!vanillaBorderStatus.containsKey(status)) {
                 vanillaBorderStatus.put(status, status.getColor());
             }
@@ -206,9 +206,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             Integer col;
 
             if (color == null && v instanceof JsonPrimitive) {
-                col = parseHex(v);
+                col = parseColor(v);
             } else {
-                col = parseHex(color);
+                col = parseColor(color);
             }
 
 
@@ -237,7 +237,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         doWith(obj, "sheep", (k, v) -> {
             DyeColor color = DyeColor.byName(k, null);
             if (color != null) {
-                int col = ARGB.opaque(parseHex(v));
+                int col = ARGB.opaque(parseColor(v));
                 customSheepColors.put(color, col);
             } else Polytone.LOGGER.warn("Unknown Dye Color with name {}", k);
         });
@@ -255,7 +255,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         doWith(obj, "redstone", (k, v) -> {
             int code = Integer.parseInt(k);
             if (code < RedStoneWireBlock.COLORS.length) {
-                int col = parseHex(v);
+                int col = parseColor(v);
                 var rgb = ColorUtils.unpack(col);
                 RedStoneWireBlock.COLORS[code] = ARGB.colorFromFloat(1.0f, rgb[0], rgb[1], rgb[2]);
                 if (code == 15) {
@@ -268,15 +268,16 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
         doWith(obj, "text", (k, v) -> {
             if (k.equals("splash")) {
-                splash = parseHex(v);
+                int splashCol = parseColor(v);
+                refreshSplash(Style.EMPTY.withColor(splashCol));
             } else if (k.equals("xpbar")) {
                 if (v instanceof JsonPrimitive) {
-                    xpBar = parseHex(v);
+                    xpBar = parseColor(v);
                 } else {
                     for (var e : entries(v)) {
                         switch (e.getKey()) {
-                            case "foreground" -> xpBar = parseHex(e.getValue());
-                            case "background" -> xpBarBack = parseHex(e.getValue());
+                            case "foreground" -> xpBar = parseColor(e.getValue());
+                            case "background" -> xpBarBack = parseColor(e.getValue());
                         }
                     }
                 }
@@ -284,17 +285,17 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 String s = k.substring(5);
                 int code = Integer.parseInt(s);
                 ChatFormatting text = ChatFormatting.getById(code);
-                setTextColor(text, parseHex(v));
+                setTextColor(text, parseColor(v));
             } else if (k.equals("code")) {
                 for (var entry : entries(v)) {
                     String s = entry.getKey();
                     int code = Integer.parseInt(s);
                     ChatFormatting text = ChatFormatting.getById(code);
-                    setTextColor(text, parseHex(entry.getValue()));
+                    setTextColor(text, parseColor(entry.getValue()));
                 }
             } else {
                 ChatFormatting text = ChatFormatting.getByName(k);
-                setTextColor(text, parseHex(v));
+                setTextColor(text, parseColor(v));
             }
         });
 
@@ -306,6 +307,17 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 }
             }
         });
+    }
+
+    private void refreshSplash(Style style) {
+        SplashManager.DEFAULT_STYLE = style;
+        SplashManager manager = Minecraft.getInstance().getSplashManager();
+        var splashes = manager.splashes;
+        List<Component> newSplashes = new ArrayList<>();
+        for (Component c : splashes) {
+            newSplashes.add(c.copy().withStyle(style));
+        }
+        manager.splashes = newSplashes;
     }
 
     private void setTextColor(ChatFormatting text, int col) {
@@ -365,13 +377,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         return Collections.emptySet();
     }
 
-    private static int parseHex(JsonElement obj) {
+    private static int parseColor(JsonElement obj) {
         return ColorUtils.CODEC.decode(JsonOps.INSTANCE, obj)
                 .getOrThrow()
                 .getFirst(); // this will throw if the element is not a valid color
     }
 
-    private static int parseHex(String str) {
+    private static int parseColor(String str) {
         str = str.replace("#", "").replace("0x", "");
         return Integer.parseInt(str.trim(), 16);
     }

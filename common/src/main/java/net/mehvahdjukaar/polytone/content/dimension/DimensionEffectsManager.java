@@ -12,6 +12,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 
@@ -114,4 +115,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         extraMods.putAll(converted);
     }
 
+    public void addPostLayers(EnvironmentAttributeSystem.Builder builder, Level level) {
+
+    }
 }

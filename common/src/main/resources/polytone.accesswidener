@@ -10,6 +10,10 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockState
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction;
 accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Collection;)V
 
+accessible field net/minecraft/client/resources/SplashManager DEFAULT_STYLE Lnet/minecraft/network/chat/Style;
+mutable field net/minecraft/client/resources/SplashManager DEFAULT_STYLE Lnet/minecraft/network/chat/Style;
+accessible field net/minecraft/client/resources/SplashManager splashes Ljava/util/List;
+
 accessible field net/minecraft/world/level/biome/Biome attributes Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
 mutable field net/minecraft/world/level/biome/Biome attributes Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
 accessible field net/minecraft/world/attribute/EnvironmentAttributeMap$Builder entries Ljava/util/Map;

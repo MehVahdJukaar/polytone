@@ -17,7 +17,7 @@ public record GuiDepthTarget(int strata, int node, boolean addAbove) {
 
     public static void renderAt(Optional<GuiDepthTarget> depth, GuiGraphics guiGraphics, Runnable render) {
         if (depth.isPresent()) {
-            ((GuiDepthTargetAware) guiGraphics).renderInNode(depth.get(), render);
+            ((GuiDepthTargetAware) guiGraphics).polytone$renderInNode(depth.get(), render);
         } else {
             render.run();
         }

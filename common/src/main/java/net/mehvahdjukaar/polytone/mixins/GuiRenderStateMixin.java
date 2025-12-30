@@ -34,7 +34,7 @@ public abstract class GuiRenderStateMixin implements GuiDepthTargetAware {
     private @Nullable GuiDepthTarget polytone$wantedNodeTarget;
 
     @Override
-    public void renderInNode(GuiDepthTarget nodeTarget, Runnable renderFunction) {
+    public void polytone$renderInNode(GuiDepthTarget nodeTarget, Runnable renderFunction) {
         this.polytone$wantedNodeTarget = nodeTarget;
         GuiRenderState.Node lastCurrentNode = current;
 
