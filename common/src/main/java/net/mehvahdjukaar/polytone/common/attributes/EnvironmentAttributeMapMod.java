@@ -41,23 +41,24 @@ public class EnvironmentAttributeMapMod {
 
     @SuppressWarnings("unchecked")
     private static <Value> Codec<EnvironmentAttributeMap.Entry<?, ?>> createEntryCodec(EnvironmentAttribute<Value> environmentAttribute) {
-        Codec<AttributeModifier<Value, ?>> attributeModifierCodec = ExtendedAttributeMod.extendCodec(environmentAttribute.type());
+        Codec<AttributeModifier<Value, ?>> attributeModifierCodec = environmentAttribute.type().modifierCodec();
         Codec<EnvironmentAttributeMap.Entry<Value, ?>> codec = attributeModifierCodec.dispatch("modifier", EnvironmentAttributeMap.Entry::modifier,
                 Util.memoize((attributeModifier) ->
-                        EnvironmentAttributeMap.Entry.createFullCodec(environmentAttribute, attributeModifier)));
+                        createFullCodec(environmentAttribute, attributeModifier)));
         return Codec.either(environmentAttribute.valueCodec(), codec).xmap((either) ->
                 either.map((object) -> new EnvironmentAttributeMap.Entry<>(object, AttributeModifier.override()),
                         (entry) -> entry), (entry) -> entry.modifier() ==
                 AttributeModifier.override() ? (Either) Either.left(entry.argument()) : (Either) Either.right(entry));
     }
 
-    public static <Value, Argument> MapCodec<EnvironmentAttributeMap.Entry<Value, Argument>> createFullCodec(EnvironmentAttribute<Value> environmentAttribute, AttributeModifier<Value, Argument> attributeModifier) {
+    //extended argument to take expressions and colormaps
+    private static <Value, Argument> MapCodec<EnvironmentAttributeMap.Entry<Value, Argument>> createFullCodec(EnvironmentAttribute<Value> environmentAttribute, AttributeModifier<Value, Argument> attributeModifier) {
         return RecordCodecBuilder.mapCodec((instance) ->
         {
             Codec<Argument> argumentCodec = attributeModifier.argumentCodec(environmentAttribute);
             argumentCodec = ExtendedAttributeMod.extendValueCodec(argumentCodec, environmentAttribute.type());
             return instance.group(argumentCodec.fieldOf("argument")
-                    .forGetter(EnvironmentAttributeMap.Entry::argument))
+                            .forGetter(EnvironmentAttributeMap.Entry::argument))
                     .apply(instance, (object) -> new EnvironmentAttributeMap.Entry<>(object, attributeModifier));
         });
     }
