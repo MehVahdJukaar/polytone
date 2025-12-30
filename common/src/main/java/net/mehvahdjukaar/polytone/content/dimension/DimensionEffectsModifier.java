@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.attributes.EnvironmentAttributeMapMod;
+import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;

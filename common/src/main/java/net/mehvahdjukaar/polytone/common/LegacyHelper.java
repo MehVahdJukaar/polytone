@@ -508,7 +508,8 @@ public class LegacyHelper {
 
     }
 
-    // fot OF fog and sky. shit code...
+    //TODO: add back
+    // for OF fog and sky. shit code...
     private static void addConvertedBlockProperties(Map<Identifier, Parsed<BlockPropertyModifier>> modifiers, Map<Identifier, ArrayImage> textures) {
 //        String[] names = new String[]{"overworld", "the_nether", "the_end"};
 //        Map<Identifier, Parsed<DimensionEffectsModifier>> converted = new HashMap<>();

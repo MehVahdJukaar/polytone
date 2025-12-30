@@ -29,19 +29,19 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     // Builtin colormaps
     //TODO: delegate to grass so we have quark compat
-    public static final IColorGetter GRASS_COLOR = new IColorGetter.ofColorResolver((s, l, p, i) ->
+    public static final IColorGetter GRASS_COLOR = new IColorGetter.OfColorResolver((s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor(),
             BiomeColors.GRASS_COLOR_RESOLVER);
 
-    public static final IColorGetter FOLIAGE_COLOR = new IColorGetter.ofColorResolver((s, l, p, i) ->
+    public static final IColorGetter FOLIAGE_COLOR = new IColorGetter.OfColorResolver((s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.get(0.5, 1.0),
             BiomeColors.FOLIAGE_COLOR_RESOLVER);
 
-    public static final IColorGetter DRY_FOLIAGE_COLOR = new IColorGetter.ofColorResolver((s, l, p, i) ->
+    public static final IColorGetter DRY_FOLIAGE_COLOR = new IColorGetter.OfColorResolver((s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageDryFoliageColor(l, p) : DryFoliageColor.get(0.5, 1.0),
             BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER);
 
-    public static final IColorGetter WATER_COLOR = new IColorGetter.ofColorResolver((s, l, p, i) ->
+    public static final IColorGetter WATER_COLOR = new IColorGetter.OfColorResolver((s, l, p, i) ->
             l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000,
             BiomeColors.WATER_COLOR_RESOLVER);
 

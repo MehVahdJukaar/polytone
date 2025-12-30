@@ -1,0 +1,44 @@
+{
+  "minecraft:visual/sunrise_sunset_color": {
+    "argument": -12632244,
+    "modifier": "multiply"
+  },
+  "minecraft:visual/fog_color": {
+    "argument": "#3f3f4c",
+    "modifier": "multiply"
+  },
+  "minecraft:visual/star_brightness": 0.0,
+  "minecraft:gameplay/sky_light_level": {
+    "argument": {
+      "value": 4.0,
+      "alpha": 0.52734375
+    },
+    "modifier": "alpha_blend"
+  },
+  "minecraft:visual/cloud_color": {
+    "argument": {
+      "brightness": 0.095,
+      "factor": 0.94
+    },
+    "modifier": "blend_to_gray"
+  },
+  "minecraft:visual/sky_light_factor": {
+    "argument": {
+      "value": 0.24,
+      "alpha": 0.52734375
+    },
+    "modifier": "alpha_blend"
+  },
+  "minecraft:visual/sky_light_color": {
+    "argument": "#867a7aff",
+    "modifier": "alpha_blend"
+  },
+  "minecraft:gameplay/bees_stay_in_hive": true,
+  "minecraft:visual/sky_color": {
+    "argument": {
+      "brightness": 0.24,
+      "factor": 0.94
+    },
+    "modifier": "blend_to_gray"
+  }
+}

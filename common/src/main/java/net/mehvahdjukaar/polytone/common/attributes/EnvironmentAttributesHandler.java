@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.attributes;
+package net.mehvahdjukaar.polytone.common.attributes;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;

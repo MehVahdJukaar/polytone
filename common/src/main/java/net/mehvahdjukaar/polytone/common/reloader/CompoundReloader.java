@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
-import net.mehvahdjukaar.polytone.content.attributes.EnvironmentAttributesHandler;
+import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributesHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.HolderLookup;

@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -98,7 +99,7 @@ public class BlockContextExpression extends PolytoneExpression {
         return expression.evaluate(vb);
     }
 
-    public double getValue(Level level, @NotNull BlockPos pos, BlockState state) {
+    public double getValue(LevelReader level, @NotNull BlockPos pos, BlockState state) {
         ExpressionUtils.seedRandom(state.getSeed(pos));
 
         IExpression.IVars vars = expression.varBuilder();

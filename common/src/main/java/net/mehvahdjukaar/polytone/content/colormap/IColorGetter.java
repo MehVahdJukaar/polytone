@@ -1,5 +1,8 @@
 package net.mehvahdjukaar.polytone.content.colormap;
 
+import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.item.BarColor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -8,7 +11,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,7 +53,7 @@ public interface IColorGetter extends BlockColor, BarColor {
     }
 
     //wraps around a color resolver. note that usually the block color get color internally calls the color resolver itself which with grass replacement might be us
-    record ofColorResolver(BlockColor bc, ColorResolver cr) implements IColorGetter, ColorResolver {
+    record OfColorResolver(BlockColor bc, ColorResolver cr) implements IColorGetter, ColorResolver {
 
         @Override
         public int getColor(BlockState state, @Nullable BlockAndTintGetter reader, @Nullable BlockPos pos, int tintIndex) {
@@ -100,5 +105,63 @@ public interface IColorGetter extends BlockColor, BarColor {
     }
 
 
+    record StaticColor(int color) implements IColorGetter {
+        @Override
+        public int getColor(BlockState state, BlockAndTintGetter reader, BlockPos pos, int tintIndex) {
+            return color;
+        }
+
+        @Override
+        public int getItemColor(ItemStack itemStack, int i) {
+            return color;
+        }
+
+        @Override
+        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+            return color;
+        }
+    }
+
+
+    //TODO: proper exp here
+    record ExpressionColor(BlockContextExpression exp) implements IColorGetter {
+
+        @Override
+        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+            if (pos == null || state == null) {
+                return 0;
+            }
+            return (int) exp.getValue(Minecraft.getInstance().level, pos, state);
+        }
+
+        @Override
+        public int getItemColor(ItemStack stack, int tintIndex) {
+            return (int) exp.getValue(Minecraft.getInstance().level, BlockPos.ZERO, Blocks.AIR.defaultBlockState());
+        }
+
+        @Override
+        public int getColor(BlockState blockState, @Nullable BlockAndTintGetter blockAndTintGetter, @Nullable BlockPos blockPos, int i) {
+           if (blockAndTintGetter instanceof LevelReader lr && blockPos != null) {
+               return (int) exp.getValue(lr, blockPos, blockState);
+           }
+           return 0;
+        }
+    }
+
+
     int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item);
+
+
+
+    Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
+            IColorGetter.StaticColor::new, g -> g instanceof StaticColor(int color) ? color : 0
+    );
+
+    Codec<IColorGetter> EXPRESSION_CODEC = BlockContextExpression.CODEC.xmap(
+            IColorGetter.ExpressionColor::new,
+            g -> g instanceof ExpressionColor(BlockContextExpression exp) ? exp : BlockContextExpression.ZERO
+    );
+
+    Codec<IColorGetter> SINGLE_COLOR_OR_EXPRESSION = Codec.withAlternative(
+            SINGLE_COLOR_CODEC, EXPRESSION_CODEC);
 }

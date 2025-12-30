@@ -4,10 +4,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
+import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
@@ -61,14 +62,12 @@ public final class Colormap implements IColorGetter, ColorResolver {
             ColormapColorModulatorExpression.CODEC.optionalFieldOf("color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult))
     ).apply(i, Colormap::new));
 
-    public static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
-            Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
-    public static final Codec<IColorGetter> DIRECT_REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_CODEC,
-                    CodecUtils.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
+    public static final Codec<IColorGetter> DIRECT_REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_OR_EXPRESSION,
+            CodecUtils.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
             Function.identity());
 
-    public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_CODEC,
+    public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_OR_EXPRESSION,
             Polytone.COLORMAPS.byNameCodec());
 
 

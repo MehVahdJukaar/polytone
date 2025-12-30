@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Locale;
@@ -47,7 +48,7 @@ public record GuiModifier(Type type, String target,
         SCREEN_TITLE;
 
         @Override
-        public String getSerializedName() {
+        public @NonNull String getSerializedName() {
             return this.name().toLowerCase(Locale.ROOT);
         }
     }

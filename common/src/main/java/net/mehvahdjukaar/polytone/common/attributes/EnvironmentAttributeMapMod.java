@@ -1,7 +1,9 @@
-package net.mehvahdjukaar.polytone.content.attributes;
+package net.mehvahdjukaar.polytone.common.attributes;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
 import net.minecraft.world.attribute.EnvironmentAttribute;
@@ -47,6 +49,17 @@ public class EnvironmentAttributeMapMod {
                 either.map((object) -> new EnvironmentAttributeMap.Entry<>(object, AttributeModifier.override()),
                         (entry) -> entry), (entry) -> entry.modifier() ==
                 AttributeModifier.override() ? (Either) Either.left(entry.argument()) : (Either) Either.right(entry));
+    }
+
+    public static <Value, Argument> MapCodec<EnvironmentAttributeMap.Entry<Value, Argument>> createFullCodec(EnvironmentAttribute<Value> environmentAttribute, AttributeModifier<Value, Argument> attributeModifier) {
+        return RecordCodecBuilder.mapCodec((instance) ->
+        {
+            Codec<Argument> argumentCodec = attributeModifier.argumentCodec(environmentAttribute);
+            argumentCodec = ExtendedAttributeMod.extendValueCodec(argumentCodec, environmentAttribute.type());
+            return instance.group(argumentCodec.fieldOf("argument")
+                    .forGetter(EnvironmentAttributeMap.Entry::argument))
+                    .apply(instance, (object) -> new EnvironmentAttributeMap.Entry<>(object, attributeModifier));
+        });
     }
 
     private EnvironmentAttributeMapMod(Map<EnvironmentAttribute<?>,
