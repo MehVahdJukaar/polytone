@@ -12,6 +12,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -21,11 +22,15 @@ import java.util.Map;
 
 public class DimensionEffectsManager extends JsonImgPartialReloader {
 
+    //mod id to modifier
     private final Map<Identifier, DimensionEffectsModifier> effectsToApply = new HashMap<>();
-
-    private final Map<Identifier, DimensionEffectsModifier> alteredVanillaEffects = new HashMap<>();
+    //dimension id to old modifier
+    private final Map<ResourceKey<DimensionType>, DimensionEffectsModifier> alteredVanillaEffects = new HashMap<>();
 
     private final Map<Identifier, Parsed<DimensionEffectsModifier>> extraMods = new HashMap<>();
+
+
+    private final Map<ResourceKey<DimensionType>, EnvironmentAttributeMap> postProcessEffects = new HashMap<>();
 
     public DimensionEffectsManager() {
         super("dimension_modifiers", "dimension_effects");
@@ -37,6 +42,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         //whatever happens, we always clear stuff to apply
         effectsToApply.clear();
         extraMods.clear();
+        postProcessEffects.clear();
     }
 
     @Override
@@ -73,12 +79,11 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         var entries = alteredVanillaEffects.entrySet().iterator();
         while (entries.hasNext()) {
             var v = entries.next();
-            Identifier key = v.getKey();
-            var dimensionKey = ResourceKey.create(Registries.DIMENSION_TYPE, key);
+            ResourceKey<DimensionType> dimensionKey = v.getKey();
             var dimType = access.lookupOrThrow(Registries.DIMENSION_TYPE).get(dimensionKey);
             if (dimType.isPresent()) {
-                DimensionEffectsModifier oldMod = v.getValue();
-                oldMod.apply(dimType.get().value());
+                DimensionEffectsModifier mod = v.getValue();
+                mod.apply(dimType.get().value());
                 entries.remove();
             }
         }
@@ -92,7 +97,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     public void onDimensionChanged(Holder<DimensionType> currentDimHolder, HolderLookup.Provider access) {
         DimensionType currentDim = currentDimHolder.value();
-        Identifier currentDimId = currentDimHolder.unwrapKey().get().identifier();
+        ResourceKey<DimensionType> key = currentDimHolder.unwrapKey().get();
 
         for (var v : effectsToApply.entrySet()) {
             Identifier modId = v.getKey();
@@ -100,9 +105,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
             var targets = modifier.targets().compute(modId, access);
             if (!targets.contains(currentDimHolder)) continue;
 
+            postProcessEffects.put(key, modifier.getPostProcessAttributes());
             DimensionEffectsModifier old = modifier.apply(currentDim);
 
-            alteredVanillaEffects.put(currentDimId, old);
+            alteredVanillaEffects.put(key, old);
 
             Polytone.LOGGER.info("Applied Custom Dimension Effects Modifier '{}' to dimension '{}'", modId, currentDimHolder);
         }
@@ -116,7 +122,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     public void addPostLayers(EnvironmentAttributeSystem.Builder builder, Level level) {
-
+        var post = postProcessEffects.get(level.dimensionTypeRegistration().unwrapKey().get());
+        if (post != null) {
+            builder.addConstantLayer(post);
+        }
     }
 
     public boolean hasModifiedAttributes() {

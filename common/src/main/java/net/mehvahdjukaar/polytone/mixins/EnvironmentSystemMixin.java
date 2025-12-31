@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EnvironmentAttributeSystem.class)
 public class EnvironmentSystemMixin {
 
-    @Inject(method = "addDefaultLayers", at  = @At("RETURN"))
+    @Inject(method = "addDefaultLayers", at = @At("RETURN"))
     private static void polytone$addCustomPostLayers(EnvironmentAttributeSystem.Builder builder, Level level, CallbackInfo ci) {
         Polytone.DIMENSION_MODIFIERS.addPostLayers(builder, level);
     }

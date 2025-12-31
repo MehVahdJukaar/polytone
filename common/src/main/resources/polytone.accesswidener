@@ -19,6 +19,11 @@ mutable field net/minecraft/world/level/biome/Biome attributes Lnet/minecraft/wo
 accessible field net/minecraft/world/attribute/EnvironmentAttributeMap$Builder entries Ljava/util/Map;
 accessible method net/minecraft/world/attribute/EnvironmentAttributeMap$Entry createCodec (Lnet/minecraft/world/attribute/EnvironmentAttribute;)Lcom/mojang/serialization/Codec;
 accessible method net/minecraft/world/attribute/EnvironmentAttributeMap$Entry createFullCodec (Lnet/minecraft/world/attribute/EnvironmentAttribute;Lnet/minecraft/world/attribute/modifier/AttributeModifier;)Lcom/mojang/serialization/MapCodec;
+accessible field net/minecraft/world/attribute/WeatherAttributes RAIN Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
+mutable field net/minecraft/world/attribute/WeatherAttributes RAIN Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
+accessible field net/minecraft/world/attribute/WeatherAttributes THUNDER Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
+mutable field net/minecraft/world/attribute/WeatherAttributes THUNDER Lnet/minecraft/world/attribute/EnvironmentAttributeMap;
+
 
 accessible field net/minecraft/client/renderer/RenderPipelines TERRAIN_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 

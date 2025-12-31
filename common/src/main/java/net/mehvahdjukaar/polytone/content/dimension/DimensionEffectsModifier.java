@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
+import net.minecraft.world.attribute.WeatherAttributes;
 import net.minecraft.world.level.dimension.DimensionType;
 import org.jspecify.annotations.NonNull;
 
@@ -51,13 +52,6 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
         );
     }
 
-    //Returns vanilla attributes that got replaced
-    private EnvironmentAttributeMap modifyAttributeMap(DimensionType dimension) {
-        EnvironmentAttributeMap currentMap = dimension.attributes();
-        ((DimensionTypeAccessor) (Object) dimension).setAttributes(attributeModifications.baseMod.modify(currentMap));
-        return currentMap;
-    }
-
     public DimensionEffectsModifier apply(DimensionType dimension) {
 
         DimensionTypeAccessor accessor = (DimensionTypeAccessor) (Object) dimension;
@@ -86,10 +80,10 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
             accessor.setCardinalLightType(this.cardinalLightType.get());
         }
 
-        EnvironmentAttributeMap oldAttributes = modifyAttributeMap(dimension);
+        EnvironmentAttributeModifications oldMods = this.attributeModifications.applyAllModifications(dimension);
 
         return new DimensionEffectsModifier(
-                EnvironmentAttributeModifications.baseOnly(EnvironmentAttributeMapMod.wrapVanilla(oldAttributes)),
+                oldMods,
                 oldSky,
                 oldCloud,
                 oldAmbient,
@@ -99,11 +93,14 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
 
     }
 
+    public EnvironmentAttributeMap getPostProcessAttributes() {
+            return attributeModifications.postProcess.toVanilla();
+    }
 
-    public record EnvironmentAttributeModifications(EnvironmentAttributeMapMod baseMod,
-                                                     EnvironmentAttributeMapMod rainMod,
-                                                     EnvironmentAttributeMapMod thunderMod,
-                                                     EnvironmentAttributeMapMod postProcess) { //here we dont use removals
+    public record EnvironmentAttributeModifications( EnvironmentAttributeMapMod baseMod,
+                                                    EnvironmentAttributeMapMod rainMod,
+                                                    EnvironmentAttributeMapMod thunderMod,
+                                                    EnvironmentAttributeMapMod postProcess) { //here we dont use removals
 
         public static final Codec<EnvironmentAttributeModifications> DIRECT_CODEC = RecordCodecBuilder.create(
                 instance -> instance.group(
@@ -145,7 +142,26 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
         }
 
         public boolean isEmpty() {
-          return  baseMod.isEmpty() && rainMod.isEmpty() && thunderMod.isEmpty() && postProcess.isEmpty();
+            return baseMod.isEmpty() && rainMod.isEmpty() && thunderMod.isEmpty() && postProcess.isEmpty();
+        }
+
+        public EnvironmentAttributeModifications applyAllModifications(DimensionType dimension) {
+            EnvironmentAttributeMap oldBase = dimension.attributes();
+            ((DimensionTypeAccessor) (Object) dimension).setAttributes(baseMod.modify(oldBase));
+
+            EnvironmentAttributeMap oldRain = WeatherAttributes.RAIN;
+            WeatherAttributes.RAIN = rainMod.modify(oldRain);
+
+            EnvironmentAttributeMap oldThunder = WeatherAttributes.THUNDER;
+            WeatherAttributes.THUNDER = thunderMod.modify(oldThunder);
+
+
+            return new EnvironmentAttributeModifications(
+                    EnvironmentAttributeMapMod.wrapVanilla(oldBase),
+                    EnvironmentAttributeMapMod.wrapVanilla(oldRain),
+                    EnvironmentAttributeMapMod.wrapVanilla(oldThunder),
+                    EnvironmentAttributeMapMod.EMPTY
+            );
         }
     }
 
