@@ -82,7 +82,6 @@ public class EnvironmentAttributeMapMod {
                                        Set<EnvironmentAttribute<?>> entriesToRemove) {
         this.entriesToReplace = entriesToAdd;
         this.entriesToRemove = entriesToRemove;
-        AttributeModifier
     }
 
     public EnvironmentAttributeMap toVanilla(){

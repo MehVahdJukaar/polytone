@@ -17,13 +17,13 @@ import java.util.Optional;
 
 //these used to be dimension special effects modifiers
 //now they are a per dimension environment effect modifier. we essentially modify dimension type
-//TODO: timelines?
 public record DimensionEffectsModifier(EnvironmentAttributeModifications attributeModifications,
                                        Optional<DimensionType.Skybox> skybox,
                                        Optional<DimensionType.CardinalLightType> cardinalLightType,
                                        Optional<Float> ambientLight,
                                        Optional<Boolean> hasSkylight,
                                        Optional<Lightmap> lightmap, //TODO: finish adding
+                                       //TODO: ad timelines
                                        DimensionTarget targets) {
 
     public static final Decoder<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->

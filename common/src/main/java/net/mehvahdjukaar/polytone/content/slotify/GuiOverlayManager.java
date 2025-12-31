@@ -39,7 +39,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
                                   HolderLookup.Provider access) {
         for (var j : Parsed.batchParseOnlyEnabled(jsons, BlitModifier.CODEC,
                 ops, "overlay modifier")) {
-            var effect = j.getValue();
+            BlitModifier effect = j.getValue();
             Identifier textureId = effect.target();
             //just 1 makes sense
             if (blitModifiers.containsKey(textureId)) {

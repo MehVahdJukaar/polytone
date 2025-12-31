@@ -22,7 +22,7 @@ public class RegistrySnapshotMixin {
     private boolean polytone$skipDynamic(MappedRegistry instance, int i, ResourceKey resourceKey, Object object, RegistrationInfo registrationInfo,
                                          @Local(argsOnly = true) Registry<?> registry) {
         //removes dynamic stuff
-        return !Polytone.isEntryDynamic(registry, resourceKey.location());
+        return !Polytone.isEntryDynamic(registry, resourceKey.identifier());
         //jus relevant or LAN
     }
 

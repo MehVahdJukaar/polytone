@@ -13,7 +13,7 @@ import net.minecraft.resources.Identifier;
 import java.util.List;
 import java.util.Optional;
 
-public record BlitModifier(Identifier target, int index, int xInc, int yInc, int zInc, int widthInc,
+public record BlitModifier(Identifier target, int index, int xInc, int yInc,   int widthInc,
                            int heightInc,
                            float u0, float v0, float u1, float v1, int color, Optional<Identifier> newTexture,
                            List<RelativeSprite> extraSprites) {
@@ -23,7 +23,6 @@ public record BlitModifier(Identifier target, int index, int xInc, int yInc, int
             Codec.INT.optionalFieldOf("index", -1).forGetter(BlitModifier::index),
             Codec.INT.optionalFieldOf("x_inc", 0).forGetter(BlitModifier::xInc),
             Codec.INT.optionalFieldOf("y_inc", 0).forGetter(BlitModifier::yInc),
-            Codec.INT.optionalFieldOf("z_inc", 0).forGetter(BlitModifier::zInc),
             Codec.INT.optionalFieldOf("width_inc", 0).forGetter(BlitModifier::widthInc),
             Codec.INT.optionalFieldOf("height_inc", 0).forGetter(BlitModifier::heightInc),
             Codec.FLOAT.optionalFieldOf("u0", -1f).forGetter(BlitModifier::u0),
@@ -68,7 +67,6 @@ public record BlitModifier(Identifier target, int index, int xInc, int yInc, int
         oldh += heightInc;
         oldY2 = oldY1 + oldh;
 
-        //TODO: add Z
         gui.innerBlit(pipeline, sprite.atlasLocation(), oldX1, oldX2, oldY1, oldY2, minU, maxU, minV, maxV, col);
     }
 
