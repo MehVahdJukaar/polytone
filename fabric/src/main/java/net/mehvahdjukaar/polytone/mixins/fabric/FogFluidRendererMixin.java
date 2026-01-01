@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(FogEnvironment.class)
 public abstract class FogFluidRendererMixin {
-    //TODO: add back
+    //TODO: add back. idk how yet  T_T
 /*
     @Inject(method = "computeFogColor", at = @At(value = "TAIL"), cancellable = true)
     private static void polytone$modifyFluidFogColor(Camera camera, float f, ClientLevel clientLevel, int i, float g, boolean bl, CallbackInfoReturnable<Vector4f> cir) {

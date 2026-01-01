@@ -1,7 +1,9 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.google.common.base.Preconditions;
 import net.mehvahdjukaar.polytone.content.texture.IDayTimeContext;
 import net.minecraft.client.renderer.texture.SpriteContents;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -23,7 +25,8 @@ public class AnimationStateMixin implements IDayTimeContext {
     }
 
     @Override
-    public void polytone$setMode(Mode mode) {
+    public void polytone$setMode(@NotNull Mode mode) {
+        Preconditions.checkNotNull(mode);
         this.polytone$mode = mode;
     }
 

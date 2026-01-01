@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.util.GsonHelper;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,6 +25,7 @@ public abstract class BlockModelDeserializerMixin {
            // BlockModel custom = SeparateTransformsModel.readModel(
              //       loader, context, jsonobject, original);
             //if (custom != null) return custom;
+
         }
         return original;
     }

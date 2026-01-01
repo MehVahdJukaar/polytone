@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.fabricmc.fabric.impl.registry.sync.RegistrySyncManager;
@@ -15,12 +17,16 @@ import org.spongepowered.asm.mixin.injection.At;
 public class RegistrySyncManagerMixin {
 
 
-    @WrapWithCondition(method = "createAndPopulateRegistryMap",
+    @WrapOperation(method = "createAndPopulateRegistryMap",
             remap = false,
             at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/Object2IntMap;put(Ljava/lang/Object;I)I"))
-    private static boolean polytone$omitPolytoneDynamicEntries(Object2IntMap instance, Object o, int i,
-                                                               @Local Registry<?> registryId,
-                                                               @Local(ordinal = 1) Identifier entryId) {
-        return !Polytone.isEntryDynamic(registryId, entryId);
+    private static int polytone$omitPolytoneDynamicEntries(Object2IntMap instance, Object o, int i,
+                                                           Operation<Integer> original, @Local Registry<?> registryId,
+                                                           @Local(ordinal = 1) Identifier entryId) {
+        if (!Polytone.isEntryDynamic(registryId, entryId)) {
+            return original.call(instance, o, i);
+        } else {
+            return 0;
+        }
     }
 }

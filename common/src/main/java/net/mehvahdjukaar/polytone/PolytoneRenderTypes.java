@@ -49,7 +49,7 @@ public class PolytoneRenderTypes {
                     .withVertexFormat(DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS)
                     .withShaderDefine("ALPHA_CUTOUT", 0.001F)
                     /* Blending Functions */
-                    .withDepthWrite(false) //??
+                    .withDepthWrite(false) //affects depth buffer
                     .withCull(true) //??
                     .withBlend(ADDITIVE_TRANSLUCENT_BLEND)
                     .build()
@@ -94,24 +94,21 @@ public class PolytoneRenderTypes {
     public static final RenderPipeline LEASH_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
                     RenderPipelines. MATRICES_FOG_SNIPPET)
             .withLocation("polytone/pipeline/leash")
-            .withVertexShader("core/terrain")
-            .withFragmentShader("core/terrain")
+            .withVertexShader("core/rendertype_text")
+            .withFragmentShader("core/rendertype_text")
             .withSampler("Sampler2")
             .withSampler("Sampler0")
             .withCull(false)
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.TRIANGLE_STRIP)
             .build());
 
-
     private static final Identifier LEASH_TEXTURE = Identifier.withDefaultNamespace("textures/entity/lead.png");
 
     private static final RenderType LEASH_RENDER_TYPE = RenderType.create(
             "polytone_leash",
             RenderSetup.builder(LEASH_PIPELINE)
-                    .bufferSize(1536)
                     .withTexture("Sampler0", LEASH_TEXTURE)
                     .useLightmap()
-                    .setOutline(RenderSetup.OutlineProperty.NONE)
                     .createRenderSetup());
 
 

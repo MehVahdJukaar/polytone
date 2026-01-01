@@ -7,7 +7,6 @@ loom {
 }
 
 
-
 publishing {
     publications {
         mavenCommon(MavenPublication) {
@@ -35,12 +34,18 @@ dependencies {
     // Do NOT use other classes from fabric loader
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
 
+    //  modApi "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}:fabric-convention-tags-v2"
+
+    compileOnly "net.mehvahdjukaar:candlelight:${candle_version}"
     implementation "net.objecthunter:exp4j:${exp4j_version}"
+    implementation 'org.mvel:mvel2:2.4.14.Final'
 
     modCompileOnly "curse.maven:serene-seasons-291874:6182596"
     modCompileOnly "curse.maven:fabric-seasons-413523:5789846"
     modCompileOnly("curse.maven:irisshaders-455508:6369436")
-    modCompileOnly("curse.maven:sodium-394468:6240355")
+    modCompileOnly("curse.maven:sodium-394468:7366772")
 
-
+    implementation "org.ow2.asm:asm:9.5"
+    implementation "org.ow2.asm:asm-commons:9.5"
 }
+

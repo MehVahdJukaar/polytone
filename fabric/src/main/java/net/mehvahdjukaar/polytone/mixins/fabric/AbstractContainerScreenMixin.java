@@ -33,9 +33,6 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     @Shadow
     protected int inventoryLabelY;
 
-    @Shadow
-    @Nullable
-    protected Slot hoveredSlot;
     @Shadow protected int topPos;
     @Shadow protected int leftPos;
     @Shadow protected int imageWidth;

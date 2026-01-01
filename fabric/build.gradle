@@ -76,16 +76,22 @@ publishing {
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+    modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 
+
+    implementation "org.ow2.asm:asm:9.5"
+    implementation "org.ow2.asm:asm-commons:9.5"
+
     implementation include( "net.objecthunter:exp4j:${exp4j_version}")
+    implementation include('org.mvel:mvel2:2.4.14.Final')
+
 
    // modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
     //modImplementation "curse.maven:continuity-531351:5425853"
-    modCompileOnly("curse.maven:sodium-394468:6211305")
+    modImplementation("curse.maven:sodium-394468:7366772")
    // modImplementation "curse.maven:distant-horizons-508933:6387715"
     modCompileOnly "curse.maven:serene-seasons-291874:6182595"
 }
-

@@ -1,7 +1,2 @@
-- this version has huge changes due to huge mc internal changes
-- imma be honest i didn't test much of the features, leaving as alpha for now.
-- this version is capable of modifying fog, and MUCH MUCH more, it makes use of the new environment attributes which streamlined a lotof the old systems
-- this means with it you can customize all environment attributes on a per dimension or per biome basis. 
-- Dimensions colormaps are no longer a thing, not like they were before at least. they can still be used as a part of the environment attribute system thats been expanded to make use of expressions and colormaps. 
-- Wiki will be updated soon but in the mean time you can read the environment attribute page on the mc wiki
-- to re iterate this sytem allow sto edit stuff like fog, sun angle, fog color, sky color, cloud height, sunset color, lightmaps and much more all in once
+- reverted some mixins changes that only work in 26.1
+- text mod and colors.jsons color fields will take ARGB color and will fill in alpha channel if missing

@@ -29,7 +29,7 @@ public record BlitModifier(Identifier target, int index, int xInc, int yInc,   i
             Codec.FLOAT.optionalFieldOf("v0", -1f).forGetter(BlitModifier::v0),
             Codec.FLOAT.optionalFieldOf("u1", -1f).forGetter(BlitModifier::u1),
             Codec.FLOAT.optionalFieldOf("v1", -1f).forGetter(BlitModifier::v1),
-            ColorUtils.CODEC.optionalFieldOf("color", -1).forGetter(BlitModifier::color),
+            ColorUtils.RGBA_CODEC.optionalFieldOf("color", -1).forGetter(BlitModifier::color),
             Identifier.CODEC.optionalFieldOf("new_texture").forGetter(BlitModifier::newTexture),
             RelativeSprite.CODEC.listOf().optionalFieldOf("overlays", List.of()).forGetter(BlitModifier::extraSprites)
     ).apply(i, BlitModifier::new));

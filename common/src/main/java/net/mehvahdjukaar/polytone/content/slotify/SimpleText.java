@@ -20,7 +20,7 @@ public record SimpleText(Component text, int x, int y, Optional<GuiDepthTarget> 
             Codec.INT.fieldOf("x").forGetter(SimpleText::x),
             Codec.INT.fieldOf("y").forGetter(SimpleText::y),
             GuiDepthTarget.CODEC.optionalFieldOf("depth").forGetter(SimpleText::depth),
-            ColorUtils.CODEC.optionalFieldOf("color", -1).forGetter(SimpleText::color),
+            ColorUtils.ARGB_CODEC.optionalFieldOf("color", -1).forGetter(SimpleText::color),
             Codec.BOOL.optionalFieldOf("centered", false).forGetter(SimpleText::centered)
     ).apply(i, SimpleText::new));
 

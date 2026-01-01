@@ -14,42 +14,58 @@ import java.util.Locale;
 public class ColorUtils {
 
     //utility codec that serializes either a string or an integer
-    public static final Codec<Integer> CODEC = Codec.either(Codec.INT,
-            Codec.STRING.flatXmap(ColorUtils::isValidStringOrError, s->isValidStringOrError(s)
-                    .map(ColorUtils::formatString))).xmap(
+    public static final Codec<Integer> RGBA_CODEC = Codec.either(Codec.INT,
+            Codec.STRING.flatXmap(
+                    s -> parseHex(s, false),
+                    s -> parseHex(s, false)
+            )).xmap(
             either -> either.map(integer -> integer, s -> Integer.parseUnsignedInt(s, 16)),
             integer -> Either.right("#" + String.format("%08X", integer))
     );
 
-    private static String formatString(String s){
-        return "#"+ s.toUpperCase(Locale.ROOT);
-    }
+    //Known uses: text
+    //automatically fills in alpha if not provided
+    public static final Codec<Integer> ARGB_CODEC =
+            Codec.either(Codec.INT, Codec.STRING.flatXmap(
+                    s -> parseHex(s, true),
+                    s -> parseHex(s, true)
+            )).xmap(
+                    e -> e.map(i -> i, s -> Integer.parseUnsignedInt(s, 16)),
+                    i -> Either.right("#" + String.format("%08X", i))
+            );
 
-    public static DataResult<String> isValidStringOrError(String s) {
+    /* -------------------- HEX PARSING -------------------- */
+
+    private static DataResult<String> parseHex(String s, boolean argb) {
         String st = s;
+
         if (s.startsWith("0x")) {
             st = s.substring(2);
         } else if (s.startsWith("#")) {
             st = s.substring(1);
         }
 
-        // Enforce the maximum length of eight characters (including prefix)
-        if (st.length() > 8) {
-            return DataResult.error(()-> "Invalid color format. Hex value must have up to 8 characters.");
+        if (st.length() != 6 && st.length() != 8) {
+            return DataResult.error(() ->
+                    "Invalid color format. Must be 6 (RRGGBB) or 8 (AARRGGBB) hex digits."
+            );
         }
 
         try {
-            int parsedValue = Integer.parseUnsignedInt(st, 16);
-            return DataResult.success(st);
+            Integer.parseUnsignedInt(st, 16);
+
+            // ARGB codec: inject full alpha if missing
+            if (argb && st.length() == 6) {
+                st = "FF" + st;
+            }
+
+            return DataResult.success(st.toUpperCase(Locale.ROOT));
         } catch (NumberFormatException e) {
-            return DataResult.error(()-> "Invalid color format. Must be in hex format (0xff00ff00, #ff00ff00, ff00ff00) or integer value");
+            return DataResult.error(() ->
+                    "Invalid color format. Must be hexadecimal."
+            );
         }
     }
-
-    public static boolean isValidString(String s) {
-        return isValidStringOrError(s).result().isPresent();
-    }
-
 
     public static int pack(float... components) {
         int n = (int) (components[0] * 255.0F) << 16;

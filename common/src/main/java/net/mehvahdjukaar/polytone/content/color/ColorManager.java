@@ -378,7 +378,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     private static int parseColor(JsonElement obj) {
-        return ColorUtils.CODEC.decode(JsonOps.INSTANCE, obj)
+        return ColorUtils.ARGB_CODEC.decode(JsonOps.INSTANCE, obj)
                 .getOrThrow()
                 .getFirst(); // this will throw if the element is not a valid color
     }

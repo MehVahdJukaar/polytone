@@ -4,12 +4,14 @@ plugins {
     id "io.github.juuxel.loom-quiltflower" version "1.7.1" apply false
     id "com.matthewprenger.cursegradle" version "1.+"
     id "com.modrinth.minotaur" version "2.+"
+    id 'net.mehvahdjukaar.candlelight' version "${candle_version}" apply false
 }
 
 allprojects {
     apply plugin: "java"
     apply plugin: "architectury-plugin"
     apply plugin: "maven-publish"
+    apply plugin: "net.mehvahdjukaar.candlelight"
 
     group = mod_group_id
     version = mod_version
@@ -223,4 +225,12 @@ tasks.register('buildAndPublishAll') {
 
     group = 'build'
     description = 'Runs clean, build, and publish neoforge and fabric'
+}
+
+tasks.compileJava {
+    options.compilerArgs += [
+            "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+            "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+            "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+    ]
 }

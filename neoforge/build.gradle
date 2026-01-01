@@ -97,8 +97,19 @@ dependencies {
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive = false }
 
+
+    implementation "org.ow2.asm:asm:9.5"
+    implementation "org.ow2.asm:asm-commons:9.5"
+
     implementation include( "net.objecthunter:exp4j:${exp4j_version}")
     forgeRuntimeLibrary ( "net.objecthunter:exp4j:${exp4j_version}")
+
+    implementation "com.squareup:javapoet:1.13.0"
+    annotationProcessor "com.squareup:javapoet:1.13.0"
+    implementation include( "net.objecthunter:exp4j:${exp4j_version}")
+    forgeRuntimeLibrary ( "net.objecthunter:exp4j:${exp4j_version}")
+    implementation include('org.mvel:mvel2:2.4.14.Final')
+    forgeRuntimeLibrary ('org.mvel:mvel2:2.4.14.Final')
 
  //   modImplementation ("curse.maven:embeddium-908741:6118392")
     modCompileOnly ("curse.maven:curios-309927:6538253")

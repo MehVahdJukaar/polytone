@@ -29,10 +29,10 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                                   Targets targets) {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-            ColorUtils.CODEC.optionalFieldOf("water_color").forGetter(BiomeEffectModifier::waterColor),
-            ColorUtils.CODEC.optionalFieldOf("foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
-            ColorUtils.CODEC.optionalFieldOf("dry_foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
-            ColorUtils.CODEC.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
+            ColorUtils.RGBA_CODEC.optionalFieldOf("water_color").forGetter(BiomeEffectModifier::waterColor),
+            ColorUtils.RGBA_CODEC.optionalFieldOf("foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
+            ColorUtils.RGBA_CODEC.optionalFieldOf("dry_foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
+            ColorUtils.RGBA_CODEC.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
             BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
             EnvironmentAttributeMapMod.CODEC.optionalFieldOf("attributes_modifiers",
                     EnvironmentAttributeMapMod.EMPTY).forGetter(BiomeEffectModifier::environmentAttributesMod),
