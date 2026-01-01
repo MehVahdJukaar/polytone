@@ -13,19 +13,10 @@ import java.util.Locale;
 //ML class
 public class ColorUtils {
 
-    //utility codec that serializes either a string or an integer
-    public static final Codec<Integer> RGBA_CODEC = Codec.either(Codec.INT,
-            Codec.STRING.flatXmap(
-                    s -> parseHex(s, false),
-                    s -> parseHex(s, false)
-            )).xmap(
-            either -> either.map(integer -> integer, s -> Integer.parseUnsignedInt(s, 16)),
-            integer -> Either.right("#" + String.format("%08X", integer))
-    );
-
-    //Known uses: text
+    //Known uses: Gui text (ARGB), VertexConsumer (ABGR), BiomeColors (ARGB) unused alpha.
     //automatically fills in alpha if not provided
-    public static final Codec<Integer> ARGB_CODEC =
+    //ARGB or ABGR
+    public static final Codec<Integer> COLOR =
             Codec.either(Codec.INT, Codec.STRING.flatXmap(
                     s -> parseHex(s, true),
                     s -> parseHex(s, true)
@@ -36,7 +27,7 @@ public class ColorUtils {
 
     /* -------------------- HEX PARSING -------------------- */
 
-    private static DataResult<String> parseHex(String s, boolean argb) {
+    private static DataResult<String> parseHex(String s, boolean fillAlphaFirst) {
         String st = s;
 
         if (s.startsWith("0x")) {
@@ -55,7 +46,7 @@ public class ColorUtils {
             Integer.parseUnsignedInt(st, 16);
 
             // ARGB codec: inject full alpha if missing
-            if (argb && st.length() == 6) {
+            if (fillAlphaFirst && st.length() == 6) {
                 st = "FF" + st;
             }
 

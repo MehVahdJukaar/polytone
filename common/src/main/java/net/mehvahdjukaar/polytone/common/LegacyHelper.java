@@ -170,7 +170,7 @@ public class LegacyHelper {
     public static final Decoder<BlockPropertyModifier> OF_JSON_CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.optionalFieldOf("format", "").forGetter(c -> ""),
             Codec.STRING.listOf().optionalFieldOf("blocks", List.of()).forGetter(c -> List.of()),
-            ColorUtils.RGBA_CODEC.optionalFieldOf("color").forGetter(c -> Optional.empty()),
+            ColorUtils.COLOR.optionalFieldOf("color").forGetter(c -> Optional.empty()),
             Codec.STRING.xmap(Integer::parseInt, String::valueOf).optionalFieldOf("yVariance").forGetter(c -> Optional.empty()),
             Codec.STRING.xmap(Integer::parseInt, String::valueOf).optionalFieldOf("yoffset").forGetter(c -> Optional.empty()),
             Codec.STRING.optionalFieldOf("source").forGetter(c -> Optional.empty()),

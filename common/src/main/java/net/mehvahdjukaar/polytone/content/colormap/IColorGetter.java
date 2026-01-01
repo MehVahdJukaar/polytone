@@ -153,7 +153,7 @@ public interface IColorGetter extends BlockColor, BarColor {
 
 
 
-    Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.RGBA_CODEC.xmap(
+    Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.COLOR.xmap(
             IColorGetter.StaticColor::new, g -> g instanceof StaticColor(int color) ? color : 0
     );
 
