@@ -13,7 +13,19 @@ import java.util.Locale;
 //ML class
 public class ColorUtils {
 
-    //Known uses: Gui text (ARGB), VertexConsumer (ABGR), BiomeColors (ARGB) unused alpha.
+    //utility codecs that serializes either a string or an integer
+
+    //RGBA
+    public static final Codec<Integer> RGBA_COLOR = Codec.either(Codec.INT,
+            Codec.STRING.flatXmap(
+                    s -> parseHex(s, false),
+                    s -> parseHex(s, false)
+            )).xmap(
+            either -> either.map(integer -> integer, s -> Integer.parseUnsignedInt(s, 16)),
+            integer -> Either.right("#" + String.format("%08X", integer))
+    );
+
+    //Known uses: Gui text (ARGB), VertexConsumer (ABGR), BiomeColors (ARGB)
     //automatically fills in alpha if not provided
     //ARGB or ABGR
     public static final Codec<Integer> COLOR =
