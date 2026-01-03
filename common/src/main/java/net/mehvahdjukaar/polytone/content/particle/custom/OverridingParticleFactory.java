@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.multiplayer.ClientLevel;

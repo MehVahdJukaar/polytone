@@ -5,6 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
+import net.mehvahdjukaar.polytone.content.particle.custom.ParticleTickable;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;

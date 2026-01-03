@@ -1,28 +1,30 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
-import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.content.sound.ParticleSoundEmitter;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
+import net.mehvahdjukaar.polytone.content.colormap.Colormap;
+import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
+import net.mehvahdjukaar.polytone.content.particle.ParticleContextExpression;
+import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
+import net.mehvahdjukaar.polytone.content.sound.ParticleSoundEmitter;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.SingleQuadParticle;
-import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.BlockPos;
@@ -38,6 +40,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,8 +50,9 @@ import java.util.Optional;
 public class CustomParticleType implements CustomParticleFactory {
 
     private static BlockState STATE_HACK = Blocks.AIR.defaultBlockState();
-    private static SingleQuadParticle.Layer CUSTOM_LAYER = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_TERRAIN);
-    private static SingleQuadParticle.Layer ADDITIVE_TRANSLUCENT = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE);
+    private static final SingleQuadParticle.Layer CUSTOM_LAYER = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_TERRAIN);
+    private static final SingleQuadParticle.Layer ADDITIVE_TRANSLUCENT = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE);
+    private static final ParticleRenderType PARTICLE_MODEL_GROUP = new ParticleRenderType(Polytone.res("particle_model").toString());
 
     private final RenderMode renderType;
     private final @Nullable Identifier model;
@@ -69,7 +73,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private final @Nullable IColorGetter colormap;
     private final RotationProvider rotationProvider;
     private final Vec3 offset;
-    private final Optional<ParticleLimit> group;
+    private final Optional<ParticleLimit> particleGroupLimit;
     private final boolean forceSpawn;
     private final boolean randomSprite;
 
@@ -104,7 +108,7 @@ public class CustomParticleType implements CustomParticleFactory {
         this.rotationProvider = rotationProvider;
         this.tickRate = tickRate;
         this.exclusionRadius = killSimilarInRadius;
-        this.group = particleGroupLimit > 0 ? Optional.of(new ParticleLimit(particleGroupLimit)) : Optional.empty();
+        this.particleGroupLimit = particleGroupLimit > 0 ? Optional.of(new ParticleLimit(particleGroupLimit)) : Optional.empty();
     }
 
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
@@ -121,7 +125,7 @@ public class CustomParticleType implements CustomParticleFactory {
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap)),
             Codec.BOOL.optionalFieldOf("random_sprite", false).forGetter(c -> c.randomSprite),
             ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("limit", 0).forGetter(c ->
-                    c.group.map(ParticleLimit::limit).orElse(0)),
+                    c.particleGroupLimit.map(ParticleLimit::limit).orElse(0)),
             Codec.BOOL.optionalFieldOf("force_spawn", false).forGetter(c -> c.forceSpawn),
             ParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
             Ticker.CODEC.optionalFieldOf("ticker").forGetter(c -> Optional.ofNullable(c.ticker)),
@@ -164,7 +168,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
     @Override
     public Particle createParticleWithState(ExtraDataParticleOptions opt, ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                                   @Nullable BlockState state, RandomSource random) {
+                                            @Nullable BlockState state, RandomSource random) {
         if (spriteSet != null) {
             // some people might want this
 
@@ -184,9 +188,9 @@ public class CustomParticleType implements CustomParticleFactory {
                 }
             }
             if (exclusionRadius > 0) {
-                ParticleRenderType particleRenderType = ParticleRenderType.SINGLE_QUADS;
+                ParticleRenderType particleRenderType = this.getParticleGroup();
                 double radiusSquared = exclusionRadius * exclusionRadius;
-                var  particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
+                var particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
 
                 if (particleQueue != null) {
                     for (var p : particleQueue.getAll()) {
@@ -214,6 +218,11 @@ public class CustomParticleType implements CustomParticleFactory {
         } else {
             throw new IllegalStateException("Sprite set not set for custom particle type");
         }
+    }
+
+    private ParticleRenderType getParticleGroup() {
+        if (renderType == RenderMode.INVISIBLE) return ParticleRenderType.NO_RENDER;
+        return model != null ? PARTICLE_MODEL_GROUP : ParticleRenderType.SINGLE_QUADS;
     }
 
     @Override
@@ -294,32 +303,44 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public @NotNull Optional<ParticleLimit> getParticleLimit() {
-            return this.type.group;
+            return this.type.particleGroupLimit;
         }
-/* TODO: these require a different approach now if you want to allow overriding the full rendering.
-            Otherwise, SingleQuadParticle already does this.
-*/
-/*
+
+        //Unused. Why? because we need extra context of the particle iteself to be passed in apply rotation
         @Override
-        public void render(VertexConsumer buffer, Camera camera, float partialTicks) {
+        public FacingCameraMode getFacingCameraMode() {
+            return this.type.rotationProvider;
+        }
+
+        @Override
+        public void extract(QuadParticleRenderState quadParticleRenderState, Camera camera, float f) {
             Quaternionf quaternionf = new Quaternionf();
-            this.type.rotationProvider.applyRotation(this, quaternionf, camera, partialTicks);
+            this.type.rotationProvider.setRotation(this, quaternionf, camera, f);
             if (this.roll != 0.0F) {
-                quaternionf.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
+                quaternionf.rotateZ(Mth.lerp(f, this.oRoll, this.roll));
             }
 
-            this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
+            this.extractRotatedQuad(quadParticleRenderState, camera, quaternionf, f);
+
             if (!this.type.rotationProvider.alwaysFacesCamera() && model == null) {
                 quaternionf.rotateX(Mth.PI);
                 //render back face
-                this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
+                this.extractRotatedQuad(quadParticleRenderState, camera, quaternionf, f);
             }
+        }
+
+        @Override
+        protected void extractRotatedQuad(QuadParticleRenderState quadParticleRenderState,
+                                          Quaternionf rot, float x, float y, float z, float size) {
+            var offset = this.type.offset;
+            super.extractRotatedQuad(quadParticleRenderState, rot,
+                    (float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z), size);
         }
 
         @Override
         public void renderCustom(PoseStack poseStack, MultiBufferSource multiBufferSource, Camera camera, float partialTicks) {
             Quaternionf quaternionf = new Quaternionf();
-            this.type.rotationProvider.applyRotation(this, quaternionf, camera, partialTicks);
+            this.type.rotationProvider.setRotation(this, quaternionf, camera, partialTicks);
             if (this.roll != 0.0F) {
                 quaternionf.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
             }
@@ -336,7 +357,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
             PoseStack poseStack = new PoseStack();
             poseStack.translate(x + offset.x, y + offset.y, z + offset.z);
-
+            ItemPickupParticleGroup
             poseStack.scale(size, size, size);
             poseStack.mulPose(quaternion);
             poseStack.translate(-0.5, -0.5, -0.5);
@@ -350,13 +371,6 @@ public class CustomParticleType implements CustomParticleFactory {
             bufferSource.endBatch();
         }
 
-        @Override
-        protected void renderRotatedQuad(VertexConsumer consumer, Quaternionf quaternion, float x, float y, float z, float partialTicks) {
-            var offset = this.type.offset;
-            super.renderRotatedQuad(consumer, quaternion, (float) (x + offset.x),
-                    (float) (y + offset.y), (float) (z + offset.z), partialTicks);
-        }
-*/
         @Override
         protected int getLightColor(float partialTick) {
             int total = super.getLightColor(partialTick);
@@ -451,13 +465,18 @@ public class CustomParticleType implements CustomParticleFactory {
         }
 
 
+        @Override
+        public ParticleRenderType getGroup() {
+            return this.type.getParticleGroup();
+        }
     }
 
     public enum RenderMode implements StringRepresentable {
         TERRAIN,
         OPAQUE,
         TRANSLUCENT,
-        LIT,
+        @Deprecated
+        LIT, //UNUSED
         ADDITIVE_TRANSLUCENT,
         INVISIBLE;
 
@@ -467,8 +486,7 @@ public class CustomParticleType implements CustomParticleFactory {
             return switch (this) {
                 case TERRAIN -> RenderTypes.solidMovingBlock();
                 case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE;
-                case LIT, INVISIBLE -> RenderTypes.cutoutMovingBlock();
-                case TRANSLUCENT -> RenderTypes.cutoutMovingBlock();
+                case TRANSLUCENT, LIT -> RenderTypes.cutoutMovingBlock();
                 // default was cutout mipped but it no longer exists
                 default -> RenderTypes.cutoutMovingBlock();
             };
@@ -476,8 +494,8 @@ public class CustomParticleType implements CustomParticleFactory {
 
         public SingleQuadParticle.Layer getLayer() {
             return switch (this) {
-                case TERRAIN, LIT -> SingleQuadParticle.Layer.TERRAIN;
-                case TRANSLUCENT, INVISIBLE -> SingleQuadParticle.Layer.TRANSLUCENT;
+                case TERRAIN -> SingleQuadParticle.Layer.TERRAIN;
+                case TRANSLUCENT, INVISIBLE, LIT -> SingleQuadParticle.Layer.TRANSLUCENT;
                 case ADDITIVE_TRANSLUCENT -> CustomParticleType.ADDITIVE_TRANSLUCENT;
                 default -> SingleQuadParticle.Layer.OPAQUE;
             };

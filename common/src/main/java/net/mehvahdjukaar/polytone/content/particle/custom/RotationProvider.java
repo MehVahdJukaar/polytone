@@ -1,13 +1,16 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.content.particle.ParticleContextExpression;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.SingleQuadParticle;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 
-public interface RotationProvider {
+//Extended facing camera mode
+public interface RotationProvider extends SingleQuadParticle.FacingCameraMode {
 
     Codec<RotationProvider> CODEC = Codec.withAlternative(
             (Codec<RotationProvider>) (Object) CustomRotation.CODEC,
@@ -16,11 +19,16 @@ public interface RotationProvider {
 
     boolean alwaysFacesCamera();
 
-    void applyRotation(SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks);
+    void setRotation(@Nullable SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks);
 
-    public static record CustomRotation(ParticleContextExpression xRot,
-                                        ParticleContextExpression yRot,
-                                        ParticleContextExpression zRot) implements RotationProvider {
+    @Override
+    default void setRotation(Quaternionf quaternionf, Camera camera, float f) {
+        setRotation(null, quaternionf, camera, f);
+    }
+
+    record CustomRotation(ParticleContextExpression xRot,
+                          ParticleContextExpression yRot,
+                          ParticleContextExpression zRot) implements RotationProvider {
 
         public static final Codec<CustomRotation> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ParticleContextExpression.CODEC.optionalFieldOf("x_rot", ParticleContextExpression.ZERO).forGetter(CustomRotation::xRot),
@@ -34,7 +42,8 @@ public interface RotationProvider {
         }
 
         @Override
-        public void applyRotation(SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks) {
+        public void setRotation(@Nullable SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks) {
+            if (particle == null) return;
             var level = Minecraft.getInstance().level;
             double x = this.xRot.getValue(particle, level);
             double y = this.yRot.getValue(particle, level);

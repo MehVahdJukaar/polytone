@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.mehvahdjukaar.polytone.content.particle.ExtraDataParticleOptions;
+import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;

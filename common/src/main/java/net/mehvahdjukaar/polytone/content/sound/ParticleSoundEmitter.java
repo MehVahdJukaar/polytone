@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.content.particle.ParticleContextExpression;
-import net.mehvahdjukaar.polytone.content.particle.ParticleTickable;
+import net.mehvahdjukaar.polytone.content.particle.custom.ParticleTickable;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;

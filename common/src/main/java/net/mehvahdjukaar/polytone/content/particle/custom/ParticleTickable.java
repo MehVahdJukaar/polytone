@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import net.minecraft.client.particle.Particle;
 import net.minecraft.world.level.Level;

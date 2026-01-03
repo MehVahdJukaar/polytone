@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.content.particle.modifiers;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

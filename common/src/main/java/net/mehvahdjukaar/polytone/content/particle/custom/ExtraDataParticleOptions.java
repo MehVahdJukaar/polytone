@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;

@@ -13,7 +13,7 @@ import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.particle.ExtraDataParticleOptions;
+import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.common.Targets;

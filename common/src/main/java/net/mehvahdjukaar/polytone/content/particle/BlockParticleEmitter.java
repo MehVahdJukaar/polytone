@@ -8,6 +8,8 @@ import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
+import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;

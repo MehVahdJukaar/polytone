@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Either;
@@ -12,6 +12,7 @@ import net.mehvahdjukaar.polytone.SpecialModelsHandler;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleResources;

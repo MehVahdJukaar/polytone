@@ -1,11 +1,11 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 
-public class CustomOrSemiCustomParticleCodec implements Codec<CustomParticleFactory> {
+public final class CustomOrSemiCustomParticleCodec implements Codec<CustomParticleFactory> {
 
     public static final Codec<CustomParticleFactory> INSTANCE = new CustomOrSemiCustomParticleCodec();
     @Override

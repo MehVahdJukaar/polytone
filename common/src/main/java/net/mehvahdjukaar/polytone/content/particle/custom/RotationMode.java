@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.content.particle.custom;
 
 
 import com.mojang.serialization.Codec;
@@ -7,6 +7,7 @@ import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -25,7 +26,7 @@ public enum RotationMode implements StringRepresentable, RotationProvider {
     }
 
     @Override
-    public void applyRotation(SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks) {
+    public void setRotation(@Nullable SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks) {
         switch (this) {
             case NONE -> {
             }
@@ -45,7 +46,8 @@ public enum RotationMode implements StringRepresentable, RotationProvider {
             case LOOK_AT_Z -> quaternionf.set(0.0F, 0.0F, camera.rotation().z, camera.rotation().w);
             case LOOK_AT_XZ -> quaternionf.set(camera.rotation().x, 0, camera.rotation().z, camera.rotation().w);
             case MOVEMENT_ALIGNED -> {
-                Vec3 dir = new Vec3(particle.xd, particle.yd, particle.zd).normalize();
+                Vec3 dir = particle == null ? Vec3.ZERO :
+                        new Vec3(particle.xd, particle.yd, particle.zd).normalize();
 
                 Vec3 cameraLook = new Vec3(camera.forwardVector());
                 Vec3 cross = dir.cross(cameraLook);
