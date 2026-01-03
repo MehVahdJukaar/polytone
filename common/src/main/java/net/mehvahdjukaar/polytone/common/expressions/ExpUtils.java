@@ -1,9 +1,15 @@
 package net.mehvahdjukaar.polytone.common.expressions;
 
 import net.mehvahdjukaar.polytone.common.expressions.proxies.CameraProxy;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.Vec3;
 import org.mvel2.ParserContext;
+import org.mvel2.util.MethodStub;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 
 public class ExpUtils {
@@ -23,14 +29,48 @@ public class ExpUtils {
     }
 
 
-    public static void registerBaseTypes(ParserContext ctx){
+    public static void addCommonInputs(ParserContext ctx){
         ctx.addInput("Vec3", Vec3.class);
+        ctx.addInput("Vec3i", Vec3i.class);
+        ctx.addInput("BlockPose", BlockPos.class);
         ctx.addInput("camera", CameraProxy.class);
         ctx.addInput("c", CameraProxy.class);
+
+        importStaticMembers(ctx, Math.class);
+
+        //    ctx.addInput("price", int.class);
+        //   ctx.addInput("category", String.class);
+        // ctx.addImport("BigDecimal", BigDecimal.class);
+        //  ctx.addImport("time", MVEL.getStaticMethod(System.class, "currentTimeMillis", new Class[0]));
     }
 
-    public static void addBaseInputs(Map<Object, Object> vars){
+    public static void addCommonVars(Map<String, Object> vars){
+//TODO: add static vars of math
+    }
 
+
+    public static void importStaticMembers(ParserContext ctx, Class<?> clazz) {
+
+        // Import static methods
+        for (Method method : clazz.getMethods()) {
+            if (Modifier.isStatic(method.getModifiers()) && method.getDeclaringClass() == clazz) {
+                ctx.addImport(method.getName(), new MethodStub(method));
+            }
+        }
+
+
+        /*
+
+// Import static fields as global variables
+        for (Field field : clazz.getFields()) {
+            if (Modifier.isStatic(field.getModifiers()) && field.getDeclaringClass() == clazz) {
+                try {
+                    ctx.addVariable(field.getName(), field.get(null)); // value of static field
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }*/
     }
 
     // global stuff

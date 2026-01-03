@@ -21,22 +21,14 @@ public final class PolyExpType<T extends PolyExp> {
 
     public PolyExpType(Function<Serializable, T> constructor, Consumer<ParserContext> inputs) {
         this.constructor = constructor;
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.setStrictTypeEnforcement(true);
-        inputs.accept(ctx);
+        this.context = new ParserContext();
+        this.context.setStrongTyping(true);
+        this.context.setStrictTypeEnforcement(true);
+        inputs.accept(this.context);
     }
 
     public Codec<T> codec() {
         return codec;
-    }
-
-    private void buildContext(ParserContext ctx) {
-
-    //    ctx.addInput("price", int.class);
-     //   ctx.addInput("category", String.class);
-       // ctx.addImport("BigDecimal", BigDecimal.class);
-      //  ctx.addImport("time", MVEL.getStaticMethod(System.class, "currentTimeMillis", new Class[0]));
     }
 
     public DataResult<T> create(String expressionStr) {
