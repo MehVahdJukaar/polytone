@@ -47,13 +47,10 @@ public class ColorUtils {
         } else if (s.startsWith("#")) {
             st = s.substring(1);
         }
-
-        if (st.length() != 6 && st.length() != 8) {
-            return DataResult.error(() ->
-                    "Invalid color format. Must be 6 (RRGGBB) or 8 (AARRGGBB) hex digits."
-            );
+        // Enforce the maximum length of eight characters (including prefix)
+        if (st.length() > 8) {
+            return DataResult.error(()-> "Invalid color format. Hex value must have up to 8 characters.");
         }
-
         try {
             Integer.parseUnsignedInt(st, 16);
 
@@ -64,6 +61,7 @@ public class ColorUtils {
 
             return DataResult.success(st.toUpperCase(Locale.ROOT));
         } catch (NumberFormatException e) {
+            //No int allowed unless in primitive type
             return DataResult.error(() ->
                     "Invalid color format. Must be hexadecimal."
             );

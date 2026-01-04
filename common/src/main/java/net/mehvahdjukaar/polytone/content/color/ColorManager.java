@@ -21,6 +21,7 @@ import net.minecraft.client.color.ColorLerper;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
 import net.minecraft.client.resources.SplashManager;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -110,7 +111,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             try {
                 parseColorJson(root, k);
             } catch (Exception e1) {
-                Polytone.LOGGER.error("Failed to parse color JSON in file {}", k, e1);
+                Polytone.LOGGER.error("Failed to parse color.json in file {}", k, e1);
             }
         }
 
@@ -225,6 +226,10 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     }
 
                     effect.color = col;
+                    effect.particleFactory =  mobEffectInstance -> {
+                        int alpha = mobEffectInstance.isAmbient() ? AMBIENT_ALPHA : 255;
+                        return ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, ARGB.color(alpha, col));
+                    };
                     if (particle != null) {
                         if (!vanillaEffectParticles.containsKey(effect)) {
                             vanillaEffectParticles.put(effect, effect.particleFactory);

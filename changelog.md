@@ -1,2 +1,4 @@
-- reverted some mixins changes that only work in 26.1
-- text mod and colors.jsons color fields will take ARGB color and will fill in alpha channel if missing
+- updated particle code to the new crazy 1.21.11 rendering changes. this fixes many bugs
+- fixed color.json not changing effect colors of particles on player
+- fixed an issue with color decoding
+- misc fixes i forgot
