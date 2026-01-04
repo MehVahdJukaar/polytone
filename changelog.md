@@ -2,3 +2,4 @@
 - fixed color.json not changing effect colors of particles on player
 - fixed an issue with color decoding
 - misc fixes i forgot
+- so far all features I tested worked or were made to work so moving out of alpha

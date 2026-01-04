@@ -1,5 +1,8 @@
-package net.mehvahdjukaar.polytone.common.expressions;
+package net.mehvahdjukaar.polytone.common.expressions.types;
 
+import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
+import net.mehvahdjukaar.polytone.common.expressions.PolyExp;
+import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.BlockProxy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;

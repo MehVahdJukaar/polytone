@@ -1,36 +1,37 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
-import net.mehvahdjukaar.candlelight.api.BeanGetters;
+import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-@BeanGetters
+@BeanGettersAliases
 public class CameraProxy {
+    public static final CameraProxy INSTANCE = new CameraProxy();
 
-    private Camera instance(){
+    private Camera delegate(){
         return Minecraft.getInstance().gameRenderer.getMainCamera();
     }
 
     public Vec3 pos(){
-        return instance().position();
+        return delegate().position();
     }
 
     public double x(){
-        return instance().position().x;
+        return delegate().position().x;
     }
 
     public double y() {
-        return instance().position().y;
+        return delegate().position().y;
     }
 
     public float yaw(){
-        return instance().yaw();
+        return delegate().yaw();
     }
 
     public float pitch(){
-        return Mth.wrapDegrees(instance().xRot());
+        return Mth.wrapDegrees(delegate().xRot());
     }
 
 }

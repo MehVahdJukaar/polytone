@@ -52,9 +52,8 @@ public class PolytoneRenderTypes {
                     .withSampler("Sampler0")
                     .withSampler("Sampler2")
                     .withVertexShader(Identifier.withDefaultNamespace("core/particle"))
-                    .withFragmentShader(Identifier.withDefaultNamespace("core/particle")) //so we can use shader define. these shaders are identical
+                    .withFragmentShader(Polytone.res("core/particle_no_cutoff")) //so we can use shader define. these shaders are identical
                     .withVertexFormat(DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS)
-                    .withShaderDefine("ALPHA_CUTOUT", 0.001F)
                     /* Blending Functions */
                     .withDepthWrite(false) //affects depth buffer
                     .withCull(true) //??

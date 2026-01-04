@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.common.codec;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Holder;
@@ -90,6 +91,9 @@ public class CodecUtils {
         return (Codec<A>) codec;
     }
 
+    public static <A, B> Codec<Either<A, B>> eitherLeft(Codec<A> leftCodec) {
+        return new EitherLeftCodec<>(leftCodec);
+    }
 
     public static final Codec<ItemStack> ITEM_OR_STACK = Codec.withAlternative(ItemStack.SINGLE_ITEM_CODEC, BuiltInRegistries.ITEM.byNameCodec(),
             Item::getDefaultInstance);

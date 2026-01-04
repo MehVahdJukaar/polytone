@@ -1,8 +1,10 @@
 package net.mehvahdjukaar.polytone.common.expressions;
 
 import net.mehvahdjukaar.polytone.common.expressions.proxies.CameraProxy;
+import net.mehvahdjukaar.polytone.common.expressions.proxies.GlobalProxy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec3;
 import org.mvel2.ParserContext;
 import org.mvel2.util.MethodStub;
@@ -10,6 +12,7 @@ import org.mvel2.util.MethodStub;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ExpUtils {
@@ -21,6 +24,17 @@ public class ExpUtils {
             "TIME", "g.time"
     );
 
+    @SuppressWarnings("CollectionAddAllCanBeReplacedWithConstructor")
+    private static final Map<String, Object> STATIC_GLOBALS = Util.make(() -> {
+        Map<String, Object> m = new HashMap<>();
+        m.putAll(getAllStaticFields(ExpMath.class));
+        m.put("camera", CameraProxy.INSTANCE);
+        m.put("c", CameraProxy.INSTANCE);
+        m.put("global", GlobalProxy.INSTANCE);
+        m.put("g", GlobalProxy.INSTANCE);
+        return m;
+    });
+
     public static String upgrade(String expr) {
         for (var e : RENAMES.entrySet()) {
             expr = expr.replace(e.getKey(), e.getValue());
@@ -29,14 +43,16 @@ public class ExpUtils {
     }
 
 
-    public static void addCommonInputs(ParserContext ctx){
+    public static void addCommonInputs(ParserContext ctx) {
+        ctx.addInput("camera", CameraProxy.class);
+        ctx.addInput("c", CameraProxy.class);
+        ctx.addImport("global", GlobalProxy.class);
+        ctx.addImport("g", GlobalProxy.class);
         ctx.addInput("Vec3", Vec3.class);
         ctx.addInput("Vec3i", Vec3i.class);
         ctx.addInput("BlockPose", BlockPos.class);
-        ctx.addInput("camera", CameraProxy.class);
-        ctx.addInput("c", CameraProxy.class);
 
-        importStaticMembers(ctx, Math.class);
+        importStaticMethods(ctx, ExpMath.class);
 
         //    ctx.addInput("price", int.class);
         //   ctx.addInput("category", String.class);
@@ -44,12 +60,14 @@ public class ExpUtils {
         //  ctx.addImport("time", MVEL.getStaticMethod(System.class, "currentTimeMillis", new Class[0]));
     }
 
-    public static void addCommonVars(Map<String, Object> vars){
+    public static void addCommonVars(Map<String, Object> vars) {
 //TODO: add static vars of math
+
+        vars.putAll(STATIC_GLOBALS);
     }
 
 
-    public static void importStaticMembers(ParserContext ctx, Class<?> clazz) {
+    private static void importStaticMethods(ParserContext ctx, Class<?> clazz) {
 
         // Import static methods
         for (Method method : clazz.getMethods()) {
@@ -57,20 +75,21 @@ public class ExpUtils {
                 ctx.addImport(method.getName(), new MethodStub(method));
             }
         }
+    }
 
-
-        /*
-
-// Import static fields as global variables
+    private static Map<String, Object> getAllStaticFields(Class<?> clazz) {
+        // Import static fields as global variables
+        Map<String, Object> fieldValues = new HashMap<>();
         for (Field field : clazz.getFields()) {
             if (Modifier.isStatic(field.getModifiers()) && field.getDeclaringClass() == clazz) {
                 try {
-                    ctx.addVariable(field.getName(), field.get(null)); // value of static field
+                    fieldValues.put(field.getName(), field.get(null)); // value of static field
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
             }
-        }*/
+        }
+        return fieldValues;
     }
 
     // global stuff

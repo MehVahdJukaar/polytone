@@ -48,6 +48,8 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static net.minecraft.world.effect.MobEffect.AMBIENT_ALPHA;
+
 public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     private static final int DEFAULT_COLOR = ARGB.colorFromFloat(1.0f, 1, 0, 0);

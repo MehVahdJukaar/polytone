@@ -1,13 +1,14 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
-import net.mehvahdjukaar.candlelight.api.BeanGetters;
+import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.apache.commons.lang3.ClassUtils;
 
-@BeanGetters
+@BeanGettersAliases
 public class BlockProxy {
 
     private final BlockState state;
@@ -24,6 +25,10 @@ public class BlockProxy {
         return state.getBlockHolder().getRegisteredName();
     }
 
+    public String state() {
+        return state.toString();
+    }
+
     public Object stateValue(Object input) {
         //return a String or primitive value representing the state property and turn the input into the best known state prop
         Property<?> property = state.getBlock().getStateDefinition().getProperty(input.toString());
@@ -34,7 +39,7 @@ public class BlockProxy {
         return value.toString();
     }
 
-    public int x(){
+    public int x() {
         return pos.getX();
     }
 
@@ -50,7 +55,24 @@ public class BlockProxy {
         return pos;
     }
 
-    public String biome(){
+    public String biome() {
         return level.getBiome(pos).getRegisteredName();
     }
+
+    public int skyLight() {
+        return level.getBrightness(LightLayer.SKY, pos);
+    }
+
+    public int blockLight() {
+        return level.getBrightness(LightLayer.BLOCK, pos);
+    }
+
+    public boolean inValidBounds() {
+        return level.isInValidBounds(pos);
+    }
+
+    public boolean inWorldBounds() {
+        return level.isInWorldBounds(pos);
+    }
+
 }

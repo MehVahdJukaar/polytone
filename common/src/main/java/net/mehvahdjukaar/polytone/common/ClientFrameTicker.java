@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.common;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.FabricSeasonsCompat;
+import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.mehvahdjukaar.polytone.compat.SereneSeasonsCompat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -52,7 +53,7 @@ public class ClientFrameTicker {
         sunTime = probe.getValue(EnvironmentAttributes.SUN_ANGLE, partialTicks) / 360.0F;
         //TODO: oter param like moon pos
         rainAndThunder = level.getRainLevel(partialTicks) * 0.5f + level.getThunderLevel(partialTicks) * 0.5f;
-        season = CompatHandler.SS ? SereneSeasonsCompat.getSeason(level) : (CompatHandler.FS ? FabricSeasonsCompat.getSeason(level) : 0f);
+        season = ISeason.getNumber(level);
 
         cameraPos = camera.blockPosition();
         cameraBiome = level.getBiome(cameraPos);

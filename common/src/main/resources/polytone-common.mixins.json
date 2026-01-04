@@ -4,10 +4,9 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
+    "EnvironmentAttributeEntryMixin"
   ],
   "client": [
-    "EnvironmentSystemMixin",
-    "accessor.DimensionTypeAccessor",
     "AbstractContainerMenuMixin",
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
@@ -15,6 +14,7 @@
     "ClientLevelMixin",
     "ColorResolverMixin",
     "ContextualBarRendererMixin",
+    "EnvironmentSystemMixin",
     "FishingHookRendererMixin",
     "GameRendererMixin",
     "GuiGraphicsMixin",
@@ -39,6 +39,7 @@
     "VariantDeserializerMixin",
     "XpOrbMixin",
     "accessor.BiomeAccessor",
+    "accessor.DimensionTypeAccessor",
     "accessor.DustParticleOptionAccessor",
     "accessor.ParticleAccessor"
   ],

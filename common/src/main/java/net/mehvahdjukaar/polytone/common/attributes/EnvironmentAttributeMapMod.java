@@ -11,12 +11,14 @@ import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.attribute.modifier.AttributeModifier;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class EnvironmentAttributeMapMod {
@@ -48,11 +50,48 @@ public class EnvironmentAttributeMapMod {
                 Util.memoize((attributeModifier) ->
                         createFullCodec(environmentAttribute, attributeModifier)));
         Codec<Value> valueCodec = environmentAttribute.valueCodec();
-        valueCodec = ExtendedAttributeMod.extendValueCodec(valueCodec, type);
-        return Codec.either(valueCodec, codec).xmap((either) ->
-                either.map((object) -> new EnvironmentAttributeMap.Entry<>(object, AttributeModifier.override()),
-                        (entry) -> entry), (entry) -> entry.modifier() ==
-                AttributeModifier.override() ? (Either) Either.left(entry.argument()) : (Either) Either.right(entry));
+        Codec<Either<Value, Supplier<Value>>> supplierCodec = ExtendedAttributeMod.addDynamicValueCodec(valueCodec, type);
+
+        return Codec.either(supplierCodec, codec)
+                .xmap(
+                        EnvironmentAttributeMapMod::valueOrModToEntry,
+                        EnvironmentAttributeMapMod::entryToValueOrMod
+                );
+    }
+
+    private static @NotNull Either<Either<?, Supplier<?>>, EnvironmentAttributeMap.Entry<?, ?>>
+    entryToValueOrMod(EnvironmentAttributeMap.Entry<?, ?> entry) {
+
+        if (entry.modifier() == AttributeModifier.override()) {
+            Supplier argSupp = ((IExtendedEntry) (Object) entry).polytone$getArgumentSupplier();
+            if (argSupp != null) {
+                return Either.left(Either.right(argSupp));
+            } else {
+                return Either.left(Either.left(entry.argument()));
+            }
+        }
+
+        return Either.right(entry);
+    }
+
+    private static <Value> EnvironmentAttributeMap.Entry<Value, ?> valueOrModToEntry(
+            Either<Either<Value, Supplier<Value>>,
+            EnvironmentAttributeMap.Entry<Value, ?>> either) {
+
+        return either.map(
+                valueOrSupplier -> valueOrSupplier.map(
+                        value -> new EnvironmentAttributeMap.Entry<>(value, AttributeModifier.override()),
+                        supplier -> createWithSupplier(
+                                supplier, AttributeModifier.override()
+                        )
+                ),
+                entry -> entry
+        );
+    }
+
+    private static <Value> EnvironmentAttributeMap.Entry<Value,?> createWithSupplier(
+            Supplier<Value> argumentSupplier, AttributeModifier<?, ?> modifier) {
+        return new EnvironmentAttributeMap.Entry<>(argumentSupplier.get(), modifier);
     }
 
     //extended argument to take expressions and colormaps
@@ -60,7 +99,7 @@ public class EnvironmentAttributeMapMod {
         return RecordCodecBuilder.mapCodec((instance) ->
         {
             Codec<Argument> argumentCodec = attributeModifier.argumentCodec(environmentAttribute);
-            argumentCodec = ExtendedAttributeMod.extendValueCodec(argumentCodec, environmentAttribute.type());
+            argumentCodec = ExtendedAttributeMod.addDynamicValueCodec(argumentCodec, environmentAttribute.type());
             return instance.group(argumentCodec.fieldOf("argument")
                             .forGetter(EnvironmentAttributeMap.Entry::argument))
                     .apply(instance, (object) -> new EnvironmentAttributeMap.Entry<>(object, attributeModifier));

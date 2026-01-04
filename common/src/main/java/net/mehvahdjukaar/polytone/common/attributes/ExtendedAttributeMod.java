@@ -1,7 +1,9 @@
 package net.mehvahdjukaar.polytone.common.attributes;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.Minecraft;
@@ -9,25 +11,28 @@ import net.minecraft.world.attribute.AttributeType;
 import net.minecraft.world.attribute.AttributeTypes;
 import net.minecraft.world.level.block.Blocks;
 
+import java.util.function.Supplier;
+
 public class ExtendedAttributeMod {
 
-    public static <A, Value> Codec<A> extendValueCodec(Codec<A> originalCodec, AttributeType<Value> type) {
+    public static <A, Value> Codec<Either<A, Supplier<A>>> addDynamicValueCodec(Codec<A> originalCodec, AttributeType<Value> type) {
         if (type == AttributeTypes.ARGB_COLOR || type == AttributeTypes.RGB_COLOR) {
-            Codec<Integer> intCodec = IColorGetter.SINGLE_COLOR_OR_EXPRESSION.xmap(
-                    c -> c.getColor(Blocks.AIR.defaultBlockState(),
-                            Minecraft.getInstance().level,
-                            ClientFrameTicker.getCameraPos(), 0),
-                    IColorGetter.StaticColor::new
-            );
-            originalCodec = (Codec<A>) Codec.either(originalCodec, intCodec);
-        } else if (type == AttributeTypes.FLOAT) {
-            Codec<Float> flaotCodec = BlockContextExpression.CODEC
-                    .xmap(e -> (float) e.getValue(Minecraft.getInstance().level,
+            Codec<Supplier<Integer>> intCodec = IColorGetter.SINGLE_COLOR_OR_EXPRESSION
+                    .xmap(c -> () -> c.getColor(Blocks.AIR.defaultBlockState(),
+                                    Minecraft.getInstance().level, //TODO: proper exp here
+                                    ClientFrameTicker.getCameraPos(), 0),
+                            supplier -> new IColorGetter.StaticColor(supplier.get()));
+
+            return Codec.either(originalCodec, (Codec) intCodec);
+        } else if (type == AttributeTypes.FLOAT || type == AttributeTypes.ANGLE_DEGREES) {
+            Codec<Supplier<Float>> flaotCodec = BlockContextExpression.CODEC
+                    .xmap(e -> () -> (float) e.getValue(Minecraft.getInstance().level,
                             ClientFrameTicker.getCameraPos(),
                             Blocks.AIR.defaultBlockState()), ex -> BlockContextExpression.ZERO);
-            originalCodec = (Codec<A>) Codec.either(originalCodec, flaotCodec);
+            return Codec.either(originalCodec, (Codec) flaotCodec);
         }
-        return originalCodec;
+        return CodecUtils.eitherLeft(originalCodec);
     }
+
 
 }
