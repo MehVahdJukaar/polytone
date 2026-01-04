@@ -23,13 +23,10 @@ import java.util.Map;
 
 public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleType.Instance> {
 
-    private int particleCount;
-    private final ParticleRenderType particleType;
     final ModelParticleRenderState particleTypeRenderState = new ModelParticleRenderState();
 
-    public ModelParticleRenderGroup(ParticleEngine particleEngine, ParticleRenderType particleRenderType) {
+    public ModelParticleRenderGroup(ParticleEngine particleEngine) {
         super(particleEngine);
-        this.particleType = particleRenderType;
     }
 
 
@@ -40,10 +37,9 @@ public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleType.I
                 try {
                     particle.extractModel(this.particleTypeRenderState, camera, f);
                 } catch (Throwable var9) {
-                    CrashReport crashReport = CrashReport.forThrowable(var9, "Rendering Particle");
+                    CrashReport crashReport = CrashReport.forThrowable(var9, "Rendering Model Particle");
                     CrashReportCategory crashReportCategory = crashReport.addCategory("Particle being rendered");
                     crashReportCategory.setDetail("Particle", particle::toString);
-                    crashReportCategory.setDetail("Particle Type", this.particleType::toString);
                     throw new ReportedException(crashReport);
                 }
             }

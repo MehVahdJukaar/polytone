@@ -10,10 +10,10 @@ import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.reloader.SingleJsonOrPropertiesReloadListener;
 import net.mehvahdjukaar.polytone.common.struc.Vec3f;
+import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -198,7 +198,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             status.color = col;
         });
 
-        doWith(obj, "effect", (k, v) -> {
+        //for jank of compat... no comment
+        doWithOrAlias(obj, List.of("effect", "potion"), (k, v) -> {
             Identifier id = Identifier.parse(k.replace("\\", ""));
             ParticleOptions particle = get(v, "particle", ParticleTypes.CODEC);
 
@@ -339,6 +340,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             }
         } catch (JsonParseException e) {
             throw new JsonParseException("Failed to parse color JSON for key: " + key, e);
+        }
+    }
+
+    private static void doWithOrAlias(JsonObject obj, Collection<String> names, BiConsumer<String, JsonElement> entryHandler) {
+        for (var s : names) {
+            doWith(obj, s, entryHandler);
         }
     }
 

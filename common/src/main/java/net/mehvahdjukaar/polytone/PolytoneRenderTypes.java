@@ -35,7 +35,7 @@ import java.util.function.Supplier;
 public class PolytoneRenderTypes {
 
     public static void init() {
-        PlatStuff.registerParticleGroup(PARTICLE_MODEL_GROUP, new ModelParticleRenderGroup());
+        PlatStuff.registerParticleGroup(e -> e.register(PARTICLE_MODEL_GROUP, ModelParticleRenderGroup::new));
     }
 
     public static final ParticleRenderType PARTICLE_MODEL_GROUP = new ParticleRenderType(Polytone.res("particle_model").toString());
