@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.neoforge;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.MapCodec;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.mixins.neoforge.*;
@@ -40,6 +41,7 @@ import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.ColorResolverManager;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleGroupsEvent;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import org.joml.Vector3f;
@@ -277,6 +279,13 @@ public class PlatStuffImpl {
     public static String getVersion() {
         return ModList.get().getModContainerById(Polytone.MOD_ID)
                 .map(c -> c.getModInfo().getVersion().toString()).orElse("unknown");
+    }
+
+    public static void registerParticleGroup(Consumer<PlatStuff.RegParticleGroup> listener) {
+        Consumer<RegisterParticleGroupsEvent> eventConsumer = (event) -> {
+            listener.accept(event::register);
+        };
+        PolytoneForge.bus.addListener(eventConsumer);
     }
 
     public static void unregisterAllCustomColorResolves() {

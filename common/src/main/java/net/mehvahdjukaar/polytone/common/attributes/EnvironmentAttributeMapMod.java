@@ -6,6 +6,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
+import net.minecraft.world.attribute.AttributeType;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.EnvironmentAttributes;
@@ -41,11 +42,14 @@ public class EnvironmentAttributeMapMod {
 
     @SuppressWarnings("unchecked")
     private static <Value> Codec<EnvironmentAttributeMap.Entry<?, ?>> createEntryCodec(EnvironmentAttribute<Value> environmentAttribute) {
-        Codec<AttributeModifier<Value, ?>> attributeModifierCodec = environmentAttribute.type().modifierCodec();
+        AttributeType<Value> type = environmentAttribute.type();
+        Codec<AttributeModifier<Value, ?>> attributeModifierCodec = type.modifierCodec();
         Codec<EnvironmentAttributeMap.Entry<Value, ?>> codec = attributeModifierCodec.dispatch("modifier", EnvironmentAttributeMap.Entry::modifier,
                 Util.memoize((attributeModifier) ->
                         createFullCodec(environmentAttribute, attributeModifier)));
-        return Codec.either(environmentAttribute.valueCodec(), codec).xmap((either) ->
+        Codec<Value> valueCodec = environmentAttribute.valueCodec();
+        valueCodec = ExtendedAttributeMod.extendValueCodec(valueCodec, type);
+        return Codec.either(valueCodec, codec).xmap((either) ->
                 either.map((object) -> new EnvironmentAttributeMap.Entry<>(object, AttributeModifier.override()),
                         (entry) -> entry), (entry) -> entry.modifier() ==
                 AttributeModifier.override() ? (Either) Either.left(entry.argument()) : (Either) Either.right(entry));

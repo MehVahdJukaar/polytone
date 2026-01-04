@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.fabric;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -11,12 +12,13 @@ import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
 import net.fabricmc.loader.api.FabricLoader;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
-import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -53,6 +55,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -311,6 +314,10 @@ public class PlatStuffImpl {
         ColorResolverRegistryAccessor.setCustomResolvers(newSet2);
 
         MY_CUSTOM_RESOLVERS.clear();
+    }
+
+    public static void registerParticleGroup(Consumer<PlatStuff.RegParticleGroup> eventConsumer) {
+        eventConsumer.accept(ParticleRendererRegistry::register);
     }
 
 }

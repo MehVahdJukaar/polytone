@@ -10,8 +10,12 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderGroup;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MaterialMapper;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -31,7 +35,10 @@ import java.util.function.Supplier;
 public class PolytoneRenderTypes {
 
     public static void init() {
+        PlatStuff.registerParticleGroup(PARTICLE_MODEL_GROUP, new ModelParticleRenderGroup());
     }
+
+    public static final ParticleRenderType PARTICLE_MODEL_GROUP = new ParticleRenderType(Polytone.res("particle_model").toString());
 
     public static final MaterialMapper PARTICLES_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_PARTICLES, "particle");
 
@@ -92,7 +99,7 @@ public class PolytoneRenderTypes {
                     .createRenderSetup());
 
     public static final RenderPipeline LEASH_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
-                    RenderPipelines. MATRICES_FOG_SNIPPET)
+                    RenderPipelines.MATRICES_FOG_SNIPPET)
             .withLocation("polytone/pipeline/leash")
             .withVertexShader("core/rendertype_text")
             .withFragmentShader("core/rendertype_text")
@@ -112,7 +119,7 @@ public class PolytoneRenderTypes {
                     .createRenderSetup());
 
 
-    private static boolean isLeashRenderOn(){
+    private static boolean isLeashRenderOn() {
         return true;
     }
 
@@ -126,7 +133,8 @@ public class PolytoneRenderTypes {
 
                                              float yOffset,
                                              float dx, float dz,
-                                             int index, boolean bl, EntityRenderState.LeashState leashState) {if (!isLeashRenderOn()) return false;
+                                             int index, boolean bl, EntityRenderState.LeashState leashState) {
+        if (!isLeashRenderOn()) return false;
         // Calculate segment and interpolate lighting
         float segment = (float) index / 24.0F;
         int blockLight = (int) Mth.lerp(segment, (float) leashState.startBlockLight, (float) leashState.endBlockLight);
@@ -165,7 +173,7 @@ public class PolytoneRenderTypes {
             RenderSystem.getModelViewMatrix().set(lastModelViewMatrix);
             DEFERRED_BUFFER_SOURCE.endBatches();
             RenderSystem.getModelViewMatrix().set(last);
-        }else {
+        } else {
             DEFERRED_BUFFER_SOURCE.endBatches();
         }
     }

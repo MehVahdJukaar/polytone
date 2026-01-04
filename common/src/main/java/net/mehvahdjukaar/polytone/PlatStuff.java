@@ -7,9 +7,11 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
+import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.particle.ParticleGroup;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
-import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
@@ -24,10 +26,11 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class PlatStuff {
@@ -204,20 +207,12 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
-    public static void clear() {
-        throw new AssertionError();
+    public interface RegParticleGroup{
+        void register(ParticleRenderType type, Function<ParticleEngine, ParticleGroup<?>> factory);
     }
 
     @ExpectPlatform
-    public static void addSpecialModel(Identifier id) {
+    public static void registerParticleGroup( Consumer<RegParticleGroup> eventConsumer)  {
         throw new AssertionError();
     }
-
-    @ExpectPlatform
-    @Nullable
-    public static QuadCollection getSpecialModel(Identifier id) {
-        throw new AssertionError();
-    }
-
 }

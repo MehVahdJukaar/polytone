@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.Blocks;
 
 public class ExtendedAttributeMod {
 
-    public static <A, Value> Codec<A> extendValueCodec(Codec<A> argumentCodec, AttributeType<Value> type) {
+    public static <A, Value> Codec<A> extendValueCodec(Codec<A> originalCodec, AttributeType<Value> type) {
         if (type == AttributeTypes.ARGB_COLOR || type == AttributeTypes.RGB_COLOR) {
             Codec<Integer> intCodec = IColorGetter.SINGLE_COLOR_OR_EXPRESSION.xmap(
                     c -> c.getColor(Blocks.AIR.defaultBlockState(),
@@ -19,15 +19,15 @@ public class ExtendedAttributeMod {
                             ClientFrameTicker.getCameraPos(), 0),
                     IColorGetter.StaticColor::new
             );
-            argumentCodec = (Codec<A>) Codec.either(argumentCodec, intCodec);
+            originalCodec = (Codec<A>) Codec.either(originalCodec, intCodec);
         } else if (type == AttributeTypes.FLOAT) {
             Codec<Float> flaotCodec = BlockContextExpression.CODEC
                     .xmap(e -> (float) e.getValue(Minecraft.getInstance().level,
                             ClientFrameTicker.getCameraPos(),
                             Blocks.AIR.defaultBlockState()), ex -> BlockContextExpression.ZERO);
-            argumentCodec = (Codec<A>) Codec.either(argumentCodec, flaotCodec);
+            originalCodec = (Codec<A>) Codec.either(originalCodec, flaotCodec);
         }
-        return argumentCodec;
+        return originalCodec;
     }
 
 }
