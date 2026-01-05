@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class ExpUtils {
 
@@ -21,7 +22,8 @@ public class ExpUtils {
             "POS_X", "o.x",
             "POS_Y", "o.y",
             "POS_Z", "o.z",
-            "TIME", "g.time"
+            "TIME", "g.time",
+            "RAND", "r.next()"
     );
 
     @SuppressWarnings("CollectionAddAllCanBeReplacedWithConstructor")

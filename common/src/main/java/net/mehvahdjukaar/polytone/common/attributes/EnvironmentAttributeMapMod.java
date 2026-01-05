@@ -75,10 +75,6 @@ public class EnvironmentAttributeMapMod {
     }
 
 
-    private static <Value, A> void test(Codec<EnvironmentAttributeMap.Entry<Value,A>> ec) {
-    }
-
-
     private static <Value, Argument> @NotNull Either<Either<Argument, Supplier<Argument>>, EnvironmentAttributeMap.Entry<Value, Argument>> entryToValueOrMod(
             EnvironmentAttributeMap.Entry<Value, Argument> entry) {
 

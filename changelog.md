@@ -1,5 +1,3 @@
-- updated particle code to the new crazy 1.21.11 rendering changes. this fixes many bugs
-- fixed color.json not changing effect colors of particles on player
-- fixed an issue with color decoding
-- misc fixes i forgot
-- so far all features I tested worked or were made to work so moving out of alpha
+- fixed environment attributes not working with expressions properly
+- more attributes types can use expressions
+- added back no alpha cutoff shader, used in additive translucnet particles

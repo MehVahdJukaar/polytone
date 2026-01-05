@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.common.expressions;
 
+import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 public class ExpMath {
 
@@ -41,5 +43,37 @@ public class ExpMath {
 
     // Linear interpolation
     public static double lerp(double a, double b, double t) { return a + (b - a) * t; }
+
+    public static double inverseLerp(double a, double b, double v) {
+        if (a != b) {
+            return (v - a) / (b - a);
+        } else {
+            return 0;
+        }
+    }
+
+    public static double smoothstep(double edge0, double edge1, double x) {
+        double t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+        return t * t * (3 - 2 * t);
+    }
+
+    //dist
+    public static double distSquare(double x1, double y1, double x2, double y2) {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        return dx * dx + dy * dy;
+    }
+
+    public static double distSquare(Vec3i p1, Vec3i p2) {
+        return distSquare(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+    }
+
+    public static double dist(double x1, double y1, double x2, double y2) {
+        return Math.sqrt(distSquare(x1, y1, x2, y2));
+    }
+
+    public static double dist(Vec3i p1, Vec3i p2) {
+        return Math.sqrt(distSquare(p1, p2));
+    }
 }
 
