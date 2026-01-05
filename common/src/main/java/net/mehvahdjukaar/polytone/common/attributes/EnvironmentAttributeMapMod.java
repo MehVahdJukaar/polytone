@@ -27,87 +27,125 @@ public class EnvironmentAttributeMapMod {
 
     public static final EnvironmentAttributeMapMod EMPTY = new EnvironmentAttributeMapMod(Map.of());
 
-    public static final Codec<EnvironmentAttributeMapMod> CODEC = Codec.lazyInitialized(
-            () -> Codec.dispatchedMap(
-                    EnvironmentAttributes.CODEC,
-                    Util.memoize((EnvironmentAttribute<?> attr) -> Codec.either(Removal.CODEC, createEntryCodec(attr))
-                    )
-            ).xmap(EnvironmentAttributeMapMod::new,
-                    mod -> mod.entriesToReplace.entrySet()
-                            .stream()
-                            .collect(Collectors.toMap(
-                                            Map.Entry::getKey,
-                                            e -> Either.right(e.getValue())
-                                    )
-                            )
-            ));
+    public static final Codec<EnvironmentAttributeMapMod> CODEC =
+            Codec.lazyInitialized(() -> {
+                        Codec<Map<EnvironmentAttribute<?>, Either<Removal, ? extends EnvironmentAttributeMap.Entry<?, ?>>>> mapCodec =
+                                Codec.dispatchedMap(
+                                        EnvironmentAttributes.CODEC,
+                                        Util.memoize((EnvironmentAttribute<?> attr) ->
+                                                Codec.either(Removal.CODEC, createEntryCodec(attr))
+                                        )
+                                );
+                        return mapCodec.xmap(
+                                EnvironmentAttributeMapMod::new,
+                                mod -> mod.entriesToReplace.entrySet()
+                                        .stream()
+                                        .collect(Collectors.toMap(
+                                                Map.Entry::getKey,
+                                                e -> Either.right(e.getValue())
+                                        ))
+                        );
+                    }
+            );
 
-    @SuppressWarnings("unchecked")
-    private static <Value> Codec<EnvironmentAttributeMap.Entry<?, ?>> createEntryCodec(EnvironmentAttribute<Value> environmentAttribute) {
+
+    private static <Value, Argument> Codec<EnvironmentAttributeMap.Entry<Value, Argument>> createEntryCodec(
+            EnvironmentAttribute<Value> environmentAttribute) {
+
         AttributeType<Value> type = environmentAttribute.type();
         Codec<AttributeModifier<Value, ?>> attributeModifierCodec = type.modifierCodec();
-        Codec<EnvironmentAttributeMap.Entry<Value, ?>> codec = attributeModifierCodec.dispatch("modifier", EnvironmentAttributeMap.Entry::modifier,
-                Util.memoize((attributeModifier) ->
-                        createFullCodec(environmentAttribute, attributeModifier)));
-        Codec<Value> valueCodec = environmentAttribute.valueCodec();
-        Codec<Either<Value, Supplier<Value>>> supplierCodec = ExtendedAttributeMod.addDynamicValueCodec(valueCodec, type);
 
-        return Codec.either(supplierCodec, codec)
+        //generics are just wrong here... Hoping they line up at runtime
+        Codec<EnvironmentAttributeMap.Entry<Value, ?>> ec =
+                attributeModifierCodec.dispatch(
+                        "modifier",
+                        EnvironmentAttributeMap.Entry::modifier,
+                        Util.memoize(mod -> createEntryCodec(environmentAttribute, mod))
+                );
+
+        Codec<Argument> valueCodec = (Codec) environmentAttribute.valueCodec();
+        Codec<Either<Argument, Supplier<Argument>>> supplierCodec =
+                ExtendedAttributeMod.addDynamicValueCodec(valueCodec, type);
+
+        return Codec.either(supplierCodec, (Codec<EnvironmentAttributeMap.Entry<Value, Argument>>) (Codec) ec)
                 .xmap(
                         EnvironmentAttributeMapMod::valueOrModToEntry,
                         EnvironmentAttributeMapMod::entryToValueOrMod
                 );
     }
 
-    private static @NotNull Either<Either<?, Supplier<?>>, EnvironmentAttributeMap.Entry<?, ?>>
-    entryToValueOrMod(EnvironmentAttributeMap.Entry<?, ?> entry) {
+
+    private static <Value, A> void test(Codec<EnvironmentAttributeMap.Entry<Value,A>> ec) {
+    }
+
+
+    private static <Value, Argument> @NotNull Either<Either<Argument, Supplier<Argument>>, EnvironmentAttributeMap.Entry<Value, Argument>> entryToValueOrMod(
+            EnvironmentAttributeMap.Entry<Value, Argument> entry) {
 
         if (entry.modifier() == AttributeModifier.override()) {
-            Supplier argSupp = ((IExtendedEntry) (Object) entry).polytone$getArgumentSupplier();
-            if (argSupp != null) {
-                return Either.left(Either.right(argSupp));
-            } else {
-                return Either.left(Either.left(entry.argument()));
-            }
+            Either<Argument, Supplier<Argument>> valOrSup = supplierFromEntry(entry);
+            return Either.left(valOrSup);
         }
 
         return Either.right(entry);
     }
 
-    private static <Value> EnvironmentAttributeMap.Entry<Value, ?> valueOrModToEntry(
-            Either<Either<Value, Supplier<Value>>,
-            EnvironmentAttributeMap.Entry<Value, ?>> either) {
+    private static <Value, Argument> @NotNull Either<Argument, Supplier<Argument>> supplierFromEntry(
+            EnvironmentAttributeMap.Entry<Value, Argument> entry) {
+        Either<Argument, Supplier<Argument>> valOrSup;
+        Supplier<Argument> argSupp = ((IExtendedEntry<Argument>) (Object) entry).polytone$getArgumentSupplier();
+        if (argSupp != null) {
+            valOrSup = Either.right(argSupp);
+        } else {
+            Argument arg = entry.argument();
+            valOrSup = Either.left(arg);
+        }
+        return valOrSup;
+    }
+
+    private static <Value, Argument> EnvironmentAttributeMap.Entry<Value, Argument> valueOrModToEntry(
+            Either<Either<Argument, Supplier<Argument>>, EnvironmentAttributeMap.Entry<Value, Argument>> either) {
 
         return either.map(
-                valueOrSupplier -> valueOrSupplier.map(
-                        value -> new EnvironmentAttributeMap.Entry<>(value, AttributeModifier.override()),
-                        supplier -> createWithSupplier(
-                                supplier, AttributeModifier.override()
-                        )
-                ),
+                a -> EnvironmentAttributeMapMod.entryFromSupplier(a,
+                        (AttributeModifier<Value, Argument>) AttributeModifier.override()),
                 entry -> entry
         );
     }
 
-    private static <Value> EnvironmentAttributeMap.Entry<Value,?> createWithSupplier(
-            Supplier<Value> argumentSupplier, AttributeModifier<?, ?> modifier) {
-        return new EnvironmentAttributeMap.Entry<>(argumentSupplier.get(), modifier);
+    private static <Value, Argument> EnvironmentAttributeMap.Entry<Value, Argument> entryFromSupplier(
+            Either<Argument, Supplier<Argument>> valueOrSupplier, AttributeModifier<Value, Argument> modifier) {
+        return valueOrSupplier.map(
+                value ->
+                        new EnvironmentAttributeMap.Entry<>(
+                                value,
+                                modifier
+                        ),
+                supplier -> {
+                    EnvironmentAttributeMap.Entry<Value, Argument> entry = new EnvironmentAttributeMap.Entry<>(supplier.get(), modifier);
+                    ((IExtendedEntry) (Object) entry).polytone$setArgumentSupplier(supplier);
+                    return entry;
+                }
+        );
     }
 
-    //extended argument to take expressions and colormaps
-    private static <Value, Argument> MapCodec<EnvironmentAttributeMap.Entry<Value, Argument>> createFullCodec(EnvironmentAttribute<Value> environmentAttribute, AttributeModifier<Value, Argument> attributeModifier) {
+
+    private static <Value, Argument> MapCodec<EnvironmentAttributeMap.Entry<Value, Argument>> createEntryCodec(
+            EnvironmentAttribute<Value> environmentAttribute, AttributeModifier<Value, Argument> attributeModifier) {
+
         return RecordCodecBuilder.mapCodec((instance) ->
         {
             Codec<Argument> argumentCodec = attributeModifier.argumentCodec(environmentAttribute);
-            argumentCodec = ExtendedAttributeMod.addDynamicValueCodec(argumentCodec, environmentAttribute.type());
-            return instance.group(argumentCodec.fieldOf("argument")
-                            .forGetter(EnvironmentAttributeMap.Entry::argument))
-                    .apply(instance, (object) -> new EnvironmentAttributeMap.Entry<>(object, attributeModifier));
+            Codec<Either<Argument, Supplier<Argument>>> argOrSupplier = ExtendedAttributeMod.addDynamicValueCodec(argumentCodec, environmentAttribute.type());
+            return instance.group(argOrSupplier.fieldOf("argument")
+                            .forGetter(EnvironmentAttributeMapMod::supplierFromEntry))
+                    .apply(instance, (object) ->
+                            entryFromSupplier(object, attributeModifier));
         });
     }
 
     private EnvironmentAttributeMapMod(Map<EnvironmentAttribute<?>,
-            Either<Removal, EnvironmentAttributeMap.Entry<?, ?>>> entries) {
+            Either<Removal, ? extends EnvironmentAttributeMap.Entry<?, ?>>> entries) {
         this.entriesToReplace = entries.entrySet().stream()
                 .filter(e -> e.getValue().right().isPresent())
                 .collect(Collectors.toMap(
@@ -127,7 +165,7 @@ public class EnvironmentAttributeMapMod {
         this.entriesToRemove = entriesToRemove;
     }
 
-    public EnvironmentAttributeMap toVanilla(){
+    public EnvironmentAttributeMap toVanilla() {
         EnvironmentAttributeMap.Builder builder = EnvironmentAttributeMap.builder();
         builder.entries.putAll(entriesToReplace);
         return builder.build();
@@ -166,7 +204,6 @@ public class EnvironmentAttributeMapMod {
         return builder.build();
     }
 
-
     private enum Removal implements StringRepresentable {
         UNIT;
         public static final Codec<Removal> CODEC = StringRepresentable.fromEnum(Removal::values);
@@ -176,5 +213,4 @@ public class EnvironmentAttributeMapMod {
             return "REMOVE";
         }
     }
-
 }

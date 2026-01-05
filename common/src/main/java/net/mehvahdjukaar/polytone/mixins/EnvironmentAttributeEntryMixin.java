@@ -35,8 +35,8 @@ public class EnvironmentAttributeEntryMixin<Value, Argument> implements IExtende
     }
 
     @ModifyArg(method = "applyModifier", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/attribute/modifier/AttributeModifier;apply(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
-            ordinal = 0))
+            target = "Lnet/minecraft/world/attribute/modifier/AttributeModifier;apply(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"),
+            index = 1)
     private Value polytone$modifyApplyModifierArg(Value original) {
         if (polytone$argumentSupplier != null) {
             return polytone$argumentSupplier.get();
