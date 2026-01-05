@@ -51,5 +51,10 @@ public interface SimpleModelStateExtension {
                         )
                         .apply(instance, ExtraData::new)
         );
+
+       public boolean isEmpty(){
+              return xRot == 0f && yRot == 0f && zRot == 0f &&
+                     xOffset == 0f && yOffset == 0f && zOffset == 0f;
+       }
     }
 }

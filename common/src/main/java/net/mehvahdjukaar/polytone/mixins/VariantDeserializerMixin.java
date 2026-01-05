@@ -10,7 +10,6 @@ import net.mehvahdjukaar.polytone.common.TransformationModelState;
 import net.minecraft.client.renderer.block.model.Variant;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.util.Mth;
-import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.spongepowered.asm.mixin.Final;
@@ -47,8 +46,8 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
     @ModifyExpressionValue(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/codecs/RecordCodecBuilder;mapCodec(Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;"))
     private static MapCodec<Variant.SimpleModelState> polytone$modifyCodec(MapCodec<Variant.SimpleModelState> original) {
 
-        //needed since the x, y, z fields are made float and use the same name
-        MapCodec<Variant.SimpleModelState> betterCodec = RecordCodecBuilder.mapCodec(
+        //needed since the x, y, z fields are made float and use the same name. could replace modded added stuff which is why we use it very carefully
+        MapCodec<Variant.SimpleModelState> rotationUnlockedReplaceCodec = RecordCodecBuilder.mapCodec(
                 instance -> instance.group(
                                 Codec.FLOAT.optionalFieldOf("x", 0f).forGetter(a -> ((SimpleModelStateExtension) (Object) a).polytone$getXRot()),
                                 Codec.FLOAT.optionalFieldOf("y", 0f).forGetter(a -> ((SimpleModelStateExtension) (Object) a).polytone$getYRot()),
@@ -75,17 +74,17 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
             public <T> Stream<T> keys(DynamicOps<T> ops) {
                 List<T> l = new ArrayList<>();
                 l.addAll(original.keys(ops).toList());
-                l.addAll(ExtraData.CODEC.keys(ops).toList());
+             //   l.addAll(ExtraData.CODEC.keys(ops).toList());
                 return l.stream();
             }
 
             @Override
             public <T> DataResult<Variant.SimpleModelState> decode(DynamicOps<T> ops, MapLike<T> input) {
                 DataResult<Variant.SimpleModelState> originalRes = original.decode(ops, input);
-                if (originalRes.isSuccess()) {
-                    DataResult<ExtraData> extraData = ExtraData.CODEC.decode(ops, input);
-                    if (extraData.isSuccess()) {
-                        ExtraData data = extraData.getOrThrow();
+                DataResult<ExtraData> extraData = ExtraData.CODEC.decode(ops, input);
+                if (extraData.isSuccess()) {
+                    ExtraData data = extraData.getOrThrow();
+                    if (originalRes.isSuccess()) {
                         SimpleModelStateExtension ext = (SimpleModelStateExtension) (Object) originalRes.getOrThrow();
                         ext.polytone$setXOffset(data.xOffset());
                         ext.polytone$setYOffset(data.yOffset());
@@ -93,10 +92,13 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
                         ext.polytone$setXRot(data.xRot());
                         ext.polytone$setYRot(data.yRot());
                         ext.polytone$setZRot(data.zRot());
+                        return originalRes;
                     }
-                    return originalRes;
+                    if (!data.isEmpty()) {
+                        return rotationUnlockedReplaceCodec.decode(ops, input);
+                    }
                 }
-                return betterCodec.decode(ops, input);
+                return originalRes;
             }
 
             @Override
