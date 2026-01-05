@@ -60,7 +60,7 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
                         .apply(instance, (t1, t2, t3, t4, t5, t6, t8) -> {
                             var state = new Variant.SimpleModelState(Quadrant.R0, Quadrant.R0, Quadrant.R0, t4);
                             ((SimpleModelStateExtension) (Object) state).polytone$setXRot(t1);
-                            ((SimpleModelStateExtension) (Object) state).polytone$setYRot(t2);
+                    //        ((SimpleModelStateExtension) (Object) state).polytone$setYRot(t2);
                             ((SimpleModelStateExtension) (Object) state).polytone$setZRot(t3);
                             ((SimpleModelStateExtension) (Object) state).polytone$setXOffset(t5);
                             ((SimpleModelStateExtension) (Object) state).polytone$setYOffset(t6);
@@ -84,19 +84,20 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
                 DataResult<ExtraData> extraData = ExtraData.CODEC.decode(ops, input);
                 if (extraData.isSuccess()) {
                     ExtraData data = extraData.getOrThrow();
-                    if (originalRes.isSuccess()) {
-                        SimpleModelStateExtension ext = (SimpleModelStateExtension) (Object) originalRes.getOrThrow();
-                        data.xOffset().ifPresent(ext::polytone$setXOffset);
-                        data.yOffset().ifPresent(ext::polytone$setYOffset);
-                        data.zOffset().ifPresent(ext::polytone$setZOffset);
-                        data.xRot().ifPresent(ext::polytone$setXRot);
-                        data.yRot().ifPresent(ext::polytone$setYRot);
-                        data.zRot().ifPresent(ext::polytone$setZRot);
-                        return originalRes;
-                    }
                     if (!data.isEmpty()) {
+                        if (originalRes.isSuccess()) {
+                            SimpleModelStateExtension ext = (SimpleModelStateExtension) (Object) originalRes.getOrThrow();
+                            data.xOffset().ifPresent(ext::polytone$setXOffset);
+                            data.yOffset().ifPresent(ext::polytone$setYOffset);
+                            data.zOffset().ifPresent(ext::polytone$setZOffset);
+                            data.xRot().ifPresent(ext::polytone$setXRot);
+                            data.yRot().ifPresent(ext::polytone$setYRot);
+                            data.zRot().ifPresent(ext::polytone$setZRot);
+                            return originalRes;
+                        }
                         return rotationUnlockedReplaceCodec.decode(ops, input);
                     }
+
                 }
                 return originalRes;
             }
@@ -111,7 +112,8 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
     @Inject(method = "asModelState", at = @At(value = "HEAD"), cancellable = true)
     public void polytone$addTranslation(CallbackInfoReturnable<ModelState> cir) {
 
-        if (polytone$xOffset != 0 || polytone$yOffset != 0 || polytone$zOffset != 0 || polytone$xRot != 0 || polytone$yRot != 0 || polytone$zRot != 0) {
+        if (polytone$xOffset != 0 || polytone$yOffset != 0 || polytone$zOffset != 0 ||
+                polytone$xRot != 0 || polytone$yRot != 0 || polytone$zRot != 0) {
             Matrix4f mat = new Matrix4f();
             Quaternionf quaternionf = (new Quaternionf())
                     .rotateYXZ(-polytone$yRot * Mth.DEG_TO_RAD,
