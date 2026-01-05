@@ -12,6 +12,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,11 @@ public class NoiseManager extends JsonPartialReloader {
     }
 
     private final MapRegistry<PerlinSimplexNoise> noises = new MapRegistry<>("Polytone Simplex Noises");
+
+    @Nullable
+    public PerlinSimplexNoise getNoise(String id) {
+        return noises.getValue(id);
+    }
 
     @Override
     protected void resetWithLevel(boolean logOff) {

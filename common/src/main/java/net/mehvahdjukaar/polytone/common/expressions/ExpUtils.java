@@ -1,7 +1,9 @@
 package net.mehvahdjukaar.polytone.common.expressions;
 
+import net.mehvahdjukaar.polytone.common.expressions.proxies.BlockProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.CameraProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.GlobalProxy;
+import net.mehvahdjukaar.polytone.common.expressions.proxies.PlayerProxy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Util;
@@ -50,9 +52,8 @@ public class ExpUtils {
         ctx.addInput("c", CameraProxy.class);
         ctx.addImport("global", GlobalProxy.class);
         ctx.addImport("g", GlobalProxy.class);
-        ctx.addInput("Vec3", Vec3.class);
-        ctx.addInput("Vec3i", Vec3i.class);
-        ctx.addInput("BlockPose", BlockPos.class);
+        ctx.addInput("p", PlayerProxy.class);
+        ctx.addInput("player", PlayerProxy.class);
 
         importStaticMethods(ctx, ExpMath.class);
 

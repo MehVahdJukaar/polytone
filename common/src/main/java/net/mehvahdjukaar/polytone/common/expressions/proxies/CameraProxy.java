@@ -10,28 +10,37 @@ import net.minecraft.world.phys.Vec3;
 public class CameraProxy {
     public static final CameraProxy INSTANCE = new CameraProxy();
 
-    private Camera delegate(){
-        return Minecraft.getInstance().gameRenderer.getMainCamera();
+    private Camera camera;
+
+    private Camera getCameraInternal() {
+        if (camera == null) {
+            camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        }
+        return camera;
     }
 
-    public Vec3 pos(){
-        return delegate().position();
-    }
-
-    public double x(){
-        return delegate().position().x;
+    public double x() {
+        return getCameraInternal().position().x;
     }
 
     public double y() {
-        return delegate().position().y;
+        return getCameraInternal().position().y;
     }
 
-    public float yaw(){
-        return delegate().yaw();
+    public  double z() {
+        return getCameraInternal().position().z;
     }
 
-    public float pitch(){
-        return Mth.wrapDegrees(delegate().xRot());
+    public float yaw() {
+        return getCameraInternal().yaw();
+    }
+
+    public float pitch() {
+        return Mth.wrapDegrees(getCameraInternal().xRot());
+    }
+
+    public float roll() {
+        return Mth.wrapDegrees(getCameraInternal().zrot());
     }
 
 }

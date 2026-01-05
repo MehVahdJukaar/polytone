@@ -19,7 +19,7 @@ public abstract class GuiGraphicsMixin implements GuiDepthTargetAware {
 
     @Shadow
     @Final
-    public GuiRenderState guiRenderState;
+    GuiRenderState guiRenderState;
 
     @Inject(method = "blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V",
             at = @At(value = "INVOKE",

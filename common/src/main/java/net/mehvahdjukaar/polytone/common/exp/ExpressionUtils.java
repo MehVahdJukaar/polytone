@@ -229,7 +229,7 @@ public class ExpressionUtils {
             NOISE_FUNCS.add(new Function(key, 2) {
                 @Override
                 public double apply(double... args) {
-                    return noise.getValue(args[0], args[1], false);
+                    return noise.getValue(args[0], args[1], true);
                 }
             });
             if (res.getNamespace().equals("minecraft")) {
@@ -237,7 +237,7 @@ public class ExpressionUtils {
                 NOISE_FUNCS.add(new Function(key, 2) {
                     @Override
                     public double apply(double... args) {
-                        return noise.getValue(args[0], args[1], false);
+                        return noise.getValue(args[0], args[1], true);
                     }
                 });
             }
