@@ -41,6 +41,21 @@ public interface SimpleModelStateExtension {
             Optional<Float> yOffset,
             Optional<Float> zOffset
     ) {
+        
+        public ExtraData(Optional<Float> xRot,
+                         Optional<Float> yRot,
+                         Optional<Float> zRot,
+                         Optional<Float> xOffset,
+                         Optional<Float> yOffset,
+                         Optional<Float> zOffset) {
+            this.xOffset = xOffset;
+            this.yOffset = yOffset;
+            this.zOffset = zOffset;
+            //make rot empty if its vanilla
+            this.xRot = xRot.filter(r -> !isVanillaRotation(r.intValue()));
+            this.yRot = yRot.filter(r -> !isVanillaRotation(r.intValue()));
+            this.zRot = zRot.filter(r -> !isVanillaRotation(r.intValue()));
+        }
 
        public static final MapCodec<ExtraData> CODEC = RecordCodecBuilder.mapCodec(
                 instance -> instance.group(
@@ -54,9 +69,13 @@ public interface SimpleModelStateExtension {
                         .apply(instance, ExtraData::new)
         );
 
+       private static boolean isVanillaRotation(int rot){
+           return rot % 90 == 0;
+       }
+
        public boolean isEmpty(){
-              return xRot.isEmpty() && yRot.isEmpty() && zRot.isEmpty() &&
-                      xOffset.isEmpty() && yOffset.isEmpty() && zOffset.isEmpty();
+           return xRot.isEmpty() && yRot.isEmpty() && zRot.isEmpty() &&
+                   xOffset.isEmpty() && yOffset.isEmpty() && zOffset.isEmpty();
        }
     }
 }
