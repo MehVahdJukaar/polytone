@@ -4,6 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import java.util.Optional;
+
 public interface SimpleModelStateExtension {
 
     void polytone$setXOffset(float xOffset);
@@ -32,29 +34,29 @@ public interface SimpleModelStateExtension {
 
 
     record ExtraData(
-            float xRot,
-            float yRot,
-            float zRot,
-            float xOffset,
-            float yOffset,
-            float zOffset
+            Optional<Float> xRot,
+            Optional<Float> yRot,
+            Optional<Float> zRot,
+            Optional<Float> xOffset,
+            Optional<Float> yOffset,
+            Optional<Float> zOffset
     ) {
 
        public static final MapCodec<ExtraData> CODEC = RecordCodecBuilder.mapCodec(
                 instance -> instance.group(
-                                Codec.FLOAT.optionalFieldOf("x", 0f).forGetter(ExtraData::xRot),
-                                Codec.FLOAT.optionalFieldOf("y", 0f).forGetter(ExtraData::yRot),
-                                Codec.FLOAT.optionalFieldOf("z", 0f).forGetter(ExtraData::zRot),
-                                Codec.FLOAT.optionalFieldOf("xoffset", 0f).forGetter(ExtraData::xOffset),
-                                Codec.FLOAT.optionalFieldOf("yoffset", 0f).forGetter(ExtraData::yOffset),
-                                Codec.FLOAT.optionalFieldOf("zoffset", 0f).forGetter(ExtraData::zOffset)
+                                Codec.FLOAT.optionalFieldOf("x").forGetter(ExtraData::xRot),
+                                Codec.FLOAT.optionalFieldOf("y" ).forGetter(ExtraData::yRot),
+                                Codec.FLOAT.optionalFieldOf("z").forGetter(ExtraData::zRot),
+                                Codec.FLOAT.optionalFieldOf("xoffset" ).forGetter(ExtraData::xOffset),
+                                Codec.FLOAT.optionalFieldOf("yoffset").forGetter(ExtraData::yOffset),
+                                Codec.FLOAT.optionalFieldOf("zoffset").forGetter(ExtraData::zOffset)
                         )
                         .apply(instance, ExtraData::new)
         );
 
        public boolean isEmpty(){
-              return xRot == 0f && yRot == 0f && zRot == 0f &&
-                     xOffset == 0f && yOffset == 0f && zOffset == 0f;
+              return xRot.isEmpty() && yRot.isEmpty() && zRot.isEmpty() &&
+                      xOffset.isEmpty() && yOffset.isEmpty() && zOffset.isEmpty();
        }
     }
 }

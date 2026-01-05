@@ -74,7 +74,7 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
             public <T> Stream<T> keys(DynamicOps<T> ops) {
                 List<T> l = new ArrayList<>();
                 l.addAll(original.keys(ops).toList());
-             //   l.addAll(ExtraData.CODEC.keys(ops).toList());
+                l.addAll(ExtraData.CODEC.keys(ops).toList());
                 return l.stream();
             }
 
@@ -86,12 +86,12 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
                     ExtraData data = extraData.getOrThrow();
                     if (originalRes.isSuccess()) {
                         SimpleModelStateExtension ext = (SimpleModelStateExtension) (Object) originalRes.getOrThrow();
-                        ext.polytone$setXOffset(data.xOffset());
-                        ext.polytone$setYOffset(data.yOffset());
-                        ext.polytone$setZOffset(data.zOffset());
-                        ext.polytone$setXRot(data.xRot());
-                        ext.polytone$setYRot(data.yRot());
-                        ext.polytone$setZRot(data.zRot());
+                        data.xOffset().ifPresent(ext::polytone$setXOffset);
+                        data.yOffset().ifPresent(ext::polytone$setYOffset);
+                        data.zOffset().ifPresent(ext::polytone$setZOffset);
+                        data.xRot().ifPresent(ext::polytone$setXRot);
+                        data.yRot().ifPresent(ext::polytone$setYRot);
+                        data.zRot().ifPresent(ext::polytone$setZRot);
                         return originalRes;
                     }
                     if (!data.isEmpty()) {
