@@ -1,12 +1,15 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
+import com.google.common.base.Preconditions;
 import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
@@ -15,58 +18,74 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.apache.commons.lang3.ClassUtils;
+import org.jspecify.annotations.NonNull;
 
+//with cache but position changing awareness
 @BeanGettersAliases
 public abstract class PositionalProxy {
 
-    protected final BlockPos pos;
-    protected final Level level;
+    private BlockState stateCache;
+    private BlockEntity beCache;
+    private Holder<Biome> biomeCache;
+    private BlockPos posCache;
 
-    private BlockState state;
-    private BlockEntity be;
-    private Holder<Biome> biome;
-
-    public PositionalProxy(Level level, BlockPos pos, BlockState state) {
-        this.level = level;
-        this.pos = pos;
-        this.state = state;
+    public PositionalProxy(BlockState state) {
+        this.stateCache = state;
     }
 
-    public PositionalProxy(Level level, BlockPos pos) {
-        this.level = level;
-        this.pos = pos;
+    public PositionalProxy() {
+    }
+
+    protected abstract Level getLevelInternal();
+
+    protected abstract BlockPos getPosInternal();
+
+    private BlockPos updatedPos() {
+        BlockPos newPos = getPosInternal();
+        if (newPos == posCache) return posCache;
+        if (posCache == null || !posCache.equals(newPos)) {
+            posCache = newPos;
+            //invalidate caches
+            stateCache = null;
+            beCache = null;
+            biomeCache = null;
+        }
+        return posCache;
     }
 
     protected BlockState getStateInternal() {
-        if (state == null) {
-            state = level.getBlockState(pos);
+        BlockPos pos = updatedPos(); //refresh cache if needed
+        if (stateCache == null) {
+            stateCache = getLevelInternal().getBlockState(pos);
         }
-        return state;
+        return stateCache;
     }
 
     protected Holder<Biome> getBiomeInternal() {
-        if (biome == null) {
-            biome = level.getBiome(pos);
+        BlockPos blockPos = updatedPos();
+        if (biomeCache == null) {
+            biomeCache = getLevelInternal().getBiome(blockPos);
         }
-        return biome;
+        return biomeCache;
     }
 
     protected BlockEntity getBlockEntityInternal() {
-        if (be == null && this.hasBlockEntity()) {
-            be = level.getBlockEntity(pos);
+        BlockPos blockPos = updatedPos();
+        if (beCache == null && this.hasBlockEntity()) {
+            beCache = getLevelInternal().getBlockEntity(blockPos);
         }
-        return be;
+        return beCache;
     }
 
     public String block() {
         return getStateInternal().getBlockHolder().getRegisteredName();
     }
 
-    public String state() {
+    public String blockState() {
         return getStateInternal().toString();
     }
 
-    public Object stateValue(Object input) {
+    public Object blockStateValue(Object input) {
         //return a String or primitive value representing the state property and turn the input into the best known state prop
         Property<?> property = getStateInternal().getBlock().getStateDefinition().getProperty(input.toString());
         var value = getStateInternal().getValue(property);
@@ -91,31 +110,37 @@ public abstract class PositionalProxy {
     }
 
     public int skyLight() {
-        return level.getBrightness(LightLayer.SKY, pos);
+        return getLevelInternal().getBrightness(LightLayer.SKY, updatedPos());
     }
 
     public int blockLight() {
-        return level.getBrightness(LightLayer.BLOCK, pos);
+        return getLevelInternal().getBrightness(LightLayer.BLOCK, updatedPos());
     }
 
     public boolean canSeeSky() {
-        return level.canSeeSky(pos);
+        return getLevelInternal().canSeeSky(updatedPos());
     }
 
-    public boolean hasEntitiesWithin(){
-        return !level.getEntities(null, state.getShape(level, pos).bounds().move(pos)).isEmpty();
+    public boolean hasEntitiesWithin() {
+        Level level = getLevelInternal();
+        BlockPos pos = updatedPos();
+        return !level.getEntities(null, getStateInternal().getShape(level, pos).bounds().move(pos)).isEmpty();
     }
 
-    public boolean hasTag(String tag){
-        TagKey<Block> tagKey = TagKey.create(Registries.BLOCK,  Identifier.parse(tag));
+    public boolean hasBlockTag(String tag) {
+        TagKey<Block> tagKey = TagKey.create(Registries.BLOCK, Identifier.parse(tag));
         return getStateInternal().is(tagKey);
     }
 
-    public boolean isAir(){
+    public boolean isAir() {
         return getStateInternal().isAir();
     }
 
-    public boolean hasLiquid(){
+    public boolean hasFluid() {
+        return !getStateInternal().getFluidState().isEmpty();
+    }
+
+    public boolean fluid() {
         return !getStateInternal().getFluidState().isEmpty();
     }
 
@@ -123,7 +148,7 @@ public abstract class PositionalProxy {
         return getStateInternal().hasBlockEntity();
     }
 
-    public String blockEntity(){
+    public String blockEntity() {
         var be = getBlockEntityInternal();
         if (be != null) {
             return be.getType().builtInRegistryHolder().getRegisteredName();
@@ -131,4 +156,32 @@ public abstract class PositionalProxy {
         return "null";
     }
 
+    private boolean inEnvironmentAttributeCall = false;
+
+    public Object environmentAttribute(String attributeName) {
+        if (inEnvironmentAttributeCall) {
+            // recursion detected — return default or null
+            return null; //this will crash but somebody shouldn't try to get an attribute from within an attribute expression
+        }
+
+        try {
+            inEnvironmentAttributeCall = true;
+
+            EnvironmentAttribute<?> attr = parseEnvAttr(attributeName);
+            // safe to call delegate methods now
+            return getLevelInternal().environmentAttributes()
+                    .getValue(Preconditions.checkNotNull(attr), getPosInternal());
+
+        } finally {
+            inEnvironmentAttributeCall = false;
+        }
+    }
+
+    protected static @NonNull EnvironmentAttribute<?> parseEnvAttr(String attributeName) {
+        EnvironmentAttribute<?> attr = BuiltInRegistries.ENVIRONMENT_ATTRIBUTE.getValue(Identifier.parse(attributeName));
+        if (attr == null) {
+            throw new IllegalArgumentException("Unknown environment attribute: " + attributeName);
+        }
+        return attr;
+    }
 }

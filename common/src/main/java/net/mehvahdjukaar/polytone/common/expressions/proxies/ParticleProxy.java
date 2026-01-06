@@ -9,14 +9,14 @@ import org.jspecify.annotations.Nullable;
 
 @BeanGettersAliases
 public class ParticleProxy extends PositionalProxy {
-
-    protected final Level level;
-    protected final Particle particle;
+    private final Level level;
+    private final Particle particle;
+    private final BlockPos pos;
     @Nullable
-    protected final SingleQuadParticle quadParticle;
+    private final SingleQuadParticle quadParticle;
 
     public ParticleProxy(Particle particle, Level level) {
-        super(level, BlockPos.containing(particle.x, particle.y, particle.z));
+        super();
         this.particle = particle;
         if (particle instanceof SingleQuadParticle sqp) {
             this.quadParticle = sqp;
@@ -24,6 +24,17 @@ public class ParticleProxy extends PositionalProxy {
             this.quadParticle = null;
         }
         this.level = level;
+        this.pos = BlockPos.containing(particle.x, particle.y, particle.z);
+    }
+
+    @Override
+    protected Level getLevelInternal() {
+        return level;
+    }
+
+    @Override
+    protected BlockPos getPosInternal() {
+        return pos;
     }
 
     public double x() {

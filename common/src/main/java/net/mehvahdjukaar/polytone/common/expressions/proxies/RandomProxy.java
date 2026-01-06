@@ -7,6 +7,8 @@ import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 
 public class RandomProxy {
 
+    public static final RandomProxy GLOBAL = RandomProxy.of(RandomSource.createNewThreadLocalInstance());
+
     private final RandomSource source;
 
     public static RandomProxy posSeeded(BlockPos pos) {
@@ -17,7 +19,7 @@ public class RandomProxy {
         return new RandomProxy(RandomSource.create(seed));
     }
 
-    public static RandomProxy create() {
+    public static RandomProxy createRandom() {
         return new RandomProxy(RandomSource.create());
     }
 

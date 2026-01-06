@@ -36,6 +36,8 @@ public class ExpUtils {
         m.put("c", CameraProxy.INSTANCE);
         m.put("global", GlobalProxy.INSTANCE);
         m.put("g", GlobalProxy.INSTANCE);
+        m.put("player", PlayerProxy.INSTANCE);
+        m.put("p", PlayerProxy.INSTANCE);
         return m;
     });
 
@@ -56,16 +58,9 @@ public class ExpUtils {
         ctx.addInput("player", PlayerProxy.class);
 
         importStaticMethods(ctx, ExpMath.class);
-
-        //    ctx.addInput("price", int.class);
-        //   ctx.addInput("category", String.class);
-        // ctx.addImport("BigDecimal", BigDecimal.class);
-        //  ctx.addImport("time", MVEL.getStaticMethod(System.class, "currentTimeMillis", new Class[0]));
     }
 
     public static void addCommonVars(Map<String, Object> vars) {
-//TODO: add static vars of math
-
         vars.putAll(STATIC_GLOBALS);
     }
 

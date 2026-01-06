@@ -11,44 +11,58 @@ import net.minecraft.world.level.Level;
 @BeanGettersAliases
 public class CameraProxy extends PositionalProxy {
 
-    public static final CameraProxy INSTANCE = create();
+    public static final CameraProxy INSTANCE = new CameraProxy();
 
-    protected final Camera camera;
-
-    private CameraProxy(Camera camera, Level level, BlockPos pos) {
-        super(level, pos);
-        this.camera = camera;
+    public CameraProxy() {
+        super();
     }
 
-    public static CameraProxy create() {
-        Minecraft mc = Minecraft.getInstance();
-        Camera cam = mc.gameRenderer.getMainCamera();
-        BlockPos posVec = cam.blockPosition();
-        return new CameraProxy(cam, mc.level, posVec);
+    private Camera delegate(){
+        return Minecraft.getInstance().gameRenderer.getMainCamera();
+    }
+
+    @Override
+    protected BlockPos getPosInternal() {
+        return  delegate().blockPosition();
+    }
+
+    @Override
+    protected Level getLevelInternal() {
+        return Minecraft.getInstance().level;
     }
 
     public double x() {
-        return camera.position().x;
+        return delegate().position().x;
     }
 
     public double y() {
-        return camera.position().y;
+        return delegate().position().y;
     }
 
     public double z() {
-        return camera.position().z;
+        return delegate().position().z;
     }
 
     public float yaw() {
-        return camera.yaw();
+        return delegate().yaw();
     }
 
     public float pitch() {
-        return Mth.wrapDegrees(camera.xRot());
+        return Mth.wrapDegrees(delegate().xRot());
     }
 
     public float roll() {
-        return Mth.wrapDegrees(PlatStuff.getCamRoll(camera));
+        return Mth.wrapDegrees(PlatStuff.getCamRoll(delegate()));
     }
 
+    public boolean detatched() {
+        return delegate().isDetached();
+    }
+
+    @Override
+    public Object environmentAttribute(String attributeName) {
+        var env = parseEnvAttr(attributeName);
+        return delegate().attributeProbe().getValue(env, 0);
+
+    }
 }
