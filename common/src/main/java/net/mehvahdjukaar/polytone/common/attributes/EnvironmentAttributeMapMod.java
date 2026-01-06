@@ -173,6 +173,7 @@ public class EnvironmentAttributeMapMod {
     }
 
     public static EnvironmentAttributeMapMod wrapVanilla(EnvironmentAttributeMap attributes) {
+        if (attributes == EnvironmentAttributeMap.EMPTY) return EMPTY;
         return new EnvironmentAttributeMapMod(EnvironmentAttributeMap.builder().putAll(attributes).entries, Set.of());
     }
 

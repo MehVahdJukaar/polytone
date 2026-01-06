@@ -1,3 +1,3 @@
-- fixed environment attributes not working with expressions properly
-- more attributes types can use expressions
-- added back no alpha cutoff shader, used in additive translucnet particles
+- added a biome post layer applied before the dimension post layer for environment attributes
+- fixed attribute modifiers with color values not accepting a colormap
+- improved a mixin used for improved blockstate deserializer

@@ -3,21 +3,16 @@ package net.mehvahdjukaar.polytone.content.biome;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
-import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
-import net.mehvahdjukaar.polytone.common.Weather;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.StringRepresentable;
+import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
+import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.dimension.DimensionType;
+import org.jspecify.annotations.NonNull;
 
-import java.util.Map;
 import java.util.Optional;
 
 public record BiomeEffectModifier(Optional<Integer> waterColor,
@@ -25,7 +20,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                                   Optional<Integer> dryFoliageColorOverride,
                                   Optional<Integer> grassColorOverride,
                                   Optional<BiomeSpecialEffects.GrassColorModifier> grassColorModifier,
-                                  EnvironmentAttributeMapMod environmentAttributesMod,
+                                  BiomeEnvAttributeModifications attributeModifications,
                                   Targets targets) {
 
     public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
@@ -34,8 +29,8 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
             ColorUtils.COLOR.optionalFieldOf("dry_foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
             ColorUtils.COLOR.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
             BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
-            EnvironmentAttributeMapMod.CODEC.optionalFieldOf("attributes_modifiers",
-                    EnvironmentAttributeMapMod.EMPTY).forGetter(BiomeEffectModifier::environmentAttributesMod),
+            BiomeEnvAttributeModifications.CODEC.optionalFieldOf("attributes_modifiers",
+                    BiomeEnvAttributeModifications.EMPTY).forGetter(BiomeEffectModifier::attributeModifications),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));
 
@@ -46,7 +41,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                 effects.dryFoliageColorOverride(),
                 effects.grassColorOverride(),
                 Optional.of(effects.grassColorModifier()),
-                EnvironmentAttributeMapMod.wrapVanilla(attributes),
+                BiomeEnvAttributeModifications.baseOnly(EnvironmentAttributeMapMod.wrapVanilla(attributes)),
                 Targets.EMPTY
         );
     }
@@ -59,16 +54,9 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                 newMod.dryFoliageColorOverride.or(this::dryFoliageColorOverride),
                 newMod.grassColorOverride.or(this::grassColorOverride),
                 newMod.grassColorModifier.or(this::grassColorModifier),
-                this.environmentAttributesMod.merge(newMod.environmentAttributesMod),
+                this.attributeModifications.merge(newMod.attributeModifications),
                 this.targets.merge(newMod.targets)
         );
-    }
-
-    //Returns vanilla attributes that got replaced
-    private EnvironmentAttributeMap modifyAttributeMap(Biome biome) {
-        EnvironmentAttributeMap currentMap = biome.getAttributes();
-        biome.attributes = environmentAttributesMod.modify(currentMap);
-        return currentMap;
     }
 
 
@@ -145,7 +133,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
 
     //Returns vanilla effects that got replaced
     public BiomeEffectModifier apply(Biome biome) {
-        EnvironmentAttributeMap oldAttribute = modifyAttributeMap(biome);
+        EnvironmentAttributeMap oldAttribute = attributeModifications.applyAllModifications(biome);
         BiomeSpecialEffects oldEffects = modifySpecialEffects(biome);
 
         return wrapVanilla(oldEffects, oldAttribute);
@@ -163,39 +151,56 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
         oldEffects.grassColorModifier = newEffects.getGrassColorModifier();
     }*/
 
-    public interface FogParam {
-        float get(Level level);
 
-        Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> (l) -> f, fogParam -> fogParam.get(null));
-        Codec<FogParam> CODEC = Codec.withAlternative(
-                Codec.withAlternative(SIMPLE_CODEC,
-                        Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
-                                .xmap(FogMap::new, FogMap::map).codec()
-                ),
-                BlockContextExpression.CODEC.xmap(
-                        FogExpression::new,
-                        fogMap -> fogMap.map
+    public EnvironmentAttributeMap getPostProcessAttributes() {
+        return attributeModifications.postProcess.toVanilla();
+    }
+
+    public record BiomeEnvAttributeModifications(EnvironmentAttributeMapMod baseMod,
+                                                 EnvironmentAttributeMapMod postProcess) { //here we dont use removals
+
+        public static final Codec<BiomeEnvAttributeModifications> DIRECT_CODEC = RecordCodecBuilder.create(
+                instance -> instance.group(
+                        EnvironmentAttributeMapMod.CODEC.optionalFieldOf("base",
+                                EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.baseMod),
+                        EnvironmentAttributeMapMod.CODEC.optionalFieldOf("post_process",
+                                EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.postProcess)
+                ).apply(instance, BiomeEnvAttributeModifications::new)
+        );
+
+        public static final Codec<BiomeEnvAttributeModifications> CODEC = Codec.withAlternative(DIRECT_CODEC,
+                EnvironmentAttributeMapMod.CODEC.xmap(BiomeEnvAttributeModifications::baseOnly,
+                        m -> m.baseMod
                 )
         );
-    }
 
-    public record FogExpression(BlockContextExpression map) implements FogParam {
+        private static @NonNull BiomeEnvAttributeModifications baseOnly(EnvironmentAttributeMapMod mod) {
+            return new BiomeEnvAttributeModifications(
+                    mod,
+                    EnvironmentAttributeMapMod.EMPTY
+            );
+        }
 
-        @Override
-        public float get(Level level) {
-            BlockPos pos = ClientFrameTicker.getCameraPos();
-            return (float) map.getValue(level, pos, Blocks.AIR.defaultBlockState());
+        public static final BiomeEnvAttributeModifications EMPTY = baseOnly(EnvironmentAttributeMapMod.EMPTY);
+
+        public BiomeEnvAttributeModifications merge(BiomeEnvAttributeModifications newMod) {
+            return new BiomeEnvAttributeModifications(
+                    this.baseMod.merge(newMod.baseMod),
+                    this.postProcess.merge(newMod.postProcess)
+            );
+        }
+
+        public boolean isEmpty() {
+            return baseMod.isEmpty() && postProcess.isEmpty();
+        }
+
+        public EnvironmentAttributeMap applyAllModifications(Biome biome) {
+            EnvironmentAttributeMap oldBase = biome.getAttributes();
+            if (!baseMod.isEmpty()) {
+                biome.attributes = baseMod.modify(oldBase);
+            }
+
+            return oldBase;
         }
     }
-
-    public record FogMap(Map<Weather, FogParam> map) implements FogParam {
-
-        @Override
-        public float get(Level level) {
-            Weather w = Weather.get(level);
-            return map.getOrDefault(w, (l) -> 1).get(level);
-        }
-    }
-
-
 }

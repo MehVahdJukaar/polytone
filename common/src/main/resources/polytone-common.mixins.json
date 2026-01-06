@@ -4,7 +4,6 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "EnvironmentAttributeEntryMixin"
   ],
   "client": [
     "AbstractContainerMenuMixin",
@@ -14,6 +13,7 @@
     "ClientLevelMixin",
     "ColorResolverMixin",
     "ContextualBarRendererMixin",
+    "EnvironmentAttributeEntryMixin",
     "EnvironmentSystemMixin",
     "FishingHookRendererMixin",
     "GameRendererMixin",
@@ -27,6 +27,7 @@
     "LeashMixin",
     "LightTextureMixin",
     "MinecraftMixin",
+    "MixinMain",
     "ModelBakeryMixin",
     "ModelManagerMixin",
     "ParticleEngineMixin",

@@ -11,17 +11,17 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.attribute.GaussianSampler;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.WritableLevelData;
-import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientLevel.class)
@@ -62,5 +62,13 @@ public abstract class ClientLevelMixin extends Level {
                 ci.cancel();
             }
         }
+    }
+    @ModifyExpressionValue(method = "addEnvironmentAttributeLayers", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/ARGB;color(III)I"))
+    public int polytone$modifySkyLightSampler(int value) {
+        Integer c = Polytone.COLORS.getSkyFlash();
+        if (c != null) {
+            return c;
+        }
+        return value;
     }
 }

@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.mixins.neoforge.*;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -313,6 +314,10 @@ public class PlatStuffImpl {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static float getCamRoll(Camera camera) {
+        return camera.getRoll();
     }
 
     private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();

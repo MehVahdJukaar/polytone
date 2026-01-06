@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.attribute.AttributeType;
@@ -17,7 +18,7 @@ public class ExtendedAttributeMod {
 
     public static <A, Value> Codec<Either<A, Supplier<A>>> addDynamicValueCodec(Codec<A> originalCodec, AttributeType<Value> type) {
         if (type == AttributeTypes.ARGB_COLOR || type == AttributeTypes.RGB_COLOR) {
-            Codec<Supplier<Integer>> intCodec = IColorGetter.SINGLE_COLOR_OR_EXPRESSION
+            Codec<Supplier<Integer>> intCodec = Colormap.REFERENCE_OR_EXPRESSION
                     .xmap(c -> () -> c.getColor(Blocks.AIR.defaultBlockState(),
                                     Minecraft.getInstance().level, //TODO: proper exp here
                                     ClientFrameTicker.getCameraPos(), 0),

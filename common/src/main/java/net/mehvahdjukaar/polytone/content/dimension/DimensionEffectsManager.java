@@ -4,6 +4,7 @@ package net.mehvahdjukaar.polytone.content.dimension;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributesHandler;
 import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
@@ -110,8 +111,11 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
             alteredVanillaEffects.put(key, old);
 
-            Polytone.LOGGER.info("Applied Custom Dimension Effects Modifier '{}' to dimension '{}'", modId, currentDimHolder);
+            Polytone.LOGGER.info("Applied Custom Dimension Effects Modifier '{}' to dimension '{}'", modId, currentDimHolder.getRegisteredName());
         }
+
+        //might be called twice. too bad
+        EnvironmentAttributesHandler.refresh();
         //we don't clear effects to apply because we need to re apply on world reload
     }
 
@@ -122,7 +126,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     public void addPostLayers(EnvironmentAttributeSystem.Builder builder, Level level) {
-        var post = postProcessEffects.get(level.dimensionTypeRegistration().unwrapKey().get());
+        EnvironmentAttributeMap post = postProcessEffects.get(level.dimensionTypeRegistration().unwrapKey().get());
         if (post != null) {
             builder.addConstantLayer(post);
         }

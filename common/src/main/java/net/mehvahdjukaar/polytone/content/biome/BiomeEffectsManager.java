@@ -5,15 +5,22 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.attribute.EnvironmentAttributeMap;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeManager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class BiomeEffectsManager extends JsonPartialReloader {
 
@@ -78,7 +85,38 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     public boolean hasModifiedAttributes() {
         return effectsToApply.values().stream().anyMatch(
-                m -> !m.environmentAttributesMod().isEmpty()
+                m -> !m.attributeModifications().isEmpty()
         );
     }
+
+    public void addPostLayers(EnvironmentAttributeSystem.Builder builder, Level level) {
+        RegistryAccess registryAccess = level.registryAccess();
+        BiomeManager biomeManager = level.getBiomeManager();
+        addBiomeLayer(builder, registryAccess.lookupOrThrow(Registries.BIOME), biomeManager);
+    }
+
+    //same as base biome layer
+    private void addBiomeLayer(EnvironmentAttributeSystem.Builder builder, HolderLookup<Biome> holderLookup, BiomeManager biomeManager) {
+        Stream<EnvironmentAttribute<?>> allAttributesInPost = effectsToApply.entrySet().stream().flatMap(
+                e -> e.getValue().getPostProcessAttributes().keySet().stream()
+        ).distinct();
+
+        allAttributesInPost.forEach((environmentAttribute) -> addBiomeLayerForAttribute(builder, environmentAttribute, biomeManager));
+    }
+
+    private <Value> void addBiomeLayerForAttribute(EnvironmentAttributeSystem.Builder builder, EnvironmentAttribute<Value> environmentAttribute,
+                                                   BiomeManager biomeManager) {
+        builder.addPositionalLayer(environmentAttribute, (object, vec3, spatialAttributeInterpolator) -> {
+            if (spatialAttributeInterpolator != null && environmentAttribute.isSpatiallyInterpolated()) {
+                return spatialAttributeInterpolator.applyAttributeLayer(environmentAttribute, object);
+            } else {
+                Holder<Biome> holder = biomeManager.getNoiseBiomeAtPosition(vec3.x, vec3.y, vec3.z);
+                BiomeEffectModifier biomeEffectModifier = effectsToApply.get(holder.value());
+                if (biomeEffectModifier == null) return object;
+                EnvironmentAttributeMap posMap = biomeEffectModifier.getPostProcessAttributes();
+                return posMap.applyModifier(environmentAttribute, object);
+            }
+        });
+    }
+
 }

@@ -61,13 +61,14 @@ public final class Colormap implements IColorGetter, ColorResolver {
             ColormapColorModulatorExpression.CODEC.optionalFieldOf("color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult))
     ).apply(i, Colormap::new));
 
-
-    public static final Codec<IColorGetter> DIRECT_REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_OR_EXPRESSION,
+    //colormaps have to be parsed first since a reference colormap id can be a valid expression
+    public static final Codec<IColorGetter> DIRECT_REFERENCE_OR_EXPRESSION = Codec.withAlternative(
             CodecUtils.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
+            SINGLE_COLOR_OR_EXPRESSION,
             Function.identity());
 
-    public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_OR_EXPRESSION,
-            Polytone.COLORMAPS.byNameCodec());
+    public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = Codec.withAlternative(
+            Polytone.COLORMAPS.byNameCodec(), SINGLE_COLOR_OR_EXPRESSION);
 
 
     // single or biome compound

@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
+import net.minecraft.client.Camera;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -204,6 +205,11 @@ public class PlatStuff {
 
     @ExpectPlatform
     public static ParticleType<ExtraDataParticleOptions> makeParticleType(boolean forceSpawn) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static float getCamRoll(Camera camera) {
         throw new AssertionError();
     }
 

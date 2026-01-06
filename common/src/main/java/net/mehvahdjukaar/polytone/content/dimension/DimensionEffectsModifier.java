@@ -17,7 +17,7 @@ import java.util.Optional;
 
 //these used to be dimension special effects modifiers
 //now they are a per dimension environment effect modifier. we essentially modify dimension type
-public record DimensionEffectsModifier(EnvironmentAttributeModifications attributeModifications,
+public record DimensionEffectsModifier(DimensionEnvAttributeModifications attributeModifications,
                                        Optional<DimensionType.Skybox> skybox,
                                        Optional<DimensionType.CardinalLightType> cardinalLightType,
                                        Optional<Float> ambientLight,
@@ -28,8 +28,8 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
 
     public static final Decoder<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    EnvironmentAttributeModifications.CODEC.optionalFieldOf("attributes_modifiers",
-                            EnvironmentAttributeModifications.EMPTY).forGetter(DimensionEffectsModifier::attributeModifications),
+                    DimensionEnvAttributeModifications.CODEC.optionalFieldOf("attributes_modifiers",
+                            DimensionEnvAttributeModifications.EMPTY).forGetter(DimensionEffectsModifier::attributeModifications),
                     DimensionType.Skybox.CODEC.optionalFieldOf("skybox").forGetter(DimensionEffectsModifier::skybox),
                     DimensionType.CardinalLightType.CODEC.optionalFieldOf("cardinal_light").forGetter(DimensionEffectsModifier::cardinalLightType),
                     Codec.FLOAT.optionalFieldOf("ambient_light").forGetter(DimensionEffectsModifier::ambientLight),
@@ -80,7 +80,7 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
             accessor.setCardinalLightType(this.cardinalLightType.get());
         }
 
-        EnvironmentAttributeModifications oldMods = this.attributeModifications.applyAllModifications(dimension);
+        DimensionEnvAttributeModifications oldMods = this.attributeModifications.applyAllModifications(dimension);
 
         return new DimensionEffectsModifier(
                 oldMods,
@@ -94,15 +94,15 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
     }
 
     public EnvironmentAttributeMap getPostProcessAttributes() {
-            return attributeModifications.postProcess.toVanilla();
+        return attributeModifications.postProcess.toVanilla();
     }
 
-    public record EnvironmentAttributeModifications( EnvironmentAttributeMapMod baseMod,
-                                                    EnvironmentAttributeMapMod rainMod,
-                                                    EnvironmentAttributeMapMod thunderMod,
-                                                    EnvironmentAttributeMapMod postProcess) { //here we dont use removals
+    public record DimensionEnvAttributeModifications(EnvironmentAttributeMapMod baseMod,
+                                                     EnvironmentAttributeMapMod rainMod,
+                                                     EnvironmentAttributeMapMod thunderMod,
+                                                     EnvironmentAttributeMapMod postProcess) { //here we dont use removals
 
-        public static final Codec<EnvironmentAttributeModifications> DIRECT_CODEC = RecordCodecBuilder.create(
+        public static final Codec<DimensionEnvAttributeModifications> DIRECT_CODEC = RecordCodecBuilder.create(
                 instance -> instance.group(
                         EnvironmentAttributeMapMod.CODEC.optionalFieldOf("base",
                                 EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.baseMod),
@@ -112,17 +112,17 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
                                 EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.thunderMod),
                         EnvironmentAttributeMapMod.CODEC.optionalFieldOf("post_process",
                                 EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.postProcess)
-                ).apply(instance, EnvironmentAttributeModifications::new)
+                ).apply(instance, DimensionEnvAttributeModifications::new)
         );
 
-        public static final Codec<EnvironmentAttributeModifications> CODEC = Codec.withAlternative(DIRECT_CODEC,
-                EnvironmentAttributeMapMod.CODEC.xmap(EnvironmentAttributeModifications::baseOnly,
+        public static final Codec<DimensionEnvAttributeModifications> CODEC = Codec.withAlternative(DIRECT_CODEC,
+                EnvironmentAttributeMapMod.CODEC.xmap(DimensionEnvAttributeModifications::baseOnly,
                         m -> m.baseMod
                 )
         );
 
-        private static @NonNull EnvironmentAttributeModifications baseOnly(EnvironmentAttributeMapMod mod) {
-            return new EnvironmentAttributeModifications(
+        private static DimensionEffectsModifier.DimensionEnvAttributeModifications baseOnly(EnvironmentAttributeMapMod mod) {
+            return new DimensionEnvAttributeModifications(
                     mod,
                     EnvironmentAttributeMapMod.EMPTY,
                     EnvironmentAttributeMapMod.EMPTY,
@@ -130,10 +130,10 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
             );
         }
 
-        public static final EnvironmentAttributeModifications EMPTY = baseOnly(EnvironmentAttributeMapMod.EMPTY);
+        public static final DimensionEnvAttributeModifications EMPTY = baseOnly(EnvironmentAttributeMapMod.EMPTY);
 
-        public EnvironmentAttributeModifications merge(EnvironmentAttributeModifications newMod) {
-            return new EnvironmentAttributeModifications(
+        public DimensionEnvAttributeModifications merge(DimensionEnvAttributeModifications newMod) {
+            return new DimensionEnvAttributeModifications(
                     this.baseMod.merge(newMod.baseMod),
                     this.rainMod.merge(newMod.rainMod),
                     this.thunderMod.merge(newMod.thunderMod),
@@ -145,18 +145,26 @@ public record DimensionEffectsModifier(EnvironmentAttributeModifications attribu
             return baseMod.isEmpty() && rainMod.isEmpty() && thunderMod.isEmpty() && postProcess.isEmpty();
         }
 
-        public EnvironmentAttributeModifications applyAllModifications(DimensionType dimension) {
-            EnvironmentAttributeMap oldBase = dimension.attributes();
-            ((DimensionTypeAccessor) (Object) dimension).setAttributes(baseMod.modify(oldBase));
+        public DimensionEnvAttributeModifications applyAllModifications(DimensionType dimension) {
+            EnvironmentAttributeMap oldBase = EnvironmentAttributeMap.EMPTY;
+            if (!baseMod.isEmpty()) {
+                oldBase = dimension.attributes();
+                ((DimensionTypeAccessor) (Object) dimension).setAttributes(baseMod.modify(oldBase));
+            }
 
-            EnvironmentAttributeMap oldRain = WeatherAttributes.RAIN;
-            WeatherAttributes.RAIN = rainMod.modify(oldRain);
+            EnvironmentAttributeMap oldRain = EnvironmentAttributeMap.EMPTY;
+            if (!rainMod.isEmpty()) {
+                oldRain = WeatherAttributes.RAIN;
+                WeatherAttributes.RAIN = rainMod.modify(oldRain);
+            }
 
-            EnvironmentAttributeMap oldThunder = WeatherAttributes.THUNDER;
-            WeatherAttributes.THUNDER = thunderMod.modify(oldThunder);
+            EnvironmentAttributeMap oldThunder = EnvironmentAttributeMap.EMPTY;
+            if (!thunderMod.isEmpty()) {
+                oldThunder = WeatherAttributes.THUNDER;
+                WeatherAttributes.THUNDER = thunderMod.modify(oldThunder);
+            }
 
-
-            return new EnvironmentAttributeModifications(
+            return new DimensionEnvAttributeModifications(
                     EnvironmentAttributeMapMod.wrapVanilla(oldBase),
                     EnvironmentAttributeMapMod.wrapVanilla(oldRain),
                     EnvironmentAttributeMapMod.wrapVanilla(oldThunder),

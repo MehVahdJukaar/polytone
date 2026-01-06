@@ -13,6 +13,7 @@ public class EnvironmentSystemMixin {
 
     @Inject(method = "addDefaultLayers", at = @At("RETURN"))
     private static void polytone$addCustomPostLayers(EnvironmentAttributeSystem.Builder builder, Level level, CallbackInfo ci) {
+        Polytone.BIOME_MODIFIERS.addPostLayers(builder, level);
         Polytone.DIMENSION_MODIFIERS.addPostLayers(builder, level);
     }
 }

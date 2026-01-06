@@ -20,6 +20,7 @@ import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptio
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -318,6 +319,10 @@ public class PlatStuffImpl {
 
     public static void registerParticleGroup(Consumer<PlatStuff.RegParticleGroup> eventConsumer) {
         eventConsumer.accept(ParticleRendererRegistry::register);
+    }
+
+    public static float getCamRoll(Camera camera) {
+        return 0;
     }
 
 }

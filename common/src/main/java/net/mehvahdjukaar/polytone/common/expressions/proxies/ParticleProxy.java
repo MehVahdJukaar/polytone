@@ -1,11 +1,13 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
+import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
+@BeanGettersAliases
 public class ParticleProxy extends PositionalProxy {
 
     protected final Level level;

@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
+import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.apache.commons.lang3.ClassUtils;
 
+@BeanGettersAliases
 public abstract class PositionalProxy {
 
     protected final BlockPos pos;
@@ -56,7 +58,7 @@ public abstract class PositionalProxy {
         return be;
     }
 
-    public String id() {
+    public String block() {
         return getStateInternal().getBlockHolder().getRegisteredName();
     }
 

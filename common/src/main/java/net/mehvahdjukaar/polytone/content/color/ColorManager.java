@@ -84,6 +84,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private Integer xpBarBack = null;
     private Integer enchantTableXp = null;
 
+    private Integer skyFlashColor = null;
+
     @Nullable
     private Integer fishingLineColor = null;
     @Nullable
@@ -94,6 +96,10 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         super("colo_manager",
                 "color.properties", "colors.json",
                 Polytone.MOD_ID, "colormatic", "vanadium", "optifine");
+    }
+
+    public Integer getSkyFlash() {
+        return skyFlashColor;
     }
 
     public Integer getXpBar() {
@@ -132,6 +138,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 }
                 color.col = col;
             } else Polytone.LOGGER.warn("Unknown MapColor with name {}", k);
+        });
+
+        doWith(obj, "environment", (k, v) -> {
+            if (k.equals("flash")) {
+                skyFlashColor = parseColor(v);
+            }
         });
 
         doWith(obj, "dye", (k, v) -> {

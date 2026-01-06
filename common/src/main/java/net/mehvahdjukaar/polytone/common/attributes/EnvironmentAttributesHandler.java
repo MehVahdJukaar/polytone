@@ -11,17 +11,26 @@ public class EnvironmentAttributesHandler {
 
     public static final WeakHashMap<ClientLevel, EnvironmentAttributeSystem> vanillaSystem = new WeakHashMap<>();
 
+    private static long lastRefreshedTimestamp;
+
     public static void refresh() {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;
-        if (Polytone.DIMENSION_MODIFIERS.hasModifiedAttributes() || Polytone.BIOME_MODIFIERS.hasModifiedAttributes()) {
+
+        //Debounce since we can call twice. for ease of use due to dimension changing happening too late
+        long thisTimestamp = level.getGameTime();
+        if (thisTimestamp == lastRefreshedTimestamp) {
+            return;
+        }
+        lastRefreshedTimestamp = thisTimestamp;
+        if (Polytone.DIMENSION_MODIFIERS.hasModifiedAttributes() || Polytone.BIOME_MODIFIERS.hasModifiedAttributes() ||
+                Polytone.COLORS.getSkyFlash() != null) {
             EnvironmentAttributeSystem old = level.environmentAttributes;
             if (!vanillaSystem.containsKey(level)) {
                 vanillaSystem.put(level, old);
             }
             //same as vanilla does. if other mods add stuff here this might break them...
-            level.environmentAttributes = EnvironmentAttributeSystem.builder()
-                    .addDefaultLayers(level).build();
+            level.environmentAttributes = level.addEnvironmentAttributeLayers(EnvironmentAttributeSystem.builder()).build();
         }
     }
 
