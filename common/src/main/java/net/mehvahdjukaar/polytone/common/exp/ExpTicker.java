@@ -9,10 +9,10 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 
+//move to global?
 public class ExpTicker {
 
     private static double time;
-    private static double sunTime;
     private static double dayTime;
     private static float rainAndThunder;
     private static float season;
@@ -31,14 +31,10 @@ public class ExpTicker {
             Polytone.onDimChanged(level);
         }
 
-        Camera camera = mc.gameRenderer.getMainCamera();
-        var probe = camera.attributeProbe();
-
         time = level.getGameTime();
-        dayTime = level.dimensionType().hasFixedTime() ? level.getDayTime() : level.getDayTime() + partialTicks;
-        sunTime = probe.getValue(EnvironmentAttributes.SUN_ANGLE, partialTicks) / 360.0F;
+        dayTime = level.dimensionType().hasFixedTime() ? level.getDayTime() : level.getDayTime();
         //TODO: oter param like moon pos
-        rainAndThunder = level.getRainLevel(partialTicks) * 0.5f + level.getThunderLevel(partialTicks) * 0.5f;
+        rainAndThunder = level.getRainLevel(0) * 0.5f + level.getThunderLevel(0) * 0.5f;
         season = ISeason.getNumber(level);
 
         deltaTime = Minecraft.getInstance().getDeltaTracker().getRealtimeDeltaTicks();

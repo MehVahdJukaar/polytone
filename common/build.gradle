@@ -38,7 +38,7 @@ dependencies {
 
     compileOnly "net.mehvahdjukaar:candlelight:${candle_version}"
     implementation "net.objecthunter:exp4j:${exp4j_version}"
-    implementation 'org.mvel:mvel2:2.4.14.Final'
+    implementation "org.mvel:mvel2:${mvel_version}"
 
     modCompileOnly "curse.maven:serene-seasons-291874:6182596"
     modCompileOnly "curse.maven:fabric-seasons-413523:5789846"
