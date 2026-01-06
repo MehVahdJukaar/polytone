@@ -22,6 +22,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.QuadParticleRenderState;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.BlockPos;
@@ -330,14 +331,14 @@ public class CustomParticleType implements CustomParticleFactory {
             }
             var offset = this.type.offset;
             modelParticleRenderState.add(
-                    this.type.getRenderType().getBlock(),
+                    RenderTypes.cutoutMovingBlock() ,
                     (float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z),
                     quaternionf.x,
                     quaternionf.y,
                     quaternionf.z,
                     quaternionf.w,
                     this.getQuadSize(f),
-                    ARGB.colorFromFloat(this.alpha, this.rCol, this.gCol, this.bCol),
+                    this.rCol, this.gCol, this.bCol, this.alpha,
                     this.getLightColor(f),
                     this.model
             );
