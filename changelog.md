@@ -1,2 +1,2 @@
-biome post layer will now use its own accumulator for spatially interpolated attributes
-fixed custom rotations in blockstate files
+added a param to color properies to chagne lighting flash color
+animated textures can use an expression to compute their frame

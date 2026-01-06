@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.content.particle.ParticleContextExpression;
+import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
@@ -121,7 +121,7 @@ public class ParticleModifier {
             if (!filter.test(options)) return;
         }
         if (colorGetter != null) {
-            float[] unpack = ColorUtils.unpack((int) colorGetter.getValue(particle, level));
+            float[] unpack = ColorUtils.unpack((int) colorGetter.evaluate(particle, level));
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (colormap != null) {
@@ -133,28 +133,28 @@ public class ParticleModifier {
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (lifeGetter != null) {
-            particle.setLifetime((int) lifeGetter.getValue(particle, level));
+            particle.setLifetime((int) lifeGetter.evaluate(particle, level));
         }
         if (sizeGetter != null) {
-            particle.scale((float) sizeGetter.getValue(particle, level));
+            particle.scale((float) sizeGetter.evaluate(particle, level));
         }
         if (redGetter != null) {
-            particle.rCol = (float) redGetter.getValue(particle, level);
+            particle.rCol = (float) redGetter.evaluate(particle, level);
         }
         if (greenGetter != null) {
-            particle.gCol = (float) greenGetter.getValue(particle, level);
+            particle.gCol = (float) greenGetter.evaluate(particle, level);
         }
         if (blueGetter != null) {
-            particle.bCol = (float) blueGetter.getValue(particle, level);
+            particle.bCol = (float) blueGetter.evaluate(particle, level);
         }
         if (speedGetter != null) {
-            double speed = speedGetter.getValue(particle, level);
+            double speed = speedGetter.evaluate(particle, level);
             particle.xd *= speed;
             particle.yd *= speed;
             particle.zd *= speed;
         }
         if (alphaGetter != null) {
-            particle.alpha = (float) alphaGetter.getValue(particle, level);
+            particle.alpha = (float) alphaGetter.evaluate(particle, level);
         }
     }
 

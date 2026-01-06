@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.mehvahdjukaar.polytone.content.particle.ParticleContextExpression;
+import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;

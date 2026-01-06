@@ -17,7 +17,7 @@ public interface BiomeIdMapper {
     Codec<BiomeIdMapper> CODEC = CodecUtils.referenceOrDirect(
             Polytone.BIOME_ID_MAPPERS.byNameCodec(), Custom.CUSTOM_CODEC, false);
 
-    BiomeIdMapper BY_INDEX = (biome) -> {
+    BiomeIdMapper LEGACY = (biome) -> {
         int id = LegacyHelper.getBiomeId(biome);
         //don't ask questions here, I changed it too many times. This works
         return (id + 1) / 256f;

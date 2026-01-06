@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
@@ -8,9 +9,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public interface IBlockExp {
 
-    @SuppressWarnings("unchecked")
     Codec<IBlockExp> CODEC = Codec.lazyInitialized(() ->
-            Codec.withAlternative((Codec) BlockContextExpression.CODEC, (Codec) BlockExp.TYPE.codec())
+            CodecUtils.withAlternative(BlockContextExpression.CODEC, BlockExp.TYPE.codec())
     );
 
     double evaluate(LevelReader level, BlockPos pos, BlockState state);

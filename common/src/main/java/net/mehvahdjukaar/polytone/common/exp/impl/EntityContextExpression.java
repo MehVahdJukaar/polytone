@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.exp.IExpression;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -61,8 +62,8 @@ public class EntityContextExpression extends PolytoneExpression  {
         if (hasTime) vb.setVariable(TIME, entityTime);
         if (hasDayTime) vb.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
         if (hasSunTime) vb.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
-        if (hasRain) vb.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
-        if (hasSeason) vb.setVariable(SEASON, ClientFrameTicker.getSeason());
+        if (hasRain) vb.setVariable(RAIN, ExpTicker.getRainAndThunder());
+        if (hasSeason) vb.setVariable(SEASON, ExpTicker.getSeasonNumber());
 
         if (hasSkyLight) vb.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, p));
         if (hasBlockLight) vb.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, p));

@@ -3,11 +3,12 @@ package net.mehvahdjukaar.polytone.content.biome;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
                     .getFirst();
             try {
                 biomeIdMappers.register(id, mapper);
-            }catch (Exception e){
+            } catch (Exception e) {
                 Polytone.LOGGER.warn("Found duplicate biome in biome id mapper {}", id);
             }
         }
@@ -49,5 +50,10 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
 
     public Codec<BiomeIdMapper> byNameCodec() {
         return biomeIdMappers;
+    }
+
+    @Nullable
+    public BiomeIdMapper get(String biomeMapper) {
+        return biomeIdMappers.getValue(biomeMapper);
     }
 }

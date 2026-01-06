@@ -2,9 +2,10 @@ package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import com.google.common.base.Preconditions;
 import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -14,12 +15,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.apache.commons.lang3.ClassUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 //with cache but position changing awareness
 @BeanGettersAliases
@@ -27,10 +31,11 @@ public abstract class PositionalProxy {
 
     private BlockState stateCache;
     private BlockEntity beCache;
-    private Holder<Biome> biomeCache;
+    private Biome biomeCache;
+    private String biomeNameCache;
     private BlockPos posCache;
 
-    public PositionalProxy(BlockState state) {
+    public PositionalProxy(@Nullable BlockState state) {
         this.stateCache = state;
     }
 
@@ -39,8 +44,10 @@ public abstract class PositionalProxy {
 
     protected abstract LevelReader getLevelInternal();
 
+    @Nullable
     protected abstract BlockPos getPosInternal();
 
+    @Nullable
     private BlockPos updatedPos() {
         BlockPos newPos = getPosInternal();
         if (newPos == posCache) return posCache;
@@ -50,6 +57,7 @@ public abstract class PositionalProxy {
             stateCache = null;
             beCache = null;
             biomeCache = null;
+            biomeNameCache = null;
         }
         return posCache;
     }
@@ -57,21 +65,28 @@ public abstract class PositionalProxy {
     protected BlockState getStateInternal() {
         BlockPos pos = updatedPos(); //refresh cache if needed
         if (stateCache == null) {
-            stateCache = getLevelInternal().getBlockState(pos);
+            stateCache = pos == null ? Blocks.AIR.defaultBlockState() :
+                    getLevelInternal().getBlockState(pos);
         }
         return stateCache;
     }
 
-    protected Holder<Biome> getBiomeInternal() {
+    protected Biome getBiomeInternal() {
         BlockPos blockPos = updatedPos();
         if (biomeCache == null) {
-            biomeCache = getLevelInternal().getBiome(blockPos);
+            var bb = blockPos == null ? getLevelInternal().registryAccess()
+                    .lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS) :
+                    getLevelInternal().getBiome(blockPos);
+            biomeCache = bb.value();
+            biomeNameCache = bb.getRegisteredName();
         }
         return biomeCache;
     }
 
+    @Nullable
     protected BlockEntity getBlockEntityInternal() {
         BlockPos blockPos = updatedPos();
+        if (blockPos == null) return null;
         if (beCache == null && this.hasBlockEntity()) {
             beCache = getLevelInternal().getBlockEntity(blockPos);
         }
@@ -97,34 +112,58 @@ public abstract class PositionalProxy {
     }
 
     public String biome() {
-        return getBiomeInternal().getRegisteredName();
+        if (biomeNameCache == null) {
+            if (biomeCache != null) {
+                biomeNameCache = getLevelInternal().registryAccess()
+                        .lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS)
+                        .getRegisteredName();
+            } else getBiomeInternal(); //updates cache
+        }
+        return biomeNameCache;
+    }
+
+    public float biomeIndex() {
+        return 1 - BiomeIdMapper.LEGACY.getIndex(getBiomeInternal());
+    }
+
+    public float biomeIndex(String biomeMapper) {
+        BiomeIdMapper mapper = Polytone.BIOME_ID_MAPPERS.get(biomeMapper);
+        if (mapper == null) {
+            throw new IllegalArgumentException("Unknown biome mapper: " + biomeMapper);
+        }
+        return 1 - mapper.getIndex(getBiomeInternal());
     }
 
     public double temperature() {
-        Holder<Biome> biome = getBiomeInternal();
-        return ColorUtils.getClimateSettings(biome.value()).temperature;
+        return ColorUtils.getClimateSettings(getBiomeInternal()).temperature;
     }
 
     public double downfall() {
-        Holder<Biome> biome = getBiomeInternal();
-        return ColorUtils.getClimateSettings(biome.value()).downfall;
+        return ColorUtils.getClimateSettings(getBiomeInternal()).downfall;
     }
 
     public int skyLight() {
-        return getLevelInternal().getBrightness(LightLayer.SKY, updatedPos());
+        BlockPos blockPos = updatedPos();
+        if (blockPos == null) return 15;
+        return getLevelInternal().getBrightness(LightLayer.SKY, blockPos);
     }
 
     public int blockLight() {
-        return getLevelInternal().getBrightness(LightLayer.BLOCK, updatedPos());
+        BlockPos blockPos = updatedPos();
+        if (blockPos == null) return 0;
+        return getLevelInternal().getBrightness(LightLayer.BLOCK, blockPos);
     }
 
     public boolean canSeeSky() {
-        return getLevelInternal().canSeeSky(updatedPos());
+        BlockPos blockPos = updatedPos();
+        if (blockPos == null) return true;
+        return getLevelInternal().canSeeSky(blockPos);
     }
 
     public boolean hasEntitiesWithin() {
         LevelReader level = getLevelInternal();
         BlockPos pos = updatedPos();
+        if (pos == null) return false;
         if (level instanceof Level l) {
             return !l.getEntities(null, getStateInternal().getShape(level, pos).bounds().move(pos)).isEmpty();
         }
@@ -154,7 +193,7 @@ public abstract class PositionalProxy {
     }
 
     public String blockEntity() {
-        var be = getBlockEntityInternal();
+        BlockEntity be = getBlockEntityInternal();
         if (be != null) {
             return be.getType().builtInRegistryHolder().getRegisteredName();
         }
@@ -171,11 +210,15 @@ public abstract class PositionalProxy {
 
         try {
             inEnvironmentAttributeCall = true;
-
+            BlockPos pos = getPosInternal();
+            if (pos == null) {
+                pos = BlockPos.ZERO;
+            }
             EnvironmentAttribute<?> attr = parseEnvAttr(attributeName);
             // safe to call delegate methods now
+
             return getLevelInternal().environmentAttributes()
-                    .getValue(Preconditions.checkNotNull(attr), getPosInternal());
+                    .getValue(Preconditions.checkNotNull(attr), pos);
 
         } finally {
             inEnvironmentAttributeCall = false;

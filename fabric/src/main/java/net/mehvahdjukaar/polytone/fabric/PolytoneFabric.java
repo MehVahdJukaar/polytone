@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
 import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
@@ -50,6 +51,7 @@ public class PolytoneFabric implements ClientModInitializer {
         ClientTickEvents.START_CLIENT_TICK.register((client) -> {
             if (client.level != null) {
                 ClientFrameTicker.onTick(client.level);
+                ExpTicker.onTick(client.level);
             }
 
         });

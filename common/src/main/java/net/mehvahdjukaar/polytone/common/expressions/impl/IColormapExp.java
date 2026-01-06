@@ -1,10 +1,12 @@
-package net.mehvahdjukaar.polytone.content.colormap;
+package net.mehvahdjukaar.polytone.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
+import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -16,14 +18,14 @@ import org.jetbrains.annotations.Nullable;
 
 import static net.mehvahdjukaar.polytone.common.ColorUtils.getClimateSettings;
 
-public interface IColormapNumberProvider {
+public interface IColormapExp {
 
-    MapRegistry<IColormapNumberProvider> BUILTIN_PROVIDERS = new MapRegistry<>("Colormap Number Providers");
+    MapRegistry<IColormapExp> BUILTIN_EXP = new MapRegistry<>("Colormap Number Providers");
 
-    Codec<IColormapNumberProvider> CODEC = CodecUtils.referenceOrDirect(BUILTIN_PROVIDERS,
-            ColormapExpressionProvider.CODEC, true);
+    Codec<IColormapExp> CODEC = CodecUtils.referenceOrDirect(BUILTIN_EXP,
+            CodecUtils.withAlternative(ColormapExpressionProvider.CODEC, ColormapExp.CODEC), true);
 
-    float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
+    float evaluate(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
                    @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack);
 
     default boolean usesBiome() {
@@ -38,14 +40,14 @@ public interface IColormapNumberProvider {
         return true;
     }
 
-    default IColormapNumberProvider createConcurrent() {
+    default IColormapExp createConcurrent() {
         return this;
     }
 
-    record Const(float c) implements IColormapNumberProvider {
+    record Const(float c) implements IColormapExp {
 
         @Override
-        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
+        public float evaluate(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
                               @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
             return c;
         }
@@ -66,17 +68,17 @@ public interface IColormapNumberProvider {
         }
     }
 
-    IColormapNumberProvider ZERO = BUILTIN_PROVIDERS.register("zero", new Const(0));
-    IColormapNumberProvider ONE = BUILTIN_PROVIDERS.register("one", new Const(1));
+    IColormapExp ZERO = BUILTIN_EXP.register("zero", new Const(0));
+    IColormapExp ONE = BUILTIN_EXP.register("one", new Const(1));
 
     //why inverted. for sunset colormaps
-    IColormapNumberProvider DAY_TIME = BUILTIN_PROVIDERS.register("day_time", (state, pos, biome, mapper, stack) ->
+    IColormapExp DAY_TIME = BUILTIN_EXP.register("day_time", (state, pos, biome, mapper, stack) ->
             (float) (1f - (ClientFrameTicker.getDayTime() % 24000 / 24000f)));
 
 
-    IColormapNumberProvider TEMPERATURE = BUILTIN_PROVIDERS.register("temperature", new IColormapNumberProvider() {
+    IColormapExp TEMPERATURE = BUILTIN_EXP.register("temperature", new IColormapExp() {
         @Override
-        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
+        public float evaluate(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
                               @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
             return biome == null ? 0 : getClimateSettings(biome).temperature;
         }
@@ -87,9 +89,9 @@ public interface IColormapNumberProvider {
         }
     });
 
-    IColormapNumberProvider LEGACY_TEMPERATURE = BUILTIN_PROVIDERS.register("legacy_temperature", new IColormapNumberProvider() {
+    IColormapExp LEGACY_TEMPERATURE = BUILTIN_EXP.register("legacy_temperature", new IColormapExp() {
         @Override
-        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
+        public float evaluate(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
                               @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
             return biome == null ? 0 : biome.getTemperature(pos, Minecraft.getInstance().level.getSeaLevel()); // TODO BAD!
         }
@@ -100,9 +102,9 @@ public interface IColormapNumberProvider {
         }
     });
 
-    IColormapNumberProvider DOWNFALL = BUILTIN_PROVIDERS.register("downfall", new IColormapNumberProvider() {
+    IColormapExp DOWNFALL = BUILTIN_EXP.register("downfall", new IColormapExp() {
         @Override
-        public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
+        public float evaluate(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
                               @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
             return biome == null ? 0 : getClimateSettings(biome).downfall;
         }
@@ -114,10 +116,10 @@ public interface IColormapNumberProvider {
     });
 
     // grid format
-    IColormapNumberProvider BIOME_ID = BUILTIN_PROVIDERS.register("biome_id",
-            new IColormapNumberProvider() {
+    IColormapExp BIOME_ID = BUILTIN_EXP.register("biome_id",
+            new IColormapExp() {
                 @Override
-                public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+                public float evaluate(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
                     if (biome == null) return 0;
                     return 1 - mapper.getIndex(biome);
                 }
@@ -130,9 +132,9 @@ public interface IColormapNumberProvider {
     );
 
 
-    IColormapNumberProvider Y_LEVEL = BUILTIN_PROVIDERS.register("y_level", new IColormapNumberProvider() {
+    IColormapExp Y_LEVEL = BUILTIN_EXP.register("y_level", new IColormapExp() {
         @Override
-        public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+        public float evaluate(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
             if (pos == null) return 64;
             // some builtin variance just because
             // 0-128 RANGE. no clue what that darn mod did but this is good enough. People shouldn't use this anyway
@@ -154,9 +156,9 @@ public interface IColormapNumberProvider {
     });
 
 
-    IColormapNumberProvider DAMAGE = BUILTIN_PROVIDERS.register("item_damage", new IColormapNumberProvider() {
+    IColormapExp DAMAGE = BUILTIN_EXP.register("item_damage", new IColormapExp() {
         @Override
-        public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+        public float evaluate(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
             if (stack == null) return 0;
             return 1 - stack.getDamageValue() / (float) stack.getMaxDamage();
         }
@@ -177,10 +179,10 @@ public interface IColormapNumberProvider {
         }
     });
 
-    IColormapNumberProvider SEASON = BUILTIN_PROVIDERS.register("season", new IColormapNumberProvider() {
+    IColormapExp SEASON = BUILTIN_EXP.register("season", new IColormapExp() {
         @Override
-        public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
-            return 1 - ClientFrameTicker.getSeason();
+        public float evaluate(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+            return 1 - ExpTicker.getSeasonNumber();
         }
 
         @Override

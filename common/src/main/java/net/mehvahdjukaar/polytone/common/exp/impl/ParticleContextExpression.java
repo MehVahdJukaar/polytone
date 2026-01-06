@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.common.exp.impl;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -7,6 +7,8 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.exp.IExpression;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -16,7 +18,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 
-public class ParticleContextExpression extends PolytoneExpression {
+public class ParticleContextExpression extends PolytoneExpression implements IParticleExp {
 
     private static final String COLOR = "COLOR";
     private static final String SPEED = "SPEED";
@@ -73,7 +75,7 @@ public class ParticleContextExpression extends PolytoneExpression {
     }
 
 
-    public double getValue(Particle particle, Level level) {
+    public double evaluate(Particle particle, Level level) {
         IExpression.IVars vb = expression.varBuilder();
         vb.setVariable(LIFE, particle.getLifetime());
         if (particle instanceof SingleQuadParticle sqp) {
@@ -110,8 +112,8 @@ public class ParticleContextExpression extends PolytoneExpression {
         if (hasTime) vb.setVariable(TIME, ClientFrameTicker.getGameTime());
         if (hasDayTime) vb.setVariable(PolytoneExpression.DAY_TIME, ClientFrameTicker.getDayTime());
         if (hasSunTime) vb.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
-        if (hasRain) vb.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
-        if (hasSeason) vb.setVariable(PolytoneExpression.SEASON, ClientFrameTicker.getSeason());
+        if (hasRain) vb.setVariable(RAIN, ExpTicker.getRainAndThunder());
+        if (hasSeason) vb.setVariable(PolytoneExpression.SEASON, ExpTicker.getSeasonNumber());
 
         if (hasSkyLight)
             vb.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, pos));
@@ -147,7 +149,4 @@ public class ParticleContextExpression extends PolytoneExpression {
         return expression.evaluate(vb);
     }
 
-    public static final ParticleContextExpression ZERO = new ParticleContextExpression("0");
-    public static final ParticleContextExpression ONE = new ParticleContextExpression("1");
-    public static final ParticleContextExpression PARTICLE_RAND = new ParticleContextExpression("(rand() * 2.0 - 1.0) * 0.4");
 }

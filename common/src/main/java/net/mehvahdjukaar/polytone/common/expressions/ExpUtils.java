@@ -42,9 +42,11 @@ public class ExpUtils {
     });
 
     public static String upgrade(String expr) {
+        //Keeping backward compat for now
+        /*
         for (var e : RENAMES.entrySet()) {
             expr = expr.replace(e.getKey(), e.getValue());
-        }
+        }*/
         return expr;
     }
 

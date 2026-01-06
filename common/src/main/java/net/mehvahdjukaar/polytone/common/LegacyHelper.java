@@ -13,7 +13,7 @@ import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.IColormapNumberProvider;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapExp;
 import net.mehvahdjukaar.polytone.content.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.minecraft.util.Util;
@@ -89,9 +89,9 @@ public class LegacyHelper {
 
             // hardcoded special color stuff
             if (path.equals("stem") || path.equals("melon_stem") || path.equals("pumpkin_stem")) {
-                Colormap colormap = Colormap.simple(new IColormapNumberProvider() {
+                Colormap colormap = Colormap.simple(new IColormapExp() {
                     @Override
-                    public float getValue(BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
+                    public float evaluate(BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
                         return state != null && state.hasProperty(StemBlock.AGE) ? state.getValue(StemBlock.AGE) / 7f : 0;
                     }
 
@@ -104,7 +104,7 @@ public class LegacyHelper {
                     public boolean usesPos() {
                         return false;
                     }
-                }, IColormapNumberProvider.ZERO);
+                }, IColormapExp.ZERO);
 
                 List<Block> targets = new ArrayList<>();
                 // so stem maps to both
@@ -118,9 +118,9 @@ public class LegacyHelper {
                 }
                 map.put(id, withCond(id, prop, BlockPropertyModifier.coloringBlocks(colormap, targets)));
             } else if (path.equals("redstone_wire")) {
-                Colormap colormap = Colormap.simple(new IColormapNumberProvider() {
+                Colormap colormap = Colormap.simple(new IColormapExp() {
                     @Override
-                    public float getValue(BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
+                    public float evaluate(BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
                         return state != null ? (1 - (state.getValue(RedStoneWireBlock.POWER) / 15f)) : 1;
                     }
 
@@ -133,7 +133,7 @@ public class LegacyHelper {
                     public boolean usesPos() {
                         return false;
                     }
-                }, IColormapNumberProvider.ZERO);
+                }, IColormapExp.ZERO);
 
                 map.put(id, withCond(id, prop, BlockPropertyModifier.coloringBlocks(colormap, Blocks.REDSTONE_WIRE)));
             } else if (prop != null) {

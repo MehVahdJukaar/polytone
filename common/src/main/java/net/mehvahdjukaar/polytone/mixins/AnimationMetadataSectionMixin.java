@@ -16,17 +16,17 @@ import java.util.function.Function;
 @Mixin(AnimationMetadataSection.class)
 public class AnimationMetadataSectionMixin implements IDayTimeContext {
     @Unique
-    private Mode polytone$mode = Mode.VANILLA;
+    private ITextureDeltaProvider polytone$mode = PolyDeltaProvider.VANILLA;
     @Unique
     private int polytone$dayDuration = SharedConstants.TICKS_PER_GAME_DAY;
 
     @Override
-    public Mode polytone$getMode() {
+    public ITextureDeltaProvider polytone$getDeltaProvider() {
         return this.polytone$mode;
     }
 
     @Override
-    public void polytone$setMode(Mode mode) {
+    public void polytone$setDeltaProvider(ITextureDeltaProvider mode) {
         this.polytone$mode = mode;
     }
 
@@ -53,13 +53,13 @@ public class AnimationMetadataSectionMixin implements IDayTimeContext {
         return RecordCodecBuilder.create(instance ->
                 instance.group(
                                 MapCodec.assumeMapUnsafe(original).forGetter(Function.identity()),
-                                Mode.CODEC.optionalFieldOf("mode", Mode.VANILLA).forGetter(a->
-                                        ((IDayTimeContext)(Object)a).polytone$getMode()),
+                                ITextureDeltaProvider.CODEC.optionalFieldOf("mode", PolyDeltaProvider.VANILLA).forGetter(a->
+                                        ((IDayTimeContext)(Object)a).polytone$getDeltaProvider()),
                                 Codec.INT.optionalFieldOf("time_cycle_duration", SharedConstants.TICKS_PER_GAME_DAY).forGetter(a->
                                         ((IDayTimeContext)(Object)a).polytone$getTimeCycleDuration())
                         )
                         .apply(instance, (typeInstance, mode, time) -> {
-                            ((IDayTimeContext)(Object)typeInstance).polytone$setMode(mode);
+                            ((IDayTimeContext)(Object)typeInstance).polytone$setDeltaProvider(mode);
                             ((IDayTimeContext)(Object)typeInstance).polytone$setTimeCycleDuration(time);
                             return typeInstance;
                         })

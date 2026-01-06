@@ -37,7 +37,6 @@ public abstract class PolytoneExpression {
     protected static final String PLAYER_SPEED_SQUARED = "PLAYER_SPEED_SQUARED";
 
     protected static final String RENDER_DISTANCE = "RENDER_DISTANCE";
-    protected static final String DIFFICULTY = "DIFFICULTY";
 
     // normally unused
     protected static final String STATE_FUNC = "state_prop";

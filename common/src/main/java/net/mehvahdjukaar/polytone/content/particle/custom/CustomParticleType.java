@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,9 +7,10 @@ import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.content.particle.ParticleContextExpression;
+import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderState;
 import net.mehvahdjukaar.polytone.content.sound.ParticleSoundEmitter;
@@ -176,7 +176,7 @@ public class CustomParticleType implements CustomParticleFactory {
             }
 
             if (this.ticker != null && this.ticker.removeIf != null) {
-                if (this.ticker.removeIf.getValue(newParticle, world) > 0) {
+                if (this.ticker.removeIf.evaluate(newParticle, world) > 0) {
                     return null;
                 }
             }
@@ -445,44 +445,44 @@ public class CustomParticleType implements CustomParticleFactory {
 
 
     //TODO: merge this and particle modifier
-    protected record Ticker(@Nullable ParticleContextExpression x,
-                            @Nullable ParticleContextExpression y,
-                            @Nullable ParticleContextExpression z,
-                            @Nullable ParticleContextExpression dx,
-                            @Nullable ParticleContextExpression dy,
-                            @Nullable ParticleContextExpression dz,
-                            @Nullable ParticleContextExpression size,
-                            @Nullable ParticleContextExpression red, @Nullable ParticleContextExpression green,
-                            @Nullable ParticleContextExpression blue, @Nullable ParticleContextExpression alpha,
-                            @Nullable ParticleContextExpression roll,
-                            @Nullable ParticleContextExpression custom,
-                            @Nullable ParticleContextExpression removeIf) {
+    protected record Ticker(@Nullable IParticleExp x,
+                            @Nullable IParticleExp y,
+                            @Nullable IParticleExp z,
+                            @Nullable IParticleExp dx,
+                            @Nullable IParticleExp dy,
+                            @Nullable IParticleExp dz,
+                            @Nullable IParticleExp size,
+                            @Nullable IParticleExp red, @Nullable IParticleExp green,
+                            @Nullable IParticleExp blue, @Nullable IParticleExp alpha,
+                            @Nullable IParticleExp roll,
+                            @Nullable IParticleExp custom,
+                            @Nullable IParticleExp removeIf) {
 
         private static final Codec<Ticker> CODEC = RecordCodecBuilder.create(i -> i.group(
-                ParticleContextExpression.CODEC.optionalFieldOf("x").forGetter(p -> Optional.ofNullable(p.x)),
-                ParticleContextExpression.CODEC.optionalFieldOf("y").forGetter(p -> Optional.ofNullable(p.y)),
-                ParticleContextExpression.CODEC.optionalFieldOf("z").forGetter(p -> Optional.ofNullable(p.z)),
-                ParticleContextExpression.CODEC.optionalFieldOf("dx").forGetter(p -> Optional.ofNullable(p.dx)),
-                ParticleContextExpression.CODEC.optionalFieldOf("dy").forGetter(p -> Optional.ofNullable(p.dy)),
-                ParticleContextExpression.CODEC.optionalFieldOf("dz").forGetter(p -> Optional.ofNullable(p.dz)),
-                ParticleContextExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.size)),
-                ParticleContextExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.red)),
-                ParticleContextExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.green)),
-                ParticleContextExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blue)),
-                ParticleContextExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
-                ParticleContextExpression.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.roll)),
-                ParticleContextExpression.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom)),
-                ParticleContextExpression.CODEC.optionalFieldOf("remove_condition").forGetter(p -> Optional.ofNullable(p.removeIf))
+                IParticleExp.CODEC.optionalFieldOf("x").forGetter(p -> Optional.ofNullable(p.x)),
+                IParticleExp.CODEC.optionalFieldOf("y").forGetter(p -> Optional.ofNullable(p.y)),
+                IParticleExp.CODEC.optionalFieldOf("z").forGetter(p -> Optional.ofNullable(p.z)),
+                IParticleExp.CODEC.optionalFieldOf("dx").forGetter(p -> Optional.ofNullable(p.dx)),
+                IParticleExp.CODEC.optionalFieldOf("dy").forGetter(p -> Optional.ofNullable(p.dy)),
+                IParticleExp.CODEC.optionalFieldOf("dz").forGetter(p -> Optional.ofNullable(p.dz)),
+                IParticleExp.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.size)),
+                IParticleExp.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.red)),
+                IParticleExp.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.green)),
+                IParticleExp.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blue)),
+                IParticleExp.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
+                IParticleExp.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.roll)),
+                IParticleExp.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom)),
+                IParticleExp.CODEC.optionalFieldOf("remove_condition").forGetter(p -> Optional.ofNullable(p.removeIf))
         ).apply(i, Ticker::new));
 
-        private Ticker(Optional<ParticleContextExpression> x, Optional<ParticleContextExpression> y,
-                       Optional<ParticleContextExpression> z, Optional<ParticleContextExpression> dx,
-                       Optional<ParticleContextExpression> dy, Optional<ParticleContextExpression> dz,
-                       Optional<ParticleContextExpression> size, Optional<ParticleContextExpression> red,
-                       Optional<ParticleContextExpression> green, Optional<ParticleContextExpression> blue,
-                       Optional<ParticleContextExpression> alpha, Optional<ParticleContextExpression> roll,
-                       Optional<ParticleContextExpression> custom,
-                       Optional<ParticleContextExpression> removeIf) {
+        private Ticker(Optional<IParticleExp> x, Optional<IParticleExp> y,
+                       Optional<IParticleExp> z, Optional<IParticleExp> dx,
+                       Optional<IParticleExp> dy, Optional<IParticleExp> dz,
+                       Optional<IParticleExp> size, Optional<IParticleExp> red,
+                       Optional<IParticleExp> green, Optional<IParticleExp> blue,
+                       Optional<IParticleExp> alpha, Optional<IParticleExp> roll,
+                       Optional<IParticleExp> custom,
+                       Optional<IParticleExp> removeIf) {
             this(x.orElse(null), y.orElse(null),
                     z.orElse(null), dx.orElse(null),
                     dy.orElse(null), dz.orElse(null),
@@ -495,46 +495,46 @@ public class CustomParticleType implements CustomParticleFactory {
 
         private void tick(CustomParticleType.Instance particle, ClientLevel level) {
             if (this.roll != null) {
-                particle.roll = (float) this.roll.getValue(particle, level);
+                particle.roll = (float) this.roll.evaluate(particle, level);
             }
             if (this.size != null) {
-                particle.quadSize = (float) this.size.getValue(particle, level);
+                particle.quadSize = (float) this.size.evaluate(particle, level);
             }
             if (this.red != null) {
-                particle.rCol = (float) this.red.getValue(particle, level);
+                particle.rCol = (float) this.red.evaluate(particle, level);
             }
             if (this.green != null) {
-                particle.gCol = (float) this.green.getValue(particle, level);
+                particle.gCol = (float) this.green.evaluate(particle, level);
             }
             if (this.blue != null) {
-                particle.bCol = (float) this.blue.getValue(particle, level);
+                particle.bCol = (float) this.blue.evaluate(particle, level);
             }
             if (this.alpha != null) {
-                particle.alpha = (float) this.alpha.getValue(particle, level);
+                particle.alpha = (float) this.alpha.evaluate(particle, level);
             }
             if (this.x != null) {
-                particle.x = this.x.getValue(particle, level);
+                particle.x = this.x.evaluate(particle, level);
             }
             if (this.y != null) {
-                particle.y = this.y.getValue(particle, level);
+                particle.y = this.y.evaluate(particle, level);
             }
             if (this.z != null) {
-                particle.z = this.z.getValue(particle, level);
+                particle.z = this.z.evaluate(particle, level);
             }
             if (this.dx != null) {
-                particle.xd = this.dx.getValue(particle, level);
+                particle.xd = this.dx.evaluate(particle, level);
             }
             if (this.dy != null) {
-                particle.yd = this.dy.getValue(particle, level);
+                particle.yd = this.dy.evaluate(particle, level);
             }
             if (this.dz != null) {
-                particle.zd = this.dz.getValue(particle, level);
+                particle.zd = this.dz.evaluate(particle, level);
             }
             if (this.custom != null) {
-                particle.custom = this.custom.getValue(particle, level);
+                particle.custom = this.custom.evaluate(particle, level);
             }
             if (this.removeIf != null) {
-                if (this.removeIf.getValue(particle, level) > 0) {
+                if (this.removeIf.evaluate(particle, level) > 0) {
                     particle.remove();
                 }
             }

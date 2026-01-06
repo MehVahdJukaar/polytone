@@ -16,8 +16,8 @@ public class SpriteContentsMixin {
     public SpriteContents.AnimatedTexture polytone$addWorldTimeTextureData(SpriteContents.AnimatedTexture original,
                                                                            @Local(argsOnly = true) AnimationMetadataSection metadata) {
         if (original != null) {
-            ((IDayTimeContext) original).polytone$setMode(
-                    ((IDayTimeContext) (Object) metadata).polytone$getMode());
+            ((IDayTimeContext) original).polytone$setDeltaProvider(
+                    ((IDayTimeContext) (Object) metadata).polytone$getDeltaProvider());
             ((IDayTimeContext) original).polytone$setTimeCycleDuration(
                     ((IDayTimeContext) (Object) metadata).polytone$getTimeCycleDuration());
         }

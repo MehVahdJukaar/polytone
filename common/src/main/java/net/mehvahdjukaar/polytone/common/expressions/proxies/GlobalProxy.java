@@ -1,10 +1,8 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
-import net.mehvahdjukaar.polytone.compat.CompatHandler;
-import net.mehvahdjukaar.polytone.compat.FabricSeasonsCompat;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.compat.ISeason;
-import net.mehvahdjukaar.polytone.compat.SereneSeasonsCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +26,14 @@ public class GlobalProxy {
     }
 
     public float seasonNumber(){
-        return ISeason.getNumber(delegate());
+        return ExpTicker.getSeasonNumber();
+    }
+
+    public int renderDistance(){
+        return Minecraft.getInstance().options.renderDistance().get();
+    }
+
+    public double rain(){
+        return ExpTicker.getRainAndThunder();
     }
 }

@@ -1,48 +1,27 @@
 package net.mehvahdjukaar.polytone.common;
 
-import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.compat.CompatHandler;
-import net.mehvahdjukaar.polytone.compat.FabricSeasonsCompat;
-import net.mehvahdjukaar.polytone.compat.ISeason;
-import net.mehvahdjukaar.polytone.compat.SereneSeasonsCompat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.dimension.DimensionType;
 
 public class ClientFrameTicker {
 
     private static double time;
     private static double sunTime;
     private static double dayTime;
-    private static float rainAndThunder;
-    private static float season;
-    private static int skyLight;
-    private static int blockLight;
     private static BlockPos cameraPos = BlockPos.ZERO;
     public static Holder<Biome> cameraBiome;
     private static float temperature;
     private static float downfall;
-    private static float deltaTime;
     private static double playerSpeed = 0;
-
-    private static DimensionType lastDImType;
-    private static Screen lastScreen = null;
-    private static float screenTime;
 
     public static void onRenderTick(Minecraft mc) {
         Level level = mc.level;
         if (level == null) return;
-        if (level.dimensionType() != lastDImType) {
-            lastDImType = level.dimensionType();
-            Polytone.onDimChanged(level);
-        }
         float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
         Camera camera = mc.gameRenderer.getMainCamera();
@@ -52,35 +31,21 @@ public class ClientFrameTicker {
         dayTime = level.dimensionType().hasFixedTime() ? level.getDayTime() : level.getDayTime() + partialTicks;
         sunTime = probe.getValue(EnvironmentAttributes.SUN_ANGLE, partialTicks) / 360.0F;
         //TODO: oter param like moon pos
-        rainAndThunder = level.getRainLevel(partialTicks) * 0.5f + level.getThunderLevel(partialTicks) * 0.5f;
-        season = ISeason.getNumber(level);
 
         cameraPos = camera.blockPosition();
         cameraBiome = level.getBiome(cameraPos);
 
-        deltaTime = Minecraft.getInstance().getDeltaTracker().getRealtimeDeltaTicks();
         if (mc.player != null)
             playerSpeed = mc.player.getDeltaMovement().lengthSqr();
 
-        if (mc.screen != lastScreen) {
-            lastScreen = mc.screen;
-            screenTime = 0;
-        }
     }
 
     public static void onTick(Level level) {
         if (cameraPos != null) {
-            skyLight = level.getBrightness(LightLayer.SKY, cameraPos);
-            blockLight = level.getBrightness(LightLayer.BLOCK, cameraPos);
             var biome = level.getBiome(cameraPos);
             temperature = ColorUtils.getClimateSettings(biome.value()).temperature;
             downfall = ColorUtils.getClimateSettings(biome.value()).downfall;
         }
-        screenTime++;
-    }
-
-    public static float getRainAndThunder() {
-        return rainAndThunder;
     }
 
     public static double getDayTime() {
@@ -93,14 +58,6 @@ public class ClientFrameTicker {
 
     public static BlockPos getCameraPos() {
         return cameraPos;
-    }
-
-    public static int getBlockLight() {
-        return blockLight;
-    }
-
-    public static int getSkyLight() {
-        return skyLight;
     }
 
     public static float getTemperature() {
@@ -122,10 +79,6 @@ public class ClientFrameTicker {
         return cameraBiome;
     }
 
-    public static float getDeltaTime() {
-        return deltaTime;
-    }
-
     public static double getSunTime() {
         return sunTime;
     }
@@ -138,11 +91,4 @@ public class ClientFrameTicker {
         return Minecraft.getInstance().options.renderDistance().get();
     }
 
-    public static float getGuiTime() {
-        return screenTime;
-    }
-
-    public static float getSeason() {
-        return season;
-    }
 }

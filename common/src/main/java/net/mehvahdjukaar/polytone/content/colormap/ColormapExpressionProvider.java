@@ -2,6 +2,8 @@ package net.mehvahdjukaar.polytone.content.colormap;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapExp;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
@@ -18,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 
-public class ColormapExpressionProvider extends PolytoneExpression implements IColormapNumberProvider {
+public class ColormapExpressionProvider extends PolytoneExpression implements IColormapExp {
 
     //Keywords
     protected static final String BIOME_VALUE = "BIOME_VALUE";
@@ -80,7 +82,7 @@ public class ColormapExpressionProvider extends PolytoneExpression implements IC
     }
 
     @Override
-    public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
+    public float evaluate(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
                           @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
 
         if (pos == null) {
@@ -96,12 +98,15 @@ public class ColormapExpressionProvider extends PolytoneExpression implements IC
             vb.setVariable(POS_Y, pos.getY());
             vb.setVariable(POS_Z, pos.getZ());
         }
+        if(mapper != null && biome != null) {
+            vb.setVariable(BIOME_VALUE, 1 - mapper.getIndex(biome));
+        }
 
         if (hasTime) vb.setVariable(TIME, ClientFrameTicker.getGameTime());
         if (hasDayTime) vb.setVariable(PolytoneExpression.DAY_TIME, ClientFrameTicker.getDayTime());
         if (hasSunTime) vb.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
-        if (hasRain) vb.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
-        if (hasSeason) vb.setVariable(PolytoneExpression.SEASON, ClientFrameTicker.getSeason());
+        if (hasRain) vb.setVariable(RAIN, ExpTicker.getRainAndThunder());
+        if (hasSeason) vb.setVariable(PolytoneExpression.SEASON, ExpTicker.getSeasonNumber());
 
         if (hasSkyLight)
             vb.setVariable(SKY_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.SKY, pos));

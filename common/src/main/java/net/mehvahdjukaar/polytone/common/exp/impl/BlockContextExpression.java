@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.exp.IExpression;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -64,8 +65,8 @@ public class BlockContextExpression extends PolytoneExpression implements IBlock
         if (hasTime) vars.setVariable(TIME, ClientFrameTicker.getGameTime());
         if (hasDayTime) vars.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
         if (hasSunTime) vars.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
-        if (hasRain) vars.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
-        if (hasSeason) vars.setVariable(SEASON, ClientFrameTicker.getSeason());
+        if (hasRain) vars.setVariable(RAIN, ExpTicker.getRainAndThunder());
+        if (hasSeason) vars.setVariable(SEASON, ExpTicker.getSeasonNumber());
 
         if (hasSkyLight) vars.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, pos));
         if (hasBlockLight) vars.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, pos));

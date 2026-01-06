@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.block;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -13,8 +14,8 @@ import java.util.Optional;
 
 public class BlockOffsets {
 
-    public static final Codec<BlockBehaviour.OffsetFunction> CODEC = Codec.withAlternative(
-            (Codec) TypeOffset.CODEC,(Codec<? extends BlockBehaviour.OffsetFunction>) CustomOffset.CODEC);
+    public static final Codec<BlockBehaviour.OffsetFunction> CODEC = CodecUtils.withAlternative(
+            TypeOffset.CODEC, CustomOffset.CODEC);
 
     private record TypeOffset(BlockBehaviour.OffsetType type,
                               BlockBehaviour.OffsetFunction inner) implements BlockBehaviour.OffsetFunction {

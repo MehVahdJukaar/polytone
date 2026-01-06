@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.neoforge;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
@@ -65,6 +66,7 @@ public class PolytoneForge {
     @SubscribeEvent
     public void onTick(LevelTickEvent.Pre event) {
         ClientFrameTicker.onTick(event.getLevel());
+        ExpTicker.onTick(event.getLevel());
     }
 
     @SubscribeEvent

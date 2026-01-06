@@ -85,6 +85,14 @@ public class PlayerProxy extends PositionalProxy {
         return delegate().getItemBySlot(eq).getItemHolder().getRegisteredName();
     }
 
+    public double health(){
+        return delegate().getHealth();
+    }
+
+    public double maxHealth(){
+        return delegate().getMaxHealth();
+    }
+
     public double walkAnimation() {
         return delegate().walkAnimation.position();
     }

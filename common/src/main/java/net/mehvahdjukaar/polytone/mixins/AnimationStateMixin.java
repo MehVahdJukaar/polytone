@@ -15,17 +15,17 @@ public class AnimationStateMixin implements IDayTimeContext {
     @Shadow
     private boolean isDirty;
     @Unique
-    private Mode polytone$mode = Mode.VANILLA;
+    private ITextureDeltaProvider polytone$mode = PolyDeltaProvider.VANILLA;
     @Unique
     private int polytone$dayDuration = 0;
 
     @Override
-    public Mode polytone$getMode() {
+    public ITextureDeltaProvider polytone$getDeltaProvider() {
         return polytone$mode;
     }
 
     @Override
-    public void polytone$setMode(@NotNull Mode mode) {
+    public void polytone$setDeltaProvider(@NotNull ITextureDeltaProvider mode) {
         Preconditions.checkNotNull(mode);
         this.polytone$mode = mode;
     }
@@ -42,7 +42,7 @@ public class AnimationStateMixin implements IDayTimeContext {
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void polytone$overrideTick(CallbackInfo ci) {
-        if (this.polytone$mode != Mode.VANILLA) {
+        if (this.polytone$mode != PolyDeltaProvider.VANILLA) {
             // Cancel vanilla frame advancement
             ci.cancel();
 

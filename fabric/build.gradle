@@ -86,7 +86,7 @@ dependencies {
     implementation "org.ow2.asm:asm-commons:9.5"
 
     implementation include( "net.objecthunter:exp4j:${exp4j_version}")
-    implementation include('org.mvel:mvel2:2.4.14.Final')
+    implementation include("org.mvel:mvel2:${mvel_version}")
 
 
    // modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")

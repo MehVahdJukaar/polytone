@@ -1,11 +1,9 @@
-package net.mehvahdjukaar.polytone.common.exp;
+package net.mehvahdjukaar.polytone.common.expressions;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.ISeason;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 
@@ -18,16 +16,16 @@ public class ExpTicker {
     private static float season;
     private static float deltaTime;
 
-    private static DimensionType lastDImType;
+    private static DimensionType lastDimType;
     private static Screen lastScreen = null;
-    private static float screenTime;
+    private static int screenTime;
 
     public static void onTick(Level level) {
         screenTime++;
         Minecraft mc = Minecraft.getInstance();
         if (level == null) return;
-        if (level.dimensionType() != lastDImType) {
-            lastDImType = level.dimensionType();
+        if (level.dimensionType() != lastDimType) {
+            lastDimType = level.dimensionType();
             Polytone.onDimChanged(level);
         }
 
@@ -45,4 +43,15 @@ public class ExpTicker {
     }
 
 
+    public static int getGuiTime() {
+        return screenTime;
+    }
+
+    public static float getRainAndThunder() {
+        return rainAndThunder;
+    }
+
+    public static float getSeasonNumber() {
+        return season;
+    }
 }
