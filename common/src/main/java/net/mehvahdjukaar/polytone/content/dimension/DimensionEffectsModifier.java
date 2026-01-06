@@ -10,7 +10,6 @@ import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.WeatherAttributes;
 import net.minecraft.world.level.dimension.DimensionType;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
 
@@ -115,10 +114,10 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                 ).apply(instance, DimensionEnvAttributeModifications::new)
         );
 
-        public static final Codec<DimensionEnvAttributeModifications> CODEC = Codec.withAlternative(DIRECT_CODEC,
+        public static final Codec<DimensionEnvAttributeModifications> CODEC = Codec.withAlternative(
                 EnvironmentAttributeMapMod.CODEC.xmap(DimensionEnvAttributeModifications::baseOnly,
                         m -> m.baseMod
-                )
+                ), DIRECT_CODEC
         );
 
         private static DimensionEffectsModifier.DimensionEnvAttributeModifications baseOnly(EnvironmentAttributeMapMod mod) {

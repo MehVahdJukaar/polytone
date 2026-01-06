@@ -168,10 +168,10 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                 ).apply(instance, BiomeEnvAttributeModifications::new)
         );
 
-        public static final Codec<BiomeEnvAttributeModifications> CODEC = Codec.withAlternative(DIRECT_CODEC,
+        public static final Codec<BiomeEnvAttributeModifications> CODEC = Codec.withAlternative(
                 EnvironmentAttributeMapMod.CODEC.xmap(BiomeEnvAttributeModifications::baseOnly,
                         m -> m.baseMod
-                )
+                ),DIRECT_CODEC
         );
 
         private static @NonNull BiomeEnvAttributeModifications baseOnly(EnvironmentAttributeMapMod mod) {

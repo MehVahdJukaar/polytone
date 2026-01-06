@@ -1,3 +1,1 @@
-- added a biome post layer applied before the dimension post layer for environment attributes
-- fixed attribute modifiers with color values not accepting a colormap
-- improved a mixin used for improved blockstate deserializer
+- fixed biome attribute mod requiring sub key "base"
