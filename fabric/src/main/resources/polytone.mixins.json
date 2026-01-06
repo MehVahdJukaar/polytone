@@ -15,6 +15,7 @@
     "FabricBlockRenderContextMixin",
     "FabricItemGroupEntriesAccessor",
     "FabricTerrainRendererContextMixin",
+    "FaceBakeryMixin",
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
     "ModelBlockRendererMixin",

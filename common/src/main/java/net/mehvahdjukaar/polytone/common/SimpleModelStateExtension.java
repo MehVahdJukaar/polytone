@@ -52,9 +52,9 @@ public interface SimpleModelStateExtension {
             this.yOffset = yOffset;
             this.zOffset = zOffset;
             //make rot empty if its vanilla
-            this.xRot = xRot.filter(r -> !isVanillaRotation(r.intValue()));
-            this.yRot = yRot.filter(r -> !isVanillaRotation(r.intValue()));
-            this.zRot = zRot.filter(r -> !isVanillaRotation(r.intValue()));
+            this.xRot = xRot.filter(r -> isCustomRotation(r.intValue()));
+            this.yRot = yRot.filter(r -> isCustomRotation(r.intValue()));
+            this.zRot = zRot.filter(r -> isCustomRotation(r.intValue()));
         }
 
        public static final MapCodec<ExtraData> CODEC = RecordCodecBuilder.mapCodec(
@@ -69,8 +69,8 @@ public interface SimpleModelStateExtension {
                         .apply(instance, ExtraData::new)
         );
 
-       private static boolean isVanillaRotation(int rot){
-           return rot % 90 == 0;
+       private static boolean isCustomRotation(int rot){
+           return rot % 90 != 0;
        }
 
        public boolean isEmpty(){

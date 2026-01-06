@@ -6,6 +6,8 @@
   "mixins": [
   ],
   "client": [
+    "AttributeProbeMixin",
+    "SpatialAttributeInterpolatorMixin",
     "AbstractContainerMenuMixin",
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
@@ -27,7 +29,6 @@
     "LeashMixin",
     "LightTextureMixin",
     "MinecraftMixin",
-    "MixinMain",
     "ModelBakeryMixin",
     "ModelManagerMixin",
     "ParticleEngineMixin",

@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.content.biome;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.attributes.IExtendedInterpolator;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
@@ -26,6 +27,9 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
     private final Map<Biome, BiomeEffectModifier> vanillaEffects = new HashMap<>();
     private final Map<Biome, BiomeEffectModifier> effectsToApply = new HashMap<>();
+
+    private boolean hasModifiedAttributes = false;
+    private boolean hasPostAttributes = false;
 
     public BiomeEffectsManager() {
         super("biome_modifiers", "biome_effects");
@@ -62,6 +66,15 @@ public class BiomeEffectsManager extends JsonPartialReloader {
             Polytone.LOGGER.info("Applied {} Custom Biome Effects Properties", vanillaEffects.size());
         }
         //we don't clear effects to apply because we need to re apply on world reload
+
+
+        this.hasModifiedAttributes = effectsToApply.values().stream().anyMatch(
+                m -> !m.attributeModifications().isEmpty()
+        );
+
+        this.hasPostAttributes = effectsToApply.values().stream().anyMatch(
+                m -> !m.attributeModifications().postProcess().isEmpty()
+        );
     }
 
     @Override
@@ -81,12 +94,18 @@ public class BiomeEffectsManager extends JsonPartialReloader {
 
         //whatever happens, we always clear stuff to apply
         effectsToApply.clear();
+
+        hasPostAttributes = false;
+        hasModifiedAttributes = false;
     }
 
     public boolean hasModifiedAttributes() {
-        return effectsToApply.values().stream().anyMatch(
-                m -> !m.attributeModifications().isEmpty()
-        );
+        return hasModifiedAttributes;
+    }
+
+
+    public boolean hasPostAttributes() {
+        return hasPostAttributes;
     }
 
     public void addPostLayers(EnvironmentAttributeSystem.Builder builder, Level level) {
@@ -96,18 +115,24 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     }
 
     //same as base biome layer
-    private void addBiomeLayer(EnvironmentAttributeSystem.Builder builder, HolderLookup<Biome> holderLookup, BiomeManager biomeManager) {
+    private void addBiomeLayer(EnvironmentAttributeSystem.Builder builder, HolderLookup<Biome> holderLookup,
+                               BiomeManager biomeManager) {
         Stream<EnvironmentAttribute<?>> allAttributesInPost = effectsToApply.entrySet().stream().flatMap(
                 e -> e.getValue().getPostProcessAttributes().keySet().stream()
         ).distinct();
 
-        allAttributesInPost.forEach((environmentAttribute) -> addBiomeLayerForAttribute(builder, environmentAttribute, biomeManager));
+        allAttributesInPost.forEach((environmentAttribute) -> addBiomeLayerForAttribute(builder,
+                environmentAttribute, biomeManager));
     }
 
-    private <Value> void addBiomeLayerForAttribute(EnvironmentAttributeSystem.Builder builder, EnvironmentAttribute<Value> environmentAttribute,
+    private <Value> void addBiomeLayerForAttribute(EnvironmentAttributeSystem.Builder builder,
+                                                   EnvironmentAttribute<Value> environmentAttribute,
                                                    BiomeManager biomeManager) {
         builder.addPositionalLayer(environmentAttribute, (object, vec3, spatialAttributeInterpolator) -> {
             if (spatialAttributeInterpolator != null && environmentAttribute.isSpatiallyInterpolated()) {
+                spatialAttributeInterpolator = ((IExtendedInterpolator) spatialAttributeInterpolator)
+                        .polytone$getOrCreatePostInterpolator();
+
                 return spatialAttributeInterpolator.applyAttributeLayer(environmentAttribute, object);
             } else {
                 Holder<Biome> holder = biomeManager.getNoiseBiomeAtPosition(vec3.x, vec3.y, vec3.z);
@@ -117,6 +142,14 @@ public class BiomeEffectsManager extends JsonPartialReloader {
                 return posMap.applyModifier(environmentAttribute, object);
             }
         });
+    }
+
+    public EnvironmentAttributeMap getPostAttributes(Biome value) {
+        BiomeEffectModifier modifier = effectsToApply.get(value);
+        if (modifier != null) {
+            return modifier.getPostProcessAttributes();
+        }
+        return EnvironmentAttributeMap.EMPTY;
     }
 
 }
