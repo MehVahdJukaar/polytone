@@ -1,15 +1,16 @@
-package net.mehvahdjukaar.polytone.content.colormap;
+package net.mehvahdjukaar.polytone.common.exp.impl;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapExp;
-import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.exp.IExpression;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapModExp;
+import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -20,71 +21,33 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
+public class ColormapModContextExpression extends ColormapExpressionProvider implements IColormapModExp {
 
-public class ColormapExpressionProvider extends PolytoneExpression implements IColormapExp {
+    private static final String RED = "RED";
+    private static final String GREEN = "GREEN";
+    private static final String BLUE = "BLUE";
+    private static final String ALPHA = "ALPHA";
 
-    //Keywords
-    protected static final String BIOME_VALUE = "BIOME_VALUE";
-    protected static final String DAMAGE = "DAMAGE";
-
-    public static final Codec<ColormapExpressionProvider> CODEC = Codec.STRING.flatXmap(s -> {
+    public static final Codec<ColormapModContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
-            return DataResult.success(new ColormapExpressionProvider(s));
+            return DataResult.success(new ColormapModContextExpression(s));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
     }, javaxExpression -> DataResult.success(javaxExpression.getUnparsed()));
 
-    protected final boolean usesBiome;
-    protected final boolean hasState;
-
-    protected ColormapExpressionProvider(String unparsed) {
-        this(unparsed, false);
+    protected ColormapModContextExpression(String unparsed) {
+        super(unparsed);
     }
 
-    protected ColormapExpressionProvider(String unparsed, boolean concurrent) {
+    protected ColormapModContextExpression(String unparsed, boolean concurrent) {
         super(unparsed, concurrent);
-
-        this.usesBiome = unparsed.contains(PolytoneExpression.TEMPERATURE) || unparsed.contains(PolytoneExpression.DOWNFALL)
-                || unparsed.contains(BIOME_VALUE);
-        this.hasState = unparsed.contains(PolytoneExpression.STATE_FUNC);
     }
 
-    @Override
-    public ColormapExpressionProvider createConcurrent() {
-        return new ColormapExpressionProvider(this.getUnparsed(), true);
-    }
 
-    @Override
-    protected void buildVars(VarBuilder builder) {
-        super.buildVars(builder);
-        builder.addAll(BIOME_VALUE, DAMAGE);
-    }
-
-    @Override
-    protected void buildFunctions(FunBuilder builder) {
-        super.buildFunctions(builder);
-        builder.addAll(STATE_PROP_INT, STATE_PROP);
-    }
-
-    @Override
-    public boolean usesBiome() {
-        return usesBiome;
-    }
-
-    @Override
-    public boolean usesPos() {
-        return this.hasPos;
-    }
-
-    @Override
-    public boolean usesState() {
-        return this.hasState;
-    }
-
-    @Override
-    public float evaluate(@Nullable BlockAndTintGetter level,  @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
-                          @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+    public float evaluate(float r, float g, float b, @Nullable BlockAndTintGetter level, @Nullable BlockState state,
+                          @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+        //mega ugly
 
         if (pos == null) {
             pos = BlockPos.ZERO;
@@ -94,13 +57,14 @@ public class ColormapExpressionProvider extends PolytoneExpression implements IC
         }
         IExpression.IVars vb = expression.varBuilder();
 
+        vb.setVariable(RED, r);
+        vb.setVariable(GREEN, g);
+        vb.setVariable(BLUE, b);
+
         if (hasPos) {
             vb.setVariable(POS_X, pos.getX());
             vb.setVariable(POS_Y, pos.getY());
             vb.setVariable(POS_Z, pos.getZ());
-        }
-        if(mapper != null && biome != null) {
-            vb.setVariable(BIOME_VALUE, 1 - mapper.getIndex(biome));
         }
 
         if (hasTime) vb.setVariable(TIME, ClientFrameTicker.getGameTime());
@@ -153,4 +117,19 @@ public class ColormapExpressionProvider extends PolytoneExpression implements IC
 
         return result;
     }
+
+    @Override
+    public ColormapModContextExpression createConcurrent() {
+        return new ColormapModContextExpression(this.getUnparsed(), true);
+    }
+
+    @Override
+    protected void buildVars(VarBuilder builder) {
+        super.buildVars(builder);
+        builder.add(RED);
+        builder.add(GREEN);
+        builder.add(BLUE);
+        builder.add(ALPHA);
+    }
 }
+

@@ -9,20 +9,21 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapExp;
+import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapExp;
 import net.mehvahdjukaar.polytone.content.fluid.FluidPropertyModifier;
-import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
-import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -91,7 +92,7 @@ public class LegacyHelper {
             if (path.equals("stem") || path.equals("melon_stem") || path.equals("pumpkin_stem")) {
                 Colormap colormap = Colormap.simple(new IColormapExp() {
                     @Override
-                    public float evaluate(BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
+                    public float evaluate(BlockAndTintGetter level, BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
                         return state != null && state.hasProperty(StemBlock.AGE) ? state.getValue(StemBlock.AGE) / 7f : 0;
                     }
 
@@ -120,7 +121,7 @@ public class LegacyHelper {
             } else if (path.equals("redstone_wire")) {
                 Colormap colormap = Colormap.simple(new IColormapExp() {
                     @Override
-                    public float evaluate(BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
+                    public float evaluate(BlockAndTintGetter level, BlockState state, BlockPos pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
                         return state != null ? (1 - (state.getValue(RedStoneWireBlock.POWER) / 15f)) : 1;
                     }
 
@@ -231,7 +232,7 @@ public class LegacyHelper {
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
-                Optional.empty(),Optional.empty(),
+                Optional.empty(), Optional.empty(),
                 Optional.empty(), List.of(), List.of(),
                 Optional.empty(), Optional.empty(),
                 false, Targets.ofIds(set), false);
@@ -294,7 +295,7 @@ public class LegacyHelper {
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
-                Optional.empty(),Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(),
                 List.of(), List.of(), Optional.empty(),
                 Optional.empty(), false, Targets.ofOptionalIds(set), false);
     }

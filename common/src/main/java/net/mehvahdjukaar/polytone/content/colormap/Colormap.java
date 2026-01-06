@@ -45,10 +45,11 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private Integer defaultColor;
     private ArrayImage image = null;
     private @Nullable Identifier explicitTargetTexture; //explicit targets
-    private final @Nullable ColormapColorModulatorExpression colorMult;
+    private final @Nullable ColormapColorModulator colorMult;
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
+    private final ThreadLocal<BlockAndTintGetter> levelHack = new ThreadLocal<>();
 
     static final Codec<Colormap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
             ColorUtils.COLOR.optionalFieldOf("default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
@@ -59,7 +60,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
             Codec.BOOL.optionalFieldOf("biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
             BiomeIdMapper.CODEC.optionalFieldOf("biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
             Identifier.CODEC.optionalFieldOf("texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture)),
-            ColormapColorModulatorExpression.CODEC.optionalFieldOf("color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult))
+            ColormapColorModulator.CODEC.optionalFieldOf("color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult))
     ).apply(i, Colormap::new));
 
     //colormaps have to be parsed first since a reference colormap id can be a valid expression
@@ -77,7 +78,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
 
     private Colormap(Optional<Integer> defaultColor, IColormapExp xGetter, IColormapExp yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
-                     Optional<Identifier> explicitTargetTexture, Optional<ColormapColorModulatorExpression> colorMult) {
+                     Optional<Identifier> explicitTargetTexture, Optional<ColormapColorModulator> colorMult) {
         this.defaultColor = defaultColor.orElse(null);
         this.xGetter = xGetter;
         this.yGetter = yGetter;
@@ -157,6 +158,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
             // this will intern call calculateBlendedColor which will call getColor/sampleColor
             stateHack.set(state); //pass block state arg like this
             yHack.set(pos != null ? pos.getY() : 0);
+            levelHack.set(level);
             try {
                 return level.getBlockTint(pos, this);
             } catch (Exception e) {
@@ -170,16 +172,18 @@ public final class Colormap implements IColorGetter, ColorResolver {
             biome = l.getBiome(pos).value();
         }
 
-        return sampleColor(state, pos, biome, null);
+        return sampleColor(level, state, pos, biome, null);
     }
 
-    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
-        float temperature = Mth.clamp(xGetter.evaluate(state, pos, biome, biomeMapper, item), 0, 1);
-        float humidity = Mth.clamp(yGetter.evaluate(state, pos, biome, biomeMapper, item), 0, 1);
+    @Override
+    public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                           @Nullable Biome biome, @Nullable ItemStack item) {
+        float temperature = Mth.clamp(xGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
+        float humidity = Mth.clamp(yGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
         int sampled = sample(humidity, temperature);
 
         if (colorMult != null) {
-            sampled = colorMult.getValue(sampled, state, pos, biome, biomeMapper, item);
+            sampled = colorMult.evaluate(sampled, level, state, pos, biome, biomeMapper, item);
         }
         return sampled;
     }
@@ -190,7 +194,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
         //this actually gets called when sodium is on as we cant define our own blend method
         Integer y = yHack.get();
         if (y == null) y = 0;
-        return this.sampleColor(stateHack.get(), BlockPos.containing(x, y, z), biome, null);
+        return this.sampleColor(levelHack.get(), stateHack.get(), BlockPos.containing(x, y, z), biome, null);
     }
 
     //calculate color blend. could just use vanilla impl tbh since we got above hack for sodium anyway
@@ -199,7 +203,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
         int i = Minecraft.getInstance().options.biomeBlendRadius().get();
         BlockState state = stateHack.get();
         if (i == 0) {
-            return this.sampleColor(state, pos, level.getBiome(pos).value(), null);
+            return this.sampleColor(level, state, pos, level.getBiome(pos).value(), null);
         } else {
             int j = (i * 2 + 1) * (i * 2 + 1);
             int k = 0;
@@ -210,7 +214,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
             int n;
             for (BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos(); cursor3D.advance(); m += n & 255) {
                 mutableBlockPos.set(cursor3D.nextX(), cursor3D.nextY(), cursor3D.nextZ());
-                n = this.sampleColor(state, mutableBlockPos, level.getBiome(mutableBlockPos).value(), null);
+                n = this.sampleColor(level, state, mutableBlockPos, level.getBiome(mutableBlockPos).value(), null);
                 k += (n & 16711680) >> 16;
                 l += (n & '\uff00') >> 8;
             }
@@ -246,18 +250,16 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public int getItemColor(ItemStack itemStack, int i) {
         BlockPos pos = null;
         Biome biome = null;
-        if (usesPos) {
-            var player = Minecraft.getInstance().player;
-            if (player == null) return defaultColor;
-            pos = player.blockPosition();
-            //we never ue blending. its overkill here
-            if (usesBiome) {
-                var level = Minecraft.getInstance().level;
-                if (level == null) return defaultColor;
-                biome = level.getBiome(pos).value();
-            }
+        var level = Minecraft.getInstance().level;
+        var player = Minecraft.getInstance().player;
+        if (player == null) return defaultColor;
+        pos = player.blockPosition();
+        //we never ue blending. its overkill here
+        if (usesBiome) {
+            if (level == null) return defaultColor;
+            biome = level.getBiome(pos).value();
         }
-        return sampleColor(null, pos, biome, itemStack);
+        return sampleColor(player.level(), null, pos, biome, itemStack);
     }
 
 
@@ -306,6 +308,4 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return new Colormap(IColormapExp.DAMAGE, IColormapExp.ZERO, false);
     }
 
-
-    //texture stuff
 }

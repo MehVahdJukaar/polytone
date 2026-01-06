@@ -2,9 +2,12 @@ package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 //trying to start declarative here, what is HERE in this block? We won't let users access everything outside of it, thats asking for trouble
 
@@ -13,22 +16,29 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BlockProxy extends PositionalProxy {
 
     private final BlockPos pos;
-    private final LevelReader level;
+    @Nullable
+    private final BlockAndTintGetter level;
 
-    public BlockProxy(LevelReader level, BlockPos pos, BlockState state) {
-        super(state);
-        this.pos = pos;
+    public BlockProxy(@Nullable BlockAndTintGetter level, @Nullable BlockPos pos, @Nullable BlockState state, @Nullable Biome biome) {
+        super(state, biome);
+        this.pos = pos == null ? BlockPos.ZERO : pos;
         this.level = level;
     }
 
-    public BlockProxy(LevelReader level, BlockPos pos) {
+    public BlockProxy(@Nullable BlockAndTintGetter level,@Nullable BlockPos pos, @Nullable BlockState state) {
+        super(state);
+        this.pos = pos == null ? BlockPos.ZERO : pos;
+        this.level = level;
+    }
+
+    public BlockProxy(@Nullable BlockAndTintGetter level, BlockPos pos) {
         super();
         this.pos = pos;
         this.level = level;
     }
 
     @Override
-    protected LevelReader getLevelInternal() {
+    protected BlockAndTintGetter getLevelInternal() {
         return level;
     }
 

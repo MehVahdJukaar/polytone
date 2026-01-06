@@ -28,7 +28,11 @@ public interface IColorGetter extends BlockColor, BarColor {
         return this;
     }
 
+    int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+                    @Nullable Biome biome, @Nullable ItemStack item);
+
     record OfBlock(BlockColor bc) implements IColorGetter {
+
         @Override
         public int getColor(BlockState state, BlockAndTintGetter reader, BlockPos pos, int tintIndex) {
             return bc.getColor(state, reader, pos, tintIndex);
@@ -43,18 +47,18 @@ public interface IColorGetter extends BlockColor, BarColor {
             BlockState state = world.getBlockState(pos);
             return bc.getColor(state, world, pos, i) | 0xff000000;
         }
-
         @Override
-        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level,  @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
             if (state != null && pos != null) {
                 return bc.getColor(state, null, pos, 0) | 0xff000000;
             }
             return -1;
         }
-    }
 
+    }
     //wraps around a color resolver. note that usually the block color get color internally calls the color resolver itself which with grass replacement might be us
     record OfColorResolver(BlockColor bc, ColorResolver cr) implements IColorGetter, ColorResolver {
+
 
         @Override
         public int getColor(BlockState state, @Nullable BlockAndTintGetter reader, @Nullable BlockPos pos, int tintIndex) {
@@ -76,9 +80,8 @@ public interface IColorGetter extends BlockColor, BarColor {
         public int getColor(Biome biome, double x, double z) {
             return cr.getColor(biome, x, z);
         }
-
         @Override
-        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
             if (biome != null) {
                 int x = pos == null ? 0 : pos.getX();
                 int z = pos == null ? 0 : pos.getZ();
@@ -86,9 +89,10 @@ public interface IColorGetter extends BlockColor, BarColor {
             }
             return -1;
         }
-    }
 
+    }
     record OfItem(BarColor ic) implements IColorGetter {
+
         @Override
         public int getColor(BlockState state, BlockAndTintGetter reader, BlockPos pos, int tintIndex) {
             return ic.getItemColor(ItemStack.EMPTY, tintIndex);
@@ -98,15 +102,15 @@ public interface IColorGetter extends BlockColor, BarColor {
         public int getItemColor(ItemStack itemStack, int i) {
             return ic.getItemColor(itemStack, i);
         }
-
         @Override
-        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level,@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
             return ic.getItemColor(item == null ? ItemStack.EMPTY : item, 0);
         }
+
     }
 
-
     record StaticColor(int color) implements IColorGetter {
+
         @Override
         public int getColor(BlockState state, BlockAndTintGetter reader, BlockPos pos, int tintIndex) {
             return color;
@@ -116,19 +120,17 @@ public interface IColorGetter extends BlockColor, BarColor {
         public int getItemColor(ItemStack itemStack, int i) {
             return color;
         }
-
         @Override
-        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level,@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
             return color;
         }
-    }
 
+    }
 
     //TODO: proper exp here
     record ExpressionColor(IBlockExp exp) implements IColorGetter {
-
         @Override
-        public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
             if (pos == null || state == null) {
                 return 0;
             }
@@ -139,7 +141,6 @@ public interface IColorGetter extends BlockColor, BarColor {
         public int getItemColor(ItemStack stack, int tintIndex) {
             return (int) exp.evaluate(Minecraft.getInstance().level, BlockPos.ZERO, Blocks.AIR.defaultBlockState());
         }
-
         @Override
         public int getColor(BlockState blockState, @Nullable BlockAndTintGetter blockAndTintGetter, @Nullable BlockPos blockPos, int i) {
            if (blockAndTintGetter instanceof LevelReader lr && blockPos != null) {
@@ -147,10 +148,9 @@ public interface IColorGetter extends BlockColor, BarColor {
            }
            return 0;
         }
+
     }
 
-
-    int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item);
 
 
 

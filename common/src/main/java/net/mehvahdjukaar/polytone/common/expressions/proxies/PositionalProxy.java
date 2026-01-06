@@ -5,17 +5,19 @@ import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.attribute.EnvironmentAttributeReader;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -26,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 //with cache but position changing awareness
+//all these nulls all because of color getters possibly having a null tint getter propagating till here...
 @BeanGettersAliases
 public abstract class PositionalProxy {
 
@@ -35,6 +38,12 @@ public abstract class PositionalProxy {
     private String biomeNameCache;
     private BlockPos posCache;
 
+
+    public PositionalProxy(@Nullable BlockState state, @Nullable Biome biome) {
+        this.stateCache = state;
+        this.biomeCache = biome;
+    }
+
     public PositionalProxy(@Nullable BlockState state) {
         this.stateCache = state;
     }
@@ -42,7 +51,8 @@ public abstract class PositionalProxy {
     public PositionalProxy() {
     }
 
-    protected abstract LevelReader getLevelInternal();
+    @Nullable
+    protected abstract BlockAndTintGetter getLevelInternal();
 
     @Nullable
     protected abstract BlockPos getPosInternal();
@@ -65,20 +75,22 @@ public abstract class PositionalProxy {
     protected BlockState getStateInternal() {
         BlockPos pos = updatedPos(); //refresh cache if needed
         if (stateCache == null) {
-            stateCache = pos == null ? Blocks.AIR.defaultBlockState() :
-                    getLevelInternal().getBlockState(pos);
+            var l = getLevelInternal();
+            stateCache = (pos == null || l == null) ? Blocks.AIR.defaultBlockState() :
+                    l.getBlockState(pos);
         }
         return stateCache;
     }
 
+    @Nullable
     protected Biome getBiomeInternal() {
         BlockPos blockPos = updatedPos();
         if (biomeCache == null) {
-            var bb = blockPos == null ? getLevelInternal().registryAccess()
-                    .lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS) :
-                    getLevelInternal().getBiome(blockPos);
-            biomeCache = bb.value();
-            biomeNameCache = bb.getRegisteredName();
+            var l = getLevelInternal();
+            if (!(l instanceof LevelReader lr) || blockPos == null) return null;
+            var holder = lr.getBiome(blockPos);
+            biomeCache = holder.value();
+            biomeNameCache = holder.getRegisteredName();
         }
         return biomeCache;
     }
@@ -87,8 +99,10 @@ public abstract class PositionalProxy {
     protected BlockEntity getBlockEntityInternal() {
         BlockPos blockPos = updatedPos();
         if (blockPos == null) return null;
+        var l = getLevelInternal();
+        if (l == null) return null;
         if (beCache == null && this.hasBlockEntity()) {
-            beCache = getLevelInternal().getBlockEntity(blockPos);
+            beCache = l.getBlockEntity(blockPos);
         }
         return beCache;
     }
@@ -114,9 +128,9 @@ public abstract class PositionalProxy {
     public String biome() {
         if (biomeNameCache == null) {
             if (biomeCache != null) {
-                biomeNameCache = getLevelInternal().registryAccess()
-                        .lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS)
-                        .getRegisteredName();
+                if (!(getLevelInternal() instanceof Level)) {
+                    biomeNameCache = "plains";
+                }
             } else getBiomeInternal(); //updates cache
         }
         return biomeNameCache;
@@ -144,24 +158,27 @@ public abstract class PositionalProxy {
 
     public int skyLight() {
         BlockPos blockPos = updatedPos();
-        if (blockPos == null) return 15;
-        return getLevelInternal().getBrightness(LightLayer.SKY, blockPos);
+        var l = getLevelInternal();
+        if (blockPos == null || l == null) return 15;
+        return l.getBrightness(LightLayer.SKY, blockPos);
     }
 
     public int blockLight() {
         BlockPos blockPos = updatedPos();
-        if (blockPos == null) return 0;
+        var l = getLevelInternal();
+        if (blockPos == null || l == null) return 0;
         return getLevelInternal().getBrightness(LightLayer.BLOCK, blockPos);
     }
 
     public boolean canSeeSky() {
         BlockPos blockPos = updatedPos();
-        if (blockPos == null) return true;
+        var l = getLevelInternal();
+        if (blockPos == null || l == null) return true;
         return getLevelInternal().canSeeSky(blockPos);
     }
 
     public boolean hasEntitiesWithin() {
-        LevelReader level = getLevelInternal();
+        var level = getLevelInternal();
         BlockPos pos = updatedPos();
         if (pos == null) return false;
         if (level instanceof Level l) {
@@ -217,7 +234,16 @@ public abstract class PositionalProxy {
             EnvironmentAttribute<?> attr = parseEnvAttr(attributeName);
             // safe to call delegate methods now
 
-            return getLevelInternal().environmentAttributes()
+            LevelReader lr;
+            if (getLevelInternal() instanceof LevelReader lrr) {
+                lr = lrr;
+            } else {
+                lr = Minecraft.getInstance().level;
+                if ( lr == null ) {
+                    throw new IllegalStateException("No level available for environment attribute retrieval!");
+                }
+            }
+            return lr.environmentAttributes()
                     .getValue(Preconditions.checkNotNull(attr), pos);
 
         } finally {

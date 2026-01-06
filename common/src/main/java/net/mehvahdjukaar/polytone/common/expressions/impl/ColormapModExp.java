@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.common.expressions.impl;
 import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExp;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;
-import net.mehvahdjukaar.polytone.common.expressions.proxies.BlockProxy;
+import net.mehvahdjukaar.polytone.common.expressions.proxies.BlockTintProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.RandomProxy;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.minecraft.core.BlockPos;
@@ -18,33 +18,26 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ColormapExp extends PolyExp implements IColormapExp {
+public class ColormapModExp extends PolyExp implements IColormapModExp {
 
-    public static final PolyExpType<ColormapExp> TYPE =
+    public static final PolyExpType<ColormapModExp> TYPE =
             new PolyExpType<>(
-                    ColormapExp::new,
+                    ColormapModExp::new,
                     c -> {
                         ExpUtils.addCommonInputs(c);
-                        c.addInput("o", BlockProxy.class);
-                        c.addInput("object", BlockProxy.class);
+                        c.addInput("o", BlockTintProxy.class);
+                        c.addInput("object", BlockTintProxy.class);
                     }
             );
 
-    private final boolean hasBiome;
 
-    public ColormapExp(Serializable ser, String exprString) {
+    public ColormapModExp(Serializable ser) {
         super(ser);
-        this.hasBiome = exprString.contains("biome");
     }
 
     @Override
-    public boolean usesBiome() {
-        return hasBiome;
-    }
-
-    @Override
-    public float evaluate(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
-        BlockProxy obj = new BlockProxy(level, pos, state, biome);
+    public float evaluate(float r, float g, float b, @Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+        BlockTintProxy obj = new BlockTintProxy(level, pos, state, biome, r, g, b);
         Map<String, Object> vars = new HashMap<>();
         ExpUtils.addCommonVars(vars);
         vars.put("o", obj);
@@ -53,5 +46,10 @@ public class ColormapExp extends PolyExp implements IColormapExp {
         vars.put("random", rand);
         vars.put("r", rand);
         return MVEL.executeExpression(expr, vars, float.class);
+    }
+
+    @Override
+    public IColormapModExp createConcurrent() {
+        return this;
     }
 }

@@ -88,11 +88,11 @@ public class BiomeCompoundColorGetter implements IColorGetter {
     }
 
     @Override
-    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+    public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
         if (biome != null) {
             IColorGetter g = getters.get(biome);
-            if (g != null) return g.sampleColor(state, pos, biome, item);
+            if (g != null) return g.sampleColor(level, state, pos, biome, item);
         }
-        return defaultGetter.sampleColor(state, pos, biome, item);
+        return defaultGetter.sampleColor(level, state, pos, biome, item);
     }
 }

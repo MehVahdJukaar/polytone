@@ -7,19 +7,23 @@ import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 
 import java.io.Serializable;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class PolyExpType<T extends PolyExp> {
 
-    private final Function<Serializable, T> constructor;
+    private final BiFunction<Serializable, String, T> constructor;
     private final ParserContext context;
     private final Codec<T> codec = Codec.STRING.flatXmap(
             this::create,
             exp -> DataResult.success("0") //unsupported
     );
+    public PolyExpType( Function<Serializable, T> constructor, Consumer<ParserContext> inputs) {
+        this( (expr, str) -> constructor.apply(expr), inputs);
+    }
 
-    public PolyExpType(Function<Serializable, T> constructor, Consumer<ParserContext> inputs) {
+    public PolyExpType( BiFunction<Serializable, String, T> constructor, Consumer<ParserContext> inputs) {
         this.constructor = constructor;
         this.context = new ParserContext();
         this.context.setStrongTyping(true);
@@ -35,7 +39,7 @@ public final class PolyExpType<T extends PolyExp> {
         try {
             expressionStr = ExpUtils.upgrade(expressionStr);
             Serializable expr = MVEL.compileExpression(expressionStr, this.context);
-            return DataResult.success(constructor.apply(expr));
+            return DataResult.success(constructor.apply(expr, expressionStr));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to compile expression: " + e.getMessage());
         }
