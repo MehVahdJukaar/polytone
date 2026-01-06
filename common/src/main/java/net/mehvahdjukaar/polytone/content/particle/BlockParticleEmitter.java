@@ -3,8 +3,9 @@ package net.mehvahdjukaar.polytone.content.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
-import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
@@ -35,21 +36,21 @@ import java.util.Optional;
 
 public record BlockParticleEmitter(
         Optional<Holder<ParticleType<?>>> particleType,
-        BlockContextExpression chance,
-        BlockContextExpression count,
-        BlockContextExpression x,
-        BlockContextExpression y,
-        BlockContextExpression z,
-        BlockContextExpression dx,
-        BlockContextExpression dy,
-        BlockContextExpression dz,
-        Optional<BlockContextExpression> r,
-        Optional<BlockContextExpression> g,
-        Optional<BlockContextExpression> b,
-        Optional<BlockContextExpression> a,
-        Optional<BlockContextExpression> roll,
-        Optional<BlockContextExpression> size,
-        Optional<BlockContextExpression> custom,
+        IBlockExp chance,
+        IBlockExp count,
+        IBlockExp x,
+        IBlockExp y,
+        IBlockExp z,
+        IBlockExp dx,
+        IBlockExp dy,
+        IBlockExp dz,
+        Optional<IBlockExp> r,
+        Optional<IBlockExp> g,
+        Optional<IBlockExp> b,
+        Optional<IBlockExp> a,
+        Optional<IBlockExp> roll,
+        Optional<IBlockExp> size,
+        Optional<IBlockExp> custom,
         RuleTest predicate,
         Optional<HolderSet<Biome>> biomes,
         SpawnLocation spawnLocation,
@@ -58,21 +59,21 @@ public record BlockParticleEmitter(
 
     public static final Codec<BlockParticleEmitter> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
             CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("particle").forGetter(BlockParticleEmitter::particleType),
-            BlockContextExpression.CODEC.optionalFieldOf("chance", BlockContextExpression.ONE).forGetter(BlockParticleEmitter::chance),
-            BlockContextExpression.CODEC.optionalFieldOf("count", BlockContextExpression.ONE).forGetter(BlockParticleEmitter::count),
-            BlockContextExpression.CODEC.optionalFieldOf("x", BlockContextExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::x),
-            BlockContextExpression.CODEC.optionalFieldOf("y", BlockContextExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::y),
-            BlockContextExpression.CODEC.optionalFieldOf("z", BlockContextExpression.PARTICLE_RAND).forGetter(BlockParticleEmitter::z),
-            BlockContextExpression.CODEC.optionalFieldOf("dx", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dx),
-            BlockContextExpression.CODEC.optionalFieldOf("dy", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dy),
-            BlockContextExpression.CODEC.optionalFieldOf("dz", BlockContextExpression.ZERO).forGetter(BlockParticleEmitter::dz),
-            BlockContextExpression.CODEC.optionalFieldOf("red").forGetter(BlockParticleEmitter::r),
-            BlockContextExpression.CODEC.optionalFieldOf("green").forGetter(BlockParticleEmitter::g),
-            BlockContextExpression.CODEC.optionalFieldOf("blue").forGetter(BlockParticleEmitter::b),
-            BlockContextExpression.CODEC.optionalFieldOf("alpha").forGetter(BlockParticleEmitter::a),
-            BlockContextExpression.CODEC.optionalFieldOf("roll").forGetter(BlockParticleEmitter::roll),
-            BlockContextExpression.CODEC.optionalFieldOf("size").forGetter(BlockParticleEmitter::size),
-            BlockContextExpression.CODEC.optionalFieldOf("custom").forGetter(BlockParticleEmitter::custom),
+            IBlockExp.CODEC.optionalFieldOf("chance", IBlockExp.ONE).forGetter(BlockParticleEmitter::chance),
+            IBlockExp.CODEC.optionalFieldOf("count", IBlockExp.ONE).forGetter(BlockParticleEmitter::count),
+            IBlockExp.CODEC.optionalFieldOf("x", IBlockExp.PARTICLE_RAND).forGetter(BlockParticleEmitter::x),
+            IBlockExp.CODEC.optionalFieldOf("y", IBlockExp.PARTICLE_RAND).forGetter(BlockParticleEmitter::y),
+            IBlockExp.CODEC.optionalFieldOf("z", IBlockExp.PARTICLE_RAND).forGetter(BlockParticleEmitter::z),
+            IBlockExp.CODEC.optionalFieldOf("dx", IBlockExp.ZERO).forGetter(BlockParticleEmitter::dx),
+            IBlockExp.CODEC.optionalFieldOf("dy", IBlockExp.ZERO).forGetter(BlockParticleEmitter::dy),
+            IBlockExp.CODEC.optionalFieldOf("dz", IBlockExp.ZERO).forGetter(BlockParticleEmitter::dz),
+            IBlockExp.CODEC.optionalFieldOf("red").forGetter(BlockParticleEmitter::r),
+            IBlockExp.CODEC.optionalFieldOf("green").forGetter(BlockParticleEmitter::g),
+            IBlockExp.CODEC.optionalFieldOf("blue").forGetter(BlockParticleEmitter::b),
+            IBlockExp.CODEC.optionalFieldOf("alpha").forGetter(BlockParticleEmitter::a),
+            IBlockExp.CODEC.optionalFieldOf("roll").forGetter(BlockParticleEmitter::roll),
+            IBlockExp.CODEC.optionalFieldOf("size").forGetter(BlockParticleEmitter::size),
+            IBlockExp.CODEC.optionalFieldOf("custom").forGetter(BlockParticleEmitter::custom),
             CodecUtils.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
             CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
             SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation),
@@ -87,25 +88,25 @@ public record BlockParticleEmitter(
         if (source != spawnSource){
             return; //only spawn particles on the correct tick source
         }
-        double spawnChance = chance.getValue(level, pos, state);
+        double spawnChance = chance.evaluate(level, pos, state);
         if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(pos);
                 if (!biomes.get().contains(biome)) return;
             }
-            for (int i = 0; i < count.getValue(level, pos, state); i++) {
+            for (int i = 0; i < count.evaluate(level, pos, state); i++) {
                 CustomParticleType.setStateHack(state);
 
                 ParticleOptions po = getParticleOptions(level, pos, state);
                 if (po == null) return;
                 var pp = spawnLocation.getLocation(pos, state, level.random);
                 level.addAlwaysVisibleParticle(po,
-                        pp.x() + x.getValue(level, pos, state),
-                        pp.y() + y.getValue(level, pos, state),
-                        pp.z() + z.getValue(level, pos, state),
-                        dx.getValue(level, pos, state),
-                        dy.getValue(level, pos, state),
-                        dz.getValue(level, pos, state)
+                        pp.x() + x.evaluate(level, pos, state),
+                        pp.y() + y.evaluate(level, pos, state),
+                        pp.z() + z.evaluate(level, pos, state),
+                        dx.evaluate(level, pos, state),
+                        dy.evaluate(level, pos, state),
+                        dz.evaluate(level, pos, state)
                 );
             }
         }
@@ -118,13 +119,13 @@ public record BlockParticleEmitter(
 
         if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().identifier())) {
             Map<String, Float> map = new HashMap<>();
-            r.ifPresent(exp -> map.put("red", (float) exp.getValue(level, pos, state)));
-            g.ifPresent(exp -> map.put("green", (float) exp.getValue(level, pos, state)));
-            b.ifPresent(exp -> map.put("blue", (float) exp.getValue(level, pos, state)));
-            a.ifPresent(exp -> map.put("alpha", (float) exp.getValue(level, pos, state)));
-            roll.ifPresent(exp -> map.put("roll", (float) exp.getValue(level, pos, state)));
-            size.ifPresent(exp -> map.put("size", (float) exp.getValue(level, pos, state)));
-            custom.ifPresent(exp -> map.put("custom", (float) exp.getValue(level, pos, state)));
+            r.ifPresent(exp -> map.put("red", (float) exp.evaluate(level, pos, state)));
+            g.ifPresent(exp -> map.put("green", (float) exp.evaluate(level, pos, state)));
+            b.ifPresent(exp -> map.put("blue", (float) exp.evaluate(level, pos, state)));
+            a.ifPresent(exp -> map.put("alpha", (float) exp.evaluate(level, pos, state)));
+            roll.ifPresent(exp -> map.put("roll", (float) exp.evaluate(level, pos, state)));
+            size.ifPresent(exp -> map.put("size", (float) exp.evaluate(level, pos, state)));
+            custom.ifPresent(exp -> map.put("custom", (float) exp.evaluate(level, pos, state)));
             return new ExtraDataParticleOptions(map, particleTypeValue);
         }
 

@@ -3,8 +3,9 @@ package net.mehvahdjukaar.polytone.content.sound;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
-import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
@@ -25,12 +26,12 @@ import java.util.Optional;
 public record BlockSoundEmitter(
         SoundEvent sound,
         SoundSource category,
-        BlockContextExpression chance,
-        BlockContextExpression x,
-        BlockContextExpression y,
-        BlockContextExpression z,
-        BlockContextExpression volume,
-        BlockContextExpression pitch,
+        IBlockExp chance,
+        IBlockExp x,
+        IBlockExp y,
+        IBlockExp z,
+        IBlockExp volume,
+        IBlockExp pitch,
         boolean distanceDelay,
         RuleTest predicate,
         @Deprecated(forRemoval = true) TickSource spawnSource,
@@ -43,12 +44,12 @@ public record BlockSoundEmitter(
     public static final Codec<BlockSoundEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
             CodecUtils.forwardAwareSoundEvent().fieldOf("sound").forGetter(BlockSoundEmitter::sound),
             SOUND_SOURCE_CODEC.optionalFieldOf("source", SoundSource.BLOCKS).forGetter(BlockSoundEmitter::category),
-            BlockContextExpression.CODEC.optionalFieldOf("chance", BlockContextExpression.ONE).forGetter(BlockSoundEmitter::chance),
-            BlockContextExpression.CODEC.optionalFieldOf("x", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::x),
-            BlockContextExpression.CODEC.optionalFieldOf("y", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::y),
-            BlockContextExpression.CODEC.optionalFieldOf("z", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::z),
-            BlockContextExpression.CODEC.optionalFieldOf("volume", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::volume),
-            BlockContextExpression.CODEC.optionalFieldOf("pitch", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::pitch),
+            IBlockExp.CODEC.optionalFieldOf("chance", IBlockExp.ONE).forGetter(BlockSoundEmitter::chance),
+            IBlockExp.CODEC.optionalFieldOf("x", IBlockExp.ZERO).forGetter(BlockSoundEmitter::x),
+            IBlockExp.CODEC.optionalFieldOf("y", IBlockExp.ZERO).forGetter(BlockSoundEmitter::y),
+            IBlockExp.CODEC.optionalFieldOf("z", IBlockExp.ZERO).forGetter(BlockSoundEmitter::z),
+            IBlockExp.CODEC.optionalFieldOf("volume", IBlockExp.ZERO).forGetter(BlockSoundEmitter::volume),
+            IBlockExp.CODEC.optionalFieldOf("pitch", IBlockExp.ZERO).forGetter(BlockSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(BlockSoundEmitter::distanceDelay),
             CodecUtils.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockSoundEmitter::predicate),
             TickSource.CODEC.optionalFieldOf("spawn_source", TickSource.ANIMATE_TICK).forGetter(BlockSoundEmitter::spawnSource),
@@ -59,7 +60,7 @@ public record BlockSoundEmitter(
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
         if (source != spawnSource) return;
-        double spawnChance = chance.getValue(level, pos, state);
+        double spawnChance = chance.evaluate(level, pos, state);
         if (level.random.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(pos);
@@ -67,12 +68,12 @@ public record BlockSoundEmitter(
             }
 
             Vec3 vec = pos.getCenter().add(
-                    x.getValue(level, pos, state),
-                    y.getValue(level, pos, state),
-                    z.getValue(level, pos, state));
+                    x.evaluate(level, pos, state),
+                    y.evaluate(level, pos, state),
+                    z.evaluate(level, pos, state));
 
-            float v = (float) volume.getValue(level, pos, state);
-            float p = (float) pitch.getValue(level, pos, state);
+            float v = (float) volume.evaluate(level, pos, state);
+            float p = (float) pitch.evaluate(level, pos, state);
 
             level.playLocalSound(vec.x, vec.y, vec.z,
                     sound, category, v, p, false);

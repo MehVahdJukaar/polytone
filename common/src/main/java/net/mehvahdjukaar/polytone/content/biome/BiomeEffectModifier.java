@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.level.biome.Biome;
@@ -168,10 +169,10 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                 ).apply(instance, BiomeEnvAttributeModifications::new)
         );
 
-        public static final Codec<BiomeEnvAttributeModifications> CODEC = Codec.withAlternative(
+        public static final Codec<BiomeEnvAttributeModifications> CODEC = CodecUtils.betterAlternative(
                 EnvironmentAttributeMapMod.CODEC.xmap(BiomeEnvAttributeModifications::baseOnly,
                         m -> m.baseMod
-                ),DIRECT_CODEC
+                ), DIRECT_CODEC, (f, s) -> !f.isEmpty()
         );
 
         private static @NonNull BiomeEnvAttributeModifications baseOnly(EnvironmentAttributeMapMod mod) {

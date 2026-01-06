@@ -11,9 +11,10 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.polytone.common.exp.impl.EntityContextExpression;
 import net.mehvahdjukaar.polytone.common.reloader.SingleJsonOrPropertiesReloadListener;
 import net.mehvahdjukaar.polytone.common.struc.Vec3f;
-import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -72,13 +73,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     Identifier xpOrbParticle;
     @Nullable
-    private BlockContextExpression xpOrbColor;
+    private EntityContextExpression xpOrbColor;
     @Nullable
-    private BlockContextExpression xpOrbColorR;
+    private EntityContextExpression xpOrbColorR;
     @Nullable
-    private BlockContextExpression xpOrbColorG;
+    private EntityContextExpression xpOrbColorG;
     @Nullable
-    private BlockContextExpression xpOrbColorB;
+    private EntityContextExpression xpOrbColorB;
 
     private Integer xpBar = null;
     private Integer xpBarBack = null;
@@ -265,10 +266,10 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         doWith(obj, "xporb", (k, v) -> {
             switch (k) {
                 case "particle_replacement" -> Polytone.PARTICLE_MODIFIERS.setXpOrbReplace(v);
-                case "color" -> xpOrbColor = new BlockContextExpression(v.getAsString());
-                case "red" -> xpOrbColorR = new BlockContextExpression(v.getAsString());
-                case "green" -> xpOrbColorG = new BlockContextExpression(v.getAsString());
-                case "blue" -> xpOrbColorB = new BlockContextExpression(v.getAsString());
+                case "color" -> xpOrbColor = new EntityContextExpression(v.getAsString());
+                case "red" -> xpOrbColorR = new EntityContextExpression(v.getAsString());
+                case "green" -> xpOrbColorG = new EntityContextExpression(v.getAsString());
+                case "blue" -> xpOrbColorB = new EntityContextExpression(v.getAsString());
             }
         });
 
@@ -504,16 +505,16 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         Vec3 orbPos = new Vec3(orb.x, orb.y, orb.z);
         Level level = Minecraft.getInstance().level;
         if (xpOrbColor != null) {
-            int color = (int) xpOrbColor.getValue(orbPos, orb.ageInTicks + partialTicks, level);
+            int color = (int) xpOrbColor.evaluate(orbPos, orb.ageInTicks + partialTicks, level);
             return ColorUtils.unpack(color);
         }
         if (xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         float r = 0;
         float g = 0;
         float b = 0;
-        if (xpOrbColorR != null) r = (float) xpOrbColorR.getValue(orbPos, orb.ageInTicks + partialTicks, level);
-        if (xpOrbColorG != null) g = (float) xpOrbColorG.getValue(orbPos, orb.ageInTicks + partialTicks, level);
-        if (xpOrbColorB != null) b = (float) xpOrbColorB.getValue(orbPos, orb.ageInTicks + partialTicks, level);
+        if (xpOrbColorR != null) r = (float) xpOrbColorR.evaluate(orbPos, orb.ageInTicks + partialTicks, level);
+        if (xpOrbColorG != null) g = (float) xpOrbColorG.evaluate(orbPos, orb.ageInTicks + partialTicks, level);
+        if (xpOrbColorB != null) b = (float) xpOrbColorB.evaluate(orbPos, orb.ageInTicks + partialTicks, level);
         return new float[]{r, g, b};
     }
 

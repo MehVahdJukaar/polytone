@@ -1,7 +1,9 @@
 package net.mehvahdjukaar.polytone.common.codec;
 
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -17,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
 public class CodecUtils {
@@ -49,7 +52,7 @@ public class CodecUtils {
 
     public static Codec<Holder<SoundEvent>> forwardAwareSoundEventHolder() {
         return forwardAwareHolderByNameCodec(BuiltInRegistries.SOUND_EVENT,
-                ()->BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY));
+                () -> BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY));
     }
 
 
@@ -83,7 +86,7 @@ public class CodecUtils {
     }
 
     @SafeVarargs
-    public static <A> Codec<A> withAlternatives(Codec<A> primary, Codec<? extends A> ...secondary) {
+    public static <A> Codec<A> withAlternatives(Codec<A> primary, Codec<? extends A>... secondary) {
         Codec<? super A> codec = primary;
         for (Codec<? extends A> c : secondary) {
             codec = Codec.withAlternative(codec, c);
@@ -108,4 +111,12 @@ public class CodecUtils {
             Codec.withAlternative(
                     ITEMSTACK_OR_ITEMSTACK_LIST.xmap(l -> () -> l, Supplier::get),
                     ITEMSTACK_HOLDER_SET);
+
+
+    //when both can succeed at the same time
+    public static <A, B extends A, C extends A> Codec<A> betterAlternative(
+            Codec<B> first, Codec<C> second, BiPredicate<B, C> chooseFirst) {
+
+        return new BetterAlternativeCodec<>(first, second, chooseFirst);
+    }
 }

@@ -4,7 +4,8 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.Minecraft;
@@ -26,8 +27,8 @@ public class ExtendedAttributeMod {
 
             return Codec.either(originalCodec, (Codec) intCodec);
         } else if (type == AttributeTypes.FLOAT || type == AttributeTypes.ANGLE_DEGREES) {
-            Codec<Supplier<Float>> flaotCodec = BlockContextExpression.CODEC
-                    .xmap(e -> () -> (float) e.getValue(Minecraft.getInstance().level,
+            Codec<Supplier<Float>> flaotCodec = IBlockExp.CODEC
+                    .xmap(e -> () -> (float) e.evaluate(Minecraft.getInstance().level,
                             ClientFrameTicker.getCameraPos(),
                             Blocks.AIR.defaultBlockState()), ex -> BlockContextExpression.ZERO);
             return Codec.either(originalCodec, (Codec) flaotCodec);

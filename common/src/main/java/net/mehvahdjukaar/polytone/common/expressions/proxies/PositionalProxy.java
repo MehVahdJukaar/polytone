@@ -11,6 +11,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
@@ -36,7 +37,7 @@ public abstract class PositionalProxy {
     public PositionalProxy() {
     }
 
-    protected abstract Level getLevelInternal();
+    protected abstract LevelReader getLevelInternal();
 
     protected abstract BlockPos getPosInternal();
 
@@ -122,10 +123,14 @@ public abstract class PositionalProxy {
     }
 
     public boolean hasEntitiesWithin() {
-        Level level = getLevelInternal();
+        LevelReader level = getLevelInternal();
         BlockPos pos = updatedPos();
-        return !level.getEntities(null, getStateInternal().getShape(level, pos).bounds().move(pos)).isEmpty();
+        if (level instanceof Level l) {
+            return !l.getEntities(null, getStateInternal().getShape(level, pos).bounds().move(pos)).isEmpty();
+        }
+        return false;
     }
+
 
     public boolean hasBlockTag(String tag) {
         TagKey<Block> tagKey = TagKey.create(Registries.BLOCK, Identifier.parse(tag));

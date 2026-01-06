@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.block;
+package net.mehvahdjukaar.polytone.common.exp.impl;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.exp.IExpression;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -14,10 +15,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
-public class BlockContextExpression extends PolytoneExpression {
+public class BlockContextExpression extends PolytoneExpression implements IBlockExp {
 
     public static final Codec<BlockContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
@@ -50,56 +50,8 @@ public class BlockContextExpression extends PolytoneExpression {
         builder.add(STATE_PROP_INT);
     }
 
-    //TODO: turn into entity context expression
-    public double getValue(Vec3 pos, float entityTime, Level level) {
-        ExpressionUtils.randomizeRandom();
-
-        IExpression.IVars vb = expression.varBuilder();
-
-        if (hasPos) {
-            vb.setVariable(POS_X, pos.x);
-            vb.setVariable(POS_Y, pos.y);
-            vb.setVariable(POS_Z, pos.z);
-        }
-        BlockPos p = BlockPos.containing(pos);
-
-        if (hasTime) vb.setVariable(TIME, entityTime);
-        if (hasDayTime) vb.setVariable(DAY_TIME, ClientFrameTicker.getDayTime());
-        if (hasSunTime) vb.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
-        if (hasRain) vb.setVariable(RAIN, ClientFrameTicker.getRainAndThunder());
-        if (hasSeason) vb.setVariable(SEASON, ClientFrameTicker.getSeason());
-
-        if (hasSkyLight) vb.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, p));
-        if (hasBlockLight) vb.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, p));
-        if (hasTemperature)
-            vb.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(p).value()).temperature);
-        if (hasDownfall)
-            vb.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(p).value()).downfall);
-
-        if (hasState) STATE_HACK.set(level.getBlockState(p));
-
-        if (hasPlayer) {
-            var e = Minecraft.getInstance().getCameraEntity();
-            vb.setVariable(PLAYER_X, e.getX());
-            vb.setVariable(PLAYER_Y, e.getY());
-            vb.setVariable(PLAYER_Z, e.getZ());
-        }
-        if (hasDistance) {
-            var e = Minecraft.getInstance().getCameraEntity();
-            double x = pos.x - e.getX();
-            double y = pos.y - e.getY();
-            double z = pos.z - e.getZ();
-            vb.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
-        }
-        if (hasPlayerSpeed) {
-            vb.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());
-        }
-
-        if (hasRenderDistance) vb.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
-        return expression.evaluate(vb);
-    }
-
-    public double getValue(LevelReader level, @NotNull BlockPos pos, BlockState state) {
+    @Override
+    public double evaluate(LevelReader level, @NotNull BlockPos pos, BlockState state) {
         ExpressionUtils.seedRandom(state.getSeed(pos));
 
         IExpression.IVars vars = expression.varBuilder();
@@ -145,8 +97,4 @@ public class BlockContextExpression extends PolytoneExpression {
 
         return expression.evaluate(vars);
     }
-
-    public static final BlockContextExpression ZERO = new BlockContextExpression("0");
-    public static final BlockContextExpression ONE = new BlockContextExpression("1");
-    public static final BlockContextExpression PARTICLE_RAND = new BlockContextExpression("(rand() * 2.0 - 1.0) * 0.4");
 }

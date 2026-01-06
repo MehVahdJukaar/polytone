@@ -1,11 +1,14 @@
-package net.mehvahdjukaar.polytone.common.expressions.types;
+package net.mehvahdjukaar.polytone.common.expressions.impl;
 
+import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExp;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.BlockProxy;
+import net.mehvahdjukaar.polytone.common.expressions.proxies.RandomProxy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import org.mvel2.MVEL;
 
@@ -13,7 +16,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BlockExp extends PolyExp {
+public class BlockExp extends PolyExp implements IBlockExp{
 
     public static final PolyExpType<BlockExp> TYPE =
             new PolyExpType<>(
@@ -29,12 +32,18 @@ public class BlockExp extends PolyExp {
         super(expr);
     }
 
-    public double execute(BlockState state, BlockPos pos, Level level) {
+    @Override
+    public double evaluate(LevelReader level, BlockPos pos, BlockState state) {
         BlockProxy obj = new BlockProxy(level, pos, state);
         Map<String, Object> vars = new HashMap<>();
         ExpUtils.addCommonVars(vars);
         vars.put("o", obj);
         vars.put("object", obj);
+        RandomProxy rand = RandomProxy.posSeeded(pos);
+        vars.put("random", rand);
+        vars.put("r", rand);
         return MVEL.executeExpression(expr, vars, Double.class);
     }
+
+
 }

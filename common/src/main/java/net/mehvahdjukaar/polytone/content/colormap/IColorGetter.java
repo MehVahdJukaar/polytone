@@ -2,7 +2,8 @@ package net.mehvahdjukaar.polytone.content.colormap;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
-import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.item.BarColor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
@@ -124,25 +125,25 @@ public interface IColorGetter extends BlockColor, BarColor {
 
 
     //TODO: proper exp here
-    record ExpressionColor(BlockContextExpression exp) implements IColorGetter {
+    record ExpressionColor(IBlockExp exp) implements IColorGetter {
 
         @Override
         public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
             if (pos == null || state == null) {
                 return 0;
             }
-            return (int) exp.getValue(Minecraft.getInstance().level, pos, state);
+            return (int) exp.evaluate(Minecraft.getInstance().level, pos, state);
         }
 
         @Override
         public int getItemColor(ItemStack stack, int tintIndex) {
-            return (int) exp.getValue(Minecraft.getInstance().level, BlockPos.ZERO, Blocks.AIR.defaultBlockState());
+            return (int) exp.evaluate(Minecraft.getInstance().level, BlockPos.ZERO, Blocks.AIR.defaultBlockState());
         }
 
         @Override
         public int getColor(BlockState blockState, @Nullable BlockAndTintGetter blockAndTintGetter, @Nullable BlockPos blockPos, int i) {
            if (blockAndTintGetter instanceof LevelReader lr && blockPos != null) {
-               return (int) exp.getValue(lr, blockPos, blockState);
+               return (int) exp.evaluate(lr, blockPos, blockState);
            }
            return 0;
         }
@@ -157,7 +158,7 @@ public interface IColorGetter extends BlockColor, BarColor {
             IColorGetter.StaticColor::new, g -> g instanceof StaticColor(int color) ? color : 0
     );
 
-    Codec<IColorGetter> EXPRESSION_CODEC = BlockContextExpression.CODEC.xmap(
+    Codec<IColorGetter> EXPRESSION_CODEC = IBlockExp.CODEC.xmap(
             IColorGetter.ExpressionColor::new,
             g -> g instanceof ExpressionColor(BlockContextExpression exp) ? exp : BlockContextExpression.ZERO
     );

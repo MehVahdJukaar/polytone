@@ -5,6 +5,7 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
@@ -114,10 +115,10 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                 ).apply(instance, DimensionEnvAttributeModifications::new)
         );
 
-        public static final Codec<DimensionEnvAttributeModifications> CODEC = Codec.withAlternative(
+        public static final Codec<DimensionEnvAttributeModifications> CODEC = CodecUtils.betterAlternative(
                 EnvironmentAttributeMapMod.CODEC.xmap(DimensionEnvAttributeModifications::baseOnly,
                         m -> m.baseMod
-                ), DIRECT_CODEC
+                ), DIRECT_CODEC, (f, s) -> !f.isEmpty()
         );
 
         private static DimensionEffectsModifier.DimensionEnvAttributeModifications baseOnly(EnvironmentAttributeMapMod mod) {

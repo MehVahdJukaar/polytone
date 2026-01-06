@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.mixins.accessor.ParticleAccessor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.SingleQuadParticle;
@@ -52,35 +52,35 @@ public record ParticleInitializer(@Nullable BlockContextExpression size,
 
     public void initialize(SingleQuadParticle particle, ClientLevel level, BlockState state, BlockPos pos) {
         if (this.roll != null) {
-            particle.roll = (float) this.roll.getValue(level, pos, state);
+            particle.roll = (float) this.roll.evaluate(level, pos, state);
         }
         if (this.size != null) {
-            particle.quadSize = ((float) this.size.getValue(level, pos, state));
+            particle.quadSize = ((float) this.size.evaluate(level, pos, state));
         }
         if (this.red != null) {
-            particle.rCol = (float) this.red.getValue(level, pos, state);
+            particle.rCol = (float) this.red.evaluate(level, pos, state);
         }
         if (this.green != null) {
-            particle.gCol = (float) this.green.getValue(level, pos, state);
+            particle.gCol = (float) this.green.evaluate(level, pos, state);
         }
         if (this.blue != null) {
-            particle.bCol = (float) this.blue.getValue(level, pos, state);
+            particle.bCol = (float) this.blue.evaluate(level, pos, state);
         }
         if (this.alpha != null) {
-            particle.alpha = (float) this.alpha.getValue(level, pos, state);
+            particle.alpha = (float) this.alpha.evaluate(level, pos, state);
         }
         if (this.lifetime != null) {
-            particle.setLifetime((int) Math.max(1, this.lifetime.getValue(level, pos, state)));
+            particle.setLifetime((int) Math.max(1, this.lifetime.evaluate(level, pos, state)));
         }
         if (this.friction != null) {
-            particle.friction = (float) this.friction.getValue(level, pos, state);
+            particle.friction = (float) this.friction.evaluate(level, pos, state);
         }
         if (this.custom != null && particle instanceof CustomParticleType.Instance ci) {
-            ci.custom = this.custom.getValue(level, pos, state);
+            ci.custom = this.custom.evaluate(level, pos, state);
         }
         if (this.hitboxSize != null) {
 
-            float hitbox = (float) this.hitboxSize.getValue(level, pos, state);
+            float hitbox = (float) this.hitboxSize.evaluate(level, pos, state);
             ((ParticleAccessor) particle).invokeSetSize(hitbox, hitbox);
         }
     }
