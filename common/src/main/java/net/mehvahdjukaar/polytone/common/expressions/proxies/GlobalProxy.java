@@ -17,7 +17,7 @@ public class GlobalProxy {
         return Minecraft.getInstance().level;
     }
 
-    public long time(){
+    public double time(){
         return delegate().getGameTime();
     }
 

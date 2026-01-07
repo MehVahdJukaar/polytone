@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.common.exp;
 
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -242,7 +243,7 @@ public class ExpressionUtils {
                 });
             }
         }
-        PerlinSimplexNoise baseNoise = new PerlinSimplexNoise(RandomSource.create(0), List.of(1));
+        PerlinSimplexNoise baseNoise = NoiseManager.DEFAULT;
         NOISE_FUNCS.add(new Function("noise", 2) {
             @Override
             public double apply(double... args) {

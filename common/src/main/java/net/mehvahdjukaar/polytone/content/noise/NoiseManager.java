@@ -24,6 +24,9 @@ public class NoiseManager extends JsonPartialReloader {
             Codec.INT.listOf().fieldOf("octaves").forGetter(p -> List.of())
     ).apply(instance, (s, l) -> new PerlinSimplexNoise(RandomSource.create(s), l)));
 
+    public static final PerlinSimplexNoise DEFAULT =  new PerlinSimplexNoise(RandomSource.create(0), List.of(1));
+
+
     public NoiseManager() {
         super("noises");
     }

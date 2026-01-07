@@ -136,11 +136,11 @@ public abstract class PositionalProxy {
         return biomeNameCache;
     }
 
-    public float biomeIndex() {
+    public double biomeIndex() {
         return 1 - BiomeIdMapper.LEGACY.getIndex(getBiomeInternal());
     }
 
-    public float biomeIndex(String biomeMapper) {
+    public double biomeIndex(String biomeMapper) {
         BiomeIdMapper mapper = Polytone.BIOME_ID_MAPPERS.get(biomeMapper);
         if (mapper == null) {
             throw new IllegalArgumentException("Unknown biome mapper: " + biomeMapper);
@@ -156,14 +156,14 @@ public abstract class PositionalProxy {
         return ColorUtils.getClimateSettings(getBiomeInternal()).downfall;
     }
 
-    public int skyLight() {
+    public double skyLight() {
         BlockPos blockPos = updatedPos();
         var l = getLevelInternal();
         if (blockPos == null || l == null) return 15;
         return l.getBrightness(LightLayer.SKY, blockPos);
     }
 
-    public int blockLight() {
+    public double blockLight() {
         BlockPos blockPos = updatedPos();
         var l = getLevelInternal();
         if (blockPos == null || l == null) return 0;
@@ -193,7 +193,7 @@ public abstract class PositionalProxy {
         return getStateInternal().is(tagKey);
     }
 
-    public boolean isAir() {
+    public boolean hasAirAt() {
         return getStateInternal().isAir();
     }
 
@@ -201,8 +201,8 @@ public abstract class PositionalProxy {
         return !getStateInternal().getFluidState().isEmpty();
     }
 
-    public boolean fluid() {
-        return !getStateInternal().getFluidState().isEmpty();
+    public String fluid() {
+        return BuiltInRegistries.FLUID.getKey(getStateInternal().getFluidState().getType()).toString();
     }
 
     public boolean hasBlockEntity() {
