@@ -6,8 +6,12 @@ import net.mehvahdjukaar.polytone.common.expressions.proxies.GlobalProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.PlayerProxy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.NonNull;
 import org.mvel2.ParserContext;
 import org.mvel2.util.MethodStub;
 
@@ -92,30 +96,11 @@ public class ExpUtils {
         return fieldValues;
     }
 
-    // global stuff
-    protected static final String TIME = "TIME";
-    protected static final String DAY_TIME = "DAY_TIME";
-    protected static final String SUN_TIME = "SUN_TIME";
-    protected static final String RAIN = "RAIN";
-    protected static final String SEASON = "SEASON";
-
-    // at pos stuff
-    protected static final String POS_X = "POS_X";
-    protected static final String POS_Y = "POS_Y";
-    protected static final String POS_Z = "POS_Z";
-    protected static final String SKY_LIGHT = "SKY_LIGHT";
-    protected static final String BLOCK_LIGHT = "BLOCK_LIGHT";
-    protected static final String TEMPERATURE = "TEMPERATURE";
-    protected static final String DOWNFALL = "DOWNFALL";
-
-    // player stuff
-    protected static final String PLAYER_X = "PLAYER_X";
-    protected static final String PLAYER_Y = "PLAYER_Y";
-    protected static final String PLAYER_Z = "PLAYER_Z";
-    protected static final String DISTANCE_SQUARED = "DISTANCE_SQUARED";
-    protected static final String PLAYER_SPEED_SQUARED = "PLAYER_SPEED_SQUARED";
-
-    protected static final String RENDER_DISTANCE = "RENDER_DISTANCE";
-    protected static final String DIFFICULTY = "DIFFICULTY";
-
+    public static @NonNull EnvironmentAttribute<?> parseEnvAttr(String attributeName) {
+        EnvironmentAttribute<?> attr = BuiltInRegistries.ENVIRONMENT_ATTRIBUTE.getValue(Identifier.parse(attributeName));
+        if (attr == null) {
+            throw new IllegalArgumentException("Unknown environment attribute: " + attributeName);
+        }
+        return attr;
+    }
 }

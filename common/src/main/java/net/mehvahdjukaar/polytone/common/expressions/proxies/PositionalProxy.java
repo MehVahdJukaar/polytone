@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -231,7 +232,7 @@ public abstract class PositionalProxy {
             if (pos == null) {
                 pos = BlockPos.ZERO;
             }
-            EnvironmentAttribute<?> attr = parseEnvAttr(attributeName);
+            EnvironmentAttribute<?> attr = ExpUtils. parseEnvAttr(attributeName);
             // safe to call delegate methods now
 
             LevelReader lr;
@@ -251,11 +252,5 @@ public abstract class PositionalProxy {
         }
     }
 
-    protected static @NonNull EnvironmentAttribute<?> parseEnvAttr(String attributeName) {
-        EnvironmentAttribute<?> attr = BuiltInRegistries.ENVIRONMENT_ATTRIBUTE.getValue(Identifier.parse(attributeName));
-        if (attr == null) {
-            throw new IllegalArgumentException("Unknown environment attribute: " + attributeName);
-        }
-        return attr;
-    }
+
 }
