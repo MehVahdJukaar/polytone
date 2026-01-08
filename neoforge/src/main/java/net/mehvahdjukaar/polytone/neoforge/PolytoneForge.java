@@ -11,8 +11,7 @@ import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEv
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +26,6 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -66,7 +64,8 @@ public class PolytoneForge {
 
     @SubscribeEvent
     public void onTick(ClientTickEvent.Pre event) {
-        Polytone.onTick(Minecraft.getInstance().level);
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level != null) Polytone.onTick(level);
     }
 
     @SubscribeEvent
