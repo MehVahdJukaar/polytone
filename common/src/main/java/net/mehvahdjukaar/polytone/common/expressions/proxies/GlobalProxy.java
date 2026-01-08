@@ -14,31 +14,36 @@ public class GlobalProxy {
     public static final GlobalProxy INSTANCE = new GlobalProxy();
 
     @NotNull
-    private Level delegate(){
+    private Level delegate() {
         return Minecraft.getInstance().level;
     }
 
-    public double time(){
+    public double time() {
         return delegate().getGameTime();
     }
 
-    public String season(){
-      return ISeason.get(delegate()).lowercaseName();
+    public double dayTime() {
+        var level = delegate();
+        return level.dimensionType().hasFixedTime() ? level.getDayTime() : level.getDayTime();
     }
 
-    public float seasonNumber(){
+    public String season() {
+        return ISeason.get(delegate()).lowercaseName();
+    }
+
+    public float seasonNumber() {
         return ExpTicker.getSeasonNumber();
     }
 
-    public int renderDistance(){
+    public int renderDistance() {
         return Minecraft.getInstance().options.renderDistance().get();
     }
 
-    public double rain(){
+    public double rain() {
         return ExpTicker.getRainAndThunder();
     }
 
-    public Object environmentAttribute(String value){
+    public Object environmentAttribute(String value) {
         var a = ExpUtils.parseEnvAttr(value);
         return delegate().environmentAttributes().getDimensionValue(a);
     }

@@ -8,13 +8,15 @@ import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.exp.IExpression;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
 
-public class EntityContextExpression extends PolytoneExpression  {
+public class EntityContextExpression extends PolytoneExpression implements IEntityExp {
 
     public static final Codec<EntityContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
@@ -47,7 +49,10 @@ public class EntityContextExpression extends PolytoneExpression  {
         builder.add(STATE_PROP_INT);
     }
 
-    public double evaluate(Vec3 pos, float entityTime, Level level) {
+    public double evaluate(Entity entity) {
+        Level level = entity.level();
+        Vec3 pos = entity.position();
+        double entityTime = entity.tickCount;
         ExpressionUtils.randomizeRandom();
 
         IExpression.IVars vb = expression.varBuilder();

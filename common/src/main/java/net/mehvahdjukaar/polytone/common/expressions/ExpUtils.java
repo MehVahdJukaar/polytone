@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.common.expressions;
 
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.BlockProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.CameraProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.GlobalProxy;
@@ -68,6 +69,7 @@ public class ExpUtils {
 
     public static void addCommonVars(Map<String, Object> vars) {
         vars.putAll(STATIC_GLOBALS);
+        Polytone.GLOBAL_EXPRESSION.addValues(vars);
     }
 
 

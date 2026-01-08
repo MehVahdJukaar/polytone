@@ -1,5 +1,8 @@
 package net.mehvahdjukaar.polytone;
 
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
@@ -12,6 +15,8 @@ import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.content.entity.EntityModifiersManager;
 import net.mehvahdjukaar.polytone.content.fluid.FluidPropertiesManager;
+import net.mehvahdjukaar.polytone.content.global_expressions.GlobalExpression;
+import net.mehvahdjukaar.polytone.content.global_expressions.GlobalExpressionsManager;
 import net.mehvahdjukaar.polytone.content.item.CustomItemModelsManager;
 import net.mehvahdjukaar.polytone.content.item.ItemModifiersManager;
 import net.mehvahdjukaar.polytone.content.lightmap.LightmapsManager;
@@ -78,7 +83,7 @@ public class Polytone {
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
-
+    public static final GlobalExpressionsManager GLOBAL_EXPRESSION = new GlobalExpressionsManager();
 
     private static final Future<Set<Identifier>> FUTURE_IDS = CompletableFuture.supplyAsync(Polytone::loadFutureIds);
 
@@ -94,7 +99,7 @@ public class Polytone {
                 BIOME_MODIFIERS,//LIGHTMAPS,
                 DIMENSION_MODIFIERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
-                CREATIVE_TABS_MODIFIERS);
+                CREATIVE_TABS_MODIFIERS, GLOBAL_EXPRESSION);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         isDevEnv = devEnv;
@@ -107,12 +112,20 @@ public class Polytone {
         if (CompatHandler.IRIS) IrisCompat.init();
 
         //TODO: custom block breaking particles
+        //TODO: custom place particles
     }
 
     public static Identifier res(String name) {
         return Identifier.fromNamespaceAndPath(MOD_ID, name);
     }
 
+
+    public static void onTick(Level level){
+        GLOBAL_EXPRESSION.tick(level);
+        ClientFrameTicker.onTick(level);
+        ExpTicker.onTick(level);
+        ENTITY_MODIFIERS.onTick(level);
+    }
 
     public static void onTagsReceived(HolderLookup.Provider registryAccess) {
         try {

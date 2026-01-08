@@ -9,6 +9,8 @@ import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,7 +45,7 @@ public interface IDayTimeContext {
     }
 
     enum PolyDeltaProvider implements StringRepresentable, ITextureDeltaProvider{
-        VANILLA, GAME_TIME, DAY_TIME, WEATHER, SCREEN_TIME;
+        VANILLA, GAME_TIME, DAY_TIME, WEATHER, SCREEN_TIME, MOON_PHASE;
 
         public static final Codec<PolyDeltaProvider> CODEC = StringRepresentable.fromEnum(PolyDeltaProvider::values);
 
@@ -81,6 +83,11 @@ public interface IDayTimeContext {
                 case GAME_TIME -> {
                     double gameTime = level.getGameTime() % timeCycleDuration;
                     yield (float) (gameTime / timeCycleDuration);
+                }
+                case MOON_PHASE -> {
+                    int phase = level.environmentAttributes().getDimensionValue(EnvironmentAttributes.MOON_PHASE)
+                            .index();
+                    yield phase / 8f;
                 }
                 case SCREEN_TIME -> Math.min(1, (ExpTicker.getGuiTime() / timeCycleDuration));
                 default -> {

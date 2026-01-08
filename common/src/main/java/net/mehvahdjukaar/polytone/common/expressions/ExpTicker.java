@@ -10,11 +10,9 @@ import net.minecraft.world.level.dimension.DimensionType;
 //move to global?
 public class ExpTicker {
 
-    private static double time;
     private static double dayTime;
     private static float rainAndThunder;
     private static float season;
-    private static float deltaTime;
 
     private static DimensionType lastDimType;
     private static Screen lastScreen = null;
@@ -29,13 +27,10 @@ public class ExpTicker {
             Polytone.onDimChanged(level);
         }
 
-        time = level.getGameTime();
-        dayTime = level.dimensionType().hasFixedTime() ? level.getDayTime() : level.getDayTime();
         //TODO: oter param like moon pos
         rainAndThunder = level.getRainLevel(0) * 0.5f + level.getThunderLevel(0) * 0.5f;
         season = ISeason.getNumber(level);
 
-        deltaTime = Minecraft.getInstance().getDeltaTracker().getRealtimeDeltaTicks();
         if (mc.screen != lastScreen) {
             lastScreen = mc.screen;
             screenTime = 0;

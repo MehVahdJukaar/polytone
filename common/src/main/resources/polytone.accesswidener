@@ -14,6 +14,8 @@ accessible method net/minecraft/client/multiplayer/ClientLevel addEnvironmentAtt
 accessible field net/minecraft/world/effect/MobEffect AMBIENT_ALPHA I
 accessible class net/minecraft/client/resources/model/BlockModelRotation$WithUvLock
 
+accessible field net/minecraft/client/renderer/entity/EntityRenderDispatcher renderers Ljava/util/Map;
+
 accessible field net/minecraft/client/resources/SplashManager DEFAULT_STYLE Lnet/minecraft/network/chat/Style;
 mutable field net/minecraft/client/resources/SplashManager DEFAULT_STYLE Lnet/minecraft/network/chat/Style;
 accessible field net/minecraft/client/resources/SplashManager splashes Ljava/util/List;

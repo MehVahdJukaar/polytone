@@ -50,8 +50,7 @@ public class PolytoneFabric implements ClientModInitializer {
 
         ClientTickEvents.START_CLIENT_TICK.register((client) -> {
             if (client.level != null) {
-                ClientFrameTicker.onTick(client.level);
-                ExpTicker.onTick(client.level);
+                Polytone.onTick(client.level);
             }
 
         });

@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.EntityContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.common.reloader.SingleJsonOrPropertiesReloadListener;
 import net.mehvahdjukaar.polytone.common.struc.Vec3f;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
@@ -73,13 +74,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     Identifier xpOrbParticle;
     @Nullable
-    private EntityContextExpression xpOrbColor;
+    private IEntityExp xpOrbColor;
     @Nullable
-    private EntityContextExpression xpOrbColorR;
+    private IEntityExp xpOrbColorR;
     @Nullable
-    private EntityContextExpression xpOrbColorG;
+    private IEntityExp xpOrbColorG;
     @Nullable
-    private EntityContextExpression xpOrbColorB;
+    private IEntityExp xpOrbColorB;
 
     private Integer xpBar = null;
     private Integer xpBarBack = null;

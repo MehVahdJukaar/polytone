@@ -19,10 +19,7 @@ import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class ColormapsManager extends JsonImgPartialReloader {
@@ -240,4 +237,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
         }
     }
 
+    public Collection<Identifier> getAllNames() {
+        return colormaps.keySet();
+    }
 }

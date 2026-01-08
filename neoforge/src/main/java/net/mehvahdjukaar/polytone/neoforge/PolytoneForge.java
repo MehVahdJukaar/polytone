@@ -2,16 +2,16 @@ package net.mehvahdjukaar.polytone.neoforge;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
-import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
-import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
+import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
+import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -65,8 +65,7 @@ public class PolytoneForge {
 
     @SubscribeEvent
     public void onTick(LevelTickEvent.Pre event) {
-        ClientFrameTicker.onTick(event.getLevel());
-        ExpTicker.onTick(event.getLevel());
+        Polytone.onTick(event.getLevel());
     }
 
     @SubscribeEvent
@@ -82,6 +81,13 @@ public class PolytoneForge {
         }
     }
 
+    @SubscribeEvent
+    public <A extends LivingEntityRenderState> void onRenderEntityPost(RenderLivingEvent.Post<?, A, ?> event) {
+        Polytone.ENTITY_MODIFIERS.onEntityRender(event.getRenderer(),
+                event.getPoseStack(), event.getRenderState());
+
+    }
+
     //tag sync event seems to be broken in latest neo
     @SubscribeEvent
     public void onTagSync(ClientPlayerNetworkEvent.LoggingIn event) {
@@ -93,6 +99,7 @@ public class PolytoneForge {
     public void renderStageEventAfterLevel(RenderLevelStageEvent.AfterLevel event) {
         PolytoneRenderTypes.onRenderLast();
     }
+
     @SubscribeEvent
     public void renderStageEventAfterLevel(RenderLevelStageEvent.AfterParticles event) {
         PolytoneRenderTypes.cacheMatrices();
