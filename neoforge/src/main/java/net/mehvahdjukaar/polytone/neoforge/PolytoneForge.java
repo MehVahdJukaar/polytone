@@ -11,6 +11,7 @@ import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEv
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
@@ -58,14 +59,14 @@ public class PolytoneForge {
 
     }
 
-    //@SubscribeEvent
+    @SubscribeEvent
     public void onEntityTick(EntityTickEvent.Post event) {
         Polytone.ENTITY_MODIFIERS.onEntityTick(event.getEntity());
     }
 
     @SubscribeEvent
-    public void onTick(LevelTickEvent.Pre event) {
-        Polytone.onTick(event.getLevel());
+    public void onTick(ClientTickEvent.Pre event) {
+        Polytone.onTick(Minecraft.getInstance().level);
     }
 
     @SubscribeEvent
@@ -81,12 +82,13 @@ public class PolytoneForge {
         }
     }
 
+    /*
     @SubscribeEvent
     public <A extends LivingEntityRenderState> void onRenderEntityPost(RenderLivingEvent.Post<?, A, ?> event) {
         Polytone.ENTITY_MODIFIERS.onEntityRender(event.getRenderer(),
-                event.getPoseStack(), event.getRenderState());
+                event.getPoseStack(), event.getRenderState(), event.getCameraState());
 
-    }
+    }*/
 
     //tag sync event seems to be broken in latest neo
     @SubscribeEvent
