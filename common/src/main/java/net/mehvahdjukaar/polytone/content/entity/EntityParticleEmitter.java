@@ -17,9 +17,9 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4fc;
+import org.joml.Vector3f;
 
 import java.util.*;
 
@@ -70,7 +70,7 @@ public record EntityParticleEmitter(
                     IEntityExp.CODEC.optionalFieldOf("custom").forGetter(EntityParticleEmitter::custom)
             ).apply(i, EntityParticleEmitter::new));
 
-    public void tick(Entity entity, Vec3 origin) {
+    public void tick(Entity entity, Matrix4fc transform) {
         if (particleType.isEmpty()) return;
         double spawnChance = chance.evaluate(entity);
         Level level = entity.level();
@@ -78,13 +78,28 @@ public record EntityParticleEmitter(
             for (int i = 0; i < count.evaluate(entity); i++) {
                 ParticleOptions po = getParticleOptions(entity);
                 if (po == null) return;
+                Vector3f origin = new Vector3f(
+                        (float) x.evaluate(entity),
+                        (float) y.evaluate(entity),
+                        (float) z.evaluate(entity)
+                );
+                Vector3f speed = new Vector3f(
+                        (float) dx.evaluate(entity),
+                        (float) dy.evaluate(entity),
+                        (float) dz.evaluate(entity)
+                );
+                // Apply the full transform to position
+                origin.mulPosition(transform);
+
+                // Apply rotation/scale only to velocity (no translation)
+                transform.transformDirection(speed);
                 level.addParticle(po,
-                        origin.x + x.evaluate(entity),
-                        origin.y + y.evaluate(entity),
-                        origin.z + z.evaluate(entity),
-                        dx.evaluate(entity),
-                        dy.evaluate(entity),
-                        dz.evaluate(entity)
+                        origin.x,
+                        origin.y,
+                        origin.z,
+                        speed.x,
+                        speed.y,
+                        speed.z
                 );
             }
         }

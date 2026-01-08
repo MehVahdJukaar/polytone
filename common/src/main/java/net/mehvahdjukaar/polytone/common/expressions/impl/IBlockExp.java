@@ -10,7 +10,12 @@ import net.minecraft.world.level.block.state.BlockState;
 public interface IBlockExp {
 
     Codec<IBlockExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.withAlternative(BlockContextExpression.CODEC, BlockExp.TYPE.codec())
+            CodecUtils.withAlternative(
+                    Codec.DOUBLE.xmap(
+                            aDouble -> (level, pos, state) -> aDouble,
+                            iBlockExp -> 0.0
+                    ),
+                    BlockContextExpression.CODEC, BlockExp.TYPE.codec())
     );
 
     double evaluate(LevelReader level, BlockPos pos, BlockState state);

@@ -4,7 +4,6 @@ import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExp;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.BlockProxy;
-import net.mehvahdjukaar.polytone.common.expressions.proxies.GlobalProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.RandomProxy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
@@ -22,7 +21,6 @@ public class BlockExp extends PolyExp implements IBlockExp {
                     BlockExp::new,
                     c -> {
                         ExpUtils.addCommonInputs(c);
-                        c.addImport("g", GlobalProxy.class);
                         c.addInput("o", BlockProxy.class);
                         c.addInput("object", BlockProxy.class);
                     }
@@ -34,22 +32,15 @@ public class BlockExp extends PolyExp implements IBlockExp {
 
     @Override
     public double evaluate(LevelReader level, BlockPos pos, BlockState state) {
-        try {
-            BlockProxy obj = new BlockProxy(level, pos, state);
-            Map<String, Object> vars = new HashMap<>();
-            ExpUtils.addCommonVars(vars);
-            vars.put("o", obj);
-            vars.put("object", obj);
-            RandomProxy rand = RandomProxy.posSeeded(pos);
-            vars.put("random", rand);
-            vars.put("r", rand);
-            vars.put("g", new GlobalProxy());
-            return MVEL.executeExpression(expr, vars, double.class);
-        } catch (Exception e) {
-            int aa = 1;
-            return 0;
-        }
+        BlockProxy obj = new BlockProxy(level, pos, state);
+        Map<String, Object> vars = new HashMap<>();
+        ExpUtils.addCommonVars(vars);
+        vars.put("o", obj);
+        vars.put("object", obj);
+        RandomProxy rand = RandomProxy.posSeeded(pos);
+        vars.put("random", rand);
+        vars.put("r", rand);
+        return MVEL.executeExpression(expr, vars, double.class);
     }
-
 
 }

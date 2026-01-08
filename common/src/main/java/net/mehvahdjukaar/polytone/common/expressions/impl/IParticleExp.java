@@ -9,7 +9,12 @@ import net.minecraft.world.level.Level;
 public interface IParticleExp {
 
     Codec<IParticleExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.withAlternative(ParticleContextExpression.CODEC, ParticleExp.TYPE.codec())
+            CodecUtils.withAlternative(
+                    Codec.DOUBLE.xmap(
+                            aDouble -> (level, pos) -> aDouble,
+                            iBlockExp -> 0.0
+                    ),
+                    ParticleContextExpression.CODEC, ParticleExp.TYPE.codec())
     );
 
     double evaluate(Particle particle, Level level);

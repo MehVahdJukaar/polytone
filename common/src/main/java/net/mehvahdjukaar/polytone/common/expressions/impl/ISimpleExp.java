@@ -5,9 +5,14 @@ import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 
 public interface ISimpleExp {
 
-    @SuppressWarnings("unchecked")
     Codec<ISimpleExp> CODEC = Codec.lazyInitialized(() -> (
-            (Codec) SimpleExp.CODEC));
+            CodecUtils.withAlternative(
+                    Codec.DOUBLE.xmap(
+                            aDouble -> () -> aDouble,
+                            iBlockExp -> 0.0
+                    ),
+                    SimpleExp.CODEC
+            )));
 
     double evaluate();
 

@@ -1,8 +1,8 @@
-package net.mehvahdjukaar.polytone.mixins.fabric;
+package net.mehvahdjukaar.polytone.mixins;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.model.EntityModel;
+import net.mehvahdjukaar.polytone.common.expressions.proxies.GlobalProxy;import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -17,8 +17,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class LivingEntityRendererMixin<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> {
 
     @Inject(method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
-            at = @At("RETURN"))
+            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V",
+            shift = At.Shift.BEFORE))
     public void polytone$renderParticles(S livingEntityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
-        Polytone.ENTITY_MODIFIERS.onEntityRender((LivingEntityRenderer)(Object) this, poseStack,  livingEntityRenderState);
+       //Cant use forge events as they are missing the camera state
+        Polytone.ENTITY_MODIFIERS.onEntityRender((LivingEntityRenderer)(Object) this, poseStack,
+                livingEntityRenderState, cameraRenderState);
     }
 }

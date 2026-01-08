@@ -18,7 +18,6 @@
     "FaceBakeryMixin",
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
-    "LivingEntityRendererMixin",
     "ModelBlockRendererMixin",
     "ParticleEngineAccessor",
     "ParticleResourcesAccessor",

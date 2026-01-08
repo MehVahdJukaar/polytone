@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -64,7 +65,7 @@ public class EntityModifiersManager extends JsonPartialReloader {
 
                 var value = entry.getValue();
                 for ( ParticleSpawnRecord record : value) {
-                    record.emitter().tick(entity, record.pos());
+                    record.emitter().tick(entity, record.transform());
                 }
             }
         }
@@ -74,18 +75,20 @@ public class EntityModifiersManager extends JsonPartialReloader {
 
     //render thread
     public <S extends LivingEntityRenderState> void onEntityRender(
-            LivingEntityRenderer<?, S, ?> renderer, PoseStack poseStack, S renderState) {
+            LivingEntityRenderer<?, S, ?> renderer, PoseStack poseStack, S renderState, CameraRenderState cameraState) {
         EntityModifier mod = emittersPerEntity.get(renderState.entityType);
 
         if (mod != null) {
             int id = ((IRenderStateWithId) renderState).polytone$getId();
             if (spawnRecords.containsKey(id)) return;
 
-            var particleSpawns = mod.gatherParticleSpawns(renderer, poseStack, renderState);
+            var particleSpawns = mod.gatherParticleSpawns(renderer, poseStack, renderState, cameraState);
 
             if(!particleSpawns.isEmpty())
                 spawnRecords.put(id, particleSpawns);
         }
     }
 
+    public void onEntityTick(Entity entity) {
+    }
 }

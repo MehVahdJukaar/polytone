@@ -16,9 +16,7 @@ public record ExcludePathCodec<T>(Codec<T> inner) implements Codec<T> {
             Identifier.fromNamespaceAndPath("polytone", "excluded_path_2")
     );
 
-    private static final Codec<List<String>> ID_CODEC = Codec.withAlternative(
-            Codec.STRING.listOf(), Codec.STRING, List::of
-    );
+    private static final Codec<List<String>> ID_CODEC = CodecUtils.singleOrList(Codec.STRING);
 
     @Override
     public <T1> DataResult<Pair<T, T1>> decode(DynamicOps<T1> ops, T1 input) {

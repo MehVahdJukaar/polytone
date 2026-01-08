@@ -24,7 +24,13 @@ public interface IColormapExp {
     MapRegistry<IColormapExp> BUILTIN_EXP = new MapRegistry<>("Colormap Number Providers");
 
     Codec<IColormapExp> CODEC = Codec.lazyInitialized(() -> CodecUtils.referenceOrDirect(BUILTIN_EXP,
-            CodecUtils.withAlternative(ColormapExpressionProvider.CODEC, ColormapExp.TYPE.codec()), true));
+            CodecUtils.withAlternative(
+                    Codec.FLOAT.xmap(
+                            aDouble -> (a,b,c,d,e,f)
+                                    -> aDouble,
+                            iBlockExp -> 0.0f
+                    ),
+                    ColormapExpressionProvider.CODEC, ColormapExp.TYPE.codec()), true));
 
     float evaluate(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
                    @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack);

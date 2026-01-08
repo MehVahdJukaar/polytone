@@ -1,10 +1,7 @@
 package net.mehvahdjukaar.polytone.common.expressions;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.expressions.proxies.BlockProxy;
-import net.mehvahdjukaar.polytone.common.expressions.proxies.CameraProxy;
-import net.mehvahdjukaar.polytone.common.expressions.proxies.GlobalProxy;
-import net.mehvahdjukaar.polytone.common.expressions.proxies.PlayerProxy;
+import net.mehvahdjukaar.polytone.common.expressions.proxies.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -59,10 +56,12 @@ public class ExpUtils {
     public static void addCommonInputs(ParserContext ctx) {
         ctx.addInput("camera", CameraProxy.class);
         ctx.addInput("c", CameraProxy.class);
-        ctx.addImport("global", GlobalProxy.class);
-        ctx.addImport("g", GlobalProxy.class);
+        ctx.addInput("global", GlobalProxy.class);
+        ctx.addInput("g", GlobalProxy.class);
         ctx.addInput("p", PlayerProxy.class);
         ctx.addInput("player", PlayerProxy.class);
+        ctx.addInput("r", RandomProxy.class);
+        ctx.addInput("random", RandomProxy.class);
 
         importStaticMethods(ctx, ExpMath.class);
     }

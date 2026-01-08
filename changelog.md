@@ -1,8 +1,3 @@
-- the new Scripting Expressions System is here!
-- This new system is a brand new much more powerful implementation of the old Math Expressions syste, this time powered by the Mvel library
-- With scripting expressions you'll be able to write proper scripting code inside an expressions.
-- This include function invocations, local variable declarations, multi line statements and all the rest you wuld expect from a curly braces based scripting language (i.e. JavaScript).
-- This feature already adds MANY MANY new contextual aware queries one can do, allowing to add many new things that werent possible before.
-- For instance you can check for a player held item with "player.handItem == 'stone_sword'" or check the temperature at the camera with "camera.temperature"
-- The old Math Expressions system will still be available, each expressiosn will be attempted to be parsed first as a Scripting Expression, and if it fails it will fallback to the old Math Expressions system to preserve backward compatibility.
-- Check out the updated wiki page SOON TM
+- added global_expressions
+- added entity_modifiers.
+- these allow you to make ENTITY MODELS emit PARTICLES

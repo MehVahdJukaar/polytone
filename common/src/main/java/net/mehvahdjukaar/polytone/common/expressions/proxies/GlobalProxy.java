@@ -31,11 +31,11 @@ public class GlobalProxy {
         return ISeason.get(delegate()).lowercaseName();
     }
 
-    public float seasonNumber() {
+    public double seasonNumber() {
         return ExpTicker.getSeasonNumber();
     }
 
-    public int renderDistance() {
+    public double renderDistance() {
         return Minecraft.getInstance().options.renderDistance().get();
     }
 

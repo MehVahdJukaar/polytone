@@ -1,11 +1,8 @@
 package net.mehvahdjukaar.polytone.common.codec;
 
 import com.mojang.datafixers.util.Either;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
-import net.mehvahdjukaar.polytone.content.texture.IDayTimeContext;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
@@ -121,7 +118,13 @@ public class CodecUtils {
         return new BetterAlternativeCodec<>(first, second, chooseFirst);
     }
 
-    public static <A, B extends A, C extends A> Codec<A> withAlternative(Codec<B> codec, Codec<C> codec1) {
-        return Codec.withAlternative((Codec<A>) codec, codec1);
+    @SafeVarargs
+    public static <A> Codec<A> withAlternative(Codec<? extends A>... codecs) {
+        return new AlternativeCodec<>(codecs);
     }
+
+    public static <A> Codec<List<A>> singleOrList(Codec<A> elementCodec) {
+        return Codec.withAlternative(elementCodec.listOf(), elementCodec, List::of);
+    }
+
 }

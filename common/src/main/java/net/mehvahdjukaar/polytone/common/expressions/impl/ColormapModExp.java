@@ -49,8 +49,4 @@ public class ColormapModExp extends PolyExp implements IColormapModExp {
         return (float) v;
     }
 
-    @Override
-    public IColormapModExp createConcurrent() {
-        return this;
-    }
 }
