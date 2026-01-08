@@ -45,7 +45,8 @@ public class ColormapModExp extends PolyExp implements IColormapModExp {
         RandomProxy rand = pos == null ? RandomProxy.GLOBAL : RandomProxy.posSeeded(pos);
         vars.put("random", rand);
         vars.put("r", rand);
-        return MVEL.executeExpression(expr, vars, float.class);
+        double v = MVEL.executeExpression(expr, vars, double.class);
+        return (float) v;
     }
 
     @Override

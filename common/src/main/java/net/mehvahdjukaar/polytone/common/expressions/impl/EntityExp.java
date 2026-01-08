@@ -42,7 +42,7 @@ public class EntityExp extends PolyExp implements IEntityExp {
         RandomProxy rand = RandomProxy.GLOBAL;
         vars.put("random", rand);
         vars.put("r", rand);
-        return MVEL.executeExpression(expr, vars, Double.class);
+        return MVEL.executeExpression(expr, vars, double.class);
     }
 
 

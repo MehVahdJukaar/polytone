@@ -112,6 +112,7 @@ public class EnvironmentAttributeMapMod {
     private static <Value, Argument> EnvironmentAttributeMap.Entry<Value, Argument> entryFromSupplier(
             Either<Argument, Supplier<Argument>> valueOrSupplier, AttributeModifier<Value, Argument> modifier) {
         return valueOrSupplier.map(
+                //gets default value from supplier. might be a bad idea
                 value ->
                         new EnvironmentAttributeMap.Entry<>(
                                 value,

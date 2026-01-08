@@ -13,6 +13,7 @@ accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Colle
 accessible method net/minecraft/client/multiplayer/ClientLevel addEnvironmentAttributeLayers (Lnet/minecraft/world/attribute/EnvironmentAttributeSystem$Builder;)Lnet/minecraft/world/attribute/EnvironmentAttributeSystem$Builder;
 accessible field net/minecraft/world/effect/MobEffect AMBIENT_ALPHA I
 accessible class net/minecraft/client/resources/model/BlockModelRotation$WithUvLock
+accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;
 
 accessible field net/minecraft/client/renderer/entity/EntityRenderDispatcher renderers Ljava/util/Map;
 

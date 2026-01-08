@@ -49,6 +49,7 @@ public class EntityContextExpression extends PolytoneExpression implements IEnti
         builder.add(STATE_PROP_INT);
     }
 
+    @Override
     public double evaluate(Entity entity) {
         Level level = entity.level();
         Vec3 pos = entity.position();

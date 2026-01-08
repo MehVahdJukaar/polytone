@@ -8,6 +8,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
+import static net.mehvahdjukaar.polytone.common.expressions.ExpUtils.parseEnvAttr;
+
 @BeanGettersAliases
 public class CameraProxy extends PositionalProxy {
 

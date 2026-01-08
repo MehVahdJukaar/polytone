@@ -503,20 +503,25 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     public float @Nullable [] getXpOrbColor(ExperienceOrbRenderState orb, float partialTicks) {
+     /*
         Vec3 orbPos = new Vec3(orb.x, orb.y, orb.z);
         Level level = Minecraft.getInstance().level;
         if (xpOrbColor != null) {
-            int color = (int) xpOrbColor.evaluate(orbPos, orb.ageInTicks + partialTicks, level);
+            int color = (int) xpOrbColor.evaluate(orb);
             return ColorUtils.unpack(color);
         }
         if (xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         float r = 0;
         float g = 0;
         float b = 0;
-        if (xpOrbColorR != null) r = (float) xpOrbColorR.evaluate(orbPos, orb.ageInTicks + partialTicks, level);
-        if (xpOrbColorG != null) g = (float) xpOrbColorG.evaluate(orbPos, orb.ageInTicks + partialTicks, level);
-        if (xpOrbColorB != null) b = (float) xpOrbColorB.evaluate(orbPos, orb.ageInTicks + partialTicks, level);
-        return new float[]{r, g, b};
+        if (xpOrbColorR != null) r = (float) xpOrbColorR.evaluate(orb);
+        if (xpOrbColorG != null) g = (float) xpOrbColorG.evaluate(orb);
+        if (xpOrbColorB != null) b = (float) xpOrbColorB.evaluate(orb);
+
+      */
+        return null;
+        //TODO:
+        //return new float[]{r, g, b};
     }
 
 

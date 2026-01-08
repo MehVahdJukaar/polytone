@@ -11,7 +11,7 @@ import net.minecraft.world.level.Level;
 public interface IEntityExp {
 
     Codec<IEntityExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.withAlternative(EntityContextExpression.CODEC, ParticleExp.TYPE.codec())
+            CodecUtils.withAlternative(EntityContextExpression.CODEC, EntityExp.TYPE.codec())
     );
 
     double evaluate(Entity entity);

@@ -2,67 +2,90 @@ package net.mehvahdjukaar.polytone.content.entity;
 
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.vertex.PoseStack;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
-import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsModifier;
-import net.mehvahdjukaar.polytone.content.global_expressions.GlobalExpression;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class EntityModifiersManager extends JsonPartialReloader {
 
+    private final Map<EntityType<?>, EntityModifier> emittersPerEntity = new HashMap<>();
 
-    private final Map<EntityRenderer<?,?>, EntityParticleEmitter> emittersPerRenderer = new HashMap<>();
-    private final Map<EntityType<?>, EntityParticleEmitter> emittersPerEntity = new HashMap<>();
+    private final Int2ObjectOpenHashMap<List<ParticleSpawnRecord>> spawnRecords = new Int2ObjectOpenHashMap<>();
+
+    public EntityModifiersManager(){
+        super("entity_modifiers");
+    }
 
     @Override
     protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        for (var j : Parsed.batchParseOnlyEnabled(jsons, EntityParticleEmitter.CODEC,
+        for (var j : Parsed.batchParseOnlyEnabled(jsons, EntityModifier.CODEC,
                 ops, "Entity Modifiers")) {
             if (j != null) {
-                emitters.put(j.getKey(), j.getValue());
+                addModifier(j.getKey(), j.getValue());
             }
         }
     }
 
-    private void addModifier(Identifier fileId, DimensionEffectsModifier mod, HolderLookup.Provider registryAccess) {
-        for (var h : mod.targets().compute(fileId, registryAccess)) {
-            emittersPerEntity.merge(h.unwrapKey().get().identifier(), mod, EntityParticleEmitter::merge);
+    private void addModifier(Identifier fileId, EntityModifier mod) {
+        for (var h : mod.targets().compute(fileId, BuiltInRegistries.ENTITY_TYPE)) {
+            emittersPerEntity.merge(h.value(), mod, EntityModifier::merge);
         }
     }
 
     @Override
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
-        EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-        for(var entry : emitters.entrySet()){
-            entry.tar
-        }
-        dispatcher.getRenderer()
+
     }
 
     @Override
     protected void resetWithLevel(boolean logOff) {
-        emittersPerRenderer.clear();
+        emittersPerEntity.clear();
     }
 
+    //client thread
     public void onTick(Level level) {
 
+        for (var entry : spawnRecords.int2ObjectEntrySet()) {
+            Entity entity = level.getEntity(entry.getIntKey());
+            if (entity != null) {
+
+                var value = entry.getValue();
+                for ( ParticleSpawnRecord record : value) {
+                    record.emitter().tick(entity, record.pos());
+                }
+            }
+        }
+        spawnRecords.clear();
     }
 
 
+    //render thread
     public <S extends LivingEntityRenderState> void onEntityRender(
             LivingEntityRenderer<?, S, ?> renderer, PoseStack poseStack, S renderState) {
+        EntityModifier mod = emittersPerEntity.get(renderState.entityType);
 
+        if (mod != null) {
+            int id = ((IRenderStateWithId) renderState).polytone$getId();
+            if (spawnRecords.containsKey(id)) return;
+
+            var particleSpawns = mod.gatherParticleSpawns(renderer, poseStack, renderState);
+
+            if(!particleSpawns.isEmpty())
+                spawnRecords.put(id, particleSpawns);
+        }
     }
+
 }

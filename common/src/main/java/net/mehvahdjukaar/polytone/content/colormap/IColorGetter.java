@@ -160,7 +160,7 @@ public interface IColorGetter extends BlockColor, BarColor {
 
     Codec<IColorGetter> EXPRESSION_CODEC = IBlockExp.CODEC.xmap(
             IColorGetter.ExpressionColor::new,
-            g -> g instanceof ExpressionColor(BlockContextExpression exp) ? exp : BlockContextExpression.ZERO
+            g -> g instanceof ExpressionColor(IBlockExp exp) ? exp : IBlockExp.ZERO
     );
 
     Codec<IColorGetter> SINGLE_COLOR_OR_EXPRESSION = Codec.withAlternative(
