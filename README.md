@@ -24,6 +24,8 @@ The mod is meant to be used by anyone
 
 For extensive documentation follow the mod Wiki here
 
+https://github.com/MehVahdJukaar/polytone/wiki
+
 https://github.com/MehVahdJukaar/polytone/wiki/Custom-Colors
 
 https://github.com/MehVahdJukaar/polytone/wiki/Custom-Block-Properties
