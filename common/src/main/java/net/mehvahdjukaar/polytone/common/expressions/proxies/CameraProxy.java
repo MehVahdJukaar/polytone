@@ -7,6 +7,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 import static net.mehvahdjukaar.polytone.common.expressions.ExpUtils.parseEnvAttr;
 
@@ -19,13 +21,13 @@ public class CameraProxy extends PositionalProxy {
         super();
     }
 
-    private Camera delegate(){
+    private Camera delegate() {
         return Minecraft.getInstance().gameRenderer.getMainCamera();
     }
 
     @Override
     protected BlockPos getPosInternal() {
-        return  delegate().blockPosition();
+        return delegate().blockPosition();
     }
 
     @Override
@@ -45,20 +47,48 @@ public class CameraProxy extends PositionalProxy {
         return delegate().position().z;
     }
 
-    public float yaw() {
+    public double yaw() {
         return delegate().yaw();
     }
 
-    public float pitch() {
+    public double pitch() {
         return Mth.wrapDegrees(delegate().xRot());
     }
 
-    public float roll() {
+    public double roll() {
         return Mth.wrapDegrees(PlatStuff.getCamRoll(delegate()));
     }
 
     public boolean detatched() {
         return delegate().isDetached();
+    }
+
+    public double viewDistance() {
+        return Minecraft.getInstance().options.renderDistance().get() * 16.0;
+    }
+
+    long lastFovUpdate = -1;
+    double cachedFov = -1;
+
+    public double fov() {
+        Camera camera = delegate();
+        long nowTime = Minecraft.getInstance().level.getGameTime();
+        if (nowTime != lastFovUpdate) {
+            lastFovUpdate = nowTime;
+            cachedFov = Minecraft.getInstance().gameRenderer.getFov(camera, 0, true);
+        }
+        return cachedFov;
+    }
+
+    public boolean lookingToward(double x, double y, double z) {
+        var dirVec = new Vec3(delegate().forwardVector().normalize(new Vector3f()));
+        var camPos = delegate().position();
+        var toTarget = new Vec3(x - camPos.x, y - camPos.y, z - camPos.z).normalize();
+        double dot = dirVec.dot(toTarget);
+        if (dot < 0) return false;
+        double fovAngleDeg = this.fov();
+        double threshold = Math.cos(Math.toRadians(fovAngleDeg / 2.0));
+        return dot >= threshold;
     }
 
     @Override
