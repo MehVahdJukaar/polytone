@@ -145,7 +145,7 @@ dependencies {
     modImplementation("curse.maven:embeddium-908741:5681725")
     //modImplementation ("org.embeddedt:embeddium-1.20.1:0.3.31+mc1.20.1")
 
-    modCompileOnly ("curse.maven:serene-seasons-291874:5753502"){
+    modCompileOnly ("curse.maven:serene-seasons-291874:6229153"){
         transitive = false;
     }
 

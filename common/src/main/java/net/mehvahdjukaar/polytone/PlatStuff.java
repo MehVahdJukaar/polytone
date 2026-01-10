@@ -189,10 +189,6 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
-    public static void updateSearchTrees(SessionSearchTrees sessionSearchTrees, List<CreativeModeTab> needsTreeUpdated) {
-        throw new AssertionError();
-    }
 
     @ExpectPlatform
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
