@@ -24,7 +24,10 @@ public abstract class RegistrySnapshotMixin<V> {
 
     @Shadow public abstract ResourceKey<Registry<V>> getRegistryKey();
 
-    @WrapOperation(method = "lambda$makeSnapshot$13", at = @At(value = "INVOKE",
+    @WrapOperation(method = "lambda$makeSnapshot$13",
+            remap = false,
+            at = @At(value = "INVOKE",
+            remap = false,
             target = "Lit/unimi/dsi/fastutil/objects/Object2IntMap;put(Ljava/lang/Object;Ljava/lang/Integer;)Ljava/lang/Integer;"))
     private Integer polytone$skipDynamicId(Object2IntMap<ResourceLocation> instance, Object key, Integer value, Operation<Integer> original) {
         //removes dynamic stuff
