@@ -4,10 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -135,13 +133,19 @@ public record Targets(List<Entry> entries) {
 
         @Override
         public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
-            Optional<Holder.Reference<T>> holder = reg.getHolder(ResourceKey.create(reg.key(), id));
-            if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
-                Polytone.LOGGER.error("Found missing ID in minecraft namespace: {}", id + ". Polytone will skip it but this is remains a bug of the Resource Pack. Optional entries or resource conditions should be used to maintain backward compatibility instead.");
+            //thanks mc
+            ResourceLocation idd = id;
+            if (idd.toString().equals("minecraft:short_grass")) {
+                idd = new ResourceLocation("grass");
+            }
+            Optional<Holder.Reference<T>> holder = reg.getHolder(ResourceKey.create(reg.key(), idd));
+            if (holder.isEmpty() && idd.getNamespace().equals("minecraft")) {
+                Polytone.LOGGER.error("Found missing ID in minecraft namespace: {}", idd + ". Polytone will skip it but this is remains a bug of the Resource Pack. Optional entries or resource conditions should be used to maintain backward compatibility instead.");
                 return List.of();
             }
             return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
         }
+
 
     }
 
