@@ -7,6 +7,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.struc.VersionRange;
 import net.minecraft.SharedConstants;
 import net.minecraft.resources.Identifier;
@@ -80,7 +81,7 @@ public class Parsed<T> {
     private static final Codec<Boolean> CONDITION_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.optionalFieldOf("polytone_ignore", false).forGetter(b -> b),
             VersionRange.CODEC.optionalFieldOf("version").forGetter(b -> Optional.empty()),
-            Codec.withAlternative(Codec.STRING.listOf(), Codec.STRING, List::of)
+            CodecUtils.singleOrList(Codec.STRING)
                     .optionalFieldOf("require_mods", List.of()).forGetter(b -> List.of())
     ).apply(instance, (ignore, version, modList) -> {
         if (ignore) {

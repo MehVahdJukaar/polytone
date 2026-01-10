@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.content.texture;
 
 import com.google.gson.JsonElement;
-import com.llamalad7.mixinextras.expression.impl.ast.expressions.SimpleExpression;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
@@ -9,7 +8,6 @@ import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -27,7 +25,7 @@ public interface IDayTimeContext {
     void polytone$setTimeCycleDuration(int duration);
 
     interface ITextureDeltaProvider{
-        Codec<ITextureDeltaProvider> CODEC = CodecUtils.withAlternative(PolyDeltaProvider.CODEC,
+        Codec<ITextureDeltaProvider> CODEC = CodecUtils.alternatives(PolyDeltaProvider.CODEC,
                 ExpressionDeltaProvider.CODEC);
 
         @Nullable Float getDelta(float timeCycleDuration);

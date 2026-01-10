@@ -4,17 +4,16 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.codecs.EitherCodec;
 
 import java.util.function.BiPredicate;
 
-public class BetterAlternativeCodec<A,B extends A,C extends A> implements Codec<A> {
+public class BestAlternativeCodec<A,B extends A,C extends A> implements Codec<A> {
 
     private final Codec<B> first;
     private final Codec<C> second;
     private final BiPredicate<B,C> chooseFirst;
 
-    public BetterAlternativeCodec(Codec<B> first, Codec<C> second, BiPredicate<B,C> chooseFirst) {
+    public BestAlternativeCodec(Codec<B> first, Codec<C> second, BiPredicate<B,C> chooseFirst) {
         this.first = first;
         this.second = second;
         this.chooseFirst = chooseFirst;

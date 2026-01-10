@@ -6,7 +6,7 @@ import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 public interface ISimpleExp {
 
     Codec<ISimpleExp> CODEC = Codec.lazyInitialized(() -> (
-            CodecUtils.withAlternative(
+            CodecUtils.alternatives(
                     Codec.DOUBLE.xmap(
                             aDouble -> () -> aDouble,
                             iBlockExp -> 0.0

@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public class BlockOffsets {
 
-    public static final Codec<BlockBehaviour.OffsetFunction> CODEC = CodecUtils.withAlternative(
+    public static final Codec<BlockBehaviour.OffsetFunction> CODEC = CodecUtils.alternatives(
             TypeOffset.CODEC, CustomOffset.CODEC);
 
     private record TypeOffset(BlockBehaviour.OffsetType type,

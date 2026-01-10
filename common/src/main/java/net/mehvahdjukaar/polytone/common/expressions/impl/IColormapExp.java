@@ -24,7 +24,7 @@ public interface IColormapExp {
     MapRegistry<IColormapExp> BUILTIN_EXP = new MapRegistry<>("Colormap Number Providers");
 
     Codec<IColormapExp> CODEC = Codec.lazyInitialized(() -> CodecUtils.referenceOrDirect(BUILTIN_EXP,
-            CodecUtils.withAlternative(
+            CodecUtils.alternatives(
                     Codec.FLOAT.xmap(
                             aDouble -> (a,b,c,d,e,f)
                                     -> aDouble,

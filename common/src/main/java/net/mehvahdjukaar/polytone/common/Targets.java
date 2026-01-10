@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
@@ -100,9 +101,8 @@ public record Targets(List<Entry> entries) {
         <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg);
     }
 
-    private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = Codec.withAlternative(
-            (Codec<Entry>) (Object) SimpleLocation.SIMPLE_CODEC,
-            Codec.withAlternative((Codec<Entry>) (Object) TagLocation.TAG_CODEC, RegexLocation.REGEX_CODEC));
+    private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = CodecUtils.alternatives(
+         SimpleLocation.SIMPLE_CODEC, TagLocation.TAG_CODEC, RegexLocation.REGEX_CODEC);
 
     private static final Codec<Entry> ENTRY_CODEC = Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC);
 

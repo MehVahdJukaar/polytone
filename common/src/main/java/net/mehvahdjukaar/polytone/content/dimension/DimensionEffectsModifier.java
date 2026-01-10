@@ -115,7 +115,7 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                 ).apply(instance, DimensionEnvAttributeModifications::new)
         );
 
-        public static final Codec<DimensionEnvAttributeModifications> CODEC = CodecUtils.betterAlternative(
+        public static final Codec<DimensionEnvAttributeModifications> CODEC = CodecUtils.bestAlternative(
                 EnvironmentAttributeMapMod.CODEC.xmap(DimensionEnvAttributeModifications::baseOnly,
                         m -> m.baseMod
                 ), DIRECT_CODEC, (f, s) -> !f.isEmpty()

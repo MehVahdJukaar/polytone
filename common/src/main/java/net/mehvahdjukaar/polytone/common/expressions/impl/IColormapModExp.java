@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 public interface IColormapModExp {
 
     Codec<IColormapModExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.withAlternative(
+            CodecUtils.alternatives(
                     Codec.FLOAT.xmap(
                             aDouble -> (a, b, c, d, e, f, g, h, i)
                                     -> aDouble,

@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -14,7 +13,7 @@ import org.joml.Quaternionf;
 //Extended facing camera mode
 public interface RotationProvider extends SingleQuadParticle.FacingCameraMode {
 
-    Codec<RotationProvider> CODEC = CodecUtils.withAlternative(
+    Codec<RotationProvider> CODEC = CodecUtils.alternatives(
             CustomRotation.CODEC, RotationMode.CODEC);
 
 

@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
@@ -72,8 +73,7 @@ public class IndexCompoundColorGetter implements IColorGetter {
                     });
 
     // single or multiple
-    public static final Codec<IColorGetter> SINGLE_OR_MULTIPLE = Codec.withAlternative(Colormap.CODEC, DIRECT_CODEC,
-            iColorGetter -> iColorGetter);
+    public static final Codec<IColorGetter> SINGLE_OR_MULTIPLE = CodecUtils.alternatives(Colormap.CODEC, DIRECT_CODEC);
 
 
     // default biome sample vanilla implementation

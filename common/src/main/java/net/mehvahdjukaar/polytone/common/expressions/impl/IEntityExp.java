@@ -3,15 +3,12 @@ package net.mehvahdjukaar.polytone.common.expressions.impl;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.EntityContextExpression;
-import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
 
 public interface IEntityExp {
 
     Codec<IEntityExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.withAlternative(
+            CodecUtils.alternatives(
                     Codec.DOUBLE.xmap(
                             aDouble -> (e) -> aDouble,
                             iBlockExp -> 0.0

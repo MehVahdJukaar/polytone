@@ -83,15 +83,6 @@ public class CodecUtils {
         return new ReferenceOrDirectCodec<>(reference, direct, bothStrings);
     }
 
-    @SafeVarargs
-    public static <A> Codec<A> withAlternatives(Codec<A> primary, Codec<? extends A>... secondary) {
-        Codec<? super A> codec = primary;
-        for (Codec<? extends A> c : secondary) {
-            codec = Codec.withAlternative(codec, c);
-        }
-        return (Codec<A>) codec;
-    }
-
     public static <A, B> Codec<Either<A, B>> eitherLeft(Codec<A> leftCodec) {
         return new EitherLeftCodec<>(leftCodec);
     }
@@ -99,8 +90,7 @@ public class CodecUtils {
     public static final Codec<ItemStack> ITEM_OR_STACK = Codec.withAlternative(ItemStack.SINGLE_ITEM_CODEC, BuiltInRegistries.ITEM.byNameCodec(),
             Item::getDefaultInstance);
 
-    public static final Codec<List<ItemStack>> ITEMSTACK_OR_ITEMSTACK_LIST = Codec.withAlternative(ITEM_OR_STACK.listOf(), ITEM_OR_STACK,
-            List::of);
+    public static final Codec<List<ItemStack>> ITEMSTACK_OR_ITEMSTACK_LIST = singleOrList(ITEM_OR_STACK);
 
     public static final Codec<Supplier<List<ItemStack>>> ITEMSTACK_HOLDER_SET = RegistryCodecs.homogeneousList(Registries.ITEM)
             .xmap(l -> () -> l.stream().map(Holder::value).map(ItemStack::new).toList(), s -> HolderSet.direct(s.get().stream().map(ItemStack::getItemHolder).toList()));
@@ -112,14 +102,14 @@ public class CodecUtils {
 
 
     //when both can succeed at the same time
-    public static <A, B extends A, C extends A> Codec<A> betterAlternative(
+    public static <A, B extends A, C extends A> Codec<A> bestAlternative(
             Codec<B> first, Codec<C> second, BiPredicate<B, C> chooseFirst) {
 
-        return new BetterAlternativeCodec<>(first, second, chooseFirst);
+        return new BestAlternativeCodec<>(first, second, chooseFirst);
     }
 
     @SafeVarargs
-    public static <A> Codec<A> withAlternative(Codec<? extends A>... codecs) {
+    public static <A> Codec<A> alternatives(Codec<? extends A>... codecs) {
         return new AlternativeCodec<>(codecs);
     }
 

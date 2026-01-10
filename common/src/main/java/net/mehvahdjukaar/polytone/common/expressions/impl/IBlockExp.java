@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public interface IBlockExp {
 
     Codec<IBlockExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.withAlternative(
+            CodecUtils.alternatives(
                     Codec.DOUBLE.xmap(
                             aDouble -> (level, pos, state) -> aDouble,
                             iBlockExp -> 0.0
