@@ -11,13 +11,13 @@ import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.sound.ParticleSoundEmitter;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.mehvahdjukaar.polytone.utils.codec.BiggerCodecs;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -44,7 +44,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
     private static BlockState STATE_HACK = Blocks.AIR.defaultBlockState();
 
-    private final RenderMode renderType;
+    private final RenderMode renderMode;
     private final @Nullable ResourceLocation model;
     private final @Nullable ParticleInitializer initializer;
     private final @Nullable Ticker ticker;
@@ -72,14 +72,14 @@ public class CustomParticleType implements CustomParticleFactory {
     private boolean isValid = true;
 
     private CustomParticleType(RenderMode renderType, @Nullable ResourceLocation model,
-                               Vec3 offset, int light, boolean hasPhysics,  boolean killOnContact, boolean killWhenStill,
+                               Vec3 offset, int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                boolean randomSprite,
                                int particleGroupLimit, boolean forceSpawn,
                                RotationProvider rotation,
                                @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
-                               @Nullable List<ParticleSoundEmitter> sounds,int tickRate, @Nullable List<Dynamic<?>> particles, int killSimilarInRadius) {
-        this.renderType = renderType;
+                               @Nullable List<ParticleSoundEmitter> sounds, int tickRate, @Nullable List<Dynamic<?>> particles, int killSimilarInRadius) {
+        this.renderMode = renderType;
         this.randomSprite = randomSprite;
         this.model = model;
         this.initializer = initializer;
@@ -134,7 +134,7 @@ public class CustomParticleType implements CustomParticleFactory {
                                Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds,
                                int tickInterval, List<Dynamic<?>> particles, int killSimilarInRadius) {
         this(renderType, model.orElse(null), offset,
-                light, hasPhysics, killOnContact, killWhenStill,  liquidAffinity, colormap.orElse(null),
+                light, hasPhysics, killOnContact, killWhenStill, liquidAffinity, colormap.orElse(null),
                 randomSprite, limit, forceSpawn, rotation,
                 initializer.orElse(null), ticker.orElse(null), sounds, tickInterval, particles, killSimilarInRadius);
     }
@@ -154,7 +154,7 @@ public class CustomParticleType implements CustomParticleFactory {
     }
 
     private RenderMode getRenderType() {
-        return renderType;
+        return renderMode;
     }
 
     @Override
@@ -179,7 +179,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 }
             }
             if (exclusionRadius > 0) {
-                var particleRenderType = this.renderType.getParticle();
+                var particleRenderType = this.renderMode.getParticleRenderType(model != null);
                 double radiusSquared = exclusionRadius * exclusionRadius;
                 Queue<Particle> particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
                 if (particleQueue != null) {
@@ -222,7 +222,6 @@ public class CustomParticleType implements CustomParticleFactory {
     public static class Instance extends TextureSheetParticle {
 
         protected final CustomParticleType type;
-        protected final RenderType renderType;
         protected final @Nullable BakedModel model;
         protected final @Nullable Ticker ticker;
         protected final SpriteSet spriteSet;
@@ -254,7 +253,6 @@ public class CustomParticleType implements CustomParticleFactory {
             this.model = customType.model == null ? null : PlatStuff.getModel(
                     customType.model
             );
-            this.renderType = customType.renderType;
             this.ticker = customType.ticker;
             ParticleInitializer initializer = customType.initializer;
             BlockPos pos = BlockPos.containing(x, y, z);
@@ -311,45 +309,6 @@ public class CustomParticleType implements CustomParticleFactory {
         public double getCustom() {
             return custom;
         }
-            @Override
-        public void render(VertexConsumer buffer, Camera camera, float partialTicks) {
-            Quaternionf quaternionf = new Quaternionf();
-            this.type.rotationProvider.applyRotation(this, quaternionf, camera, partialTicks);
-            if (this.roll != 0.0F) {
-                quaternionf.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
-            }
-
-            this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
-            if (!this.type.rotationProvider.alwaysFacesCamera() && model == null) {
-                quaternionf.rotateX(Mth.PI);
-                //render back face
-                this.renderRotatedQuad(buffer, camera, quaternionf, partialTicks);
-            }
-        }
-
-        @Override
-        protected void renderRotatedQuad(VertexConsumer consumer, Quaternionf quaternion, float x, float y, float z, float partialTicks) {
-            Vec3 offset = this.type.offset;
-            if (model == null) {
-                consumer = this.type.renderType.modifyParticleConsumer(consumer);
-                super.renderRotatedQuad(consumer, quaternion, (float) (x + offset.x),
-                        (float) (y + offset.y), (float) (z + offset.z), partialTicks);
-            } else {
-                consumer = this.type.renderType.modifyBlockConsumer(consumer);
-
-                float size = this.getQuadSize(partialTicks);
-
-                PoseStack poseStack = new PoseStack();
-                poseStack.translate(x + offset.x, y + offset.y, z + offset.z);
-
-                poseStack.scale(size, size, size);
-                poseStack.mulPose(quaternion);
-                poseStack.translate(-0.5, -0.5, -0.5);
-
-                putModelBulkData(this.model, this.getLightColor(partialTicks),
-                        OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol, this.alpha);
-            }
-        }
 
         @Override
         protected int getLightColor(float partialTick) {
@@ -391,7 +350,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 this.setColor(unpack[0], unpack[1], unpack[2]);
             }
 
-            if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo ) {
+            if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo) {
                 this.remove();
             }
 
@@ -436,7 +395,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 poseStack.translate(-0.5, -0.5, -0.5);
 
                 MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-                consumer = bufferSource.getBuffer(net.minecraft.client.renderer.RenderType.cutout());
+                consumer = this.type.renderMode.getModelBufferSource(bufferSource);
 
                 putModelBulkData(this.model, this.getLightColor(partialTicks),
                         OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol);
@@ -446,11 +405,13 @@ public class CustomParticleType implements CustomParticleFactory {
             }
         }
 
-        public void superRenderModified(VertexConsumer buffer, Camera renderInfo, float partialTicks) {
+        public void superRenderModified(VertexConsumer vc, Camera renderInfo, float partialTicks) {
+
+            vc = this.type.renderMode.modifyParticleConsumer(vc);
             Vec3 vec3 = renderInfo.getPosition();
-            float f = (float)(Mth.lerp((double)partialTicks, this.xo, this.x) - vec3.x());
-            float g = (float)(Mth.lerp((double)partialTicks, this.yo, this.y) - vec3.y());
-            float h = (float)(Mth.lerp((double)partialTicks, this.zo, this.z) - vec3.z());
+            float f = (float) (Mth.lerp(partialTicks, this.xo, this.x) - vec3.x());
+            float g = (float) (Mth.lerp(partialTicks, this.yo, this.y) - vec3.y());
+            float h = (float) (Mth.lerp(partialTicks, this.zo, this.z) - vec3.z());
             //only change
             Quaternionf quaternionf = new Quaternionf();
             this.type.rotationProvider.applyRotation(this, quaternionf, renderInfo, partialTicks);
@@ -461,7 +422,7 @@ public class CustomParticleType implements CustomParticleFactory {
             Vector3f[] vector3fs = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)};
             float i = this.getQuadSize(partialTicks);
 
-            for(int j = 0; j < 4; ++j) {
+            for (int j = 0; j < 4; ++j) {
                 Vector3f vector3f = vector3fs[j];
                 vector3f.rotate(quaternionf);
                 vector3f.mul(i);
@@ -473,10 +434,10 @@ public class CustomParticleType implements CustomParticleFactory {
             float m = this.getV0();
             float n = this.getV1();
             int o = this.getLightColor(partialTicks);
-            buffer.vertex((double)vector3fs[0].x(), (double)vector3fs[0].y(), (double)vector3fs[0].z()).uv(l, n).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
-            buffer.vertex((double)vector3fs[1].x(), (double)vector3fs[1].y(), (double)vector3fs[1].z()).uv(l, m).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
-            buffer.vertex((double)vector3fs[2].x(), (double)vector3fs[2].y(), (double)vector3fs[2].z()).uv(k, m).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
-            buffer.vertex((double)vector3fs[3].x(), (double)vector3fs[3].y(), (double)vector3fs[3].z()).uv(k, n).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
+            vc.vertex(vector3fs[0].x(), vector3fs[0].y(), vector3fs[0].z()).uv(l, n).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
+            vc.vertex(vector3fs[1].x(), vector3fs[1].y(), vector3fs[1].z()).uv(l, m).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
+            vc.vertex(vector3fs[2].x(), vector3fs[2].y(), vector3fs[2].z()).uv(k, m).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
+            vc.vertex(vector3fs[3].x(), vector3fs[3].y(), vector3fs[3].z()).uv(k, n).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
         }
 
 
@@ -503,7 +464,7 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public ParticleRenderType getRenderType() {
-            return this.model == null ? this.renderType.getParticle() : ParticleRenderType.CUSTOM;
+            return this.type.renderMode.getParticleRenderType(this.model != null);
         }
 
     }
@@ -518,18 +479,21 @@ public class CustomParticleType implements CustomParticleFactory {
 
         public static final Codec<RenderMode> CODEC = StringRepresentable.fromEnum(RenderMode::values);
 
-        public RenderType getBlock() {
+        public RenderType getVanillaRenderType(boolean hasModel) {
             return switch (this) {
-                case TERRAIN -> net.minecraft.client.renderer.RenderType.solid();
-                case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK;
-                case LIT -> net.minecraft.client.renderer.RenderType.cutout();
-                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
-                case INVISIBLE -> net.minecraft.client.renderer.RenderType.cutout();
-                default -> net.minecraft.client.renderer.RenderType.cutoutMipped();
+                case TERRAIN -> RenderType.solid();
+                case ADDITIVE_TRANSLUCENT -> hasModel ?
+                        PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK :
+                        PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_SPECIAL;
+                case LIT -> RenderType.cutout();
+                case TRANSLUCENT -> RenderType.translucent();
+                case INVISIBLE -> RenderType.cutout();
+                default -> RenderType.cutoutMipped();
             };
         }
 
-        public ParticleRenderType getParticle() {
+        public ParticleRenderType getParticleRenderType(boolean hasModel) {
+            if (hasModel || this == ADDITIVE_TRANSLUCENT) return ParticleRenderType.CUSTOM;
             return switch (this) {
                 case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;
                 case TRANSLUCENT -> ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
@@ -546,17 +510,18 @@ public class CustomParticleType implements CustomParticleFactory {
         }
 
         public VertexConsumer modifyParticleConsumer(VertexConsumer original) {
-         //   if(true)return original;
             if (this == ADDITIVE_TRANSLUCENT) {
                 return PolytoneRenderTypes.DEFERRED_BUFFER_SOURCE.getBuffer(
-                        PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE);
+                        PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_SPECIAL);
             } else return original;
         }
 
-        public VertexConsumer modifyBlockConsumer(VertexConsumer original) {
-            return PolytoneRenderTypes.DEFERRED_BUFFER_SOURCE.getBuffer(
-                    this.getBlock()
-            );
+        public VertexConsumer getModelBufferSource(MultiBufferSource bufferSource) {
+            RenderType type = this.getVanillaRenderType(true);
+            if (this == ADDITIVE_TRANSLUCENT) {
+                return PolytoneRenderTypes.DEFERRED_BUFFER_SOURCE.getBuffer(type);
+            }
+            return bufferSource.getBuffer(type);
         }
     }
 

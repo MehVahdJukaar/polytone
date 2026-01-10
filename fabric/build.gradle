@@ -33,6 +33,7 @@ dependencies {
     implementation include( 'net.objecthunter:exp4j:0.4.8')
 
     //modImplementation("maven.modrinth:sodium:mc1.20.3-0.5.6")
+    modCompileOnly "curse.maven:serene-seasons-291874:6182595"
 
     modCompileOnly ("curse.maven:continuity-531351:4779473")
     modCompileOnly ("curse.maven:embeddium-908741:5522040")

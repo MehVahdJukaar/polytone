@@ -11,9 +11,10 @@
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "BlockModelDeserializerMixin",
-    "FabricBlockRenderContextMixin",
     "CreativeTabAccessor",
+    "FabricBlockRenderContextMixin",
     "FabricItemGroupEntriesAccessor",
+    "FabricTerrainRendererContextMixin",
     "FogFluidRendererMixin",
     "FogRendererMixin2",
     "GameRendererMixin",
@@ -24,9 +25,9 @@
     "ModelManagerAccessor",
     "ModelRendererMixin",
     "ParticleEngineAccessor",
+    "ParticleEngineMixin2",
     "RegistrySyncManagerMixin",
-    "ShaderInstanceMixin",
-    "FabricTerrainRendererContextMixin"
+    "ShaderInstanceMixin"
   ],
   "injectors": {
     "defaultRequire": 1

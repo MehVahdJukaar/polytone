@@ -1,1 +1,2 @@
-- lightmaps and dim modifiers no longer parse all dimensions when pack is loaded as dimension registry isnt snynced. should fix working on custom dims
+- fixed particle 3d models not being baked
+- additive translucent particles now render above water and cloud like they do in 1.21.1

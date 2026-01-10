@@ -62,16 +62,6 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
-    public static void registerColorResolver(ColorResolver colormap) {
-        throw new AssertionError();
-    }
-
-    @ExpectPlatform
-    public static void unregisterAllCustomColorResolves() {
-        throw new AssertionError();
-    }
-
     public interface SpecialModelEvent {
         void register(ModelResourceLocation modelLocation);
 

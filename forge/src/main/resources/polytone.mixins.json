@@ -6,8 +6,6 @@
   "mixins": [
   ],
   "client": [
-    "RegistrySnapshotMixin",
-    "SodiumBlockRendererMixin",
     "AbstractContainerScreenMixin",
     "BlockColorsAccessor",
     "CreativeModeInventoryScreenMixin",
@@ -19,6 +17,9 @@
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
     "ParticleEngineAccessor",
+    "ParticleEngineMixin2",
+    "RegistrySnapshotMixin",
+    "SodiumBlockRendererMixin",
     "TerrainParticleMixin"
   ],
   "injectors": {

@@ -163,7 +163,6 @@ public class Polytone {
         BiomeKeysCache.clear();
     }
 
-    //todo: hook up
     public static void onEarlyPackLoad(ResourceManager manager) {
         COMPOUND_RELOADER.earlyProcess(manager);
     }

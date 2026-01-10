@@ -27,6 +27,7 @@
     "LightTextureMixin",
     "MinecraftMixin",
     "ModelBlockRendererMixin",
+    "ModelManagerMixin",
     "ParticleEngineMixin",
     "PotionUtilsMixin",
     "ScreenMixin",

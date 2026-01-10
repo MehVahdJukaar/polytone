@@ -3,26 +3,20 @@ package net.mehvahdjukaar.polytone;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL13;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.SequencedMap;
+import java.util.Map;
 import java.util.function.Supplier;
-
-import static com.mojang.blaze3d.vertex.DefaultVertexFormat.PARTICLE;
 
 public class PolytoneRenderTypes extends RenderType {
     static ShaderInstance particleNoAlphaCutoffShader;
@@ -51,7 +45,7 @@ public class PolytoneRenderTypes extends RenderType {
             }
     );
 
-    public static final RenderType ADDITIVE_TRANSLUCENT =
+    public static final RenderType ADDITIVE_TRANSLUCENT_BLOCK =
             create("polytone_additive_translucent",
                     DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS,
                     786432, true, true,
@@ -62,7 +56,23 @@ public class PolytoneRenderTypes extends RenderType {
                             .setTransparencyState(ADDITIVE_TRANSLUCENT_TRANSPARENCY)
                             .setOutputState(TRANSLUCENT_TARGET).createCompositeState(true));
 
+    private static final TextureStateShard PARTICLE_SHEET = new TextureStateShard(TextureAtlas.LOCATION_PARTICLES, false, false);
+    protected static final ShaderStateShard PARTICLE_SHADER_STATE = new ShaderStateShard(() -> particleNoAlphaCutoffShader);
 
+
+    public static final RenderType ADDITIVE_TRANSLUCENT_PARTICLE_SPECIAL =
+            create("polytone_additive_translucent_particle",
+                    DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS,
+                    786432, true, true,
+                    RenderType.CompositeState.builder()
+                            .setLightmapState(LIGHTMAP)
+                            .setShaderState(PARTICLE_SHADER_STATE)
+                            .setTextureState(PARTICLE_SHEET)
+                            .setTransparencyState(ADDITIVE_TRANSLUCENT_TRANSPARENCY)
+                            .setOutputState(TRANSLUCENT_TARGET).createCompositeState(true));
+
+
+    //unused
     public static final ParticleRenderType ADDITIVE_TRANSLUCENT_PARTICLE = new ParticleRenderType() {
         @Override
         public void begin(BufferBuilder builder, TextureManager textureManager) {
@@ -88,14 +98,16 @@ public class PolytoneRenderTypes extends RenderType {
     };
 
 
-
     public static void onRenderLast() {
         if (lastModelViewMatrix != null) {
-            Matrix4f last = new Matrix4f(RenderSystem.getModelViewMatrix());
+            Matrix4f oldMv = new Matrix4f(RenderSystem.getModelViewMatrix());
+            Matrix4f oldProj = new Matrix4f(RenderSystem.getProjectionMatrix());
+            RenderSystem.getProjectionMatrix().set(lastProjMatrix);
             RenderSystem.getModelViewMatrix().set(lastModelViewMatrix);
             DEFERRED_BUFFER_SOURCE.endBatches();
-            RenderSystem.getModelViewMatrix().set(last);
-        }else {
+            RenderSystem.getModelViewMatrix().set(oldMv);
+            RenderSystem.getProjectionMatrix().set(oldProj);
+        } else {
             DEFERRED_BUFFER_SOURCE.endBatches();
         }
     }
@@ -103,28 +115,30 @@ public class PolytoneRenderTypes extends RenderType {
     public static final DeferredBufferSource DEFERRED_BUFFER_SOURCE = new DeferredBufferSource();
 
     private static Matrix4f lastModelViewMatrix;
+    private static Matrix4f lastProjMatrix;
 
     public static void cacheMatrices() {
         lastModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
+        lastProjMatrix = new Matrix4f(RenderSystem.getProjectionMatrix());
     }
 
     public static class DeferredBufferSource extends MultiBufferSource.BufferSource {
-        protected final Supplier<ByteBufferBuilder> bufferSupplier;
+        protected final Supplier<BufferBuilder> bufferSupplier;
 
         private final Collection<RenderType> delayed = new HashSet<>();
 
         protected DeferredBufferSource() {
-            this(() -> new ByteBufferBuilder(786432), new LinkedHashMap<>());
+            this(() -> new BufferBuilder(786432), new LinkedHashMap<>());
         }
 
-        protected DeferredBufferSource(Supplier<ByteBufferBuilder> bufferSupplier, SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers) {
+        protected DeferredBufferSource(Supplier<BufferBuilder> bufferSupplier, Map<RenderType, BufferBuilder> fixedBuffers) {
             super(bufferSupplier.get(), fixedBuffers);
             this.bufferSupplier = bufferSupplier;
         }
 
         public void endBatches() {
             endBatch(ADDITIVE_TRANSLUCENT_BLOCK);
-            endBatch(ADDITIVE_TRANSLUCENT_PARTICLE);
+            endBatch(ADDITIVE_TRANSLUCENT_PARTICLE_SPECIAL);
             for (RenderType type : delayed) {
                 endBatch(type);
             }

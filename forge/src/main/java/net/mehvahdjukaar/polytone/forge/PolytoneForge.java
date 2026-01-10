@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.forge;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FogType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -65,6 +67,13 @@ public class PolytoneForge {
     public void onRender(TickEvent.RenderTickEvent onRender) {
         if (onRender.phase == TickEvent.Phase.START)
             ClientFrameTicker.onRenderTick(Minecraft.getInstance());
+    }
+
+    @SubscribeEvent
+    public void renderStageEventAfterLevel(RenderLevelStageEvent event) {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL ) {
+            PolytoneRenderTypes.onRenderLast();
+        }
     }
 
     @SubscribeEvent
