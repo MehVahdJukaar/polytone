@@ -102,7 +102,7 @@ public class PolytoneRenderTypes extends RenderType {
         if (lastModelViewMatrix != null) {
             Matrix4f oldMv = new Matrix4f(RenderSystem.getModelViewMatrix());
             Matrix4f oldProj = new Matrix4f(RenderSystem.getProjectionMatrix());
-            RenderSystem.getProjectionMatrix().set(lastProjMatrix);
+          //  RenderSystem.getProjectionMatrix().set(lastProjMatrix);
             RenderSystem.getModelViewMatrix().set(lastModelViewMatrix);
             DEFERRED_BUFFER_SOURCE.endBatches();
             RenderSystem.getModelViewMatrix().set(oldMv);

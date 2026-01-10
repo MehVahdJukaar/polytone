@@ -35,6 +35,7 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Holder;
@@ -335,26 +336,26 @@ public class PlatStuffImpl {
     private static Consumer<PlatStuff.SpecialModelEvent> hack2;
 
     public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
-        hack2 = eventListener;
         ModelLoadingPlugin.register(pluginContext -> {
-            hack = pluginContext;
+            eventListener.accept(new PlatStuff.SpecialModelEvent() {
+                @Override
+                public void register(ModelResourceLocation modelLocation) {
+                    pluginContext.addModels(modelLocation);
+                }
+
+                @Override
+                public void register(ResourceLocation id) {
+                    pluginContext.addModels(id);
+                }
+            });
         });
 
     }
 
 
     public static void doAddModels() {
-        hack2.accept(new PlatStuff.SpecialModelEvent() {
-            @Override
-            public void register(ModelResourceLocation modelLocation) {
-                hack.addModels(modelLocation);
-            }
 
-            @Override
-            public void register(ResourceLocation id) {
-                hack.addModels(id);
-            }
-        });
+
     }
 
     public static String getVersion() {
