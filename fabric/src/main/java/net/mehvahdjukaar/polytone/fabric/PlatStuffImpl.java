@@ -332,9 +332,6 @@ public class PlatStuffImpl {
         return PolytoneFabric.currentServer.registryAccess();
     }
 
-    private static ModelLoadingPlugin.Context hack;
-    private static Consumer<PlatStuff.SpecialModelEvent> hack2;
-
     public static void addSpecialModelRegistration(Consumer<PlatStuff.SpecialModelEvent> eventListener) {
         ModelLoadingPlugin.register(pluginContext -> {
             eventListener.accept(new PlatStuff.SpecialModelEvent() {
@@ -352,9 +349,7 @@ public class PlatStuffImpl {
 
     }
 
-
     public static void doAddModels() {
-
 
     }
 
