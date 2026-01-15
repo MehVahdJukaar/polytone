@@ -289,6 +289,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         });
 
         doWith(obj, "text", (k, v) -> {
+            //TODO: this wont be applied unless we are into a level...
             if (k.equals("splash")) {
                 int splashCol = parseColor(v);
                 refreshSplash(Style.EMPTY.withColor(splashCol));
