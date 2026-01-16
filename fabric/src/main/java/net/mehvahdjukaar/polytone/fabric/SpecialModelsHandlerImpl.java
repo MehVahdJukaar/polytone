@@ -11,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class SpecialModelsHandlerImpl {
 
@@ -34,27 +36,35 @@ public class SpecialModelsHandlerImpl {
         }
         return null;
     }
-
-    private static ModelLoadingPlugin.Context hack = null;
+    private static final CompletableFuture<ModelLoadingPlugin.Context> hackFuture = new CompletableFuture<>();
 
     public static void init() {
-        ModelLoadingPlugin.register(pluginContext -> {
-            hack = pluginContext;
-        });
+        // safely sets hack
+        ModelLoadingPlugin.register(hackFuture::complete);
     }
 
+    public static void finalizeAdditions() {
+        try {
+            // Wait for hack to be initialized, up to a timeout if desired
+            ModelLoadingPlugin.Context hack = hackFuture.get(); // blocks until set
 
-    public static void finalizeAdditions(){
-        for (var entry : SPECIAL_MODELS.entrySet()) {
-            var key = entry.getKey();
-            var value = entry.getValue();
-            hack.addModel(value, new SimpleUnbakedExtraModel<>(
-                    key, (model, baker) -> { //same exact as forge
-                return model.bakeTopGeometry(model.getTopTextureSlots(), baker, BlockModelRotation.IDENTITY);
+            for (var entry : SPECIAL_MODELS.entrySet()) {
+                var key = entry.getKey();
+                var value = entry.getValue();
+
+                hack.addModel(value, new SimpleUnbakedExtraModel<>(
+                        key,
+                        (model, baker) -> model.bakeTopGeometry(
+                                model.getTopTextureSlots(),
+                                baker,
+                                BlockModelRotation.IDENTITY
+                        )
+                ));
             }
-            ));
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Failed to initialize hack context", e);
         }
-        hack = null;
     }
 
 }
