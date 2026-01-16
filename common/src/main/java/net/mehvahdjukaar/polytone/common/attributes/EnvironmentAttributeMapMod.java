@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.content.biome.BiomeEffectModifier;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
 import net.minecraft.world.attribute.AttributeType;
@@ -11,6 +12,7 @@ import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.attribute.modifier.AttributeModifier;
+import net.minecraft.world.attribute.modifier.FloatModifier;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
@@ -157,9 +159,55 @@ public class EnvironmentAttributeMapMod {
     }
 
     private EnvironmentAttributeMapMod(Map<EnvironmentAttribute<?>, EnvironmentAttributeMap.Entry<?, ?>> entriesToAdd,
-                                       Set<EnvironmentAttribute<?>> entriesToRemove) {
+                                      Set<EnvironmentAttribute<?>> entriesToRemove) {
         this.entriesToReplace = entriesToAdd;
         this.entriesToRemove = entriesToRemove;
+    }
+
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private final Map<EnvironmentAttribute<?>, EnvironmentAttributeMap.Entry<?, ?>> entriesToReplace = new HashMap<>();
+        private final Set<EnvironmentAttribute<?>> entriesToRemove = new HashSet<>();
+
+        public <Value, Parameter> Builder modify(EnvironmentAttribute<Value> environmentAttribute,
+                                                         AttributeModifier<Value, Parameter> attributeModifier,
+                                                         Supplier<Parameter> objectSupplier) {
+            environmentAttribute.type().checkAllowedModifier(attributeModifier);
+            EnvironmentAttributeMap.Entry<Value, Parameter> entry = new EnvironmentAttributeMap.Entry<>(objectSupplier.get(), attributeModifier);
+            ((IExtendedEntry<Parameter>) (Object) entry).polytone$setArgumentSupplier(objectSupplier);
+            this.entriesToReplace.put(environmentAttribute, entry);
+            return this;
+        }
+
+        public <Value, Parameter> Builder modify(EnvironmentAttribute<Value> environmentAttribute,
+                                                 AttributeModifier<Value, Parameter> attributeModifier,
+                                                 Parameter object) {
+            environmentAttribute.type().checkAllowedModifier(attributeModifier);
+            this.entriesToReplace.put(environmentAttribute, new EnvironmentAttributeMap.Entry<>(object, attributeModifier));
+            return this;
+        }
+
+
+        public <Value> Builder set(EnvironmentAttribute<Value> environmentAttribute, Value object) {
+            return this.modify(environmentAttribute, AttributeModifier.override(), object);
+        }
+
+        public <Value> Builder remove(EnvironmentAttribute<Value> attribute) {
+            entriesToRemove.add(attribute);
+            return this;
+        }
+
+        public EnvironmentAttributeMapMod build() {
+            return new EnvironmentAttributeMapMod(entriesToReplace, entriesToRemove);
+        }
+
+        public boolean isEmpty() {
+            return entriesToReplace.isEmpty() && entriesToRemove.isEmpty();
+        }
     }
 
     public EnvironmentAttributeMap toVanilla() {

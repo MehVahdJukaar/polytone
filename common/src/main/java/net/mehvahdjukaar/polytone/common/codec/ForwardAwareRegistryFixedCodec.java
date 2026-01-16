@@ -69,6 +69,8 @@ public final class ForwardAwareRegistryFixedCodec<E> implements Codec<Optional<H
         return DataResult.error(() -> "Can't access registry " + this.registryKey);
     }
 
+
+    @Override
     public String toString() {
         return "RegistryFixedCodec[" + this.registryKey + "]";
     }

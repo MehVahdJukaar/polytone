@@ -3,3 +3,5 @@
 - particle ticker can be a single expression
 - added functions to sample a colormap "colormap(name, x, y, z, tint)"
 - particle tick expressions can sample from a colormap
+- technical change that can affect particles: particle ticker will now also be run immediately as the particle is spawned
+- experimental changes, adding backward support for fog and sky color for biome mods old syntax

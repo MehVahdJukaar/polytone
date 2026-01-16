@@ -113,4 +113,9 @@ public class LenientHolderSetCodec<E> implements Codec<HolderSet<E>> {
     private <T> DataResult<T> encodeWithoutRegistry(HolderSet<E> input, DynamicOps<T> ops, T prefix) {
         return this.homogenousListCodec.encode(input.stream().toList(), ops, prefix);
     }
+
+    @Override
+    public String toString() {
+        return "LenientHolderSetCodec[" + this.registryKey + "]";
+    }
 }

@@ -52,4 +52,9 @@ public class BestAlternativeCodec<A,B extends A,C extends A> implements Codec<A>
             return second.encode(c, ops, prefix);
         }
     }
+
+    @Override
+    public String toString() {
+        return "BestAlternativeCodec[" + first + ", " + second + "]";
+    }
 }

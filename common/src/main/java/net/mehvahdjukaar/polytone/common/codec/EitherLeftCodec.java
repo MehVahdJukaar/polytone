@@ -28,4 +28,9 @@ public final class EitherLeftCodec<A, B> implements Codec<Either<A, B>> {
                 .map(a -> leftCodec.encode(a, dynamicOps, t))
                 .orElseGet(() -> DataResult.error(() -> "Expected left value"));
     }
+
+    @Override
+    public String toString() {
+        return "EitherLeftCodec[" + leftCodec + "]";
+    }
 }
