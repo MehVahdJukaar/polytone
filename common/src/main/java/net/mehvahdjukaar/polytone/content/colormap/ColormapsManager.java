@@ -240,4 +240,10 @@ public class ColormapsManager extends JsonImgPartialReloader {
     public Collection<Identifier> getAllNames() {
         return colormaps.keySet();
     }
+
+    @Nullable
+    public IColorGetter get(String id) {
+        var c = colormaps.getValue(id);
+        return c != null ? c.get() : null;
+    }
 }

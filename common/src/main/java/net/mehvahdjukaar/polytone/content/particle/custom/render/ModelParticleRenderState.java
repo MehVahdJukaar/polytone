@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.state.ParticleGroupRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.QuadCollection;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
     public void add(
             RenderType layer, float x, float y, float z,
             float rx, float ry, float rz, float rw, float size, float r, float g, float b, float a, int light,
-            QuadCollection modelData
+            @NotNull QuadCollection modelData
     ) {
         this.particles.computeIfAbsent(layer, l -> new ArrayList<>())
                 .add(new ParticleInstance(x, y, z, rx, ry, rz, rw, size,
@@ -63,9 +64,9 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
         }
     }
 
-    private static void putModelBulkData(QuadCollection model, int combinedLight, int combinedOverlay,
+    private static void putModelBulkData(@NotNull QuadCollection quadCollection, int combinedLight, int combinedOverlay,
                                          PoseStack.Pose pose, VertexConsumer buffer, float r, float g, float b, float a) {
-        for (BakedQuad bakedQuad : model.getAll()) {
+        for (BakedQuad bakedQuad : quadCollection.getAll()) {
             buffer.putBulkData(pose, bakedQuad, r, g, b, a, combinedLight, combinedOverlay);
         }
     }
@@ -74,6 +75,6 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
     private record ParticleInstance(float x, float y, float z,
                                     float rx, float ry, float rz, float rw, float size,
                                     float r, float g, float b, float a, int light,
-                                    QuadCollection modelData) {
+                                    @NotNull QuadCollection modelData) {
     }
 }

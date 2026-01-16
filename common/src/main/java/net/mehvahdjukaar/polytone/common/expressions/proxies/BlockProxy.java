@@ -1,10 +1,8 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
-import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
+import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
@@ -12,7 +10,7 @@ import org.jspecify.annotations.Nullable;
 //trying to start declarative here, what is HERE in this block? We won't let users access everything outside of it, thats asking for trouble
 
 //immutable
-@BeanGettersAliases
+@BeanAliases
 public class BlockProxy extends PositionalProxy {
 
     private final BlockPos pos;
@@ -25,7 +23,7 @@ public class BlockProxy extends PositionalProxy {
         this.level = level;
     }
 
-    public BlockProxy(@Nullable BlockAndTintGetter level,@Nullable BlockPos pos, @Nullable BlockState state) {
+    public BlockProxy(@Nullable BlockAndTintGetter level, @Nullable BlockPos pos, @Nullable BlockState state) {
         super(state);
         this.pos = pos == null ? BlockPos.ZERO : pos;
         this.level = level;

@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
-import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
+import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -12,7 +12,7 @@ import org.joml.Vector3f;
 
 import static net.mehvahdjukaar.polytone.common.expressions.ExpUtils.parseEnvAttr;
 
-@BeanGettersAliases
+@BeanAliases
 public class CameraProxy extends PositionalProxy {
 
     public static final CameraProxy INSTANCE = new CameraProxy();

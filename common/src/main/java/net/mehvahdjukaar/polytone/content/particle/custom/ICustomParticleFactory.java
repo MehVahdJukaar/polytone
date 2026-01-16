@@ -9,7 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-public interface CustomParticleFactory extends ParticleProvider<ExtraDataParticleOptions> {
+public interface ICustomParticleFactory extends ParticleProvider<ExtraDataParticleOptions> {
 
     void setSpriteSet(SpriteSet spriteSet);
 

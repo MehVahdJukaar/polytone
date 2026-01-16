@@ -12,18 +12,18 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record ParticleInitializer(@Nullable BlockContextExpression size,
-                                  @Nullable BlockContextExpression lifetime,
-                                  @Nullable BlockContextExpression red,
-                                  @Nullable BlockContextExpression green,
-                                  @Nullable BlockContextExpression blue,
-                                  @Nullable BlockContextExpression alpha,
-                                  @Nullable BlockContextExpression roll,
-                                  @Nullable BlockContextExpression friction,
-                                  @Nullable BlockContextExpression hitboxSize,
-                                  @Nullable BlockContextExpression custom) {
+public record CustomParticleInitializer(@Nullable BlockContextExpression size,
+                                        @Nullable BlockContextExpression lifetime,
+                                        @Nullable BlockContextExpression red,
+                                        @Nullable BlockContextExpression green,
+                                        @Nullable BlockContextExpression blue,
+                                        @Nullable BlockContextExpression alpha,
+                                        @Nullable BlockContextExpression roll,
+                                        @Nullable BlockContextExpression friction,
+                                        @Nullable BlockContextExpression hitboxSize,
+                                        @Nullable BlockContextExpression custom) {
 
-    public static final Codec<ParticleInitializer> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final Codec<CustomParticleInitializer> CODEC = RecordCodecBuilder.create(i -> i.group(
             BlockContextExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.size)),
             BlockContextExpression.CODEC.optionalFieldOf("lifetime").forGetter(p -> Optional.ofNullable(p.lifetime)),
             BlockContextExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.red)),
@@ -34,15 +34,15 @@ public record ParticleInitializer(@Nullable BlockContextExpression size,
             BlockContextExpression.CODEC.optionalFieldOf("friction").forGetter(p -> Optional.ofNullable(p.friction)),
             BlockContextExpression.CODEC.optionalFieldOf("hitboxSize").forGetter(p -> Optional.ofNullable(p.hitboxSize)),
             BlockContextExpression.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom))
-    ).apply(i, ParticleInitializer::new));
+    ).apply(i, CustomParticleInitializer::new));
 
-    private ParticleInitializer(Optional<BlockContextExpression> size, Optional<BlockContextExpression> lifetime,
-                                Optional<BlockContextExpression> red, Optional<BlockContextExpression> green,
-                                Optional<BlockContextExpression> blue, Optional<BlockContextExpression> alpha,
-                                Optional<BlockContextExpression> roll,
-                                Optional<BlockContextExpression> friction,
-                                Optional<BlockContextExpression> hitboxSize,
-                                Optional<BlockContextExpression> custom) {
+    private CustomParticleInitializer(Optional<BlockContextExpression> size, Optional<BlockContextExpression> lifetime,
+                                      Optional<BlockContextExpression> red, Optional<BlockContextExpression> green,
+                                      Optional<BlockContextExpression> blue, Optional<BlockContextExpression> alpha,
+                                      Optional<BlockContextExpression> roll,
+                                      Optional<BlockContextExpression> friction,
+                                      Optional<BlockContextExpression> hitboxSize,
+                                      Optional<BlockContextExpression> custom) {
         this(size.orElse(null), lifetime.orElse(null), red.orElse(null),
                 green.orElse(null), blue.orElse(null), alpha.orElse(null),
                 roll.orElse(null), friction.orElse(null),

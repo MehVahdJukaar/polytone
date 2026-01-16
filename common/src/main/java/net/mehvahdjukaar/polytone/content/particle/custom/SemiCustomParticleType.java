@@ -26,17 +26,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
-public class SemiCustomParticleType implements CustomParticleFactory {
+public class SemiCustomParticleType implements ICustomParticleFactory {
 
     private final Optional<ParticleType<?>> copyType;
     private ParticleProvider<?> copyProvider = null;
     private boolean hasBeenInit = false;
     private SpriteSet spriteSet = null;
-    private final @Nullable ParticleInitializer initializer;
+    private final @Nullable CustomParticleInitializer initializer;
     private final boolean hasPhysics;
     private final @Nullable IColorGetter colormap;
 
-    public SemiCustomParticleType(Optional<ParticleType<?>> type, Optional<ParticleInitializer> initializer,
+    public SemiCustomParticleType(Optional<ParticleType<?>> type, Optional<CustomParticleInitializer> initializer,
                                   boolean hasPhysics, Optional<IColorGetter> colorGetter) {
         this.copyType = type;
         this.hasPhysics = hasPhysics;
@@ -46,7 +46,7 @@ public class SemiCustomParticleType implements CustomParticleFactory {
 
     public static final Codec<SemiCustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
             CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("copy_from").forGetter(c -> c.copyType),
-            ParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
+            CustomParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap))
     ).apply(i, SemiCustomParticleType::new));

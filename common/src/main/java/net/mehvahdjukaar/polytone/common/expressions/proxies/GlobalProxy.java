@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
-import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
+import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.compat.ISeason;
@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-@BeanGettersAliases
+@BeanAliases
 public class GlobalProxy {
 
     public static final GlobalProxy INSTANCE = new GlobalProxy();

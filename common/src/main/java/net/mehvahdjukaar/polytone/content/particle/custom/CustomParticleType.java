@@ -3,14 +3,13 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderState;
 import net.mehvahdjukaar.polytone.content.sound.ParticleSoundEmitter;
@@ -28,7 +27,6 @@ import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -44,14 +42,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CustomParticleType implements CustomParticleFactory {
+public class CustomParticleType implements ICustomParticleFactory {
 
     private static BlockState STATE_HACK = Blocks.AIR.defaultBlockState();
 
     private final ParticleRenderMode renderType;
     private final @Nullable Identifier model;
-    private final @Nullable ParticleInitializer initializer;
-    private final @Nullable Ticker ticker;
+    private final @Nullable CustomParticleInitializer initializer;
+    private final ICustomParticleTicker ticker;
     private final List<ParticleSoundEmitter> sounds;
     private final int tickRate;
     private final int exclusionRadius;
@@ -65,7 +63,7 @@ public class CustomParticleType implements CustomParticleFactory {
     private final boolean killOnContact;
     private final boolean killWhenStill;
     private final @Nullable IColorGetter colormap;
-    private final RotationProvider rotationProvider;
+    private final IRotationProvider rotationProvider;
     private final Vec3 offset;
     private final Optional<ParticleLimit> particleGroupLimit;
     private final boolean forceSpawn;
@@ -75,13 +73,13 @@ public class CustomParticleType implements CustomParticleFactory {
 
     private boolean isValid = true;
 
-    private CustomParticleType(ParticleRenderMode renderType, RotationProvider rotationProvider,
+    private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
                                @Nullable Identifier model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                boolean randomSprite,
                                int particleGroupLimit, boolean forceSpawn,
-                               @Nullable ParticleInitializer initializer, @Nullable Ticker ticker,
+                               @Nullable CustomParticleInitializer initializer, ICustomParticleTicker ticker,
                                @Nullable List<ParticleSoundEmitter> sounds,
                                int tickRate, @Nullable List<Dynamic<?>> particles, int killSimilarInRadius) {
         this.renderType = renderType;
@@ -108,7 +106,7 @@ public class CustomParticleType implements CustomParticleFactory {
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
             ParticleRenderMode.CODEC.optionalFieldOf("render_type", ParticleRenderMode.OPAQUE)
                     .forGetter(CustomParticleType::getRenderType),
-            RotationProvider.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationProvider),
+            IRotationProvider.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationProvider),
             Identifier.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model)),
             Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(c -> c.offset),
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
@@ -121,25 +119,25 @@ public class CustomParticleType implements CustomParticleFactory {
             ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("limit", 0).forGetter(c ->
                     c.particleGroupLimit.map(ParticleLimit::limit).orElse(0)),
             Codec.BOOL.optionalFieldOf("force_spawn", false).forGetter(c -> c.forceSpawn),
-            ParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
-            Ticker.CODEC.optionalFieldOf("ticker").forGetter(c -> Optional.ofNullable(c.ticker)),
+            CustomParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
+            ICustomParticleTicker.CODEC.optionalFieldOf("ticker", ICustomParticleTicker.NO_OP).forGetter(c -> c.ticker),
             ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
             ExtraCodecs.POSITIVE_INT.optionalFieldOf("tick_interval", 1).forGetter(c -> c.tickRate),
             Codec.PASSTHROUGH.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.lazyParticles),
             ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("exclusion_radius", 0).forGetter(c -> c.exclusionRadius)
     ).apply(i, CustomParticleType::new));
 
-    private CustomParticleType(ParticleRenderMode renderType, RotationProvider rotationProvider,
+    private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
                                Optional<Identifier> model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                boolean randomSprite,
-                               int limit, boolean forceSpawn, Optional<ParticleInitializer> initializer,
-                               Optional<Ticker> ticker, List<ParticleSoundEmitter> sounds, int tickRate, List<Dynamic<?>> particles, int killSimilarInRadius) {
+                               int limit, boolean forceSpawn, Optional<CustomParticleInitializer> initializer,
+                               ICustomParticleTicker ticker, List<ParticleSoundEmitter> sounds, int tickRate, List<Dynamic<?>> particles, int killSimilarInRadius) {
         this(renderType, rotationProvider, model.orElse(null), offset,
                 light, hasPhysics, killOnContact, killWhenStill, liquidAffinity, colormap.orElse(null),
                 randomSprite, limit, forceSpawn,
-                initializer.orElse(null), ticker.orElse(null), sounds, tickRate, particles, killSimilarInRadius);
+                initializer.orElse(null), ticker, sounds, tickRate, particles, killSimilarInRadius);
     }
 
     @Override
@@ -176,10 +174,12 @@ public class CustomParticleType implements CustomParticleFactory {
                 }
             }
 
-            if (this.ticker != null && this.ticker.removeIf != null) {
-                if (this.ticker.removeIf.evaluate(newParticle, world) > 0) {
-                    return null;
-                }
+            //tick once
+            //todo replace   initializer with ticker
+            this.ticker.tick(newParticle, world);
+            if (!newParticle.isAlive()) {
+                return null;
+
             }
             if (exclusionRadius > 0) {
                 ParticleRenderType particleRenderType = this.getParticleGroup();
@@ -234,7 +234,7 @@ public class CustomParticleType implements CustomParticleFactory {
         protected final @Nullable QuadCollection model;
         protected final SpriteSet spriteSet;
         protected final LiquidAffinity liquidAffinity;
-        protected final List<ParticleTickable> tickables;
+        protected final List<IParticleTickable> tickables;
         protected float oQuadSize;
         protected double custom;
 
@@ -268,8 +268,15 @@ public class CustomParticleType implements CustomParticleFactory {
             this.xd = xSpeed;
             this.yd = ySpeed;
             this.zd = zSpeed;
-            this.model = customType.model == null ? null : SpecialModelsHandler.getSpecialModel(customType.model);
-            ParticleInitializer initializer = customType.initializer;
+            QuadCollection qc = null;
+            if (customType.model != null) {
+                qc = SpecialModelsHandler.getSpecialModel(customType.model);
+                if (qc == null) {
+                    Polytone.LOGGER.error("Failed to load custom particle model: {}. Maybe model was missing", customType.model);
+                }
+            }
+            this.model = qc;
+            CustomParticleInitializer initializer = customType.initializer;
             BlockPos pos = BlockPos.containing(x, y, z);
             if (initializer != null) {
                 initializer.initialize(this, level, state, pos);
@@ -293,6 +300,10 @@ public class CustomParticleType implements CustomParticleFactory {
 
         public double getCustom() {
             return custom;
+        }
+
+        public void setCustom(double custom) {
+            this.custom = custom;
         }
 
         @Override
@@ -324,6 +335,10 @@ public class CustomParticleType implements CustomParticleFactory {
         }
 
         public void extractModel(ModelParticleRenderState modelParticleRenderState, Camera camera, float f) {
+            if (this.model == null) {
+                //failsafe
+                return;
+            }
             Quaternionf quaternionf = new Quaternionf();
             this.type.rotationProvider.setRotation(this, quaternionf, camera, f);
             if (this.roll != 0.0F) {
@@ -331,7 +346,7 @@ public class CustomParticleType implements CustomParticleFactory {
             }
             var offset = this.type.offset;
             modelParticleRenderState.add(
-                    RenderTypes.cutoutMovingBlock() ,
+                    RenderTypes.cutoutMovingBlock(),
                     (float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z),
                     quaternionf.x,
                     quaternionf.y,
@@ -405,7 +420,7 @@ public class CustomParticleType implements CustomParticleFactory {
                 }
             }
             if (!this.removed && isTickTime) {
-                for (ParticleTickable tickable : this.tickables) {
+                for (IParticleTickable tickable : this.tickables) {
                     tickable.tick(this, level);
                 }
             }
@@ -442,105 +457,6 @@ public class CustomParticleType implements CustomParticleFactory {
         public ParticleRenderType getGroup() {
             return this.type.getParticleGroup();
         }
-    }
-
-
-    //TODO: merge this and particle modifier
-    protected record Ticker(@Nullable IParticleExp x,
-                            @Nullable IParticleExp y,
-                            @Nullable IParticleExp z,
-                            @Nullable IParticleExp dx,
-                            @Nullable IParticleExp dy,
-                            @Nullable IParticleExp dz,
-                            @Nullable IParticleExp size,
-                            @Nullable IParticleExp red, @Nullable IParticleExp green,
-                            @Nullable IParticleExp blue, @Nullable IParticleExp alpha,
-                            @Nullable IParticleExp roll,
-                            @Nullable IParticleExp custom,
-                            @Nullable IParticleExp removeIf) {
-
-        private static final Codec<Ticker> CODEC = RecordCodecBuilder.create(i -> i.group(
-                IParticleExp.CODEC.optionalFieldOf("x").forGetter(p -> Optional.ofNullable(p.x)),
-                IParticleExp.CODEC.optionalFieldOf("y").forGetter(p -> Optional.ofNullable(p.y)),
-                IParticleExp.CODEC.optionalFieldOf("z").forGetter(p -> Optional.ofNullable(p.z)),
-                IParticleExp.CODEC.optionalFieldOf("dx").forGetter(p -> Optional.ofNullable(p.dx)),
-                IParticleExp.CODEC.optionalFieldOf("dy").forGetter(p -> Optional.ofNullable(p.dy)),
-                IParticleExp.CODEC.optionalFieldOf("dz").forGetter(p -> Optional.ofNullable(p.dz)),
-                IParticleExp.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.size)),
-                IParticleExp.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.red)),
-                IParticleExp.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.green)),
-                IParticleExp.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blue)),
-                IParticleExp.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
-                IParticleExp.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.roll)),
-                IParticleExp.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom)),
-                IParticleExp.CODEC.optionalFieldOf("remove_condition").forGetter(p -> Optional.ofNullable(p.removeIf))
-        ).apply(i, Ticker::new));
-
-        private Ticker(Optional<IParticleExp> x, Optional<IParticleExp> y,
-                       Optional<IParticleExp> z, Optional<IParticleExp> dx,
-                       Optional<IParticleExp> dy, Optional<IParticleExp> dz,
-                       Optional<IParticleExp> size, Optional<IParticleExp> red,
-                       Optional<IParticleExp> green, Optional<IParticleExp> blue,
-                       Optional<IParticleExp> alpha, Optional<IParticleExp> roll,
-                       Optional<IParticleExp> custom,
-                       Optional<IParticleExp> removeIf) {
-            this(x.orElse(null), y.orElse(null),
-                    z.orElse(null), dx.orElse(null),
-                    dy.orElse(null), dz.orElse(null),
-                    size.orElse(null), red.orElse(null),
-                    green.orElse(null), blue.orElse(null),
-                    alpha.orElse(null), roll.orElse(null),
-                    custom.orElse(null), removeIf.orElse(null)
-            );
-        }
-
-        private void tick(CustomParticleType.Instance particle, ClientLevel level) {
-            if (this.roll != null) {
-                particle.roll = (float) this.roll.evaluate(particle, level);
-            }
-            if (this.size != null) {
-                particle.quadSize = (float) this.size.evaluate(particle, level);
-            }
-            if (this.red != null) {
-                particle.rCol = (float) this.red.evaluate(particle, level);
-            }
-            if (this.green != null) {
-                particle.gCol = (float) this.green.evaluate(particle, level);
-            }
-            if (this.blue != null) {
-                particle.bCol = (float) this.blue.evaluate(particle, level);
-            }
-            if (this.alpha != null) {
-                particle.alpha = (float) this.alpha.evaluate(particle, level);
-            }
-            if (this.x != null) {
-                particle.x = this.x.evaluate(particle, level);
-            }
-            if (this.y != null) {
-                particle.y = this.y.evaluate(particle, level);
-            }
-            if (this.z != null) {
-                particle.z = this.z.evaluate(particle, level);
-            }
-            if (this.dx != null) {
-                particle.xd = this.dx.evaluate(particle, level);
-            }
-            if (this.dy != null) {
-                particle.yd = this.dy.evaluate(particle, level);
-            }
-            if (this.dz != null) {
-                particle.zd = this.dz.evaluate(particle, level);
-            }
-            if (this.custom != null) {
-                particle.custom = this.custom.evaluate(particle, level);
-            }
-            if (this.removeIf != null) {
-                if (this.removeIf.evaluate(particle, level) > 0) {
-                    particle.remove();
-                }
-            }
-        }
-
     }
 
     public static final Codec<Optional<Identifier>> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(

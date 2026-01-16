@@ -1,13 +1,19 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
-import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
+import net.mehvahdjukaar.candlelight.api.BeanAliases;
+import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-@BeanGettersAliases
+@BeanAliases
 public class ParticleProxy extends PositionalProxy {
     private final Level level;
     private final Particle particle;
@@ -93,8 +99,92 @@ public class ParticleProxy extends PositionalProxy {
         return particle.getLifetime();
     }
 
+    public int color() {
+        if (quadParticle != null) {
+            return ColorUtils.pack(quadParticle.rCol, quadParticle.gCol, quadParticle.bCol);
+        }
+        return -1;
+    }
+
+    public double custom() {
+        if (particle instanceof CustomParticleType.Instance cp) {
+            return cp.getCustom();
+        }
+        return 0;
+    }
+
     public boolean hasEntitiesWithin() {
         return !level.getEntities(null, particle.getBoundingBox().inflate(1.25)).isEmpty();
     }
 
+
+    //setters
+
+    public void xd(double xd) {
+        particle.xd = xd;
+    }
+
+    public void yd(double yd) {
+        particle.yd = yd;
+    }
+
+    public void zd(double zd) {
+        particle.zd = zd;
+    }
+
+    public void red(double r) {
+        if (quadParticle != null) quadParticle.rCol = (float) r;
+    }
+
+
+    public void green(double g) {
+        if (quadParticle != null) quadParticle.gCol = (float) g;
+    }
+
+    public void blue(double b) {
+        if (quadParticle != null) quadParticle.bCol = (float) b;
+    }
+
+    public void alpha(double a) {
+        if (quadParticle != null) quadParticle.alpha = (float) a;
+    }
+
+    public void roll(double roll) {
+        if (quadParticle != null) quadParticle.roll = (float) roll;
+    }
+
+    public void size(double size) {
+        if (quadParticle != null) quadParticle.quadSize = (float) size;
+    }
+
+    public void custom(double custom) {
+        if (particle instanceof CustomParticleType.Instance cp) {
+            cp.setCustom(custom);
+        }
+    }
+
+    public void color(int rgb) {
+        float[] unpack = ColorUtils.unpack(rgb);
+        if (quadParticle != null) {
+            quadParticle.setColor(unpack[0], unpack[1], unpack[2]);
+        }
+    }
+
+    public void removed() {
+        particle.remove();
+    }
+
+    public void colorFrom(String colormapName) {
+        var c = Polytone.COLORMAPS.get(colormapName);
+        if (c == null) {
+            Polytone.LOGGER.error("Colormap with name '{}' not found!", colormapName);
+            return;
+        }
+        BlockState state = Blocks.AIR.defaultBlockState();
+        int color = c.getColor(state,
+                Minecraft.getInstance().level,
+                BlockPos.containing(particle.x, particle.y, particle.z), 0);
+
+        this.color(color);
+    }
 }

@@ -1,8 +1,13 @@
 package net.mehvahdjukaar.polytone.common.expressions;
 
+import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Blocks;
 
 public class ExpMath {
 
@@ -162,6 +167,20 @@ public class ExpMath {
         return ARGB.colorFromFloat((float) a, (float) r, (float) g, (float) b);
     }
 
+
+    public static int colormap(String colormap, int x, int y, int z, int tint) {
+        var c = Polytone.COLORMAPS.get(colormap);
+        if (c != null){
+            var pos = new BlockPos(x, y, z);
+            c.getColor(Blocks.AIR.defaultBlockState(), Minecraft.getInstance().level,
+                    pos, tint);
+        }
+        return 0;
+    }
+
+    public static int colormap(String colormap) {
+        return colormap(colormap, 0,0,0,0);
+    }
 
 }
 

@@ -27,6 +27,8 @@ import java.util.function.Predicate;
 
 public class ParticleModifier {
 
+
+    //TODO: make single expression
     public static final Codec<ParticleModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             Filter.CODEC.optionalFieldOf("filter").forGetter(p -> Optional.ofNullable(p.filter)),
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(p -> Optional.ofNullable(p.colormap)),

@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.world.level.Level;
 
-public interface ParticleTickable {
+public interface IParticleTickable {
 
-    void tick(Particle particle, Level level);
+    <T extends Particle> void tick(T particle, Level level);
 }

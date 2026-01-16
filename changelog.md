@@ -1,3 +1,5 @@
-- added global_expressions
-- added entity_modifiers.
-- these allow you to make ENTITY MODELS emit PARTICLES
+- improved missing model exception handling
+- custom particle expressions can set particle values directly too.
+- particle ticker can be a single expression
+- added functions to sample a colormap "colormap(name, x, y, z, tint)"
+- particle tick expressions can sample from a colormap
