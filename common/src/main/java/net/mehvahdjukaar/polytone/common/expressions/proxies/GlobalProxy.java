@@ -19,7 +19,7 @@ public class GlobalProxy {
     }
 
     public double time() {
-        return delegate().getGameTime();
+        return delegate().getGameTime() + Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaTicks();
     }
 
     public double dayTime() {

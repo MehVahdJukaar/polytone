@@ -47,18 +47,25 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     ).apply(instance, BiomeEffectModifier::new));
 
     public static final Codec<BiomeEffectModifier> CODEC = CodecUtils.postProcess(DIRECT_CODEC,
-            Codec.INT.optionalFieldOf("fog_color"),
-            Codec.INT.optionalFieldOf("sky_color"),
+            ColorUtils.COLOR.optionalFieldOf("fog_color"),
+            ColorUtils.COLOR.optionalFieldOf("sky_color"),
             CodecUtils.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start"),
             CodecUtils.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end"),
             (b, fog, sky, fogFade, fogRadius) -> {
                 EnvironmentAttributeMapMod.Builder builder = EnvironmentAttributeMapMod.builder();
                 fog.ifPresent(f -> builder.set(EnvironmentAttributes.FOG_COLOR, f));
                 sky.ifPresent(s -> builder.set(EnvironmentAttributes.SKY_COLOR, s));
-                fogFade.ifPresent(f -> {
+                fogRadius.ifPresent(f -> {
                     builder.modify(EnvironmentAttributes.FOG_END_DISTANCE,
                             FloatModifier.MULTIPLY,
-                            (Supplier<Float>) () -> f.get(Minecraft.getInstance().level));
+                            (Supplier<Float>) f::get);
+                });
+                //probably very wrong
+                fogFade.ifPresent(f -> {
+                    builder.modify(EnvironmentAttributes.FOG_START_DISTANCE,
+                            FloatModifier.MULTIPLY,
+                            (Supplier<Float>) () -> 1f - f.get() // scaled relative to far plane
+                    );
                 });
 
                 if (!builder.isEmpty()) {
@@ -265,6 +272,14 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
 
     public interface FogParam {
         float get(Level level);
+
+        default float get() {
+            var level = Minecraft.getInstance().level;
+            if (level != null) {
+                return get(level);
+            }
+            return 1;
+        }
 
         Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> (l) -> f, fogParam -> fogParam.get(null));
         Codec<FogParam> CODEC = Codec.withAlternative(
