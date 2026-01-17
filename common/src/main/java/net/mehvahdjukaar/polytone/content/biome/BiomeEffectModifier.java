@@ -71,7 +71,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                 if (!builder.isEmpty()) {
                     return b.merge(ofAttributes(
                             b.attributeModifications.merge(
-                                    BiomeEnvAttributeModifications.postProcessOnly(builder.build())
+                                    BiomeEnvAttributeModifications.baseOnly(builder.build())
                             ))
                     );
                 }

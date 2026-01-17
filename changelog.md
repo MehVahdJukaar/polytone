@@ -1,7 +1,1 @@
-- improved missing model exception handling
-- custom particle expressions can set particle values directly too.
-- particle ticker can be a single expression
-- added functions to sample a colormap "colormap(name, x, y, z, tint)"
-- particle tick expressions can sample from a colormap
-- technical change that can affect particles: particle ticker will now also be run immediately as the particle is spawned
-- experimental changes, adding backward support for fog and sky color for biome mods old syntax
+backward compat fog and sky color in biome mod are now applied to the base layer
