@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class CodecUtils {
@@ -151,6 +152,21 @@ public class CodecUtils {
                                                   MapCodec<E> c4,
                                                   Function5<A, B, C, D, E, A> f) {
         return PostProcessCodecs.of(codec, c1, c2, c3, c4, f);
+    }
+
+    public static <A> Codec<Predicate<A>> predicate(Codec<A> elementCodec) {
+        var singleOrList = singleOrList(elementCodec);
+        return singleOrList.xmap(
+                list -> a -> {
+                    for (var e : list) {
+                        if (e.equals(a)) return true;
+                    }
+                    return false;
+                },
+                predicate -> {
+                    //not really accurate but whatever
+                    return List.of();
+                });
     }
 
 }

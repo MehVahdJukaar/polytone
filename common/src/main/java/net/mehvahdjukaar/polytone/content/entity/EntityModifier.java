@@ -8,11 +8,8 @@ import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +31,7 @@ public record EntityModifier(List<EntityParticleEmitter> emitters,
 
         List<ParticleSpawnRecord> records = new ArrayList<>();
         for (EntityParticleEmitter emitter : emitters) {
-            PoseStack spawn = emitter.getSpawnPose(renderer);
+            PoseStack spawn = emitter.getModelSpawnPose(renderer, renderState);
             if (spawn != null) {
                 Matrix4f cameraToEntityArm = new Matrix4f(poseStack.last().pose());
                 cameraToEntityArm.mul(spawn.last().pose());
