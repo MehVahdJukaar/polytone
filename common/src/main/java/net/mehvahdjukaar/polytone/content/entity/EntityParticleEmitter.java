@@ -11,6 +11,7 @@ import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.EmfCompat;
 import net.mehvahdjukaar.polytone.compat.EtfCompat;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -22,6 +23,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
@@ -35,6 +37,7 @@ public record EntityParticleEmitter(
         Optional<Predicate<Integer>> etfVariant,
         Optional<Predicate<Integer>> emfVariant,
         Optional<Holder<ParticleType<?>>> particleType,
+        int maxDistance,
         IEntityExp chance,
         IEntityExp count,
         IEntityExp x,
@@ -65,6 +68,7 @@ public record EntityParticleEmitter(
                     CodecUtils.predicate(Codec.INT).optionalFieldOf("target_emf_variant").forGetter(EntityParticleEmitter::emfVariant),
                     CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("particle")
                             .forGetter(EntityParticleEmitter::particleType),
+                    Codec.INT.optionalFieldOf("max_distance", 32).forGetter(EntityParticleEmitter::maxDistance),
                     IEntityExp.CODEC.optionalFieldOf("chance", IEntityExp.ONE).forGetter(EntityParticleEmitter::chance),
                     IEntityExp.CODEC.optionalFieldOf("count", IEntityExp.ONE).forGetter(EntityParticleEmitter::count),
                     IEntityExp.CODEC.optionalFieldOf("x", IEntityExp.ZERO).forGetter(EntityParticleEmitter::x),
@@ -165,6 +169,13 @@ public record EntityParticleEmitter(
         //check etf
         if (etfVariant.isPresent() && CompatHandler.ETF && !etfVariant.get().test(
                 EtfCompat.getLastKnownTextureVariantIndex(state))) {
+            return null;
+        }
+
+        //check distance
+        Vec3 pos = Minecraft.getInstance().gameRenderer.getMainCamera().position();
+        double distSq = pos.distanceToSqr(state.x, state.y, state.z);
+        if (distSq > maxDistance * maxDistance) {
             return null;
         }
 

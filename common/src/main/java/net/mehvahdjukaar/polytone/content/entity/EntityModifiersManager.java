@@ -26,7 +26,7 @@ public class EntityModifiersManager extends JsonPartialReloader {
 
     private final Int2ObjectOpenHashMap<List<ParticleSpawnRecord>> spawnRecords = new Int2ObjectOpenHashMap<>();
 
-    public EntityModifiersManager(){
+    public EntityModifiersManager() {
         super("entity_modifiers");
     }
 
@@ -64,7 +64,7 @@ public class EntityModifiersManager extends JsonPartialReloader {
             if (entity != null) {
 
                 var value = entry.getValue();
-                for ( ParticleSpawnRecord record : value) {
+                for (ParticleSpawnRecord record : value) {
                     record.emitter().tick(entity, record.transform());
                 }
             }
@@ -84,8 +84,9 @@ public class EntityModifiersManager extends JsonPartialReloader {
 
             var particleSpawns = mod.gatherParticleSpawns(renderer, poseStack, renderState, cameraState);
 
-            if(!particleSpawns.isEmpty())
+            if (!particleSpawns.isEmpty()) {
                 spawnRecords.put(id, particleSpawns);
+            }
         }
     }
 
