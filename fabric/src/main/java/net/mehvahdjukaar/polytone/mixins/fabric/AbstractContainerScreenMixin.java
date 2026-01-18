@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.mixins.fabric;
 import com.google.common.base.Preconditions;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.fabricmc.fabric.api.tag.client.v1.ClientTags;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.slotify.GuiModifierManager;
 import net.minecraft.client.gui.GuiGraphics;
@@ -36,9 +37,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     @Shadow
     protected int inventoryLabelY;
 
-    @Shadow
-    @Nullable
-    protected Slot hoveredSlot;
+
     @Shadow protected int topPos;
     @Shadow protected int leftPos;
     @Shadow protected int imageWidth;
