@@ -107,8 +107,8 @@ public record Targets(List<Entry> entries) {
 
     private static final Codec<Entry> ENTRY_CODEC = Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC);
 
-    public static final Codec<Targets> CODEC = Codec.withAlternative(ENTRY_CODEC.xmap(List::of, List::getFirst),
-            ENTRY_CODEC.listOf()).xmap(Targets::new, t -> t.entries);
+    public static final Codec<Targets> CODEC = CodecUtils.singleOrList(ENTRY_CODEC)
+            .xmap(Targets::new, t -> t.entries);
 
     private record OptionalEntry(Entry entry, boolean required) implements Entry {
         public static final Codec<OptionalEntry> OPTIONAL_CODEC = RecordCodecBuilder.create(i -> i.group(

@@ -1,1 +1,3 @@
-backward compat fog and sky color in biome mod are now applied to the base layer
+- mod now makes use of fabric client tags
+- also on forge a similar implementation was added
+- entity modifier particle emittes can target a specific renderer texture. additionally EMF and ETF compat was added allowing to target a specific variant
