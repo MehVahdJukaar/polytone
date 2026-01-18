@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.utils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
@@ -157,7 +158,7 @@ public record Targets(List<Entry> entries) {
         @Override
         public <T> Iterable<Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
             TagKey<T> key = TagKey.create((ResourceKey) reg.key(), id);
-            return reg.get(key).orElseThrow(() -> new IllegalStateException("Tag not found: " + id));
+            return PlatStuff.getTagEntries(reg, key);
         }
 
         @Override
