@@ -422,6 +422,10 @@ public class LegacyHelper {
                 String path = id.getPath();
                 if (path.contains("water") || path.contains("lava")) {
 
+                    //remove custom
+                    if (path.contains("/")) {
+                        id = id.withPath(path.substring(path.lastIndexOf('/') + 1));
+                    }
                     if (path.endsWith("_fog") || path.contains("under")) fog.put(id, parsed);
                     else fluid.put(id, parsed);
 
