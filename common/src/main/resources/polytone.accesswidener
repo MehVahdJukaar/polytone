@@ -207,3 +207,9 @@ accessible field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecr
 mutable field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
 accessible field net/minecraft/world/level/block/SignBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
 mutable field net/minecraft/world/level/block/SignBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
+
+#frustum fix
+accessible field net/minecraft/client/renderer/culling/Frustum intersection Lorg/joml/FrustumIntersection;
+accessible field net/minecraft/client/renderer/culling/Frustum camX D
+accessible field net/minecraft/client/renderer/culling/Frustum camY D
+accessible field net/minecraft/client/renderer/culling/Frustum camZ D

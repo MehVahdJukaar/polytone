@@ -6,7 +6,6 @@
   "mixins": [
   ],
   "client": [
-    "LivingEntityRendererMixin",
     "AbstractContainerMenuMixin",
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
@@ -30,12 +29,14 @@
     "ItemStackMixin",
     "LeashMixin",
     "LightTextureMixin",
+    "LivingEntityRendererMixin",
     "MinecraftMixin",
     "ModelBakeryMixin",
     "ModelManagerMixin",
     "ParticleEngineMixin",
     "ParticleGroupMixin",
     "ParticleResourcesMixin",
+    "QuadParticleGroupMixin",
     "ScreenMixin",
     "SmithingScreenMixin",
     "SodiumBlockRendererMixin",

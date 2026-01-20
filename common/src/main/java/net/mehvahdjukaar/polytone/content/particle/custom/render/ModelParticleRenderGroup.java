@@ -1,25 +1,16 @@
 package net.mehvahdjukaar.polytone.content.particle.custom.render;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.*;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.particle.ParticleGroup;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.state.ParticleGroupRenderState;
-import net.minecraft.client.renderer.state.QuadParticleRenderState;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
-
-import java.util.HashMap;
-import java.util.Map;
+import net.minecraft.world.phys.AABB;
 
 public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleType.Instance> {
 
@@ -33,7 +24,7 @@ public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleType.I
     @Override
     public ParticleGroupRenderState extractRenderState(Frustum frustum, Camera camera, float f) {
         for (CustomParticleType.Instance particle : this.particles) {
-            if (frustum.pointInFrustum(particle.x, particle.y, particle.z)) {
+            if (particleInFrustum(frustum, particle)) {
                 try {
                     particle.extractModel(this.particleTypeRenderState, camera, f);
                 } catch (Throwable var9) {
@@ -48,5 +39,11 @@ public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleType.I
         return this.particleTypeRenderState;
     }
 
+
+    public static boolean particleInFrustum(Frustum frustum, Particle particle) {
+        AABB bb = particle.getBoundingBox();
+        return frustum.intersection.testAab((float) (bb.minX - frustum.camX), (float) (bb.minY - frustum.camY), (float) (bb.minZ - frustum.camZ),
+                (float) (bb.maxX - frustum.camX), (float) (bb.maxY - frustum.camY), (float) (bb.maxZ - frustum.camZ));
+    }
 
 }
