@@ -41,4 +41,9 @@ public class LenientCodecWithLog<A> extends OptionalFieldCodec<A> {
         }
         return parsed.map(Optional::of).setPartial(parsed.resultOrPartial());
     }
+
+    @Override
+    public String toString() {
+        return "LenientCodecWithLog[" + elementCodec + "]";
+    }
 }

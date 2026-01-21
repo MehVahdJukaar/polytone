@@ -3,16 +3,29 @@ package net.mehvahdjukaar.polytone.content.biome;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.mehvahdjukaar.polytone.common.Weather;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
+import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.attribute.modifier.FloatModifier;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
+import net.minecraft.world.level.block.Blocks;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public record BiomeEffectModifier(Optional<Integer> waterColor,
                                   Optional<Integer> foliageColorOverride,
@@ -22,7 +35,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                                   BiomeEnvAttributeModifications attributeModifications,
                                   Targets targets) {
 
-    public static final Codec<BiomeEffectModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
+    public static final Codec<BiomeEffectModifier> DIRECT_CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             ColorUtils.COLOR.optionalFieldOf("water_color").forGetter(BiomeEffectModifier::waterColor),
             ColorUtils.COLOR.optionalFieldOf("foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
             ColorUtils.COLOR.optionalFieldOf("dry_foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
@@ -33,6 +46,38 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BiomeEffectModifier::targets)
     ).apply(instance, BiomeEffectModifier::new));
 
+    public static final Codec<BiomeEffectModifier> CODEC = CodecUtils.postProcess(DIRECT_CODEC,
+            ColorUtils.COLOR.optionalFieldOf("fog_color"),
+            ColorUtils.COLOR.optionalFieldOf("sky_color"),
+            CodecUtils.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start"),
+            CodecUtils.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end"),
+            (b, fog, sky, fogFade, fogRadius) -> {
+                EnvironmentAttributeMapMod.Builder builder = EnvironmentAttributeMapMod.builder();
+                fog.ifPresent(f -> builder.set(EnvironmentAttributes.FOG_COLOR, f));
+                sky.ifPresent(s -> builder.set(EnvironmentAttributes.SKY_COLOR, s));
+                fogRadius.ifPresent(f -> {
+                    builder.modify(EnvironmentAttributes.FOG_END_DISTANCE,
+                            FloatModifier.MULTIPLY,
+                            (Supplier<Float>) f::get);
+                });
+                //probably very wrong
+                fogFade.ifPresent(f -> {
+                    builder.modify(EnvironmentAttributes.FOG_START_DISTANCE,
+                            FloatModifier.MULTIPLY,
+                            (Supplier<Float>) () -> 1f - f.get() // scaled relative to far plane
+                    );
+                });
+
+                if (!builder.isEmpty()) {
+                    return b.merge(ofAttributes(
+                            b.attributeModifications.merge(
+                                    BiomeEnvAttributeModifications.baseOnly(builder.build())
+                            ))
+                    );
+                }
+                return b;
+            });
+
     private static BiomeEffectModifier wrapVanilla(BiomeSpecialEffects effects, EnvironmentAttributeMap attributes) {
         return new BiomeEffectModifier(
                 Optional.of(effects.waterColor()),
@@ -41,6 +86,18 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                 effects.grassColorOverride(),
                 Optional.of(effects.grassColorModifier()),
                 BiomeEnvAttributeModifications.baseOnly(EnvironmentAttributeMapMod.wrapVanilla(attributes)),
+                Targets.EMPTY
+        );
+    }
+
+    private static BiomeEffectModifier ofAttributes(BiomeEnvAttributeModifications attributes) {
+        return new BiomeEffectModifier(
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                attributes,
                 Targets.EMPTY
         );
     }
@@ -173,10 +230,17 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                 ), DIRECT_CODEC, (f, s) -> !f.isEmpty()
         );
 
-        private static @NonNull BiomeEnvAttributeModifications baseOnly(EnvironmentAttributeMapMod mod) {
+        public static @NonNull BiomeEnvAttributeModifications baseOnly(EnvironmentAttributeMapMod mod) {
             return new BiomeEnvAttributeModifications(
                     mod,
                     EnvironmentAttributeMapMod.EMPTY
+            );
+        }
+
+        public static @NotNull BiomeEnvAttributeModifications postProcessOnly(EnvironmentAttributeMapMod mod) {
+            return new BiomeEnvAttributeModifications(
+                    EnvironmentAttributeMapMod.EMPTY,
+                    mod
             );
         }
 
@@ -202,4 +266,50 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
             return oldBase;
         }
     }
+
+
+    //legacy fog
+
+    public interface FogParam {
+        float get(Level level);
+
+        default float get() {
+            var level = Minecraft.getInstance().level;
+            if (level != null) {
+                return get(level);
+            }
+            return 1;
+        }
+
+        Codec<FogParam> SIMPLE_CODEC = Codec.FLOAT.xmap(f -> (l) -> f, fogParam -> fogParam.get(null));
+        Codec<FogParam> CODEC = Codec.withAlternative(
+                Codec.withAlternative(SIMPLE_CODEC,
+                        Codec.simpleMap(Weather.CODEC, SIMPLE_CODEC, StringRepresentable.keys(Weather.values()))
+                                .xmap(FogMap::new, FogMap::map).codec()
+                ),
+                BlockContextExpression.CODEC.xmap(
+                        FogExpression::new,
+                        fogMap -> fogMap.map
+                )
+        );
+    }
+
+    public record FogExpression(BlockContextExpression map) implements FogParam {
+
+        @Override
+        public float get(Level level) {
+            BlockPos pos = ClientFrameTicker.getCameraPos();
+            return (float) map.evaluate(level, pos, Blocks.AIR.defaultBlockState());
+        }
+    }
+
+    public record FogMap(Map<Weather, FogParam> map) implements FogParam {
+
+        @Override
+        public float get(Level level) {
+            Weather w = Weather.get(level);
+            return map.getOrDefault(w, (l) -> 1).get(level);
+        }
+    }
+
 }

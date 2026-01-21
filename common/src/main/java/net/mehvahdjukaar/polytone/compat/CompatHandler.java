@@ -8,5 +8,7 @@ public class CompatHandler {
     public static final boolean FS = PlatStuff.isModLoaded("fabric_seasons");
     public static final boolean IRIS  =  PlatStuff.isModLoaded("iris") ||  PlatStuff.isModLoaded("oculus");
     public static final boolean ALEX_CAVES = PlatStuff.isModLoaded("alexscaves");
+    public static final boolean EMF = PlatStuff.isModLoaded("entity_model_features");
+    public static final boolean ETF = PlatStuff.isModLoaded("entity_texture_features");
 
 }

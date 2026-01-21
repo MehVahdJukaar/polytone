@@ -1,3 +1,3 @@
-- added global_expressions
-- added entity_modifiers.
-- these allow you to make ENTITY MODELS emit PARTICLES
+- mod now makes use of fabric client tags
+- also on forge a similar implementation was added
+- entity modifier particle emittes can target a specific renderer texture. additionally EMF and ETF compat was added allowing to target a specific variant

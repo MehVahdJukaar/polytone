@@ -13,7 +13,7 @@ import org.joml.Vector3f;
 
 import java.util.Locale;
 
-public enum RotationMode implements StringRepresentable, RotationProvider {
+public enum RotationMode implements StringRepresentable, IRotationProvider {
     LOOK_AT_XYZ, LOOK_AT_Y,
     LOOK_AT_X, LOOK_AT_Z, LOOK_AT_XZ,
     MOVEMENT_ALIGNED, LOOK_UP, LOOK_WEST, NONE;

@@ -1,17 +1,18 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
-import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
+import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-@BeanGettersAliases
-public class BlockTintProxy extends BlockProxy{
+@BeanAliases
+public class BlockTintProxy extends BlockProxy {
     private final float r;
     private final float g;
     private final float b;
+
     public BlockTintProxy(@Nullable BlockAndTintGetter level, @Nullable BlockPos pos, @Nullable BlockState state,
                           @Nullable Biome biome, float r, float g, float b) {
         super(level, pos, state, biome);

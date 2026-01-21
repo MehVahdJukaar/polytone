@@ -19,7 +19,7 @@ public class EntityProxy extends AbstractEntityProxy{
     }
 
     @Override
-    public Entity entity() {
+    protected Entity entity() {
         return  entity;
     }
 

@@ -14,6 +14,7 @@ public record LenientUnboundedMapCodec<K, V>(Codec<K> keyCodec,
                                              Codec<V> elementCodec) implements BaseMapCodec<K, V>, Codec<Map<K, V>> {
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    @Override
     public <T> DataResult<Map<K, V>> decode(DynamicOps<T> ops, MapLike<T> input) {
         ImmutableMap.Builder<K, V> read = ImmutableMap.builder();
         input.entries().forEach((pair) -> {
@@ -31,6 +32,7 @@ public record LenientUnboundedMapCodec<K, V>(Codec<K> keyCodec,
         return DataResult.success(elements);
     }
 
+    @Override
     public <T> DataResult<Pair<Map<K, V>, T>> decode(DynamicOps<T> ops, T input) {
         return ops.getMap(input).setLifecycle(Lifecycle.stable()).flatMap((map) -> {
             return this.decode(ops, map);
@@ -39,10 +41,12 @@ public record LenientUnboundedMapCodec<K, V>(Codec<K> keyCodec,
         });
     }
 
+    @Override
     public <T> DataResult<T> encode(Map<K, V> input, DynamicOps<T> ops, T prefix) {
-        return this.encode((Map) input, ops, (RecordBuilder) ops.mapBuilder()).build(prefix);
+        return this.encode( input, ops,  ops.mapBuilder()).build(prefix);
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -54,10 +58,12 @@ public record LenientUnboundedMapCodec<K, V>(Codec<K> keyCodec,
         }
     }
 
+    @Override
     public int hashCode() {
-        return Objects.hash(new Object[]{this.keyCodec, this.elementCodec});
+        return Objects.hash(this.keyCodec, this.elementCodec);
     }
 
+    @Override
     public String toString() {
         String var10000 = String.valueOf(this.keyCodec);
         return "LenientUnboundedMapCodec[" + var10000 + " -> " + String.valueOf(this.elementCodec) + "]";

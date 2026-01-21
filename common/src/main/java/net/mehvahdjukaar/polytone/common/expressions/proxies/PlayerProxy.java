@@ -1,12 +1,11 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
-import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
+import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
-@BeanGettersAliases
+@BeanAliases
 public class PlayerProxy extends AbstractEntityProxy {
 
     public static final PlayerProxy INSTANCE = new PlayerProxy();

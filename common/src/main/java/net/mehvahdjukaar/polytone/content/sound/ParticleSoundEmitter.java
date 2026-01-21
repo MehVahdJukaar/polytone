@@ -3,9 +3,8 @@ package net.mehvahdjukaar.polytone.content.sound;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
-import net.mehvahdjukaar.polytone.content.particle.custom.ParticleTickable;
+import net.mehvahdjukaar.polytone.content.particle.custom.IParticleTickable;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
@@ -30,7 +29,7 @@ public record ParticleSoundEmitter(
         IParticleExp volume,
         IParticleExp pitch,
         boolean distanceDelay,
-        Optional<HolderSet<Biome>> biomes) implements ParticleTickable {
+        Optional<HolderSet<Biome>> biomes) implements IParticleTickable {
 
   private static final Codec<SoundSource> SOUND_SOURCE_CODEC =
           Codec.STRING.comapFlatMap(s -> DataResult.success(SoundSource.valueOf(s.toLowerCase(Locale.ROOT))),

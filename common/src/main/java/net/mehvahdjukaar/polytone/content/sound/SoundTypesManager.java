@@ -81,7 +81,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     @Override
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
         if (!customSoundEvents.isEmpty()) {
-            Polytone.LOGGER.info("Registered {} custom Sound Events from Resource Packs: {}", customSoundEvents.size(), customSoundEvents + ". Remember to add them to sounds.json!");
+            Polytone.LOGGER.info("Registered {} custom Sound Events", customSoundEvents.size()) ;
             //this is bad
             Minecraft.getInstance().getSoundManager().reload();
             //this entire thing is a bad idea

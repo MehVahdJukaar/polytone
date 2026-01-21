@@ -10,7 +10,10 @@ import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.fabricmc.fabric.api.tag.client.v1.ClientTags;
 import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
+import net.fabricmc.fabric.impl.tag.client.ClientTagsImpl;
+import net.fabricmc.fabric.impl.tag.client.ClientTagsLoader;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -30,6 +33,9 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -38,6 +44,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
@@ -51,10 +58,7 @@ import org.joml.Vector3f;
 import sereneseasons.api.season.SeasonHelper;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -323,6 +327,45 @@ public class PlatStuffImpl {
 
     public static float getCamRoll(Camera camera) {
         return 0;
+    }
+
+    public static <T> Iterable<Holder<T>> getTagEntries(HolderLookup.RegistryLookup<T> reg, TagKey<T> tag) {
+        Set<Holder<T>> result = new HashSet<>();
+        collectAllClientTags(tag, reg, result, new HashSet<>());
+        return result;
+    }
+
+    //Thanks fabric api.. this client tag api they have is soo bad
+    @SuppressWarnings("unchecked")
+    private static <T> void collectAllClientTags(
+            TagKey<T> tagKey,
+            HolderLookup.RegistryLookup<T> registry,
+            Set<Holder<T>> result,
+            Set<TagKey<T>> visited
+    ) {
+        if (!visited.add(tagKey)) return;
+
+        // Prefer synced registry tags if present
+        if (registry.get(tagKey).isPresent()) {
+            registry.get(tagKey).get().forEach(result::add);
+            return;
+        }
+
+        // Local fallback (client-only tags)
+        ClientTagsLoader.LoadedTag tag =
+                ClientTagsImpl.getOrCreatePartiallySyncedTag(tagKey);
+
+        // Direct entries
+        for (Identifier id : tag.immediateChildIds()) {
+            ResourceKey<T> key = ResourceKey.create((ResourceKey)
+                    registry.key().registryKey(), id);
+            registry.get(key).ifPresent(result::add);
+        }
+
+        // Nested tags
+        for (TagKey<?> child : tag.immediateChildTags()) {
+            collectAllClientTags((TagKey<T>) child, registry, result, visited);
+        }
     }
 
 }

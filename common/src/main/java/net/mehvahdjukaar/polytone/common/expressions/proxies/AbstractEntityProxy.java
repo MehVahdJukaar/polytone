@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
-import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
+import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -8,7 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
-@BeanGettersAliases
+@BeanAliases
 public abstract class AbstractEntityProxy extends PositionalProxy {
 
     protected abstract Entity entity();
@@ -26,7 +26,7 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
         return entity().getOnPos();
     }
 
-    public String name(){
+    public String name() {
         return entity().getName().getString();
     }
 
@@ -96,15 +96,15 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
         return le.getItemBySlot(eq).getItemHolder().getRegisteredName();
     }
 
-    public double height(){
+    public double height() {
         return entity().getBbHeight();
     }
 
-    public double width(){
+    public double width() {
         return entity().getBbWidth();
     }
 
-    public double eyeHeight(){
+    public double eyeHeight() {
         return entity().getEyeHeight();
     }
 
@@ -148,11 +148,11 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
     }
 
     public boolean onGround() {
-        return  entity().onGround();
+        return entity().onGround();
     }
 
     public double speed() {
-        return  entity().getDeltaMovement().length();
+        return entity().getDeltaMovement().length();
     }
 
     public double speedSq() {

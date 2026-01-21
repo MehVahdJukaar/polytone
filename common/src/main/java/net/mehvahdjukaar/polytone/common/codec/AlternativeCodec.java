@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.util.ExtraCodecs;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,5 +61,18 @@ public record AlternativeCodec<A>(Codec<? extends A> ...codecs) implements Codec
         }
 
         return DataResult.error(() -> "No alternative codec could encode value: " + input);
+    }
+
+    @Override
+    public @NonNull String toString() {
+        StringBuilder sb = new StringBuilder("AlternativeCodec[");
+        for (int i = 0; i < codecs.length; i++) {
+            sb.append(codecs[i].toString());
+            if (i < codecs.length - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }

@@ -38,4 +38,9 @@ public class ForwardAwareByNameCodec<A> implements Codec<Optional<A>> {
     public <T> DataResult<T> encode(Optional<A> input, DynamicOps<T> ops, T prefix) {
         return original.encode(input.orElseThrow(), ops, prefix);
     }
+
+    @Override
+    public String toString() {
+        return "ForwardAwareByNameCodec[" + original + "]";
+    }
 }

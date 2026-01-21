@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.common;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.core.Holder;
@@ -106,8 +107,8 @@ public record Targets(List<Entry> entries) {
 
     private static final Codec<Entry> ENTRY_CODEC = Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC);
 
-    public static final Codec<Targets> CODEC = Codec.withAlternative(ENTRY_CODEC.xmap(List::of, List::getFirst),
-            ENTRY_CODEC.listOf()).xmap(Targets::new, t -> t.entries);
+    public static final Codec<Targets> CODEC = CodecUtils.singleOrList(ENTRY_CODEC)
+            .xmap(Targets::new, t -> t.entries);
 
     private record OptionalEntry(Entry entry, boolean required) implements Entry {
         public static final Codec<OptionalEntry> OPTIONAL_CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -161,7 +162,7 @@ public record Targets(List<Entry> entries) {
         @Override
         public <T> Iterable<Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
             TagKey<T> key = TagKey.create((ResourceKey<? extends Registry<T>>) reg.key(), id);
-            return reg.get(key).orElseThrow(() -> new IllegalStateException("Tag not found: " + id));
+            return PlatStuff.getTagEntries(reg, key);
         }
 
         @Override

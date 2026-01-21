@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Set;
@@ -41,4 +42,8 @@ public record ExcludePathCodec<T>(Codec<T> inner) implements Codec<T> {
         return inner.encode(input, ops, prefix);
     }
 
+    @Override
+    public @NonNull String toString() {
+        return "ExcludePathCodec[" + inner + "]";
+    }
 }

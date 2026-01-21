@@ -6,6 +6,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.NonNull;
 
 import java.util.function.Function;
 
@@ -37,5 +38,10 @@ public record RemappingCodec<A, B>(MapRegistry<A> from, MapRegistry<B> to, Funct
             return DataResult.error(() -> "Could not find any entry with value '" + input + "' in registry [" + to.getName() + "] \n Known values: " + to.getValues());
         }
         return Identifier.CODEC.encode(id, ops, prefix);
+    }
+
+    @Override
+    public @NonNull String toString() {
+        return "RemappingCodec[" + from.getName() + "->" + to.getName() + "]";
     }
 }

@@ -32,10 +32,10 @@ import java.util.function.Function;
 
 public class CustomParticlesManager extends JsonPartialReloader {
 
-    public final MapRegistry<CustomParticleFactory> customParticleFactories = new MapRegistry<>("Custom Particles");
+    public final MapRegistry<ICustomParticleFactory> customParticleFactories = new MapRegistry<>("Custom Particles");
     private final Map<ParticleType<?>, ParticleProvider<?>> overwrittenVanillaProviders = new HashMap<>();
 
-    public static final Codec<CustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = Codec.either(SemiCustomParticleType.CODEC, CustomParticleType.CODEC)
+    public static final Codec<ICustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = Codec.either(SemiCustomParticleType.CODEC, CustomParticleType.CODEC)
             .xmap(e -> e.map(Function.identity(), Function.identity()),
                     p -> p instanceof CustomParticleType c ? Either.right(c) : Either.left((SemiCustomParticleType) p));
 
@@ -161,7 +161,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
         return ParticleParticleEmitter.CODEC.decode(ops, dynamic.getValue()).getOrThrow().getFirst();
     }
 
-    public Codec<CustomParticleFactory> byNameCodec() {
+    public Codec<ICustomParticleFactory> byNameCodec() {
         return customParticleFactories;
     }
 

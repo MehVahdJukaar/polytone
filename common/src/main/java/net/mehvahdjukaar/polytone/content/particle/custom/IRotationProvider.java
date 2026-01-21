@@ -11,9 +11,9 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 
 //Extended facing camera mode
-public interface RotationProvider extends SingleQuadParticle.FacingCameraMode {
+public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
 
-    Codec<RotationProvider> CODEC = CodecUtils.alternatives(
+    Codec<IRotationProvider> CODEC = CodecUtils.alternatives(
             CustomRotation.CODEC, RotationMode.CODEC);
 
 
@@ -28,7 +28,7 @@ public interface RotationProvider extends SingleQuadParticle.FacingCameraMode {
 
     record CustomRotation(IParticleExp xRot,
                           IParticleExp yRot,
-                          IParticleExp zRot) implements RotationProvider {
+                          IParticleExp zRot) implements IRotationProvider {
 
         public static final Codec<CustomRotation> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 IParticleExp.CODEC.optionalFieldOf("x_rot", IParticleExp.ZERO).forGetter(CustomRotation::xRot),

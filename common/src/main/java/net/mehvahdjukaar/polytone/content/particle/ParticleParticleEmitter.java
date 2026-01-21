@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
-import net.mehvahdjukaar.polytone.content.particle.custom.ParticleTickable;
+import net.mehvahdjukaar.polytone.content.particle.custom.IParticleTickable;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -46,7 +46,7 @@ public record ParticleParticleEmitter(
         Optional<IParticleExp> custom,
         RuleTest predicate,
         Optional<HolderSet<Biome>> biomes
-) implements ParticleTickable {
+) implements IParticleTickable {
 
     public static final Codec<ParticleParticleEmitter> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
             CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("particle").forGetter(ParticleParticleEmitter::particleType),

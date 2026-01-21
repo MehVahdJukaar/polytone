@@ -7,25 +7,37 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.compat.EmfCompat;
+import net.mehvahdjukaar.polytone.compat.EtfCompat;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public record EntityParticleEmitter(
         List<String> bone,
+        Optional<Predicate<Identifier>> textureId,
+        Optional<Predicate<Integer>> etfVariant,
+        Optional<Predicate<Integer>> emfVariant,
         Optional<Holder<ParticleType<?>>> particleType,
+        int maxDistance,
         IEntityExp chance,
         IEntityExp count,
         IEntityExp x,
@@ -51,8 +63,12 @@ public record EntityParticleEmitter(
     public static final Codec<EntityParticleEmitter> CODEC = RecordCodecBuilder.create(
             i -> BiggerCodecs.group(i,
                     BONE_CODEC.fieldOf("bone").forGetter(EntityParticleEmitter::bone),
+                    CodecUtils.predicate(Identifier.CODEC).optionalFieldOf("target_texture").forGetter(EntityParticleEmitter::textureId),
+                    CodecUtils.predicate(Codec.INT).optionalFieldOf("target_etf_variant").forGetter(EntityParticleEmitter::etfVariant),
+                    CodecUtils.predicate(Codec.INT).optionalFieldOf("target_emf_variant").forGetter(EntityParticleEmitter::emfVariant),
                     CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("particle")
                             .forGetter(EntityParticleEmitter::particleType),
+                    Codec.INT.optionalFieldOf("max_distance", 32).forGetter(EntityParticleEmitter::maxDistance),
                     IEntityExp.CODEC.optionalFieldOf("chance", IEntityExp.ONE).forGetter(EntityParticleEmitter::chance),
                     IEntityExp.CODEC.optionalFieldOf("count", IEntityExp.ONE).forGetter(EntityParticleEmitter::count),
                     IEntityExp.CODEC.optionalFieldOf("x", IEntityExp.ZERO).forGetter(EntityParticleEmitter::x),
@@ -134,17 +150,41 @@ public record EntityParticleEmitter(
 
 
     @Nullable
-    public PoseStack getSpawnPose(LivingEntityRenderer<?, ?, ?> renderer) {
+    public <S extends LivingEntityRenderState> PoseStack getModelSpawnPose(LivingEntityRenderer<?, S, ?> renderer, S state) {
         //find bone
         if (bone.isEmpty()) {
-            return new PoseStack();
+            //no bone found, cancel spawning
+            return null;
         }
+
+        if (textureId.isPresent() && !textureId.get().test(renderer.getTextureLocation(state))) {
+            return null;
+        }
+
+        //check emf
+        if (emfVariant.isPresent() && CompatHandler.EMF && !emfVariant.get().test(
+                        EmfCompat.getLastKnownTextureVariantIndex(state))) {
+            return null;
+        }
+        //check etf
+        if (etfVariant.isPresent() && CompatHandler.ETF && !etfVariant.get().test(
+                EtfCompat.getLastKnownTextureVariantIndex(state))) {
+            return null;
+        }
+
+        //check distance
+        Vec3 pos = Minecraft.getInstance().gameRenderer.getMainCamera().position();
+        double distSq = pos.distanceToSqr(state.x, state.y, state.z);
+        if (distSq > maxDistance * maxDistance) {
+            return null;
+        }
+
         ModelPart part = renderer.getModel().root();
         List<ModelPart> parts = new ArrayList<>();
         parts.add(part);
         for (String b : bone) {
             part = part.children.get(b);
-            if (part == null){
+            if (part == null) {
                 return null; //fail
             }
             parts.add(part);

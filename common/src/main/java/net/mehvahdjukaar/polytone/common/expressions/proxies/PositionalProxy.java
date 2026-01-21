@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import com.google.common.base.Preconditions;
-import net.mehvahdjukaar.candlelight.api.BeanGettersAliases;
+import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
@@ -13,7 +13,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.attribute.EnvironmentAttribute;
-import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -25,12 +24,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.apache.commons.lang3.ClassUtils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 //with cache but position changing awareness
 //all these nulls all because of color getters possibly having a null tint getter propagating till here...
-@BeanGettersAliases
+@BeanAliases
 public abstract class PositionalProxy {
 
     private BlockState stateCache;
@@ -232,7 +230,7 @@ public abstract class PositionalProxy {
             if (pos == null) {
                 pos = BlockPos.ZERO;
             }
-            EnvironmentAttribute<?> attr = ExpUtils. parseEnvAttr(attributeName);
+            EnvironmentAttribute<?> attr = ExpUtils.parseEnvAttr(attributeName);
             // safe to call delegate methods now
 
             LevelReader lr;
@@ -240,7 +238,7 @@ public abstract class PositionalProxy {
                 lr = lrr;
             } else {
                 lr = Minecraft.getInstance().level;
-                if ( lr == null ) {
+                if (lr == null) {
                     throw new IllegalStateException("No level available for environment attribute retrieval!");
                 }
             }
