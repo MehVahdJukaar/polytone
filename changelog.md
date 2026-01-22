@@ -1,1 +1,2 @@
-added a warning when fabulous mode is enabled
+- improved error handling on particles missing sprites, rejecting pack load instead of crashing when particle is spanwed
+- backported client tags changes of 1.21.11

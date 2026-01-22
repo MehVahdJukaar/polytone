@@ -212,6 +212,21 @@ public class CustomParticleType implements CustomParticleFactory {
     @Override
     public void setSpriteSet(ParticleEngine.MutableSpriteSet mutableSpriteSet) {
         this.spriteSet = mutableSpriteSet;
+        try{
+            spriteSet.get( RandomSource.create());
+        }catch (Exception e){
+            throw new RuntimeException("SpriteSet for custom particle type "+this+" was empty! Did you forget to add a particle sprites file?", e);
+        }
+    }
+
+    ResourceLocation debugId;
+
+    @Override
+    public String toString() {
+        ResourceLocation id = this.debugId;
+        return "CustomParticleType{" +
+                "id=" + (id != null ? id : "unregistered") +
+                '}';
     }
 
     public void setUnregistered() {

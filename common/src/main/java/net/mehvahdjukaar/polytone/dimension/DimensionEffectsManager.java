@@ -182,7 +182,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         //apply to current dimension
         Level level = Minecraft.getInstance().level;
         if (level != null) {
-            onDimensionChanged(level.dimensionTypeRegistration(), access);
+            onDimensionChanged(level.dimensionTypeRegistration(), registryAccess);
         }
     }
 
@@ -204,7 +204,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
                 fogColormaps.put(currentDim, c);
             }
             if (modifier.getTerrainFogColormap() instanceof IColorGetter c) {
-                terrainFogColormaps.put(dim, c);
+                terrainFogColormaps.put(currentDimHolder.value(), c);
             }
             if (modifier.getSkyColormap() instanceof IColorGetter c) {
                 skyColormaps.put(currentDim, c);
