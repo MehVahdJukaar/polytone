@@ -106,8 +106,12 @@ public class CustomParticlesManager extends JsonPartialReloader {
                 ops, "custom particle")) {
             try {
                 var factory = j.getValue();
-                var id = j.getKey();
-                factory.setSpriteSet(particleResources.spriteSets.get(id));
+                Identifier id = j.getKey();
+                ParticleResources.MutableSpriteSet spriteSet = particleResources.spriteSets.get(id);
+                if(spriteSet == null){
+                    int aa = 1;
+                }
+                factory.setSpriteSet(spriteSet);
 
                 if (factory instanceof CustomParticleType c) {
                     customTypes.add(c);

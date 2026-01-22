@@ -3,28 +3,17 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
-import net.mehvahdjukaar.polytone.SpecialModelsHandler;
-import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
-import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderState;
 import net.mehvahdjukaar.polytone.content.sound.ParticleSoundEmitter;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.QuadParticleRenderState;
-import net.minecraft.client.resources.model.QuadCollection;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
@@ -34,9 +23,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,32 +31,29 @@ import java.util.Optional;
 
 public class CustomParticleType implements ICustomParticleFactory {
 
-    private static BlockState STATE_HACK = Blocks.AIR.defaultBlockState();
-
-    private final ParticleRenderMode renderType;
-    private final @Nullable Identifier model;
-    private final @Nullable CustomParticleInitializer initializer;
-    private final ICustomParticleTicker ticker;
-    private final List<ParticleSoundEmitter> sounds;
-    private final int tickRate;
-    private final int exclusionRadius;
+    protected final ParticleRenderMode renderType;
+    protected final @Nullable Identifier model;
+    protected final @Nullable CustomParticleInitializer initializer;
+    protected final ICustomParticleTicker ticker;
+    protected final List<ParticleSoundEmitter> sounds;
+    protected final int tickRate;
+    protected final int exclusionRadius;
     protected final List<ParticleParticleEmitter> particles = new ArrayList<>();
     @Nullable
     protected List<Dynamic<?>> lazyParticles;
 
-    private final int lightLevel;
-    private final LiquidAffinity liquidAffinity;
-    private final boolean hasPhysics;
-    private final boolean killOnContact;
-    private final boolean killWhenStill;
-    private final @Nullable IColorGetter colormap;
-    private final IRotationProvider rotationProvider;
-    private final Vec3 offset;
-    private final Optional<ParticleLimit> particleGroupLimit;
-    private final boolean forceSpawn;
-    private final boolean randomSprite;
+    protected final int lightLevel;
+    protected final LiquidAffinity liquidAffinity;
+    protected final boolean hasPhysics;
+    protected final boolean killOnContact;
+    protected final boolean killWhenStill;
+    protected final @Nullable IColorGetter colormap;
+    protected final IRotationProvider rotationProvider;
+    protected final Vec3 offset;
+    protected final Optional<ParticleLimit> particleGroupLimit;
+    protected final boolean forceSpawn;
 
-    private transient SpriteSet spriteSet;
+    protected final SpritePicker spritePicker;
 
     private boolean isValid = true;
 
@@ -83,7 +67,7 @@ public class CustomParticleType implements ICustomParticleFactory {
                                @Nullable List<ParticleSoundEmitter> sounds,
                                int tickRate, @Nullable List<Dynamic<?>> particles, int killSimilarInRadius) {
         this.renderType = renderType;
-        this.randomSprite = randomSprite;
+        this.spritePicker = new SpritePicker(randomSprite);
         this.model = model;
         this.initializer = initializer;
         this.ticker = ticker;
@@ -104,8 +88,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     }
 
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
-            ParticleRenderMode.CODEC.optionalFieldOf("render_type", ParticleRenderMode.OPAQUE)
-                    .forGetter(CustomParticleType::getRenderType),
+            ParticleRenderMode.CODEC.optionalFieldOf("render_type", ParticleRenderMode.OPAQUE).forGetter(c -> c.renderType),
             IRotationProvider.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationProvider),
             Identifier.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model)),
             Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(c -> c.offset),
@@ -114,9 +97,9 @@ public class CustomParticleType implements ICustomParticleFactory {
             Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
             Codec.BOOL.optionalFieldOf("kill_when_still", false).forGetter(c -> c.killWhenStill),
             LiquidAffinity.CODEC.optionalFieldOf("liquid_affinity", LiquidAffinity.ANY).forGetter(c -> c.liquidAffinity),
-          //TODO: remove
+            //TODO: remove
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap)),
-            Codec.BOOL.optionalFieldOf("random_sprite", false).forGetter(c -> c.randomSprite),
+            Codec.BOOL.optionalFieldOf("random_sprite", false).forGetter(c -> c.spritePicker.selectsRandom()),
             ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("limit", 0).forGetter(c ->
                     c.particleGroupLimit.map(ParticleLimit::limit).orElse(0)),
             Codec.BOOL.optionalFieldOf("force_spawn", false).forGetter(c -> c.forceSpawn),
@@ -142,6 +125,11 @@ public class CustomParticleType implements ICustomParticleFactory {
     }
 
     @Override
+    public boolean isValid() {
+        return isValid;
+    }
+
+    @Override
     public boolean forceSpawns() {
         return forceSpawn;
     }
@@ -151,317 +139,80 @@ public class CustomParticleType implements ICustomParticleFactory {
         return this.model;
     }
 
-    public static void setStateHack(BlockState state) {
-        STATE_HACK = state;
-    }
-
-    private ParticleRenderMode getRenderType() {
-        return renderType;
-    }
-
     @Override
-    public Particle createParticleWithState(ExtraDataParticleOptions opt, ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
+    public Particle createParticleWithState(ExtraDataParticleOptions opt, ClientLevel world,
+                                            double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                                             @Nullable BlockState state, RandomSource random) {
-        if (spriteSet != null) {
-            // some people might want this
+        if (!spritePicker.hasSprites()) {
+            throw new IllegalStateException("Sprite set not set for custom particle type");
+        }
 
-            Instance newParticle = new Instance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this, random);
-            opt.apply(newParticle);
-            if (this.hasPhysics) {
-                for (VoxelShape voxelShape : world.getBlockCollisions(null, newParticle.getBoundingBox())) {
-                    if (!voxelShape.isEmpty()) {
-                        return null;
-                    }
+        // some people might want this
+
+        CustomParticleInstance newParticle = new CustomParticleInstance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this);
+        opt.apply(newParticle);
+        if (this.hasPhysics) {
+            for (VoxelShape voxelShape : world.getBlockCollisions(null, newParticle.getBoundingBox())) {
+                if (!voxelShape.isEmpty()) {
+                    return null;
                 }
             }
+        }
 
-            //tick once
-            //todo replace   initializer with ticker
-            this.ticker.tick(newParticle, world);
-            if (!newParticle.isAlive()) {
-                return null;
+        //tick once
+        //todo replace   initializer with ticker
+        this.ticker.tick(newParticle, world);
+        if (!newParticle.isAlive()) {
+            return null;
 
-            }
-            if (exclusionRadius > 0) {
-                ParticleRenderType particleRenderType = this.getParticleGroup();
-                double radiusSquared = exclusionRadius * exclusionRadius;
-                var particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
+        }
+        if (exclusionRadius > 0) {
+            ParticleRenderType particleRenderType = this.getParticleGroup();
+            double radiusSquared = exclusionRadius * exclusionRadius;
+            var particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
 
-                if (particleQueue != null) {
-                    for (var p : particleQueue.getAll()) {
-                        if (p instanceof Instance inst && inst.type == this) {
-                            //calculate distance between p and newParticle
-                            double distSqrt = Mth.lengthSquared(
-                                    inst.x - newParticle.x,
-                                    inst.y - newParticle.y,
-                                    inst.z - newParticle.z);
+            if (particleQueue != null) {
+                for (var p : particleQueue.getAll()) {
+                    if (p instanceof CustomParticleInstance inst && inst.type == this) {
+                        //calculate distance between p and newParticle
+                        double distSqrt = Mth.lengthSquared(
+                                inst.x - newParticle.x,
+                                inst.y - newParticle.y,
+                                inst.z - newParticle.z);
 
-                            if (distSqrt < radiusSquared) {
-                                if (inst.hasAgeLeft()) {
-                                    //If it is still alive, we should not spawn a new one in the same place.
-                                    return null;
-                                } else {
-                                    //It's dead, but still present — remove it to make room for the new one
-                                    inst.remove();
-                                }
+                        if (distSqrt < radiusSquared) {
+                            if (inst.hasAgeLeft()) {
+                                //If it is still alive, we should not spawn a new one in the same place.
+                                return null;
+                            } else {
+                                //It's dead, but still present — remove it to make room for the new one
+                                inst.remove();
                             }
                         }
                     }
                 }
             }
-            return newParticle;
-        } else {
-            throw new IllegalStateException("Sprite set not set for custom particle type");
         }
+        return newParticle;
     }
 
-    private ParticleRenderType getParticleGroup() {
+    public ParticleRenderType getParticleGroup() {
         if (renderType == ParticleRenderMode.INVISIBLE) return ParticleRenderType.NO_RENDER;
         return model != null ? PolytoneRenderTypes.PARTICLE_MODEL_GROUP : ParticleRenderType.SINGLE_QUADS;
     }
 
     @Override
     public void setSpriteSet(SpriteSet spriteSet) {
-        this.spriteSet = spriteSet;
+        this.spritePicker.acceptSprites(spriteSet);
     }
 
     public void setUnregistered() {
         this.isValid = false;
     }
 
-    public static class Instance extends SingleQuadParticle {
-
-        protected final CustomParticleType type;
-        protected final @Nullable QuadCollection model;
-        protected final SpriteSet spriteSet;
-        protected final LiquidAffinity liquidAffinity;
-        protected final List<IParticleTickable> tickables;
-        protected float oQuadSize;
-        protected double custom;
-
-        protected Instance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                           @Nullable BlockState state, CustomParticleType customType, RandomSource random) {
-            super(level, x, y, z, xSpeed, ySpeed, zSpeed, customType.randomSprite ? customType.spriteSet.get(random) : customType.spriteSet.first());
-            if (customType.randomSprite) {
-                this.spriteSet = null;
-                this.setSprite(customType.spriteSet.get(random));
-
-            } else {
-                this.spriteSet = customType.spriteSet;
-                this.setSpriteFromAge(spriteSet);
-            }
-
-
-            this.setSize(0.1f, 0.1f);
-            this.type = customType;
-
-            this.tickables = new ArrayList<>();
-            this.tickables.addAll(customType.sounds);
-            this.tickables.addAll(customType.particles);
-
-            //for normal particles since its simple particle types (so that they can be ued in biomes) we can pass extra params
-            if (state == null) state = STATE_HACK;
-
-            // remove randomness
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.xd = xSpeed;
-            this.yd = ySpeed;
-            this.zd = zSpeed;
-            QuadCollection qc = null;
-            if (customType.model != null) {
-                qc = SpecialModelsHandler.getSpecialModel(customType.model);
-                if (qc == null) {
-                    Polytone.LOGGER.error("Failed to load custom particle model: {}. Maybe model was missing", customType.model);
-                }
-            }
-            this.model = qc;
-            CustomParticleInitializer initializer = customType.initializer;
-            BlockPos pos = BlockPos.containing(x, y, z);
-            if (initializer != null) {
-                initializer.initialize(this, level, state, pos);
-            }
-
-            this.oQuadSize = quadSize;
-
-            this.liquidAffinity = customType.liquidAffinity;
-            this.hasPhysics = customType.hasPhysics;
-
-            if (this.type.colormap != null) {
-                float[] unpack = ColorUtils.unpack(this.type.colormap.getColor(state, level, pos, 0));
-                this.setColor(unpack[0], unpack[1], unpack[2]);
-            }
-
-        }
-
-        private boolean hasAgeLeft() {
-            return this.age < this.lifetime;
-        }
-
-        public double getCustom() {
-            return custom;
-        }
-
-        public void setCustom(double custom) {
-            this.custom = custom;
-        }
-
-        @Override
-        public @NotNull Optional<ParticleLimit> getParticleLimit() {
-            return this.type.particleGroupLimit;
-        }
-
-        //Unused. Why? because we need extra context of the particle iteself to be passed in apply rotation
-        @Override
-        public FacingCameraMode getFacingCameraMode() {
-            return this.type.rotationProvider;
-        }
-
-        @Override
-        public void extract(QuadParticleRenderState quadParticleRenderState, Camera camera, float f) {
-            Quaternionf quaternionf = new Quaternionf();
-            this.type.rotationProvider.setRotation(this, quaternionf, camera, f);
-            if (this.roll != 0.0F) {
-                quaternionf.rotateZ(Mth.lerp(f, this.oRoll, this.roll));
-            }
-
-            this.extractRotatedQuad(quadParticleRenderState, camera, quaternionf, f);
-
-            if (!this.type.rotationProvider.alwaysFacesCamera() && model == null) {
-                quaternionf.rotateX(Mth.PI);
-                //render back face
-                this.extractRotatedQuad(quadParticleRenderState, camera, quaternionf, f);
-            }
-        }
-
-        public void extractModel(ModelParticleRenderState modelParticleRenderState, Camera camera, float f) {
-            if (this.model == null) {
-                //failsafe
-                return;
-            }
-            Quaternionf quaternionf = new Quaternionf();
-            this.type.rotationProvider.setRotation(this, quaternionf, camera, f);
-            if (this.roll != 0.0F) {
-                quaternionf.rotateZ(Mth.lerp(f, this.oRoll, this.roll));
-            }
-            var offset = this.type.offset;
-            modelParticleRenderState.add(
-                    RenderTypes.cutoutMovingBlock(),
-                    (float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z),
-                    quaternionf.x,
-                    quaternionf.y,
-                    quaternionf.z,
-                    quaternionf.w,
-                    this.getQuadSize(f),
-                    this.rCol, this.gCol, this.bCol, this.alpha,
-                    this.getLightColor(f),
-                    this.model
-            );
-        }
-
-        @Override
-        protected void extractRotatedQuad(QuadParticleRenderState quadParticleRenderState,
-                                          Quaternionf rot, float x, float y, float z, float f) {
-            var offset = this.type.offset;
-            super.extractRotatedQuad(quadParticleRenderState, rot,
-                    (float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z), f);
-        }
-
-        @Override
-        protected int getLightColor(float partialTick) {
-            int total = super.getLightColor(partialTick);
-            if (this.type.lightLevel > 0) {
-                int sky = LightTexture.sky(total);
-                int block = LightTexture.block(total);
-                block = Math.max(block, this.type.lightLevel);
-                return LightTexture.pack(block, sky);
-            }
-            return total;
-        }
-
-        @Override
-        public void remove() {
-            super.remove();
-            this.age = this.lifetime;
-        }
-
-        @Override
-        public void tick() {
-            if (!this.type.isValid) {
-                this.remove();
-                return;
-            }
-            if (spriteSet != null) this.setSpriteFromAge(spriteSet);
-            super.tick();
-            //interpolate our states
-            this.oRoll = this.roll;
-            this.oQuadSize = this.quadSize;
-
-            boolean isTickTime = this.age % this.type.tickRate == 0;
-
-            if (type.ticker != null && isTickTime) {
-                type.ticker.tick(this, level);
-            }
-
-            if (this.type.colormap != null) {
-                BlockPos pos = BlockPos.containing(x, y, z);
-                float[] unpack = ColorUtils.unpack(this.type.colormap.getColor(null, level, pos, 0));
-                this.setColor(unpack[0], unpack[1], unpack[2]);
-            }
-
-            if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo) {
-                this.remove();
-            }
-
-            if (liquidAffinity != LiquidAffinity.ANY) {
-                BlockState state = level.getBlockState(BlockPos.containing(x, y, z));
-                if (liquidAffinity == LiquidAffinity.LIQUIDS ^ !state.getFluidState().isEmpty()) {
-                    this.remove();
-                }
-            }
-            if (!this.removed && isTickTime) {
-                for (IParticleTickable tickable : this.tickables) {
-                    tickable.tick(this, level);
-                }
-            }
-        }
-
-        @Override
-        public void move(double x, double y, double z) {
-            super.move(x, y, z);
-            if (type.killOnContact && this.age > 1) {
-                Vec3 myPos = new Vec3(this.x, this.y, this.z);
-                Vec3 wantedPos = new Vec3(this.xo + x, this.yo + y, this.zo + z);
-                if (myPos.distanceToSqr(wantedPos) > 0.000001) {
-                    // collided with any block. pop. It fragile
-                    this.remove();
-                    this.xd = 0;
-                    this.yd = 0;
-                    this.zd = 0;
-                }
-            }
-        }
-
-        @Override
-        public float getQuadSize(float scaleFactor) {
-            return Mth.lerp(scaleFactor, this.oQuadSize, this.quadSize);
-        }
-
-        @Override
-        protected Layer getLayer() {
-            return type.getRenderType().getLayer(model != null);
-        }
-
-
-        @Override
-        public ParticleRenderType getGroup() {
-            return this.type.getParticleGroup();
-        }
-    }
-
     public static final Codec<Optional<Identifier>> CUSTOM_MODEL_ONLY_CODEC = RecordCodecBuilder.create(i -> i.group(
             Identifier.CODEC.optionalFieldOf("model").forGetter(e -> e)
     ).apply(i, r -> r));
+
 }
 

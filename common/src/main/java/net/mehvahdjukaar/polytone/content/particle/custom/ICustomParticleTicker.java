@@ -7,7 +7,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 
 public interface ICustomParticleTicker {
 
-    void tick(CustomParticleType.Instance particle, ClientLevel level);
+    void tick(CustomParticleInstance particle, ClientLevel level);
 
     Codec<ICustomParticleTicker> CODEC = CodecUtils.alternatives(
             MultiExpressionParticleTicker.CODEC,

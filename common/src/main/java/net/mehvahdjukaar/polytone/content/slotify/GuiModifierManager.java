@@ -15,10 +15,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -137,6 +134,7 @@ public class GuiModifierManager extends JsonPartialReloader {
             try {
                 type = menu.getType();
             } catch (Exception e) {
+                //null for inventory?
                 type = null;
             }
             m = byMenuId.get(type);
@@ -165,6 +163,7 @@ public class GuiModifierManager extends JsonPartialReloader {
         return m;
     }
 
+    //TODO: add back?? why is this commented out
     public Collection<SlotModifier> getSlotModifiers(AbstractContainerScreen<?> screen, Slot slot) {
         Set<SlotModifier> modifies;
         var c = screen.getTitle();

@@ -23,6 +23,7 @@ public interface ICustomParticleFactory extends ParticleProvider<ExtraDataPartic
         return createParticleWithState(type, level, x, y, z, xSpeed, ySpeed, zSpeed, null, random);
     }
 
+    boolean isValid();
 
     @Nullable
     default Identifier getCustomModel() {

@@ -4,10 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.content.colormap.Colormap;
+import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
@@ -29,8 +29,10 @@ import java.util.Optional;
 public class SemiCustomParticleType implements ICustomParticleFactory {
 
     private final Optional<ParticleType<?>> copyType;
+    @Nullable
     private ParticleProvider<?> copyProvider = null;
     private boolean hasBeenInit = false;
+    @Nullable
     private SpriteSet spriteSet = null;
     private final @Nullable CustomParticleInitializer initializer;
     private final boolean hasPhysics;
@@ -52,6 +54,11 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
     ).apply(i, SemiCustomParticleType::new));
 
     @Override
+    public boolean isValid() {
+        return copyType.isPresent();
+    }
+
+    @Override
     public boolean forceSpawns() {
         return copyType.get().getOverrideLimiter();
     }
@@ -64,7 +71,7 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
     @Nullable
     @Override
     public Particle createParticleWithState(ExtraDataParticleOptions opt, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                                   @Nullable BlockState state, RandomSource random) {
+                                            @Nullable BlockState state, RandomSource random) {
         try {
             if (copyType.isEmpty()) {
                 return null;
@@ -83,13 +90,13 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
                     initializer.initialize(sqp, level, state, pos);
 
 
-                opt.apply(sqp);
-            }
+                    opt.apply(sqp);
+                }
 
                 if (particle != null) {
                     particle.hasPhysics = this.hasPhysics;
 
-                    if (this.colormap != null&& particle instanceof SingleQuadParticle sqp) {
+                    if (this.colormap != null && particle instanceof SingleQuadParticle sqp) {
                         float[] unpack = ColorUtils.unpack(this.colormap.getColor(state, level, pos, 0));
                         sqp.setColor(unpack[0], unpack[1], unpack[2]);
                     }
@@ -106,7 +113,7 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
 
                 return particle;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             Polytone.LOGGER.error("Failed to create semi custom particle of type {}. This likely means the particle itself is invalid and not supported. The resource pack that adds it HAS TO change it.", copyType, e);
         }
         return null;
