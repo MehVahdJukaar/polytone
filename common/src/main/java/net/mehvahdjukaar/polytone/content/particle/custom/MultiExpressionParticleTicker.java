@@ -58,7 +58,7 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
         );
     }
 
-    public void tick(CustomParticleType.Instance particle, ClientLevel level) {
+    public void tick(CustomParticleInstance particle, ClientLevel level) {
         if (this.roll != null) {
             particle.roll = (float) this.roll.evaluate(particle, level);
         }

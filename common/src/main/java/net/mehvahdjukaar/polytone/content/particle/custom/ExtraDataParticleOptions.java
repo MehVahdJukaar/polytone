@@ -69,7 +69,7 @@ public record ExtraDataParticleOptions(Map<String, Float> extraData,
             sp.quadSize = size;
         }
         Float custom = extraData.get("custom");
-        if (custom != null && particle instanceof CustomParticleType.Instance inst) {
+        if (custom != null && particle instanceof CustomParticleInstance inst) {
             inst.custom = custom;
         }
     }

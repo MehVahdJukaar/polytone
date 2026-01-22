@@ -10,8 +10,8 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
 import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleProvider;
@@ -19,10 +19,11 @@ import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -108,7 +109,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
                 var factory = j.getValue();
                 Identifier id = j.getKey();
                 ParticleResources.MutableSpriteSet spriteSet = particleResources.spriteSets.get(id);
-                if(spriteSet == null){
+                if (spriteSet == null) {
                     int aa = 1;
                 }
                 factory.setSpriteSet(spriteSet);
@@ -151,7 +152,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
         //initialize recursive stuff
         for (var c : customTypes) {
-            if(c.lazyParticles != null) {
+            if (c.lazyParticles != null) {
                 for (var d : c.lazyParticles) {
                     c.particles.add(runCodec(ops, d));
                 }
@@ -171,5 +172,10 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
     public boolean isDynamicParticle(Identifier entryId) {
         return customParticleFactories.containsKey(entryId);
+    }
+
+    @Nullable
+    public Identifier getId(CustomParticleType customParticleType) {
+        return customParticleFactories.getKey(customParticleType);
     }
 }

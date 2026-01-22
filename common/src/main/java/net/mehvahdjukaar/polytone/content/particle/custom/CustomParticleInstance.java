@@ -250,7 +250,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     protected Layer getLayer() {
-        return type.getRenderType().getLayer(model != null);
+        return type.renderType.getLayer(model != null);
     }
 
 

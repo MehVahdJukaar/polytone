@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.common.exp.IExpression;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -98,7 +99,7 @@ public class ParticleContextExpression extends PolytoneExpression implements IPa
         vb.setVariable(Y, particle.y);
         vb.setVariable(Z, particle.z);
         vb.setVariable(AGE, particle.age);
-        if (hasCustom && particle instanceof CustomParticleType.Instance i)
+        if (hasCustom && particle instanceof CustomParticleInstance i)
             vb.setVariable(CUSTOM, i.getCustom());
 
 

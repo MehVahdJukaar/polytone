@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.minecraft.core.BlockPos;
@@ -95,7 +96,7 @@ public record BlockParticleEmitter(
                 if (!biomes.get().contains(biome)) return;
             }
             for (int i = 0; i < count.evaluate(level, pos, state); i++) {
-                CustomParticleType.setStateHack(state);
+                CustomParticleInstance.setStateHack(state);
 
                 ParticleOptions po = getParticleOptions(level, pos, state);
                 if (po == null) return;

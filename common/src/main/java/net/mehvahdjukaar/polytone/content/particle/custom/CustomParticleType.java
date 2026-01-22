@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
@@ -19,7 +20,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -203,7 +203,17 @@ public class CustomParticleType implements ICustomParticleFactory {
 
     @Override
     public void setSpriteSet(SpriteSet spriteSet) {
-        this.spritePicker.acceptSprites(spriteSet);
+        try {
+            this.spritePicker.acceptSprites(spriteSet);
+        } catch (SpriteSetErrorException e) {
+            throw new RuntimeException("Failed to set sprite set for custom particle type: " + this + ".\nDid you remember to add particle sprites?", e);
+        }
+    }
+
+    @Override
+    public String toString() {
+        Identifier id = Polytone.CUSTOM_PARTICLES.getId(this);
+        return "CustomParticleType{" + id + "}";
     }
 
     public void setUnregistered() {

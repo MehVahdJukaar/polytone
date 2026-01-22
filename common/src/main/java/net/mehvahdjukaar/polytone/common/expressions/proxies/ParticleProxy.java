@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.common.expressions.proxies;
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
-import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
@@ -107,12 +107,13 @@ public class ParticleProxy extends PositionalProxy {
     }
 
     public double custom() {
-        if (particle instanceof CustomParticleType.Instance cp) {
+        if (particle instanceof CustomParticleInstance cp) {
             return cp.getCustom();
         }
         return 0;
     }
 
+    @Override
     public boolean hasEntitiesWithin() {
         return !level.getEntities(null, particle.getBoundingBox().inflate(1.25)).isEmpty();
     }
@@ -158,7 +159,7 @@ public class ParticleProxy extends PositionalProxy {
     }
 
     public void custom(double custom) {
-        if (particle instanceof CustomParticleType.Instance cp) {
+        if (particle instanceof CustomParticleInstance cp) {
             cp.setCustom(custom);
         }
     }

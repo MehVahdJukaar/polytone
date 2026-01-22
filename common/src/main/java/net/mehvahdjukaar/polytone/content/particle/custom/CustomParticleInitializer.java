@@ -75,7 +75,7 @@ public record CustomParticleInitializer(@Nullable BlockContextExpression size,
         if (this.friction != null) {
             particle.friction = (float) this.friction.evaluate(level, pos, state);
         }
-        if (this.custom != null && particle instanceof CustomParticleType.Instance ci) {
+        if (this.custom != null && particle instanceof CustomParticleInstance ci) {
             ci.custom = this.custom.evaluate(level, pos, state);
         }
         if (this.hitboxSize != null) {

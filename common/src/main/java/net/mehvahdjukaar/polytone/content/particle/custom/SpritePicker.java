@@ -13,9 +13,15 @@ public class SpritePicker {
         this.selectsRandom = selectsRandom;
     }
 
-    public void acceptSprites(SpriteSet spriteSet) {
+    public void acceptSprites(SpriteSet spriteSet) throws SpriteSetErrorException {
         if (this.set != null) {
-            throw new IllegalStateException("Sprites already set!");
+            throw new SpriteSetErrorException("Sprites already set!");
+        }
+        //assert non empty
+        try {
+            spriteSet.first();
+        } catch (Exception e) {
+            throw new SpriteSetErrorException("SpriteSet content was empty!");
         }
         this.set = spriteSet;
     }

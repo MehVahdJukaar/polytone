@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.particle.custom.render;
 
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -12,7 +13,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.ParticleGroupRenderState;
 import net.minecraft.world.phys.AABB;
 
-public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleType.Instance> {
+public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleInstance> {
 
     final ModelParticleRenderState particleTypeRenderState = new ModelParticleRenderState();
 
@@ -23,7 +24,7 @@ public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleType.I
 
     @Override
     public ParticleGroupRenderState extractRenderState(Frustum frustum, Camera camera, float f) {
-        for (CustomParticleType.Instance particle : this.particles) {
+        for (CustomParticleInstance particle : this.particles) {
             if (particleInFrustum(frustum, particle)) {
                 try {
                     particle.extractModel(this.particleTypeRenderState, camera, f);
