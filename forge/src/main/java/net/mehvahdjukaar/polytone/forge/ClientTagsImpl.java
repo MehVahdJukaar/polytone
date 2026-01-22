@@ -1,8 +1,9 @@
-package net.mehvahdjukaar.polytone.neoforge;
+package net.mehvahdjukaar.polytone.forge;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
@@ -121,7 +122,7 @@ public class ClientTagsImpl {
     }
 
 
-    public static <T> Iterable<Holder<T>> getTagEntries(HolderLookup.RegistryLookup<T> reg, TagKey<T> tag) {
+    public static <T> Iterable<Holder<T>> getTagEntries(Registry<T> reg, TagKey<T> tag) {
         Set<Holder<T>> result = new HashSet<>();
         collectAllClientTags(tag, reg, result, new HashSet<>());
         return result;
@@ -129,15 +130,16 @@ public class ClientTagsImpl {
 
     private static <T> void collectAllClientTags(
             TagKey<T> tagKey,
-            HolderLookup.RegistryLookup<T> registry,
+           Registry<T> registry,
             Set<Holder<T>> result,
             Set<TagKey<T>> visited
     ) {
         if (!visited.add(tagKey)) return;
 
         // Prefer synced registry tags if present
-        if (registry.get(tagKey).isPresent()) {
-            registry.get(tagKey).get().forEach(result::add);
+        Optional<HolderSet.Named<T>> t = registry.getTag(tagKey);
+        if (t.isPresent()) {
+            t.get().forEach(result::add);
             return;
         }
 
@@ -148,8 +150,8 @@ public class ClientTagsImpl {
         // Direct entries
         for (ResourceLocation id : tag.immediateChildIds()) {
             ResourceKey<T> key = ResourceKey.create((ResourceKey)
-                    registry.key().registryKey(), id);
-            registry.get(key).ifPresent(result::add);
+                    registry.key(), id);
+            registry.getHolder(key).ifPresent(result::add);
         }
 
         // Nested tags

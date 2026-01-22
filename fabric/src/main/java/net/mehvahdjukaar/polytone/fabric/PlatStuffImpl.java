@@ -13,8 +13,6 @@ import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.tag.client.v1.ClientTags;
-import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
 import net.fabricmc.fabric.impl.tag.client.ClientTagsImpl;
 import net.fabricmc.fabric.impl.tag.client.ClientTagsLoader;
 import net.fabricmc.loader.api.FabricLoader;
@@ -43,13 +41,9 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.*;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
-import net.minecraft.core.Holder;
-import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -422,7 +416,7 @@ public class PlatStuffImpl {
 
 
 
-    public static <T> Iterable<Holder<T>> getTagEntries(HolderLookup.RegistryLookup<T> reg, TagKey<T> tag) {
+    public static <T> Iterable<Holder<T>> getTagEntries(Registry<T> reg, TagKey<T> tag) {
         Set<Holder<T>> result = new HashSet<>();
         collectAllClientTags(tag, reg, result, new HashSet<>());
         return result;
@@ -432,15 +426,16 @@ public class PlatStuffImpl {
     @SuppressWarnings("unchecked")
     private static <T> void collectAllClientTags(
             TagKey<T> tagKey,
-            HolderLookup.RegistryLookup<T> registry,
+            Registry<T> registry,
             Set<Holder<T>> result,
             Set<TagKey<T>> visited
     ) {
         if (!visited.add(tagKey)) return;
 
         // Prefer synced registry tags if present
-        if (registry.get(tagKey).isPresent()) {
-            registry.get(tagKey).get().forEach(result::add);
+        Optional<HolderSet.Named<T>> t = registry.getTag(tagKey);
+        if (t.isPresent()) {
+            t.get().forEach(result::add);
             return;
         }
 
@@ -451,8 +446,8 @@ public class PlatStuffImpl {
         // Direct entries
         for (ResourceLocation id : tag.immediateChildIds()) {
             ResourceKey<T> key = ResourceKey.create((ResourceKey)
-                    registry.key().registryKey(), id);
-            registry.get(key).ifPresent(result::add);
+                    registry.key(), id);
+            registry.getHolder(key).ifPresent(result::add);
         }
 
         // Nested tags

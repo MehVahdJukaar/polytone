@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.neoforge;
+package net.mehvahdjukaar.polytone.forge;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -6,13 +6,13 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagFile;
 import net.minecraft.tags.TagKey;
-import net.neoforged.fml.ModList;
+import net.minecraft.tags.TagManager;
+import net.minecraftforge.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
@@ -107,7 +107,7 @@ public class ClientTagsLoader {
      * @return the paths to all tag json files within the available mods
      */
     private static HashSet<Path> getTagFiles(ResourceKey<? extends Registry<?>> registryKey, ResourceLocation identifier) {
-        return getTagFiles(Registries.tagsDirPath(registryKey), identifier);
+        return getTagFiles(TagManager.getTagDir(registryKey), identifier);
     }
 
     /**
@@ -125,8 +125,8 @@ public class ClientTagsLoader {
     private static HashSet<Path> getResourcePaths(String path) {
         HashSet<Path> out = new HashSet<>();
 
-        for (var mod : ModList.get().getSortedMods()) {
-            out.add(mod.getModInfo().getOwningFile().getFile().getFilePath().resolve(path));
+        for (var mod : ModList.get().getMods()) {
+            out.add(mod.getOwningFile().getFile().getFilePath().resolve(path));
         }
 
         return out;

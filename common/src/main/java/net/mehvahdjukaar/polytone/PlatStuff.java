@@ -52,7 +52,7 @@ public class PlatStuff {
     }
 
     @ExpectPlatform
-    public static <T> Iterable<Holder<T>> getTagEntries(HolderLookup.RegistryLookup<T> reg, TagKey<T> tag) {
+    public static <T> Iterable<Holder<T>> getTagEntries(Registry<T> reg, TagKey<T> tag) {
         throw new AssertionError();
     }
 

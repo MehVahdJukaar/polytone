@@ -171,7 +171,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
         //apply to current dimension
         Level level = Minecraft.getInstance().level;
         if (level != null) {
-            onDimensionChanged(level.dimensionTypeRegistration(), registryAccess);
+            onDimensionChanged(level.dimensionTypeRegistration(), access);
         }
     }
 

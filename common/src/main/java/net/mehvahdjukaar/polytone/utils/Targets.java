@@ -160,7 +160,7 @@ public record Targets(List<Entry> entries) {
 
 
         @Override
-        public <T> Iterable<Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
+        public <T> Iterable<? extends Holder<T>> get(Registry<T> reg) {
             TagKey<T> key = TagKey.create((ResourceKey) reg.key(), id);
             return PlatStuff.getTagEntries(reg, key);
         }

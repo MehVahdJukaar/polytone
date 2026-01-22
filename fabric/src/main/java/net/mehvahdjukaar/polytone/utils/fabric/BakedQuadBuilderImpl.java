@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.tag.client.v1.ClientTags;
 import net.mehvahdjukaar.polytone.utils.BakedQuadBuilder;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -23,6 +24,7 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
     public static BakedQuadBuilder create(TextureAtlasSprite sprite, @Nullable Matrix4f transformation) {
         return new BakedQuadBuilderImpl(sprite, transformation);
+        ClientTags
     }
 
     private final QuadEmitter inner;
