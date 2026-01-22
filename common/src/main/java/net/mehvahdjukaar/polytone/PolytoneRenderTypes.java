@@ -5,6 +5,7 @@ import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.SourceFactor;
+import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -17,6 +18,7 @@ import net.minecraft.client.renderer.MaterialMapper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -30,6 +32,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.SequencedMap;
 import java.util.function.Supplier;
+
+import static net.minecraft.client.renderer.RenderPipelines.register;
+import static net.minecraft.client.renderer.rendertype.RenderTypes.MOVING_BLOCK_SAMPLER;
 
 
 public class PolytoneRenderTypes {
@@ -46,7 +51,7 @@ public class PolytoneRenderTypes {
             new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE);
 
 
-    public static final RenderPipeline ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE = RenderPipelines.register(
+    public static final RenderPipeline ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE = register(
             RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
                     .withLocation(Polytone.res("pipeline/additive_particle"))
                     .withSampler("Sampler0")
@@ -76,28 +81,31 @@ public class PolytoneRenderTypes {
             new ParticleRenderType("particle_additive_translucent"));
 
 
+    //TODO: shouldn't this be on the particle sheet?
+    @Deprecated(forRemoval = true)
+    static RenderPipeline.Snippet  MATRICES_PROJECTION_SNIPPET = RenderPipeline.builder(new RenderPipeline.Snippet[0]).withUniform("DynamicTransforms",UniformType.UNIFORM_BUFFER).withUniform("Projection",UniformType.UNIFORM_BUFFER).buildSnippet();
+
     //block. Used to render 3d model for particles
-    public static final RenderPipeline ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE = RenderPipelines.register(
-            RenderPipeline.builder(RenderPipelines.TERRAIN_SNIPPET)
-                    .withShaderDefine("ALPHA_CUTOUT", 0.001F)
-                    .withLocation(Polytone.res("pipeline/additive_block"))
-                    .withBlend(ADDITIVE_TRANSLUCENT_BLEND)
-                    .build()
-    );
+    public static final RenderPipeline ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE = register(RenderPipeline.builder(
+                    MATRICES_PROJECTION_SNIPPET)
+            .withLocation(Polytone.res("pipeline/additive_translucent_moving_block"))
+            .withVertexShader("core/rendertype_translucent_moving_block")
+            .withFragmentShader("core/rendertype_translucent_moving_block")
+            .withSampler("Sampler0")
+            .withSampler("Sampler2")
+            .withBlend(ADDITIVE_TRANSLUCENT_BLEND)
+            .withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS)
+            .build());
 
-    //in theory same as with particle just different shader?? and texture state
-    // Mip map strategy is now part of texture creation.
-    public static final RenderType ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE = RenderType.create(
-            Polytone.MOD_ID + ":additive_block",
-            RenderSetup.builder(ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE)
-                    .bufferSize(64 * 1024)
-                    .affectsCrumbling()
-                    .sortOnUpload()
-                    .useLightmap()
-                    .setOutline(RenderSetup.OutlineProperty.NONE)
-                    .createRenderSetup());
+    public static final RenderType ADDITIVE_TRANSLUCENT_MOVING_BLOCK_RENDERTYPE = RenderType.create(Polytone.MOD_ID + ":translucent_moving_block",
+            RenderSetup.builder(ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE).useLightmap()
+                    .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, MOVING_BLOCK_SAMPLER)
+                    .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+                    .sortOnUpload().bufferSize(786432)
+                    .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
 
-    public static final RenderPipeline LEASH_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
+
+    public static final RenderPipeline LEASH_PIPELINE = register(RenderPipeline.builder(
                     RenderPipelines.MATRICES_FOG_SNIPPET)
             .withLocation("polytone/pipeline/leash")
             .withVertexShader("core/rendertype_text")
@@ -200,7 +208,7 @@ public class PolytoneRenderTypes {
         }
 
         public void endBatches() {
-            endBatch(ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE);
+            endBatch(ADDITIVE_TRANSLUCENT_MOVING_BLOCK_RENDERTYPE);
             endBatch(ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE);
             for (RenderType type : delayed) {
                 endBatch(type);
@@ -211,7 +219,7 @@ public class PolytoneRenderTypes {
         public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
             if (!fixedBuffers.containsKey(renderType)) {
                 fixedBuffers.put(renderType, bufferSupplier.get());
-                if (renderType != ADDITIVE_TRANSLUCENT_BLOCK_RENDERTYPE && renderType != ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE) {
+                if (renderType != ADDITIVE_TRANSLUCENT_MOVING_BLOCK_RENDERTYPE && renderType != ADDITIVE_TRANSLUCENT_PARTICLE_RENDERTYPE) {
                     delayed.add(renderType);
                 }
             }

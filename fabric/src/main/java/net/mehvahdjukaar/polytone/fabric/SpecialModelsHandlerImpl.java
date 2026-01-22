@@ -11,8 +11,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class SpecialModelsHandlerImpl {
 
@@ -36,35 +34,34 @@ public class SpecialModelsHandlerImpl {
         }
         return null;
     }
-    private static final CompletableFuture<ModelLoadingPlugin.Context> hackFuture = new CompletableFuture<>();
+
+    private static ModelLoadingPlugin.Context hack = null;
 
     public static void init() {
         // safely sets hack
-        ModelLoadingPlugin.register(hackFuture::complete);
+        ModelLoadingPlugin.register(context -> {
+            hack = context;
+        });
     }
 
     public static void finalizeAdditions() {
-        try {
-            // Wait for hack to be initialized, up to a timeout if desired
-            ModelLoadingPlugin.Context hack = hackFuture.get(); // blocks until set
+        if (hack == null) return;
+        // Wait for hack to be initialized, up to a timeout if desired
+        for (var entry : SPECIAL_MODELS.entrySet()) {
+            var key = entry.getKey();
+            var value = entry.getValue();
 
-            for (var entry : SPECIAL_MODELS.entrySet()) {
-                var key = entry.getKey();
-                var value = entry.getValue();
-
-                hack.addModel(value, new SimpleUnbakedExtraModel<>(
-                        key,
-                        (model, baker) -> model.bakeTopGeometry(
-                                model.getTopTextureSlots(),
-                                baker,
-                                BlockModelRotation.IDENTITY
-                        )
-                ));
-            }
-
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Failed to initialize hack context", e);
+            hack.addModel(value, new SimpleUnbakedExtraModel<>(
+                    key,
+                    (model, baker) -> model.bakeTopGeometry(
+                            model.getTopTextureSlots(),
+                            baker,
+                            BlockModelRotation.IDENTITY
+                    )
+            ));
         }
+
+
     }
 
 }

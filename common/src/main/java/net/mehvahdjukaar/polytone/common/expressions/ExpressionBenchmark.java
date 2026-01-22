@@ -4,14 +4,118 @@ import org.mvel2.MVEL;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;
+import org.mvel2.ParserContext;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ExpressionBenchmark {
+    static final int FIELD_COUNT = 10;       // total fields
+    static final int WARMUP = 5_000_000;
+    static final int RUNS   = 20_000_000;
 
-    public static void main(String[] args) throws Exception {
+    public static class MyObj {
+        public int f0, f1, f2, f3, f4, f5, f6, f7, f8, f9;
+    }
+
+    public static void main(String[] args) {
+
+        MyObj myObj = new MyObj();
+
+        Map<String, Object> ctx = new HashMap<>();
+        ctx.put("myObj", myObj);
+        ctx.put("x", 42);
+        ctx.put("y", 7);
+
+        ParserContext pc = new ParserContext();
+        pc.setStrongTyping(true);
+        pc.setIndexAllocation(true);
+
+        pc.addInput("x", int.class);
+        pc.addInput("y", int.class);
+        pc.addInput("myObj", MyObj.class);
+
+        // ---- Build expressions ----
+        Serializable[] pureExpr = new Serializable[FIELD_COUNT];
+        StringBuilder combinedSrc = new StringBuilder();
+
+        for (int i = 0; i < FIELD_COUNT; i++) {
+            boolean complex = i < FIELD_COUNT / 2; // first half complex
+            String expr;
+            if (complex) {
+                expr = """
+                    (x > y ?
+                        Math.max(x * 3 - y, %d) :
+                        Math.abs(y * 2 - x)
+                    ) + (x %% 3 == 0 ? %d : y)
+                    """.formatted(i, i);
+            } else {
+                expr = "%d".formatted(i);  // simple constant
+            }
+
+            pureExpr[i] = MVEL.compileExpression(expr, pc);
+
+            combinedSrc.append("myObj.f")
+                    .append(i)
+                    .append(" = ")
+                    .append(expr)
+                    .append(";\n");
+        }
+
+        Serializable combined = MVEL.compileExpression(combinedSrc.toString(), pc);
+
+        // ---- Warmup ----
+        for (int i = 0; i < WARMUP; i++) {
+            for (int j = 0; j < FIELD_COUNT; j++) {
+                int v = (Integer) MVEL.executeExpression(pureExpr[j], ctx);
+                assign(myObj, j, v);
+            }
+            MVEL.executeExpression(combined, ctx);
+        }
+
+        // ---- Benchmark: pure expressions + Java setters ----
+        long start = System.nanoTime();
+        for (int i = 0; i < RUNS; i++) {
+            for (int j = 0; j < FIELD_COUNT; j++) {
+                int v = (Integer) MVEL.executeExpression(pureExpr[j], ctx);
+                assign(myObj, j, v);
+            }
+        }
+        long pureTime = System.nanoTime() - start;
+
+        // ---- Benchmark: combined expression ----
+        start = System.nanoTime();
+        for (int i = 0; i < RUNS; i++) {
+            MVEL.executeExpression(combined, ctx);
+        }
+        long combinedTime = System.nanoTime() - start;
+
+        System.out.println("Field count: " + FIELD_COUNT);
+        System.out.println("Pure expr + Java assign : " +
+                pureTime / 1_000_000 + " ms");
+        System.out.println("Combined MVEL assign    : " +
+                combinedTime / 1_000_000 + " ms");
+        System.out.println("Ratio (pure/combined)  : " +
+                ((double) pureTime / combinedTime));
+    }
+
+    private static void assign(MyObj o, int i, int v) {
+        switch (i) {
+            case 0 -> o.f0 = v;
+            case 1 -> o.f1 = v;
+            case 2 -> o.f2 = v;
+            case 3 -> o.f3 = v;
+            case 4 -> o.f4 = v;
+            case 5 -> o.f5 = v;
+            case 6 -> o.f6 = v;
+            case 7 -> o.f7 = v;
+            case 8 -> o.f8 = v;
+            case 9 -> o.f9 = v;
+        }
+    }
+
+    public static void main2(String[] args) throws Exception {
         // More complex expressions
         String expr1 = "(a + b * c) / d - pow(e,f)";
         String expr2 = "sin(x) * cos(y) + log(z) - sqrt(w)";

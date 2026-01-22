@@ -38,9 +38,9 @@ public class CustomParticleType implements ICustomParticleFactory {
     protected final List<ParticleSoundEmitter> sounds;
     protected final int tickRate;
     protected final int exclusionRadius;
-    protected final List<ParticleParticleEmitter> particles = new ArrayList<>();
+    protected final List<ParticleParticleEmitter> particleEmitters = new ArrayList<>();
     @Nullable
-    protected List<Dynamic<?>> lazyParticles;
+    protected List<Dynamic<?>> lazyEmitters;
 
     protected final int lightLevel;
     protected final LiquidAffinity liquidAffinity;
@@ -56,6 +56,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     protected final SpritePicker spritePicker;
 
     private boolean isValid = true;
+    protected Identifier debugId = null;
 
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
                                @Nullable Identifier model, Vec3 offset,
@@ -72,7 +73,7 @@ public class CustomParticleType implements ICustomParticleFactory {
         this.initializer = initializer;
         this.ticker = ticker;
         this.sounds = sounds;
-        this.lazyParticles = particles;
+        this.lazyEmitters = particles;
         this.lightLevel = light;
         this.hasPhysics = hasPhysics;
         this.killOnContact = killOnContact;
@@ -107,7 +108,7 @@ public class CustomParticleType implements ICustomParticleFactory {
             ICustomParticleTicker.CODEC.optionalFieldOf("ticker", ICustomParticleTicker.NO_OP).forGetter(c -> c.ticker),
             ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
             ExtraCodecs.POSITIVE_INT.optionalFieldOf("tick_interval", 1).forGetter(c -> c.tickRate),
-            Codec.PASSTHROUGH.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.lazyParticles),
+            Codec.PASSTHROUGH.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.lazyEmitters),
             ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("exclusion_radius", 0).forGetter(c -> c.exclusionRadius)
     ).apply(i, CustomParticleType::new));
 
@@ -212,7 +213,8 @@ public class CustomParticleType implements ICustomParticleFactory {
 
     @Override
     public String toString() {
-        Identifier id = Polytone.CUSTOM_PARTICLES.getId(this);
+        Identifier id = debugId != null ? debugId :
+                Polytone.CUSTOM_PARTICLES.getId(this);
         return "CustomParticleType{" + id + "}";
     }
 

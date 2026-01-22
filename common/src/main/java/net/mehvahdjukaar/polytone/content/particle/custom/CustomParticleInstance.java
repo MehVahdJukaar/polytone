@@ -9,7 +9,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.QuadCollection;
@@ -48,7 +47,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
         this.tickables = new ArrayList<>();
         this.tickables.addAll(customType.sounds);
-        this.tickables.addAll(customType.particles);
+        this.tickables.addAll(customType.particleEmitters);
 
         //for normal particles since its simple particle types (so that they can be ued in biomes) we can pass extra params
         if (state == null) state = STATE_HACK;
@@ -138,14 +137,14 @@ public class CustomParticleInstance extends SingleQuadParticle {
         }
         var offset = this.type.offset;
         modelParticleRenderState.add(
-                RenderTypes.cutoutMovingBlock(),
+                this.type.renderType,
                 (float) (x + offset.x), (float) (y + offset.y), (float) (z + offset.z),
                 quaternionf.x,
                 quaternionf.y,
                 quaternionf.z,
                 quaternionf.w,
                 this.getQuadSize(f),
-                this.rCol, this.gCol, this.bCol, this.alpha,
+                this.rCol, this.gCol, this.bCol, 1,
                 this.getLightColor(f),
                 this.model
         );

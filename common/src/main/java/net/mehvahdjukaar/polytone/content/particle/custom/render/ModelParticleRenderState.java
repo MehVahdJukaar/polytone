@@ -2,9 +2,12 @@ package net.mehvahdjukaar.polytone.content.particle.custom.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
+import net.mehvahdjukaar.polytone.content.particle.custom.ParticleRenderMode;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.state.ParticleGroupRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -19,10 +22,10 @@ import java.util.Map;
 
 public class ModelParticleRenderState implements ParticleGroupRenderState {
 
-    private final Map<RenderType, List<ParticleInstance>> particles = new HashMap<>();
+    private final Map<ParticleRenderMode, List<ParticleInstance>> particles = new HashMap<>();
 
     public void add(
-            RenderType layer, float x, float y, float z,
+            ParticleRenderMode layer, float x, float y, float z,
             float rx, float ry, float rz, float rw, float size, float r, float g, float b, float a, int light,
             @NotNull QuadCollection modelData
     ) {
@@ -56,9 +59,10 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
 
                 poseStack.translate(-0.5, -0.5, -0.5);
 
-                submitNodeCollector.submitCustomGeometry(poseStack, v.getKey(), (pose1, vertexConsumer) -> {
-                    putModelBulkData(p.modelData, p.light, OverlayTexture.NO_OVERLAY, pose1, vertexConsumer,
-                            p.r, p.g, p.b, p.a);
+                submitNodeCollector.submitCustomGeometry(poseStack, v.getKey().getBlock(), (pose1, vertexConsumer) -> {
+                 //   vertexConsumer = v.getKey().modifyBlockConsumer(vertexConsumer);
+
+                    putModelBulkData(p.modelData, p.light, OverlayTexture.NO_OVERLAY, pose1, vertexConsumer, p.r, p.g, p.b, p.a);
                 });
             }
         }

@@ -142,6 +142,7 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @Contract
     @ExpectPlatform
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
         throw new AssertionError();
@@ -153,12 +154,14 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @Contract
     @ExpectPlatform
     public static void unregisterParticleProvider(Identifier id) {
         throw new AssertionError();
     }
 
 
+    @Contract
     public static <T> T registerDynamic(Registry<T> reg, Identifier id, T o) {
         if (reg.containsKey(id)) {
             throw new RuntimeException("Tried to register object with id " + id + " to registry " + reg + " but it already exists");

@@ -51,8 +51,8 @@ public class CustomParticlesManager extends JsonPartialReloader {
         var resourceManager = sharedState.resourceManager();
         var jsons = this.getJsonsInDirectories(resourceManager);
         for (var j : jsons.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
+            JsonElement json = j.getValue();
+            Identifier id = j.getKey();
             var model = CustomParticleType.CUSTOM_MODEL_ONLY_CODEC.decode(JsonOps.INSTANCE, json)
                     .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Particle with json id " + id + "\n error: " + errorMsg))
                     .getFirst();
@@ -63,7 +63,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
     @Override
     protected void resetWithLevel(boolean isLogOff) {
         for (var id : customParticleFactories.orderedKeys()) {
-            var p = customParticleFactories.getValue(id);
+            ICustomParticleFactory p = customParticleFactories.getValue(id);
             if (p instanceof CustomParticleType cp) {
                 cp.setUnregistered();
             }
@@ -103,61 +103,71 @@ public class CustomParticlesManager extends JsonPartialReloader {
 
         Set<CustomParticleType> customTypes = new HashSet<>();
 
-        for (var j : Parsed.batchParseOnlyEnabled(jsons, CustomOrSemiCustomParticleCodec.INSTANCE,
-                ops, "custom particle")) {
-            try {
-                var factory = j.getValue();
-                Identifier id = j.getKey();
-                ParticleResources.MutableSpriteSet spriteSet = particleResources.spriteSets.get(id);
-                if (spriteSet == null) {
-                    int aa = 1;
-                }
-                factory.setSpriteSet(spriteSet);
 
-                if (factory instanceof CustomParticleType c) {
-                    customTypes.add(c);
-                }
+        var allFactories = Parsed.batchParseOnlyEnabled(jsons, CustomOrSemiCustomParticleCodec.INSTANCE,
+                ops, "custom particle");
+        for (var j : allFactories) {
+            var factory = j.getValue();
+            Identifier id = j.getKey();
 
-                if (BuiltInRegistries.PARTICLE_TYPE.get(id).isPresent()) {
-                    ParticleType<?> oldType = BuiltInRegistries.PARTICLE_TYPE.get(id).get().value();
-                    Polytone.LOGGER.info("Overriding particle with id {}", id);
-                    var oldFactory = PlatStuff.getParticleProvider(oldType);
+            if (factory instanceof CustomParticleType c) {
+                customTypes.add(c);
+                c.debugId = id;
+            }
+
+            ParticleResources.MutableSpriteSet spriteSet = particleResources.spriteSets.get(id);
+            factory.setSpriteSet(spriteSet);
+
+            if (BuiltInRegistries.PARTICLE_TYPE.get(id).isPresent()) {
+                ParticleType<?> oldType = BuiltInRegistries.PARTICLE_TYPE.get(id).get().value();
+                var oldFactory = PlatStuff.getParticleProvider(oldType);
+                //override vanilla particle
+                try {
+                    particleResources.register(oldType, new OverridingParticleFactory<>(factory));
                     overwrittenVanillaProviders.put(oldType, oldFactory);
-                    //override vanilla particle
-                    try {
-                        particleResources.register(oldType, new OverridingParticleFactory<>(factory));
-                    } catch (Exception e) {
-                        Polytone.LOGGER.error("Can't override existing particle with ID {}. Particle type not supported", id, e);
-                    }
-                    continue;
-                } else {
-                    customParticleFactories.register(id, factory);
+                } catch (Exception e) {
+                    Polytone.LOGGER.error("Can't override existing particle with ID {}. Particle type not supported", id, e);
                 }
 
-
-                Polytone.LOGGER.info("Registered Custom Particle {}", id);
-            } catch (Exception e) {
-                Polytone.LOGGER.error("!!!!!!!!!!!! Failed to load Custom Particle {}", j.getKey(), e);
+            } else {
+                ParticleType<ExtraDataParticleOptions> type = PlatStuff.makeParticleType(factory.forceSpawns());
+                PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
+                particleResources.register(type, factory);
+                customParticleFactories.register(id, factory);
             }
         }
 
-        // register custom particle types. needs to be here
-        for (var c : customParticleFactories.getEntries()) {
-            var factory = c.getValue();
-            var id = c.getKey();
-            ParticleType<ExtraDataParticleOptions> type = PlatStuff.makeParticleType(factory.forceSpawns());
-            PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
-            particleResources.register(type, factory);
-        }
+        logBatch("Registered custom particles: ",
+                customParticleFactories.keySet());
+        logBatch("Overridden vanilla particles: ",
+                overwrittenVanillaProviders.keySet()
+                        .stream().map(BuiltInRegistries.PARTICLE_TYPE::getKey).toList());
 
         //initialize recursive stuff
         for (var c : customTypes) {
-            if (c.lazyParticles != null) {
-                for (var d : c.lazyParticles) {
-                    c.particles.add(runCodec(ops, d));
+            if (c.lazyEmitters != null) {
+                for (var d : c.lazyEmitters) {
+                    c.particleEmitters.add(runCodec(ops, d));
                 }
-                c.lazyParticles = null;
+                c.lazyEmitters = null;
             }
+        }
+    }
+
+    private static <T> void logBatch(String prefix, Iterable<T> entries) {
+        StringBuilder sb = new StringBuilder(prefix);
+        boolean first = true;
+
+        for (T entry : entries) {
+            if (entry == null) continue;
+
+            if (!first) sb.append(", ");
+            sb.append(entry);
+            first = false;
+        }
+
+        if (!first) { // at least one entry was appended
+           Polytone.LOGGER.info(sb.toString());
         }
     }
 

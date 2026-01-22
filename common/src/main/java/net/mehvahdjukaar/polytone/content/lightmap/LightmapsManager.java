@@ -9,21 +9,23 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.LegacyHelper;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
-import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.biome.Biome;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +52,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
 
     @Override
     protected Resources prepare(PreparableReloadListener.SharedState sharedState) {
-        var resourceManager = sharedState.resourceManager();
+        ResourceManager resourceManager = sharedState.resourceManager();
         var jsons = this.getJsonsInDirectories(resourceManager);
 
         Map<Identifier, ArrayImage> textures = new HashMap<>();
@@ -194,5 +196,9 @@ public class LightmapsManager extends JsonImgPartialReloader {
             }
         }
         return null;
+    }
+
+    public AbstractTexture getGuiLightTexture() {
+        return Minecraft.getInstance().getTextureManager().getTexture(GUI_LIGHTMAP);
     }
 }

@@ -1,12 +1,11 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -26,4 +25,7 @@ public abstract class GameRendererMixin {
         Polytone.LIGHTMAPS.setupForGUI(false);
         Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
     }
+
+
+
 }

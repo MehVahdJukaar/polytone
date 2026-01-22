@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
-import net.fabricmc.fabric.api.tag.client.v1.ClientTags;
 import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
 import net.fabricmc.fabric.impl.tag.client.ClientTagsImpl;
 import net.fabricmc.fabric.impl.tag.client.ClientTagsLoader;
@@ -35,7 +34,6 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -58,7 +56,10 @@ import org.joml.Vector3f;
 import sereneseasons.api.season.SeasonHelper;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -253,10 +254,14 @@ public class PlatStuffImpl {
 
     public static void unregisterParticleProvider(Identifier id) {
         var type = BuiltInRegistries.PARTICLE_TYPE.get(id);
-        ParticleResources particleResources = Minecraft.getInstance().particleResources;
-        ((ParticleResourcesAccessor) particleResources)
-                .getProviders()
-                .remove(BuiltInRegistries.PARTICLE_TYPE.getId(type.get().value()));
+        if (type.isPresent()) {
+            ParticleResources particleResources = Minecraft.getInstance().particleResources;
+            ((ParticleResourcesAccessor) particleResources)
+                    .getProviders()
+                    .remove(BuiltInRegistries.PARTICLE_TYPE.getId(type.get().value()));
+        } else {
+            Polytone.LOGGER.warn("Tried to unregister a particle provider for a particle type that does not exist: {}", id);
+        }
     }
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,

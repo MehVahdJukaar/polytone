@@ -21,6 +21,7 @@ public class SpritePicker {
         try {
             spriteSet.first();
         } catch (Exception e) {
+            //crash so pack devs know
             throw new SpriteSetErrorException("SpriteSet content was empty!");
         }
         this.set = spriteSet;

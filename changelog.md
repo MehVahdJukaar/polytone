@@ -1,3 +1,3 @@
-- mod now makes use of fabric client tags
-- also on forge a similar implementation was added
-- entity modifier particle emittes can target a specific renderer texture. additionally EMF and ETF compat was added allowing to target a specific variant
+- improved error handling on particle sprites. now a particle without sprites will reject pack load instead of crashing when spawned
+- fixed an issue with custom models on fabric
+- fixed additive translucent render type for particles block models being broken

@@ -15,6 +15,8 @@ accessible field net/minecraft/world/effect/MobEffect AMBIENT_ALPHA I
 accessible class net/minecraft/client/resources/model/BlockModelRotation$WithUvLock
 accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;
 
+accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_PROJECTION_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+
 accessible method net/minecraft/client/renderer/GameRenderer getFov (Lnet/minecraft/client/Camera;FZ)F
 
 accessible field net/minecraft/client/renderer/entity/EntityRenderDispatcher renderers Ljava/util/Map;
