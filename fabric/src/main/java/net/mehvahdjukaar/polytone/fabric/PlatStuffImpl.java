@@ -26,6 +26,7 @@ import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.utils.Targets;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -69,6 +70,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
+import org.intellij.lang.annotations.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import sereneseasons.api.season.SeasonHelper;
@@ -420,14 +422,6 @@ public class PlatStuffImpl {
 
 
 
-    public static void registerParticleGroup(Consumer<PlatStuff.RegParticleGroup> eventConsumer) {
-        eventConsumer.accept(ParticleRendererRegistry::register);
-    }
-
-    public static float getCamRoll(Camera camera) {
-        return 0;
-    }
-
     public static <T> Iterable<Holder<T>> getTagEntries(HolderLookup.RegistryLookup<T> reg, TagKey<T> tag) {
         Set<Holder<T>> result = new HashSet<>();
         collectAllClientTags(tag, reg, result, new HashSet<>());
@@ -455,7 +449,7 @@ public class PlatStuffImpl {
                 ClientTagsImpl.getOrCreatePartiallySyncedTag(tagKey);
 
         // Direct entries
-        for (Identifier id : tag.immediateChildIds()) {
+        for (ResourceLocation id : tag.immediateChildIds()) {
             ResourceKey<T> key = ResourceKey.create((ResourceKey)
                     registry.key().registryKey(), id);
             registry.get(key).ifPresent(result::add);
