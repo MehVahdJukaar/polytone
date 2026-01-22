@@ -5,8 +5,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 
 import java.util.*;
@@ -46,7 +46,7 @@ public class ClientTagsImpl {
 
         if (maybeRegistry.isPresent()) {
             // Check the synced tag exists and use that
-            if (maybeRegistry.get().get(tagKey).isPresent()) {
+            if (maybeRegistry.get().getTag(tagKey).isPresent()) {
                 return registryEntry.is(tagKey);
             }
         }
@@ -59,7 +59,7 @@ public class ClientTagsImpl {
         // Recursively search the entries contained with the tag
         ClientTagsLoader.LoadedTag wt = ClientTagsImpl.getOrCreatePartiallySyncedTag(tagKey);
 
-        if (wt.immediateChildIds().contains(registryEntry.unwrapKey().get().identifier())) {
+        if (wt.immediateChildIds().contains(registryEntry.unwrapKey().get().location())) {
             return true;
         }
 
@@ -83,14 +83,15 @@ public class ClientTagsImpl {
             if (Minecraft.getInstance().level != null) {
                 if (Minecraft.getInstance().level.registryAccess() != null) {
                     Optional<? extends Registry<T>> maybeRegistry = Minecraft.getInstance().level
-                            .registryAccess().lookup(tagKey.registry());
+                            .registryAccess().registry(tagKey.registry());
                     if (maybeRegistry.isPresent()) return maybeRegistry;
                 }
             }
         }
 
-        return (Optional<? extends Registry<T>>) BuiltInRegistries.REGISTRY.getOptional(tagKey.registry().identifier());
+        return (Optional<? extends Registry<T>>) BuiltInRegistries.REGISTRY.getOptional(tagKey.registry().location());
     }
+
 
     @SuppressWarnings("unchecked")
     public static <T> Optional<Holder<T>> getRegistryEntry(TagKey<T> tagKey, T entry) {
@@ -104,8 +105,9 @@ public class ClientTagsImpl {
 
         Optional<ResourceKey<T>> maybeKey = registry.getResourceKey(entry);
 
-        return maybeKey.map(registry::getOrThrow);
+        return maybeKey.map(registry::getHolderOrThrow);
     }
+
 
     public static ClientTagsLoader.LoadedTag getOrCreatePartiallySyncedTag(TagKey<?> tagKey) {
         ClientTagsLoader.LoadedTag loadedTag = LOCAL_TAG_HIERARCHY.get(tagKey);
@@ -144,7 +146,7 @@ public class ClientTagsImpl {
                 ClientTagsImpl.getOrCreatePartiallySyncedTag(tagKey);
 
         // Direct entries
-        for (Identifier id : tag.immediateChildIds()) {
+        for (ResourceLocation id : tag.immediateChildIds()) {
             ResourceKey<T> key = ResourceKey.create((ResourceKey)
                     registry.key().registryKey(), id);
             registry.get(key).ifPresent(result::add);
