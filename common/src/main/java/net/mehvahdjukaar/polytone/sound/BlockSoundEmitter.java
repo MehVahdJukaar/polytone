@@ -5,6 +5,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.block.TickSource;
 import net.mehvahdjukaar.polytone.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.utils.codec.ForwardAwareRegistryFixedCodec;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
@@ -36,7 +37,8 @@ public record BlockSoundEmitter(
         BlockContextExpression pitch,
         boolean distanceDelay,
         RuleTest predicate,
-        Optional<HolderSet<Biome>> biomes) implements BlockClientTickable {
+        Optional<HolderSet<Biome>> biomes,
+        TickSource tickSource) implements BlockClientTickable {
 
     private static final Codec<SoundSource> SOUND_SOURCE_CODEC =
             Codec.STRING.comapFlatMap(s -> DataResult.success(SoundSource.valueOf(s.toLowerCase(Locale.ROOT))),
@@ -53,12 +55,14 @@ public record BlockSoundEmitter(
             BlockContextExpression.CODEC.optionalFieldOf("pitch", BlockContextExpression.ZERO).forGetter(BlockSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(BlockSoundEmitter::distanceDelay),
             CodecUtils.lenientWithLog( RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockSoundEmitter::predicate),
-            CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockSoundEmitter::biomes)
+            CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockSoundEmitter::biomes),
+            TickSource.CODEC.optionalFieldOf("tick_source", TickSource.ANIMATE_TICK).forGetter(BlockSoundEmitter::tickSource)
     ).apply(i, BlockSoundEmitter::new));
 
 
     @Override
-    public void tick(Level level, BlockPos pos, BlockState state) {
+    public void tick(Level level, BlockPos pos, BlockState state, TickSource tickSource) {
+        if (tickSource != this.tickSource) return;
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {

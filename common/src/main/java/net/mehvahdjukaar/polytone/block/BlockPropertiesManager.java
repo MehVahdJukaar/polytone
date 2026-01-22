@@ -10,8 +10,6 @@ import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -261,11 +259,11 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         optifineColormapsToBlocks.put(path, str);
     }
 
-    public boolean maybeEmitParticle(Block block, BlockState state, Level level, BlockPos pos) {
-        var m = particleAndSoundEmitters.get(block);
+    public boolean runTickers(BlockState state, Level level, BlockPos pos, TickSource tickSource) {
+        ClientTickModifier m = particleAndSoundEmitters.get(state.getBlock());
         if (m != null) {
             for (var p : m.tickables) {
-                p.tick(level, pos, state);
+                p.tick(level, pos, state, tickSource);
             }
             return m.cancelExisting;
         }

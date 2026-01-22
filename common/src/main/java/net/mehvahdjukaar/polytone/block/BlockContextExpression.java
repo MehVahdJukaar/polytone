@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -130,11 +131,12 @@ public class BlockContextExpression extends PolytoneExpression {
             vars.setVariable(PLAYER_Z, e.getZ());
         }
         if (hasDistance) {
-            Entity e = Minecraft.getInstance().getCameraEntity();
+            Entity e = Minecraft.getInstance().player;
             double x = pos.getX() - e.getX();
             double y = pos.getY() - e.getY();
             double z = pos.getZ() - e.getZ();
-            vars.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+            double dist = x * x + y * y + z * z;
+            vars.setVariable(DISTANCE_SQUARED, dist);
         }
         if (hasPlayerSpeed) {
             vars.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());

@@ -3,8 +3,10 @@ package net.mehvahdjukaar.polytone;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -53,6 +55,7 @@ public class PolytoneRenderTypes extends RenderType {
                             .setLightmapState(LIGHTMAP)
                             .setShaderState(RENDERTYPE_TRANSLUCENT_SHADER)
                             .setTextureState(BLOCK_SHEET_MIPPED)
+                            .setWriteMaskState(RenderStateShard.COLOR_WRITE)
                             .setTransparencyState(ADDITIVE_TRANSLUCENT_TRANSPARENCY)
                             .setOutputState(TRANSLUCENT_TARGET).createCompositeState(true));
 
@@ -68,6 +71,8 @@ public class PolytoneRenderTypes extends RenderType {
                             .setLightmapState(LIGHTMAP)
                             .setShaderState(PARTICLE_SHADER_STATE)
                             .setTextureState(PARTICLE_SHEET)
+                            .setWriteMaskState(RenderStateShard.COLOR_WRITE)
+                            .setLayeringState(LayeringStateShard.POLYGON_OFFSET_LAYERING)
                             .setTransparencyState(ADDITIVE_TRANSLUCENT_TRANSPARENCY)
                             .setOutputState(TRANSLUCENT_TARGET).createCompositeState(true));
 
@@ -79,6 +84,7 @@ public class PolytoneRenderTypes extends RenderType {
             RenderSystem.setShader(() -> particleNoAlphaCutoffShader);
 
             RenderSystem.depthMask(true);
+
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
 
             RenderSystem.enableBlend();

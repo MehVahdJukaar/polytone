@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.block.TickSource;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
 import net.mehvahdjukaar.polytone.utils.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
@@ -50,7 +51,8 @@ public record BlockParticleEmitter(
         Optional<BlockContextExpression> custom,
         RuleTest predicate,
         Optional<HolderSet<Biome>> biomes,
-        SpawnLocation spawnLocation
+        SpawnLocation spawnLocation,
+        TickSource spawnSource
 ) implements BlockClientTickable {
 
     public static final Codec<BlockParticleEmitter> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
@@ -72,12 +74,16 @@ public record BlockParticleEmitter(
             BlockContextExpression.CODEC.optionalFieldOf("custom").forGetter(BlockParticleEmitter::custom),
             CodecUtils.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
             CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
-            StrOpt.of(SpawnLocation.CODEC,"spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation)
+            StrOpt.of(SpawnLocation.CODEC,"spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation),
+            TickSource.CODEC.optionalFieldOf("tick_source", TickSource.ANIMATE_TICK).forGetter(BlockParticleEmitter::spawnSource)
+
     ).apply(i, BlockParticleEmitter::new));
 
     @Override
-    public void tick(Level level, BlockPos pos, BlockState state) {
+    public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
         if (particleType.isEmpty()) return;
+        if (source != spawnSource) return; //only spawn particles on the correct tick source
+
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {
 

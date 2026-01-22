@@ -121,35 +121,6 @@ public class ParticleUtil {
     }
 
 
-    public static void spawnBreakParticles(VoxelShape shape, BlockPos pPos, BlockState pState, Level level) {
-
-        var particleEngine = Minecraft.getInstance().particleEngine;
-
-        shape.forAllBoxes((x0, y0, z0, x1, y1, z1) -> {
-            double d1 = Math.min(1.0D, x1 - x0);
-            double d2 = Math.min(1.0D, y1 - y0);
-            double d3 = Math.min(1.0D, z1 - z0);
-            int i = Math.max(2, Mth.ceil(d1 / 0.25D));
-            int j = Math.max(2, Mth.ceil(d2 / 0.25D));
-            int k = Math.max(2, Mth.ceil(d3 / 0.25D));
-
-            for (int l = 0; l < i; ++l) {
-                for (int i1 = 0; i1 < j; ++i1) {
-                    for (int j1 = 0; j1 < k; ++j1) {
-                        double d4 = (l + 0.5D) / i;
-                        double d5 = (i1 + 0.5D) / j;
-                        double d6 = (j1 + 0.5D) / k;
-                        double d7 = d4 * d1 + x0;
-                        double d8 = d5 * d2 + y0;
-                        double d9 = d6 * d3 + z0;
-                        particleEngine.add(new TerrainParticle((ClientLevel) level, pPos.getX() + d7, pPos.getY() + d8,
-                                pPos.getZ() + d9, d4 - 0.5D, d5 - 0.5D, d6 - 0.5D, pState, pPos));
-                    }
-                }
-            }
-        });
-    }
-
     @ApiStatus.Internal
     public static Supplier<ShaderInstance> particleShader = GameRenderer::getParticleShader;
 

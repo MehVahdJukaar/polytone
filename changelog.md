@@ -1,2 +1,2 @@
-- improved error handling on particles missing sprites, rejecting pack load instead of crashing when particle is spanwed
-- backported client tags changes of 1.21.11
+- fixed additive transluncent particles having wrong depth test logic
+- added tick_source to particle emitters, parity with 1.21.11 (tho cracking one doesnt work yet)
