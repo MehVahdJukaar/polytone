@@ -1,22 +1,19 @@
 package net.mehvahdjukaar.polytone.neoforge;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagFile;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.StrictJsonParser;
 import net.neoforged.fml.ModList;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,13 +41,17 @@ import java.util.Set;
  * limitations under the License.
  */
 public class ClientTagsLoader {
+    /**
+     * Load a given tag from the available mods into a set of {@code Identifier}s.
+     * Parsing based on {@link net.minecraft.tags.TagLoader#load(net.minecraft.server.packs.resources.ResourceManager)}
+     */
     public static LoadedTag loadTag(TagKey<?> tagKey) {
         var tags = new HashSet<TagEntry>();
         HashSet<Path> tagFiles = getTagFiles(tagKey.registry(), tagKey.location());
 
         for (Path tagPath : tagFiles) {
             try (BufferedReader tagReader = Files.newBufferedReader(tagPath)) {
-                JsonElement jsonElement = StrictJsonParser.parse(tagReader);
+                JsonElement jsonElement = JsonParser.parseReader(tagReader);
                 TagFile maybeTagFile = TagFile.CODEC.parse(new Dynamic<>(JsonOps.INSTANCE, jsonElement))
                         .result().orElse(null);
 
@@ -62,25 +63,26 @@ public class ClientTagsLoader {
                     tags.addAll(maybeTagFile.entries());
                 }
             } catch (IOException e) {
-            Polytone. LOGGER.error("Error loading tag: " + tagKey, e);
+                Polytone.LOGGER.error("Error loading tag: {}", tagKey, e);
             }
         }
 
-        HashSet<Identifier> completeIds = new HashSet<>();
-        HashSet<Identifier> immediateChildIds = new HashSet<>();
+        HashSet<ResourceLocation> completeIds = new HashSet<>();
+        HashSet<ResourceLocation> immediateChildIds = new HashSet<>();
         HashSet<TagKey<?>> immediateChildTags = new HashSet<>();
 
         for (TagEntry tagEntry : tags) {
             tagEntry.build(new TagEntry.Lookup<>() {
+                @Nullable
                 @Override
-                public @NonNull Identifier element(Identifier id, boolean required) {
+                public ResourceLocation element(ResourceLocation id) {
                     immediateChildIds.add(id);
                     return id;
                 }
 
                 @Nullable
                 @Override
-                public Collection<Identifier> tag(Identifier id) {
+                public Collection<ResourceLocation> tag(ResourceLocation id) {
                     TagKey<?> tag = TagKey.create(tagKey.registry(), id);
                     immediateChildTags.add(tag);
                     return ClientTagsImpl.getOrCreatePartiallySyncedTag(tag).completeIds;
@@ -95,8 +97,8 @@ public class ClientTagsLoader {
                 Collections.unmodifiableSet(immediateChildIds));
     }
 
-    public record LoadedTag(Set<Identifier> completeIds, Set<TagKey<?>> immediateChildTags,
-                            Set<Identifier> immediateChildIds) {
+    public record LoadedTag(Set<ResourceLocation> completeIds, Set<TagKey<?>> immediateChildTags,
+                            Set<ResourceLocation> immediateChildIds) {
     }
 
     /**
@@ -104,17 +106,18 @@ public class ClientTagsLoader {
      * @param identifier  the Identifier of the tag
      * @return the paths to all tag json files within the available mods
      */
-    private static HashSet<Path> getTagFiles(ResourceKey<? extends Registry<?>> registryKey, Identifier identifier) {
+    private static HashSet<Path> getTagFiles(ResourceKey<? extends Registry<?>> registryKey, ResourceLocation identifier) {
         return getTagFiles(Registries.tagsDirPath(registryKey), identifier);
     }
 
     /**
      * @return the paths to all tag json files within the available mods
      */
-    private static HashSet<Path> getTagFiles(String tagType, Identifier identifier) {
+    private static HashSet<Path> getTagFiles(String tagType, ResourceLocation identifier) {
         String tagFile = "data/%s/%s/%s.json".formatted(identifier.getNamespace(), tagType, identifier.getPath());
         return getResourcePaths(tagFile);
     }
+
 
     /**
      * @return all paths from the available mods that match the given internal path
