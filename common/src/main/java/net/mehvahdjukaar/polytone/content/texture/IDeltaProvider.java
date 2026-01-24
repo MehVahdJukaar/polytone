@@ -15,26 +15,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-public interface IDayTimeContext {
+public interface IDeltaProvider {
+    Codec<IDeltaProvider> CODEC = CodecUtils.alternatives(PresetProvider.CODEC,
+            ExpProvider.CODEC);
 
-    ITextureDeltaProvider polytone$getDeltaProvider();
+    @Nullable Float getDelta(float timeCycleDuration);
 
-    void polytone$setDeltaProvider(ITextureDeltaProvider mode);
 
-    int polytone$getTimeCycleDuration();
 
-    void polytone$setTimeCycleDuration(int duration);
-
-    interface ITextureDeltaProvider {
-        Codec<ITextureDeltaProvider> CODEC = CodecUtils.alternatives(PolyDeltaProvider.CODEC,
-                ExpressionDeltaProvider.CODEC);
-
-        @Nullable Float getDelta(float timeCycleDuration);
-    }
-
-    record ExpressionDeltaProvider(ISimpleExp exp) implements ITextureDeltaProvider {
-        public static final Codec<ExpressionDeltaProvider> CODEC = ISimpleExp.CODEC
-                .xmap(ExpressionDeltaProvider::new, ExpressionDeltaProvider::exp);
+    record ExpProvider(ISimpleExp exp) implements IDeltaProvider {
+        public static final Codec<ExpProvider> CODEC = ISimpleExp.CODEC
+                .xmap(ExpProvider::new, ExpProvider::exp);
 
         @Override
         public Float getDelta(float timeCycleDuration) {
@@ -43,17 +34,17 @@ public interface IDayTimeContext {
         }
     }
 
-    enum PolyDeltaProvider implements StringRepresentable, ITextureDeltaProvider {
+    enum PresetProvider implements StringRepresentable, IDeltaProvider {
         VANILLA, GAME_TIME, DAY_TIME, WEATHER, SCREEN_TIME, MOON_PHASE, SEASON;
 
-        public static final Codec<PolyDeltaProvider> CODEC = StringRepresentable.fromEnum(PolyDeltaProvider::values);
+        public static final Codec<PresetProvider> CODEC = StringRepresentable.fromEnum(PresetProvider::values);
 
         @Override
         public String getSerializedName() {
             return this.name().toLowerCase(Locale.ROOT);
         }
 
-        public static PolyDeltaProvider byName(String name) {
+        public static PresetProvider byName(String name) {
             try {
                 return valueOf(name.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException e) {
@@ -61,7 +52,7 @@ public interface IDayTimeContext {
             }
         }
 
-        public static PolyDeltaProvider get(@Nullable JsonElement json) {
+        public static PresetProvider get(@Nullable JsonElement json) {
             if (json != null && json.isJsonPrimitive()) {
                 return byName(json.getAsString());
             } else {

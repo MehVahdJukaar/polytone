@@ -1,7 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.google.common.base.Preconditions;
-import net.mehvahdjukaar.polytone.content.texture.IDayTimeContext;
+import net.mehvahdjukaar.polytone.content.texture.IDeltaProvider;
+import net.mehvahdjukaar.polytone.content.texture.IDeltaProviderContext;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.*;
@@ -10,22 +11,22 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(SpriteContents.AnimationState.class)
-public class AnimationStateMixin implements IDayTimeContext {
+public class AnimationStateMixin implements IDeltaProviderContext {
 
     @Shadow
     private boolean isDirty;
     @Unique
-    private ITextureDeltaProvider polytone$mode = PolyDeltaProvider.VANILLA;
+    private IDeltaProvider polytone$mode = IDeltaProvider.PresetProvider.VANILLA;
     @Unique
     private int polytone$dayDuration = 0;
 
     @Override
-    public ITextureDeltaProvider polytone$getDeltaProvider() {
+    public IDeltaProvider polytone$getDeltaProvider() {
         return polytone$mode;
     }
 
     @Override
-    public void polytone$setDeltaProvider(@NotNull ITextureDeltaProvider mode) {
+    public void polytone$setDeltaProvider(@NotNull IDeltaProvider mode) {
         Preconditions.checkNotNull(mode);
         this.polytone$mode = mode;
     }
@@ -42,7 +43,7 @@ public class AnimationStateMixin implements IDayTimeContext {
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void polytone$overrideTick(CallbackInfo ci) {
-        if (this.polytone$mode != PolyDeltaProvider.VANILLA) {
+        if (this.polytone$mode != IDeltaProvider.PresetProvider.VANILLA) {
             // Cancel vanilla frame advancement
             ci.cancel();
 

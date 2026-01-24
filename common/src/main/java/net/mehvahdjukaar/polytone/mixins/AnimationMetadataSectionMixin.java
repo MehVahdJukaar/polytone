@@ -4,7 +4,8 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.content.texture.IDayTimeContext;
+import net.mehvahdjukaar.polytone.content.texture.IDeltaProvider;
+import net.mehvahdjukaar.polytone.content.texture.IDeltaProviderContext;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,19 +15,19 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.function.Function;
 
 @Mixin(AnimationMetadataSection.class)
-public class AnimationMetadataSectionMixin implements IDayTimeContext {
+public class AnimationMetadataSectionMixin implements IDeltaProviderContext {
     @Unique
-    private ITextureDeltaProvider polytone$mode = PolyDeltaProvider.VANILLA;
+    private IDeltaProvider polytone$mode = IDeltaProvider.PresetProvider    .VANILLA;
     @Unique
     private int polytone$dayDuration = SharedConstants.TICKS_PER_GAME_DAY;
 
     @Override
-    public ITextureDeltaProvider polytone$getDeltaProvider() {
+    public IDeltaProvider polytone$getDeltaProvider() {
         return this.polytone$mode;
     }
 
     @Override
-    public void polytone$setDeltaProvider(ITextureDeltaProvider mode) {
+    public void polytone$setDeltaProvider(IDeltaProvider mode) {
         this.polytone$mode = mode;
     }
 
@@ -53,14 +54,14 @@ public class AnimationMetadataSectionMixin implements IDayTimeContext {
         return RecordCodecBuilder.create(instance ->
                 instance.group(
                                 MapCodec.assumeMapUnsafe(original).forGetter(Function.identity()),
-                                ITextureDeltaProvider.CODEC.optionalFieldOf("mode", PolyDeltaProvider.VANILLA).forGetter(a->
-                                        ((IDayTimeContext)(Object)a).polytone$getDeltaProvider()),
+                                IDeltaProvider.CODEC.optionalFieldOf("mode", IDeltaProvider.PresetProvider.VANILLA).forGetter(a->
+                                        ((IDeltaProviderContext)(Object)a).polytone$getDeltaProvider()),
                                 Codec.INT.optionalFieldOf("time_cycle_duration", SharedConstants.TICKS_PER_GAME_DAY).forGetter(a->
-                                        ((IDayTimeContext)(Object)a).polytone$getTimeCycleDuration())
+                                        ((IDeltaProviderContext)(Object)a).polytone$getTimeCycleDuration())
                         )
                         .apply(instance, (typeInstance, mode, time) -> {
-                            ((IDayTimeContext)(Object)typeInstance).polytone$setDeltaProvider(mode);
-                            ((IDayTimeContext)(Object)typeInstance).polytone$setTimeCycleDuration(time);
+                            ((IDeltaProviderContext)(Object)typeInstance).polytone$setDeltaProvider(mode);
+                            ((IDeltaProviderContext)(Object)typeInstance).polytone$setTimeCycleDuration(time);
                             return typeInstance;
                         })
         );
