@@ -1,3 +1,1 @@
-- improved error handling on particle sprites. now a particle without sprites will reject pack load instead of crashing when spawned
-- fixed an issue with custom models on fabric
-- fixed additive translucent render type for particles block models being broken
+ added "season" mode for variant textures

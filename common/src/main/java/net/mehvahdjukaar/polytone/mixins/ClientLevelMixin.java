@@ -57,7 +57,7 @@ public abstract class ClientLevelMixin extends Level {
     public void polytone$addExtraBreakingParticles(BlockPos pos, Direction direction, CallbackInfo ci) {
         BlockState state = this.getBlockState(pos);
         if (!state.isAir()) {
-            boolean cancels = Polytone.BLOCK_MODIFIERS.runTickers(state, this, pos, TickSource.BLOCK_BROKEN);
+            boolean cancels = Polytone.BLOCK_MODIFIERS.runTickers(state, this, pos, TickSource.BLOCK_CRACKING);
             if (cancels) {
                 ci.cancel();
             }
