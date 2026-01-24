@@ -2,11 +2,8 @@ package net.mehvahdjukaar.polytone.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.SpriteTicker;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.TreeMap;
@@ -19,13 +16,13 @@ public class PolytoneTextureTicker implements SpriteTicker {
     private final float animationScaleFactor;
     private final TreeMap<Float, Integer> frameMap = new TreeMap<>();
     private final int timeCycleDuration;
-    private final DayTimeTexture.Mode mode;
+    private final IDeltaProvider mode;
 
     private int lastFrameIndex = 0;
 
     public PolytoneTextureTicker(SpriteContents.AnimatedTexture animationInfo,
                                  SpriteContents spriteContents, boolean interpolateFrames,
-                                 int dayDuration, DayTimeTexture.Mode mode) {
+                                 int dayDuration, IDeltaProvider mode) {
         this.animationInfo = animationInfo;
         this.timeCycleDuration = dayDuration;
         this.mode = mode;
@@ -52,7 +49,7 @@ public class PolytoneTextureTicker implements SpriteTicker {
 
     @Override
     public void tickAndUpload(int x, int y) {
-        Float delta = getDelta();
+        Float delta = this.mode.getDelta(timeCycleDuration);
         if (delta == null) return;
         // Calculate the current frame based on the day cycle
         var currentFrame = frameMap.floorEntry(delta);
@@ -81,27 +78,6 @@ public class PolytoneTextureTicker implements SpriteTicker {
         lastFrameIndex = frameInfo.index;
     }
 
-    private @Nullable Float getDelta() {
-        Level level = Minecraft.getInstance().level;
-        if (level == null) return null;
-
-        return switch (mode) {
-            case WEATHER -> {
-                float rainAndThunder = ClientFrameTicker.getRainAndThunder() * 2 / 3f;
-                yield rainAndThunder + 1 / 6;
-            }
-            //needs to fall in between those 2 so we dont get interpolation as this stuff doesnt loop back
-            case GAME_TIME -> {
-                double gameTime = level.getGameTime() % timeCycleDuration;
-                yield (float) (gameTime / timeCycleDuration);
-            }
-            case SCREEN_TIME -> Math.min(1, (ClientFrameTicker.getGuiTime() / timeCycleDuration));
-            default -> {
-                double dayTime = ClientFrameTicker.getDayTime() % timeCycleDuration;
-                yield (float) (dayTime / timeCycleDuration);
-            }
-        };
-    }
 
     @Override
     public void close() {

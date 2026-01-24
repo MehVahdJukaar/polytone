@@ -67,6 +67,11 @@ public class CodecUtils {
         return AlternativeMapCodec.optionalAlias(codec, primaryName, alias);
     }
 
+    @SafeVarargs
+    public static <A> Codec<A> alternatives(Codec<? extends A>... codecs) {
+        return new AlternativeCodec<>(codecs);
+    }
+
     public static <B> MapCodec<B> alias(Codec<B> codec, String primaryName, String alias) {
         return AlternativeMapCodec.alias(codec, primaryName, alias);
     }
