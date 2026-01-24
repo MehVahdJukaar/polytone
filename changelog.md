@@ -1,2 +1,1 @@
-- fixed additive transluncent particles having wrong depth test logic
-- added tick_source to particle emitters, parity with 1.21.11 (tho cracking one doesnt work yet)
+- improved some backports related to custom animated textures

@@ -24,7 +24,6 @@ public class BakedQuadBuilderImpl implements BakedQuadBuilder {
 
     public static BakedQuadBuilder create(TextureAtlasSprite sprite, @Nullable Matrix4f transformation) {
         return new BakedQuadBuilderImpl(sprite, transformation);
-        ClientTags
     }
 
     private final QuadEmitter inner;

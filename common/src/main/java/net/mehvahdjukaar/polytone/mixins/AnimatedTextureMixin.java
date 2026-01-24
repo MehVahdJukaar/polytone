@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.texture.DayTimeTexture;
+import net.mehvahdjukaar.polytone.texture.IDeltaProvider;
+import net.mehvahdjukaar.polytone.texture.IDeltaProviderContext;
 import net.mehvahdjukaar.polytone.texture.PolytoneTextureTicker;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.texture.SpriteContents;
@@ -14,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(SpriteContents.AnimatedTexture.class)
-public abstract class AnimatedTextureMixin implements DayTimeTexture {
+public abstract class AnimatedTextureMixin implements IDeltaProviderContext {
 
     @Shadow
     @Final
@@ -23,21 +24,21 @@ public abstract class AnimatedTextureMixin implements DayTimeTexture {
     @Final
     SpriteContents field_28469;
     @Unique
-    private Mode polytone$mode = Mode.VANILLA;
+    private IDeltaProvider polytone$mode = IDeltaProvider.PresetProvider.VANILLA;
     @Unique
     private int polytone$dayDuration = 0;
 
     @Override
-    public Mode polytone$getMode() {
+    public IDeltaProvider polytone$getMode() {
         return polytone$mode;
     }
 
     @Override
-    public void polytone$setMode(Mode mode) {
+    public void polytone$setMode(IDeltaProvider mode) {
         this.polytone$mode = mode;
-        if (mode == Mode.DAY_TIME) {
+        if (mode == IDeltaProvider.PresetProvider.DAY_TIME) {
             polytone$dayDuration = SharedConstants.TICKS_PER_GAME_DAY;
-        } else if (mode == Mode.GAME_TIME) {
+        } else if (mode == IDeltaProvider.PresetProvider.GAME_TIME) {
             polytone$dayDuration = 1;
         }
     }
@@ -54,7 +55,7 @@ public abstract class AnimatedTextureMixin implements DayTimeTexture {
 
     @Inject(method = "createTicker", at = @At("HEAD"), cancellable = true)
     public void polytone$modifyTicker(CallbackInfoReturnable<SpriteTicker> cir) {
-        if (polytone$mode != Mode.VANILLA) {
+        if (polytone$mode != IDeltaProvider.PresetProvider.VANILLA) {
             var t = new PolytoneTextureTicker((SpriteContents.AnimatedTexture) (Object) this, this.field_28469,
                     this.interpolateFrames, this.polytone$dayDuration, this.polytone$mode);
             cir.setReturnValue(t);
