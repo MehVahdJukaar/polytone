@@ -13,8 +13,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 
 public interface IDeltaProvider {
-    Codec<IDeltaProvider> CODEC = CodecUtils.alternatives(PresetProvider.CODEC,
-            ExpProvider.CODEC);
+    Codec<IDeltaProvider> CODEC = CodecUtils.alternatives(
+            PresetProvider.CODEC, ExpProvider.CODEC);
 
     @Nullable Float getDelta(float timeCycleDuration);
 
@@ -34,6 +34,8 @@ public interface IDeltaProvider {
     enum PresetProvider implements StringRepresentable, IDeltaProvider {
 
         VANILLA, GAME_TIME, DAY_TIME, WEATHER, SCREEN_TIME, MOON_PHASE;
+
+        public static final Codec<PresetProvider> CODEC = StringRepresentable.fromEnum(PresetProvider::values);
 
         @Override
         public String getSerializedName() {
