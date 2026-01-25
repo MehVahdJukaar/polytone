@@ -81,7 +81,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
         }
         var jsons = this.getJsonsInDirectories(resourceManager);
         for (var v : jsons.keySet()) {
-            engine.spriteSets.put(v, new ParticleEngine.MutableSpriteSet());
+            engine.spriteSets.computeIfAbsent(v, a-> new ParticleEngine.MutableSpriteSet());
         }
     }
 
