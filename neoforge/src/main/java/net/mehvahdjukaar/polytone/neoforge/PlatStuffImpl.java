@@ -10,6 +10,11 @@ import net.mehvahdjukaar.polytone.mixins.neoforge.*;
 import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.mixins.neoforge.BlockColorsAccessor;
+import net.mehvahdjukaar.polytone.mixins.neoforge.CreativeTabAccessor;
+import net.mehvahdjukaar.polytone.mixins.neoforge.ModifiableBiomeAccessor;
+import net.mehvahdjukaar.polytone.mixins.neoforge.ModifiableBiomeInfoBiomeInfoAccessor;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -26,6 +31,8 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -35,6 +42,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -372,6 +380,10 @@ public class PlatStuffImpl {
     }
 
     public static void doAddModels() {
+    }
+
+    public static <T> Iterable<Holder<T>> getTagEntries(HolderLookup.RegistryLookup<T> reg, TagKey<T> tag) {
+        return ClientTagsImpl.getTagEntries(reg, tag);
     }
 
     private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();

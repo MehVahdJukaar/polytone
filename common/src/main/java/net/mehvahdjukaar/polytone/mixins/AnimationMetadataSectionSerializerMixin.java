@@ -1,8 +1,11 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.mehvahdjukaar.polytone.texture.DayTimeTexture;
+import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.polytone.texture.IDeltaProvider;
+import net.mehvahdjukaar.polytone.texture.IDeltaProviderContext;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSectionSerializer;
 import net.minecraft.util.GsonHelper;
@@ -16,12 +19,14 @@ public class AnimationMetadataSectionSerializerMixin {
     @ModifyReturnValue(method = "fromJson(Lcom/google/gson/JsonObject;)Lnet/minecraft/client/resources/metadata/animation/AnimationMetadataSection;", at = @At("RETURN"))
     public AnimationMetadataSection polytone$addWorldTimeTextureData(AnimationMetadataSection original,
                                                                      JsonObject json) {
-        DayTimeTexture.Mode mode = DayTimeTexture.Mode.get(json.get("mode"));
-        if (mode != null) {
-            ((DayTimeTexture) original).polytone$setMode(mode);
+        JsonElement mode1 = json.get("mode");
+        if (mode1 != null) {
+            IDeltaProvider.CODEC.parse(JsonOps.INSTANCE, mode1).result()
+                    .ifPresent(mode -> ((IDeltaProviderContext) original)
+                            .polytone$setMode(mode));
         }
         if (json.has("time_cycle_duration")) {
-            ((DayTimeTexture) original).polytone$setTimeCycleDuration(GsonHelper.getAsInt(json, "time_cycle_duration"));
+            ((IDeltaProviderContext) original).polytone$setTimeCycleDuration(GsonHelper.getAsInt(json, "time_cycle_duration"));
         }
         return original;
     }

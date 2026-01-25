@@ -1,1 +1,1 @@
-added a warning when fabulous mode is enabled
+fixed an issue with animated textures
