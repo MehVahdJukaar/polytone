@@ -1,1 +1,1 @@
-- improved some backports related to custom animated textures
+fixed an issue with animated textures
