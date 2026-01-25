@@ -32,7 +32,7 @@ public record CustomParticleInitializer(@Nullable BlockContextExpression size,
             BlockContextExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
             BlockContextExpression.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.roll)),
             BlockContextExpression.CODEC.optionalFieldOf("friction").forGetter(p -> Optional.ofNullable(p.friction)),
-            BlockContextExpression.CODEC.optionalFieldOf("hitboxSize").forGetter(p -> Optional.ofNullable(p.hitboxSize)),
+            BlockContextExpression.CODEC.optionalFieldOf("hitbox_size").forGetter(p -> Optional.ofNullable(p.hitboxSize)),
             BlockContextExpression.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom))
     ).apply(i, CustomParticleInitializer::new));
 
@@ -79,8 +79,7 @@ public record CustomParticleInitializer(@Nullable BlockContextExpression size,
             ci.custom = this.custom.evaluate(level, pos, state);
         }
         if (this.hitboxSize != null) {
-
-            float hitbox = (float) this.hitboxSize.evaluate(level, pos, state);
+             float hitbox = (float) this.hitboxSize.evaluate(level, pos, state);
             ((ParticleAccessor) particle).invokeSetSize(hitbox, hitbox);
         }
     }

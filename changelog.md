@@ -1,1 +1,3 @@
- added "season" mode for variant textures
+- added particle debug renderers. press f3+b to see them
+- fixed hitbox_size being called hitboxSize
+- fixed unloading a pack with particle overrides not resetting their sprites properly

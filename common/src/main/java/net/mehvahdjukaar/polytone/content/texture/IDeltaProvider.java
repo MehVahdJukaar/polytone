@@ -16,8 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 
 public interface IDeltaProvider {
-    Codec<IDeltaProvider> CODEC = CodecUtils.alternatives(PresetProvider.CODEC,
-            ExpProvider.CODEC);
+    Codec<IDeltaProvider> CODEC = CodecUtils.alternatives(PresetProvider.CODEC, ExpProvider.CODEC);
 
     @Nullable Float getDelta(float timeCycleDuration);
 
@@ -70,9 +69,7 @@ public interface IDeltaProvider {
                     yield rainAndThunder + 1 / 6;
                 }
                 //needs to fall in between those 2 so we dont get interpolation as this stuff doesnt loop back
-                case GAME_TIME -> {
-                    yield getTimeFract(timeCycleDuration, level);
-                }
+                case GAME_TIME -> getTimeFract(timeCycleDuration, level);
                 case SEASON -> {
                     if (CompatHandler.SS || CompatHandler.FS) {
                         yield ExpTicker.getSeasonNumber();

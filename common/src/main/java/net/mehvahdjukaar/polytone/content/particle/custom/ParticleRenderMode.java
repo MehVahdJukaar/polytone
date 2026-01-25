@@ -62,8 +62,8 @@ public enum ParticleRenderMode implements StringRepresentable {
         return PolytoneRenderTypes.DEFERRED_BUFFER_SOURCE.getBuffer(this.getBlock());
     }
 
-    private static final SingleQuadParticle.Layer CUSTOM_LAYER = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_TERRAIN);
-    private static final SingleQuadParticle.Layer ADDITIVE_TRANSLUCENT_LAYER = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE);
+    public static final SingleQuadParticle.Layer CUSTOM_LAYER = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_TERRAIN);
+    public static final SingleQuadParticle.Layer ADDITIVE_TRANSLUCENT_LAYER = new SingleQuadParticle.Layer(true, TextureAtlas.LOCATION_PARTICLES, PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE);
 
 }
 

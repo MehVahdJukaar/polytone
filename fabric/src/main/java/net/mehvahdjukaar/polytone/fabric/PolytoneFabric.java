@@ -5,19 +5,20 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
-import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
+import net.mehvahdjukaar.polytone.content.particle.debug.ParticleCountDebugEntry;
+import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
 import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
 import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.server.MinecraftServer;
 
@@ -38,6 +39,12 @@ public class PolytoneFabric implements ClientModInitializer {
                 Polytone.onTagsReceived(registries);
             }
         });
+
+        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(
+                context  -> ParticleHitboxDebugRenderer.emitGizmos()
+        );
+        DebugScreenEntries.register(Polytone.res("particle_count"), new ParticleCountDebugEntry());
+
         WorldRenderEvents.START_MAIN.register((context) ->
                 ClientFrameTicker.onRenderTick(context.gameRenderer().getMinecraft()));
 

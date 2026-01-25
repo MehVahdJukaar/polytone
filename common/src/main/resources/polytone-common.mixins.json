@@ -39,6 +39,7 @@
     "QuadParticleGroupMixin",
     "RenderSetupMixin",
     "ScreenMixin",
+    "SingleQuadParticleAccessor",
     "SmithingScreenMixin",
     "SodiumBlockRendererMixin",
     "SpatialAttributeInterpolatorMixin",

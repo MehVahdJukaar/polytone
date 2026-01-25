@@ -4,6 +4,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
+import net.mehvahdjukaar.polytone.content.particle.debug.ParticleCountDebugEntry;
+import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
@@ -55,6 +57,16 @@ public class PolytoneForge {
             LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
 
+    }
+
+    @SubscribeEvent
+    public void addDebugScreenParticles(RegisterDebugEntriesEvent event) {
+        event.register(Polytone.res("particle_count"), new ParticleCountDebugEntry());
+    }
+
+    @SubscribeEvent
+    public void renderVistaDebug(RenderLevelStageEvent.AfterTripwireBlocks event) {
+        ParticleHitboxDebugRenderer.emitGizmos();
     }
 
     @SubscribeEvent

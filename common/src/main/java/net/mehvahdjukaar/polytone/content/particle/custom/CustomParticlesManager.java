@@ -71,23 +71,30 @@ public class CustomParticlesManager extends JsonPartialReloader {
             PlatStuff.unregisterDynamic(BuiltInRegistries.PARTICLE_TYPE, id);
         }
         customParticleFactories.clear();
+        ParticleResources resources = Minecraft.getInstance().particleEngine.resourceManager;
         for (var v : overwrittenVanillaProviders.entrySet()) {
-            PlatStuff.setParticleProvider(v.getKey(), v.getValue());
+            ParticleType<?> key = v.getKey();
+            PlatStuff.setParticleProvider(key, v.getValue());
+            //reset sprite sets
+            Identifier id = BuiltInRegistries.PARTICLE_TYPE.getKey(key);
+            if (id != null) {
+                //resources.spriteSets.put(id, new ParticleResources.MutableSpriteSet());
+            }
         }
         overwrittenVanillaProviders.clear();
     }
 
-    // not ideal
+    // not ideal. early process or something
     public void addSpriteSets(ResourceManager resourceManager) {
         ParticleResources resources = Minecraft.getInstance().particleEngine.resourceManager;
         for (var v : customParticleFactories.keySet()) {
             //never remove them as it could crash with old already spawner particles. not ideal
-            //resources.spriteSets.remove(v);
+            resources.spriteSets.remove(v);
         }
         var jsons = this.getJsonsInDirectories(resourceManager);
-        for (var v : jsons.keySet()) {
-
-            resources.spriteSets.put(v, new ParticleResources.MutableSpriteSet());
+        for (Identifier v : jsons.keySet()) {
+            //just add missing ones
+            resources.spriteSets.computeIfAbsent(v,a-> new ParticleResources.MutableSpriteSet());
         }
     }
 
