@@ -41,7 +41,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
         super(level, x, y, z, xSpeed, ySpeed, zSpeed, customType.spritePicker.getAny());
         this.type = customType;
 
-        this.type.spritePicker.pickSprite(this);
+        this.type.spritePicker.pickSprite(this, true);
 
         this.setSize(0.1f, 0.1f);
 
@@ -115,6 +115,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
         if (this.roll != 0.0F) {
             quaternionf.rotateZ(Mth.lerp(f, this.oRoll, this.roll));
         }
+        super.extract(quadParticleRenderState, camera, f);
 
         this.extractRotatedQuad(quadParticleRenderState, camera, quaternionf, f);
 
@@ -191,7 +192,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
             this.remove();
             return;
         }
-        this.type.spritePicker.pickSprite(this);
+        this.type.spritePicker.pickSprite(this, false);
         super.tick();
         //interpolate our states
         this.oRoll = this.roll;

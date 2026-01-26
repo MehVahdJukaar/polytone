@@ -21,7 +21,7 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
                                             @Nullable IParticleExp blue, @Nullable IParticleExp alpha,
                                             @Nullable IParticleExp roll,
                                             @Nullable IParticleExp custom,
-                                            @Nullable IParticleExp removeIf) implements ICustomParticleTicker{
+                                            @Nullable IParticleExp removeIf) implements ICustomParticleTicker {
 
     public static final Codec<MultiExpressionParticleTicker> CODEC = RecordCodecBuilder.create(i -> i.group(
             IParticleExp.CODEC.optionalFieldOf("x").forGetter(p -> Optional.ofNullable(p.x)),
@@ -62,6 +62,7 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
         if (this.roll != null) {
             particle.roll = (float) this.roll.evaluate(particle, level);
         }
+        particle.roll = 45;
         if (this.size != null) {
             particle.quadSize = (float) this.size.evaluate(particle, level);
         }

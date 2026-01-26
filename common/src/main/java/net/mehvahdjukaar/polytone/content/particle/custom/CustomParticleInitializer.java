@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.mixins.accessor.ParticleAccessor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.SingleQuadParticle;
@@ -12,37 +13,38 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public record CustomParticleInitializer(@Nullable BlockContextExpression size,
-                                        @Nullable BlockContextExpression lifetime,
-                                        @Nullable BlockContextExpression red,
-                                        @Nullable BlockContextExpression green,
-                                        @Nullable BlockContextExpression blue,
-                                        @Nullable BlockContextExpression alpha,
-                                        @Nullable BlockContextExpression roll,
-                                        @Nullable BlockContextExpression friction,
-                                        @Nullable BlockContextExpression hitboxSize,
-                                        @Nullable BlockContextExpression custom) {
+//TODO: change exp type
+public record CustomParticleInitializer(@Nullable IBlockExp size,
+                                        @Nullable IBlockExp lifetime,
+                                        @Nullable IBlockExp red,
+                                        @Nullable IBlockExp green,
+                                        @Nullable IBlockExp blue,
+                                        @Nullable IBlockExp alpha,
+                                        @Nullable IBlockExp roll,
+                                        @Nullable IBlockExp friction,
+                                        @Nullable IBlockExp hitboxSize,
+                                        @Nullable IBlockExp custom) {
 
     public static final Codec<CustomParticleInitializer> CODEC = RecordCodecBuilder.create(i -> i.group(
-            BlockContextExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.size)),
-            BlockContextExpression.CODEC.optionalFieldOf("lifetime").forGetter(p -> Optional.ofNullable(p.lifetime)),
-            BlockContextExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.red)),
-            BlockContextExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.green)),
-            BlockContextExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blue)),
-            BlockContextExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
-            BlockContextExpression.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.roll)),
-            BlockContextExpression.CODEC.optionalFieldOf("friction").forGetter(p -> Optional.ofNullable(p.friction)),
-            BlockContextExpression.CODEC.optionalFieldOf("hitbox_size").forGetter(p -> Optional.ofNullable(p.hitboxSize)),
-            BlockContextExpression.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom))
+            IBlockExp.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.size)),
+            IBlockExp.CODEC.optionalFieldOf("lifetime").forGetter(p -> Optional.ofNullable(p.lifetime)),
+            IBlockExp.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.red)),
+            IBlockExp.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.green)),
+            IBlockExp.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blue)),
+            IBlockExp.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
+            IBlockExp.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.roll)),
+            IBlockExp.CODEC.optionalFieldOf("friction").forGetter(p -> Optional.ofNullable(p.friction)),
+            IBlockExp.CODEC.optionalFieldOf("hitbox_size").forGetter(p -> Optional.ofNullable(p.hitboxSize)),
+            IBlockExp.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom))
     ).apply(i, CustomParticleInitializer::new));
 
-    private CustomParticleInitializer(Optional<BlockContextExpression> size, Optional<BlockContextExpression> lifetime,
-                                      Optional<BlockContextExpression> red, Optional<BlockContextExpression> green,
-                                      Optional<BlockContextExpression> blue, Optional<BlockContextExpression> alpha,
-                                      Optional<BlockContextExpression> roll,
-                                      Optional<BlockContextExpression> friction,
-                                      Optional<BlockContextExpression> hitboxSize,
-                                      Optional<BlockContextExpression> custom) {
+    private CustomParticleInitializer(Optional<IBlockExp> size, Optional<IBlockExp> lifetime,
+                                      Optional<IBlockExp> red, Optional<IBlockExp> green,
+                                      Optional<IBlockExp> blue, Optional<IBlockExp> alpha,
+                                      Optional<IBlockExp> roll,
+                                      Optional<IBlockExp> friction,
+                                      Optional<IBlockExp> hitboxSize,
+                                      Optional<IBlockExp> custom) {
         this(size.orElse(null), lifetime.orElse(null), red.orElse(null),
                 green.orElse(null), blue.orElse(null), alpha.orElse(null),
                 roll.orElse(null), friction.orElse(null),

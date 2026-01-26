@@ -43,12 +43,12 @@ public class SpritePicker {
         */
     }
 
-    public void pickSprite(CustomParticleInstance particle) {
+    public void pickSprite(CustomParticleInstance particle, boolean init) {
         if (set == null) {
             throw new RuntimeException("Tried to pick a sprite for a particle with no sprites set!");
         }
         if (this.selectsRandom) {
-            particle.setSprite(set.get(particle.getRandom()));
+            if (init) particle.setSprite(set.get(particle.getRandom()));
         } else {
             particle.setSpriteFromAge(set);
         }
