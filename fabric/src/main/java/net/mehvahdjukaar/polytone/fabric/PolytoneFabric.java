@@ -11,18 +11,21 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
-import net.mehvahdjukaar.polytone.content.particle.debug.ParticleCountDebugEntry;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
-import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
 import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
-import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
+import net.minecraft.client.gui.components.debug.DebugEntryNoop;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
+import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
+import net.minecraft.client.gui.components.debug.DebugScreenProfile;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class PolytoneFabric implements ClientModInitializer {
@@ -41,9 +44,10 @@ public class PolytoneFabric implements ClientModInitializer {
         });
 
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register(
-                context  -> ParticleHitboxDebugRenderer.emitGizmos()
+                context -> ParticleHitboxDebugRenderer.emitGizmos()
         );
-        DebugScreenEntries.register(Polytone.res("particle_count"), new ParticleCountDebugEntry());
+        DebugScreenEntries.register(ParticleHitboxDebugRenderer.ID, new DebugEntryNoop());
+        addToProfiles();
 
         WorldRenderEvents.START_MAIN.register((context) ->
                 ClientFrameTicker.onRenderTick(context.gameRenderer().getMinecraft()));
@@ -96,6 +100,20 @@ public class PolytoneFabric implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             addRenderParticlesType();
         });
+    }
+
+    private static void addToProfiles() {
+        var old = DebugScreenEntries.PROFILES;
+        var def = old.get(DebugScreenProfile.DEFAULT);
+        var newDef = new HashMap<>(def);
+        newDef.put(ParticleHitboxDebugRenderer.ID, DebugScreenEntryStatus.ALWAYS_ON);
+        var perf = old.get(DebugScreenProfile.PERFORMANCE);
+        var newPerf = new HashMap<>(perf);
+        newPerf.put(ParticleHitboxDebugRenderer.ID, DebugScreenEntryStatus.ALWAYS_ON);
+        var newProfiles = new HashMap<>(old);
+        newProfiles.put(DebugScreenProfile.DEFAULT, newDef);
+        newProfiles.put(DebugScreenProfile.PERFORMANCE, newPerf);
+        DebugScreenEntries.PROFILES = newProfiles;
     }
 
     public static MinecraftServer currentServer;

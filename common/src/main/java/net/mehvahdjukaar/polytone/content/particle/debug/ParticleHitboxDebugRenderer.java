@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.particle.debug;
 
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleRenderMode;
 import net.mehvahdjukaar.polytone.mixins.SingleQuadParticleAccessor;
@@ -11,12 +12,16 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.gizmos.Gizmos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
 public class ParticleHitboxDebugRenderer {
 
+    public static final Identifier ID = Polytone.res("particle_hitboxes");
+
     public static void emitGizmos() {
         Minecraft mc = Minecraft.getInstance();
+        if (!mc.debugEntries.isCurrentlyEnabled(ID)) return;
         if (!mc.debugEntries.isCurrentlyEnabled(DebugScreenEntries.ENTITY_HITBOXES)) return;
 
         Vec3 camera = mc.gameRenderer.getMainCamera().position();

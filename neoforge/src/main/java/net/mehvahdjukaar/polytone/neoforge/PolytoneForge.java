@@ -4,7 +4,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
-import net.mehvahdjukaar.polytone.content.particle.debug.ParticleCountDebugEntry;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
@@ -12,8 +11,13 @@ import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.debug.DebugEntryNoop;
+import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
+import net.minecraft.client.gui.components.debug.DebugScreenProfile;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.debug.DebugRenderer;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -53,15 +57,19 @@ public class PolytoneForge {
             Polytone.init(!FMLEnvironment.isProduction(), true);
             NeoForge.EVENT_BUS.register(this);
             modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
+            modBus.addListener(this::onRegisterDebugEntries);
         } else {
             LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
 
     }
 
-    @SubscribeEvent
-    public void addDebugScreenParticles(RegisterDebugEntriesEvent event) {
-        event.register(Polytone.res("particle_count"), new ParticleCountDebugEntry());
+    public void onRegisterDebugEntries(RegisterDebugEntriesEvent event) {
+        event.register(ParticleHitboxDebugRenderer.ID, new DebugEntryNoop());
+        event.includeInProfile(ParticleHitboxDebugRenderer.ID, DebugScreenProfile.DEFAULT,
+                DebugScreenEntryStatus.ALWAYS_ON);
+        event.includeInProfile(ParticleHitboxDebugRenderer.ID, DebugScreenProfile.PERFORMANCE,
+                DebugScreenEntryStatus.ALWAYS_ON);
     }
 
     @SubscribeEvent

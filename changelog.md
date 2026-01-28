@@ -1,3 +1,1 @@
-- added particle debug renderers. press f3+b to see them
-- fixed hitbox_size being called hitboxSize
-- fixed unloading a pack with particle overrides not resetting their sprites properly
+added setting for debug particle renderers
