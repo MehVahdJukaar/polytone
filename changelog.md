@@ -1,1 +1,1 @@
-added setting for debug particle renderers
+- fixed custom particles rendering twice, once with vanilla rotations
