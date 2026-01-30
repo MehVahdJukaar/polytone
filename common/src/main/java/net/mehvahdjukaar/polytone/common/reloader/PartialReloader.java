@@ -8,8 +8,8 @@ import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.struc.ListUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -55,29 +55,17 @@ public abstract class PartialReloader<T> {
             Identifier resourceLocation = entry.getKey();
             Identifier resourceLocation2 = fileToIdConverter.fileToId(resourceLocation);
 
-            try {
-                Reader reader = entry.getValue().openAsReader();
+            try (Reader reader = entry.getValue().openAsReader()) {
 
-                try {
-                    JsonElement jsonElement = GsonHelper.fromJson(gson, reader, JsonElement.class);
-                    JsonElement jsonElement2 = map.put(resourceLocation2, jsonElement);
-                    if (jsonElement2 != null) {
-                        throw new IllegalStateException("Duplicate data file ignored with ID " + resourceLocation2);
-                    }
-                } catch (Throwable var13) {
-                    try {
-                        reader.close();
-                    } catch (Throwable var12) {
-                        var13.addSuppressed(var12);
-                    }
-
-                    throw var13;
+                JsonElement jsonElement = GsonHelper.fromJson(gson, reader, JsonElement.class);
+                JsonElement jsonElement2 = map.put(resourceLocation2, jsonElement);
+                if (jsonElement2 != null) {
+                    throw new IllegalStateException("Duplicate data file ignored with ID " + resourceLocation2);
                 }
 
-                reader.close();
             } catch (IllegalArgumentException | IOException | JsonParseException var14) {
                 throw new IllegalStateException("Couldn't parse data file " + resourceLocation2 + " from " + resourceLocation, var14);
-               // Polytone.LOGGER.error("Couldn't parse data file {} from {}", resourceLocation2, resourceLocation, var14);
+                // Polytone.LOGGER.error("Couldn't parse data file {} from {}", resourceLocation2, resourceLocation, var14);
             }
         }
     }
@@ -104,16 +92,17 @@ public abstract class PartialReloader<T> {
         return ArrayImage.groupTextures(this.getImagesInDirectories(manager));
     }
 
-    protected void earlyProcess(PreparableReloadListener.SharedState sharedState) {
-
-    }
+    protected void earlyProcess(PreparableReloadListener.SharedState sharedState) {}
 
     protected abstract T prepare(PreparableReloadListener.SharedState sharedState);
 
-    protected abstract void parseWithLevel(T obj, RegistryOps<JsonElement> ops, HolderLookup.Provider access);
+    protected void parseWithLevel(T obj, RegistryOps<JsonElement> ops, HolderLookup.Provider access){};
 
-    protected abstract void applyWithLevel(HolderLookup.Provider access, boolean isLogIn);
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn){};
 
-    protected abstract void resetWithLevel(boolean logOff);
+    protected void resetWithLevel(boolean logOff){};
+
+    protected void applyNormal(T obj) {}
+
 
 }

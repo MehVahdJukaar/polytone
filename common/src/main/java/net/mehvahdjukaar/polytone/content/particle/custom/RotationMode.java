@@ -6,6 +6,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
@@ -16,6 +17,7 @@ import java.util.Locale;
 public enum RotationMode implements StringRepresentable, IRotationProvider {
     LOOK_AT_XYZ, LOOK_AT_Y,
     LOOK_AT_X, LOOK_AT_Z, LOOK_AT_XZ,
+    LOOK_AT_PLAYER, LOOK_AT_PLAYER_Y,
     MOVEMENT_ALIGNED, LOOK_UP, LOOK_WEST, NONE;
 
     public static final Codec<RotationMode> CODEC = StringRepresentable.fromEnum(RotationMode::values);
@@ -45,6 +47,21 @@ public enum RotationMode implements StringRepresentable, IRotationProvider {
             case LOOK_AT_X -> quaternionf.set(camera.rotation().x, 0, 0.0F, camera.rotation().w);
             case LOOK_AT_Z -> quaternionf.set(0.0F, 0.0F, camera.rotation().z, camera.rotation().w);
             case LOOK_AT_XZ -> quaternionf.set(camera.rotation().x, 0, camera.rotation().z, camera.rotation().w);
+            case LOOK_AT_PLAYER -> {
+                Entity player = camera.entity();
+
+                Vec3 lookVec = player.getViewVector(partialTicks);
+                double pitch = getPitch(lookVec);
+                double yaw = getYaw(lookVec);
+                quaternionf.rotateY((float) (-Mth.DEG_TO_RAD * yaw));
+                quaternionf.rotateX((float) (Mth.DEG_TO_RAD * (pitch - 90)));
+            }
+            case LOOK_AT_PLAYER_Y -> {
+                Entity player = camera.entity();
+                Vec3 lookVec = player.getViewVector(partialTicks);
+                double yaw = getYaw(lookVec);
+                quaternionf.rotateY((float) (-Mth.DEG_TO_RAD * yaw));
+            }
             case MOVEMENT_ALIGNED -> {
                 Vec3 dir = particle == null ? Vec3.ZERO :
                         new Vec3(particle.xd, particle.yd, particle.zd).normalize();

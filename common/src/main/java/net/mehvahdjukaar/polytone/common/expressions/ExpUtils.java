@@ -64,6 +64,8 @@ public class ExpUtils {
         ctx.addInput("random", RandomProxy.class);
 
         importStaticMethods(ctx, ExpMath.class);
+        importStaticFieldTypes(ctx, ExpMath.class);
+        Polytone.GLOBAL_EXPRESSION.addTypes(ctx);
     }
 
     public static void addCommonVars(Map<String, Object> vars) {
@@ -78,6 +80,15 @@ public class ExpUtils {
         for (Method method : clazz.getMethods()) {
             if (Modifier.isStatic(method.getModifiers()) && method.getDeclaringClass() == clazz) {
                 ctx.addImport(method.getName(), new MethodStub(method));
+            }
+        }
+    }
+
+    private static void importStaticFieldTypes(ParserContext ctx, Class<?> clazz) {
+        for (Field field : clazz.getFields()) {
+            int mod = field.getModifiers();
+            if (Modifier.isStatic(mod) && field.getDeclaringClass() == clazz) {
+                ctx.addInput(field.getName(), field.getType());
             }
         }
     }

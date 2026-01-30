@@ -27,6 +27,8 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -78,8 +80,14 @@ public class PlatStuff {
 
     @Contract
     @ExpectPlatform
-    public static boolean isModLoaded(String namespace) {
+    public static boolean isModLoaded(String mod) {
         throw new AssertionError();
+    }
+
+    @Contract
+    @ExpectPlatform
+    public static String getModVersion(String mod) {
+        throw  new AssertionError();
     }
 
     @ExpectPlatform
@@ -217,6 +225,16 @@ public class PlatStuff {
 
     @ExpectPlatform
     public static float getCamRoll(Camera camera) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static Path getGamePath() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static String getModLoader() {
         throw new AssertionError();
     }
 

@@ -55,7 +55,9 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import sereneseasons.api.season.SeasonHelper;
 
+import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -71,7 +73,8 @@ public class PlatStuffImpl {
     }
 
     public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final Identifier name) {
-        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(name, listener.get());
+        ResourceLoader.get(PackType.CLIENT_RESOURCES)
+                .registerReloader(name, listener.get());
     }
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
@@ -371,6 +374,19 @@ public class PlatStuffImpl {
         for (TagKey<?> child : tag.immediateChildTags()) {
             collectAllClientTags((TagKey<T>) child, registry, result, visited);
         }
+    }
+
+    public static Path getGamePath() {
+            return FabricLoader.getInstance().getGameDir();
+    }
+
+    public static String getModVersion(String modId) {
+        return FabricLoader.getInstance().getModContainer(modId).map(v -> v.getMetadata().getVersion().getFriendlyString())
+                .orElse(null);
+    }
+
+    public static String getModLoader() {
+        return "Fabric";
     }
 
 }

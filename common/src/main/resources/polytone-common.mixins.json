@@ -4,6 +4,10 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
+    "OverlayEntryMixin",
+    "OverlayIntermediateEntryMixin",
+    "PackMixin",
+    "PackRepositoryMixin"
   ],
   "client": [
     "AbstractContainerMenuMixin",
@@ -33,6 +37,8 @@
     "MinecraftMixin",
     "ModelBakeryMixin",
     "ModelManagerMixin",
+    "OptionsMixin",
+    "PackSelectScreenMixin",
     "ParticleEngineMixin",
     "ParticleGroupMixin",
     "ParticleResourcesMixin",

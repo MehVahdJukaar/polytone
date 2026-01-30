@@ -32,7 +32,7 @@ public class CompoundReloader implements PreparableReloadListener {
     }
 
     @Override
-    public CompletableFuture<Void> reload(SharedState sharedState, Executor backgroundExecutor, PreparationBarrier preparationBarrier,  Executor gameExecutor) {
+    public CompletableFuture<Void> reload(SharedState sharedState, Executor backgroundExecutor, PreparationBarrier preparationBarrier, Executor gameExecutor) {
         List<CompletableFuture<?>> futures = children.stream()
                 .map(child -> CompletableFuture.supplyAsync(() -> child.prepare(sharedState), backgroundExecutor))
                 .collect(Collectors.toList());
@@ -45,6 +45,8 @@ public class CompoundReloader implements PreparableReloadListener {
                     childrenResourcesCache.addAll((Collection) preparedList);
                     Level level = Minecraft.getInstance().level;
 
+                    applyNormal();
+
                     if (level != null) {
                         try {
                             applyWithLevel(level.registryAccess(), false);
@@ -53,6 +55,28 @@ public class CompoundReloader implements PreparableReloadListener {
                         }
                     }
                 }, gameExecutor);
+    }
+
+
+    //normal apply
+    public void applyNormal() {
+        for (int i = 0; i < childrenResourcesCache.size(); i++) {
+            PartialReloader<?> c = children.get(i);
+            try {
+                applyNormalTyped(c, childrenResourcesCache.get(i));
+            } catch (Exception e) {
+                String message = c + " failed to parse some resources";
+                Polytone.logException(e, message);
+                Polytone.iMessedUp = true;
+
+                Polytone.LOGGER.error(message);
+                throw e;
+            }
+        }
+    }
+
+    private <T> void applyNormalTyped(PartialReloader<T> c, Object object) {
+        c.applyNormal((T) object);
     }
 
     public void applyWithLevel(HolderLookup.Provider registryAccess, boolean firstLogin) {

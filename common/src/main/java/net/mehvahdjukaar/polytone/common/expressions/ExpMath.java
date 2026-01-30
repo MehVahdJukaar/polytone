@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.common.expressions;
 
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.struc.VersionRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -8,6 +10,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Blocks;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class ExpMath {
 
@@ -167,19 +173,89 @@ public class ExpMath {
         return ARGB.colorFromFloat((float) a, (float) r, (float) g, (float) b);
     }
 
+    public static int colormap(String colormap, double x, double y, double z) {
+        return colormap(colormap, x, y, z, 0);
+    }
 
-    public static int colormap(String colormap, int x, int y, int z, int tint) {
+    public static int colormap(String colormap, double x, double y, double z, double tint) {
         var c = Polytone.COLORMAPS.get(colormap);
-        if (c != null){
-            var pos = new BlockPos(x, y, z);
+        if (c != null) {
+            var pos = BlockPos.containing(x, y, z);
             c.getColor(Blocks.AIR.defaultBlockState(), Minecraft.getInstance().level,
-                    pos, tint);
+                    pos, (int) tint);
+        } else {
+            Polytone.LOGGER.warn("Colormap '{}' not found!", colormap);
         }
         return 0;
     }
 
+
+    //general stuff. shouldnt be here really...
+
     public static int colormap(String colormap) {
-        return colormap(colormap, 0,0,0,0);
+        return colormap(colormap, 0, 0, 0, 0);
+    }
+
+    public static Object config(String key) {
+        try {
+            Identifier configKey = Identifier.parse(key);
+            return Polytone.CONFIGS.getValue(configKey);
+        } catch (Exception e) {
+            Polytone.LOGGER.error("Could not parse Identifier '{}'", key, e);
+            return 0;
+        }
+    }
+
+    public static boolean modOn(String mod) {
+        return PlatStuff.isModLoaded(mod);
+    }
+
+    public static boolean modOn(String mod, String versionRange) {
+        if (PlatStuff.isModLoaded(mod)) {
+            String v = PlatStuff.getModVersion(mod);
+            var range = VersionRange.decode(versionRange);
+            if (range.isError()) {
+                Polytone.LOGGER.error("Failed to parse version range '{}' for mod '{}'", versionRange, mod);
+                return false;
+            } else {
+                return range.getOrThrow().matches(v);
+            }
+        }
+        return false;
+    }
+
+    public static double dateYear() {
+        return LocalDate.now().getYear();
+    }
+
+    public static double dateMonth() {
+        return LocalDate.now().getMonthValue();
+    }
+
+    public static double dateDay() {
+        return LocalDate.now().getDayOfMonth();
+    }
+
+    public static double dateHour() {
+        LocalDateTime now = LocalDateTime.now();
+        return now.getHour();
+    }
+
+    public static double dateMinute() {
+        LocalDateTime now = LocalDateTime.now();
+        return now.getMinute(); // 0–59
+    }
+
+    public static long dateTime() {
+        return Instant.now().getEpochSecond();
+    }
+
+    public static String modLoader() {
+        return PlatStuff.getModLoader();
+    }
+
+    public static String osName() {
+        return System.getProperty("os.name");
     }
 
 }

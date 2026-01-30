@@ -62,7 +62,6 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
         if (this.roll != null) {
             particle.roll = (float) this.roll.evaluate(particle, level);
         }
-        particle.roll = 45;
         if (this.size != null) {
             particle.quadSize = (float) this.size.evaluate(particle, level);
         }

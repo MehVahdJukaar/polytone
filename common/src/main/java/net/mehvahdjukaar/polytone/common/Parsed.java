@@ -78,25 +78,7 @@ public class Parsed<T> {
 
     private static final Codec<Integer> PRIORITY_CODEC = Codec.INT.optionalFieldOf("priority", 0).codec();
 
-    private static final Codec<Boolean> CONDITION_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.BOOL.optionalFieldOf("polytone_ignore", false).forGetter(b -> b),
-            VersionRange.CODEC.optionalFieldOf("version").forGetter(b -> Optional.empty()),
-            CodecUtils.singleOrList(Codec.STRING)
-                    .optionalFieldOf("require_mods", List.of()).forGetter(b -> List.of())
-    ).apply(instance, (ignore, version, modList) -> {
-        if (ignore) {
-            return false;
-        }
-        if (version.isPresent() && !version.get().matches(SharedConstants.getCurrentVersion().id())) {
-            return false;
-        }
-        for (String s : modList) {
-            if (!PlatStuff.isModLoaded(s)) {
-                return false;
-            }
-        }
-        return true;
-    }));
+
 
     public static <T, J> Parsed<T> parseAlways(Decoder<T> codec, J input, DynamicOps<J> ops,
                                                Identifier id, String jsonTypeName) {
@@ -104,13 +86,13 @@ public class Parsed<T> {
     }
 
     private static <T, J> Parsed<T> parseOptional(Decoder<T> codec, J input, DynamicOps<J> ops,
-                                                 Identifier id, String jsonTypeName) {
+                                                  Identifier id, String jsonTypeName) {
         return parseOptionalOrPartial(codec, null, input, ops, id, jsonTypeName);
     }
 
     private static <T, J> Parsed<T> parseOptionalOrPartial(Decoder<T> fullCodec, @Nullable Decoder<T> partialCodec, J input, DynamicOps<J> ops,
-                                                          Identifier id, String jsonTypeName) {
-        Boolean enabled = CONDITION_CODEC.decode(ops, input).getOrThrow().getFirst();
+                                                           Identifier id, String jsonTypeName) {
+        Boolean enabled = ConditionUtils.CODEC_SINGLE_JSON.decode(ops, input).getOrThrow().getFirst();
         int priority = PRIORITY_CODEC.decode(ops, input).getOrThrow().getFirst();
         T value;
         try {
@@ -141,13 +123,13 @@ public class Parsed<T> {
         return treeMap;
     }
 
-    public static <A, J> SortedMap<A> batchParseAlways(java.util.Map<Identifier, J> jsons,
+    public static <A, J> SortedMap<A> batchParseAlways(Map<Identifier, J> jsons,
                                                        Decoder<A> codec, DynamicOps<J> ops, String readableTypeName) {
         return batchParseOrPartial(jsons, codec, codec, ops, readableTypeName);
     }
 
-    public static <A, J> Iterable<Map.Entry<Identifier, A>> batchParseOnlyEnabled(java.util.Map<Identifier, J> jsons,
-                                                                                        Decoder<A> codec, DynamicOps<J> ops, String jsonTypeName) {
+    public static <A, J> Iterable<Map.Entry<Identifier, A>> batchParseOnlyEnabled(Map<Identifier, J> jsons,
+                                                                                  Decoder<A> codec, DynamicOps<J> ops, String jsonTypeName) {
         return batchParseOrPartial(jsons, codec, null, ops, jsonTypeName)
                 .entrySet().stream().filter(p -> p.getValue().isEnabled)
                 .map(e -> Map.entry(e.getKey(), e.getValue().getResultOrPartial())).toList();

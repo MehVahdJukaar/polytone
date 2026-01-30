@@ -11,7 +11,7 @@ public interface ISimpleExp {
                             aDouble -> () -> aDouble,
                             iBlockExp -> 0.0
                     ),
-                    SimpleExp.CODEC
+                    SimpleExp.TYPE.codec()
             )));
 
     double evaluate();

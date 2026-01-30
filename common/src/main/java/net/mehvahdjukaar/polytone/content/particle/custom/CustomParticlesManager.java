@@ -91,10 +91,14 @@ public class CustomParticlesManager extends JsonPartialReloader {
             //never remove them as it could crash with old already spawner particles. not ideal
             resources.spriteSets.remove(v);
         }
-        var jsons = this.getJsonsInDirectories(resourceManager);
-        for (Identifier v : jsons.keySet()) {
-            //just add missing ones
-            resources.spriteSets.computeIfAbsent(v,a-> new ParticleResources.MutableSpriteSet());
+        try {
+            var jsons = this.getJsonsInDirectories(resourceManager);
+            for (Identifier v : jsons.keySet()) {
+                //just add missing ones
+                resources.spriteSets.computeIfAbsent(v, a -> new ParticleResources.MutableSpriteSet());
+            }
+        }catch (Exception e){
+            Polytone.LOGGER.error("Error adding custom particle sprite sets from resource packs",e);
         }
     }
 

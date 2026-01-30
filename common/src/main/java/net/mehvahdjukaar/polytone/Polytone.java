@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone;
 
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
-import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
+import net.mehvahdjukaar.polytone.common.reloader.CompoundReloader;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
@@ -12,10 +12,10 @@ import net.mehvahdjukaar.polytone.content.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.content.block.BlockSetManager;
 import net.mehvahdjukaar.polytone.content.color.ColorManager;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.content.entity.EntityModifiersManager;
 import net.mehvahdjukaar.polytone.content.fluid.FluidPropertiesManager;
-import net.mehvahdjukaar.polytone.content.global_expressions.GlobalExpression;
 import net.mehvahdjukaar.polytone.content.global_expressions.GlobalExpressionsManager;
 import net.mehvahdjukaar.polytone.content.item.CustomItemModelsManager;
 import net.mehvahdjukaar.polytone.content.item.ItemModifiersManager;
@@ -27,7 +27,6 @@ import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.content.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabsModifiersManager;
-import net.mehvahdjukaar.polytone.common.reloader.CompoundReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
@@ -84,6 +83,7 @@ public class Polytone {
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
     public static final GlobalExpressionsManager GLOBAL_EXPRESSION = new GlobalExpressionsManager();
+    public static final ConfigsManager CONFIGS = new ConfigsManager();
 
     private static final Future<Set<Identifier>> FUTURE_IDS = CompletableFuture.supplyAsync(Polytone::loadFutureIds);
 
@@ -94,12 +94,13 @@ public class Polytone {
 
     public static void init(boolean devEnv, boolean forge) {
         COMPOUND_RELOADER = new CompoundReloader(
+                CONFIGS, GLOBAL_EXPRESSION,
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS,//LIGHTMAPS,
                 DIMENSION_MODIFIERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
-                CREATIVE_TABS_MODIFIERS, GLOBAL_EXPRESSION);
+                CREATIVE_TABS_MODIFIERS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         isDevEnv = devEnv;
@@ -111,6 +112,7 @@ public class Polytone {
         PolytoneRenderTypes.init();
         if (CompatHandler.IRIS) IrisCompat.init();
 
+        //TODO: server resource pack
         //TODO: custom block breaking particles
         //TODO: custom place particles
     }
@@ -120,7 +122,7 @@ public class Polytone {
     }
 
 
-    public static void onTick(Level level){
+    public static void onTick(Level level) {
         GLOBAL_EXPRESSION.tick(level);
         ClientFrameTicker.onTick(level);
         ExpTicker.onTick(level);

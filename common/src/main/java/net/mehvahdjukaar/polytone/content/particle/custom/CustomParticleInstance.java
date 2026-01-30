@@ -116,7 +116,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
             quaternionf.rotateZ(Mth.lerp(f, this.oRoll, this.roll));
         }
         this.extractRotatedQuad(quadParticleRenderState, camera, quaternionf, f);
-
         if (!this.type.rotationProvider.alwaysFacesCamera() && model == null) {
             quaternionf.rotateX(Mth.PI);
             //render back face

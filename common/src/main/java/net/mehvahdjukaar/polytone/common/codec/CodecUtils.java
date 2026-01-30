@@ -20,10 +20,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public class CodecUtils {
 
@@ -121,6 +118,11 @@ public class CodecUtils {
     public static <A> Codec<List<A>> singleOrList(Codec<A> elementCodec) {
         return Codec.withAlternative(elementCodec.listOf(), elementCodec, List::of);
     }
+
+    public static <A> Codec<A> singleOrList(Codec<A> elementCodec, Function <List<A>, A> listToSingle) {
+        return Codec.withAlternative(elementCodec, elementCodec.listOf(), listToSingle);
+    }
+
 
     public static <A, B> Codec<A> union(Codec<A> codec, Codec<B> otherType, BiFunction<A, B, A> applyFunc) {
         return new UnionCodec<>(codec, otherType, applyFunc);

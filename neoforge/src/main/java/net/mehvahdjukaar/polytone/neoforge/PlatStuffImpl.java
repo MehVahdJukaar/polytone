@@ -32,6 +32,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.packs.OverlayMetadataSection;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
@@ -44,6 +45,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.ColorResolverManager;
 import net.neoforged.neoforge.client.CreativeModeTabSearchRegistry;
@@ -53,7 +55,9 @@ import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
 import org.joml.Vector3f;
 
+import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -328,6 +332,18 @@ public class PlatStuffImpl {
 
     public static <T> Iterable<Holder<T>> getTagEntries(HolderLookup.RegistryLookup<T> reg, TagKey<T> tag) {
         return ClientTagsImpl.getTagEntries(reg, tag);
+    }
+
+    public static Path getGamePath() {
+        return FMLPaths.GAMEDIR.get();
+    }
+
+    public static String getModVersion(String modId) {
+        return ModList.get().getModContainerById(modId).map(v -> v.getModInfo().getVersion().toString()).orElse(null);
+    }
+
+    public static String getModLoader() {
+        return "Neoforge";
     }
 
     private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();

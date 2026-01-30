@@ -13,6 +13,16 @@ import java.util.List;
 
 public record AlternativeCodec<A>(Codec<? extends A> ...codecs) implements Codec<A> {
 
+    @SafeVarargs
+    public AlternativeCodec {
+        //assert the codecs arent ourselves
+        for (var codec : codecs) {
+            if (codec == AlternativeCodec.this) {
+                throw new IllegalArgumentException("AlternativeCodec cannot contain itself as a codec");
+            }
+        }
+    }
+
     @Override
     public <T> DataResult<Pair<A, T>> decode(DynamicOps<T> ops, T input) {
         List<String> errors = new ArrayList<>();

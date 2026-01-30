@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.common.reloader;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import net.minecraft.resources.Identifier;
@@ -11,6 +12,7 @@ public abstract class JsonPartialReloader extends PartialReloader<Map<Identifier
 
     protected JsonPartialReloader(String ...name) {
         super(name);
+        Preconditions.checkArgument(name.length > 0, "Reloader must have a name");
     }
 
     @Override

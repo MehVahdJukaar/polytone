@@ -1,1 +1,6 @@
-- fixed custom particles rendering twice, once with vanilla rotations
+- added config_entries folder where one can define arbitrary custom configs
+- these will show up in a dedicated button in your resource pack folder
+- config entries can be referenced from expressions
+- they can also be used to turn off pack overlays on demand. check the wiki tweaks section
+- With these features you can essentially make some parts of your pack turn off via a user friendly config button, either through overlay, through polytone conditions or through behavioral changes driven by the configs in your expressions
+- minor fixes to the aftermentioned system (2)
