@@ -186,6 +186,7 @@ public class ConfigsManager extends JsonPartialReloader {
         for (var entry : parsed.entrySet()) {
             addConfig(entry.getKey(), entry.getValue(), configs, configFileSnapshot);
         }
+        Polytone.LOGGER.info("Loaded {} Polytone config entries", configs.size());
     }
 
     public void beforeRepositoryRefresh() {

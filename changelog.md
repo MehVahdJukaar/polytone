@@ -1,6 +1,1 @@
-- added config_entries folder where one can define arbitrary custom configs
-- these will show up in a dedicated button in your resource pack folder
-- config entries can be referenced from expressions
-- they can also be used to turn off pack overlays on demand. check the wiki tweaks section
-- With these features you can essentially make some parts of your pack turn off via a user friendly config button, either through overlay, through polytone conditions or through behavioral changes driven by the configs in your expressions
-- minor fixes to the aftermentioned system (2)
+- further improvements to the config file system. load configs can only be contained in the pack whose mcmeta is being read. For everything else they can be anywhere in any pack
