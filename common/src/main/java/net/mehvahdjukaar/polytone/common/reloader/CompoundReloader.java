@@ -51,7 +51,9 @@ public class CompoundReloader implements PreparableReloadListener {
                         try {
                             applyWithLevel(level.registryAccess(), false);
                         } catch (Exception e) {
-                            throw new RuntimeException(e);
+                            Polytone.maybeThrow(
+                                    new RuntimeException(e)
+                            );
                         }
                     }
                 }, gameExecutor);

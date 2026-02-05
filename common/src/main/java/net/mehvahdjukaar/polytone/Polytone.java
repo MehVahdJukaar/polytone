@@ -267,4 +267,13 @@ public class Polytone {
     public static void onDimChanged(Level to) {
         DIMENSION_MODIFIERS.onDimensionChanged(to.dimensionTypeRegistration(), to.registryAccess());
     }
+
+    public static void maybeThrow(RuntimeException e) {
+        if (CONFIGS.isLenientLoading()) {
+            LOGGER.error("Pack loading error occurred. Ignoring due to lenient loading config.", e);
+        } else {
+            throw e;
+        }
+
+    }
 }

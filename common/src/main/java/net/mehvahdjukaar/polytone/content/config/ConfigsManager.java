@@ -26,15 +26,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 //TODO: make these per pack instead? since we load configs per pack. only issue is that for expressions these arent per pack...
 public class ConfigsManager extends JsonPartialReloader {
 
+    public final OptionHolder<Boolean> lenientLoading = OptionHolder.
+            create(new BoolConfig(Optional.of("polytone.config.lenient_errors"), false),
+                    Polytone.res("lenient_loading"));
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
     private final ThreadLocal<MapRegistry<OptionHolder<?>>> activeLoadConfigs = new ThreadLocal<>(); // from active packs
     private final File optionsFile;
@@ -168,12 +168,16 @@ public class ConfigsManager extends JsonPartialReloader {
         }
     }
 
+    public boolean isLenientLoading() {
+        return lenientLoading.get();
+    }
 
     @Override
     protected void applyNormal(Map<Identifier, JsonElement> obj) {
         saveConfigsToDisk();
 
         configs.clear();
+        configs.register(lenientLoading.fileId, lenientLoading);
 
         Map<Identifier, PolyConfig<?>> parsed = new HashMap<>();
         //ignoring conditions here purposefully

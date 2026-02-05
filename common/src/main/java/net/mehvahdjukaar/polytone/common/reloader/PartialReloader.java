@@ -60,11 +60,15 @@ public abstract class PartialReloader<T> {
                 JsonElement jsonElement = GsonHelper.fromJson(gson, reader, JsonElement.class);
                 JsonElement jsonElement2 = map.put(resourceLocation2, jsonElement);
                 if (jsonElement2 != null) {
-                    throw new IllegalStateException("Duplicate data file ignored with ID " + resourceLocation2);
+                    Polytone.maybeThrow(
+                            new IllegalStateException("Duplicate data file ignored with ID " + resourceLocation2)
+                    );
                 }
 
             } catch (IllegalArgumentException | IOException | JsonParseException var14) {
-                throw new IllegalStateException("Couldn't parse data file " + resourceLocation2 + " from " + resourceLocation, var14);
+                Polytone.maybeThrow(
+                        new IllegalStateException("Couldn't parse data file " + resourceLocation2 + " from " + resourceLocation, var14)
+                );
                 // Polytone.LOGGER.error("Couldn't parse data file {} from {}", resourceLocation2, resourceLocation, var14);
             }
         }
@@ -92,17 +96,28 @@ public abstract class PartialReloader<T> {
         return ArrayImage.groupTextures(this.getImagesInDirectories(manager));
     }
 
-    protected void earlyProcess(PreparableReloadListener.SharedState sharedState) {}
+    protected void earlyProcess(PreparableReloadListener.SharedState sharedState) {
+    }
 
     protected abstract T prepare(PreparableReloadListener.SharedState sharedState);
 
-    protected void parseWithLevel(T obj, RegistryOps<JsonElement> ops, HolderLookup.Provider access){};
+    protected void parseWithLevel(T obj, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    }
 
-    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn){};
+    ;
 
-    protected void resetWithLevel(boolean logOff){};
+    protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
+    }
 
-    protected void applyNormal(T obj) {}
+    ;
+
+    protected void resetWithLevel(boolean logOff) {
+    }
+
+    ;
+
+    protected void applyNormal(T obj) {
+    }
 
 
 }

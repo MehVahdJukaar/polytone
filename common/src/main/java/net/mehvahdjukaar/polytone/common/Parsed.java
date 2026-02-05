@@ -4,12 +4,7 @@ import com.google.gson.JsonParseException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.common.struc.VersionRange;
-import net.minecraft.SharedConstants;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,6 +41,10 @@ public class Parsed<T> {
     }
 
 
+    private static <T> Parsed<T> failure(Identifier id) {
+        return new Parsed<>(false, null, id, 0);
+    }
+
     @NotNull
     public T getResultOrPartial() {
         return value;
@@ -79,7 +78,6 @@ public class Parsed<T> {
     private static final Codec<Integer> PRIORITY_CODEC = Codec.INT.optionalFieldOf("priority", 0).codec();
 
 
-
     public static <T, J> Parsed<T> parseAlways(Decoder<T> codec, J input, DynamicOps<J> ops,
                                                Identifier id, String jsonTypeName) {
         return parseOptionalOrPartial(codec, codec, input, ops, id, jsonTypeName);
@@ -103,6 +101,7 @@ public class Parsed<T> {
                 else value = partialCodec.decode(ops, input).getOrThrow().getFirst();
             }
         } catch (Exception e) {
+            if (Polytone.CONFIGS.isLenientLoading()) return Parsed.failure(id);
             throw new JsonParseException("Failed to decode " + jsonTypeName + " from file \"" + id + ".json\": ", e);
         }
         return new Parsed<>(enabled, value, id, priority);

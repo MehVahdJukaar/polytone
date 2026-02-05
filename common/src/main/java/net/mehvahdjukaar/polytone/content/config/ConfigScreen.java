@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.config;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.components.Button;
@@ -12,15 +13,17 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ConfigScreen extends OptionsSubScreen {
     private static final Component TITLE = Component.translatable("screen.polytone.configs.title");
 
     private final Multimap<String, OptionInstance<?>> opt = MultimapBuilder.hashKeys().arrayListValues().build();
-    private final Runnable safeFunc;
+    private final Runnable saveFunc;
 
     public ConfigScreen(Screen screen, Collection<OptionHolder<?>> options, Runnable safeFunc) {
         super(screen, Minecraft.getInstance().options, TITLE);
@@ -28,12 +31,12 @@ public class ConfigScreen extends OptionsSubScreen {
             String cat = e.fileId.getNamespace();
             opt.put(cat, e.option);
         }
-        this.safeFunc = safeFunc;
+        this.saveFunc = safeFunc;
     }
 
     @Override
     public void removed() {
-        safeFunc.run();
+        saveFunc.run();
     }
 
     private void resetValues() {
@@ -64,7 +67,13 @@ public class ConfigScreen extends OptionsSubScreen {
     protected void addOptions() {
         for (var cat : opt.keySet()) {
             this.list.addHeader(Component.literal(getReadableName(cat)));
-            this.list.addSmall(opt.get(cat).toArray(new OptionInstance[0]));
+            if (cat.equals(Polytone.MOD_ID)) {
+                List<OptionInstance<?>> options = new ArrayList<>(opt.get(cat));
+                options.remove(Polytone.CONFIGS.lenientLoading.option);
+                this.list.addBig(Polytone.CONFIGS.lenientLoading.option);
+                this.list.addSmall(options.toArray(new OptionInstance[0]));
+
+            } else this.list.addSmall(opt.get(cat).toArray(new OptionInstance[0]));
         }
     }
 
