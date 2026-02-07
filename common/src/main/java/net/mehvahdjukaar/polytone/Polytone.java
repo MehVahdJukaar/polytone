@@ -115,6 +115,7 @@ public class Polytone {
         //TODO: server resource pack
         //TODO: custom block breaking particles
         //TODO: custom place particles
+        //TODO: block mobs from emitting particles. like blaze
     }
 
     public static Identifier res(String name) {

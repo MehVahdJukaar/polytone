@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ConfigsManager extends JsonPartialReloader {
 
     public final OptionHolder<Boolean> lenientLoading = OptionHolder.
-            create(new BoolConfig(Optional.of("polytone.config.lenient_errors"), false),
+            create(new BoolConfig(Optional.empty(), false),
                     Polytone.res("lenient_loading"));
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
     private final ThreadLocal<MapRegistry<OptionHolder<?>>> activeLoadConfigs = new ThreadLocal<>(); // from active packs

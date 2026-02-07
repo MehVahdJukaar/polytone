@@ -67,6 +67,8 @@ public class ConfigScreen extends OptionsSubScreen {
     protected void addOptions() {
         for (var cat : opt.keySet()) {
             this.list.addHeader(Component.literal(getReadableName(cat)));
+
+
             if (cat.equals(Polytone.MOD_ID)) {
                 List<OptionInstance<?>> options = new ArrayList<>(opt.get(cat));
                 options.remove(Polytone.CONFIGS.lenientLoading.option);

@@ -1,1 +1,2 @@
-- further improvements to the config file system. load configs can only be contained in the pack whose mcmeta is being read. For everything else they can be anywhere in any pack
+- added a config that allows polytone to attempt loading broken packs
+- added an owner() method to Entity Context expression object.

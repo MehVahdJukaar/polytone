@@ -4,9 +4,6 @@
   "toast.polytone.early_load_fail": "Polytone Early Resource Reload failed",
   "screen.polytone.configs.title": "Polytone Packs Configs",
   "screen.polytone.configs.reset": "Reset to Defaults",
-  "config.polytone.test_string": "Test String",
-  "config.polytone.test_string.tooltip": "A simple test string config",
-  "config.polytone.test_number": "Test Number",
-  "config.polytone.test_number.tooltip": "A simple test number config",
-  "config.polytone.lenient_loading": "Attempts loading packs with errors. Not guaranteed to work. Do NOT enable this if you are a pack creator."
+  "config.polytone.lenient_loading.tooltip": "Attempts loading packs with errors. Not guaranteed to work. Do NOT enable this if you are a pack creator.",
+  "config.polytone.lenient_loading": "Lenient Pack Loading"
 }

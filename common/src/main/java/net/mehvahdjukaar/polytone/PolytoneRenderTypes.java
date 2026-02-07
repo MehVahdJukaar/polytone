@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.monster.Blaze;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
