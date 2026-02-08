@@ -5,14 +5,15 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
+import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,10 +22,9 @@ import net.minecraft.world.level.storage.WritableLevelData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ClientLevel.class)
+@Mixin(value = ClientLevel.class, priority = 1100)
 public abstract class ClientLevelMixin extends Level {
 
     protected ClientLevelMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, RegistryAccess registryAccess, Holder<DimensionType> holder, boolean bl, boolean bl2, long l, int i) {
@@ -63,6 +63,7 @@ public abstract class ClientLevelMixin extends Level {
             }
         }
     }
+
     @ModifyExpressionValue(method = "addEnvironmentAttributeLayers", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/ARGB;color(III)I"))
     public int polytone$modifySkyLightSampler(int value) {
         Integer c = Polytone.COLORS.getSkyFlash();

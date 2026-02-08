@@ -55,13 +55,13 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import sereneseasons.api.season.SeasonHelper;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -308,25 +308,32 @@ public class PlatStuffImpl {
         Polytone.LOGGER.info("registered color resolver {}", colorResolver);
 
         if (colorResolver instanceof Colormap) {
-            MY_CUSTOM_RESOLVERS.add(colorResolver);
+            CURRENT_CUSTOM_RESOLVERS.add(colorResolver);
         }
     }
 
     //lags behind as multithread bs...
-    private static final Set<ColorResolver> MY_CUSTOM_RESOLVERS = new HashSet<>();
+// Must be thread-safe if registry is touched off-thread
+    private static final Set<ColorResolver> CURRENT_CUSTOM_RESOLVERS = ConcurrentHashMap.newKeySet();
+    private static final Set<ColorResolver> PREVIOUS_CUSTOM_RESOLVERS = ConcurrentHashMap.newKeySet();
 
     public static void unregisterAllCustomColorResolves() {
-        Set<ColorResolver> set = ColorResolverRegistryImpl.getAllResolvers();
-        Set<ColorResolver> newSet = new HashSet<>(set);
-        newSet.removeAll(MY_CUSTOM_RESOLVERS);
-        ColorResolverRegistryAccessor.setAllResolvers(newSet);
+        // Remove ONLY previous generation
+        if (!PREVIOUS_CUSTOM_RESOLVERS.isEmpty()) {
 
-        Set<ColorResolver> set2 = ColorResolverRegistryImpl.getCustomResolvers();
-        Set<ColorResolver> newSet2 = new HashSet<>(set2);
-        newSet2.removeAll(MY_CUSTOM_RESOLVERS);
-        ColorResolverRegistryAccessor.setCustomResolvers(newSet2);
+            Set<ColorResolver> all = new HashSet<>(ColorResolverRegistryImpl.getAllResolvers());
+            all.removeAll(PREVIOUS_CUSTOM_RESOLVERS);
+            ColorResolverRegistryAccessor.setAllResolvers(all);
 
-        MY_CUSTOM_RESOLVERS.clear();
+            Set<ColorResolver> custom = new HashSet<>(ColorResolverRegistryImpl.getCustomResolvers());
+            custom.removeAll(PREVIOUS_CUSTOM_RESOLVERS);
+            ColorResolverRegistryAccessor.setCustomResolvers(custom);
+        }
+
+        // --- generation swap ---
+        PREVIOUS_CUSTOM_RESOLVERS.clear();
+        PREVIOUS_CUSTOM_RESOLVERS.addAll(CURRENT_CUSTOM_RESOLVERS);  // current becomes previous
+        CURRENT_CUSTOM_RESOLVERS.clear();           // new frame starts empty
     }
 
     public static void registerParticleGroup(Consumer<PlatStuff.RegParticleGroup> eventConsumer) {
