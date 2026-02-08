@@ -115,6 +115,7 @@ public class Polytone {
         //TODO: server resource pack
         //TODO: custom block breaking particles
         //TODO: custom place particles
+        //TODO: block mobs from emitting particles. like blaze
     }
 
     public static Identifier res(String name) {
@@ -266,5 +267,14 @@ public class Polytone {
 
     public static void onDimChanged(Level to) {
         DIMENSION_MODIFIERS.onDimensionChanged(to.dimensionTypeRegistration(), to.registryAccess());
+    }
+
+    public static void maybeThrow(RuntimeException e) {
+        if (CONFIGS.isLenientLoading()) {
+            LOGGER.error("Pack loading error occurred. Ignoring due to lenient loading config.", e);
+        } else {
+            throw e;
+        }
+
     }
 }

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TraceableEntity;
 import org.jetbrains.annotations.Nullable;
 
 public class EntityProxy extends AbstractEntityProxy{
@@ -16,6 +17,17 @@ public class EntityProxy extends AbstractEntityProxy{
         } else {
             this.le = null;
         }
+    }
+
+    @Nullable
+    public EntityProxy owner(){
+        if (entity instanceof TraceableEntity t) {
+            var owner = t.getOwner();
+            if (owner != null) {
+                return new EntityProxy(owner);
+            }
+        }
+        return null;
     }
 
     @Override

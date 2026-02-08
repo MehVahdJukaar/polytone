@@ -7,6 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IPackMetadataExp;
 import net.mehvahdjukaar.polytone.common.expressions.impl.PackMetadataExp;
 import net.mehvahdjukaar.polytone.common.struc.VersionRange;
 import net.minecraft.SharedConstants;
@@ -14,6 +15,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.OverlayMetadataSection;
 import net.minecraft.util.TriState;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,7 +46,7 @@ public class ConditionUtils {
         return true;
     }
 
-    public static final Codec<Boolean> CODEC_SINGLE_JSON = RecordCodecBuilder.create(instance -> instance.group(
+    private static final Codec<Boolean> CODEC_SINGLE_JSON_FULL = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.optionalFieldOf("polytone_ignore", false).forGetter(b -> b),
             MC_VERSION_RANGE_CODEC.optionalFieldOf("version", true).forGetter(b -> true),
             CONFIG_MATCH_CODEC.optionalFieldOf("require_config", true).forGetter(b -> true),
@@ -52,7 +54,20 @@ public class ConditionUtils {
     ).apply(instance, (ignore, version, polyCond, modsOn) ->
             !ignore && version && polyCond && modsOn));
 
-    public static final Codec<TriState> CODEC_OVERLAY_FULL = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<Boolean> CODEC_EXPRESSION_SINGLE_JSON = PackMetadataExp.CODEC.xmap(
+            IPackMetadataExp::evaluate,
+            triState -> PackMetadataExp.TRUE);
+
+
+    public static final Codec<Boolean> CODEC_SINGLE_JSON = CodecUtils.alternatives(
+            CODEC_SINGLE_JSON_FULL, //old
+            CodecUtils.alternatives(
+                    CODEC_SINGLE_JSON_FULL,
+                    CODEC_EXPRESSION_SINGLE_JSON
+            ).fieldOf("polytone_condition").codec()
+    );
+
+     static final Codec<TriState> CODEC_OVERLAY_FULL = RecordCodecBuilder.create(instance -> instance.group(
             Codec.BOOL.optionalFieldOf("override", false).forGetter(b -> false),
             CONFIG_MATCH_CODEC.optionalFieldOf("require_config", true).forGetter(b -> true),
             MODS_ENABLED_CODEC.optionalFieldOf("require_mods", true).forGetter(b -> true)
@@ -65,7 +80,7 @@ public class ConditionUtils {
         }
     }));
 
-    public static final Codec<TriState> CODEC_EXPRESSION = PackMetadataExp.CODEC.xmap(
+    private static final Codec<TriState> CODEC_EXPRESSION_OVERLAY = PackMetadataExp.CODEC.xmap(
             exp -> {
                 boolean b = exp.evaluate();
                 return b ? TriState.TRUE : TriState.FALSE;
@@ -74,7 +89,7 @@ public class ConditionUtils {
 
     public static final Codec<TriState> CODEC_OVERLAY = Codec.withAlternative(
             CODEC_OVERLAY_FULL,
-            CODEC_EXPRESSION
+            CODEC_EXPRESSION_OVERLAY
     ).optionalFieldOf("polytone_condition", TriState.DEFAULT).codec();
 
     public static <T> Codec<Optional<T>> createConditionalCodec(final Codec<T> ownerCodec) {
