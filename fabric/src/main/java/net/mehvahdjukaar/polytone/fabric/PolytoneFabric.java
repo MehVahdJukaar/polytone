@@ -113,10 +113,10 @@ public class PolytoneFabric implements ClientModInitializer {
         var old = DebugScreenEntries.PROFILES;
         var def = old.get(DebugScreenProfile.DEFAULT);
         var newDef = new HashMap<>(def);
-        newDef.put(ParticleHitboxDebugRenderer.ID, DebugScreenEntryStatus.ALWAYS_ON);
+        newDef.put(ParticleHitboxDebugRenderer.ID, DebugScreenEntryStatus.IN_OVERLAY);
         var perf = old.get(DebugScreenProfile.PERFORMANCE);
         var newPerf = new HashMap<>(perf);
-        newPerf.put(ParticleHitboxDebugRenderer.ID, DebugScreenEntryStatus.ALWAYS_ON);
+        newPerf.put(ParticleHitboxDebugRenderer.ID, DebugScreenEntryStatus.IN_OVERLAY);
         var newProfiles = new HashMap<>(old);
         newProfiles.put(DebugScreenProfile.DEFAULT, newDef);
         newProfiles.put(DebugScreenProfile.PERFORMANCE, newPerf);

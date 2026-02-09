@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.content.config;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.components.Button;
@@ -13,10 +12,8 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class ConfigScreen extends OptionsSubScreen {
@@ -67,15 +64,7 @@ public class ConfigScreen extends OptionsSubScreen {
     protected void addOptions() {
         for (var cat : opt.keySet()) {
             this.list.addHeader(Component.literal(getReadableName(cat)));
-
-
-            if (cat.equals(Polytone.MOD_ID)) {
-                List<OptionInstance<?>> options = new ArrayList<>(opt.get(cat));
-                options.remove(Polytone.CONFIGS.lenientLoading.option);
-                this.list.addBig(Polytone.CONFIGS.lenientLoading.option);
-                this.list.addSmall(options.toArray(new OptionInstance[0]));
-
-            } else this.list.addSmall(opt.get(cat).toArray(new OptionInstance[0]));
+            this.list.addSmall(opt.get(cat).toArray(new OptionInstance[0]));
         }
     }
 

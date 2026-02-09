@@ -9,8 +9,8 @@ import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
@@ -103,7 +103,7 @@ public record Targets(List<Entry> entries) {
     }
 
     private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = CodecUtils.alternatives(
-         SimpleLocation.SIMPLE_CODEC, TagLocation.TAG_CODEC, RegexLocation.REGEX_CODEC);
+            SimpleLocation.SIMPLE_CODEC, TagLocation.TAG_CODEC, RegexLocation.REGEX_CODEC);
 
     private static final Codec<Entry> ENTRY_CODEC = Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC);
 
@@ -145,7 +145,7 @@ public record Targets(List<Entry> entries) {
             if (holder.isEmpty() && Polytone.isFutureId(id)) {
                 return List.of();
             }
-            return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
+            return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found in registry " + reg.key() + ": " + id)));
         }
 
     }

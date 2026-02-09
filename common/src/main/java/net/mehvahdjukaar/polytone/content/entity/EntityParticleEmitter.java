@@ -88,8 +88,11 @@ public record EntityParticleEmitter(
 
     public void tick(Entity entity, Matrix4fc transform) {
         if (particleType.isEmpty()) return;
-        double spawnChance = chance.evaluate(entity);
         Level level = entity.level();
+        float throttle = Polytone.CONFIGS.particlesThrottle.get();
+        if (throttle < 1 && level.random.nextFloat() > throttle) return;
+
+        double spawnChance = chance.evaluate(entity);
         if (level.random.nextFloat() < spawnChance) {
             for (int i = 0; i < count.evaluate(entity); i++) {
                 ParticleOptions po = getParticleOptions(entity);

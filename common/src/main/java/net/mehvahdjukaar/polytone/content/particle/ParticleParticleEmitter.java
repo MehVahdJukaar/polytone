@@ -73,6 +73,9 @@ public record ParticleParticleEmitter(
     @Override
     public void tick(Particle particle, Level level) {
         if (particleType.isEmpty()) return;
+        float throttle = Polytone.CONFIGS.particlesThrottle.get();
+        if (throttle < 1 && level.random.nextFloat() > throttle) return;
+
         double spawnChance = chance.evaluate(particle, level);
         if (level.random.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {

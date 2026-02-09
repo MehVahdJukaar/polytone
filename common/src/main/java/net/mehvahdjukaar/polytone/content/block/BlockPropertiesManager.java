@@ -5,13 +5,13 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
-import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.common.LegacyHelper;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.PartialReloader;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.struc.PropertiesUtils;
+import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BiomeColors;
@@ -19,8 +19,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ColorResolver;
@@ -87,19 +87,24 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         var resourceManager = sharedState.resourceManager();
         var jsons = this.getJsonsInDirectories(resourceManager);
 
+        boolean legacyParsing = Polytone.CONFIGS.legacyParsing.get();
         Map<Identifier, ArrayImage> textures = new HashMap<>();
+        Map<Identifier, Properties> ofProperties = new HashMap<>();
+        if (legacyParsing) {
+            Map<Identifier, ArrayImage> ofTextures = ArrayImage.scanDirectory(resourceManager, "optifine/colormap");
+            Map<Identifier, ArrayImage> cmTextures = ArrayImage.scanDirectory(resourceManager, "colormatic/colormap");
 
-        Map<Identifier, ArrayImage> ofTextures = ArrayImage.scanDirectory(resourceManager, "optifine/colormap");
-        Map<Identifier, ArrayImage> cmTextures = ArrayImage.scanDirectory(resourceManager, "colormatic/colormap");
+            ofProperties = PropertiesUtils.gatherProperties(resourceManager, "optifine/colormap");
+            Map<Identifier, JsonElement> ofJsons = new HashMap<>();
+            scanDirectory(resourceManager, "optifine/colormap", GSON, ofJsons);
 
-        Map<Identifier, Properties> ofProperties = PropertiesUtils.gatherProperties(resourceManager, "optifine/colormap");
-        Map<Identifier, JsonElement> ofJsons = new HashMap<>();
-        scanDirectory(resourceManager, "optifine/colormap", GSON, ofJsons);
+            for(var j : ofJsons.entrySet()){
+                ofProperties.put(j.getKey(), PropertiesUtils.jsonToProperties(j.getValue()));
+            }
 
-        ofJsons.forEach((k, v) -> ofProperties.put(k, PropertiesUtils.jsonToProperties(v)));
-
-        textures.putAll(LegacyHelper.convertPaths(ofTextures));
-        textures.putAll(LegacyHelper.convertPaths(cmTextures));
+            textures.putAll(LegacyHelper.convertPaths(ofTextures));
+            textures.putAll(LegacyHelper.convertPaths(cmTextures));
+        }
 
         Map<Identifier, ArrayImage> myTextures = this.getImagesInDirectories(resourceManager);
         textures.putAll(myTextures);

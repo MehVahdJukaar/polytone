@@ -421,6 +421,7 @@ public class LegacyHelper {
 
     public static void convertOfBlockToFluidProp(LinkedListMultimap<Identifier, Parsed<BlockPropertyModifier>> parsedModifiers,
                                                  Map<Identifier, ArrayImage> textures) {
+        if (!Polytone.CONFIGS.legacyParsing.get()) return;
 
         Map<Identifier, Parsed<BlockPropertyModifier>> fluid = new HashMap<>();
         Map<Identifier, Parsed<BlockPropertyModifier>> fog = new HashMap<>();
@@ -486,6 +487,8 @@ public class LegacyHelper {
 
     public static void convertOfBlockToDimensionProperties(LinkedListMultimap<Identifier, Parsed<BlockPropertyModifier>> parsedModifiers,
                                                            Map<Identifier, ArrayImage> textures) {
+        if (!Polytone.CONFIGS.legacyParsing.get()) return;
+
         Map<Identifier, Parsed<BlockPropertyModifier>> filtered = new HashMap<>();
         Map<Identifier, ArrayImage> filteredTextures = new HashMap<>();
         Pattern fogP = Pattern.compile("minecraft:(?:fog|fogcolor)[0-2]\\b");

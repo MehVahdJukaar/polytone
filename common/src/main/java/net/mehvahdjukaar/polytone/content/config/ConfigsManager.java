@@ -21,6 +21,7 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.util.GsonHelper;
+import org.jspecify.annotations.NonNull;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,9 +33,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 //TODO: make these per pack instead? since we load configs per pack. only issue is that for expressions these arent per pack...
 public class ConfigsManager extends JsonPartialReloader {
 
-    public final OptionHolder<Boolean> lenientLoading = OptionHolder.
-            create(new BoolConfig(Optional.empty(), false),
-                    Polytone.res("lenient_loading"));
+    public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);
+    public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", true);
+    public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", 1);
+
+    private static @NonNull OptionHolder<Boolean> builtinConfig(String id, boolean def) {
+        return OptionHolder.create(new BoolConfig(Optional.empty(), def), Polytone.res(id));
+    }
+
+    private static @NonNull OptionHolder<Float> builtinConfig(String id, float def) {
+        return OptionHolder.create(new NumberConfig(Optional.empty(), def, 0, 1, 0), Polytone.res(id));
+    }
+
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
     private final ThreadLocal<MapRegistry<OptionHolder<?>>> activeLoadConfigs = new ThreadLocal<>(); // from active packs
     private final File optionsFile;
@@ -178,6 +188,8 @@ public class ConfigsManager extends JsonPartialReloader {
 
         configs.clear();
         configs.register(lenientLoading.fileId, lenientLoading);
+        configs.register(legacyParsing.fileId, legacyParsing);
+        configs.register(particlesThrottle.fileId, particlesThrottle);
 
         Map<Identifier, PolyConfig<?>> parsed = new HashMap<>();
         //ignoring conditions here purposefully
