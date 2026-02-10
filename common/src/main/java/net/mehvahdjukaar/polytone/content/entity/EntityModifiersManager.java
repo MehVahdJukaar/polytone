@@ -67,12 +67,14 @@ public class EntityModifiersManager extends JsonPartialReloader {
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.getCameraType().isFirstPerson()) {
             LocalPlayer player = mc.player;
-            EntityModifier mod = emittersPerEntity.get(player);
-            if (spawnRecords.containsKey(player.getId())) return;
-            if (mod != null) {
-                Vec3 cameraPos = mc.gameRenderer.getMainCamera().position();
-                var particleSpawns = mod.gatherParticleSpawnsWithoutModel(player, cameraPos);
-                spawnRecords.put(player.getId(), particleSpawns);
+            if(player != null) {
+                EntityModifier mod = emittersPerEntity.get(player.getType());
+                if (mod != null) {
+                    if (spawnRecords.containsKey(player.getId())) return;
+                    Vec3 cameraPos = mc.gameRenderer.getMainCamera().position();
+                    var particleSpawns = mod.gatherParticleSpawnsWithoutModel(player, cameraPos);
+                    spawnRecords.put(player.getId(), particleSpawns);
+                }
             }
         }
 
