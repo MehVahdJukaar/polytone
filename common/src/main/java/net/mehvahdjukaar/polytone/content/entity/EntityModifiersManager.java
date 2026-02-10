@@ -5,6 +5,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -15,6 +17,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 import java.util.List;
@@ -59,17 +62,33 @@ public class EntityModifiersManager extends JsonPartialReloader {
     //client thread
     public void onTick(Level level) {
 
+        //hack for local player
+        //TODO: add hack for hand with item?
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.options.getCameraType().isFirstPerson()) {
+            LocalPlayer player = mc.player;
+            EntityModifier mod = emittersPerEntity.get(player);
+            if (spawnRecords.containsKey(player.getId())) return;
+            if (mod != null) {
+                Vec3 cameraPos = mc.gameRenderer.getMainCamera().position();
+                var particleSpawns = mod.gatherParticleSpawnsWithoutModel(player, cameraPos);
+                spawnRecords.put(player.getId(), particleSpawns);
+            }
+        }
+
         for (var entry : spawnRecords.int2ObjectEntrySet()) {
             Entity entity = level.getEntity(entry.getIntKey());
             if (entity != null) {
 
                 var value = entry.getValue();
                 for (ParticleSpawnRecord record : value) {
-                    record.emitter().tick(entity, record.transform());
+                    record.emitter().tick(entity, record.matrix());
                 }
             }
         }
         spawnRecords.clear();
+
+
     }
 
 
@@ -82,7 +101,8 @@ public class EntityModifiersManager extends JsonPartialReloader {
             int id = ((IRenderStateWithId) renderState).polytone$getId();
             if (spawnRecords.containsKey(id)) return;
 
-            var particleSpawns = mod.gatherParticleSpawns(renderer, poseStack, renderState, cameraState);
+            var particleSpawns = mod.gatherParticleSpawns(renderer, poseStack,
+                    renderState, cameraState.pos);
 
             if (!particleSpawns.isEmpty()) {
                 spawnRecords.put(id, particleSpawns);

@@ -13,10 +13,10 @@ public class SeparateTransformsModel extends BlockModel {
             JsonObject perspectiveData = GsonHelper.getAsJsonObject(jsonobject, "perspectives");
 
             Map<ItemDisplayContext, BlockModel> perspectives = new HashMap<>();
-            for (ItemDisplayContext transform : ItemDisplayContext.values()) {
-                if (perspectiveData.has(transform.getSerializedName())) {
-                    BlockModel perspectiveModel = context.deserialize(GsonHelper.getAsJsonObject(perspectiveData, transform.getSerializedName()), BlockModel.class);
-                    perspectives.put(transform, perspectiveModel);
+            for (ItemDisplayContext matrix : ItemDisplayContext.values()) {
+                if (perspectiveData.has(matrix.getSerializedName())) {
+                    BlockModel perspectiveModel = context.deserialize(GsonHelper.getAsJsonObject(perspectiveData, matrix.getSerializedName()), BlockModel.class);
+                    perspectives.put(matrix, perspectiveModel);
                 }
             }
 

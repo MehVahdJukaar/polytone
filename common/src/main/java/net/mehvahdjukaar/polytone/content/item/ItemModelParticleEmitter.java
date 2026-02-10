@@ -11,10 +11,10 @@ import org.joml.Quaternionf;
 public record ItemModelParticleEmitter(ParticleContextExpression exp) {
 
     /**
-     * Converts the top of the PoseStack (in view space) into world-space by applying the camera's transform.
+     * Converts the top of the PoseStack (in view space) into world-space by applying the camera's matrix.
      *
      * @param poseStack The current PoseStack, in view space.
-     * @return A Matrix4f representing the model's transform in world space.
+     * @return A Matrix4f representing the model's matrix in world space.
      */
     public static Matrix4f getWorldMatrixFromModelMatrix(PoseStack poseStack) {
         Matrix4f modelView = new Matrix4f(poseStack.last().pose());
@@ -30,7 +30,7 @@ public record ItemModelParticleEmitter(ParticleContextExpression exp) {
                 .rotate(camRot)
                 .translate((float) camPos.x, (float) camPos.y, (float) camPos.z);
 
-        // Apply the inverse view transform to get world space
+        // Apply the inverse view matrix to get world space
         return cameraMatrix.mul(modelView);
     }
 }

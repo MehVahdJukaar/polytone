@@ -1,2 +1,2 @@
-- added a config that allows polytone to attempt loading broken packs
-- added an owner() method to Entity Context expression object.
+- fixed occlusion cache not being refreshed
+- entity emitters for the player will also emit emitters with no bones specified also when the player is in first person (and hence no model is rendered) 

@@ -62,7 +62,7 @@ public record EntityParticleEmitter(
 
     public static final Codec<EntityParticleEmitter> CODEC = RecordCodecBuilder.create(
             i -> BiggerCodecs.group(i,
-                    BONE_CODEC.fieldOf("bone").forGetter(EntityParticleEmitter::bone),
+                    BONE_CODEC.optionalFieldOf("bone",List.of()).forGetter(EntityParticleEmitter::bone),
                     CodecUtils.predicate(Identifier.CODEC).optionalFieldOf("target_texture").forGetter(EntityParticleEmitter::textureId),
                     CodecUtils.predicate(Codec.INT).optionalFieldOf("target_etf_variant").forGetter(EntityParticleEmitter::etfVariant),
                     CodecUtils.predicate(Codec.INT).optionalFieldOf("target_emf_variant").forGetter(EntityParticleEmitter::emfVariant),
@@ -107,7 +107,7 @@ public record EntityParticleEmitter(
                         (float) dy.evaluate(entity),
                         (float) dz.evaluate(entity)
                 );
-                // Apply the full transform to position
+                // Apply the full matrix to position
                 origin.mulPosition(transform);
 
                 // Apply rotation/scale only to velocity (no translation)
@@ -151,14 +151,26 @@ public record EntityParticleEmitter(
         return po;
     }
 
-
     @Nullable
-    public <S extends LivingEntityRenderState> PoseStack getModelSpawnPose(LivingEntityRenderer<?, S, ?> renderer, S state) {
-        //find bone
-        if (bone.isEmpty()) {
-            //no bone found, cancel spawning
+    public PoseStack getSpawnPosWithoutModel(Entity entity, Vec3 cameraPos){
+        //check distance
+        double distSq = cameraPos.distanceToSqr(entity.getX(), entity.getY(), entity.getZ());
+        if (distSq > maxDistance * maxDistance) {
             return null;
         }
+
+        //find bone
+        if (bone.isEmpty()) {
+            //no bone is given, spawn at entity position
+            return new PoseStack();
+        }
+        return null;
+    }
+
+
+    @Nullable
+    public <S extends LivingEntityRenderState> PoseStack getModelSpawnPose(LivingEntityRenderer<?, S, ?> renderer,
+                                                                           S state, Vec3 cameraPos) {
 
         if (textureId.isPresent() && !textureId.get().test(renderer.getTextureLocation(state))) {
             return null;
@@ -176,11 +188,17 @@ public record EntityParticleEmitter(
         }
 
         //check distance
-        Vec3 pos = Minecraft.getInstance().gameRenderer.getMainCamera().position();
-        double distSq = pos.distanceToSqr(state.x, state.y, state.z);
+        double distSq = cameraPos.distanceToSqr(state.x, state.y, state.z);
         if (distSq > maxDistance * maxDistance) {
             return null;
         }
+
+        //find bone
+        if (bone.isEmpty()) {
+            //no bone is given, spawn at entity position
+            return new PoseStack();
+        }
+
 
         ModelPart part = renderer.getModel().root();
         List<ModelPart> parts = new ArrayList<>();

@@ -7,7 +7,8 @@ import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -26,21 +27,32 @@ public record EntityModifier(List<EntityParticleEmitter> emitters,
     ).apply(i, EntityModifier::new));
 
 
-    public <S extends LivingEntityRenderState> List<ParticleSpawnRecord> gatherParticleSpawns(
-            LivingEntityRenderer<?, S, ?> renderer, PoseStack poseStack, S renderState, CameraRenderState cameraState) {
-
+    public List<ParticleSpawnRecord> gatherParticleSpawnsWithoutModel(
+            Entity entity, Vec3 cameraPos) {
         List<ParticleSpawnRecord> records = new ArrayList<>();
         for (EntityParticleEmitter emitter : emitters) {
-            PoseStack spawn = emitter.getModelSpawnPose(renderer, renderState);
+            PoseStack spawn = emitter.getSpawnPosWithoutModel(entity, cameraPos);
+            if (spawn != null) {
+                spawn.translate(entity.getX(), entity.getY(), entity.getZ());
+                records.add(new ParticleSpawnRecord(spawn.last().pose(), emitter));
+            }
+        }
+        return records;
+    }
+
+    public <S extends LivingEntityRenderState> List<ParticleSpawnRecord> gatherParticleSpawns(
+            LivingEntityRenderer<?, S, ?> renderer, PoseStack poseStack, S renderState, Vec3 cameraPos) {
+        List<ParticleSpawnRecord> records = new ArrayList<>();
+        Vector3f camP = cameraPos.toVector3f();
+        for (EntityParticleEmitter emitter : emitters) {
+            PoseStack spawn = emitter.getModelSpawnPose(renderer, renderState, cameraPos);
             if (spawn != null) {
                 Matrix4f cameraToEntityArm = new Matrix4f(poseStack.last().pose());
                 cameraToEntityArm.mul(spawn.last().pose());
 
-// Convert from camera space to world space
-                Vector3f cameraWorldPos = cameraState.pos.toVector3f();
                 Matrix4f worldTransform = new Matrix4f()
-                        .translation(cameraWorldPos) // moves from camera space to world space
-                        .mul(cameraToEntityArm);     // apply emitter transform in camera space
+                        .translation(camP) // moves from camera space to world space
+                        .mul(cameraToEntityArm);     // apply emitter matrix in camera space
 
 
                 records.add(new ParticleSpawnRecord(worldTransform, emitter));
@@ -48,6 +60,7 @@ public record EntityModifier(List<EntityParticleEmitter> emitters,
         }
         return records;
     }
+
 
     public EntityModifier merge(EntityModifier entityModifier) {
         return new EntityModifier(
