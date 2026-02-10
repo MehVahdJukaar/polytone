@@ -39,8 +39,8 @@ public class VariantDeserializerMixin {
         Quaternionf quaternionf = (new Quaternionf())
                 .rotateYXZ(-yRot * Mth.DEG_TO_RAD,
                         -xRot * Mth.DEG_TO_RAD, -zRot * Mth.DEG_TO_RAD);
-        mat.translate(xOffset /16f, yOffset /16f, zOffset /16f);
         mat.rotate(quaternionf);
+        mat.translate(xOffset / 16f, yOffset / 16f, zOffset / 16f);
         return new Transformation(mat);
     }
 
