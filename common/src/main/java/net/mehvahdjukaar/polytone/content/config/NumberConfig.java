@@ -8,6 +8,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.util.ExtraCodecs;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,26 +16,34 @@ import java.util.function.Function;
 
 public class NumberConfig implements OptionInstance.SliderableValueSet<Float>, PolyConfig<Float> {
 
-    public static final Codec<NumberConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<NumberConfig> CODEC = RecordCodecBuilder.<NumberConfig>create(instance -> instance.group(
             Codec.STRING.optionalFieldOf("value_translation").forGetter(c -> Optional.ofNullable(c.valueTranslationKey)),
+            Codec.unboundedMap(Codec.STRING, Codec.FLOAT).optionalFieldOf("presets", Map.of()).forGetter(c -> c.presets),
             Codec.FLOAT.fieldOf("default_value").forGetter(c -> c.defaultValue),
             Codec.FLOAT.optionalFieldOf("min", 0f).forGetter(c -> c.min),
             Codec.FLOAT.optionalFieldOf("max", 1f).forGetter(c -> c.max),
             ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("step", 0.1f).forGetter(c -> c.step)
-    ).apply(instance, NumberConfig::new));
+    ).apply(instance, NumberConfig::new)).validate(o -> PolyConfig.validatePresets(o, o.presets));
 
     private final @Nullable String valueTranslationKey;
+    private final Map<String, Float> presets;
     private final float defaultValue;
     private final float step;
     private final float min;
     private final float max;
 
-    protected NumberConfig(Optional<String> valueTranslation, float defaultValue, float min, float max, float step) {
+    protected NumberConfig(Optional<String> valueTranslation, Map<String, Float> presets, float defaultValue, float min, float max, float step) {
         this.defaultValue = defaultValue;
+        this.presets = presets;
         this.step = step;
         this.min = min;
         this.max = max;
         this.valueTranslationKey = valueTranslation.orElse(null);
+    }
+
+    @Override
+    public Map<String, Float> getPresets() {
+        return presets;
     }
 
     @Override

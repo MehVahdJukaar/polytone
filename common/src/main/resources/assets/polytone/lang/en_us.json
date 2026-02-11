@@ -1,4 +1,6 @@
 {
+  "toast.polytone.lenient_load": "Pack loaded in lenient mode",
+  "toast.polytone.lenient_load_desc": "Possible errors were ignored",
   "toast.polytone.load_fail": "Pack has errors. Check logs/polytone.log",
   "toast.polytone.lazy_load_fail": "Polytone Late Resource Reload failed",
   "toast.polytone.early_load_fail": "Polytone Early Resource Reload failed",

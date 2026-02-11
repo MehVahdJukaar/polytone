@@ -10,8 +10,8 @@ import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -20,18 +20,26 @@ import java.util.function.Supplier;
 
 public class BoolConfig implements OptionInstance.CycleableValueSet<Boolean>, PolyConfig<Boolean> {
 
-    public static final Codec<BoolConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<BoolConfig> CODEC = RecordCodecBuilder.<BoolConfig>create(instance -> instance.group(
             Codec.STRING.optionalFieldOf("value_translation").forGetter(c -> Optional.ofNullable(c.valueTranslationKey)),
+            Codec.unboundedMap(Codec.STRING, Codec.BOOL).optionalFieldOf("presets", Map.of()).forGetter(c -> c.presets),
             Codec.BOOL.fieldOf("default_value").forGetter(c -> c.defaultValue)
-    ).apply(instance, BoolConfig::new));
+    ).apply(instance, BoolConfig::new)).validate(o -> PolyConfig.validatePresets(o, o.presets));;
 
     private static final List<Boolean> VALUES = ImmutableList.of(Boolean.TRUE, Boolean.FALSE);
     private final @Nullable String valueTranslationKey;
+    private final Map<String, Boolean> presets;
     private final boolean defaultValue;
 
-    protected BoolConfig(Optional<String> valueTranslation, boolean defaultValue) {
+    protected BoolConfig(Optional<String> valueTranslation, Map<String, Boolean> presets, boolean defaultValue) {
         this.defaultValue = defaultValue;
+        this.presets = presets;
         this.valueTranslationKey = valueTranslation.orElse(null);
+    }
+
+    @Override
+    public Map<String, Boolean> getPresets() {
+        return presets;
     }
 
     @Override

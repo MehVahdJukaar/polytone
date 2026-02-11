@@ -10,24 +10,33 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static net.minecraft.client.Options.genericValueLabel;
 
 public class ConfigScreen extends OptionsSubScreen {
     private static final Component TITLE = Component.translatable("screen.polytone.configs.title");
 
-    private final Multimap<String, OptionInstance<?>> opt = MultimapBuilder.hashKeys().arrayListValues().build();
+    private final Multimap<String, OptionInstance<?>> optionsPerCategory = MultimapBuilder.hashKeys().arrayListValues().build();
     private final Runnable saveFunc;
 
     public ConfigScreen(Screen screen, Collection<OptionHolder<?>> options, Runnable safeFunc) {
         super(screen, Minecraft.getInstance().options, TITLE);
         for (OptionHolder<?> e : options) {
             String cat = e.fileId.getNamespace();
-            opt.put(cat, e.option);
+            optionsPerCategory.put(cat, e.option);
         }
+        this.saveFunc = safeFunc;
+    }
+
+    public ConfigScreen(Screen scree, Multimap<String, OptionInstance<?>> options, Runnable safeFunc) {
+        super(scree, Minecraft.getInstance().options, TITLE);
+        this.optionsPerCategory.putAll(options);
         this.saveFunc = safeFunc;
     }
 
@@ -37,7 +46,7 @@ public class ConfigScreen extends OptionsSubScreen {
     }
 
     private void resetValues() {
-        for (var entry : opt.asMap().entrySet()) {
+        for (var entry : optionsPerCategory.asMap().entrySet()) {
             for (var option : entry.getValue()) {
                 resetOptionValue(option);
             }
@@ -62,10 +71,65 @@ public class ConfigScreen extends OptionsSubScreen {
 
     @Override
     protected void addOptions() {
-        for (var cat : opt.keySet()) {
-            this.list.addHeader(Component.literal(getReadableName(cat)));
-            this.list.addSmall(opt.get(cat).toArray(new OptionInstance[0]));
+        for (var modId : optionsPerCategory.keySet()) {
+            this.list.addHeader(Component.literal(getReadableName(modId)));
+            Collection<OptionInstance<?>> options = optionsPerCategory.get(modId);
+            OptionInstance<?> presetOpt = makePresetOpt(options, modId);
+            if (presetOpt != null) this.list.addBig(presetOpt);
+            this.list.addSmall(options.toArray(new OptionInstance[0]));
         }
+    }
+
+    //ugliest code ever
+    @Nullable
+    private OptionInstance<?> makePresetOpt(Collection<OptionInstance<?>> options, String modId) {
+        var known = LAST_KNOWN_PRESET_WIDGETS.get(modId);
+        if (known != null) return known;
+
+        Map<String, Runnable> presetActions = new HashMap<>();
+        for (OptionInstance<?> option : options) {
+            if (option.values() instanceof PolyConfig<?> c) {
+                addPresetActions(presetActions, option);
+            }
+        }
+        if (presetActions.isEmpty()) return null;
+
+        StringConfig valueSet = new StringConfig(Optional.empty(), Map.of(), "none",
+                new ArrayList<>(presetActions.keySet()));
+
+        Identifier id = Identifier.fromNamespaceAndPath(modId, "presets");
+        var opt = new OptionInstance<>(id.toLanguageKey(),
+                OptionInstance.cachedConstantTooltip(
+                        Component.translatable(id.withSuffix(".tooltip").toLanguageKey())),
+                (component, value) -> genericValueLabel(component,
+                        Component.translatable(id.withSuffix("." + value).toLanguageKey())),
+                valueSet,
+                valueSet.codec(), valueSet.getDefaultValue(), (v) -> {
+            presetActions.get(v).run();
+            //mega hack. TODO: do better!
+            Minecraft.getInstance().setScreen(new ConfigScreen(this.lastScreen, optionsPerCategory, saveFunc));
+        }
+        );
+        LAST_KNOWN_PRESET_WIDGETS.put(modId, opt);
+        return opt;
+    }
+
+    private <T> void addPresetActions(Map<String, Runnable> presets, OptionInstance<T> option) {
+        if (option.values() instanceof PolyConfig<T> c) {
+            for (var entry : c.getPresets().entrySet()) {
+                Runnable setAction = () -> option.set(entry.getValue());
+                presets.merge(entry.getKey(), setAction, (a, b) -> () -> {
+                    a.run();
+                    b.run();
+                });
+            }
+        }
+    }
+
+    private static final Map<String, OptionInstance<String>> LAST_KNOWN_PRESET_WIDGETS = new HashMap<>();
+
+    public static void clearPresetCache() {
+        LAST_KNOWN_PRESET_WIDGETS.clear();
     }
 
     public static String getReadableName(String name) {

@@ -38,11 +38,11 @@ public class ConfigsManager extends JsonPartialReloader {
     public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", 1);
 
     private static @NonNull OptionHolder<Boolean> builtinConfig(String id, boolean def) {
-        return OptionHolder.create(new BoolConfig(Optional.empty(), def), Polytone.res(id));
+        return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), def), Polytone.res(id));
     }
 
     private static @NonNull OptionHolder<Float> builtinConfig(String id, float def) {
-        return OptionHolder.create(new NumberConfig(Optional.empty(), def, 0, 1, 0), Polytone.res(id));
+        return OptionHolder.create(new NumberConfig(Optional.empty(), Map.of(), def, 0, 1, 0), Polytone.res(id));
     }
 
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
@@ -184,6 +184,7 @@ public class ConfigsManager extends JsonPartialReloader {
 
     @Override
     protected void applyNormal(Map<Identifier, JsonElement> obj) {
+        ConfigScreen.clearPresetCache();
         saveConfigsToDisk();
 
         configs.clear();

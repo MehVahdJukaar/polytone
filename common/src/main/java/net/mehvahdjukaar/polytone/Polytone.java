@@ -129,7 +129,7 @@ public class Polytone {
         ExpTicker.onTick(level);
         ENTITY_MODIFIERS.onTick(level);
     }
-
+    public static final SystemToast.SystemToastId LENIENT_LOAD_WARN = new SystemToast.SystemToastId(1500);
     public static void onTagsReceived(HolderLookup.Provider registryAccess) {
         try {
             if (isDevEnv) {
@@ -137,6 +137,13 @@ public class Polytone {
             }//always clear as fabric fires tag loaded even on reload command
             COMPOUND_RELOADER.applyWithLevel(registryAccess, false);
             BiomeKeysCache.clear();
+
+            if (CONFIGS.lenientLoading.get()){
+                ToastManager toastComponent = Minecraft.getInstance().getToastManager();
+                SystemToast.addOrUpdate(toastComponent,LENIENT_LOAD_WARN,
+                        Component.translatable("toast.polytone.lenient_load"),
+                        Component.translatable("toast.polytone.lenient_load_desc"));
+            }
 
         } catch (RuntimeException e) {
             Polytone.LOGGER.error("Failed to apply some Polytone modifiers on world load", e);
