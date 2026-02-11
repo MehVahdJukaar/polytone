@@ -7,6 +7,8 @@ import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.CloudRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -67,7 +69,7 @@ public class EntityModifiersManager extends JsonPartialReloader {
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.getCameraType().isFirstPerson()) {
             LocalPlayer player = mc.player;
-            if(player != null) {
+            if (player != null) {
                 EntityModifier mod = emittersPerEntity.get(player.getType());
                 if (mod != null) {
                     if (spawnRecords.containsKey(player.getId())) return;

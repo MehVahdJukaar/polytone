@@ -1,2 +1,1 @@
-- fixed occlusion cache not being refreshed
-- entity emitters for the player will also emit emitters with no bones specified also when the player is in first person (and hence no model is rendered) 
+- fixed dimension attributes not allowing non constant values
