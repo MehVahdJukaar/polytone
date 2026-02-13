@@ -1,11 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,10 +20,7 @@ public class ModelManagerMixin {
             Polytone.onEarlyPackLoad(resourceManager);
         } catch (Exception e) {
             Polytone.LOGGER.error("Polytone: failed to process early reload", e);
-            ToastManager toastComponent = Minecraft.getInstance().getToastManager();
-            SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
-                    Component.translatable("toast.polytone.early_load_fail"),
-                    Component.translatable("toast.polytone.load_fail"));
+            Polytone.displayEarlyReloadFailedToast();
         }
 
     }

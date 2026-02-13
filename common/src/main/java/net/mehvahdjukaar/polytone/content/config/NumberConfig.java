@@ -14,46 +14,25 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
-public class NumberConfig implements OptionInstance.SliderableValueSet<Float>, PolyConfig<Float> {
+public class NumberConfig extends PolyConfig<Float> implements OptionInstance.SliderableValueSet<Float> {
 
-    public static final Codec<NumberConfig> CODEC = RecordCodecBuilder.<NumberConfig>create(instance -> instance.group(
-            Codec.STRING.optionalFieldOf("value_translation").forGetter(c -> Optional.ofNullable(c.valueTranslationKey)),
-            Codec.unboundedMap(Codec.STRING, Codec.FLOAT).optionalFieldOf("presets", Map.of()).forGetter(c -> c.presets),
-            Codec.FLOAT.fieldOf("default_value").forGetter(c -> c.defaultValue),
-            Codec.FLOAT.optionalFieldOf("min", 0f).forGetter(c -> c.min),
-            Codec.FLOAT.optionalFieldOf("max", 1f).forGetter(c -> c.max),
-            ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("step", 0.1f).forGetter(c -> c.step)
-    ).apply(instance, NumberConfig::new)).validate(o -> PolyConfig.validatePresets(o, o.presets));
+    public static final Codec<NumberConfig> CODEC = RecordCodecBuilder.<NumberConfig>create(instance ->
+            commonFields(instance, Codec.FLOAT)
+                    .and(instance.group(
+                            Codec.FLOAT.optionalFieldOf("min", 0f).forGetter(c -> c.min),
+                            Codec.FLOAT.optionalFieldOf("max", 1f).forGetter(c -> c.max),
+                            ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("step", 0.1f).forGetter(c -> c.step)
+                    )).apply(instance, NumberConfig::new)).validate(PolyConfig::validatePresets);
 
-    private final @Nullable String valueTranslationKey;
-    private final Map<String, Float> presets;
-    private final float defaultValue;
     private final float step;
     private final float min;
     private final float max;
 
-    protected NumberConfig(Optional<String> valueTranslation, Map<String, Float> presets, float defaultValue, float min, float max, float step) {
-        this.defaultValue = defaultValue;
-        this.presets = presets;
+    protected NumberConfig(Optional<String> valueTranslation, Map<String, Float> presets, int order, float defaultValue, float min, float max, float step) {
+        super(valueTranslation, presets, order, defaultValue);
         this.step = step;
         this.min = min;
         this.max = max;
-        this.valueTranslationKey = valueTranslation.orElse(null);
-    }
-
-    @Override
-    public Map<String, Float> getPresets() {
-        return presets;
-    }
-
-    @Override
-    public @Nullable String getValueTranslationKey() {
-        return valueTranslationKey;
-    }
-
-    @Override
-    public Float getDefaultValue() {
-        return defaultValue;
     }
 
     @Override

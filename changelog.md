@@ -1,1 +1,1 @@
-- fixed dimension attributes not allowing non constant values
+- fixed an issue with configs

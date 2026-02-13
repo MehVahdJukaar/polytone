@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2fStack;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -157,6 +158,11 @@ public class PolytoneForge {
         @Override
         public ResourceKey<CreativeModeTab> getTab() {
             return event.getTabKey();
+        }
+
+        @Override
+        public Collection<ItemStack> getAllItems() {
+            return event.getParentEntries();
         }
 
         @Override

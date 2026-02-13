@@ -129,7 +129,7 @@ public class Polytone {
         ExpTicker.onTick(level);
         ENTITY_MODIFIERS.onTick(level);
     }
-    public static final SystemToast.SystemToastId LENIENT_LOAD_WARN = new SystemToast.SystemToastId(1500);
+
     public static void onTagsReceived(HolderLookup.Provider registryAccess) {
         try {
             if (isDevEnv) {
@@ -138,23 +138,17 @@ public class Polytone {
             COMPOUND_RELOADER.applyWithLevel(registryAccess, false);
             BiomeKeysCache.clear();
 
-            if (CONFIGS.lenientLoading.get()){
-                ToastManager toastComponent = Minecraft.getInstance().getToastManager();
-                SystemToast.addOrUpdate(toastComponent,LENIENT_LOAD_WARN,
-                        Component.translatable("toast.polytone.lenient_load"),
-                        Component.translatable("toast.polytone.lenient_load_desc"));
+            if (CONFIGS.lenientLoading.get()) {
+                displayLenientLoadToast();
             }
 
         } catch (RuntimeException e) {
             Polytone.LOGGER.error("Failed to apply some Polytone modifiers on world load", e);
-
-            ToastManager toastComponent = Minecraft.getInstance().getToastManager();
-            SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
-                    Component.translatable("toast.polytone.lazy_load_fail"),
-                    Component.translatable("toast.polytone.load_fail"));
+            displayLateReloadFailedToast();
         }
 
     }
+
 
     public static void onLogOut() {
         COMPOUND_RELOADER.resetWithLevel(true);
@@ -282,6 +276,29 @@ public class Polytone {
         } else {
             throw e;
         }
-
     }
+
+    public static final SystemToast.SystemToastId LENIENT_LOAD_WARN = new SystemToast.SystemToastId(1500);
+
+    public static void displayLenientLoadToast() {
+        ToastManager toastComponent = Minecraft.getInstance().getToastManager();
+        SystemToast.addOrUpdate(toastComponent, LENIENT_LOAD_WARN,
+                Component.translatable("toast.polytone.lenient_load"),
+                Component.translatable("toast.polytone.lenient_load_desc"));
+    }
+
+    public static void displayEarlyReloadFailedToast() {
+        ToastManager toastComponent = Minecraft.getInstance().getToastManager();
+        SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
+                Component.translatable("toast.polytone.early_load_fail"),
+                Component.translatable("toast.polytone.load_fail"));
+    }
+
+    public static void displayLateReloadFailedToast() {
+        ToastManager toastComponent = Minecraft.getInstance().getToastManager();
+        SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
+                Component.translatable("toast.polytone.lazy_load_fail"),
+                Component.translatable("toast.polytone.load_fail"));
+    }
+
 }

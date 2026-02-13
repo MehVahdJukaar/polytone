@@ -5,13 +5,15 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.OptionInstance;
+import net.minecraft.client.Options;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static net.minecraft.client.Options.genericValueLabel;
 
 public class OptionHolder<T> {
 
@@ -47,24 +49,32 @@ public class OptionHolder<T> {
         }
     }
 
+    public boolean wasUpdated() {
+        return updated.get();
+    }
+
     public boolean checkAndClearUpdated() {
         return updated.getAndSet(false);
     }
 
     public static <T> OptionHolder<T> create(PolyConfig<T> config, Identifier id) {
-        String valueTranslationKey = config.getValueTranslationKey();
         AtomicBoolean updated = new AtomicBoolean(false);
+
+        OptionInstance.CaptionBasedToString<T> toStr = (name, value) -> {
+            Optional<String> valueTranslationKey = config.getValueTranslationKey();
+
+            MutableComponent valueName = valueTranslationKey.map(s -> Component.translatable(s, value))
+                    .orElseGet(() -> Component.literal(value + ""));
+            if (updated.get()) valueName.withStyle(ChatFormatting.AQUA);
+            return Options.genericValueLabel(name, valueName);
+        };
+
         var opt = new OptionInstance<>(id.toLanguageKey("config"),
-                OptionInstance.cachedConstantTooltip(
-                        Component.translatable(id.toLanguageKey("config", "tooltip"))),
-                (component, value) -> genericValueLabel(component,
-                        valueTranslationKey == null ? Component.literal(value + "") :
-                                Component.translatable(valueTranslationKey, value)),
-                config,
-                config.codec(), config.getDefaultValue(), (v) -> {
-            updated.set(true);
-        }
+                OptionInstance.cachedConstantTooltip(Component.translatable(id.toLanguageKey("config", "tooltip"))),
+                toStr, config,
+                config.codec(), config.getDefaultValue(), (v) -> updated.set(true)
         );
         return new OptionHolder<>(opt, id, updated);
     }
+
 }

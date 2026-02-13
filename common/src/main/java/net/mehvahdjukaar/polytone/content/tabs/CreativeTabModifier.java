@@ -12,8 +12,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 
@@ -40,29 +40,29 @@ public record CreativeTabModifier(
         Targets targets) {
 
     public static final Codec<CreativeTabModifier> CODEC =
-                    RecordCodecBuilder.<CreativeTabModifier>create(i -> i.group(
+            RecordCodecBuilder.<CreativeTabModifier>create(i -> i.group(
                             CodecUtils.ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
-                    Codec.BOOL.optionalFieldOf("search_bar").forGetter(CreativeTabModifier::search), //unused
-                    Codec.INT.optionalFieldOf("search_bar_width").forGetter(CreativeTabModifier::searchWidth),
-                    Codec.BOOL.optionalFieldOf("can_scroll").forGetter(CreativeTabModifier::canScroll),
-                    Codec.BOOL.optionalFieldOf("show_title").forGetter(CreativeTabModifier::showTitle),
-                    ComponentSerialization.CODEC.optionalFieldOf("name").forGetter(CreativeTabModifier::name),
-                    Identifier.CODEC.optionalFieldOf("background").forGetter(CreativeTabModifier::backGroundLocation),
-                    Identifier.CODEC.optionalFieldOf("tabs_image").forGetter(CreativeTabModifier::tabsImage),
-                    Identifier.CODEC.listOf().optionalFieldOf("before_tabs").forGetter(CreativeTabModifier::beforeTabs),
-                    Identifier.CODEC.listOf().optionalFieldOf("after_tabs").forGetter(CreativeTabModifier::afterTabs),
-                    ItemPredicate.CODEC.listOf().optionalFieldOf("removals", List.of()).forGetter(CreativeTabModifier::removals),
-                    ItemAddition.CODEC.listOf().optionalFieldOf("additions", List.of()).forGetter(CreativeTabModifier::additions),
-                    Codec.BOOL.optionalFieldOf("create_new", false).forGetter(CreativeTabModifier::registerTab),
-                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)
-            ).apply(i, CreativeTabModifier::new))
-            .validate(
-                    m -> {
-                        if (m.registerTab && (!m.removals.isEmpty() || m.targets != Targets.EMPTY)) {
-                            return DataResult.error(() -> "Modifiers that register new creative tabs cannot have item removals or target existing tabs.");
-                        }
-                        return DataResult.success(m);
-                    });
+                            Codec.BOOL.optionalFieldOf("search_bar").forGetter(CreativeTabModifier::search), //unused
+                            Codec.INT.optionalFieldOf("search_bar_width").forGetter(CreativeTabModifier::searchWidth),
+                            Codec.BOOL.optionalFieldOf("can_scroll").forGetter(CreativeTabModifier::canScroll),
+                            Codec.BOOL.optionalFieldOf("show_title").forGetter(CreativeTabModifier::showTitle),
+                            ComponentSerialization.CODEC.optionalFieldOf("name").forGetter(CreativeTabModifier::name),
+                            Identifier.CODEC.optionalFieldOf("background").forGetter(CreativeTabModifier::backGroundLocation),
+                            Identifier.CODEC.optionalFieldOf("tabs_image").forGetter(CreativeTabModifier::tabsImage),
+                            Identifier.CODEC.listOf().optionalFieldOf("before_tabs").forGetter(CreativeTabModifier::beforeTabs),
+                            Identifier.CODEC.listOf().optionalFieldOf("after_tabs").forGetter(CreativeTabModifier::afterTabs),
+                            ItemPredicate.CODEC.listOf().optionalFieldOf("removals", List.of()).forGetter(CreativeTabModifier::removals),
+                            ItemAddition.CODEC.listOf().optionalFieldOf("additions", List.of()).forGetter(CreativeTabModifier::additions),
+                            Codec.BOOL.optionalFieldOf("create_new", false).forGetter(CreativeTabModifier::registerTab),
+                            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(CreativeTabModifier::targets)
+                    ).apply(i, CreativeTabModifier::new))
+                    .validate(
+                            m -> {
+                                if (m.registerTab && (!m.removals.isEmpty() || m.targets != Targets.EMPTY)) {
+                                    return DataResult.error(() -> "Modifiers that register new creative tabs cannot have item removals or target existing tabs.");
+                                }
+                                return DataResult.success(m);
+                            });
 
 
     public CreativeTabModifier merge(CreativeTabModifier newMod) {
@@ -89,6 +89,7 @@ public record CreativeTabModifier(
             event.removeItems(v);
         }
 
+        outer:
         for (var v : additions) {
             List<ItemStack> stacks = v.items().get();
             if (stacks == null) continue;
@@ -102,6 +103,15 @@ public record CreativeTabModifier(
                 }
                 stacks = newList;
             }
+            //verify the tab doesnt contain any of the additions
+            for (var s : stacks) {
+                if (event.getAllItems().contains(s)) {
+                    Polytone.LOGGER.error("Attempted to add item {} to creative tab {} but it already contains it! This likely means you didnt add an item remover for said item. Pack load failed.", s, event.getTab());
+                    Polytone.displayLateReloadFailedToast();
+                    break outer;
+                }
+            }
+
             if (v.before()) {
                 event.addBefore(v.predicate(), stacks.toArray(ItemStack[]::new));
             } else {
@@ -111,6 +121,7 @@ public record CreativeTabModifier(
 
         return applyAttributes(event.getTab());
     }
+
 
     public CreativeTabModifier applyAttributes(ResourceKey<CreativeModeTab> key) {
         Optional<Holder.Reference<CreativeModeTab>> tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(key);

@@ -22,19 +22,19 @@ import static net.minecraft.client.Options.genericValueLabel;
 public class ConfigScreen extends OptionsSubScreen {
     private static final Component TITLE = Component.translatable("screen.polytone.configs.title");
 
-    private final Multimap<String, OptionInstance<?>> optionsPerCategory = MultimapBuilder.hashKeys().arrayListValues().build();
+    private final Multimap<String, OptionHolder<?>> optionsPerCategory = MultimapBuilder.hashKeys().arrayListValues().build();
     private final Runnable saveFunc;
 
     public ConfigScreen(Screen screen, Collection<OptionHolder<?>> options, Runnable safeFunc) {
         super(screen, Minecraft.getInstance().options, TITLE);
         for (OptionHolder<?> e : options) {
             String cat = e.fileId.getNamespace();
-            optionsPerCategory.put(cat, e.option);
+            optionsPerCategory.put(cat, e);
         }
         this.saveFunc = safeFunc;
     }
 
-    public ConfigScreen(Screen scree, Multimap<String, OptionInstance<?>> options, Runnable safeFunc) {
+    public ConfigScreen(Screen scree, Multimap<String, OptionHolder<?>> options, Runnable safeFunc) {
         super(scree, Minecraft.getInstance().options, TITLE);
         this.optionsPerCategory.putAll(options);
         this.saveFunc = safeFunc;
@@ -48,7 +48,7 @@ public class ConfigScreen extends OptionsSubScreen {
     private void resetValues() {
         for (var entry : optionsPerCategory.asMap().entrySet()) {
             for (var option : entry.getValue()) {
-                resetOptionValue(option);
+                resetOptionValue(option.option);
             }
         }
     }
@@ -73,28 +73,40 @@ public class ConfigScreen extends OptionsSubScreen {
     protected void addOptions() {
         for (var modId : optionsPerCategory.keySet()) {
             this.list.addHeader(Component.literal(getReadableName(modId)));
-            Collection<OptionInstance<?>> options = optionsPerCategory.get(modId);
+            Collection<OptionHolder<?>> options = optionsPerCategory.get(modId);
             OptionInstance<?> presetOpt = makePresetOpt(options, modId);
             if (presetOpt != null) this.list.addBig(presetOpt);
-            this.list.addSmall(options.toArray(new OptionInstance[0]));
+            OptionInstance<?>[] sortedOptions = options.stream()
+                    .sorted(Comparator.comparingInt((OptionHolder<?> o) -> {
+                                        if (o.option.values() instanceof PolyConfig<?> c) {
+                                            return c.getDisplayOrder();
+                                        }
+                                        return 0;
+                                    })
+                                    .thenComparing(o -> o.fileId)
+                    )
+                    .map(o -> o.option)
+                    .toArray(OptionInstance<?>[]::new);
+            this.list.addSmall(sortedOptions);
         }
     }
 
     //ugliest code ever
     @Nullable
-    private OptionInstance<?> makePresetOpt(Collection<OptionInstance<?>> options, String modId) {
+    private OptionInstance<?> makePresetOpt(Collection<OptionHolder<?>> optHolders, String modId) {
         var known = LAST_KNOWN_PRESET_WIDGETS.get(modId);
         if (known != null) return known;
 
         Map<String, Runnable> presetActions = new HashMap<>();
-        for (OptionInstance<?> option : options) {
-            if (option.values() instanceof PolyConfig<?> c) {
-                addPresetActions(presetActions, option);
+        for (OptionHolder<?> holder : optHolders) {
+            OptionInstance<?> op = holder.option;
+            if (op.values() instanceof PolyConfig<?> c) {
+                addPresetActions(presetActions, op);
             }
         }
         if (presetActions.isEmpty()) return null;
 
-        StringConfig valueSet = new StringConfig(Optional.empty(), Map.of(), "none",
+        StringConfig valueSet = new StringConfig(Optional.empty(), Map.of(), 0, "none",
                 new ArrayList<>(presetActions.keySet()));
 
         Identifier id = Identifier.fromNamespaceAndPath(modId, "presets");
