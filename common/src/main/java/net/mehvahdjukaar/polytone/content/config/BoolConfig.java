@@ -20,8 +20,8 @@ import java.util.function.Supplier;
 public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.CycleableValueSet<Boolean> {
 
     public static final Codec<BoolConfig> CODEC = RecordCodecBuilder.<BoolConfig>create(instance ->
-            commonFields(instance, Codec.BOOL)
-                    .apply(instance, BoolConfig::new))
+                    commonFields(instance, Codec.BOOL)
+                            .apply(instance, BoolConfig::new))
             .validate(PolyConfig::validatePresets);
 
     private static final List<Boolean> VALUES = ImmutableList.of(Boolean.TRUE, Boolean.FALSE);
@@ -56,6 +56,8 @@ public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.Cy
                     .create(i, j, k, 20, Component.empty(), (cycleButton, object) -> {
                         this.valueSetter().set(optionInstance, object);
                         consumer.accept(object);
+                        //Update text again
+                        cycleButton.setMessage(cycleButton.createLabelForValue(object));
                     });
         };
     }

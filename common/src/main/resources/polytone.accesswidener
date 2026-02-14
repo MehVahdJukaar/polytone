@@ -17,6 +17,8 @@ accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/M
 accessible class net/minecraft/server/packs/OverlayMetadataSection$OverlayEntry$IntermediateEntry
 accessible method net/minecraft/client/gui/screens/packs/PackSelectionScreen reload ()V
 
+accessible method net/minecraft/client/gui/components/CycleButton createLabelForValue (Ljava/lang/Object;)Lnet/minecraft/network/chat/Component;
+
 accessible class net/minecraft/client/OptionInstance$SliderableValueSet
 accessible class net/minecraft/client/OptionInstance$ValueSet
 accessible class net/minecraft/client/OptionInstance$CycleableValueSet

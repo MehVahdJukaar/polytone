@@ -13,13 +13,13 @@ import net.minecraft.resources.Identifier;
 import java.util.List;
 import java.util.Optional;
 
-public record BlitModifier(Identifier target, int index, int xInc, int yInc,   int widthInc,
+public record BlitModifier(TextureTarget target, int index, int xInc, int yInc,   int widthInc,
                            int heightInc,
                            float u0, float v0, float u1, float v1, int color, Optional<Identifier> newTexture,
                            List<RelativeSprite> extraSprites) {
 
     public static final Codec<BlitModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Identifier.CODEC.fieldOf("texture").forGetter(BlitModifier::target),
+            TextureTarget.CODEC.fieldOf("texture").forGetter(BlitModifier::target),
             Codec.INT.optionalFieldOf("index", -1).forGetter(BlitModifier::index),
             Codec.INT.optionalFieldOf("x_inc", 0).forGetter(BlitModifier::xInc),
             Codec.INT.optionalFieldOf("y_inc", 0).forGetter(BlitModifier::yInc),

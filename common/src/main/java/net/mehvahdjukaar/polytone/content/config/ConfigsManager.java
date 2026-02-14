@@ -43,7 +43,7 @@ public class ConfigsManager extends JsonPartialReloader {
 
     private static @NonNull OptionHolder<Float> builtinConfig(String id, float def) {
         return OptionHolder.create(new NumberConfig(Optional.empty(), Map.of(), 1,
-                def, 0, 1, 0), Polytone.res(id));
+                def, 0, 1, 0.01f), Polytone.res(id));
     }
 
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
@@ -57,7 +57,7 @@ public class ConfigsManager extends JsonPartialReloader {
 
     public ConfigsManager() {
         super("config_entries");
-        this.optionsFile = PlatStuff.getGamePath().resolve("polytone_options.json").toFile();
+        this.optionsFile = PlatStuff.getGamePath().resolve("config/polytone_options.json").toFile();
         this.gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .create();
@@ -84,8 +84,11 @@ public class ConfigsManager extends JsonPartialReloader {
 
     public Screen createScreen(PackSelectionScreen parent) {
         return new ConfigScreen(parent, configs.getValues(), () -> {
-            boolean anyChanged = configs.getValues()
-                    .stream().anyMatch(OptionHolder::checkAndClearUpdated);
+            boolean anyChanged = false;
+
+            for (var option : configs.getValues()) {
+              anyChanged |= option.checkAndClearUpdated();
+            }
             if (anyChanged) {
                 needsPackReload.set(true);
                 saveConfigsToDisk();

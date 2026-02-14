@@ -55,6 +55,7 @@ public class StringConfig extends PolyConfig<String> implements OptionInstance.C
                     .create(i, j, k, 20, Component.empty(), (cycleButton, object) -> {
                         this.valueSetter().set(optionInstance, object);
                         consumer.accept(object);
+                        cycleButton.setMessage(cycleButton.createLabelForValue(object));
                     });
         };
     }

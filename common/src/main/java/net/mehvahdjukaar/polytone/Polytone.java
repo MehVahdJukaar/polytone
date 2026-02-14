@@ -112,6 +112,7 @@ public class Polytone {
         PolytoneRenderTypes.init();
         if (CompatHandler.IRIS) IrisCompat.init();
 
+        //TODO: expression driven overlays and customization for existing ones
         //TODO: server resource pack
         //TODO: custom block breaking particles
         //TODO: custom place particles

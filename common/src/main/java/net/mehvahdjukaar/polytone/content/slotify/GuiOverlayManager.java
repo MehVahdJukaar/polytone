@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,15 +16,13 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class GuiOverlayManager extends JsonPartialReloader {
 
     private final Map<Gui.HeartType, HeartSprites> heartSprites = new EnumMap<>(Gui.HeartType.class);
-    private final Map<Identifier, BlitModifier> blitModifiers = new HashMap<>();
+    private final List<BlitModifier> blitModifiers = new ArrayList<>();
+    private final Map<Identifier, BlitModifier> blitModifiersCache = new HashMap<>();
 
     public GuiOverlayManager() {
         super("overlay_modifiers");
@@ -31,7 +30,8 @@ public class GuiOverlayManager extends JsonPartialReloader {
 
     @Override
     protected void resetWithLevel(boolean logOff) {
-        blitModifiers.clear();
+        blitModifiers .clear();
+        blitModifiersCache.clear();
     }
 
     @Override
@@ -39,13 +39,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
                                   HolderLookup.Provider access) {
         for (var j : Parsed.batchParseOnlyEnabled(jsons, BlitModifier.CODEC,
                 ops, "overlay modifier")) {
-            BlitModifier effect = j.getValue();
-            Identifier textureId = effect.target();
-            //just 1 makes sense
-            if (blitModifiers.containsKey(textureId)) {
-                Polytone.LOGGER.warn("Overlay Modifier with texture id {} already exists. Overwriting", textureId);
-            }
-            blitModifiers.put(textureId, effect);
+            blitModifiers.add(j.getValue());
         }
     }
 
@@ -67,7 +61,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
     public boolean maybeModifyBlit(GuiGraphics gui, RenderPipeline pipeline, TextureAtlasSprite sprite,
                                    int x, int y, int width, int height, int color) {
         if (!active || blitModifiers.isEmpty()) return false;
-        var mod = blitModifiers.get(sprite.contents().name());
+        var mod = getMod(sprite);
         if (mod != null) {
             int ind = mod.index();
             if (ind == -1 || ind == index) {
@@ -82,6 +76,18 @@ public class GuiOverlayManager extends JsonPartialReloader {
         return false;
     }
 
+    private BlitModifier getMod(TextureAtlasSprite sprite) {
+        return blitModifiersCache.computeIfAbsent(sprite.contents().name(),
+                id-> {
+                    for (var m : blitModifiers) {
+                        if (m.target().test(id)) {
+                            return m;
+                        }
+                    }
+                    return null;
+                });
+    }
+
     //partial blit
     public boolean maybeModifyBlit(GuiGraphics gui, RenderPipeline pipeline, TextureAtlasSprite sprite,
                                    int x, int y,
@@ -89,7 +95,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
                                    int uPosition, int vPosition, int uWidth, int vHeight,
                                    int color) {
         if (!active || blitModifiers.isEmpty()) return false;
-        var mod = blitModifiers.get(sprite.contents().name());
+        var mod = getMod(sprite);
         if (mod != null) {
             int ind = mod.index();
             if (ind == -1 || ind == index) {
