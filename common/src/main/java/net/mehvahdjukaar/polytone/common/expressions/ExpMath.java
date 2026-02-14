@@ -254,6 +254,10 @@ public class ExpMath {
         return PlatStuff.getModLoader();
     }
 
+    public static int dateDayOfYear() {
+        return LocalDate.now().getDayOfYear();
+    }
+
     public static String osName() {
         return System.getProperty("os.name");
     }
