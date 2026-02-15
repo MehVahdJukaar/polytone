@@ -83,11 +83,16 @@ public class ConfigsManager extends JsonPartialReloader {
     }
 
     public Screen createScreen(PackSelectionScreen parent) {
-        return new ConfigScreen(parent, configs.getValues(), () -> {
+        Set<OptionHolder<?>> configs = this.configs.getValues();
+        for (var option : configs) {
+            option.updateLastSavedData();
+        }
+
+        return new ConfigScreen(parent, configs, () -> {
             boolean anyChanged = false;
 
-            for (var option : configs.getValues()) {
-              anyChanged |= option.checkAndClearUpdated();
+            for (var option : configs) {
+              anyChanged |= option.hasUnsavedChanges();
             }
             if (anyChanged) {
                 needsPackReload.set(true);

@@ -13,18 +13,18 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class OptionHolder<T> {
 
     public final OptionInstance<T> option;
     public final Identifier fileId;
-    private final AtomicBoolean updated;
+    private final AtomicReference<T> lastSavedValue;
 
-    OptionHolder(OptionInstance<T> option, Identifier registryID, AtomicBoolean updated) {
+    OptionHolder(OptionInstance<T> option, Identifier registryID, AtomicReference<T> updated) {
         this.option = option;
         this.fileId = registryID;
-        this.updated = updated;
+        this.lastSavedValue = updated;
     }
 
     public T get() {
@@ -49,30 +49,30 @@ public class OptionHolder<T> {
         }
     }
 
-    public boolean wasUpdated() {
-        return updated.get();
+    public void updateLastSavedData() {
+        lastSavedValue.set(option.get());
     }
 
-    public boolean checkAndClearUpdated() {
-        return updated.getAndSet(false);
+    public boolean hasUnsavedChanges() {
+        return !option.get().equals(lastSavedValue.get());
     }
 
     public static <T> OptionHolder<T> create(PolyConfig<T> config, Identifier id) {
-        AtomicBoolean updated = new AtomicBoolean(false);
+        AtomicReference<T> updated = new AtomicReference<T>(config.getDefaultValue());
 
         OptionInstance.CaptionBasedToString<T> toStr = (name, value) -> {
             Optional<String> valueTranslationKey = config.getValueTranslationKey();
 
             MutableComponent valueName = valueTranslationKey.map(s -> Component.translatable(s, value))
                     .orElseGet(() -> Component.literal(value + ""));
-            if (updated.get()) valueName.withStyle(ChatFormatting.AQUA);
+            if (updated.get() != value) valueName.withStyle(ChatFormatting.AQUA);
             return Options.genericValueLabel(name, valueName);
         };
 
         var opt = new OptionInstance<>(id.toLanguageKey("config"),
                 OptionInstance.cachedConstantTooltip(Component.translatable(id.toLanguageKey("config", "tooltip"))),
                 toStr, config,
-                config.codec(), config.getDefaultValue(), (v) -> updated.set(true)
+                config.codec(), config.getDefaultValue(), (v) ->  {}
         );
         return new OptionHolder<>(opt, id, updated);
     }

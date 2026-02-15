@@ -25,13 +25,13 @@ public class ConfigScreen extends OptionsSubScreen {
     private final Multimap<String, OptionHolder<?>> optionsPerCategory = MultimapBuilder.hashKeys().arrayListValues().build();
     private final Runnable saveFunc;
 
-    public ConfigScreen(Screen screen, Collection<OptionHolder<?>> options, Runnable safeFunc) {
+    public ConfigScreen(Screen screen, Collection<OptionHolder<?>> options, Runnable saveFunc) {
         super(screen, Minecraft.getInstance().options, TITLE);
         for (OptionHolder<?> e : options) {
             String cat = e.fileId.getNamespace();
             optionsPerCategory.put(cat, e);
         }
-        this.saveFunc = safeFunc;
+        this.saveFunc = saveFunc;
     }
 
     public ConfigScreen(Screen scree, Multimap<String, OptionHolder<?>> options, Runnable safeFunc) {
