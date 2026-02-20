@@ -16,8 +16,6 @@ import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.client.gui.components.debug.DebugScreenProfile;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.debug.DebugRenderer;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -25,9 +23,11 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.*;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
@@ -40,6 +40,8 @@ import org.joml.Matrix3x2fStack;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
+
+import static net.mehvahdjukaar.polytone.Polytone.MOD_ID;
 
 /**
  * Author: MehVahdJukaar
@@ -62,6 +64,11 @@ public class PolytoneForge {
         } else {
             LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
+
+        ModList.get().getModContainerById(MOD_ID).get()
+                .registerExtensionPoint(IConfigScreenFactory.class, (modContainer, arg) ->
+                        Polytone.CONFIGS.createScreenForMainMenu(arg)
+                );
 
     }
 

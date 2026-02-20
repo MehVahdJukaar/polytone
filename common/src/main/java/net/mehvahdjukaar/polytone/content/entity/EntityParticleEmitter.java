@@ -12,8 +12,11 @@ import net.mehvahdjukaar.polytone.compat.EmfCompat;
 import net.mehvahdjukaar.polytone.compat.EtfCompat;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
@@ -169,10 +172,11 @@ public record EntityParticleEmitter(
 
 
     @Nullable
-    public <S extends LivingEntityRenderState> PoseStack getModelSpawnPose(LivingEntityRenderer<?, S, ?> renderer,
-                                                                           S state, Vec3 cameraPos) {
+    public <S extends EntityRenderState> PoseStack getModelSpawnPose(
+            Model<? super S> model, S state, EntityRenderer<?, S> renderer, Vec3 cameraPos) {
 
-        if (textureId.isPresent() && !textureId.get().test(renderer.getTextureLocation(state))) {
+        if (textureId.isPresent() && renderer instanceof LivingEntityRenderer lr &&
+                !textureId.get().test(lr.getTextureLocation((LivingEntityRenderState) state))) {
             return null;
         }
 
@@ -200,7 +204,7 @@ public record EntityParticleEmitter(
         }
 
 
-        ModelPart part = renderer.getModel().root();
+        ModelPart part = model.root();
         List<ModelPart> parts = new ArrayList<>();
         parts.add(part);
         for (String b : bone) {

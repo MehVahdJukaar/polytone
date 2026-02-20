@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 
@@ -23,7 +24,7 @@ public class ConfigScreen extends OptionsSubScreen {
     private static final Component TITLE = Component.translatable("screen.polytone.configs.title");
 
     private final Multimap<String, OptionHolder<?>> optionsPerCategory = MultimapBuilder.hashKeys().arrayListValues().build();
-    private final Runnable saveFunc;
+    private Runnable saveFunc;
 
     public ConfigScreen(Screen screen, Collection<OptionHolder<?>> options, Runnable saveFunc) {
         super(screen, Minecraft.getInstance().options, TITLE);
@@ -45,28 +46,54 @@ public class ConfigScreen extends OptionsSubScreen {
         saveFunc.run();
     }
 
-    private void resetValues() {
+    //double hack
+    private void remakeScreen() {
+        Runnable saveFunc = this.saveFunc;
+        //make it not save here
+        this.saveFunc = () -> {
+        };
+        this.minecraft.setScreen(new ConfigScreen(this.lastScreen, optionsPerCategory, saveFunc));
+    }
+
+    private void undoChanges() {
         for (var entry : optionsPerCategory.asMap().entrySet()) {
             for (var option : entry.getValue()) {
-                resetOptionValue(option.option);
+                option.undoChanges();
             }
         }
     }
 
-    private <T> void resetOptionValue(OptionInstance<T> option) {
-        if (option.values() instanceof PolyConfig<T> c) {
-            option.set(c.getDefaultValue());
+    private void resetValues() {
+        for (var entry : optionsPerCategory.asMap().entrySet()) {
+            for (var option : entry.getValue()) {
+                option.resetToDefault();
+            }
         }
-        resetOption(option);
     }
 
     @Override
     protected void addFooter() {
         LinearLayout linearLayout = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+        int width = Mth.positiveCeilDiv(150 * 2 - 8  ,3);
         linearLayout.addChild(Button.builder(Component.translatable("screen.polytone.configs.reset"),
-                b -> resetValues()).build());
+                        b -> {
+                            resetValues();
+                            remakeScreen();
+                        })
+                .width(width)
+                .build());
+        //undo
+        linearLayout.addChild(Button.builder(Component.translatable("screen.polytone.configs.undo"),
+                        b -> {
+                            undoChanges();
+                            remakeScreen();
+                        })
+                .width(width)
+                .build());
         linearLayout.addChild(Button.builder(CommonComponents.GUI_DONE,
-                b -> this.minecraft.setScreen(this.lastScreen)).build());
+                        b -> this.minecraft.setScreen(this.lastScreen))
+                .width(width)
+                .build());
     }
 
     @Override
@@ -118,8 +145,7 @@ public class ConfigScreen extends OptionsSubScreen {
                 valueSet,
                 valueSet.codec(), valueSet.getDefaultValue(), (v) -> {
             presetActions.get(v).run();
-            //mega hack. TODO: do better!
-            Minecraft.getInstance().setScreen(new ConfigScreen(this.lastScreen, optionsPerCategory, saveFunc));
+            remakeScreen();
         }
         );
         LAST_KNOWN_PRESET_WIDGETS.put(modId, opt);

@@ -1,2 +1,2 @@
-- blit modifiers can target a texture ID or a regex.
-- configs have feedback when you change a value. they were also moved in the config folder
+- fixed an issue where configs files were overwritten blank on reboot
+- improved config screen

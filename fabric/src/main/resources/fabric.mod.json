@@ -17,6 +17,9 @@
   "entrypoints": {
     "client": [
       "net.mehvahdjukaar.polytone.fabric.PolytoneFabric"
+    ],
+    "modmenu": [
+      "net.mehvahdjukaar.polytone.integration.fabric.ModMenuCompat"
     ]
   },
   "mixins": [

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import io.github.fishstiz.packed_packs.gui.screens.PackedPacksScreen;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.mehvahdjukaar.polytone.content.config.ExtraWidthHorizontalLayout;
@@ -84,7 +85,7 @@ public abstract class PackSelectScreenMixin extends Screen {
     private @NonNull SpriteIconButton poly$makeButton(int buttonW) {
         return SpriteIconButton.builder(Component.translatable("options.accessibility"),
                         (arg) -> Minecraft.getInstance().setScreen(
-                                Polytone.CONFIGS.createScreen((PackSelectionScreen) (Screen) this)),
+                                Polytone.CONFIGS.createScreenForPack((PackSelectionScreen) (Screen) this)),
                         true).width(buttonW)
                 .sprite(Polytone.res("paint_brush"), 16, 16).build();
     }

@@ -35,6 +35,8 @@ public class OptionHolder<T> {
         JsonElement je = option.codec().encodeStart(JsonOps.INSTANCE, option.get())
                 .getOrThrow();
         target.add(fileId.toString(), je);
+
+        lastSavedValue.set(option.get());
     }
 
     public void loadFromJson(JsonObject json) {
@@ -47,9 +49,7 @@ public class OptionHolder<T> {
         } else {
             Polytone.LOGGER.error("Failed to load config option {}: {}", fileId, result.error().get().message());
         }
-    }
 
-    public void updateLastSavedData() {
         lastSavedValue.set(option.get());
     }
 
@@ -58,23 +58,33 @@ public class OptionHolder<T> {
     }
 
     public static <T> OptionHolder<T> create(PolyConfig<T> config, Identifier id) {
-        AtomicReference<T> updated = new AtomicReference<T>(config.getDefaultValue());
+        AtomicReference<T> lastKnownValue = new AtomicReference<T>(config.getDefaultValue());
 
         OptionInstance.CaptionBasedToString<T> toStr = (name, value) -> {
             Optional<String> valueTranslationKey = config.getValueTranslationKey();
 
             MutableComponent valueName = valueTranslationKey.map(s -> Component.translatable(s, value))
                     .orElseGet(() -> Component.literal(value + ""));
-            if (updated.get() != value) valueName.withStyle(ChatFormatting.AQUA);
+            if (!lastKnownValue.get().equals(value)) valueName.withStyle(ChatFormatting.AQUA);
             return Options.genericValueLabel(name, valueName);
         };
 
         var opt = new OptionInstance<>(id.toLanguageKey("config"),
                 OptionInstance.cachedConstantTooltip(Component.translatable(id.toLanguageKey("config", "tooltip"))),
                 toStr, config,
-                config.codec(), config.getDefaultValue(), (v) ->  {}
+                config.codec(), config.getDefaultValue(), (v) -> {
+        }
         );
-        return new OptionHolder<>(opt, id, updated);
+        return new OptionHolder<>(opt, id, lastKnownValue);
     }
 
+    public void undoChanges() {
+        option.set(lastSavedValue.get());
+    }
+
+    public void resetToDefault() {
+        if (option.values() instanceof PolyConfig<T> c) {
+            option.set(c.getDefaultValue());
+        }
+    }
 }

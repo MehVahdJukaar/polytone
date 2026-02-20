@@ -6,11 +6,10 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.CloudRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,6 +20,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +67,7 @@ public class EntityModifiersManager extends JsonPartialReloader {
         //hack for local player
         //TODO: add hack for hand with item?
         Minecraft mc = Minecraft.getInstance();
+        if (mc.isPaused()) return;
         if (mc.options.getCameraType().isFirstPerson()) {
             LocalPlayer player = mc.player;
             if (player != null) {
@@ -95,18 +96,27 @@ public class EntityModifiersManager extends JsonPartialReloader {
 
     }
 
+    private WeakReference<EntityRenderer> lastLivingEntityState = new WeakReference<>(null);
+    private WeakReference<CameraRenderState> lastCameraState = new WeakReference<>(null);
+
+    public void captureRenderStates(CameraRenderState state, EntityRenderer<?,?> renderer) {
+        lastCameraState = new WeakReference<>(state);
+        lastLivingEntityState = new WeakReference<>(renderer);
+    }
 
     //render thread
-    public <S extends LivingEntityRenderState> void onEntityRender(
-            LivingEntityRenderer<?, S, ?> renderer, PoseStack poseStack, S renderState, CameraRenderState cameraState) {
+    public <S extends EntityRenderState> void onEntityRenderTyped(
+            Model<? super S> model, PoseStack poseStack, S renderState) {
+        CameraRenderState cameraState = lastCameraState.get();
+        if (cameraState == null) return;
         EntityModifier mod = emittersPerEntity.get(renderState.entityType);
 
         if (mod != null) {
             int id = ((IRenderStateWithId) renderState).polytone$getId();
             if (spawnRecords.containsKey(id)) return;
 
-            var particleSpawns = mod.gatherParticleSpawns(renderer, poseStack,
-                    renderState, cameraState.pos);
+            List<ParticleSpawnRecord> particleSpawns = mod.gatherParticleSpawns(model, poseStack, renderState,
+                    lastLivingEntityState.get(), cameraState.pos);
 
             if (!particleSpawns.isEmpty()) {
                 spawnRecords.put(id, particleSpawns);
@@ -115,5 +125,9 @@ public class EntityModifiersManager extends JsonPartialReloader {
     }
 
     public void onEntityTick(Entity entity) {
+    }
+
+    public <S> void onEntityRender(Model<? super S> model, PoseStack poseStack, S object) {
+        onEntityRenderTyped((Model) model, poseStack, (EntityRenderState) object);
     }
 }

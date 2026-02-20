@@ -13,6 +13,7 @@ import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.resources.Identifier;
@@ -82,17 +83,29 @@ public class ConfigsManager extends JsonPartialReloader {
         return needsPackReload.getAndSet(false);
     }
 
-    public Screen createScreen(PackSelectionScreen parent) {
+    public Screen createScreenForMainMenu(Screen parent) {
+        return new ConfigScreen(parent, configs.getValues(), () -> {
+            boolean anyChanged = false;
+
+            for (var option : configs.getValues()) {
+                anyChanged |= option.hasUnsavedChanges();
+            }
+            if (anyChanged) {
+                saveConfigsToDisk();
+                //reload packs now
+                Minecraft.getInstance().reloadResourcePacks();
+            }
+        });
+    }
+
+    public Screen createScreenForPack(PackSelectionScreen parent) {
         Set<OptionHolder<?>> configs = this.configs.getValues();
-        for (var option : configs) {
-            option.updateLastSavedData();
-        }
 
         return new ConfigScreen(parent, configs, () -> {
             boolean anyChanged = false;
 
             for (var option : configs) {
-              anyChanged |= option.hasUnsavedChanges();
+                anyChanged |= option.hasUnsavedChanges();
             }
             if (anyChanged) {
                 needsPackReload.set(true);
@@ -194,7 +207,6 @@ public class ConfigsManager extends JsonPartialReloader {
     @Override
     protected void applyNormal(Map<Identifier, JsonElement> obj) {
         ConfigScreen.clearPresetCache();
-        saveConfigsToDisk();
 
         activeLoadConfigs.remove();
         configs.clear();

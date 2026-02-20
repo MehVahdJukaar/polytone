@@ -5,8 +5,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.model.Model;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -40,12 +41,14 @@ public record EntityModifier(List<EntityParticleEmitter> emitters,
         return records;
     }
 
-    public <S extends LivingEntityRenderState> List<ParticleSpawnRecord> gatherParticleSpawns(
-            LivingEntityRenderer<?, S, ?> renderer, PoseStack poseStack, S renderState, Vec3 cameraPos) {
+    public <S extends EntityRenderState> List<ParticleSpawnRecord> gatherParticleSpawns(
+            Model<? super S> model, PoseStack poseStack, S renderState,
+            EntityRenderer<?, S> renderer,
+            Vec3 cameraPos) {
         List<ParticleSpawnRecord> records = new ArrayList<>();
         Vector3f camP = cameraPos.toVector3f();
         for (EntityParticleEmitter emitter : emitters) {
-            PoseStack spawn = emitter.getModelSpawnPose(renderer, renderState, cameraPos);
+            PoseStack spawn = emitter.getModelSpawnPose(model, renderState, renderer, cameraPos);
             if (spawn != null) {
                 Matrix4f cameraToEntityArm = new Matrix4f(poseStack.last().pose());
                 cameraToEntityArm.mul(spawn.last().pose());
