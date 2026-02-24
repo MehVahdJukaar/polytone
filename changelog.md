@@ -1,2 +1,2 @@
-- fixed an issue where configs files were overwritten blank on reboot
-- improved config screen
+- fixed hard cast in entity modifiers
+- tweaked custom particles age

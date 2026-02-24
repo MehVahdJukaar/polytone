@@ -99,13 +99,13 @@ public class EntityModifiersManager extends JsonPartialReloader {
     private WeakReference<EntityRenderer> lastLivingEntityState = new WeakReference<>(null);
     private WeakReference<CameraRenderState> lastCameraState = new WeakReference<>(null);
 
-    public void captureRenderStates(CameraRenderState state, EntityRenderer<?,?> renderer) {
+    public void captureRenderStates(CameraRenderState state, EntityRenderer<?, ?> renderer) {
         lastCameraState = new WeakReference<>(state);
         lastLivingEntityState = new WeakReference<>(renderer);
     }
 
     //render thread
-    public <S extends EntityRenderState> void onEntityRenderTyped(
+    public <S extends EntityRenderState> void onEntityRender(
             Model<? super S> model, PoseStack poseStack, S renderState) {
         CameraRenderState cameraState = lastCameraState.get();
         if (cameraState == null) return;
@@ -125,9 +125,5 @@ public class EntityModifiersManager extends JsonPartialReloader {
     }
 
     public void onEntityTick(Entity entity) {
-    }
-
-    public <S> void onEntityRender(Model<? super S> model, PoseStack poseStack, S object) {
-        onEntityRenderTyped((Model) model, poseStack, (EntityRenderState) object);
     }
 }

@@ -263,4 +263,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
         STATE_HACK = state;
     }
 
+    public void setAge(int i) {
+        this.age = i;
+    }
 }

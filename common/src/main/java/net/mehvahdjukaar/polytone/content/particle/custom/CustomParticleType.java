@@ -163,9 +163,9 @@ public class CustomParticleType implements ICustomParticleFactory {
         //tick once
         //todo replace   initializer with ticker
         this.ticker.tick(newParticle, world);
+        newParticle.setAge(0); //reset age after tick, so that it doesn't get affected by initializer tick
         if (!newParticle.isAlive()) {
             return null;
-
         }
         if (exclusionRadius > 0) {
             ParticleRenderType particleRenderType = this.getParticleGroup();
