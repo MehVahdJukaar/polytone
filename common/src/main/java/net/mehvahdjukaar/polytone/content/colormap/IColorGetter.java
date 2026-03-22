@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.content.colormap;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.item.BarColor;
 import net.minecraft.client.Minecraft;
@@ -16,6 +15,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public interface IColorGetter extends BlockColor, BarColor {
@@ -28,7 +28,7 @@ public interface IColorGetter extends BlockColor, BarColor {
         return this;
     }
 
-    int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+    int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
                     @Nullable Biome biome, @Nullable ItemStack item);
 
     record OfBlock(BlockColor bc) implements IColorGetter {
@@ -47,15 +47,17 @@ public interface IColorGetter extends BlockColor, BarColor {
             BlockState state = world.getBlockState(pos);
             return bc.getColor(state, world, pos, i) | 0xff000000;
         }
+
         @Override
-        public int sampleColor(@Nullable BlockAndTintGetter level,  @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
             if (state != null && pos != null) {
-                return bc.getColor(state, null, pos, 0) | 0xff000000;
+                return bc.getColor(state, null, BlockPos.containing(pos), 0) | 0xff000000;
             }
             return -1;
         }
 
     }
+
     //wraps around a color resolver. note that usually the block color get color internally calls the color resolver itself which with grass replacement might be us
     record OfColorResolver(BlockColor bc, ColorResolver cr) implements IColorGetter, ColorResolver {
 
@@ -80,17 +82,19 @@ public interface IColorGetter extends BlockColor, BarColor {
         public int getColor(Biome biome, double x, double z) {
             return cr.getColor(biome, x, z);
         }
+
         @Override
-        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
             if (biome != null) {
-                int x = pos == null ? 0 : pos.getX();
-                int z = pos == null ? 0 : pos.getZ();
+                int x = pos == null ? 0 : (int) pos.x();
+                int z = pos == null ? 0 : (int) pos.z();
                 return cr.getColor(biome, x, z);
             }
             return -1;
         }
 
     }
+
     record OfItem(BarColor ic) implements IColorGetter {
 
         @Override
@@ -102,8 +106,9 @@ public interface IColorGetter extends BlockColor, BarColor {
         public int getItemColor(ItemStack itemStack, int i) {
             return ic.getItemColor(itemStack, i);
         }
+
         @Override
-        public int sampleColor(@Nullable BlockAndTintGetter level,@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
             return ic.getItemColor(item == null ? ItemStack.EMPTY : item, 0);
         }
 
@@ -120,8 +125,9 @@ public interface IColorGetter extends BlockColor, BarColor {
         public int getItemColor(ItemStack itemStack, int i) {
             return color;
         }
+
         @Override
-        public int sampleColor(@Nullable BlockAndTintGetter level,@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
             return color;
         }
 
@@ -130,7 +136,7 @@ public interface IColorGetter extends BlockColor, BarColor {
     //TODO: proper exp here
     record ExpressionColor(IBlockExp exp) implements IColorGetter {
         @Override
-        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
             if (pos == null || state == null) {
                 return 0;
             }
@@ -139,19 +145,18 @@ public interface IColorGetter extends BlockColor, BarColor {
 
         @Override
         public int getItemColor(ItemStack stack, int tintIndex) {
-            return (int) exp.evaluate(Minecraft.getInstance().level, BlockPos.ZERO, Blocks.AIR.defaultBlockState());
+            return (int) exp.evaluate(Minecraft.getInstance().level, Vec3.ZERO, Blocks.AIR.defaultBlockState());
         }
+
         @Override
         public int getColor(BlockState blockState, @Nullable BlockAndTintGetter blockAndTintGetter, @Nullable BlockPos blockPos, int i) {
-           if (blockAndTintGetter instanceof LevelReader lr && blockPos != null) {
-               return (int) exp.evaluate(lr, blockPos, blockState);
-           }
-           return 0;
+            if (blockAndTintGetter instanceof LevelReader lr && blockPos != null) {
+                return (int) exp.evaluate(lr, blockPos.getCenter(), blockState);
+            }
+            return 0;
         }
 
     }
-
-
 
 
     Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.COLOR.xmap(

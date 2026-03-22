@@ -7,13 +7,13 @@ import net.minecraft.core.Holder;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.phys.Vec3;
 
 public class ClientFrameTicker {
 
     private static double time;
     private static double sunTime;
     private static double dayTime;
-    private static BlockPos cameraPos = BlockPos.ZERO;
     public static Holder<Biome> cameraBiome;
     private static float temperature;
     private static float downfall;
@@ -32,20 +32,18 @@ public class ClientFrameTicker {
         sunTime = probe.getValue(EnvironmentAttributes.SUN_ANGLE, partialTicks) / 360.0F;
         //TODO: oter param like moon pos
 
-        cameraPos = camera.blockPosition();
-        cameraBiome = level.getBiome(cameraPos);
+        cameraBiome = level.getBiome(getCameraBlockPos());
 
-        if (mc.player != null)
+        if (mc.player != null) {
             playerSpeed = mc.player.getDeltaMovement().lengthSqr();
-
+        }
     }
 
     public static void onTick(Level level) {
-        if (cameraPos != null) {
-            var biome = level.getBiome(cameraPos);
-            temperature = ColorUtils.getClimateSettings(biome.value()).temperature;
-            downfall = ColorUtils.getClimateSettings(biome.value()).downfall;
-        }
+        BlockPos cameraPos = getCameraBlockPos();
+        var biome = level.getBiome(cameraPos);
+        temperature = ColorUtils.getClimateSettings(biome.value()).temperature;
+        downfall = ColorUtils.getClimateSettings(biome.value()).downfall;
     }
 
     public static double getDayTime() {
@@ -56,8 +54,8 @@ public class ClientFrameTicker {
         return time;
     }
 
-    public static BlockPos getCameraPos() {
-        return cameraPos;
+    public static BlockPos getCameraBlockPos() {
+        return Minecraft.getInstance().gameRenderer.getMainCamera().blockPosition();
     }
 
     public static float getTemperature() {
@@ -68,13 +66,16 @@ public class ClientFrameTicker {
         return downfall;
     }
 
+    public static Vec3 getCameraPos() {
+        return Minecraft.getInstance().gameRenderer.getMainCamera().position();
+    }
+
     public static Holder<Biome> getCameraBiome() {
         if (cameraBiome == null) {
             //mega dumb. idk why this can be called before tick
             Minecraft mc = Minecraft.getInstance();
             Level level = mc.level;
-            cameraPos = mc.gameRenderer.getMainCamera().blockPosition();
-            cameraBiome = level.getBiome(cameraPos);
+            cameraBiome = level.getBiome(getCameraBlockPos());
         }
         return cameraBiome;
     }
@@ -90,5 +91,4 @@ public class ClientFrameTicker {
     public static double getRenderDistance() {
         return Minecraft.getInstance().options.renderDistance().get();
     }
-
 }

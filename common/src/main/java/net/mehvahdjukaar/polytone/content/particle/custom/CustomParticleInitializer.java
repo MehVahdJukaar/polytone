@@ -9,6 +9,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -53,35 +54,36 @@ public record CustomParticleInitializer(@Nullable IBlockExp size,
     }
 
     public void initialize(SingleQuadParticle particle, ClientLevel level, BlockState state, BlockPos pos) {
+        Vec3 v = pos.getCenter();
         if (this.roll != null) {
-            particle.roll = (float) this.roll.evaluate(level, pos, state);
+            particle.roll = (float) this.roll.evaluate(level, v, state);
         }
         if (this.size != null) {
-            particle.quadSize = ((float) this.size.evaluate(level, pos, state));
+            particle.quadSize = ((float) this.size.evaluate(level, v, state));
         }
         if (this.red != null) {
-            particle.rCol = (float) this.red.evaluate(level, pos, state);
+            particle.rCol = (float) this.red.evaluate(level, v, state);
         }
         if (this.green != null) {
-            particle.gCol = (float) this.green.evaluate(level, pos, state);
+            particle.gCol = (float) this.green.evaluate(level, v, state);
         }
         if (this.blue != null) {
-            particle.bCol = (float) this.blue.evaluate(level, pos, state);
+            particle.bCol = (float) this.blue.evaluate(level, v, state);
         }
         if (this.alpha != null) {
-            particle.alpha = (float) this.alpha.evaluate(level, pos, state);
+            particle.alpha = (float) this.alpha.evaluate(level, v, state);
         }
         if (this.lifetime != null) {
-            particle.setLifetime((int) Math.max(1, this.lifetime.evaluate(level, pos, state)));
+            particle.setLifetime((int) Math.max(1, this.lifetime.evaluate(level, v, state)));
         }
         if (this.friction != null) {
-            particle.friction = (float) this.friction.evaluate(level, pos, state);
+            particle.friction = (float) this.friction.evaluate(level, v, state);
         }
         if (this.custom != null && particle instanceof CustomParticleInstance ci) {
-            ci.custom = this.custom.evaluate(level, pos, state);
+            ci.custom = this.custom.evaluate(level, v, state);
         }
         if (this.hitboxSize != null) {
-             float hitbox = (float) this.hitboxSize.evaluate(level, pos, state);
+             float hitbox = (float) this.hitboxSize.evaluate(level, v, state);
             ((ParticleAccessor) particle).invokeSetSize(hitbox, hitbox);
         }
     }

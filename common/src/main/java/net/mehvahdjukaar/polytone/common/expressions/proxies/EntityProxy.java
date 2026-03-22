@@ -5,7 +5,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
 import org.jetbrains.annotations.Nullable;
 
-public class EntityProxy extends AbstractEntityProxy{
+public class EntityProxy extends AbstractEntityProxy {
 
     private final Entity entity;
     private final @Nullable LivingEntity le;
@@ -20,7 +20,7 @@ public class EntityProxy extends AbstractEntityProxy{
     }
 
     @Nullable
-    public EntityProxy owner(){
+    public EntityProxy owner() {
         if (entity instanceof TraceableEntity t) {
             var owner = t.getOwner();
             if (owner != null) {
@@ -32,7 +32,7 @@ public class EntityProxy extends AbstractEntityProxy{
 
     @Override
     protected Entity entity() {
-        return  entity;
+        return entity;
     }
 
     @Override

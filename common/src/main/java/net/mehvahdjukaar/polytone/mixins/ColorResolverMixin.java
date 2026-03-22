@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.minecraft.client.color.block.BlockTintCache;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.fog.environment.FogEnvironment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
@@ -39,7 +40,7 @@ public abstract class ColorResolverMixin extends Level {
         if (!this.tintCaches.containsKey(resolver) && resolver instanceof Colormap c) {
             //make copy of the map and assigns it as it has limited capacity
             var newMap = new Object2ObjectArrayMap<>(this.tintCaches);
-            newMap.put(resolver, new BlockTintCache(p -> c.calculateBlendedColor(this, p)));
+            newMap.put(resolver, new BlockTintCache(p -> c.calculateBlendedColor(this, p.getCenter())));
             this.tintCaches = newMap;
         }
     }

@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 public class BlockContextExpression extends PolytoneExpression implements IBlockExp {
@@ -52,7 +53,8 @@ public class BlockContextExpression extends PolytoneExpression implements IBlock
     }
 
     @Override
-    public double evaluate(LevelReader level, @NotNull BlockPos pos, BlockState state) {
+    public double evaluate(LevelReader level, @NotNull Vec3 p, BlockState state) {
+        BlockPos pos = BlockPos.containing(p);
         ExpressionUtils.seedRandom(state.getSeed(pos));
 
         IExpression.IVars vars = expression.varBuilder();

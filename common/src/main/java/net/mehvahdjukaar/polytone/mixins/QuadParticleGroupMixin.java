@@ -12,7 +12,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(QuadParticleGroup.class)
 public class QuadParticleGroupMixin {
 
-    @Redirect(method = "extractRenderState", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/culling/Frustum;pointInFrustum(DDD)Z"))
+    @Redirect(method = "extractRenderState",
+            require = 0,
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/culling/Frustum;pointInFrustum(DDD)Z"))
     public boolean polytone$accurateFrustumIntersect(Frustum instance, double d, double e, double f, @Local SingleQuadParticle particle) {
         return ModelParticleRenderGroup.particleInFrustum(instance, particle);
     }

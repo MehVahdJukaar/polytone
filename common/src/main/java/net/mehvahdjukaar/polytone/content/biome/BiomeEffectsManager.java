@@ -20,15 +20,17 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class BiomeEffectsManager extends JsonPartialReloader {
 
     private final Map<Biome, BiomeEffectModifier> vanillaEffects = new HashMap<>();
     private final Map<Biome, BiomeEffectModifier> effectsToApply = new HashMap<>();
+    private final Set<EnvironmentAttribute<?>> alteredAttributes = new HashSet<>();
 
-    private boolean hasModifiedAttributes = false;
     private boolean hasPostAttributes = false;
 
     public BiomeEffectsManager() {
@@ -67,10 +69,9 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         }
         //we don't clear effects to apply because we need to re apply on world reload
 
-
-        this.hasModifiedAttributes = effectsToApply.values().stream().anyMatch(
-                m -> !m.attributeModifications().isEmpty()
-        );
+        for (var m : effectsToApply.values()) {
+            this.alteredAttributes.addAll(m.attributeModifications().getAllModifiedAttributes());
+        }
 
         this.hasPostAttributes = effectsToApply.values().stream().anyMatch(
                 m -> !m.attributeModifications().postProcess().isEmpty()
@@ -96,11 +97,11 @@ public class BiomeEffectsManager extends JsonPartialReloader {
         effectsToApply.clear();
 
         hasPostAttributes = false;
-        hasModifiedAttributes = false;
+        alteredAttributes.clear();
     }
 
     public boolean hasModifiedAttributes() {
-        return hasModifiedAttributes;
+        return !alteredAttributes.isEmpty();
     }
 
 
@@ -125,11 +126,19 @@ public class BiomeEffectsManager extends JsonPartialReloader {
                 environmentAttribute, biomeManager));
     }
 
+    public boolean doesAttributeNeedSpatialInterpolation(EnvironmentAttribute<?> attr) {
+        //pessimistic approach. suboptimal, will cause extra interpolation many times
+        return alteredAttributes.contains(attr);
+    }
+
     private <Value> void addBiomeLayerForAttribute(EnvironmentAttributeSystem.Builder builder,
                                                    EnvironmentAttribute<Value> environmentAttribute,
                                                    BiomeManager biomeManager) {
         builder.addPositionalLayer(environmentAttribute, (object, vec3, spatialAttributeInterpolator) -> {
-            if (spatialAttributeInterpolator != null && environmentAttribute.isSpatiallyInterpolated()) {
+            if (spatialAttributeInterpolator != null
+                //&& environmentAttribute.isSpatiallyInterpolated()
+                //all are spatially interpolated now since they possibly could be
+            ) {
                 spatialAttributeInterpolator = ((IExtendedInterpolator) spatialAttributeInterpolator)
                         .polytone$getOrCreatePostInterpolator();
 

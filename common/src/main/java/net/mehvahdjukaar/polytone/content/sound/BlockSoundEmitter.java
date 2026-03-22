@@ -60,7 +60,8 @@ public record BlockSoundEmitter(
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
         if (source != spawnSource) return;
-        double spawnChance = chance.evaluate(level, pos, state);
+        Vec3 p = pos.getCenter();
+        double spawnChance = chance.evaluate(level, p, state);
         if (level.random.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(pos);
@@ -68,15 +69,15 @@ public record BlockSoundEmitter(
             }
 
             Vec3 vec = pos.getCenter().add(
-                    x.evaluate(level, pos, state),
-                    y.evaluate(level, pos, state),
-                    z.evaluate(level, pos, state));
+                    x.evaluate(level, p, state),
+                    y.evaluate(level, p, state),
+                    z.evaluate(level, p, state));
 
-            float v = (float) volume.evaluate(level, pos, state);
-            float p = (float) pitch.evaluate(level, pos, state);
+            float vol = (float) volume.evaluate(level, p, state);
+            float pit = (float) pitch.evaluate(level, p, state);
 
             level.playLocalSound(vec.x, vec.y, vec.z,
-                    sound, category, v, p, false);
+                    sound, category, vol, pit, false);
         }
     }
 

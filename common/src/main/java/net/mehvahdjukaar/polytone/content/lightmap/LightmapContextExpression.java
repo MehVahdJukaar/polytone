@@ -52,10 +52,10 @@ record LightmapContextExpression(ConcurrentExpression expression, String unparse
         vb.setVariable(TIME, time);
         vb.setVariable(RAIN, rain);
         vb.setVariable(THUNDER, thunder);
-        BlockPos pos = ClientFrameTicker.getCameraPos();
-        vb.setVariable(POS_X, pos.getX());
-        vb.setVariable(POS_Y, pos.getY());
-        vb.setVariable(POS_Z, pos.getZ());
+        var pos = ClientFrameTicker.getCameraPos();
+        vb.setVariable(POS_X, pos.x());
+        vb.setVariable(POS_Y, pos.y());
+        vb.setVariable(POS_Z, pos.z());
         if (usesBiome) {
             var biome = ClientFrameTicker.getCameraBiome();
             if (biome == null) {

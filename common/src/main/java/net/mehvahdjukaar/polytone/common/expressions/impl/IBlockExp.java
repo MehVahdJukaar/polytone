@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 public interface IBlockExp {
 
@@ -15,10 +16,11 @@ public interface IBlockExp {
                             aDouble -> (level, pos, state) -> aDouble,
                             iBlockExp -> 0.0
                     ),
-                    BlockContextExpression.CODEC, BlockExp.TYPE.codec())
+                    BlockContextExpression.CODEC,
+                    BlockExp.TYPE.codec())
     );
 
-    double evaluate(LevelReader level, BlockPos pos, BlockState state);
+    double evaluate(LevelReader level, Vec3 pos, BlockState state);
 
     IBlockExp ZERO = (a, b, c) -> 0.0;
     IBlockExp ONE = (a, b, c) -> 1.0;

@@ -89,25 +89,26 @@ public record BlockParticleEmitter(
         if (source != spawnSource){
             return; //only spawn particles on the correct tick source
         }
-        double spawnChance = chance.evaluate(level, pos, state);
+        Vec3 v = pos.getCenter();
+        double spawnChance = chance.evaluate(level, v, state);
         if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(pos);
                 if (!biomes.get().contains(biome)) return;
             }
-            for (int i = 0; i < count.evaluate(level, pos, state); i++) {
+            for (int i = 0; i < count.evaluate(level, v, state); i++) {
                 CustomParticleInstance.setStateHack(state);
 
                 ParticleOptions po = getParticleOptions(level, pos, state);
                 if (po == null) return;
                 var pp = spawnLocation.getLocation(pos, state, level.random);
                 level.addAlwaysVisibleParticle(po,
-                        pp.x() + x.evaluate(level, pos, state),
-                        pp.y() + y.evaluate(level, pos, state),
-                        pp.z() + z.evaluate(level, pos, state),
-                        dx.evaluate(level, pos, state),
-                        dy.evaluate(level, pos, state),
-                        dz.evaluate(level, pos, state)
+                        pp.x() + x.evaluate(level, v, state),
+                        pp.y() + y.evaluate(level, v, state),
+                        pp.z() + z.evaluate(level, v, state),
+                        dx.evaluate(level, v, state),
+                        dy.evaluate(level, v, state),
+                        dz.evaluate(level, v, state)
                 );
             }
         }
@@ -120,13 +121,14 @@ public record BlockParticleEmitter(
 
         if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().identifier())) {
             Map<String, Float> map = new HashMap<>();
-            r.ifPresent(exp -> map.put("red", (float) exp.evaluate(level, pos, state)));
-            g.ifPresent(exp -> map.put("green", (float) exp.evaluate(level, pos, state)));
-            b.ifPresent(exp -> map.put("blue", (float) exp.evaluate(level, pos, state)));
-            a.ifPresent(exp -> map.put("alpha", (float) exp.evaluate(level, pos, state)));
-            roll.ifPresent(exp -> map.put("roll", (float) exp.evaluate(level, pos, state)));
-            size.ifPresent(exp -> map.put("size", (float) exp.evaluate(level, pos, state)));
-            custom.ifPresent(exp -> map.put("custom", (float) exp.evaluate(level, pos, state)));
+            Vec3 v = pos.getCenter();
+            r.ifPresent(exp -> map.put("red", (float) exp.evaluate(level, v, state)));
+            g.ifPresent(exp -> map.put("green", (float) exp.evaluate(level, v, state)));
+            b.ifPresent(exp -> map.put("blue", (float) exp.evaluate(level, v, state)));
+            a.ifPresent(exp -> map.put("alpha", (float) exp.evaluate(level, v, state)));
+            roll.ifPresent(exp -> map.put("roll", (float) exp.evaluate(level, v, state)));
+            size.ifPresent(exp -> map.put("size", (float) exp.evaluate(level, v, state)));
+            custom.ifPresent(exp -> map.put("custom", (float) exp.evaluate(level, v, state)));
             return new ExtraDataParticleOptions(map, particleTypeValue);
         }
 

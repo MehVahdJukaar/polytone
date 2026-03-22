@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.content.biome;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
@@ -13,6 +14,7 @@ import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.attribute.modifier.FloatModifier;
@@ -23,8 +25,7 @@ import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 public record BiomeEffectModifier(Optional<Integer> waterColor,
@@ -49,6 +50,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     public static final Codec<BiomeEffectModifier> CODEC = CodecUtils.postProcess(DIRECT_CODEC,
             ColorUtils.COLOR.optionalFieldOf("fog_color"),
             ColorUtils.COLOR.optionalFieldOf("sky_color"),
+            //shitty backward compat. todo: remove
             CodecUtils.optionalAlias(FogParam.CODEC, "fog_fade", "fog_start"),
             CodecUtils.optionalAlias(FogParam.CODEC, "fog_radius", "fog_end"),
             (b, fog, sky, fogFade, fogRadius) -> {
@@ -69,6 +71,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                 });
 
                 if (!builder.isEmpty()) {
+                    Polytone.LOGGER.warn("Pack applied some biome modifiers fog modification using the old convention. This won't be supported in the future! They need to be converted to environment attribute modifications!");
                     return b.merge(ofAttributes(
                             b.attributeModifications.merge(
                                     BiomeEnvAttributeModifications.baseOnly(builder.build())
@@ -265,6 +268,13 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
 
             return oldBase;
         }
+
+        public Collection<EnvironmentAttribute<?>> getAllModifiedAttributes() {
+            Set<EnvironmentAttribute<?>> set = new HashSet<>();
+            set.addAll(postProcess.getAlteredEntries());
+            set.addAll(baseMod.getAlteredEntries());
+            return set;
+        }
     }
 
 
@@ -298,7 +308,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
 
         @Override
         public float get(Level level) {
-            BlockPos pos = ClientFrameTicker.getCameraPos();
+            var pos = ClientFrameTicker.getCameraPos();
             return (float) map.evaluate(level, pos, Blocks.AIR.defaultBlockState());
         }
     }

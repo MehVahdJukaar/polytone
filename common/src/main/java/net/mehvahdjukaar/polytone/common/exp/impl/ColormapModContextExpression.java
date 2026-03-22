@@ -19,6 +19,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public class ColormapModContextExpression extends ColormapExpressionProvider implements IColormapModExp {
@@ -46,14 +47,15 @@ public class ColormapModContextExpression extends ColormapExpressionProvider imp
 
 
     public float evaluate(float r, float g, float b, @Nullable BlockAndTintGetter level, @Nullable BlockState state,
-                          @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+                          @Nullable Vec3 pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
         //mega ugly
 
+        BlockPos bp = pos == null ? BlockPos.ZERO : BlockPos.containing(pos);
         if (pos == null) {
-            pos = BlockPos.ZERO;
+            pos = Vec3.ZERO;
             ExpressionUtils.randomizeRandom();
         } else {
-            ExpressionUtils.seedRandom(pos.hashCode() * pos.asLong());
+            ExpressionUtils.seedRandom(pos.hashCode() * bp.asLong());
         }
         IExpression.IVars vb = expression.varBuilder();
 
@@ -62,9 +64,9 @@ public class ColormapModContextExpression extends ColormapExpressionProvider imp
         vb.setVariable(BLUE, b);
 
         if (hasPos) {
-            vb.setVariable(POS_X, pos.getX());
-            vb.setVariable(POS_Y, pos.getY());
-            vb.setVariable(POS_Z, pos.getZ());
+            vb.setVariable(POS_X, pos.x());
+            vb.setVariable(POS_Y, pos.y());
+            vb.setVariable(POS_Z, pos.z());
         }
 
         if (hasTime) vb.setVariable(TIME, ClientFrameTicker.getGameTime());
@@ -74,9 +76,9 @@ public class ColormapModContextExpression extends ColormapExpressionProvider imp
         if (hasSeason) vb.setVariable(PolytoneExpression.SEASON, ExpTicker.getSeasonNumber());
 
         if (hasSkyLight)
-            vb.setVariable(SKY_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.SKY, pos));
+            vb.setVariable(SKY_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.SKY, bp));
         if (hasBlockLight)
-            vb.setVariable(BLOCK_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.BLOCK, pos));
+            vb.setVariable(BLOCK_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.BLOCK, bp));
         if (hasTemperature)
             vb.setVariable(PolytoneExpression.TEMPERATURE, biome != null ? ColorUtils.getClimateSettings(biome).temperature : 0);
         if (hasDownfall)
@@ -90,9 +92,9 @@ public class ColormapModContextExpression extends ColormapExpressionProvider imp
         }
         if (hasDistance) {
             Entity e = Minecraft.getInstance().getCameraEntity();
-            double x = pos.getX() - e.getX();
-            double y = pos.getY() - e.getY();
-            double z = pos.getZ() - e.getZ();
+            double x = pos.x() - e.getX();
+            double y = pos.y() - e.getY();
+            double z = pos.z() - e.getZ();
             vb.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
         }
         if (hasPlayerSpeed) {

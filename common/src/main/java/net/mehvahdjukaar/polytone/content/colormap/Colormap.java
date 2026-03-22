@@ -21,6 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -169,11 +170,11 @@ public final class Colormap implements IColorGetter, ColorResolver {
             biome = l.getBiome(pos).value();
         }
 
-        return sampleColor(level, state, pos, biome, null);
+        return sampleColor(level, state, pos == null ? null : pos.getCenter(), biome, null);
     }
 
     @Override
-    public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable BlockPos pos,
+    public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
                            @Nullable Biome biome, @Nullable ItemStack item) {
         float temperature = Mth.clamp(xGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
         float humidity = Mth.clamp(yGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
@@ -191,16 +192,17 @@ public final class Colormap implements IColorGetter, ColorResolver {
         //this actually gets called when sodium is on as we cant define our own blend method
         Integer y = yHack.get();
         if (y == null) y = 0;
-        return this.sampleColor(levelHack.get(), stateHack.get(), BlockPos.containing(x, y, z), biome, null);
+        return this.sampleColor(levelHack.get(), stateHack.get(), new Vec3(x, y, z), biome, null);
     }
 
     //calculate color blend. could just use vanilla impl tbh since we got above hack for sodium anyway
-    public int calculateBlendedColor(Level level, BlockPos pos) {
+    public int calculateBlendedColor(Level level, Vec3 p) {
+        BlockPos pos = BlockPos.containing(p);
         //Same as vanilla impl. We could have just called it. Just here so we call sampleColor instead of getColor with pos instead of x z
         int i = Minecraft.getInstance().options.biomeBlendRadius().get();
         BlockState state = stateHack.get();
         if (i == 0) {
-            return this.sampleColor(level, state, pos, level.getBiome(pos).value(), null);
+            return this.sampleColor(level, state, p, level.getBiome(pos).value(), null);
         } else {
             int j = (i * 2 + 1) * (i * 2 + 1);
             int k = 0;
@@ -211,7 +213,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
             int n;
             for (BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos(); cursor3D.advance(); m += n & 255) {
                 mutableBlockPos.set(cursor3D.nextX(), cursor3D.nextY(), cursor3D.nextZ());
-                n = this.sampleColor(level, state, mutableBlockPos, level.getBiome(mutableBlockPos).value(), null);
+                n = this.sampleColor(level, state, mutableBlockPos.getCenter(), level.getBiome(mutableBlockPos).value(), null);
                 k += (n & 16711680) >> 16;
                 l += (n & '\uff00') >> 8;
             }
@@ -245,16 +247,16 @@ public final class Colormap implements IColorGetter, ColorResolver {
     //for items
     @Override
     public int getItemColor(ItemStack itemStack, int i) {
-        BlockPos pos = null;
+        Vec3 pos = null;
         Biome biome = null;
         var level = Minecraft.getInstance().level;
         var player = Minecraft.getInstance().player;
         if (player == null) return defaultColor;
-        pos = player.blockPosition();
+        pos = player.position();
         //we never ue blending. its overkill here
         if (usesBiome) {
             if (level == null) return defaultColor;
-            biome = level.getBiome(pos).value();
+            biome = level.getBiome(BlockPos.containing(pos)).value();
         }
         return sampleColor(player.level(), null, pos, biome, itemStack);
     }
