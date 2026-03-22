@@ -26,6 +26,8 @@ import org.joml.Quaternionf;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CustomParticleInstance extends SingleQuadParticle {
 
@@ -185,6 +187,12 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     public void tick() {
+        if (Polytone.CONFIGS.particlesOffThread.get()) {
+            PARTICLE_TREAD.submit(this::tickInternal);
+        } else tickInternal();
+    }
+
+    private void tickInternal() {
         if (!this.type.isValid()) {
             this.remove();
             return;
@@ -266,4 +274,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
     public void setAge(int i) {
         this.age = i;
     }
+
+    private static final ExecutorService PARTICLE_TREAD = Executors.newWorkStealingPool();
 }

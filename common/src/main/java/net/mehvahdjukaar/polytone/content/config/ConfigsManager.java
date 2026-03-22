@@ -31,12 +31,12 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-//TODO: make these per pack instead? since we load configs per pack. only issue is that for expressions these arent per pack...
 public class ConfigsManager extends JsonPartialReloader {
 
     public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);
     public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", true);
     public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", 1);
+    public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false);
 
     private static @NonNull OptionHolder<Boolean> builtinConfig(String id, boolean def) {
         return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), 1, def), Polytone.res(id));
@@ -213,6 +213,7 @@ public class ConfigsManager extends JsonPartialReloader {
         configs.register(lenientLoading.fileId, lenientLoading);
         configs.register(legacyParsing.fileId, legacyParsing);
         configs.register(particlesThrottle.fileId, particlesThrottle);
+        configs.register(particlesOffThread.fileId, particlesOffThread);
 
         Map<Identifier, PolyConfig<?>> parsed = new HashMap<>();
         //ignoring conditions here purposefully

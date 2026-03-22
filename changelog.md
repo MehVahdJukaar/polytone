@@ -1,2 +1,3 @@
-- fixed hard cast in entity modifiers
-- tweaked custom particles age
+- made some colormap code run off float positions rather than discrete integer ones
+- the attribute post layer is now always interpolated even if the attribute normlaly wouldn't support it
+- added an experimental config that makes custom particles tick off thread asyncronously
