@@ -64,7 +64,7 @@ public class SemiCustomParticleType implements CustomParticleFactory {
 
     @Nullable
     @Override
-    public Particle createParticle(ParticleOptions opt, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
+    public Particle createParticle(ParticleOptions opt, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
         try {
             if (copyType.isEmpty()) {
                 return null;
@@ -84,6 +84,10 @@ public class SemiCustomParticleType implements CustomParticleFactory {
                 //initialize
                 if (initializer != null && particle instanceof SingleQuadParticle sp) {
                     initializer.initialize(sp, level, state, pos);
+
+                    if(opt instanceof ExtraDataParticleOptions eo) {
+                        eo.apply(particle);
+                    }
                 }
 
                 if (opt instanceof ExtraDataParticleOptions eo) eo.apply(particle);

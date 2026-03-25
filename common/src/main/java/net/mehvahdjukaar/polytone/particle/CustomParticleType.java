@@ -15,7 +15,6 @@ import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.mehvahdjukaar.polytone.utils.codec.BiggerCodecs;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.renderer.LightTexture;
@@ -26,7 +25,9 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleGroup;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
@@ -144,11 +145,6 @@ public class CustomParticleType implements CustomParticleFactory {
         return forceSpawn;
     }
 
-    @Override
-    public @Nullable ModelResourceLocation getCustomModel() {
-        return this.model;
-    }
-
     public static void setStateHack(BlockState state) {
         STATE_HACK = state;
     }
@@ -157,14 +153,15 @@ public class CustomParticleType implements CustomParticleFactory {
         return renderType;
     }
 
+
     @Override
-    public Particle createParticle(ExtraDataParticleOptions opt, ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                                   @Nullable BlockState state) {
+    public Particle createParticle(ParticleOptions opt, ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
         if (spriteSet != null) {
             // some people might want this
 
+            BlockState state = opt instanceof BlockParticleOption bp ? bp.getState() : null;
             Instance newParticle = new Instance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this);
-            opt.apply(newParticle);
+            if (opt instanceof ExtraDataParticleOptions eo) eo.apply(newParticle);
             if (this.hasPhysics) {
                 for (VoxelShape voxelShape : world.getBlockCollisions(null, newParticle.getBoundingBox())) {
                     if (!voxelShape.isEmpty()) {
@@ -212,10 +209,10 @@ public class CustomParticleType implements CustomParticleFactory {
     @Override
     public void setSpriteSet(ParticleEngine.MutableSpriteSet mutableSpriteSet) {
         this.spriteSet = mutableSpriteSet;
-        try{
-            spriteSet.get( RandomSource.create());
-        }catch (Exception e){
-            throw new RuntimeException("SpriteSet for custom particle type "+this+" was empty! Did you forget to add a particle sprites file?", e);
+        try {
+            spriteSet.get(RandomSource.create());
+        } catch (Exception e) {
+            throw new RuntimeException("SpriteSet for custom particle type " + this + " was empty! Did you forget to add a particle sprites file?", e);
         }
     }
 

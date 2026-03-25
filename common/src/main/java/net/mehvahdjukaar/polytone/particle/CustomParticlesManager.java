@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -137,7 +138,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
         for (var c : customParticleFactories.getEntries()) {
             var factory = c.getValue();
             var id = c.getKey();
-            ParticleType<ExtraDataParticleOptions> type = PlatStuff.makeParticleType(factory.forceSpawns());
+            ParticleType<ParticleOptions> type = PlatStuff.makeParticleType(factory.forceSpawns());
             PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
             particleEngine.register(type, factory);
         }
