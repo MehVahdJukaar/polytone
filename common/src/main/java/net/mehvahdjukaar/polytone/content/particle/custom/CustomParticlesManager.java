@@ -17,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -141,7 +142,7 @@ public class CustomParticlesManager extends JsonPartialReloader {
                 }
 
             } else {
-                ParticleType<ExtraDataParticleOptions> type = PlatStuff.makeParticleType(factory.forceSpawns());
+                ParticleType<ParticleOptions> type = PlatStuff.makeParticleType(factory.forceSpawns());
                 PlatStuff.registerDynamic(BuiltInRegistries.PARTICLE_TYPE, id, type);
                 particleResources.register(type, factory);
                 customParticleFactories.register(id, factory);

@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.fabric;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.serialization.MapCodec;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
@@ -35,9 +36,12 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.PackType;
@@ -246,12 +250,12 @@ public class PlatStuffImpl {
                 .getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getId(type), provider);
     }
 
-    public static ParticleType<ExtraDataParticleOptions> makeParticleType(boolean forceSpawn) {
+    public static ParticleType<ParticleOptions> makeParticleType(boolean forceSpawn) {
         AtomicReference<ParticleType<ExtraDataParticleOptions>> ref = new AtomicReference<>();
-        var instance = FabricParticleTypes.complex(forceSpawn,
-                ExtraDataParticleOptions.codec(ref::get),
-                ExtraDataParticleOptions.streamCodec(ref::get));
-        ref.set(instance);
+        MapCodec<ParticleOptions> codec = (MapCodec) ExtraDataParticleOptions.codec(ref::get);
+        StreamCodec<RegistryFriendlyByteBuf, ParticleOptions> streamCodec = (StreamCodec) ExtraDataParticleOptions.streamCodec(ref::get);
+        ParticleType<ParticleOptions> instance = FabricParticleTypes.complex(forceSpawn, codec, streamCodec);
+        ref.set((ParticleType) instance);
         return instance;
     }
 
@@ -389,7 +393,7 @@ public class PlatStuffImpl {
     }
 
     public static Path getGamePath() {
-            return FabricLoader.getInstance().getGameDir();
+        return FabricLoader.getInstance().getGameDir();
     }
 
     public static String getModVersion(String modId) {

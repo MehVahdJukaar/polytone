@@ -25,6 +25,7 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -91,21 +92,21 @@ public class PlatStuffImpl {
         particleEngine.resourceManager.getProviders().remove(id);
     }
 
-    public static ParticleType<ExtraDataParticleOptions> makeParticleType(boolean forceSpawn) {
+    public static ParticleType<ParticleOptions> makeParticleType(boolean forceSpawn) {
         AtomicReference<ParticleType<ExtraDataParticleOptions>> ref = new AtomicReference<>();
-        ParticleType<ExtraDataParticleOptions> instance = new ParticleType<>(forceSpawn) {
+        ParticleType<ParticleOptions> instance = new ParticleType<>(forceSpawn) {
 
             @Override
-            public MapCodec<ExtraDataParticleOptions> codec() {
-                return ExtraDataParticleOptions.codec(ref::get);
+            public MapCodec<ParticleOptions> codec() {
+                return (MapCodec) ExtraDataParticleOptions.codec(ref::get);
             }
 
             @Override
-            public StreamCodec<? super RegistryFriendlyByteBuf, ExtraDataParticleOptions> streamCodec() {
-                return ExtraDataParticleOptions.streamCodec(ref::get);
+            public StreamCodec<? super RegistryFriendlyByteBuf, ParticleOptions> streamCodec() {
+                return (StreamCodec) ExtraDataParticleOptions.streamCodec(ref::get);
             }
         };
-        ref.set(instance);
+        ref.set((ParticleType) instance);
         return instance;
     }
 

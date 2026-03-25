@@ -15,7 +15,9 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleLimit;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
@@ -136,22 +138,16 @@ public class CustomParticleType implements ICustomParticleFactory {
     }
 
     @Override
-    public @Nullable Identifier getCustomModel() {
-        return this.model;
-    }
-
-    @Override
-    public Particle createParticleWithState(ExtraDataParticleOptions opt, ClientLevel world,
-                                            double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                                            @Nullable BlockState state, RandomSource random) {
+    public Particle createParticle(ParticleOptions opt, ClientLevel world,
+                                   double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
         if (!spritePicker.hasSprites()) {
             throw new IllegalStateException("Sprite set not set for custom particle type");
         }
 
-        // some people might want this
+        BlockState state = opt instanceof BlockParticleOption bp ? bp.getState() : null;
 
         CustomParticleInstance newParticle = new CustomParticleInstance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this);
-        opt.apply(newParticle);
+        if (opt instanceof ExtraDataParticleOptions ep) ep.apply(newParticle);
         if (this.hasPhysics) {
             for (VoxelShape voxelShape : world.getBlockCollisions(null, newParticle.getBoundingBox())) {
                 if (!voxelShape.isEmpty()) {

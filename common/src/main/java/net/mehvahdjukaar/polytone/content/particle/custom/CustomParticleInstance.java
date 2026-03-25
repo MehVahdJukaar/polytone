@@ -31,6 +31,8 @@ import java.util.concurrent.Executors;
 
 public class CustomParticleInstance extends SingleQuadParticle {
 
+    private static final ExecutorService PARTICLE_THREAD = Executors.newWorkStealingPool();
+
     protected final CustomParticleType type;
     protected final @Nullable QuadCollection model;
     protected final LiquidAffinity liquidAffinity;
@@ -188,7 +190,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
     @Override
     public void tick() {
         if (Polytone.CONFIGS.particlesOffThread.get()) {
-            PARTICLE_TREAD.submit(this::tickInternal);
+            PARTICLE_THREAD.submit(this::tickInternal);
         } else tickInternal();
     }
 
@@ -275,5 +277,4 @@ public class CustomParticleInstance extends SingleQuadParticle {
         this.age = i;
     }
 
-    private static final ExecutorService PARTICLE_TREAD = Executors.newWorkStealingPool();
 }

@@ -14,6 +14,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -70,8 +71,7 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
 
     @Nullable
     @Override
-    public Particle createParticleWithState(ExtraDataParticleOptions opt, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                                            @Nullable BlockState state, RandomSource random) {
+    public Particle createParticle(ParticleOptions opt, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
         try {
             if (copyType.isEmpty()) {
                 return null;
@@ -81,6 +81,9 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
             }
 
             if (copyProvider != null) {
+
+                BlockState state = opt instanceof BlockParticleOption bo ? bo.getState() : null;
+
                 var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) copyType.get()), level, x, y, z, xSpeed, ySpeed, zSpeed, random);
 
                 BlockPos pos = BlockPos.containing(x, y, z);
@@ -90,7 +93,7 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
                     initializer.initialize(sqp, level, state, pos);
 
 
-                    opt.apply(sqp);
+                    if (opt instanceof ExtraDataParticleOptions eo) eo.apply(sqp);
                 }
 
                 if (particle != null) {
