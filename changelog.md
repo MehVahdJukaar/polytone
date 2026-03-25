@@ -1,1 +1,1 @@
-fixed an issue with animated textures
+fixed an issue with custom particle generics
