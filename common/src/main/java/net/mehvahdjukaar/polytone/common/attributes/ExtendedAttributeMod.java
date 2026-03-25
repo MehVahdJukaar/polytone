@@ -4,7 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.common.expressions.impl.ICameraExp;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.Minecraft;
@@ -26,9 +26,9 @@ public class ExtendedAttributeMod {
 
             return Codec.either(originalCodec, (Codec) intCodec);
         } else if (type == AttributeTypes.FLOAT || type == AttributeTypes.ANGLE_DEGREES) {
-            Codec<Supplier<Float>> flaotCodec = ICameraExp.CODEC
-                    .xmap(e -> () -> (float) e.evaluate(),
-                            ex -> ICameraExp.ZERO);
+            Codec<Supplier<Float>> flaotCodec = IBlockExp.CODEC
+                    .xmap(e -> () -> (float) e.evaluate(Minecraft.getInstance().level, ClientFrameTicker.getCameraPos(), null),
+                            ex -> IBlockExp.ZERO);
             return Codec.either(originalCodec, (Codec) flaotCodec);
         }
         return CodecUtils.eitherLeft(originalCodec);

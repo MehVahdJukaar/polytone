@@ -30,6 +30,7 @@ import net.mehvahdjukaar.polytone.content.tabs.CreativeTabsModifiersManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.client.renderer.fog.environment.FogEnvironment;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -112,8 +113,10 @@ public class Polytone {
         PolytoneRenderTypes.init();
         if (CompatHandler.IRIS) IrisCompat.init();
 
+        //weather darken and other fog custom
+        //independent fog env fog and sky fog stuff. also independent from render distnace
+        //starts customizaton
         //TODO: expression driven overlays and customization for existing ones
-        //TODO: server resource pack
         //TODO: custom block breaking particles
         //TODO: custom place particles
         //TODO: block mobs from emitting particles. like blaze

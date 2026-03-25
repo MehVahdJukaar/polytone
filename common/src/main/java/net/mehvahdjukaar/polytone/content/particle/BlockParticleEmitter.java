@@ -89,6 +89,9 @@ public record BlockParticleEmitter(
         if (source != spawnSource){
             return; //only spawn particles on the correct tick source
         }
+        float throttle = Polytone.CONFIGS.particlesThrottle.get();
+        if (throttle < 1 && level.random.nextFloat() > throttle) return;
+
         Vec3 v = pos.getCenter();
         double spawnChance = chance.evaluate(level, v, state);
         if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {

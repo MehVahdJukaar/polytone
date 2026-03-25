@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.mvel2.MVEL;
 
 import java.io.Serializable;
@@ -32,7 +33,7 @@ public class BlockExp extends PolyExp implements IBlockExp {
     }
 
     @Override
-    public double evaluate(LevelReader level, Vec3 pos, BlockState state) {
+    public double evaluate(LevelReader level, Vec3 pos, @Nullable BlockState state) {
         BlockProxy obj = new BlockProxy(level, pos, state);
         Map<String, Object> vars = new HashMap<>();
         ExpUtils.addCommonVars(vars);

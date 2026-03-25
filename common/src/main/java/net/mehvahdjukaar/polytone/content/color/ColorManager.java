@@ -15,13 +15,14 @@ import net.mehvahdjukaar.polytone.common.exp.impl.EntityContextExpression;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.common.reloader.SingleJsonOrPropertiesReloadListener;
 import net.mehvahdjukaar.polytone.common.struc.Vec3f;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.content.color.fog_env.FogEnvironmentMod;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.ColorLerper;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
-import net.minecraft.client.renderer.fog.environment.FogEnvironment;
+import net.minecraft.client.renderer.fog.FogRenderer;
+import net.minecraft.client.renderer.fog.environment.PowderedSnowFogEnvironment;
 import net.minecraft.client.resources.SplashManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ColorParticleOption;
@@ -40,11 +41,9 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.border.BorderStatus;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -71,6 +70,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     protected final int[] originalRedstoneWireColors = Arrays.copyOf(RedStoneWireBlock.COLORS, RedStoneWireBlock.COLORS.length);
 
     protected final Style originalSplash = SplashManager.DEFAULT_STYLE;
+
+    protected final int originalPowderSnowColor = PowderedSnowFogEnvironment.COLOR;
+    @Nullable
+    protected FogEnvironmentMod powderSnowFogMod = null;
+    @Nullable
+    protected FogEnvironmentMod lavaFogMod = null;
 
     @Nullable
     Identifier xpOrbParticle;
@@ -143,9 +148,14 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             } else Polytone.LOGGER.warn("Unknown MapColor with name {}", k);
         });
 
-        doWith(obj, "environment", (k, v) -> {
-            if (k.equals("flash")) {
-                skyFlashColor = parseColor(v);
+        doWith(obj, "environment", (k, e) -> {
+            if (Objects.equals(k, "flash")) {
+                skyFlashColor = parseColor(e);
+            } else {
+                doWith(e, "fog", (ka, va) -> {
+                    powderSnowFogMod = get(va, "powder_snow", FogEnvironmentMod.CODEC);
+                    lavaFogMod = get(va, "lava", FogEnvironmentMod.CODEC);
+                });
             }
         });
 
@@ -180,6 +190,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 }
             }
         });
+
 
         doWith(obj, "particle", (k, v) -> {
             Identifier id = Identifier.parse(k.replace("\\", ""));
@@ -243,7 +254,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     }
 
                     effect.color = col;
-                    effect.particleFactory =  mobEffectInstance -> {
+                    effect.particleFactory = mobEffectInstance -> {
                         int alpha = mobEffectInstance.isAmbient() ? AMBIENT_ALPHA : 255;
                         return ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, ARGB.color(alpha, col));
                     };
@@ -353,7 +364,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         tc.value = col;
     }
 
-    private static void doWith(JsonObject obj, String key, BiConsumer<String, JsonElement> entryHandler) {
+    private static void doWith(JsonElement o, String key, BiConsumer<String, JsonElement> entryHandler) {
+        if (!(o instanceof JsonObject obj)) return;
         try {
             if (obj.has(key)) {
                 JsonObject sub = GsonHelper.getAsJsonObject(obj, key);
@@ -380,6 +392,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         return Collections.emptySet();
     }
 
+    @Nullable
     private static <T> T get(JsonElement element, String key, Codec<T> codec) {
         if (element instanceof JsonObject jo) {
             JsonElement joo = jo.get(key);
