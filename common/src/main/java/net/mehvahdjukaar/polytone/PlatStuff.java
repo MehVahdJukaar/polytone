@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.*;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -248,9 +249,9 @@ public class PlatStuff {
         return reference;
     }
 
-
+    //must be weakest generic otherwise we could have crashes when people assume the old generic due to implicit methods
     @ExpectPlatform
-    public static ParticleType<ExtraDataParticleOptions> makeParticleType(boolean forceSpawn) {
+    public static ParticleType<ParticleOptions> makeParticleType(boolean forceSpawn) {
         throw new AssertionError();
     }
 

@@ -14,6 +14,7 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -63,8 +64,7 @@ public class SemiCustomParticleType implements CustomParticleFactory {
 
     @Nullable
     @Override
-    public Particle createParticle(ExtraDataParticleOptions opt, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
-                                   @Nullable BlockState state) {
+    public Particle createParticle(ParticleOptions opt, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
         try {
             if (copyType.isEmpty()) {
                 return null;
@@ -74,6 +74,9 @@ public class SemiCustomParticleType implements CustomParticleFactory {
             }
 
             if (copyProvider != null) {
+
+                BlockState state = opt instanceof BlockParticleOption bo ? bo.getState() : null;
+
                 var particle = ((ParticleProvider) copyProvider).createParticle(((ParticleOptions) copyType.get()), level, x, y, z, xSpeed, ySpeed, zSpeed);
 
                 BlockPos pos = BlockPos.containing(x, y, z);
@@ -83,7 +86,7 @@ public class SemiCustomParticleType implements CustomParticleFactory {
                     initializer.initialize(sp, level, state, pos);
                 }
 
-                opt.apply(particle);
+                if (opt instanceof ExtraDataParticleOptions eo) eo.apply(particle);
 
                 if (particle != null) {
                     particle.hasPhysics = this.hasPhysics;
