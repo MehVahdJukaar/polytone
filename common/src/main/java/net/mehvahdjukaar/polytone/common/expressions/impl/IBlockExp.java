@@ -7,6 +7,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface IBlockExp {
 
@@ -20,7 +22,7 @@ public interface IBlockExp {
                     BlockExp.TYPE.codec())
     );
 
-    double evaluate(LevelReader level, Vec3 pos, BlockState state);
+    double evaluate(LevelReader level, Vec3 pos, @Nullable BlockState state);
 
     IBlockExp ZERO = (a, b, c) -> 0.0;
     IBlockExp ONE = (a, b, c) -> 1.0;

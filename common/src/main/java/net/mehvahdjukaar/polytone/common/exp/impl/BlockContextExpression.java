@@ -12,12 +12,12 @@ import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class BlockContextExpression extends PolytoneExpression implements IBlockExp {
 
@@ -53,9 +53,9 @@ public class BlockContextExpression extends PolytoneExpression implements IBlock
     }
 
     @Override
-    public double evaluate(LevelReader level, @NotNull Vec3 p, BlockState state) {
+    public double evaluate(LevelReader level, @NotNull Vec3 p, @Nullable BlockState state) {
         BlockPos pos = BlockPos.containing(p);
-        ExpressionUtils.seedRandom(state.getSeed(pos));
+        ExpressionUtils.seedRandom(state == null ? 42 : state.getSeed(pos));
 
         IExpression.IVars vars = expression.varBuilder();
 
@@ -77,7 +77,7 @@ public class BlockContextExpression extends PolytoneExpression implements IBlock
         if (hasDownfall)
             vars.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(pos).value()).downfall);
 
-        if (hasState) STATE_HACK.set(state);
+        if (hasState && state != null) STATE_HACK.set(state);
 
         if (hasPlayer) {
             var e = Minecraft.getInstance().getCameraEntity();

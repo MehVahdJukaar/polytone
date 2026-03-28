@@ -16,6 +16,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.client.renderer.fog.environment.AtmosphericFogEnvironment;
@@ -35,7 +36,6 @@ import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 public class FogRenderer   {
-    public static final int FOG_UBO_SIZE = new Std140SizeCalculator().putVec4().putFloat().putFloat().putFloat().putFloat().putFloat().putFloat().get();
     public static final List<FogEnvironment> FOG_ENVIRONMENTS = Lists.<FogEnvironment>newArrayList(
             new LavaFogEnvironment(),
             new PowderedSnowFogEnvironment(),
@@ -121,6 +121,7 @@ public class FogRenderer   {
         float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
         Vector4f fogColor = this.computeFogColor(camera, partialTicks, clientLevel, renderDistance, darkenWorldAmount);
         float blocksRenderDistance = renderDistance * 16;
+
         FogType fogType = this.getFogType(camera);
         Entity entity = camera.entity();
         FogData fogData = new FogData();
@@ -150,7 +151,7 @@ public class FogRenderer   {
     }
 
     @Environment(EnvType.CLIENT)
-    public static enum FogMode {
+    public enum FogMode {
         NONE,
         WORLD;
     }

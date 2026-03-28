@@ -21,7 +21,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.ColorLerper;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
-import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.fog.environment.PowderedSnowFogEnvironment;
 import net.minecraft.client.resources.SplashManager;
 import net.minecraft.core.HolderLookup;
@@ -76,6 +75,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     protected FogEnvironmentMod powderSnowFogMod = null;
     @Nullable
     protected FogEnvironmentMod lavaFogMod = null;
+    //TODO: add this
 
     @Nullable
     Identifier xpOrbParticle;
@@ -93,11 +93,21 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private Integer enchantTableXp = null;
 
     private Integer skyFlashColor = null;
+    private Integer voidDarknessOffset = null;
+    private Integer horizonHeight = null;
 
     @Nullable
     private Integer fishingLineColor = null;
     @Nullable
     private Vec3f fishingLineOffset = null;
+
+    //don't use pls
+    @Nullable
+    private Integer swampDark = null;
+    @Nullable
+    private Integer swampLight = null;
+    @Nullable
+    private Integer darkForest = null;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -110,12 +120,33 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         return skyFlashColor;
     }
 
+    public Integer getVoidDarknessOffset() {
+        return voidDarknessOffset;
+    }
+
+    public Integer getHorizonHeight() {
+        return horizonHeight;
+    }
+
     public Integer getXpBar() {
         return xpBar;
     }
 
     public Integer getXpBarBackground() {
         return xpBarBack;
+    }
+
+    //TODO: figure out a way to get that mixin to work
+    public @Nullable Integer getSpecialSwampDark() {
+        return swampDark;
+    }
+
+    public @Nullable Integer getSpecialSwampLight() {
+        return swampLight;
+    }
+
+    public @Nullable Integer getSpecialDarkForest() {
+        return darkForest;
     }
 
     @Override
@@ -149,14 +180,19 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         });
 
         doWith(obj, "environment", (k, e) -> {
-            if (Objects.equals(k, "flash")) {
-                skyFlashColor = parseColor(e);
-            } else {
-                doWith(e, "fog", (ka, va) -> {
-                    powderSnowFogMod = get(va, "powder_snow", FogEnvironmentMod.CODEC);
-                    lavaFogMod = get(va, "lava", FogEnvironmentMod.CODEC);
-                });
+            switch (k) {
+                case "sky_flash":
+                    skyFlashColor = parseColor(e);
+                case "void_darkness_offset":
+                    voidDarknessOffset = e.getAsInt();
+                case "horizon_height":
+                    horizonHeight = e.getAsInt();
             }
+        });
+
+        doWith(obj, "fog", (ka, va) -> {
+            powderSnowFogMod = get(va, "powder_snow", FogEnvironmentMod.CODEC);
+            lavaFogMod = get(va, "lava", FogEnvironmentMod.CODEC);
         });
 
         doWith(obj, "dye", (k, v) -> {
@@ -191,6 +227,20 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             }
         });
 
+        doWith(obj, "special_grass_color", (k, v) -> {
+            int hex = parseColor(v);
+            switch (k) {
+                case "swamp_dark" -> {
+                    swampDark = hex;
+                }
+                case "swamp_light" -> {
+                    swampLight = hex;
+                }
+                case "dark_forest" -> {
+                    darkForest = hex;
+                }
+            }
+        });
 
         doWith(obj, "particle", (k, v) -> {
             Identifier id = Identifier.parse(k.replace("\\", ""));
@@ -449,6 +499,11 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         xpOrbColorB = null;
         fishingLineOffset = null;
         fishingLineColor = null;
+        skyFlashColor = null;
+        voidDarknessOffset = null;
+        horizonHeight = null;
+        lavaFogMod = null;
+        powderSnowFogMod = null;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();

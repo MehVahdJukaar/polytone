@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -48,6 +49,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
 */
 
     public static ItemModifier ofBarColor(Colormap colormap) {
+
         return new ItemModifier(Optional.of(colormap),
                 Optional.empty(),
              //   List.of(),

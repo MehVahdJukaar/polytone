@@ -16,6 +16,7 @@
     "AnimationMetadataSectionMixin",
     "AnimationStateMixin",
     "AttributeProbeMixin",
+    "ClientLevelDataMixin",
     "ClientLevelMixin",
     "ColorResolverMixin",
     "ContextualBarRendererMixin",
