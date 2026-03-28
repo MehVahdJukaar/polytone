@@ -4,6 +4,7 @@ import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;

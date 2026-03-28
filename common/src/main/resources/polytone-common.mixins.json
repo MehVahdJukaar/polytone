@@ -4,11 +4,13 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
+    "DarkOakColorMixin",
     "EnvironmentAttributeSystemBuilderMixin",
     "OverlayEntryMixin",
     "OverlayIntermediateEntryMixin",
     "PackMixin",
-    "PackRepositoryMixin"
+    "PackRepositoryMixin",
+    "SwampColorMixin"
   ],
   "client": [
     "AbstractContainerMenuMixin",

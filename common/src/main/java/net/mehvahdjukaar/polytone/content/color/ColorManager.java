@@ -136,7 +136,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         return xpBarBack;
     }
 
-    //TODO: figure out a way to get that mixin to work
     public @Nullable Integer getSpecialSwampDark() {
         return swampDark;
     }

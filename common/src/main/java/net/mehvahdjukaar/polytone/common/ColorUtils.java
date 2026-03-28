@@ -91,4 +91,18 @@ public class ColorUtils {
     }
 
 
+    public static int blendColor(int original, int blend){
+            // unpack colors to float arrays [r, g, b] in 0..1
+            float[] orig = unpack(original);
+            float[] b = unpack(blend);
+
+            // average each channel
+            float r = (orig[0] + b[0]) / 2f;
+            float g = (orig[1] + b[1]) / 2f;
+            float bl = (orig[2] + b[2]) / 2f;
+
+            // pack back to integer
+            return pack(r, g, bl);
+    }
+
 }

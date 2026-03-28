@@ -116,6 +116,8 @@ public class Polytone {
         //weather darken and other fog custom
         //independent fog env fog and sky fog stuff. also independent from render distnace
         //starts customizaton
+        //fog env mod stuff
+        //script expression in slotify
         //TODO: expression driven overlays and customization for existing ones
         //TODO: custom block breaking particles
         //TODO: custom place particles

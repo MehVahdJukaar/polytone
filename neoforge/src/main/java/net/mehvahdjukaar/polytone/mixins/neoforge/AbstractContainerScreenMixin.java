@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.HopperScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -51,6 +52,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 
     @Inject(method = "init", at = @At("TAIL"))
     public void polytone$modifyLabels(CallbackInfo ci) {
+
         var m = Polytone.SLOTIFY.getGuiModifier(this);
         if (m != null) {
             this.titleLabelX += m.titleX();
