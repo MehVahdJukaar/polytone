@@ -70,16 +70,18 @@ public class PostShadersManager extends JsonPartialReloader {
         getOrCreateUniforms().update(projectionMatrix, viewMatrix, angle);
     }
 
+    public void tick() {
+        for (var j : effects) {
+            j.refreshEnabled();
+        }
+    }
+
     public void addPostPass(int width, int height, LevelTargetBundle targets, FrameGraphBuilder frameGraphBuilder, GpuBufferSlice gpuBufferSlice, CameraRenderState cameraRenderState) {
 
         ShaderManager sm = Minecraft.getInstance().getShaderManager();
         for (var e : effects) {
-            try {
-                PostChain pc = sm.getPostChain(e.postChain(), LevelTargetBundle.MAIN_TARGETS);
-                if (pc != null) pc.addToFrame(frameGraphBuilder, width, height, targets);
-            }catch (Exception ex) {
-
-            }
+            PostChain pc = e.getPostChain(sm);
+            if (pc != null) pc.addToFrame(frameGraphBuilder, width, height, targets);
         }
 
     }

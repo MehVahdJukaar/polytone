@@ -140,6 +140,8 @@ public class Polytone {
         ClientFrameTicker.onTick(level);
         ExpTicker.onTick(level);
         ENTITY_MODIFIERS.onTick(level);
+        POST_SHADERS.tick();
+
     }
 
     public static void onTagsReceived(HolderLookup.Provider registryAccess) {

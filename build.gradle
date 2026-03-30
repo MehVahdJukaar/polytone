@@ -225,7 +225,6 @@ tasks.register('buildAndPublishAll') {
     dependsOn ':fabric:curseforge'
     dependsOn ':fabric:modrinth'
     dependsOn ':publish'
-    finalizedBy 'gitTag'
 
     group = 'build'
     description = 'Runs clean, build, and publish neoforge and fabric'

@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 import org.jetbrains.annotations.NotNull;
 
 @BeanAliases
@@ -29,6 +30,21 @@ public class GlobalProxy {
 
     public String season() {
         return ISeason.get(delegate()).lowercaseName();
+    }
+
+    public String dimensionType() {
+        var level = delegate();
+        return level.dimension().identifier().toString();
+    }
+
+    public int skyType() {
+        var level = delegate();
+        DimensionType.Skybox skybox = level.dimensionType().skybox();
+        return switch (skybox) {
+            case NONE -> 0;
+            case OVERWORLD -> 1;
+            case END -> 2;
+        };
     }
 
     public double seasonNumber() {

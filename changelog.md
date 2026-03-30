@@ -1,2 +1,2 @@
-- added custom post shaders feature
-- added extra post shader uniform feature. check the wiki https://github.com/MehVahdJukaar/polytone/wiki/Shaders
+- added activation conditions to post shaders
+- more expressions methods

@@ -27,18 +27,27 @@ layout(std140) uniform Globals {
     int UseRgss;
 };
 
-
 // --- CONFIGURATION ---
 const float GodRayIntensity = 0.5;
-const int GodRaySamples = 60;       // Higher quality with jitter/dither
+const float MoonRayIntensity = 0.1;
+const int GodRaySamples = 50;          // Higher quality with jitter/dither
 const float Exposure = 0.25;
 const float Decay = 0.99;
 const float Density = 0.92;
 const float Weight = 0.25;
-const vec3 SunDirection = vec3(1.0, 0.0, 0.0); // Adjust based on your world North
+const float SunSize = 0.06;            // Radius of the solid disk
+const float SunGlow = 0.4;             // Intensity of the surrounding glow
 
-const float SunSize = 0.045;        // Radius of the solid sun disk
-const float SunGlow = 0.4;          // Intensity of the surrounding glow (0.0 to 1.0)
+// Transition width for crossfading (10 degrees in radians)
+const float TRANSITION_WIDTH = radians(12.0);
+
+// Sun colors
+const vec3 SUN_CORE = vec3(1.0, 1.0, 0.9);
+const vec3 SUN_GLOW = vec3(1.0, 0.7, 0.3);
+
+// Moon colors (slightly blue)
+const vec3 MOON_CORE = vec3(0.8, 0.9, 1.0);
+const vec3 MOON_GLOW = vec3(0.5, 0.6, 1.0);
 
 // Pseudo-random noise to break up banding/stepping artifacts
 float interleaved_gradient_noise(vec2 uv) {
@@ -49,59 +58,65 @@ float getDepth(vec2 pos) {
     return texture(InDepthSampler, pos).r;
 }
 
-vec3 getSunScreenPos(out bool isBehind) {
-vec3 sunDirWorld = normalize(vec3(
-    0.0,
-    sin(PolySunAngle),
-    cos(PolySunAngle)
-));
+// ----------------------------------------------------------------------
+// Compute screen position of a light source given its world direction angle
+// Returns: screen uv (if visible), 'isBehind' flag, and a fade factor when
+//          the light is near the screen edge.
+// ----------------------------------------------------------------------
+vec3 getLightScreenPos(float angle, out bool isBehind, out float screenFade) {
+    vec3 sunDirWorld = normalize(vec3(
+                                 cos(angle),
+                                 sin(angle),
+                                 0.0
+                                 ));
     vec3 camPos = vec3(PolyModelViewMat[3]);
-    vec3 sunPosWorld = camPos - sunDirWorld * 1000.0;
+    vec3 lightPosWorld = camPos - sunDirWorld * 1000.0;
 
-    vec4 sunClip = PolyProjMat * (PolyModelViewMat * vec4(sunPosWorld, 1.0));
+    vec4 lightClip = PolyProjMat * (PolyModelViewMat * vec4(lightPosWorld, 1.0));
 
-    // w <= 0 means the sun is behind the camera plane
-    isBehind = (sunClip.w <= 0.0);
-
+    isBehind = (lightClip.w <= 0.0);
     if (isBehind) return vec3(-1.0);
 
-    vec3 sunNDC = sunClip.xyz / sunClip.w;
-    return vec3(sunNDC.xy * 0.5 + 0.5, sunClip.w);
+    vec3 lightNDC = lightClip.xyz / lightClip.w;
+    vec2 uv = lightNDC.xy * 0.5 + 0.5;
+
+    // Fade out when the light approaches the screen edge
+    float distFromCenter = distance(uv, vec2(0.5, 0.5));
+    screenFade = smoothstep(1.5, 0.2, distFromCenter);
+    if (isBehind) screenFade = 0.0;
+
+    return vec3(uv, lightClip.w);
 }
 
-// Helper to get consistent sun shape for both drawing and ray sampling
-// Returns a square sun shape, consistent regardless of camera rotation
-float getSunShape(vec2 uv, vec2 sunPos) {
-    vec2 delta = uv - sunPos;
-
-    // Adjust for screen aspect ratio
+// ----------------------------------------------------------------------
+// Returns a square sun shape (hard core + soft glow) for a given UV
+// ----------------------------------------------------------------------
+float getSunShape(vec2 uv, vec2 lightUV) {
+    vec2 delta = uv - lightUV;
     float aspect = InSize.x / InSize.y;
     delta.x *= aspect;
-
     float dist = length(delta);
 
-    // Hard circular core
     float core = smoothstep(SunSize, SunSize * 0.8, dist);
-
-    // Optional circular glow (exponential falloff)
     float glow = exp(-dist / (SunSize * SunGlow)) * SunGlow;
-
     return core + glow;
 }
 
-vec3 computeGodRays(vec2 uv) {
+// ----------------------------------------------------------------------
+// Compute god rays for a single light source.
+// lightAngle   : world angle of the light (radians)
+// lightColor   : color of the light (will be multiplied with ray intensity)
+// ----------------------------------------------------------------------
+vec3 computeGodRaysForLight(float lightAngle, vec3 lightColor) {
     bool isBehind;
-    vec3 sunData = getSunScreenPos(isBehind);
-    vec2 sunUV = sunData.xy;
-
-    float distFromCenter = distance(sunUV, vec2(0,0));
-    float screenFade = smoothstep(1.5, 0.2, distFromCenter);
-    if (isBehind) screenFade = 0.0;
+    float screenFade;
+    vec3 lightData = getLightScreenPos(lightAngle, isBehind, screenFade);
     if (screenFade <= 0.0) return vec3(0.0);
 
-    vec2 deltaTexCoord = (uv - sunUV) * (1.0 / float(GodRaySamples)) * Density;
+    vec2 lightUV = lightData.xy;
 
-    vec2 samplingCoord = uv + (deltaTexCoord * interleaved_gradient_noise(gl_FragCoord.xy));
+    vec2 deltaTexCoord = (texCoord - lightUV) * (1.0 / float(GodRaySamples)) * Density;
+    vec2 samplingCoord = texCoord + (deltaTexCoord * interleaved_gradient_noise(gl_FragCoord.xy));
 
     vec3 rayColor = vec3(0.0);
     float illuminationDecay = 1.0;
@@ -109,46 +124,92 @@ vec3 computeGodRays(vec2 uv) {
     for (int i = 0; i < GodRaySamples; i++) {
         samplingCoord -= deltaTexCoord;
 
-        float borderMask = smoothstep(0.0, 0.08, samplingCoord.x) * smoothstep(1.0, 0.92, samplingCoord.x) * smoothstep(0.0, 0.08, samplingCoord.y) * smoothstep(1.0, 0.92, samplingCoord.y);
+        float borderMask = smoothstep(0.0, 0.08, samplingCoord.x) *
+        smoothstep(1.0, 0.92, samplingCoord.x) *
+        smoothstep(0.0, 0.08, samplingCoord.y) *
+        smoothstep(1.0, 0.92, samplingCoord.y);
 
         float sampleDepth = getDepth(samplingCoord);
-
-        // Use the shape-based intensity instead of a simple radius
-        float sunShapeIntensity = getSunShape(samplingCoord, sunUV);
-
-        // Only allow light if it's hitting the sky (not blocked by geometry)
+        float sunShapeIntensity = getSunShape(samplingCoord, lightUV);
         float lightSource = (sampleDepth > 0.999999) ? sunShapeIntensity : 0.0;
 
-        rayColor += vec3(lightSource) * illuminationDecay * Weight * borderMask;
+        rayColor += lightColor * lightSource * illuminationDecay * Weight * borderMask;
         illuminationDecay *= Decay;
     }
 
-    return rayColor * Exposure * GodRayIntensity * screenFade;
+    return rayColor * Exposure * screenFade;
+}
+
+// ----------------------------------------------------------------------
+// Determine the weights for sun and moon based on the current angle.
+// The weights are 0 or 1 except near 0 and π where they crossfade.
+// ----------------------------------------------------------------------
+void getLightWeights(float angle, out float sunWeight, out float moonWeight) {
+    // Map angle to [0, 2π) with t = angle + π
+    float t = angle + 3.14159;
+    t = mod(t, 2.0 * 3.14159);
+
+    if (t < TRANSITION_WIDTH) {
+        // Transition from moon (0) to sun (1) near t = 0 (angle = -π)
+        sunWeight = t / TRANSITION_WIDTH;
+    } else if (t < 3.14159 - TRANSITION_WIDTH) {
+        // Sun fully active (negative angles)
+        sunWeight = 1.0;
+    } else if (t < 3.14159 + TRANSITION_WIDTH) {
+        // Transition from sun to moon near t = π (angle = 0)
+        sunWeight = 1.0 - (t - (3.14159 - TRANSITION_WIDTH)) / (2.0 * TRANSITION_WIDTH);
+    } else if (t < 2.0 * 3.14159 - TRANSITION_WIDTH) {
+        // Moon fully active (positive angles)
+        sunWeight = 0.0;
+    } else {
+        // Transition from moon to sun near t = 2π (angle = π)
+        sunWeight = (t - (2.0 * 3.14159 - TRANSITION_WIDTH)) / TRANSITION_WIDTH;
+    }
+
+    moonWeight = 1.0 - sunWeight;
 }
 
 void main() {
-    vec2 sizeRatio = OutSize / InSize;
+    vec4 diffuseColor = texture(InSampler, texCoord);
 
-    // Compute improved God Rays
-    vec3 godRays = computeGodRays(texCoord);
+    // Determine sun/moon activation weights
+    float sunWeight, moonWeight;
+    getLightWeights(PolySunAngle, sunWeight, moonWeight);
 
-    // Apply geometry mask so rays don't brighten the sky itself (optional, looks cleaner)
+    // Compute god rays from both lights, scaled by their weights
+    vec3 godRays = vec3(0.0);
+    if (sunWeight > 0.0) {
+        godRays += computeGodRaysForLight(PolySunAngle, SUN_GLOW) * sunWeight * GodRayIntensity;
+    }
+    if (moonWeight > 0.0) {
+        godRays += computeGodRaysForLight(PolySunAngle + 3.14159, MOON_GLOW) * moonWeight * MoonRayIntensity;
+    }
+
+    // Apply geometry mask so rays don't brighten the sky itself
     float geometryMask = smoothstep(1.0, 0.999999, getDepth(texCoord));
-    // Add rays to scene
-     vec4 diffuseColor = texture(InSampler, texCoord);;
-    diffuseColor += vec4(godRays * geometryMask, 1);
+    diffuseColor.rgb += godRays * geometryMask;
 
-    // Draw Visual Sun Disk
-    bool isBehind;
-    vec3 sunData = getSunScreenPos(isBehind);
-
-    if (!isBehind) {
-        float shape = getSunShape(texCoord, sunData.xy);
-        vec3 coreColor = vec3(1.0, 1.0, 0.9);
-        vec3 glowColor = vec3(1.0, 0.7, 0.3);
-        diffuseColor += vec4( shape * mix(glowColor, coreColor, smoothstep(SunSize * 0.5, SunSize, shape)), 1);
+    // Draw visual disks (sun and moon) weighted by their activation
+    bool dummy;
+    float dummyFade;
+    // Sun disk
+    if (sunWeight > 0.0 && false) {
+        vec3 sunData = getLightScreenPos(PolySunAngle, dummy, dummyFade);
+        if (!dummy && dummyFade > 0.0) {
+            float shape = getSunShape(texCoord, sunData.xy);
+            vec3 diskColor = mix(SUN_GLOW, SUN_CORE, smoothstep(SunSize * 0.5, SunSize, shape));
+            diffuseColor.rgb += shape * diskColor * sunWeight;
+        }
+    }
+    // Moon disk
+    if (moonWeight > 0.0 && false) {
+        vec3 moonData = getLightScreenPos(PolySunAngle + 3.14159, dummy, dummyFade);
+        if (!dummy && dummyFade > 0.0) {
+            float shape = getSunShape(texCoord, moonData.xy);
+            vec3 diskColor = mix(MOON_GLOW, MOON_CORE, smoothstep(SunSize * 0.5, SunSize, shape));
+            diffuseColor.rgb += shape * diskColor * moonWeight;
+        }
     }
 
     fragColor = diffuseColor;
 }
-
