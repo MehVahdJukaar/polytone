@@ -1,1 +1,2 @@
-- hotfix fixing color expressions in env attributes returning 0
+- added custom post shaders feature
+- added extra post shader uniform feature. check the wiki https://github.com/MehVahdJukaar/polytone/wiki/Shaders
