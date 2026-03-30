@@ -6,7 +6,7 @@ uniform sampler2D InDepthSampler;
 in vec2 texCoord;
 out vec4 fragColor;
 
-layout(std140) uniform SamplerInfo {
+layout (std140) uniform SamplerInfo {
     vec2 OutSize;
     vec2 InSize;
 };
@@ -17,7 +17,7 @@ layout (std140) uniform PolyGlobals {
     float PolySunAngle;
 };
 
-layout(std140) uniform Globals {
+layout (std140) uniform Globals {
     ivec3 CameraBlockPos;
     vec3 CameraOffset;
     vec2 ScreenSize;
@@ -48,11 +48,11 @@ float getDepth(vec2 pos) {
 }
 
 vec3 getSunScreenPos(out bool isBehind) {
-vec3 sunDirWorld = normalize(vec3(
-    0.0,
-    sin(PolySunAngle),
-    cos(PolySunAngle)
-));
+    vec3 sunDirWorld = normalize(vec3(
+                                 cos(PolySunAngle),
+                                 sin(PolySunAngle),
+                                 0, 0
+                                 ));
     vec3 camPos = vec3(PolyModelViewMat[3]);
     vec3 sunPosWorld = camPos - sunDirWorld * 1000.0;
 
@@ -74,7 +74,7 @@ vec3 computeGodRays(vec2 uv) {
 
     // 1. DYNAMIC FADING
     // Fades the rays out as the sun moves toward the screen edges or behind the camera
-    float distFromCenter = distance(sunUV, vec2(0,0));
+    float distFromCenter = distance(sunUV, vec2(0, 0));
     float screenFade = smoothstep(1.5, 0.2, distFromCenter);
     if (isBehind) screenFade = 0.0;
     if (screenFade <= 0.0) return vec3(0.0);
@@ -137,7 +137,7 @@ void main() {
     // Apply geometry mask so rays don't brighten the sky itself (optional, looks cleaner)
     float geometryMask = smoothstep(1.0, 0.999999, getDepth(texCoord));
     // Add rays to scene
-     vec4 diffuseColor = texture(InSampler, texCoord);;
+    vec4 diffuseColor = texture(InSampler, texCoord);;
     diffuseColor += vec4(godRays * geometryMask, 1);
 
     // Draw Visual Sun Disk
@@ -145,7 +145,7 @@ void main() {
     vec3 sunData = getSunScreenPos(isBehind);
     if (!isBehind) {
         // Only draw sun if it's not occluded by geometry
-       // diffuseColor += vec4(drawDebugSun(texCoord, sunData.xy) * (1-geometryMask), 1);
+        // diffuseColor += vec4(drawDebugSun(texCoord, sunData.xy) * (1-geometryMask), 1);
     }
     fragColor = diffuseColor;
 }
