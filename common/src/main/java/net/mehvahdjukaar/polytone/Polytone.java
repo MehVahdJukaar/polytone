@@ -172,7 +172,7 @@ public class Polytone {
         COMPOUND_RELOADER.earlyProcess(new PreparableReloadListener.SharedState(manager));
     }
 
-    public static void logException(Exception e, String message) {
+    public static void logException(Throwable e, String message) {
         // Find the Log4j logging directory
         String logDir = getLog4jDirectory().orElse(Paths.get("logs").toAbsolutePath().toString());
 

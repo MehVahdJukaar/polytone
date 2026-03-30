@@ -93,7 +93,7 @@ public class CompoundReloader implements PreparableReloadListener {
             PartialReloader<?> c = children.get(i);
             try {
                 processTyped(c, childrenResourcesCache.get(i), ops, registryAccess);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 String message = c + " failed to parse some resources";
                 Polytone.logException(e, message);
                 Polytone.iMessedUp = true;
