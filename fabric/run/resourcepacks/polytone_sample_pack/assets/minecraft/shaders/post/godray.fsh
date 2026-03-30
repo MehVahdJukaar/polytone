@@ -37,7 +37,7 @@ const float Density = 0.92;
 const float Weight = 0.25;
 const vec3 SunDirection = vec3(1.0, 0.0, 0.0); // Adjust based on your world North
 
-const float SunSize = 0.015;        // Radius of the solid sun disk
+const float SunSize = 0.045;        // Radius of the solid sun disk
 const float SunGlow = 0.4;          // Intensity of the surrounding glow (0.0 to 1.0)
 
 // Pseudo-random noise to break up banding/stepping artifacts
@@ -78,15 +78,13 @@ float getSunShape(vec2 uv, vec2 sunPos) {
     float aspect = InSize.x / InSize.y;
     delta.x *= aspect;
 
-    // Hard square core
-    float coreX = smoothstep(SunSize, SunSize * 0.8, abs(delta.x));
-    float coreY = smoothstep(SunSize, SunSize * 0.8, abs(delta.y));
-    float core = coreX * coreY;
+    float dist = length(delta);
 
-    // Optional square glow (exponential falloff per axis)
-    float glowX = exp(-abs(delta.x) / (SunSize * SunGlow));
-    float glowY = exp(-abs(delta.y) / (SunSize * SunGlow));
-    float glow = glowX * glowY * SunGlow;
+    // Hard circular core
+    float core = smoothstep(SunSize, SunSize * 0.8, dist);
+
+    // Optional circular glow (exponential falloff)
+    float glow = exp(-dist / (SunSize * SunGlow)) * SunGlow;
 
     return core + glow;
 }
