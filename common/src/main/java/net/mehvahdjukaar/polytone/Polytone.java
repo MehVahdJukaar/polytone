@@ -100,14 +100,12 @@ public class Polytone {
     public static boolean isForge = false;
 
     public static void init(boolean devEnv, boolean forge) {
-        //TODO: ad custom post chain. have sun angle there pls and proj matrix
-
         COMPOUND_RELOADER = new CompoundReloader(
                 CONFIGS, GLOBAL_EXPRESSION,
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS,//LIGHTMAPS,
-                DIMENSION_MODIFIERS,
+                DIMENSION_MODIFIERS, POST_SHADERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
                 CREATIVE_TABS_MODIFIERS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,

@@ -16,19 +16,31 @@ uniform sampler2D CloudsDepthSampler;
 layout (std140) uniform PolyGlobals {
     mat4 PolyProjMat;
     mat4 PolyModelViewMat;
+    float PolySunAngle;
 };
+
+layout(std140) uniform Globals {
+    ivec3 CameraBlockPos;
+    vec3 CameraOffset;
+    vec2 ScreenSize;
+    float GlintAlpha;
+    float GameTime;
+    int MenuBlurRadius;
+    int UseRgss;
+};
+
 
 in vec2 texCoord;
 out vec4 fragColor;
 
 // --- CONFIGURATION ---
 const float GodRayIntensity = 0.45;
-const int GodRaySamples = 80;       // Higher quality with jitter/dither
+const int GodRaySamples = 60;       // Higher quality with jitter/dither
 const float Exposure = 0.25;
-const float Decay = 0.98;
+const float Decay = 0.97;
 const float Density = 0.92;
-const float Weight = 0.35;
-const vec3 SunDirection = vec3(0.0, 0.0, 1.0); // Adjust based on your world North
+const float Weight = 0.25;
+const vec3 SunDirection = vec3(1.0, 0.0, 0.0); // Adjust based on your world North
 
 // Helper for layering
 vec4 color_layers[6] = vec4[](vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0));
@@ -56,9 +68,24 @@ vec3 blend(vec3 dst, vec4 src) {
 float interleaved_gradient_noise(vec2 uv) {
     return fract(52.9829189 * fract(dot(uv, vec2(0.06711056, 0.00583715))));
 }
+float getDepth(vec2 pos) {
+
+    // We use min() to find the closest depth (smallest value)
+   float best = texture(MainDepthSampler, pos).r;
+    best = min(best, texture(TranslucentDepthSampler, pos).r);
+    //best = min(best, texture(ItemEntityDepthSampler, pos).r);
+   // best = min(best, texture(ParticlesDepthSampler, pos).r);
+   // best = min(best, texture(WeatherDepthSampler, pos).r);
+    best = min(best, texture(CloudsDepthSampler, pos).r);
+    return best;
+}
 
 vec3 getSunScreenPos(out bool isBehind) {
-    vec3 sunDirWorld = normalize(SunDirection);
+vec3 sunDirWorld = normalize(vec3(
+    0.0,
+    sin(PolySunAngle),
+    cos(PolySunAngle)
+));
     vec3 camPos = vec3(PolyModelViewMat[3]);
     vec3 sunPosWorld = camPos - sunDirWorld * 1000.0;
 
@@ -80,15 +107,10 @@ vec3 computeGodRays(vec2 uv) {
 
     // 1. DYNAMIC FADING
     // Fades the rays out as the sun moves toward the screen edges or behind the camera
-    float distFromCenter = distance(sunUV, vec2(0.5));
-    float screenFade = smoothstep(1.5, 0.7, distFromCenter);
+    float distFromCenter = distance(sunUV, vec2(0,0));
+float screenFade = smoothstep(1.5, 0.2, distFromCenter);
     if (isBehind) screenFade = 0.0;
     if (screenFade <= 0.0) return vec3(0.0);
-
-    // 2. OCCLUSION PRE-CHECK
-    // If the sun center is hidden by a mountain, dim the rays
-    float sunDepthSample = texture(MainDepthSampler, clamp(sunUV, 0.0, 1.0)).r;
-    float sunVisibility = (sunDepthSample > 0.9999) ? 1.0 : 0.2; // 0.2 keeps a slight "haze"
 
     // 3. RAY MARCHING SETUP
     vec2 deltaTexCoord = (uv - sunUV) * (1.0 / float(GodRaySamples)) * Density;
@@ -107,26 +129,37 @@ vec3 computeGodRays(vec2 uv) {
         // This prevents rays from "bunching up" and spiking in brightness at the borders
         float borderMask = smoothstep(0.0, 0.08, samplingCoord.x) * smoothstep(1.0, 0.92, samplingCoord.x) * smoothstep(0.0, 0.08, samplingCoord.y) * smoothstep(1.0, 0.92, samplingCoord.y);
 
-        float sampleDepth = texture(MainDepthSampler, samplingCoord).r;
+        float sampleDepth = getDepth(samplingCoord);
 
         // Only the sky (depth ~ 1.0) contributes light to the ray
-        float lightSource = (sampleDepth > 0.9999) ? 1.0 : 0.0;
+        float lightSource = (sampleDepth > 0.999999) ? 1.0 : 0.0;
 
         rayColor += vec3(lightSource) * illuminationDecay * Weight * borderMask;
         illuminationDecay *= Decay;
     }
 
-    return rayColor * Exposure * GodRayIntensity * screenFade * sunVisibility;
+    return rayColor * Exposure * GodRayIntensity * screenFade;
 }
 
 vec3 drawDebugSun(vec2 uv, vec2 sunPos) {
-    float d = distance(uv, sunPos);
+    // Convert to centered space
+    vec2 delta = uv - sunPos;
+
+    // Fix aspect ratio (X stretched by width/height)
+    float aspect = ScreenSize.x / ScreenSize.y;
+    delta.x *= aspect;
+
+    float d = length(delta);
+
     float core = smoothstep(0.012, 0.008, d);
     float glow = exp(-d * 35.0) * 0.7;
+
     vec3 coreColor = vec3(1.0, 1.0, 0.9);
     vec3 glowColor = vec3(1.0, 0.7, 0.3);
+
     return (core * coreColor) + (glow * glowColor);
 }
+
 
 void main() {
     // Collect scene layers
@@ -149,8 +182,7 @@ void main() {
     vec3 godRays = computeGodRays(texCoord);
 
     // Apply geometry mask so rays don't brighten the sky itself (optional, looks cleaner)
-    float geometryMask = smoothstep(1.0, 0.9995, depth_layers[0]);
-
+    float geometryMask = smoothstep(1.0, 0.999999, getDepth(texCoord));
     // Add rays to scene
     sceneAccum += (godRays * geometryMask);
 
@@ -159,8 +191,7 @@ void main() {
     vec3 sunData = getSunScreenPos(isBehind);
     if (!isBehind) {
         // Only draw sun if it's not occluded by geometry
-        float sunOcclusion = step(0.9999, depth_layers[0]);
-        sceneAccum += drawDebugSun(texCoord, sunData.xy) * sunOcclusion;
+        sceneAccum += drawDebugSun(texCoord, sunData.xy) * (1-geometryMask);
     }
 
     fragColor = vec4(sceneAccum, 1.0);

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 
@@ -26,7 +27,7 @@ public class PolytoneGlobalUniforms implements AutoCloseable {
             ByteBuffer byteBuffer = Std140Builder.onStack(memoryStack, UBO_SIZE)
                     .putMat4f(projectionMat)
                     .putMat4f(viewMat)
-                    .putFloat(sunAngle)
+                    .putFloat(sunAngle- Mth.HALF_PI)
                     .get();
             RenderSystem.getDevice().createCommandEncoder()
                     .writeToBuffer(this.buffer.slice(), byteBuffer);

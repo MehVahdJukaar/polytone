@@ -104,17 +104,13 @@ public abstract class PartialReloader<T> {
     protected void parseWithLevel(T obj, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
     }
 
-    ;
 
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
     }
 
-    ;
 
     protected void resetWithLevel(boolean logOff) {
     }
-
-    ;
 
     protected void applyNormal(T obj) {
     }
