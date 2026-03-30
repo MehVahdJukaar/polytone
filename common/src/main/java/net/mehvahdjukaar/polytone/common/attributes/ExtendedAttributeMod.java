@@ -10,6 +10,7 @@ import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.attribute.AttributeType;
 import net.minecraft.world.attribute.AttributeTypes;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.function.Supplier;
 

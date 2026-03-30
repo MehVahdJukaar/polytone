@@ -10,7 +10,6 @@ import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
-import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
@@ -128,16 +127,27 @@ public class ParticleContextExpression extends PolytoneExpression implements IPa
 
         if (hasPlayer) {
             var e = Minecraft.getInstance().getCameraEntity();
-            vb.setVariable(PLAYER_X, e.getX());
-            vb.setVariable(PLAYER_Y, e.getY());
-            vb.setVariable(PLAYER_Z, e.getZ());
+            if (e != null) {
+
+                vb.setVariable(PLAYER_X, e.getX());
+                vb.setVariable(PLAYER_Y, e.getY());
+                vb.setVariable(PLAYER_Z, e.getZ());
+            } else {
+                vb.setVariable(PLAYER_X, 0);
+                vb.setVariable(PLAYER_Y, 0);
+                vb.setVariable(PLAYER_Z, 0);
+            }
         }
         if (hasDistance) {
             var e = Minecraft.getInstance().getCameraEntity();
-            double x = particle.x - e.getX();
-            double y = particle.y - e.getY();
-            double z = particle.z - e.getZ();
-            vb.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+            if (e != null) {
+                double x = particle.x - e.getX();
+                double y = particle.y - e.getY();
+                double z = particle.z - e.getZ();
+                vb.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+            } else {
+                vb.setVariable(DISTANCE_SQUARED, 0);
+            }
         }
         if (hasPlayerSpeed) {
             vb.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());

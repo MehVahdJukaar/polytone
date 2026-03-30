@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 public interface IColorGetter extends BlockColor, BarColor {
 
@@ -137,7 +138,7 @@ public interface IColorGetter extends BlockColor, BarColor {
     record ExpressionColor(IBlockExp exp) implements IColorGetter {
         @Override
         public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
-            if (pos == null || state == null) {
+            if (pos == null) {
                 return 0;
             }
             return (int) exp.evaluate(Minecraft.getInstance().level, pos, state);
@@ -149,7 +150,7 @@ public interface IColorGetter extends BlockColor, BarColor {
         }
 
         @Override
-        public int getColor(BlockState blockState, @Nullable BlockAndTintGetter blockAndTintGetter, @Nullable BlockPos blockPos, int i) {
+        public int getColor(@NonNull BlockState blockState, @Nullable BlockAndTintGetter blockAndTintGetter, @Nullable BlockPos blockPos, int i) {
             if (blockAndTintGetter instanceof LevelReader lr && blockPos != null) {
                 return (int) exp.evaluate(lr, blockPos.getCenter(), blockState);
             }

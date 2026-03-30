@@ -1,5 +1,8 @@
 package net.mehvahdjukaar.polytone;
 
+import com.mojang.blaze3d.opengl.GlProgram;
+import com.mojang.blaze3d.opengl.Uniform;
+import net.irisshaders.iris.mixinterface.ShaderInstanceInterface;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.reloader.CompoundReloader;
@@ -23,6 +26,7 @@ import net.mehvahdjukaar.polytone.content.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
+import net.mehvahdjukaar.polytone.content.shaders.PostShadersManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.content.sound.SoundTypesManager;
@@ -30,6 +34,7 @@ import net.mehvahdjukaar.polytone.content.tabs.CreativeTabsModifiersManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.fog.environment.FogEnvironment;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
@@ -81,6 +86,7 @@ public class Polytone {
     public static final ColorManager COLORS = new ColorManager();
     public static final GuiModifierManager SLOTIFY = new GuiModifierManager();
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
+    public static final PostShadersManager POST_SHADERS = new PostShadersManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
     public static final GlobalExpressionsManager GLOBAL_EXPRESSION = new GlobalExpressionsManager();
@@ -94,6 +100,8 @@ public class Polytone {
     public static boolean isForge = false;
 
     public static void init(boolean devEnv, boolean forge) {
+        //TODO: ad custom post chain. have sun angle there pls and proj matrix
+
         COMPOUND_RELOADER = new CompoundReloader(
                 CONFIGS, GLOBAL_EXPRESSION,
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,

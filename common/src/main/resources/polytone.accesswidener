@@ -19,6 +19,7 @@ accessible method net/minecraft/client/gui/screens/packs/PackSelectionScreen rel
 
 accessible field net/minecraft/client/renderer/fog/environment/PowderedSnowFogEnvironment COLOR I
 mutable field net/minecraft/client/renderer/fog/environment/PowderedSnowFogEnvironment COLOR I
+accessible field net/minecraft/client/renderer/LevelRenderer levelRenderState Lnet/minecraft/client/renderer/state/LevelRenderState;
 
 accessible method net/minecraft/client/gui/components/CycleButton createLabelForValue (Ljava/lang/Object;)Lnet/minecraft/network/chat/Component;
 

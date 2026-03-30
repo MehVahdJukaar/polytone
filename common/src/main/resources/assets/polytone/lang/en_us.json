@@ -13,5 +13,6 @@
   "config.polytone.legacy_parsing": "Legacy Formats Parse",
   "config.polytone.particles_throttle.tooltip": "Scales down the amount of custom spawned particles. Decrease to artificially lowers their spawn chance. This is a last resort option to increase performance in unoptimized packs and should normally not be used.",
   "config.polytone.particles_throttle": "Particle Spawn Throttle",
-  "config.polytone.custom_particles_async": "Async Custom Particles"
+  "config.polytone.custom_particles_async": "Async Custom Particles",
+  "config.polytone.custom_particles_async.tooltip": "Makes Custom Particles tick logic run on a different thread. Very crude and experimental. Might improve performance or not."
 }

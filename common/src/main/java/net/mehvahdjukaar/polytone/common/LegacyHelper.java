@@ -566,8 +566,8 @@ public class LegacyHelper {
 //                        false, false, Optional.empty(), DimensionTarget.EMPTY);
 //
 //                Identifier id = Identifier.parse(names[i]);
-//                boolean isEnabled = fogEnabled || skyEnabled;
-//                var parsedMod = Parsed.lowPriority(mod, id, isEnabled);
+//                boolean enabled = fogEnabled || skyEnabled;
+//                var parsedMod = Parsed.lowPriority(mod, id, enabled);
 //                converted.put(id, parsedMod);
 //            }
 //        }

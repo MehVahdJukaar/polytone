@@ -26,6 +26,9 @@ public abstract class GameRendererMixin {
         Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
     }
 
-
+    @Inject(method = "close", at = @At(value = "TAIL"))
+    private void polytone$closeShaderStuff(CallbackInfo ci) {
+        Polytone.POST_SHADERS.onClose();
+    }
 
 }

@@ -1,2 +1,1 @@
-- fixed a crash when using old math expressions in env attributes. Still remember to use the new scripting expressions moving forward
-- added sky_flash, horizon_height and void_darkness_offset parameters to colors.json
+- hotfix fixing color expressions in env attributes returning 0
