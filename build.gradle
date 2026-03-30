@@ -246,17 +246,18 @@ tasks.register('gitTag') {
         }
 
         if (!stdout.toString().trim().isEmpty()) {
-            throw new GradleException("Git tag '${tag}' already exists")
-        }
+            logger.warn("Git tag '${tag}' already exists")
+        } else {
 
-        // create annotated tag
-        exec {
-            commandLine 'git', 'tag', '-a', tag, '-m', "Release ${tag}"
-        }
+            // create annotated tag
+            exec {
+                commandLine 'git', 'tag', '-a', tag, '-m', "Release ${tag}"
+            }
 
-        // push tag
-        exec {
-            commandLine 'git', 'push', 'origin', tag
+            // push tag
+            exec {
+                commandLine 'git', 'push', 'origin', tag
+            }
         }
     }
 }
