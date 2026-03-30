@@ -5,6 +5,7 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.utils.exp.PolytoneExpression;
 import net.mehvahdjukaar.polytone.utils.exp.IExpression;
 import net.minecraft.client.Minecraft;
@@ -38,7 +39,7 @@ public class ParticleContextExpression extends PolytoneExpression {
 
     private static final String CUSTOM = "CUSTOM";
 
-    public static final Codec<ParticleContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
+    public static final Codec<ParticleContextExpression> CODEC = CodecUtils.STR_OR_DOUBLE_CODEC.flatXmap(s -> {
         try {
             return DataResult.success(new ParticleContextExpression(s));
         } catch (Exception e) {

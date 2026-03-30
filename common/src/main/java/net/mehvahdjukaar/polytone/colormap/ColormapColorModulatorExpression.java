@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.utils.exp.IExpression;
 import net.mehvahdjukaar.polytone.utils.exp.PolytoneExpression;
 import net.minecraft.client.Minecraft;
@@ -66,7 +67,7 @@ public class ColormapColorModulatorExpression {
         private static final String BLUE = "BLUE";
         private static final String ALPHA = "ALPHA";
 
-        protected static final Codec<Exp> CODEC = Codec.STRING.flatXmap(s -> {
+        protected static final Codec<Exp> CODEC = CodecUtils.STR_OR_DOUBLE_CODEC.flatXmap(s -> {
             try {
                 return DataResult.success(new Exp(s));
             } catch (Exception e) {

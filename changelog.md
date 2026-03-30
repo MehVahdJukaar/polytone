@@ -1,1 +1,2 @@
-fixed an issue with custom particle generics
+- made some fields in expressions also accept numerical values that are not written as a string.
+- This is NOT a fix, merely here to make packs for 1.21.11 have a bit more backward compat as those do allow numbers

@@ -6,6 +6,7 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
 import net.mehvahdjukaar.polytone.utils.exp.IExpression;
 import net.minecraft.core.BlockPos;
@@ -15,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 record LightmapContextExpression(ConcurrentExpression expression, String unparsed,
                                  boolean usesBiome) implements ILightmapNumberProvider {
 
-    public static final Codec<LightmapContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
+    public static final Codec<LightmapContextExpression> CODEC = CodecUtils.STR_OR_DOUBLE_CODEC.flatXmap(s -> {
         try {
             return DataResult.success(create(s));
         } catch (Exception e) {

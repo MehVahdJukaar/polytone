@@ -18,6 +18,9 @@ import java.util.function.Supplier;
 
 public class CodecUtils {
 
+    public static Codec<String> STR_OR_DOUBLE_CODEC = Codec.withAlternative(Codec.STRING,
+            Codec.DOUBLE.xmap( d->d+"", s->0.0));
+
     public static <E> Codec<HolderSet<E>> forwardAwareHomogeneousList(ResourceKey<? extends Registry<E>> registryKey) {
         return LenientHolderSetCodec.create(registryKey, new ForwardAwareRegistryFixedCodec<>(registryKey), false);
     }

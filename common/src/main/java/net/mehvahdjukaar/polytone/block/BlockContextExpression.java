@@ -5,8 +5,9 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.mehvahdjukaar.polytone.utils.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.utils.exp.IExpression;
+import net.mehvahdjukaar.polytone.utils.exp.PolytoneExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -18,7 +19,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class BlockContextExpression extends PolytoneExpression {
 
-    public static final Codec<BlockContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
+    public static final Codec<BlockContextExpression> CODEC =
+            CodecUtils.STR_OR_DOUBLE_CODEC.flatXmap(s -> {
         try {
             return DataResult.success(new BlockContextExpression(s));
         } catch (Exception e) {
