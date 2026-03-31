@@ -51,7 +51,7 @@ vec3 getSunScreenPos(out bool isBehind) {
     vec3 sunDirWorld = normalize(vec3(
                                  cos(PolySunAngle),
                                  sin(PolySunAngle),
-                                 0, 0
+                                 0.0
                                  ));
     vec3 camPos = vec3(PolyModelViewMat[3]);
     vec3 sunPosWorld = camPos - sunDirWorld * 1000.0;
