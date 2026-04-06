@@ -33,17 +33,21 @@ public class PostShadersManager extends JsonPartialReloader {
 
     @Override
     protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        for (var j : Parsed.batchParseOnlyEnabled(jsons, PostChainEffect.CODEC,
-                ops, "Post Shader Effects")) {
-            if (j != null) {
-                effects.add(j.getValue());
+        synchronized (effects) {
+            for (var j : Parsed.batchParseOnlyEnabled(jsons, PostChainEffect.CODEC,
+                    ops, "Post Shader Effects")) {
+                if (j != null) {
+                    effects.add(j.getValue());
+                }
             }
         }
     }
 
     @Override
     protected void resetWithLevel(boolean logOff) {
-        effects.clear();
+        synchronized (effects){
+            effects.clear();
+        }
     }
 
     private PolytoneGlobalUniforms getOrCreateUniforms() {
@@ -76,13 +80,20 @@ public class PostShadersManager extends JsonPartialReloader {
         }
     }
 
+    //TODO: add custom arbitrary uniforms
+    private final ThreadLocal<Boolean> addingPolytonePostChain = ThreadLocal.withInitial(() -> false);
+
     public void addPostPass(int width, int height, LevelTargetBundle targets, FrameGraphBuilder frameGraphBuilder, GpuBufferSlice gpuBufferSlice, CameraRenderState cameraRenderState) {
 
         ShaderManager sm = Minecraft.getInstance().getShaderManager();
-        for (var e : effects) {
-            PostChain pc = e.getPostChain(sm);
-            if (pc != null) pc.addToFrame(frameGraphBuilder, width, height, targets);
+        addingPolytonePostChain.set(true);
+        synchronized (effects) {
+            for (var e : effects) {
+                PostChain pc = e.getPostChain(sm);
+                if (pc != null) pc.addToFrame(frameGraphBuilder, width, height, targets);
+            }
         }
+        addingPolytonePostChain.set(false);
 
     }
 }

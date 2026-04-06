@@ -1,2 +1,1 @@
-- added activation conditions to post shaders
-- more expressions methods
+some fixes of stuf not being parsed or applied correctly

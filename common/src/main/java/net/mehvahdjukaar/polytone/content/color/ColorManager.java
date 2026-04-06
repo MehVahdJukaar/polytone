@@ -182,10 +182,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             switch (k) {
                 case "sky_flash":
                     skyFlashColor = parseColor(e);
+                    return;
                 case "void_darkness_offset":
-                    voidDarknessOffset = e.getAsInt();
+                    voidDarknessOffset = parseInt(e);
+                    return;
                 case "horizon_height":
-                    horizonHeight = e.getAsInt();
+                    horizonHeight = parseInt(e);
+                    return;
             }
         });
 
@@ -467,6 +470,20 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             return element.getAsJsonObject().entrySet();
         }
         return Collections.emptySet();
+    }
+
+    private static int parseInt(JsonElement element) {
+        //get as int or parse string as int
+        if (element instanceof JsonPrimitive jp) {
+
+            if (jp.isString()) {
+                return Integer.parseInt(jp.getAsString());
+            }
+            if (jp.isNumber()) {
+                return jp.getAsInt();
+            }
+        }
+        throw new IllegalStateException("Failed to parse numerical element. Must be an integer! " + element);
     }
 
     private static int parseColor(JsonElement obj) {

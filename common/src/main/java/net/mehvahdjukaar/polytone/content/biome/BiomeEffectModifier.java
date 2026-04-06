@@ -57,19 +57,20 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
                 EnvironmentAttributeMapMod.Builder builder = EnvironmentAttributeMapMod.builder();
                 fog.ifPresent(f -> builder.set(EnvironmentAttributes.FOG_COLOR, f));
                 sky.ifPresent(s -> builder.set(EnvironmentAttributes.SKY_COLOR, s));
+                //probably very wrong
+                /*
                 fogRadius.ifPresent(f -> {
                     builder.modify(EnvironmentAttributes.FOG_END_DISTANCE,
                             FloatModifier.MULTIPLY,
                             (Supplier<Float>) f::get);
                 });
-                //probably very wrong
+
                 fogFade.ifPresent(f -> {
                     builder.modify(EnvironmentAttributes.FOG_START_DISTANCE,
                             FloatModifier.MULTIPLY,
                             (Supplier<Float>) () -> 1f - f.get() // scaled relative to far plane
                     );
-                });
-
+                });*/
                 if (!builder.isEmpty()) {
                     Polytone.LOGGER.warn("Pack applied some biome modifiers fog modification using the old convention. This won't be supported in the future! They need to be converted to environment attribute modifications!");
                     return b.merge(ofAttributes(

@@ -10,20 +10,19 @@ import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Set;
-
 public final class PostChainEffect {
 
     public static final Codec<PostChainEffect> CODEC = RecordCodecBuilder.create(
             i -> i.group(
-                    Identifier.CODEC.fieldOf("post_chain").forGetter(p->p.postChain),
-                    ISimpleExp.CODEC.optionalFieldOf("activation_condition", ISimpleExp.ONE).forGetter(p->p.turnOnCondition)
+                    Identifier.CODEC.fieldOf("post_chain").forGetter(p -> p.postChain),
+                    ISimpleExp.CODEC.optionalFieldOf("activation_condition", ISimpleExp.ONE).forGetter(p -> p.turnOnCondition)
             ).apply(i, PostChainEffect::new));
     private final Identifier postChain;
     private final ISimpleExp turnOnCondition;
 
+
     private boolean cachedOn = false;
-    private boolean cachedBroken = false;
+    private PostChain cachedPostChain = null;
 
     public PostChainEffect(Identifier postChain, ISimpleExp turnOnCondition) {
         this.postChain = postChain;
@@ -36,15 +35,23 @@ public final class PostChainEffect {
 
     @Nullable
     public PostChain getPostChain(ShaderManager manager) {
-        if (cachedBroken) return null;
         if (!cachedOn) return null;
 
-        try {
-            return manager.getPostChain(postChain, LevelTargetBundle.MAIN_TARGETS);
-        } catch (Throwable ex) {
-            Polytone.LOGGER.error("Failed to load post chain", ex);
-            cachedBroken = true;
+        if (cachedPostChain == null) {
+
+            try {
+                cachedPostChain = manager.getPostChain(postChain, LevelTargetBundle.MAIN_TARGETS);
+            } catch (Throwable ex) {
+                Polytone.LOGGER.error("Failed to load post chain", ex);
+                //cachedBroken = true;
+                return null;
+            }
+        }
+
+        //has been closed
+        if (cachedPostChain != null && cachedPostChain.persistentTargets.isEmpty()) {
             return null;
         }
+        return cachedPostChain;
     }
 }
