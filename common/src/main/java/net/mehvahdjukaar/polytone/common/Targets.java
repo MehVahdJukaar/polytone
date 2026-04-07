@@ -64,7 +64,9 @@ public record Targets(List<Entry> entries) {
                         set.add(holder);
                     }
                 } catch (Exception e) {
-                    throw new IllegalStateException("Failed to parse some target(s) for polytone file " + fileId, e);
+                    if (!Polytone.CONFIGS.isLenientLoading()){
+                        throw new IllegalStateException("Failed to parse some target(s) for polytone file " + fileId, e);
+                    }
                 }
             }
         }

@@ -10,7 +10,10 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockState
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction;
 accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Collection;)V
 
-accessible field net/minecraft/client/renderer/PostChain persistentTargets Ljava/util/Map;
+accessible field net/minecraft/client/renderer/PostChain passes Ljava/util/List;
+accessible field net/minecraft/client/renderer/PostPass infoUbo Lnet/minecraft/client/renderer/MappableRingBuffer;
+accessible field net/minecraft/client/renderer/MappableRingBuffer buffers [Lcom/mojang/blaze3d/buffers/GpuBuffer;
+
 accessible method net/minecraft/client/multiplayer/ClientLevel addEnvironmentAttributeLayers (Lnet/minecraft/world/attribute/EnvironmentAttributeSystem$Builder;)Lnet/minecraft/world/attribute/EnvironmentAttributeSystem$Builder;
 accessible field net/minecraft/world/effect/MobEffect AMBIENT_ALPHA I
 accessible class net/minecraft/client/resources/model/BlockModelRotation$WithUvLock

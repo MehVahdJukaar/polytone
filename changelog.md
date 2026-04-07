@@ -1,1 +1,2 @@
-some fixes of stuf not being parsed or applied correctly
+- fixed another issue with shaders not working
+- alpha is now passed along in particle with custom models

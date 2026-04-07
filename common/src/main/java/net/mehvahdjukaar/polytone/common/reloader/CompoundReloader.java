@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributesHandler
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -48,12 +49,17 @@ public class CompoundReloader implements PreparableReloadListener {
                     applyNormal();
 
                     if (level != null) {
-                        try {
-                            applyWithLevel(level.registryAccess(), false);
-                        } catch (Exception e) {
-                            Polytone.maybeThrow(
-                                    new RuntimeException(e)
-                            );
+                        RegistryAccess ra = level.registryAccess();
+                        if(ra instanceof RegistryAccess.Frozen) {
+                            try {
+                                applyWithLevel(ra, false);
+                            } catch (Exception e) {
+                                Polytone.maybeThrow(
+                                        new RuntimeException(e)
+                                );
+                            }
+                        }else {
+                            Polytone.LOGGER.warn("Tried to reload with a non frozen registry access. How?");
                         }
                     }
                 }, gameExecutor);

@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
+import net.minecraft.client.renderer.PostPass;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -36,22 +37,25 @@ public final class PostChainEffect {
     @Nullable
     public PostChain getPostChain(ShaderManager manager) {
         if (!cachedOn) return null;
-
         if (cachedPostChain == null) {
-
             try {
                 cachedPostChain = manager.getPostChain(postChain, LevelTargetBundle.MAIN_TARGETS);
             } catch (Throwable ex) {
                 Polytone.LOGGER.error("Failed to load post chain", ex);
-                //cachedBroken = true;
                 return null;
             }
         }
-
         //has been closed
-        if (cachedPostChain != null && cachedPostChain.persistentTargets.isEmpty()) {
-            return null;
-        }
+        if (isPostPassClosed(cachedPostChain)) return null;
         return cachedPostChain;
+    }
+
+    private static boolean isPostPassClosed(@Nullable PostChain pass) {
+        if (pass != null &&
+                !pass.passes.isEmpty()) {
+            var buffer = pass.passes.getFirst().infoUbo.buffers[0];
+            return buffer.isClosed();
+        }
+        return false;
     }
 }

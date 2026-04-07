@@ -146,7 +146,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
                 quaternionf.z,
                 quaternionf.w,
                 this.getQuadSize(f),
-                this.rCol, this.gCol, this.bCol, 1,
+                this.rCol, this.gCol, this.bCol, this.alpha,
                 this.getLightColor(f),
                 this.model
         );

@@ -2,12 +2,9 @@ package net.mehvahdjukaar.polytone.content.particle.custom.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleRenderMode;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.state.ParticleGroupRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -22,7 +19,7 @@ import java.util.Map;
 
 public class ModelParticleRenderState implements ParticleGroupRenderState {
 
-    private final Map<ParticleRenderMode, List<ParticleInstance>> particles = new HashMap<>();
+    private final Map<ParticleRenderMode, List<ParticleRenderInstance>> particles = new HashMap<>();
 
     public void add(
             ParticleRenderMode layer, float x, float y, float z,
@@ -30,7 +27,7 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
             @NotNull QuadCollection modelData
     ) {
         this.particles.computeIfAbsent(layer, l -> new ArrayList<>())
-                .add(new ParticleInstance(x, y, z, rx, ry, rz, rw, size,
+                .add(new ParticleRenderInstance(x, y, z, rx, ry, rz, rw, size,
                         r, g, b, a, light, modelData));
     }
 
@@ -76,9 +73,9 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
     }
 
 
-    private record ParticleInstance(float x, float y, float z,
-                                    float rx, float ry, float rz, float rw, float size,
-                                    float r, float g, float b, float a, int light,
-                                    @NotNull QuadCollection modelData) {
+    private record ParticleRenderInstance(float x, float y, float z,
+                                          float rx, float ry, float rz, float rw, float size,
+                                          float r, float g, float b, float a, int light,
+                                          @NotNull QuadCollection modelData) {
     }
 }
