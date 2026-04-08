@@ -123,10 +123,11 @@ public class Polytone {
         //independent fog env fog and sky fog stuff. also independent from render distnace
         //starts customizaton
         //fog env mod stuff
+        //extra uniforms to post shaders. to lightmaps to. expression driven uniforms
         //script expression in slotify
         //TODO: expression driven overlays and customization for existing ones
         //TODO: custom block breaking particles
-        //TODO: custom place particles
+        //TODO: custom place particle
         //TODO: block mobs from emitting particles. like blaze
     }
 
@@ -253,8 +254,6 @@ public class Polytone {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 
     private static Set<Identifier> loadFutureIds() {
