@@ -1,1 +1,1 @@
-fixed an issue with animated textures
+uncapped model rotations when using enahnced variants deseralizers
