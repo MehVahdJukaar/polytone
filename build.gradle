@@ -5,7 +5,7 @@ plugins {
     id "com.matthewprenger.cursegradle" version "1.+"
     id "com.modrinth.minotaur" version "2.+"
     id 'net.mehvahdjukaar.candlelight' version "${candle_version}" apply false
-    id 'com.diffplug.spotless' version '6.25.0'  apply false
+    id 'com.diffplug.spotless' version '6.25.0' apply false
 }
 
 allprojects {
@@ -18,12 +18,16 @@ allprojects {
     group = mod_group_id
     version = mod_version
     archivesBaseName = mod_id
-
+/*
     spotless {
         java {
-            googleJavaFormat() // Use Google’s standard formatting
+            // Use rootDir for all projects
+            eclipse().configFile("${rootDir}/eclipse-format.xml")
+            indentWithSpaces(4)
+            removeUnusedImports()
+            importOrder '', 'java', 'javax', 'org', 'com'
         }
-    }
+    }*/
 
     repositories {
         // Standard repositories
@@ -52,7 +56,7 @@ allprojects {
         maven { url = "https://mvn.devos.one/snapshots/" } // Registrate, Porting Lib (snapshots)
         maven { url = "https://maven.terraformersmc.com/" } // TerraformersMC mods
         maven { url = "https://maven.saps.dev/releases" } // FTB Mods
-        maven { url = "https://dl.cloudsmith.io/public/tslat/sbl/maven/"}
+        maven { url = "https://dl.cloudsmith.io/public/tslat/sbl/maven/" }
 
         maven { url = "https://maven.theillusivec4.top/" } // Curios API
         maven { url = "https://maven.squiddev.cc" } // CC: Tweaked
@@ -211,7 +215,7 @@ static List<String> listGameVersions(String minInclusive, String maxExclusive) {
     }
 
     int startPatch = minParts[2] as int
-    int endPatch   = maxParts[2] as int
+    int endPatch = maxParts[2] as int
 
     def versions = []
 
