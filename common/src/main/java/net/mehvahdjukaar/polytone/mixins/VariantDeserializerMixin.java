@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.math.Transformation;
-import net.mehvahdjukaar.polytone.utils.IVariantExtension;
 import net.minecraft.client.renderer.block.model.Variant;
 import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.resources.ResourceLocation;
@@ -38,7 +37,6 @@ public class VariantDeserializerMixin {
         float yRot = GsonHelper.getAsFloat(jsonObject, "y", 0);
         float zRot = GsonHelper.getAsFloat(jsonObject, "z", 0);
 
-        boolean unlocked = false;
         if (xOffset != 0 || yOffset != 0 || zOffset != 0 || zRot != 0 || xRot % 45 != 0 || yRot % 45 != 0) {
 
             Matrix4f mat = new Matrix4f();
@@ -49,17 +47,12 @@ public class VariantDeserializerMixin {
             mat = mat.rotate(quaternionf);
 
             rotation = new Transformation(mat);
-            unlocked = true;
         } else {
             BlockModelRotation blockModelRotation = BlockModelRotation.by((int) xRot, (int) yRot);
             rotation = blockModelRotation.getRotation();
         }
 
-        var v = op.call(modelLocation, rotation, uvLock, weight);
-        if (unlocked) {
-            ((IVariantExtension) v).poly$setUncapped(true);
-        }
-        return v;
+        return op.call(modelLocation, rotation, uvLock, weight);
     }
 
 }
