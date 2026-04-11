@@ -119,37 +119,39 @@ public class FluidPropertiesManagerImpl {
         @Override
         public @NotNull Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
             if (fogColor != null) {
-                return new Vector3f(ColorUtils.unpack(fogColor.getColor(null, level, null, -1) | 0xff000000));
+                int color = fogColor.getColor(camera.getBlockAtCamera(), level, camera.getBlockPosition(), -1);
+                return new Vector3f(ColorUtils.unpack(color | 0xff000000));
             }
             return existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
         }
 
-        /*
-        @Override
-        public FogParameters modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, FogParameters fogParameters) {
-            if (fogRadius != null || forFade != null) {
-                FogManager.FogState fogState = FogManager.modifyFluidFog(
-                        fogParameters.start(),
-                        fogParameters.end(),
-                        fogRadius,
-                        forFade
-                );
-                if(fogState != null) {
-                    return new FogParameters(
-                            fogState.start(),
-                            fogState.end(),
-                            fogParameters.shape(),
-                            fogParameters.red(),
-                            fogParameters.green(),
-                            fogParameters.blue(),
-                            fogParameters.alpha()
-                    );
-                }
 
-            }
-            return existingProperties.modifyFogRender(camera, mode, renderDistance, partialTick, fogParameters);
-        }
-*/
+        /*
+                @Override
+                public FogParameters modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, FogParameters fogParameters) {
+                    if (fogRadius != null || forFade != null) {
+                        FogManager.FogState fogState = FogManager.modifyFluidFog(
+                                fogParameters.start(),
+                                fogParameters.end(),
+                                fogRadius,
+                                forFade
+                        );
+                        if(fogState != null) {
+                            return new FogParameters(
+                                    fogState.start(),
+                                    fogState.end(),
+                                    fogParameters.shape(),
+                                    fogParameters.red(),
+                                    fogParameters.green(),
+                                    fogParameters.blue(),
+                                    fogParameters.alpha()
+                            );
+                        }
+
+                    }
+                    return existingProperties.modifyFogRender(camera, mode, renderDistance, partialTick, fogParameters);
+                }
+        */
         @Override
         public ResourceLocation getStillTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
             return existingProperties.getStillTexture(state, getter, pos);

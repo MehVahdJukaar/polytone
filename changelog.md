@@ -1,1 +1,1 @@
-uncapped model rotations when using enahnced variants deseralizers
+- fixed fog fluid colors not working properly

@@ -40,7 +40,7 @@ public abstract class FogFluidRendererMixin {
             if (modifier != null) {
                 BlockColor col = modifier.getFogColormap();
                 if (col != null) {
-                    var newC = ColorUtils.unpack(col.getColor(null, level, pos, -1) | 0xff000000);
+                    var newC = ColorUtils.unpack(col.getColor(level.getBlockState(pos), level, pos, -1) | 0xff000000);
                     fogRed = newC[0];
                     fogGreen = newC[1];
                     fogBlue = newC[2];
