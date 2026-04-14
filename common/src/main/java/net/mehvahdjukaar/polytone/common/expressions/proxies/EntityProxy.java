@@ -1,10 +1,12 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
+import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
 import org.jetbrains.annotations.Nullable;
 
+@BeanAliases
 public class EntityProxy extends AbstractEntityProxy {
 
     private final Entity entity;

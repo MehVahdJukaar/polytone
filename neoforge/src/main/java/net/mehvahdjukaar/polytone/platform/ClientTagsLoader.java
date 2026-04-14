@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.neoforge;
+package net.mehvahdjukaar.polytone.platform;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Dynamic;
@@ -15,8 +15,6 @@ import net.minecraft.util.StrictJsonParser;
 import net.neoforged.fml.ModList;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;

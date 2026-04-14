@@ -1,31 +1,30 @@
 package net.mehvahdjukaar.polytone;
 
-import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.minecraft.client.resources.model.QuadCollection;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
-
 public class SpecialModelsHandler {
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void clear() {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void addSpecialModel(Identifier id) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     @Nullable
     public static QuadCollection getSpecialModel(Identifier id) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void finalizeAdditions() {
         throw new AssertionError();
     }

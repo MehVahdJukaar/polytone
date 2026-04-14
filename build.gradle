@@ -5,29 +5,18 @@ plugins {
     id "com.matthewprenger.cursegradle" version "1.+"
     id "com.modrinth.minotaur" version "2.+"
     id 'net.mehvahdjukaar.candlelight' version "${candle_version}" apply false
-    id 'com.diffplug.spotless' version '6.25.0' apply false
 }
 
 allprojects {
     apply plugin: "java"
     apply plugin: "architectury-plugin"
     apply plugin: "maven-publish"
-    apply plugin: "net.mehvahdjukaar.candlelight"
-    apply plugin: "com.diffplug.spotless"
 
     group = mod_group_id
     version = mod_version
     archivesBaseName = mod_id
-/*
-    spotless {
-        java {
-            // Use rootDir for all projects
-            eclipse().configFile("${rootDir}/eclipse-format.xml")
-            indentWithSpaces(4)
-            removeUnusedImports()
-            importOrder '', 'java', 'javax', 'org', 'com'
-        }
-    }*/
+
+
 
     repositories {
         // Standard repositories
@@ -93,6 +82,12 @@ subprojects {
     apply plugin: "io.github.juuxel.loom-quiltflower"
     apply plugin: "com.matthewprenger.cursegradle"
     apply plugin: "com.modrinth.minotaur"
+    apply plugin: "net.mehvahdjukaar.candlelight"
+
+    candlelight {
+        clientOnly = false
+        logging = true
+    }
 
     loom { silentMojangMappingsLicense() }
 

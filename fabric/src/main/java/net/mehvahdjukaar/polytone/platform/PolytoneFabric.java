@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.fabric;
+package net.mehvahdjukaar.polytone.platform;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -8,9 +8,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
-import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.impl.discovery.ModLoadCondition;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
@@ -19,14 +17,11 @@ import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRend
 import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.debug.DebugEntryNoop;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.client.gui.components.debug.DebugScreenProfile;
-import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.ArrayList;

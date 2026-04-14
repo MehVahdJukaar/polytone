@@ -150,7 +150,6 @@ public class FogRenderer   {
         Std140Builder.intoBuffer(byteBuffer).putVec4(vector4f).putFloat(f).putFloat(g).putFloat(h).putFloat(j).putFloat(k).putFloat(l);
     }
 
-    @Environment(EnvType.CLIENT)
     public enum FogMode {
         NONE,
         WORLD;

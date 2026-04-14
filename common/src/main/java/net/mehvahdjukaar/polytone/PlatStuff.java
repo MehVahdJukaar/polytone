@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone;
 
-import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
+import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.minecraft.client.Camera;
 import net.minecraft.client.color.block.BlockColor;
@@ -28,143 +27,142 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class PlatStuff {
-    @ExpectPlatform
+
+    @PlatformImpl
     public static String maybeRemapName(String s) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static boolean isModStateValid() {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static <T> Iterable<Holder<T>> getTagEntries(HolderLookup.RegistryLookup<T> reg, TagKey<T> tag) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final Identifier name) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static String getVersion() {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void registerColorResolver(ColorResolver colormap) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void unregisterAllCustomColorResolves() {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static boolean isModLoaded(String mod) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static String getModVersion(String mod) {
         throw  new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static CreativeTabModifier modifyTab(CreativeTabModifier mod, CreativeModeTab tab) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static void sortTabs() {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static CreativeModeTab createCreativeTab(Identifier id) {
         throw new AssertionError();
     }
 
 
-    @ExpectPlatform
+    @PlatformImpl
     public static RegistryAccess hackyGetRegistryAccess() {
         throw new AssertionError();
 
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static ChunkSectionLayer getRenderType(Block block) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static void setRenderType(Block block, ChunkSectionLayer renderType) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX, int skyY, Vector3f combined) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static float compatACModifyGamma(float partialTicks, float gamma) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void updateSearchTrees(SessionSearchTrees sessionSearchTrees, List<CreativeModeTab> needsTreeUpdated) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static void setParticleProvider(ParticleType<?> type, ParticleProvider<?> provider) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static void unregisterParticleProvider(Identifier id) {
         throw new AssertionError();
     }
@@ -219,22 +217,22 @@ public class PlatStuff {
     }
 
     //must be weakest generic otherwise we could have crashes when people assume the old generic due to implicit methods
-    @ExpectPlatform
+    @PlatformImpl
     public static ParticleType<ParticleOptions> makeParticleType(boolean forceSpawn) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static float getCamRoll(Camera camera) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static Path getGamePath() {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static String getModLoader() {
         throw new AssertionError();
     }
@@ -243,7 +241,7 @@ public class PlatStuff {
         void register(ParticleRenderType type, Function<ParticleEngine, ParticleGroup<?>> factory);
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void registerParticleGroup( Consumer<RegParticleGroup> eventConsumer)  {
         throw new AssertionError();
     }

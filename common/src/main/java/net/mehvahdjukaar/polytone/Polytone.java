@@ -99,6 +99,9 @@ public class Polytone {
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
 
+
+
+
     public static void init(boolean devEnv, boolean forge) {
         COMPOUND_RELOADER = new CompoundReloader(
                 CONFIGS, GLOBAL_EXPRESSION,

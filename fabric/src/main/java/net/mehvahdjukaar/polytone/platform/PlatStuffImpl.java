@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.fabric;
+package net.mehvahdjukaar.polytone.platform;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.MapCodec;
@@ -72,6 +72,12 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class PlatStuffImpl {
+
+    public static String getLoader() {
+        return "hi";
+    }
+
+
     public static boolean isModStateValid() {
         return true;
     }

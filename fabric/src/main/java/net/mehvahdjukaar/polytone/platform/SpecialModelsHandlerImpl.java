@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.fabric;
+package net.mehvahdjukaar.polytone.platform;
 
 import net.fabricmc.fabric.api.client.model.loading.v1.ExtraModelKey;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;

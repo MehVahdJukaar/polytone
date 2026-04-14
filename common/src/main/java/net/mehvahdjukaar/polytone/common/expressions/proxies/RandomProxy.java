@@ -1,11 +1,13 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
+import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 
+@BeanAliases
 public class RandomProxy {
 
     public static final RandomProxy GLOBAL = RandomProxy.of(RandomSource.createNewThreadLocalInstance());
