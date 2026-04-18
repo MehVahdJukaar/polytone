@@ -51,7 +51,7 @@ public class AnimationStateMixin implements IDeltaProviderContext {
             if (delta == null || delta < 0) return;
 
             SpriteContents.AnimatedTexture anim = this.animationInfo;
-            int totalTime = anim.frames.stream().mapToInt(f -> f.time).sum();
+            int totalTime = anim.frames.stream().mapToInt(SpriteContents.FrameInfo::time).sum();
             float scaledTime = delta * totalTime;
 
             int accumulated = 0;
@@ -60,12 +60,12 @@ public class AnimationStateMixin implements IDeltaProviderContext {
 
             for (int i = 0; i < anim.frames.size(); i++) {
                 SpriteContents.FrameInfo frameInfo = anim.frames.get(i);
-                if (scaledTime < accumulated + frameInfo.time) {
+                if (scaledTime < accumulated + frameInfo.time()) {
                     this.frame = i;
                     this.subFrame = (int)(scaledTime - accumulated);
                     break;
                 }
-                accumulated += frameInfo.time;
+                accumulated += frameInfo.time();
             }
 
             // Update isDirty if frame changed (mimics vanilla behavior)

@@ -116,9 +116,9 @@ public class ColormapExpressionProvider extends PolytoneExpression implements IC
         if (hasBlockLight)
             vb.setVariable(BLOCK_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.BLOCK, bp));
         if (hasTemperature)
-            vb.setVariable(PolytoneExpression.TEMPERATURE, biome != null ? ColorUtils.getClimateSettings(biome).temperature : 0);
+            vb.setVariable(PolytoneExpression.TEMPERATURE, biome != null ? ColorUtils.getClimateSettings(biome).temperature() : 0);
         if (hasDownfall)
-            vb.setVariable(PolytoneExpression.DOWNFALL, biome != null ? ColorUtils.getClimateSettings(biome).downfall : 0);
+            vb.setVariable(PolytoneExpression.DOWNFALL, biome != null ? ColorUtils.getClimateSettings(biome).downfall() : 0);
 
         if (hasPlayer) {
             var e = Minecraft.getInstance().getCameraEntity();

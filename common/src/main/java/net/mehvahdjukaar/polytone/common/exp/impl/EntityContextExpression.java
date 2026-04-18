@@ -74,9 +74,9 @@ public class EntityContextExpression extends PolytoneExpression implements IEnti
         if (hasSkyLight) vb.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, p));
         if (hasBlockLight) vb.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, p));
         if (hasTemperature)
-            vb.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(p).value()).temperature);
+            vb.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(p).value()).temperature());
         if (hasDownfall)
-            vb.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(p).value()).downfall);
+            vb.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(p).value()).downfall());
 
         if (hasState) STATE_HACK.set(level.getBlockState(p));
 

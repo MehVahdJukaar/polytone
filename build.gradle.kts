@@ -8,6 +8,8 @@ plugins {
     id("net.mehvahdjukaar.candlelight") version "1.0.0" apply false
 }
 
+
+
 mod {
     val mod_description: String by extra
     val mod_credits: String by extra
@@ -39,11 +41,10 @@ subprojects {
         }
     }
 
-    /*
-    candlelight {
-        clientOnly = false
-        logging = true
-    }*/
+    dependencies{
+        compileOnly("net.mehvahdjukaar:candlelight:1.0.0")
+    }
+
 
 
     tasks.withType<JavaCompile> {

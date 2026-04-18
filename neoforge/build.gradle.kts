@@ -4,6 +4,7 @@ plugins {
 
 neoforge {
     dependOn(project(":common"))
+    accessWidener(project(":common"))
 }
 
 val exp4j_version: String by extra

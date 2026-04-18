@@ -73,11 +73,7 @@ import java.util.function.Supplier;
 
 public class PlatStuffImpl {
 
-    public static String getLoader() {
-        return "hi";
-    }
-
-
+    @org.jetbrains.annotations.Contract
     public static boolean isModStateValid() {
         return true;
     }
@@ -410,5 +406,6 @@ public class PlatStuffImpl {
     public static String getModLoader() {
         return "Fabric";
     }
+
 
 }

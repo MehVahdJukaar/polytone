@@ -36,6 +36,7 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.fog.environment.FogEnvironment;
+import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;

@@ -1,4 +1,4 @@
-accessWidener   v2  named
+accessWidener   v1  named
 
 
 mutable field net/minecraft/world/level/material/MapColor col I
@@ -122,12 +122,10 @@ accessible method net/minecraft/client/particle/ParticleResources$MutableSpriteS
 accessible field net/minecraft/client/particle/Particle age I
 accessible field net/minecraft/client/particle/SingleQuadParticle quadSize F
 
-accessible field net/minecraft/world/level/border/BorderStatus color I
-mutable field net/minecraft/world/level/border/BorderStatus color I
-
-accessible field net/minecraft/world/level/biome/Biome$ClimateSettings temperature F
-accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall F
 accessible class net/minecraft/world/level/biome/Biome$ClimateSettings
+
+mutable field net/minecraft/world/level/border/BorderStatus color I
+accessible field net/minecraft/world/level/border/BorderStatus color I
 
 accessible field net/minecraft/network/chat/TextColor value I
 mutable field net/minecraft/network/chat/TextColor value I
@@ -138,12 +136,11 @@ mutable field net/minecraft/world/item/Item components Lnet/minecraft/core/compo
 # texture stuff
 accessible class net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
 accessible class net/minecraft/client/renderer/texture/SpriteContents$FrameInfo
+accessible method net/minecraft/client/renderer/texture/SpriteContents$FrameInfo <init> (II)V
 accessible field net/minecraft/client/renderer/texture/SpriteContents byMipLevel [Lcom/mojang/blaze3d/platform/NativeImage;
-accessible field net/minecraft/client/renderer/texture/SpriteContents$FrameInfo index I
 accessible field net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture frames Ljava/util/List;
 accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameX (I)I
 accessible method net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture getFrameY (I)I
-accessible field net/minecraft/client/renderer/texture/SpriteContents$FrameInfo time I
 
 accessible field net/minecraft/client/particle/Particle stoppedByCollision Z
 
@@ -188,8 +185,6 @@ accessible method net/minecraft/client/renderer/RenderPipelines register (Lcom/m
 accessible field net/minecraft/ChatFormatting color Ljava/lang/Integer;
 mutable field net/minecraft/ChatFormatting color Ljava/lang/Integer;
 
-accessible field net/minecraft/client/renderer/block/model/BakedQuad tintIndex I
-mutable field net/minecraft/client/renderer/block/model/BakedQuad tintIndex I
 
 accessible field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
 mutable field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
@@ -215,15 +210,6 @@ accessible field net/minecraft/client/renderer/GameRenderer fogRenderer Lnet/min
 
 accessible field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
 mutable field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
-
-
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects foliageColorOverride Ljava/util/Optional;
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects foliageColorOverride Ljava/util/Optional;
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorOverride Ljava/util/Optional;
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorOverride Ljava/util/Optional;
-accessible field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorModifier Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
-mutable field net/minecraft/world/level/biome/BiomeSpecialEffects grassColorModifier Lnet/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier;
-
 
 
 accessible field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;

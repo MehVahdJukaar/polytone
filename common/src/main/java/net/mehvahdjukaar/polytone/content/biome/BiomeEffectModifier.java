@@ -134,28 +134,28 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
         }
         builder.waterColor(newWaterColor);
 
-        Optional<Integer> newFoliageColorOverride = specialEffects.foliageColorOverride;
+        Optional<Integer> newFoliageColorOverride = specialEffects.foliageColorOverride();
         if (foliageColorOverride.isPresent()) {
             newFoliageColorOverride = foliageColorOverride;
             changed = true;
         }
         newFoliageColorOverride.ifPresent(builder::foliageColorOverride);
 
-        Optional<Integer> newDryFoliageColorOverride = specialEffects.foliageColorOverride;
+        Optional<Integer> newDryFoliageColorOverride = specialEffects.foliageColorOverride();
         if (dryFoliageColorOverride.isPresent()) {
             newDryFoliageColorOverride = dryFoliageColorOverride;
             changed = true;
         }
         newDryFoliageColorOverride.ifPresent(builder::dryFoliageColorOverride);
 
-        Optional<Integer> newGrassColorOverride = specialEffects.grassColorOverride;
+        Optional<Integer> newGrassColorOverride = specialEffects.grassColorOverride();
         if (grassColorOverride.isPresent()) {
             newGrassColorOverride = grassColorOverride;
             changed = true;
         }
         newGrassColorOverride.ifPresent(builder::grassColorOverride);
 
-        BiomeSpecialEffects.GrassColorModifier newGrassColorModifier = specialEffects.grassColorModifier;
+        BiomeSpecialEffects.GrassColorModifier newGrassColorModifier = specialEffects.grassColorModifier();
         if (grassColorModifier.isPresent()) {
             newGrassColorModifier = grassColorModifier.get();
             changed = true;

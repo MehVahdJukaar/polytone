@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.platform;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;

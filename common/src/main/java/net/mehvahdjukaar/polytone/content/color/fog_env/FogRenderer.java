@@ -1,23 +1,16 @@
 package net.mehvahdjukaar.polytone.content.color.fog_env;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
-import com.mojang.blaze3d.buffers.Std140SizeCalculator;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.RenderSystem;
+
 import java.nio.ByteBuffer;
 import java.util.List;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.client.renderer.fog.environment.AtmosphericFogEnvironment;
 import net.minecraft.client.renderer.fog.environment.BlindnessFogEnvironment;
@@ -35,7 +28,7 @@ import net.minecraft.world.level.material.FogType;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
-public class FogRenderer   {
+public class FogRenderer {
     public static final List<FogEnvironment> FOG_ENVIRONMENTS = Lists.<FogEnvironment>newArrayList(
             new LavaFogEnvironment(),
             new PowderedSnowFogEnvironment(),
@@ -68,9 +61,9 @@ public class FogRenderer   {
         } else {
             int baseColor = firstFogEnvWithColor.getBaseColor(clientLevel, camera, renderDistance, partialTicks);
             float h = clientLevel.getLevelData().voidDarknessOnsetRange();
-            float k = Mth.clamp((h + clientLevel.getMinY() - (float)camera.position().y) / h, 0.0F, 1.0F);
+            float k = Mth.clamp((h + clientLevel.getMinY() - (float) camera.position().y) / h, 0.0F, 1.0F);
             if (firstFogEnvWithDarkness != null) {
-                LivingEntity livingEntity = (LivingEntity)entity;
+                LivingEntity livingEntity = (LivingEntity) entity;
                 k = firstFogEnvWithDarkness.getModifiedDarkness(livingEntity, k, partialTicks);
             }
 
@@ -92,13 +85,12 @@ public class FogRenderer   {
             float o;
             if (fogType == FogType.WATER) {
                 if (entity instanceof LocalPlayer) {
-                    o = ((LocalPlayer)entity).getWaterVision();
+                    o = ((LocalPlayer) entity).getWaterVision();
                 } else {
                     o = 1.0F;
                 }
             } else if (entity instanceof LivingEntity livingEntity2 && livingEntity2.hasEffect(MobEffects.NIGHT_VISION) && !livingEntity2.hasEffect(MobEffects.DARKNESS)
-            )
-            {
+            ) {
                 o = GameRenderer.getNightVisionScale(livingEntity2, partialTicks);
             } else {
                 o = 0.0F;

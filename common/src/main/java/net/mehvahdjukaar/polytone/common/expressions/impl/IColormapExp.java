@@ -89,7 +89,7 @@ public interface IColormapExp {
         @Override
         public float evaluate(@Nullable BlockAndTintGetter level, BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,
                               @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
-            return biome == null ? 0 : getClimateSettings(biome).temperature;
+            return biome == null ? 0 : getClimateSettings(biome).temperature();
         }
 
         @Override
@@ -116,7 +116,7 @@ public interface IColormapExp {
         @Override
         public float evaluate(@Nullable BlockAndTintGetter level, BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,
                               @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
-            return biome == null ? 0 : getClimateSettings(biome).downfall;
+            return biome == null ? 0 : getClimateSettings(biome).downfall();
         }
 
         @Override

@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.content.fluid;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
-import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;

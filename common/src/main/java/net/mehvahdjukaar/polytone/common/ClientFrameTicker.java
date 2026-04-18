@@ -42,8 +42,8 @@ public class ClientFrameTicker {
     public static void onTick(Level level) {
         BlockPos cameraPos = getCameraBlockPos();
         var biome = level.getBiome(cameraPos);
-        temperature = ColorUtils.getClimateSettings(biome.value()).temperature;
-        downfall = ColorUtils.getClimateSettings(biome.value()).downfall;
+        temperature = ColorUtils.getClimateSettings(biome.value()).temperature();
+        downfall = ColorUtils.getClimateSettings(biome.value()).downfall();
     }
 
     public static double getDayTime() {
