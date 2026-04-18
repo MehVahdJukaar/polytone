@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.compat.neoforge;
+package net.mehvahdjukaar.polytone.compat.platform;
 
 public class AlexsCavesCompat {
 //TODO: add back

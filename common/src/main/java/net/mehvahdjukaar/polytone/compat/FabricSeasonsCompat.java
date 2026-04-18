@@ -12,7 +12,8 @@ public class FabricSeasonsCompat {
     }
 
     @PlatformImpl
-    public static float getSeasonNumber(Level level){
+    public static float getSeasonNumber(Level level) {
         throw new AssertionError();
     }
+
 }

@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.integration.platform;
+package net.mehvahdjukaar.polytone.compat.platform;
 
 import io.github.lucaargolo.seasons.FabricSeasons;
 import io.github.lucaargolo.seasons.utils.Season;
@@ -21,4 +21,7 @@ public class FabricSeasonsCompatImpl {
     public static float getSeasonNumber(Level level){
         return FabricSeasons.getCurrentSeason(level).ordinal() / 3f;
     }
+
+
+
 }

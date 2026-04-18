@@ -4,7 +4,7 @@ import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.minecraft.world.level.Level;
 
 public class FabricSeasonsCompatImpl {
-    public static ISeason ge2tSeason(Level level) {
+    public static ISeason getSeason(Level level) {
         return ISeason.SPRING;
     }
 

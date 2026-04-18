@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.integration.fabric;
+package net.mehvahdjukaar.polytone.compat.platform;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;

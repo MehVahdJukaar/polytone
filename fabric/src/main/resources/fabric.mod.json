@@ -19,7 +19,7 @@
       "net.mehvahdjukaar.polytone.platform.PolytoneFabric"
     ],
     "modmenu": [
-      "net.mehvahdjukaar.polytone.integration.fabric.ModMenuCompat"
+      "net.mehvahdjukaar.polytone.compat.platform.ModMenuCompat"
     ]
   },
   "mixins": [
