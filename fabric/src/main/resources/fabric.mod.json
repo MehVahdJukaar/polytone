@@ -16,7 +16,7 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "net.mehvahdjukaar.polytone.fabric.PolytoneFabric"
+      "net.mehvahdjukaar.polytone.platform.PolytoneFabric"
     ],
     "modmenu": [
       "net.mehvahdjukaar.polytone.integration.fabric.ModMenuCompat"
@@ -29,6 +29,6 @@
   "depends": {
     "fabricloader": ">=0.18",
     "fabric": ">=0.140.0+1.21.11",
-    "minecraft": ">=${minecraft_min_version} <${minecraft_max_version}"
+    "minecraft": "=${minecraft_version}"
   }
 }

@@ -1,0 +1,144 @@
+import org.apache.commons.io.output.ByteArrayOutputStream
+
+plugins {
+    id("com.possible-triangle.core")
+    id("com.possible-triangle.common") apply false
+    id("com.possible-triangle.fabric") apply false
+    id("com.possible-triangle.neoforge") apply false
+    id("net.mehvahdjukaar.candlelight") version "1.0.0" apply false
+}
+
+mod {
+    val mod_description: String by extra
+    val mod_credits: String by extra
+    val mod_license: String by extra
+    val mod_homepage: String by extra
+    val mod_github: String by extra
+    val mod_authors: String by extra
+    additional.add("mod_description", provider { mod_description })
+    additional.add("mod_credits", provider { mod_credits })
+    additional.add("mod_license", provider { mod_license })
+    additional.add("mod_homepage", provider { mod_homepage })
+    additional.add("mod_authors", provider { mod_authors })
+    additional.add("mod_github", provider { mod_github })
+}
+
+
+subprojects {
+
+    apply(plugin = "com.possible-triangle.core")
+    apply(plugin = "net.mehvahdjukaar.candlelight")
+
+    repositories {
+        nexus()
+    }
+
+    upload {
+        maven {
+            nexus()
+        }
+    }
+
+    /*
+    candlelight {
+        clientOnly = false
+        logging = true
+    }*/
+
+
+    tasks.withType<JavaCompile> {
+        options.compilerArgs.addAll(listOf("-Xmaxerrs", "4000"))
+    }
+
+
+    repositories {
+        // Standard repositories
+        mavenLocal()
+        mavenCentral()
+
+        flatDir {
+            dirs("mods")
+        }
+
+        // Our publishing repo
+        maven { url = uri("https://registry.somethingcatchy.net/repository/maven-releases/") }
+
+        maven { url = uri("https://api.modrinth.com/maven") }
+        maven { url = uri("https://www.cursemaven.com") }
+        maven { url = uri("https://jitpack.io") }
+
+        maven { url = uri("https://maven.neoforged.net/releases") }
+        maven { url = uri("https://maven.architectury.dev") }
+        maven { url = uri("https://maven.parchmentmc.org") }
+
+        maven { url = uri("https://maven.createmod.net") } // Create Mod, Ponder, Flywheel
+        maven { url = uri("https://maven.blamejared.com") } // JEI, Vazkii's Mods
+        maven { url = uri("https://maven.ladysnake.org/releases") } // Ladysnake mods
+        maven { url = uri("https://maven.tterrag.com/") } // Flywheel, EnderIO
+        maven { url = uri("https://mvn.devos.one/releases/") } // Registrate, Porting Lib (releases)
+        maven { url = uri("https://mvn.devos.one/snapshots/") } // Registrate, Porting Lib (snapshots)
+        maven { url = uri("https://maven.terraformersmc.com/") } // TerraformersMC mods
+        maven { url = uri("https://maven.saps.dev/releases") } // FTB Mods
+        maven { url = uri("https://dl.cloudsmith.io/public/tslat/sbl/maven/") }
+
+        maven { url = uri("https://maven.theillusivec4.top/") } // Curios API
+        maven { url = uri("https://maven.squiddev.cc") } // CC: Tweaked
+        maven { url = uri("https://maven.su5ed.dev/releases") } // SU5ED mods
+        maven { url = uri("https://harleyoconnor.com/maven") } // Dynamic Trees
+        maven { url = uri("https://maven.misterpemodder.com/libs-release/") } // ShulkerBoxTooltip
+        maven { url = uri("https://maven.firstdarkdev.xyz/snapshots") } // FirstDarkDev (snapshots)
+        maven {
+            url = uri("https://raw.githubusercontent.com/Fuzss/modresources/main/maven")
+        } // NeoForge config API port
+
+        maven { // Reach Entity Attributes
+            url = uri("https://maven.jamieswhiteshirt.com/libs-release")
+        }
+    }
+
+}
+
+tasks.register("buildAndPublishAll") {
+// clean also calls clean for all subprojects, no need to reference them all specifically
+    dependsOn("clean")
+// same for build
+    dependsOn("build")
+// publish currently also already handles modrinth & curseforge if they are configured
+// might change that if you don't like it
+    dependsOn("publish")
+
+
+    finalizedBy("gitTag")
+
+    group = "build"
+    description = "Runs clean, build, and publish neoforge and fabric"
+}
+
+tasks.register("gitTag") {
+    val execOps = project.objects.newInstance<ExecOperations>()
+
+    group = "build"
+    description = "Create and push git tag from project version"
+
+    doLast {
+        val tag = mod.version.get()
+
+        val stdout = ByteArrayOutputStream()
+
+        execOps.exec {
+            commandLine("git", "tag", "-l", tag)
+            standardOutput = stdout
+        }
+
+        if (!stdout.toString().trim().isEmpty()) {
+            logger.warn("Git tag '${tag}' already exists")
+        } else {
+            execOps.exec {
+                commandLine("git", "tag", "-a", tag, "-m", "Release ${tag}")
+            }
+            execOps.exec {
+                commandLine("git", "push", "origin", tag)
+            }
+        }
+    }
+}
