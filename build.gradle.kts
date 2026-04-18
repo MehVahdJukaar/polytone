@@ -5,10 +5,8 @@ plugins {
     id("com.possible-triangle.common") apply false
     id("com.possible-triangle.fabric") apply false
     id("com.possible-triangle.neoforge") apply false
-    id("net.mehvahdjukaar.candlelight") version "1.0.0" apply false
+    id("net.mehvahdjukaar.candlelight") version "1.0.2" apply false
 }
-
-
 
 mod {
     val mod_description: String by extra
@@ -31,6 +29,10 @@ subprojects {
     apply(plugin = "com.possible-triangle.core")
     apply(plugin = "net.mehvahdjukaar.candlelight")
 
+    dependencies{
+        compileOnly("net.mehvahdjukaar:candlelight:1.0.2")
+    }
+
     repositories {
         nexus()
     }
@@ -41,9 +43,6 @@ subprojects {
         }
     }
 
-    dependencies{
-        compileOnly("net.mehvahdjukaar:candlelight:1.0.0")
-    }
 
 
 

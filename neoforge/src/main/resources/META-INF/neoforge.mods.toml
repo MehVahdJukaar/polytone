@@ -1,6 +1,5 @@
 
 modLoader = "javafml"
-loaderVersion = "${loader_version_range}"
 
 license = "${mod_license}"
 issueTrackerURL = "${mod_github}/issues"
@@ -30,7 +29,7 @@ issueTrackerURL = "${mod_github}/issues"
 [[dependencies.${mod_id}]]
     modId = "minecraft"
     type = "required"
-    versionRange = "[${minecraft_min_version}]"
+    versionRange = "[${minecraft_version}]"
     ordering = "NONE"
     side = "CLIENT"
 

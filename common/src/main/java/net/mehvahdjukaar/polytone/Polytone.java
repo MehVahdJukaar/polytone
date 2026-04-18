@@ -1,8 +1,5 @@
 package net.mehvahdjukaar.polytone;
 
-import com.mojang.blaze3d.opengl.GlProgram;
-import com.mojang.blaze3d.opengl.Uniform;
-import net.irisshaders.iris.mixinterface.ShaderInstanceInterface;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.reloader.CompoundReloader;
@@ -34,9 +31,6 @@ import net.mehvahdjukaar.polytone.content.tabs.CreativeTabsModifiersManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
-import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.fog.environment.FogEnvironment;
-import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -99,8 +93,6 @@ public class Polytone {
 
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
-
-
 
 
     public static void init(boolean devEnv, boolean forge) {

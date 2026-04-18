@@ -73,9 +73,9 @@ public class BlockContextExpression extends PolytoneExpression implements IBlock
         if (hasSkyLight) vars.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, pos));
         if (hasBlockLight) vars.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, pos));
         if (hasTemperature)
-            vars.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(pos).value()).temperature);
+            vars.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(pos).value()).temperature());
         if (hasDownfall)
-            vars.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(pos).value()).downfall);
+            vars.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(pos).value()).downfall());
 
         if (hasState && state != null) STATE_HACK.set(state);
 

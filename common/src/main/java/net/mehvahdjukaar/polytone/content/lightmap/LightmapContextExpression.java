@@ -63,8 +63,8 @@ record LightmapContextExpression(ConcurrentExpression expression, String unparse
                 vb.setVariable(DOWNFALL, 0);
             } else {
                 var cs = ColorUtils.getClimateSettings(biome.value());
-                vb.setVariable(TEMPERATURE, cs.temperature);
-                vb.setVariable(DOWNFALL, cs.downfall);
+                vb.setVariable(TEMPERATURE, cs.temperature());
+                vb.setVariable(DOWNFALL, cs.downfall());
             }
 
         }
