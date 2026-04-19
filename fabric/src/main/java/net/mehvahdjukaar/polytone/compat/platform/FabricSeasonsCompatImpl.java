@@ -22,6 +22,4 @@ public class FabricSeasonsCompatImpl {
         return FabricSeasons.getCurrentSeason(level).ordinal() / 3f;
     }
 
-
-
 }

@@ -33,7 +33,7 @@ public class LevelRendererMixin {
 
     @Shadow
     @Final
-    private LevelRenderState levelRenderState;
+    public LevelRenderState levelRenderState;
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
     public void poly$preRender(GraphicsResourceAllocator graphicsResourceAllocator,

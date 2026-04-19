@@ -5,7 +5,7 @@ plugins {
     id("com.possible-triangle.common") apply false
     id("com.possible-triangle.fabric") apply false
     id("com.possible-triangle.neoforge") apply false
-    id("net.mehvahdjukaar.candlelight") version "1.0.2" apply false
+    id("net.mehvahdjukaar.candlelight") version "1.1.0" apply false
 }
 
 mod {
@@ -27,10 +27,9 @@ mod {
 subprojects {
 
     apply(plugin = "com.possible-triangle.core")
-    apply(plugin = "net.mehvahdjukaar.candlelight")
 
     dependencies{
-        compileOnly("net.mehvahdjukaar:candlelight:1.0.2")
+        compileOnly("net.mehvahdjukaar:candlelight:1.1.0")
     }
 
     repositories {

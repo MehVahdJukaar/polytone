@@ -1,10 +1,11 @@
 plugins {
     id("com.possible-triangle.fabric")
+    id("net.mehvahdjukaar.candlelight")
+
 }
 
 fabric {
     dependOn(project(":common"))
-
     accessWidener(project(":common"))
 }
 
@@ -28,7 +29,9 @@ dependencies {
     modCompileOnly("curse.maven:sodium-394468:7366772")
     //modRuntimeOnly("curse.maven:irisshaders-455508:7805348")
     // modImplementation "curse.maven:distant-horizons-508933:6387715"
+    modCompileOnly("curse.maven:irisshaders-455508:6369436")
     modCompileOnly("curse.maven:serene-seasons-291874:6182595")
     modCompileOnly("com.terraformersmc:modmenu:4.0.6")
-
+    modCompileOnly("curse.maven:entity-model-features-844662:7400754")
+    modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")
 }
