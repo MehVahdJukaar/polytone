@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.fluid.fabric;
+package net.mehvahdjukaar.polytone.content.fluid.platform;
 
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.minecraft.client.color.block.BlockColor;
@@ -8,11 +8,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.FluidState;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 public record PolytoneFluidRenderHandlerWrapper(FluidRenderHandler instance,
                                                 BlockColor color) implements FluidRenderHandler {
     @Override
-    public TextureAtlasSprite[] getFluidSprites(@Nullable BlockAndTintGetter view, @Nullable BlockPos pos, FluidState state) {
+    public TextureAtlasSprite @NonNull [] getFluidSprites(@Nullable BlockAndTintGetter view, @Nullable BlockPos pos, FluidState state) {
         return instance.getFluidSprites(view, pos, state);
     }
 

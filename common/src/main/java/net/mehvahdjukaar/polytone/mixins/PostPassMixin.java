@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class PostPassMixin {
 
 
-    @Inject(method = "method_67884", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderPass;setPipeline(Lcom/mojang/blaze3d/pipeline/RenderPipeline;)V"))
+    @Inject(method = {"lambda$addToFrame$5", "method_67884"}, at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderPass;setPipeline(Lcom/mojang/blaze3d/pipeline/RenderPipeline;)V"))
     private void poly$onPostPass(CallbackInfo ci, @Local RenderPass pass) {
         Polytone.POST_SHADERS.setupExtraUniforms(pass);
     }

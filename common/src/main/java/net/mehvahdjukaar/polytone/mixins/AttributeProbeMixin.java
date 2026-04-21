@@ -20,7 +20,7 @@ public class AttributeProbeMixin {
     @Final
     SpatialAttributeInterpolator biomeInterpolator;
 
-    @Inject(method = "method_75687", at = @At("HEAD"))
+    @Inject(method = {"lambda$tick$1","method_75687"}, at = @At("HEAD"))
     private void poly$accumulateInner(double weight, Holder<Biome> holder, CallbackInfo ci) {
         if (Polytone.BIOME_MODIFIERS.hasPostAttributes()) {
             SpatialAttributeInterpolator postInterpolator = ((IExtendedInterpolator) this.biomeInterpolator)

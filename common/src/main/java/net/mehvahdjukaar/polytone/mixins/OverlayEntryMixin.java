@@ -3,13 +3,11 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.common.PolyConditionalOverlay;
-import net.minecraft.SharedConstants;import net.minecraft.server.packs.OverlayMetadataSection;
+import net.minecraft.server.packs.OverlayMetadataSection;
 import net.minecraft.util.TriState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(OverlayMetadataSection.OverlayEntry.class)
 public class OverlayEntryMixin implements PolyConditionalOverlay {
@@ -36,9 +34,9 @@ public class OverlayEntryMixin implements PolyConditionalOverlay {
     }
 
 
-    @ModifyReturnValue(method = "lambda$listCodecForPackType$0",
+    @ModifyReturnValue(method = {"lambda$listCodecForPackType$0","method_72312"},
             at = @At(value = "RETURN"))
-    private static  OverlayMetadataSection.OverlayEntry polytone$decodeListWithPolytoneCodec(
+    private static OverlayMetadataSection.OverlayEntry polytone$decodeListWithPolytoneCodec(
             OverlayMetadataSection.OverlayEntry original,
             @Local(argsOnly = true) OverlayMetadataSection.OverlayEntry.IntermediateEntry intermediate) {
         ((PolyConditionalOverlay) (Object) original).polytone$setCondition(

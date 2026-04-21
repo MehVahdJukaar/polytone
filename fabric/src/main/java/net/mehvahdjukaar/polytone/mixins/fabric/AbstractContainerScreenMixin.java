@@ -1,15 +1,11 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
-import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.Slot;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -33,10 +29,14 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     @Shadow
     protected int inventoryLabelY;
 
-    @Shadow protected int topPos;
-    @Shadow protected int leftPos;
-    @Shadow protected int imageWidth;
-    @Shadow protected int imageHeight;
+    @Shadow
+    protected int topPos;
+    @Shadow
+    protected int leftPos;
+    @Shadow
+    protected int imageWidth;
+    @Shadow
+    protected int imageHeight;
     @Unique
     private Integer polytone$customLabelColor = null;
     @Unique

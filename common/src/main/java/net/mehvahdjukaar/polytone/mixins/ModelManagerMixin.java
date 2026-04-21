@@ -14,7 +14,8 @@ import java.util.Map;
 @Mixin(ModelManager.class)
 public class ModelManagerMixin {
 
-    @Inject(method = "method_62663", at = @At("HEAD"))
+    //method_62663
+    @Inject(method = {"lambda$loadBlockModels$5", "method_62663"}, at = @At("HEAD"))
     private static void polytone$loadCustomItemModels(ResourceManager resourceManager, CallbackInfoReturnable<Map> cir) {
         try {
             Polytone.onEarlyPackLoad(resourceManager);
