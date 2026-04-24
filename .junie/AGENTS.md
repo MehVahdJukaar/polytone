@@ -1,0 +1,1 @@
+IMPORTANT: When applicable, prefer using intellij-index MCP tools for code navigation and refactoring. Prefer more specialized and targeted tools. Query mixins just when in tasked with complex problems. Try simpler approach solutions first unless asked.

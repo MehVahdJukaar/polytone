@@ -1,14 +1,5 @@
 plugins {
     id("com.possible-triangle.common")
-    id("net.mehvahdjukaar.candlelight")
-
-}
-
-neoForge {
-    parchment {
-        mappingsVersion = "2024.11.17"
-        minecraftVersion = "1.21.1"
-    }
 }
 
 common {

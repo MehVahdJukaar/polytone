@@ -19,7 +19,7 @@ public class PolytoneGlobalUniforms implements AutoCloseable {
             .get();
 
     private final GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Polytone Global Settings UBO",
-            136, UBO_SIZE);
+            GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_UNIFORM, UBO_SIZE);
 
     public void update(Matrix4f projectionMat, Matrix4f viewMat, float sunAngle) {
 

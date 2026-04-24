@@ -30,6 +30,4 @@ public interface IColormapModExp {
     default IColormapModExp createConcurrent() {
         return this;
     }
-
-    ;
 }

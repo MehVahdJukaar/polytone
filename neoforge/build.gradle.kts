@@ -1,7 +1,5 @@
 plugins {
     id("com.possible-triangle.neoforge")
-    id("net.mehvahdjukaar.candlelight")
-
 }
 
 neoforge {

@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone;
 
+import com.mojang.blaze3d.opengl.GlShaderModule;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.minecraft.client.Camera;
@@ -11,6 +12,7 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleGroup;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.renderer.PostPass;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.*;
 import net.minecraft.core.particles.ParticleOptions;
@@ -205,7 +207,6 @@ public class PlatStuff {
 
         if (reference != null) {
             T value = reference.value();
-
             reg.byLocation.remove(key.identifier());
             reg.byValue.remove(value);
             reg.byId.remove(reference);

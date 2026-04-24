@@ -1,7 +1,5 @@
 plugins {
     id("com.possible-triangle.fabric")
-    id("net.mehvahdjukaar.candlelight")
-
 }
 
 fabric {

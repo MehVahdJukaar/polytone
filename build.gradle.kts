@@ -6,6 +6,7 @@ plugins {
     id("com.possible-triangle.fabric") apply false
     id("com.possible-triangle.neoforge") apply false
     id("net.mehvahdjukaar.candlelight") version "1.1.0" apply false
+    id("dev.mixinmcp.decompile") version "0.9.0" apply false
 }
 
 mod {
@@ -27,8 +28,10 @@ mod {
 subprojects {
 
     apply(plugin = "com.possible-triangle.core")
+    apply(plugin = "net.mehvahdjukaar.candlelight")
+    apply(plugin = "dev.mixinmcp.decompile")
 
-    dependencies{
+    dependencies {
         compileOnly("net.mehvahdjukaar:candlelight:1.1.0")
     }
 
@@ -58,6 +61,7 @@ subprojects {
         flatDir {
             dirs("mods")
         }
+
 
         // Our publishing repo
         maven { url = uri("https://registry.somethingcatchy.net/repository/maven-releases/") }

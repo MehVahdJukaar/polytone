@@ -18,3 +18,4 @@ classes/
 .settings
 *.launch
 /unique_lines.txt
+/.junie/memory/
