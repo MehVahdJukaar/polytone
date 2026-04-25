@@ -7,14 +7,6 @@ neoforge {
     accessWidener(project(":common"))
 }
 
-neoForge {
-    parchment {
-        mappingsVersion = "2024.11.17"
-        minecraftVersion = "1.21.1"
-    }
-}
-
-
 val exp4j_version: String by extra
 val mvel_version: String by extra
 

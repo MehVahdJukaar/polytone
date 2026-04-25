@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone;
 
-import com.mojang.blaze3d.opengl.GlShaderModule;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.minecraft.client.Camera;
@@ -12,18 +11,16 @@ import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleGroup;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.renderer.PostPass;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.*;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
@@ -89,7 +86,7 @@ public class PlatStuff {
     @Contract
     @PlatformImpl
     public static String getModVersion(String mod) {
-        throw  new AssertionError();
+        throw new AssertionError();
     }
 
     @PlatformImpl
@@ -239,12 +236,12 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
-    public interface RegParticleGroup{
+    public interface RegParticleGroup {
         void register(ParticleRenderType type, Function<ParticleEngine, ParticleGroup<?>> factory);
     }
 
     @PlatformImpl
-    public static void registerParticleGroup( Consumer<RegParticleGroup> eventConsumer)  {
+    public static void registerParticleGroup(Consumer<RegParticleGroup> eventConsumer) {
         throw new AssertionError();
     }
 }

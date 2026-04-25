@@ -11,8 +11,11 @@
   "config.polytone.lenient_loading": "Lenient Pack Loading",
   "config.polytone.legacy_parsing.tooltip": "Tries to translate formats from other mods to be parsed as Polytone files. Relevant for custom colors and colormaps.",
   "config.polytone.legacy_parsing": "Legacy Formats Parse",
+  "config.polytone.auto_particle_rate_limit.tooltip": "Rate limits each particle emitter from polytone packs. Each will be relate limited after 2 particles every tick steady state or after 400 particles burst every 5 seconds.",
+  "config.polytone.auto_particle_rate_limit": "Auto Particle Rate Limit",
   "config.polytone.particles_throttle.tooltip": "Scales down the amount of custom spawned particles. Decrease to artificially lowers their spawn chance. This is a last resort option to increase performance in unoptimized packs and should normally not be used.",
   "config.polytone.particles_throttle": "Particle Spawn Throttle",
   "config.polytone.custom_particles_async": "Async Custom Particles",
-  "config.polytone.custom_particles_async.tooltip": "Makes Custom Particles tick logic run on a different thread. Very crude and experimental. Might improve performance or not."
+  "config.polytone.custom_particles_async.tooltip": "Makes Custom Particles tick logic run on a different thread. Very crude and experimental. Might improve performance or not.",
+  "config.polytone.header": "Polytone"
 }

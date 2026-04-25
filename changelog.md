@@ -1,2 +1,1 @@
-- fixed another issue with shaders not working
-- alpha is now passed along in particle with custom models
+- added an aggressive, on by default, particle rate limiter. might worsen the look of some packs (or make them way faster if they are not optimized). turn off for best looks.

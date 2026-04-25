@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.content.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.TokenBuckerTracker;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
@@ -89,6 +90,7 @@ public record ParticleParticleEmitter(
             for (int i = 0; i < count.evaluate(particle, level); i++) {
                 ParticleOptions po = getParticleOptions(particle, level);
                 if (po == null) return;
+                if (!TokenBuckerTracker.canEmitParticle(this)) return;
                 level.addParticle(po,
                         particle.x + x.evaluate(particle, level),
                         particle.y + y.evaluate(particle, level),

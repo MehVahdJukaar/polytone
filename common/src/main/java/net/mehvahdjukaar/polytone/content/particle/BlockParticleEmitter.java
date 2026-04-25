@@ -3,14 +3,13 @@ package net.mehvahdjukaar.polytone.content.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
-import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
-import net.mehvahdjukaar.polytone.content.block.TickSource;
+import net.mehvahdjukaar.polytone.common.TokenBuckerTracker;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
+import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
+import net.mehvahdjukaar.polytone.content.block.TickSource;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
-import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -83,10 +82,10 @@ public record BlockParticleEmitter(
 
     @Override
     public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
-        if (particleType.isEmpty()){
+        if (particleType.isEmpty()) {
             return;
         }
-        if (source != spawnSource){
+        if (source != spawnSource) {
             return; //only spawn particles on the correct tick source
         }
         float throttle = Polytone.CONFIGS.particlesThrottle.get();
@@ -104,6 +103,7 @@ public record BlockParticleEmitter(
 
                 ParticleOptions po = getParticleOptions(level, pos, state);
                 if (po == null) return;
+                if (!TokenBuckerTracker.canEmitParticle(this)) return;
                 var pp = spawnLocation.getLocation(pos, state, level.random);
                 level.addAlwaysVisibleParticle(po,
                         pp.x() + x.evaluate(level, v, state),

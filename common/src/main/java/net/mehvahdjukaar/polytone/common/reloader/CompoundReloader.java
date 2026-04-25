@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
+import net.mehvahdjukaar.polytone.common.TokenBuckerTracker;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributesHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -50,7 +51,7 @@ public class CompoundReloader implements PreparableReloadListener {
 
                     if (level != null) {
                         RegistryAccess ra = level.registryAccess();
-                        if(ra instanceof RegistryAccess.Frozen) {
+                        if (ra instanceof RegistryAccess.Frozen) {
                             try {
                                 applyWithLevel(ra, false);
                             } catch (Exception e) {
@@ -58,7 +59,7 @@ public class CompoundReloader implements PreparableReloadListener {
                                         new RuntimeException(e)
                                 );
                             }
-                        }else {
+                        } else {
                             Polytone.LOGGER.warn("Tried to reload with a non frozen registry access. How?");
                         }
                     }
@@ -153,6 +154,7 @@ public class CompoundReloader implements PreparableReloadListener {
 
 
     public void resetWithLevel(boolean isLogOff) {
+        TokenBuckerTracker.clear();
         for (var c : children) {
             c.resetWithLevel(isLogOff);
         }

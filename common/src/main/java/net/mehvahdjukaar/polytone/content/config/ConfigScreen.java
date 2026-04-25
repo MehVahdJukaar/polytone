@@ -74,7 +74,7 @@ public class ConfigScreen extends OptionsSubScreen {
     @Override
     protected void addFooter() {
         LinearLayout linearLayout = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-        int width = Mth.positiveCeilDiv(150 * 2 - 8  ,3);
+        int width = Mth.positiveCeilDiv(150 * 2 - 8, 3);
         linearLayout.addChild(Button.builder(Component.translatable("screen.polytone.configs.reset"),
                         b -> {
                             resetValues();
@@ -99,7 +99,11 @@ public class ConfigScreen extends OptionsSubScreen {
     @Override
     protected void addOptions() {
         for (var modId : optionsPerCategory.keySet()) {
-            this.list.addHeader(Component.literal(getReadableName(modId)));
+            Component header = Component.translatable("config." + modId + ".header");
+            if (header.getString().equals(modId)) {
+                header = Component.literal(getReadableName(modId));
+            }
+            this.list.addHeader(header);
             Collection<OptionHolder<?>> options = optionsPerCategory.get(modId);
             OptionInstance<?> presetOpt = makePresetOpt(options, modId);
             if (presetOpt != null) this.list.addBig(presetOpt);

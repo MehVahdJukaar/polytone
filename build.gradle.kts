@@ -1,4 +1,5 @@
 import org.apache.commons.io.output.ByteArrayOutputStream
+import org.gradle.internal.extensions.core.serviceOf
 
 plugins {
     id("com.possible-triangle.core")
@@ -42,6 +43,17 @@ subprojects {
     upload {
         maven {
             nexus()
+        }
+        curseforge {
+            dependencies {
+            }
+        }
+        modrinth {
+            dependencies {
+            }
+        }
+
+        forEach {
         }
     }
 
@@ -101,6 +113,8 @@ subprojects {
 
 }
 
+
+
 tasks.register("buildAndPublishAll") {
 // clean also calls clean for all subprojects, no need to reference them all specifically
     dependsOn("clean")
@@ -109,8 +123,6 @@ tasks.register("buildAndPublishAll") {
 // publish currently also already handles modrinth & curseforge if they are configured
 // might change that if you don't like it
     dependsOn("publish")
-
-
     finalizedBy("gitTag")
 
     group = "build"
@@ -118,14 +130,10 @@ tasks.register("buildAndPublishAll") {
 }
 
 tasks.register("gitTag") {
-    val execOps = project.objects.newInstance<ExecOperations>()
-
     group = "build"
-    description = "Create and push git tag from project version"
-
     doLast {
-        val tag = mod.version.get()
-
+        val execOps = serviceOf<ExecOperations>() // Fetches the service
+        val tag = project.version.toString()
         val stdout = ByteArrayOutputStream()
 
         execOps.exec {
@@ -133,11 +141,12 @@ tasks.register("gitTag") {
             standardOutput = stdout
         }
 
+
         if (!stdout.toString().trim().isEmpty()) {
             logger.warn("Git tag '${tag}' already exists")
         } else {
             execOps.exec {
-                commandLine("git", "tag", "-a", tag, "-m", "Release ${tag}")
+                commandLine("git", "tag", "-a", tag, "-m", "Release $tag")
             }
             execOps.exec {
                 commandLine("git", "push", "origin", tag)
