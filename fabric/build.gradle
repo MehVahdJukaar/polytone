@@ -37,6 +37,7 @@ dependencies {
 
     modCompileOnly ("curse.maven:continuity-531351:4779473")
     modCompileOnly ("curse.maven:embeddium-908741:5522040")
+    modCompileOnly ("curse.maven:irisshaders-455508:6258195")
    // modImplementation ("curse.maven:sodium-394468:6237505")
     modRuntimeOnly("curse.maven:spark-361579:4738953")
 

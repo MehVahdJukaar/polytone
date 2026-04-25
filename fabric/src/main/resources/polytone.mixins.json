@@ -27,7 +27,8 @@
     "ParticleEngineAccessor",
     "ParticleEngineMixin2",
     "RegistrySyncManagerMixin",
-    "ShaderInstanceMixin"
+    "ShaderInstanceMixin",
+    "TerrainParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

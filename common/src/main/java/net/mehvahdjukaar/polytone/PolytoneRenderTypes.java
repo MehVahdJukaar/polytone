@@ -154,7 +154,7 @@ public class PolytoneRenderTypes extends RenderType {
         public @NotNull VertexConsumer getBuffer(@NotNull RenderType renderType) {
             if (!fixedBuffers.containsKey(renderType)) {
                 fixedBuffers.put(renderType, bufferSupplier.get());
-                if (renderType != ADDITIVE_TRANSLUCENT_BLOCK && renderType != ADDITIVE_TRANSLUCENT_PARTICLE)
+                if (renderType != ADDITIVE_TRANSLUCENT_BLOCK && renderType != ADDITIVE_TRANSLUCENT_PARTICLE_SPECIAL)
                     delayed.add(renderType);
             }
             return super.getBuffer(renderType);

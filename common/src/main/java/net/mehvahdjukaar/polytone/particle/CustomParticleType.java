@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
@@ -384,39 +385,44 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public void render(VertexConsumer consumer, Camera camera, float partialTicks) {
-            if (this.model == null) {
-                superRenderModified(consumer, camera, partialTicks);
-            } else {
-                PoseStack poseStack = new PoseStack();
-                Vec3 cameraPos = camera.getPosition();
-                float x = (float) (Mth.lerp(partialTicks, this.xo, this.x) - cameraPos.x());
-                float y = (float) (Mth.lerp(partialTicks, this.yo, this.y) - cameraPos.y());
-                float z = (float) (Mth.lerp(partialTicks, this.zo, this.z) - cameraPos.z());
+            try {
+                if (this.model == null) {
+                    superRenderModified(consumer, camera, partialTicks);
+                } else {
+                    PoseStack poseStack = new PoseStack();
+                    Vec3 cameraPos = camera.getPosition();
+                    float x = (float) (Mth.lerp(partialTicks, this.xo, this.x) - cameraPos.x());
+                    float y = (float) (Mth.lerp(partialTicks, this.yo, this.y) - cameraPos.y());
+                    float z = (float) (Mth.lerp(partialTicks, this.zo, this.z) - cameraPos.z());
 
-                //same that happens in rotation
-                Quaternionf quaternionf = new Quaternionf();
-                this.type.rotationProvider.applyRotation(this, quaternionf, camera, partialTicks);
-                if (this.roll != 0.0F) {
-                    quaternionf.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
+                    //same that happens in rotation
+                    Quaternionf quaternionf = new Quaternionf();
+                    this.type.rotationProvider.applyRotation(this, quaternionf, camera, partialTicks);
+                    if (this.roll != 0.0F) {
+                        quaternionf.rotateZ(Mth.lerp(partialTicks, this.oRoll, this.roll));
+                    }
+
+
+                    float size = this.getQuadSize(partialTicks);
+
+                    poseStack.translate(x, y, z);
+
+                    poseStack.scale(size, size, size);
+                    poseStack.mulPose(quaternionf);
+                    poseStack.translate(-0.5, -0.5, -0.5);
+
+                    MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+                    consumer = this.type.renderMode.getModelBufferSource(bufferSource);
+
+                    putModelBulkData(this.model, this.getLightColor(partialTicks),
+                            OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol);
+
+                    bufferSource.endBatch();
+
                 }
-
-
-                float size = this.getQuadSize(partialTicks);
-
-                poseStack.translate(x, y, z);
-
-                poseStack.scale(size, size, size);
-                poseStack.mulPose(quaternionf);
-                poseStack.translate(-0.5, -0.5, -0.5);
-
-                MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-                consumer = this.type.renderMode.getModelBufferSource(bufferSource);
-
-                putModelBulkData(this.model, this.getLightColor(partialTicks),
-                        OverlayTexture.NO_OVERLAY, poseStack, consumer, this.rCol, this.gCol, this.bCol);
-
-                bufferSource.endBatch();
-
+            }catch (Throwable e){
+                Polytone.LOGGER.error("Failed to render custom particle with render type.. HOW this this happen? Try removing rendering mods. {}, {}, {}, {}", consumer, type, type.renderMode, type.model);
+                throw e;
             }
         }
 

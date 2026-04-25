@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
@@ -24,7 +26,6 @@ import net.mehvahdjukaar.polytone.utils.CompoundReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
-import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -32,16 +33,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
-import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.io.*;
@@ -159,6 +156,18 @@ public class Polytone {
                     Component.translatable("toast.polytone.lazy_load_fail"),
                     Component.translatable("toast.polytone.load_fail"));
         }
+
+
+
+        try {
+            VertexConsumer b = PolytoneRenderTypes.DEFERRED_BUFFER_SOURCE.getBuffer(PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_SPECIAL);
+            if (b instanceof BufferBuilder bb) {
+                bb.currentElement();
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to validate polytone render types!!! HOW?? Remove suspicious rendering mods or report there!");
+        }
+
 
     }
 
