@@ -1,1 +1,2 @@
-- fixed fog fluid colors not working properly
+- fixed force particle tint in block mods
+- added sanity checks for vista translucent render types. if a mod breaks it for whatever reason mod should crash on world load
