@@ -9,9 +9,9 @@ body:
       label: Mandatory Troubleshooting
       description: Please complete these steps before submitting.
       options:
-        - label: "Use the LATEST version of the mod and ALL its dependencies (or ideally all your mods). Pro tip: don't install mods manually, use a launcher"
+        - label: "Use the LATEST version of the mod and ALL its dependencies (or ideally all your mods). Pro tip: don't install mods manually, use a launcher."
           required: true
-        - label: "Don't use Optifine or hybrid servers (Mohist/Velocity/etc) and have tried without big game altering mods (Sodium/Lithium/etc)"
+        - label: "Don't use Optifine or hybrid servers (Mohist/Velocity/etc) and have tried without big game altering mods (Sodium/Lithium/etc)."
           required: true
         - label: "Check that this bug hasn't been reported already."
           required: true
@@ -22,12 +22,17 @@ body:
       label: Minecraft Version & Loader
       description: Select your game version and the loader you are using.
       options:
+        - 1.21.11-NEOFORGE
+        - 1.21.11-FABRIC
+        - 1.21.5-NEOFORGE
+        - 1.21.5-FABRIC
         - 1.21.1-NEOFORGE
         - 1.21.1-FABRIC
         - 1.20.1-FORGE
         - 1.20.1-FABRIC
         - 1.19.2-FORGE
         - 1.18.2-FORGE
+        - OTHER-SPECIFY
       default: 0
     validations:
       required: true
