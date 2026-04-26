@@ -33,7 +33,7 @@ body:
         - 1.19.2-FORGE
         - 1.18.2-FORGE
         - OTHER-SPECIFY
-      default: 0
+      default: 4
     validations:
       required: true
 
