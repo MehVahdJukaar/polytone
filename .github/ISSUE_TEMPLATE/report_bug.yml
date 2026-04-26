@@ -1,0 +1,77 @@
+name: Report Bug
+description: Found a bug? Report it.
+title: "[🐞]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ⚠️ Before Reporting
+        Please ensure you have performed the following steps. Reports that haven't followed these may be closed:
+        1. **Update:** Use the latest version of the mod and its dependencies.
+        2. **Isolate:** Remove Optifine (unsupported) and check if performance mods (Sodium/Embeddium) are the cause.
+        3. **Search:** Check the [Issue List] for duplicates.
+        4. **Logs:** If you crashed, you **must** provide a log.
+
+  - type: checkboxes
+    id: pre-checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: "I have updated the mod & dependencies to the latest version."
+          required: true
+        - label: "I am NOT using Optifine or unsupported hybrid server software (Mohist, etc.)."
+          required: true
+        - label: "I have searched for existing issues regarding this bug."
+          required: true
+
+  - type: dropdown
+    id: mc-version
+    attributes:
+      label: Minecraft Version & Loader
+      description: Which version and loader are you using?
+      options:
+        - 1.21.1-NEOFORGE
+        - 1.21.1-FABRIC
+        - 1.20.1-FORGE
+        - 1.20.1-FABRIC
+        - 1.19.2-FORGE
+        - 1.18.2-FORGE
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: mod-version
+    attributes:
+      label: Specific Mod Version
+      description: The full version string of this mod (and its library, if applicable).
+      placeholder: "ex: supplementaries-1.20-2.8.48 / moonlight-1.20-2.12.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: What happened, and how can we make it happen again?
+      placeholder: |
+        Description:
+        (e.g., The game crashes when I click on X block)
+
+        Steps to Reproduce:
+        1. Go to...
+        2. Click on...
+        3. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
+      description: |
+        If the game crashed, please paste your `latest.log` or `crash-report` here (use a service like pastebin or mclists if it's too long). You can also drag and drop images.
+      placeholder: "Paste logs here or drag and drop files..."
+    validations:
+      required: true
