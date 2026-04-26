@@ -15,6 +15,8 @@ body:
           required: true
         - label: "Check that this bug hasn't been reported already."
           required: true
+        - label: "Try with the mod alone. If issue does not persist then try removing half of your mods at the time to find the conflicting mod."
+          required: false
 
   - type: dropdown
     id: mc-version
