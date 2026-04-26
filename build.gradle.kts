@@ -1,12 +1,13 @@
 import org.apache.commons.io.output.ByteArrayOutputStream
 import org.gradle.internal.extensions.core.serviceOf
+import java.nio.charset.Charset
 
 plugins {
     id("com.possible-triangle.core")
     id("com.possible-triangle.common") apply false
     id("com.possible-triangle.fabric") apply false
     id("com.possible-triangle.neoforge") apply false
-    id("net.mehvahdjukaar.candlelight") version "1.1.0" apply false
+    id("net.mehvahdjukaar.candlelight") version "1.1.3" apply false
     id("dev.mixinmcp.decompile") version "0.9.0" apply false
 }
 
@@ -33,7 +34,7 @@ subprojects {
     apply(plugin = "dev.mixinmcp.decompile")
 
     dependencies {
-        compileOnly("net.mehvahdjukaar:candlelight:1.1.0")
+        compileOnly("net.mehvahdjukaar:candlelight:1.1.1")
     }
 
     repositories {
@@ -45,6 +46,7 @@ subprojects {
             nexus()
         }
         curseforge {
+
             dependencies {
             }
         }
@@ -54,11 +56,17 @@ subprojects {
         }
 
         forEach {
+            changelog = rootProject.file("changelog.md").readText()
+            versionName = "${mod.id.get()}-${mod.version.get()}-${project.name}"
         }
     }
 
-
-
+    tasks.processResources {
+        from(rootDir) {
+            include("MVEL_LICENSE.md")
+            into("") // root of jar (or change path below)
+        }
+    }
 
     tasks.withType<JavaCompile> {
         options.compilerArgs.addAll(listOf("-Xmaxerrs", "4000"))
@@ -116,17 +124,14 @@ subprojects {
 
 
 tasks.register("buildAndPublishAll") {
-// clean also calls clean for all subprojects, no need to reference them all specifically
-    dependsOn("clean")
-// same for build
-    dependsOn("build")
-// publish currently also already handles modrinth & curseforge if they are configured
-// might change that if you don't like it
-    dependsOn("publish")
-    finalizedBy("gitTag")
-
     group = "build"
-    description = "Runs clean, build, and publish neoforge and fabric"
+    description = "Runs clean, build, publish for all projects"
+
+    dependsOn(subprojects.map { it.tasks.named("clean") })
+    dependsOn(subprojects.map { it.tasks.named("build") })
+    dependsOn(subprojects.map { it.tasks.named("publish") })
+
+    finalizedBy("gitTag")
 }
 
 tasks.register("gitTag") {
@@ -142,7 +147,7 @@ tasks.register("gitTag") {
         }
 
 
-        if (!stdout.toString().trim().isEmpty()) {
+        if (!stdout.toString(Charset.defaultCharset()).trim().isEmpty()) {
             logger.warn("Git tag '${tag}' already exists")
         } else {
             execOps.exec {

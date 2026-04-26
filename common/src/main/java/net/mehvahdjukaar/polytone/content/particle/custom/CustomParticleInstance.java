@@ -5,6 +5,7 @@ import net.mehvahdjukaar.polytone.SpecialModelsHandler;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderState;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SingleQuadParticle;
@@ -22,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,12 +35,13 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     private static final ExecutorService PARTICLE_THREAD = Executors.newWorkStealingPool();
 
-    protected final CustomParticleType type;
+    public final CustomParticleType type;
     protected final @Nullable QuadCollection model;
-    protected final LiquidAffinity liquidAffinity;
     protected final List<IParticleTickable> tickables;
     protected float oQuadSize;
     protected double custom;
+
+    private boolean inFrustumLastTick = true;
 
     protected CustomParticleInstance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                                      @Nullable BlockState state, CustomParticleType customType) {
@@ -79,14 +82,16 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
         this.oQuadSize = quadSize;
 
-        this.liquidAffinity = customType.liquidAffinity;
-        this.hasPhysics = customType.hasPhysics;
-
         if (this.type.colormap != null) {
             float[] unpack = ColorUtils.unpack(this.type.colormap.getColor(state, level, pos, 0));
             this.setColor(unpack[0], unpack[1], unpack[2]);
         }
 
+    }
+
+
+    public void notifyInFrustum(boolean wasInFrustum) {
+        this.inFrustumLastTick = wasInFrustum;
     }
 
     public boolean hasAgeLeft() {
@@ -199,6 +204,15 @@ public class CustomParticleInstance extends SingleQuadParticle {
             this.remove();
             return;
         }
+        if (type.killWhenNotInView && !this.inFrustumLastTick) {
+            this.remove();
+            return;
+        }
+        if (type.killWhenNotInView && isBehindCamera()) {
+            this.remove();
+            return;
+        }
+
         this.type.spritePicker.pickSprite(this, false);
         super.tick();
         //interpolate our states
@@ -221,9 +235,9 @@ public class CustomParticleInstance extends SingleQuadParticle {
             this.remove();
         }
 
-        if (liquidAffinity != LiquidAffinity.ANY) {
+        if (type.liquidAffinity != LiquidAffinity.ANY) {
             BlockState state = level.getBlockState(BlockPos.containing(x, y, z));
-            if (liquidAffinity == LiquidAffinity.LIQUIDS ^ !state.getFluidState().isEmpty()) {
+            if (type.liquidAffinity == LiquidAffinity.LIQUIDS ^ !state.getFluidState().isEmpty()) {
                 this.remove();
             }
         }
@@ -277,4 +291,23 @@ public class CustomParticleInstance extends SingleQuadParticle {
         this.age = i;
     }
 
+
+    private boolean isBehindCamera() {
+        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        if (camera.entity() == Minecraft.getInstance().player) {
+            //check distance
+            Vector3f cameraPos = camera.position().toVector3f();
+            Vector3f thisPos = new Vector3f((float) this.x, (float) this.y, (float) this.z);
+            double distance = cameraPos.distanceSquared(thisPos);
+
+            if (distance > (4 * 4)) {
+                camera.forwardVector();
+                Vector3f toObject = thisPos.sub(cameraPos);
+                var lookVector = camera.forwardVector();
+                double dotProduct = toObject.dot(lookVector);
+                return dotProduct < 0;
+            }
+        }
+        return false;
+    }
 }

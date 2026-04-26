@@ -53,8 +53,8 @@ public class PolytoneForge {
     static IEventBus bus;
 
     public PolytoneForge(IEventBus modBus) {
-
         bus = modBus;
+
         SpecialModelsHandlerImpl.init(bus);
         if (FMLEnvironment.getDist() == Dist.CLIENT) {
             Polytone.init(!FMLEnvironment.isProduction(), true);

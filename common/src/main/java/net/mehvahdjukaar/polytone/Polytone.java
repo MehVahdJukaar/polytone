@@ -40,7 +40,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -127,6 +126,7 @@ public class Polytone {
         //TODO: custom block breaking particles
         //TODO: custom place particle
         //TODO: block mobs from emitting particles. like blaze
+        //EXpression driven uniforms
     }
 
     public static Identifier res(String name) {

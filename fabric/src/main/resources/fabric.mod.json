@@ -11,6 +11,7 @@
     "homepage": "${mod_homepage}",
     "sources": "${mod_github}"
   },
+  "accessWidener": "${mod_id}.accesswidener",
   "license": "${mod_license}",
   "icon": "icon.png",
   "environment": "client",
