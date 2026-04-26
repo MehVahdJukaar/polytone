@@ -19,3 +19,6 @@ classes/
 *.launch
 /unique_lines.txt
 /.junie/memory/
+/.codex
+/.aiassistant/
+/.ai/

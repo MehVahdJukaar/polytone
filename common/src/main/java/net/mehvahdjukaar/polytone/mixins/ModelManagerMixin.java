@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
 
-// super ugly. We need to run CIM before model baking so we can bake extra auto generated models
+// hideous. We need to run CIM before model baking so we can bake extra auto generated models
 @Mixin(ModelManager.class)
 public class ModelManagerMixin {
 

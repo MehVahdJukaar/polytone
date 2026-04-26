@@ -46,7 +46,6 @@ subprojects {
             nexus()
         }
         curseforge {
-
             dependencies {
             }
         }
@@ -82,12 +81,6 @@ subprojects {
             dirs("mods")
         }
 
-
-        // Our publishing repo
-        maven { url = uri("https://registry.somethingcatchy.net/repository/maven-releases/") }
-
-        maven { url = uri("https://api.modrinth.com/maven") }
-        maven { url = uri("https://www.cursemaven.com") }
         maven { url = uri("https://jitpack.io") }
 
         maven { url = uri("https://maven.neoforged.net/releases") }
@@ -103,22 +96,15 @@ subprojects {
         maven { url = uri("https://maven.terraformersmc.com/") } // TerraformersMC mods
         maven { url = uri("https://maven.saps.dev/releases") } // FTB Mods
         maven { url = uri("https://dl.cloudsmith.io/public/tslat/sbl/maven/") }
-
         maven { url = uri("https://maven.theillusivec4.top/") } // Curios API
         maven { url = uri("https://maven.squiddev.cc") } // CC: Tweaked
         maven { url = uri("https://maven.su5ed.dev/releases") } // SU5ED mods
         maven { url = uri("https://harleyoconnor.com/maven") } // Dynamic Trees
         maven { url = uri("https://maven.misterpemodder.com/libs-release/") } // ShulkerBoxTooltip
         maven { url = uri("https://maven.firstdarkdev.xyz/snapshots") } // FirstDarkDev (snapshots)
-        maven {
-            url = uri("https://raw.githubusercontent.com/Fuzss/modresources/main/maven")
-        } // NeoForge config API port
-
-        maven { // Reach Entity Attributes
-            url = uri("https://maven.jamieswhiteshirt.com/libs-release")
-        }
+        maven { url = uri("https://raw.githubusercontent.com/Fuzss/modresources/main/maven") } // Fuzss' Mod Resources
+        maven { url = uri("https://maven.jamieswhiteshirt.com/libs-release") } // Jamie's Mods
     }
-
 }
 
 
@@ -145,7 +131,6 @@ tasks.register("gitTag") {
             commandLine("git", "tag", "-l", tag)
             standardOutput = stdout
         }
-
 
         if (!stdout.toString(Charset.defaultCharset()).trim().isEmpty()) {
             logger.warn("Git tag '${tag}' already exists")
