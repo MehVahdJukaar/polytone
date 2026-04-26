@@ -17,7 +17,7 @@ public abstract class TerrainParticleMixin {
     )
     public boolean polytone$whyIsGrassBlockHardcoded(boolean original, @Local(argsOnly = true) BlockState state) {
         Boolean b = Polytone.BLOCK_MODIFIERS.getTerrainTintOverride(state.getBlock());
-        if (b != null) return b;
+        if (b != null) return !b;
         return original;
     }
 }
