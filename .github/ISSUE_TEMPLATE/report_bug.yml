@@ -3,33 +3,24 @@ description: Found a bug? Report it.
 title: "[🐞]: "
 labels: ["bug"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        ## ⚠️ Before Reporting
-        Please ensure you have performed the following steps. Reports that haven't followed these may be closed:
-        1. **Update:** Use the latest version of the mod and its dependencies.
-        2. **Isolate:** Remove Optifine (unsupported) and check if performance mods (Sodium/Embeddium) are the cause.
-        3. **Search:** Check the [Issue List] for duplicates.
-        4. **Logs:** If you crashed, you **must** provide a log.
-
   - type: checkboxes
-    id: pre-checklist
+    id: checklist
     attributes:
-      label: Checklist
+      label: Mandatory Troubleshooting
+      description: Please complete these steps before submitting.
       options:
-        - label: "I have updated the mod & dependencies to the latest version."
+        - label: "Use the LATEST version of the mod and ALL its dependencies (or ideally all your mods). Pro tip: don't install mods manually, use a launcher"
           required: true
-        - label: "I am NOT using Optifine or unsupported hybrid server software (Mohist, etc.)."
+        - label: "Don't use Optifine or hybrid servers (Mohist/Velocity/etc) and have tried without big game altering mods (Sodium/Lithium/etc)"
           required: true
-        - label: "I have searched for existing issues regarding this bug."
+        - label: "Check that this bug hasn't been reported already."
           required: true
 
   - type: dropdown
     id: mc-version
     attributes:
       label: Minecraft Version & Loader
-      description: Which version and loader are you using?
+      description: Select your game version and the loader you are using.
       options:
         - 1.21.1-NEOFORGE
         - 1.21.1-FABRIC
@@ -41,37 +32,30 @@ body:
     validations:
       required: true
 
-  - type: input
-    id: mod-version
-    attributes:
-      label: Specific Mod Version
-      description: The full version string of this mod (and its library, if applicable).
-      placeholder: "ex: supplementaries-1.20-2.8.48 / moonlight-1.20-2.12.0"
-    validations:
-      required: true
-
   - type: textarea
     id: description
     attributes:
-      label: Bug Description
-      description: What happened, and how can we make it happen again?
+      label: Issue Details
+      description: Provide a clear description of what happened and how to reproduce it.
       placeholder: |
-        Description:
-        (e.g., The game crashes when I click on X block)
-
-        Steps to Reproduce:
-        1. Go to...
-        2. Click on...
-        3. See error...
+        What happened:
+        
+        Steps to reproduce:
+        1. 
+        2. 
     validations:
       required: true
 
   - type: textarea
     id: logs
     attributes:
-      label: Logs / Screenshots
+      label: Logs & Media
       description: |
-        If the game crashed, please paste your `latest.log` or `crash-report` here (use a service like pastebin or mclists if it's too long). You can also drag and drop images.
-      placeholder: "Paste logs here or drag and drop files..."
+        Drag and drop your **latest.log** or **crash-report** here. 
+        
+        These are found in: `.minecraft/logs/` or `.minecraft/crash-reports/`
+        
+        Include additional screenshot if needed.
+      placeholder: "Drop files or paste logs here..."
     validations:
       required: true
