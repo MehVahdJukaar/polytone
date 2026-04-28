@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(FogEnvironment.class)
+//@Mixin(FogEnvironment.class)
 public abstract class FogRendererMixin2 {
     /* Disable biome fog modification for now */
 //    @Inject(method = "setupFog", at = @At(value = "TAIL"), cancellable = true)

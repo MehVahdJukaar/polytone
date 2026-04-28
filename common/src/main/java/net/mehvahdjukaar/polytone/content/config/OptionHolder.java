@@ -58,7 +58,7 @@ public class OptionHolder<T> {
     }
 
     public static <T> OptionHolder<T> create(PolyConfig<T> config, Identifier id) {
-        AtomicReference<T> lastKnownValue = new AtomicReference<T>(config.getDefaultValue());
+        AtomicReference<T> lastKnownValue = new AtomicReference<>(config.getDefaultValue());
 
         OptionInstance.CaptionBasedToString<T> toStr = (name, value) -> {
             Optional<String> valueTranslationKey = config.getValueTranslationKey();

@@ -23,15 +23,12 @@ public interface IntRange {
 
         @Override
         public <T> DataResult<T> encode(IntRange input, DynamicOps<T> ops, T prefix) {
-            if (input instanceof SingleTarget t) {
-                return INT_CODEC.encode(t, ops, prefix);
-            } else if (input instanceof ListTarget t) {
-                return LIST_CODEC.encode(t, ops, prefix);
-            } else if (input instanceof RangeTarget t) {
-                return RANGE_CODEC.encode(t, ops, prefix);
-            } else {
-                throw new IllegalArgumentException("Unsupported implementation type: " + input.getClass());
-            }
+            return switch (input) {
+                case SingleTarget t -> INT_CODEC.encode(t, ops, prefix);
+                case ListTarget t -> LIST_CODEC.encode(t, ops, prefix);
+                case RangeTarget t -> RANGE_CODEC.encode(t, ops, prefix);
+                default -> throw new IllegalArgumentException("Unsupported implementation type: " + input.getClass());
+            };
         }
 
         @Override

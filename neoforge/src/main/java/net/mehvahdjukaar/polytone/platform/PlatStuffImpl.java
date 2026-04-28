@@ -69,9 +69,8 @@ public class PlatStuffImpl {
     }
 
     public static void addClientReloadListener(Supplier<PreparableReloadListener> listener, Identifier location) {
-        Consumer<AddClientReloadListenersEvent> eventConsumer = (event) -> {
-            event.addListener(location, listener.get());
-        };
+        Consumer<AddClientReloadListenersEvent> eventConsumer = (event) ->
+                event.addListener(location, listener.get());
         PolytoneForge.bus.addListener(eventConsumer);
     }
 
@@ -292,9 +291,8 @@ public class PlatStuffImpl {
     }
 
     public static void registerParticleGroup(Consumer<PlatStuff.RegParticleGroup> listener) {
-        Consumer<RegisterParticleGroupsEvent> eventConsumer = (event) -> {
-            listener.accept(event::register);
-        };
+        Consumer<RegisterParticleGroupsEvent> eventConsumer = (event) ->
+                listener.accept(event::register);
         PolytoneForge.bus.addListener(eventConsumer);
     }
 

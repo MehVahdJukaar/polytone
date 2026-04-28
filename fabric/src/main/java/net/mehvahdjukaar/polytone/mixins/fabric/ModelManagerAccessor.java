@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Map;
 
-@Mixin(ModelManager.class)
+//@Mixin(ModelManager.class)
 public interface ModelManagerAccessor {
 
     @Accessor("bakedItemStackModels")

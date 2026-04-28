@@ -28,10 +28,8 @@ public record SimpleSprite(Identifier texture, int x, int y, int width, int heig
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        Runnable render = () -> {
-            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, texture,
-                    x, x + width, y, y + height);
-        };
+        Runnable render = () ->
+                guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height);
         GuiDepthTarget.renderAt(depth, guiGraphics, render);
 
     }

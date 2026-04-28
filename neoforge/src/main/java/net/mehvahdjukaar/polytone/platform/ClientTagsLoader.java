@@ -60,7 +60,7 @@ public class ClientTagsLoader {
                     tags.addAll(maybeTagFile.entries());
                 }
             } catch (IOException e) {
-            Polytone. LOGGER.error("Error loading tag: " + tagKey, e);
+                Polytone.LOGGER.error("Error loading tag: {}", tagKey, e);
             }
         }
 

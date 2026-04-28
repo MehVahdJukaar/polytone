@@ -143,7 +143,7 @@ public class ExpressionUtils {
     public static final Function SMOOTHSTEP = new Function("smoothstep", 3) {
         @Override
         public double apply(double... args) {
-            double t = Math.max(0, Math.min(1, (args[0] - args[1]) / (args[2] - args[1])));
+            double t = Math.clamp((args[0] - args[1]) / (args[2] - args[1]), 0, 1);
             return t * t * (3 - 2 * t);
         }
     };

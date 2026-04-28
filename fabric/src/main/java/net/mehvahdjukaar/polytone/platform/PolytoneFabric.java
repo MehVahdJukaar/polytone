@@ -55,9 +55,8 @@ public class PolytoneFabric implements ClientModInitializer {
         WorldRenderEvents.START_MAIN.register((context) ->
                 ClientFrameTicker.onRenderTick(context.gameRenderer().getMinecraft()));
 
-        WorldRenderEvents.END_MAIN.register(context -> {
-            PolytoneRenderTypes.onRenderLast();
-        });
+        WorldRenderEvents.END_MAIN.register(context ->
+                PolytoneRenderTypes.onRenderLast());
 
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
             PolytoneRenderTypes.cacheMatrices(); //might not be enough. needs to be after particles but we dont have it
@@ -96,13 +95,11 @@ public class PolytoneFabric implements ClientModInitializer {
             }
         });
 
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            Polytone.onLogOut();
-        });
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
+                Polytone.onLogOut());
 
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-            addRenderParticlesType();
-        });
+        ClientLifecycleEvents.CLIENT_STARTED.register(client ->
+                addRenderParticlesType());
     }
 
     private static void addToProfiles() {

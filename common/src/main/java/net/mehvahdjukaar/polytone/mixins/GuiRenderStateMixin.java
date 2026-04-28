@@ -68,7 +68,7 @@ public abstract class GuiRenderStateMixin implements GuiDepthTargetAware {
     private GuiRenderState.Node polytone$selectOrAddNewNode(int strataIndex, int nodeIndex, boolean addAbove,
                                                             Predicate<GuiRenderState.Node> predicate) {
         // Clamp strata index
-        strataIndex = Math.max(0, Math.min(strataIndex, strata.size() - 1));
+        strataIndex = Math.clamp(strataIndex, 0, strata.size() - 1);
         GuiRenderState.Node current = strata.get(strataIndex);
         int depth = 0;
 

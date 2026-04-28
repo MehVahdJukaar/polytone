@@ -1,9 +1,12 @@
 package net.mehvahdjukaar.polytone.mixins.neoforge;
 
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import it.unimi.dsi.fastutil.ints.Int2ObjectSortedMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.core.Registry;
@@ -17,21 +20,29 @@ import org.spongepowered.asm.mixin.injection.At;
 public class RegistrySnapshotMixin {
 
 
-    @WrapWithCondition(method = "<init>(Lnet/minecraft/core/Registry;Z)V", at = @At(value = "INVOKE",
+    @WrapOperation(method = "<init>(Lnet/minecraft/core/Registry;Z)V", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/core/MappedRegistry;register(ILnet/minecraft/resources/ResourceKey;Ljava/lang/Object;Lnet/minecraft/core/RegistrationInfo;)Lnet/minecraft/core/Holder$Reference;"))
-    private boolean polytone$skipDynamic(MappedRegistry instance, int i, ResourceKey resourceKey, Object object, RegistrationInfo registrationInfo,
-                                         @Local(argsOnly = true) Registry<?> registry) {
+    private Holder.Reference polytone$skipDynamic(MappedRegistry instance, int i, ResourceKey resourceKey, Object object, RegistrationInfo registrationInfo,
+                                                  Operation<Holder.Reference> original, @Local(argsOnly = true) Registry<?> registry) {
         //removes dynamic stuff
-        return !Polytone.isEntryDynamic(registry, resourceKey.identifier());
+        if (!Polytone.isEntryDynamic(registry, resourceKey.identifier())) {
+            return original.call(instance, i, resourceKey, object, registrationInfo);
+        } else {
+            return null;
+        }
         //jus relevant or LAN
     }
 
-    @WrapWithCondition(method = "lambda$new$0", at = @At(value = "INVOKE",
+    @WrapOperation(method = "lambda$new$0", at = @At(value = "INVOKE",
             target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectSortedMap;put(ILjava/lang/Object;)Ljava/lang/Object;"))
-    private boolean polytone$skipDynamicId(Int2ObjectSortedMap instance, int i, Object object,@Local(argsOnly = true) Registry<?> registry,
-                                           @Local(argsOnly = true) Identifier resourceKey) {
+    private Object polytone$skipDynamicId(Int2ObjectSortedMap instance, int i, Object object, Operation<Object> original, @Local(argsOnly = true) Registry<?> registry,
+                                          @Local(argsOnly = true) Identifier resourceKey) {
         //removes dynamic stuff
-        return !Polytone.isEntryDynamic(registry, resourceKey);
+        if (!Polytone.isEntryDynamic(registry, resourceKey)) {
+            return original.call(instance, i, object);
+        } else {
+            return null;
+        }
         //jus relevant or LAN
     }
 }

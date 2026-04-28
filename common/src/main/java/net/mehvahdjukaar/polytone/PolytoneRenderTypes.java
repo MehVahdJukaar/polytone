@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.SequencedMap;
 import java.util.function.Supplier;
 
+import static net.minecraft.client.renderer.RenderPipelines.MATRICES_PROJECTION_SNIPPET;
 import static net.minecraft.client.renderer.RenderPipelines.register;
 import static net.minecraft.client.renderer.rendertype.RenderTypes.MOVING_BLOCK_SAMPLER;
 
@@ -82,9 +83,6 @@ public class PolytoneRenderTypes {
             new ParticleRenderType("particle_additive_translucent"));
 
 
-    //TODO: shouldn't this be on the particle sheet?
-    @Deprecated(forRemoval = true)
-    static RenderPipeline.Snippet  MATRICES_PROJECTION_SNIPPET = RenderPipeline.builder(new RenderPipeline.Snippet[0]).withUniform("DynamicTransforms",UniformType.UNIFORM_BUFFER).withUniform("Projection",UniformType.UNIFORM_BUFFER).buildSnippet();
 
     //block. Used to render 3d model for particles
     public static final RenderPipeline ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE = register(RenderPipeline.builder(

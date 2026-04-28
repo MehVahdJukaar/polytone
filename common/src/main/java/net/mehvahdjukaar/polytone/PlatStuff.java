@@ -191,7 +191,7 @@ public class PlatStuff {
     public static <T> void unregisterDynamic(Registry<T> reg, Identifier id) {
         if (reg instanceof MappedRegistry<T> mapped) {
             mapped.frozen = false;
-            unRegister((MappedRegistry<T>) reg, ResourceKey.create(reg.key(), id));
+            unRegister(mapped, ResourceKey.create(reg.key(), id));
             mapped.frozen = true;
         } else {
             Polytone.LOGGER.error("Unknown registry type {}", reg);

@@ -82,7 +82,7 @@ public class ConcurrentExpression implements IExpression {
     }
 
     public Set<String> getVariableNames() {
-        final Set<String> variables = new HashSet<String>();
+        final Set<String> variables = new HashSet<>();
         for (final Token t : tokens) {
             if (t.getType() == Token.TOKEN_VARIABLE)
                 variables.add(((VariableToken) t).getName());

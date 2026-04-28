@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.mixins.fabric;
 import net.minecraft.client.renderer.fog.environment.FogEnvironment;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(FogEnvironment.class)
+//@Mixin(FogEnvironment.class)
 public abstract class FogFluidRendererMixin {
     //TODO: add back. idk how yet  T_T
 /*

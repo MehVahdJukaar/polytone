@@ -39,9 +39,7 @@ public class SpecialModelsHandlerImpl {
 
     public static void init() {
         // safely sets hack
-        ModelLoadingPlugin.register(context -> {
-            hack = context;
-        });
+        ModelLoadingPlugin.register(context -> hack = context);
     }
 
     public static void finalizeAdditions() {

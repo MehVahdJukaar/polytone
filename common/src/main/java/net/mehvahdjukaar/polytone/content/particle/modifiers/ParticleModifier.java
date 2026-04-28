@@ -83,7 +83,7 @@ public class ParticleModifier {
                 alpha.orElse(null), speed.orElse(null), targets);
     }
 
-    public ParticleModifier(@Nullable Filter filter, @Nullable IColorGetter colormap,
+    private ParticleModifier(@Nullable Filter filter, @Nullable IColorGetter colormap,
                             @Nullable ParticleContextExpression color, @Nullable ParticleContextExpression life,
                             @Nullable ParticleContextExpression size, @Nullable ParticleContextExpression red,
                             @Nullable ParticleContextExpression green, @Nullable ParticleContextExpression blue,

@@ -44,9 +44,8 @@ public record RelativeSprite(Identifier texture, int x, int y, Optional<GuiDepth
         int finalX1 = x2;
         int finalY = y1;
         int finalY1 = y2;
-        GuiDepthTarget.renderAt(depth, graphics, () -> {
-            graphics.innerBlit(pipeline, texture, finalX, finalX1, finalY, finalY1,
-                    sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(), color);
-        });
+        GuiDepthTarget.renderAt(depth, graphics, () ->
+                graphics.innerBlit(pipeline, texture, finalX, finalX1, finalY, finalY1,
+                sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(), color));
     }
 }

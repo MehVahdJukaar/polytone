@@ -24,12 +24,7 @@ public class SpecialModelsHandlerImpl {
     }
 
     public static void addSpecialModel(Identifier id) {
-        SPECIAL_MODELS.put(id, new StandaloneModelKey<>(new ModelDebugName() {
-            @Override
-            public String debugName() {
-                return id.toString();
-            }
-        }));
+        SPECIAL_MODELS.put(id, new StandaloneModelKey<>(id::toString));
 
     }
 

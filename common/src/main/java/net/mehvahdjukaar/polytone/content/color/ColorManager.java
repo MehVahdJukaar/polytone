@@ -188,7 +188,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                     return;
                 case "horizon_height":
                     horizonHeight = parseInt(e);
-                    return;
             }
         });
 
@@ -285,7 +284,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             ParticleOptions particle = get(v, "particle", ParticleTypes.CODEC);
 
             String color = getString(v, "color");
-            Integer col;
+            int col;
 
             if (color == null && v instanceof JsonPrimitive) {
                 col = parseColor(v);

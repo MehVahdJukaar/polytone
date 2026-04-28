@@ -82,7 +82,7 @@ public abstract class DepthSearchTrie<K, KT, O, I> {
         TrieNode<K, KT, O> current = root;
         while (true) {
             Object type = current.type;
-            Object folder = getKeyFromType(type, keyProvider);
+            K folder = getKeyFromType(type, keyProvider);
             if (folder == null) return current;
             var child = current.children.getOrDefault(folder, current.children.get(null));
             if (child == null) {
