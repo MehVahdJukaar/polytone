@@ -12,6 +12,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mvel2.MVEL;
 
@@ -44,7 +45,7 @@ public class ColormapExp extends PolyExp implements IColormapExp {
     }
 
     @Override
-    public float evaluate(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+    public float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
         BlockProxy obj = new BlockProxy(level, pos, state, biome);
         Map<String, Object> vars = new HashMap<>();
         ExpUtils.addCommonVars(vars);

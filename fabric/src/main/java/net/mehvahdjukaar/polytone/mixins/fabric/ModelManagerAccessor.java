@@ -11,6 +11,6 @@ import java.util.Map;
 //@Mixin(ModelManager.class)
 public interface ModelManagerAccessor {
 
-    @Accessor("bakedItemStackModels")
+   // @Accessor("bakedItemStackModels")
     Map<Identifier, ItemModel> getBakedItemStackModels();
 }

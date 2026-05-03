@@ -19,6 +19,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -84,7 +85,7 @@ public class ColormapExpressionProvider extends PolytoneExpression implements IC
     }
 
     @Override
-    public float evaluate(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,
+    public float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,
                           @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
 
         BlockPos bp = pos == null ? BlockPos.ZERO : BlockPos.containing(pos);

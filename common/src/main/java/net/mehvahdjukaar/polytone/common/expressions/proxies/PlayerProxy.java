@@ -23,4 +23,11 @@ public class PlayerProxy extends AbstractEntityProxy {
         return Minecraft.getInstance().player;
     }
 
+    public double itemUseTicks(){
+        return entity().getTicksUsingItem();
+    }
+
+    public String itemUsed(){
+        return entity().getUseItem().getItemHolder().getRegisteredName();
+    }
 }

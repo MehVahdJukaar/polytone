@@ -31,6 +31,7 @@ import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -93,7 +94,7 @@ public class LegacyHelper {
             if (path.equals("stem") || path.equals("melon_stem") || path.equals("pumpkin_stem")) {
                 Colormap colormap = Colormap.simple(new IColormapExp() {
                     @Override
-                    public float evaluate(BlockAndTintGetter level, BlockState state, Vec3 pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
+                    public float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, Vec3 pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
                         return state != null && state.hasProperty(StemBlock.AGE) ? state.getValue(StemBlock.AGE) / 7f : 0;
                     }
 
@@ -122,7 +123,7 @@ public class LegacyHelper {
             } else if (path.equals("redstone_wire")) {
                 Colormap colormap = Colormap.simple(new IColormapExp() {
                     @Override
-                    public float evaluate(BlockAndTintGetter level, BlockState state, Vec3 pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
+                    public float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, Vec3 pos, Biome biome, BiomeIdMapper mapper, ItemStack stack) {
                         return state != null ? (1 - (state.getValue(RedStoneWireBlock.POWER) / 15f)) : 1;
                     }
 

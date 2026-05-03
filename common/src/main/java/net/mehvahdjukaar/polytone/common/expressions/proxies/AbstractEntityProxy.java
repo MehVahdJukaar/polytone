@@ -70,7 +70,6 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
     }
 
     public String mainHandItem() {
-
         LivingEntity le = livingEntity();
         if (le == null) return "minecraft:air";
         return le.getMainHandItem().getItemHolder().getRegisteredName();
