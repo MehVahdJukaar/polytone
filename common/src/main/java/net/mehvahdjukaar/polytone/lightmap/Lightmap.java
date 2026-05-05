@@ -8,10 +8,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.dimension.DimensionTarget;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.utils.codec.ReferenceOrDirectCodec;
 import net.mehvahdjukaar.polytone.utils.StrOpt;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -107,6 +105,8 @@ public class Lightmap {
                                     DynamicTexture lightTexture,
                                     Minecraft minecraft, ClientLevel level,
                                     float flicker, float partialTicks) {
+        LocalPlayer player = minecraft.player;
+        if (player == null) return;
 
         // this makes a copy
         var oldTexture = lightPixels.getPixelsRGBA();
@@ -121,7 +121,6 @@ public class Lightmap {
         long deltaMillis = currentTime - lastTime;
         float deltaTime = deltaMillis / 1000.0F;
         lastTime = currentTime;
-        LocalPlayer player = minecraft.player;
         Options options = minecraft.options;
 
         float skyLightIntensity;
