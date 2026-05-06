@@ -39,7 +39,6 @@
     "SplashRendererMixin",
     "SpriteContentsMixin",
     "VariantDeserializerMixin",
-    "VariantMixin",
     "XpOrbMixin",
     "accessor.BiomeAccessor",
     "accessor.DustParticleOptionAccessor",

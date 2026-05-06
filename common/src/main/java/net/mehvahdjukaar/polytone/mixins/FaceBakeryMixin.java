@@ -33,7 +33,7 @@ public class FaceBakeryMixin {
     public boolean poly$allowArbitraryRot(FaceBakery instance, int[] vertices, Direction direction,
                                           @Local(argsOnly = true) ModelState transform, @Local(argsOnly = true) BlockElementRotation partRotation) {
         var t = transform.getRotation();
-        if (t == Transformation.identity()) return true;
+        if (t == Transformation.identity() || partRotation == null) return true;
         Vector3fc rot = ((IExtendedBlockElementRotation) (Object) partRotation).getRotation();
 
         return rot == null;
