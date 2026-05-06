@@ -1,1 +1,1 @@
-uncapped model rotations when using enahnced variants deseralizers
+fixed an issue with biome compound colormaps
