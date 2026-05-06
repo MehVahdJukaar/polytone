@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.utils.CodecUtil;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.chunk.RenderChunkRegion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -69,10 +70,15 @@ public class BiomeCompoundColorGetter implements IColorGetter {
 
     @Override
     public int getColor(BlockState blockState, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos, int i) {
+        if(level instanceof RenderChunkRegion rc){
+            level = rc.level;
+        }
         if (level instanceof LevelReader l) {
             Biome biome = l.getBiome(pos).value();
             IColorGetter g = getters.get(biome);
-            if (g != null) return g.getColor(blockState, level, pos, i);
+            if (g != null) {
+                return g.getColor(blockState, level, pos, i);
+            }
         }
         return defaultGetter.getColor(blockState, level, pos, i);
     }
