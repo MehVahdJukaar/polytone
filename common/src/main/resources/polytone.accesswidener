@@ -21,6 +21,8 @@ accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/M
 accessible class net/minecraft/server/packs/OverlayMetadataSection$OverlayEntry$IntermediateEntry
 accessible method net/minecraft/client/gui/screens/packs/PackSelectionScreen reload ()V
 
+accessible field net/minecraft/client/renderer/chunk/RenderSectionRegion level Lnet/minecraft/world/level/Level;
+
 accessible field net/minecraft/client/renderer/fog/environment/PowderedSnowFogEnvironment COLOR I
 mutable field net/minecraft/client/renderer/fog/environment/PowderedSnowFogEnvironment COLOR I
 accessible field net/minecraft/client/renderer/LevelRenderer levelRenderState Lnet/minecraft/client/renderer/state/LevelRenderState;

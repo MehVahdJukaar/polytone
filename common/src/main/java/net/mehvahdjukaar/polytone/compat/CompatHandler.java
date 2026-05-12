@@ -10,5 +10,6 @@ public class CompatHandler {
     public static final boolean ALEX_CAVES = PlatStuff.isModLoaded("alexscaves");
     public static final boolean EMF = PlatStuff.isModLoaded("entity_model_features");
     public static final boolean ETF = PlatStuff.isModLoaded("entity_texture_features");
+    public static final boolean SODIUM = PlatStuff.isModLoaded("sodium");
 
 }
