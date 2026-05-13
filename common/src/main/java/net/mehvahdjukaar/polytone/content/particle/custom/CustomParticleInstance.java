@@ -47,6 +47,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
                                      @Nullable BlockState state, CustomParticleType customType) {
         super(level, x, y, z, xSpeed, ySpeed, zSpeed, customType.spritePicker.getAny());
         this.type = customType;
+        this.hasPhysics = customType.hasPhysics;
 
         this.type.spritePicker.pickSprite(this, true);
 
@@ -200,6 +201,9 @@ public class CustomParticleInstance extends SingleQuadParticle {
     }
 
     private void tickInternal() {
+        if(this.type.debugId.toString().contains("lightray") && !this.type.debugId.toString().contains("emitter")){
+            int aa = 1;
+        }
         if (!this.type.isValid()) {
             this.remove();
             return;

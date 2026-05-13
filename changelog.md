@@ -1,1 +1,2 @@
-fixed an issue loading packs that had certain types of expressions
+- added a new particle rotation mode
+- fixed custom particles ignoring hasPhysics

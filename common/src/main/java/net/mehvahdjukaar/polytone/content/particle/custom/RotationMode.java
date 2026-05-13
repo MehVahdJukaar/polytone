@@ -50,53 +50,33 @@ public enum RotationMode implements StringRepresentable, IRotationProvider {
             case LOOK_AT_PLAYER -> {
                 Entity player = camera.entity();
 
-                Vec3 lookVec = player.getViewVector(partialTicks);
-                double pitch = getPitch(lookVec);
-                double yaw = getYaw(lookVec);
-                quaternionf.rotateY((float) (-Mth.DEG_TO_RAD * yaw));
-                quaternionf.rotateX((float) (Mth.DEG_TO_RAD * (pitch - 90)));
+                Vector3f lookVec = player.getViewVector(partialTicks).toVector3f();
+                float pitch = IRotationProvider.getPitch(lookVec);
+                float yaw = IRotationProvider.getYaw(lookVec);
+                quaternionf.rotateY((-Mth.DEG_TO_RAD * yaw));
+                quaternionf.rotateX((Mth.DEG_TO_RAD * (pitch - 90)));
             }
             case LOOK_AT_PLAYER_Y -> {
                 Entity player = camera.entity();
-                Vec3 lookVec = player.getViewVector(partialTicks);
-                double yaw = getYaw(lookVec);
-                quaternionf.rotateY((float) (-Mth.DEG_TO_RAD * yaw));
+                Vector3f lookVec = player.getViewVector(partialTicks).toVector3f();
+                float yaw = IRotationProvider.getYaw(lookVec);
+                quaternionf.rotateY((-Mth.DEG_TO_RAD * yaw));
             }
             case MOVEMENT_ALIGNED -> {
-                Vec3 dir = particle == null ? Vec3.ZERO :
-                        new Vec3(particle.xd, particle.yd, particle.zd).normalize();
+                Vector3f dir = particle == null ? new Vector3f() :
+                        new Vec3(particle.xd, particle.yd, particle.zd).normalize().toVector3f();
 
-                Vec3 cameraLook = new Vec3(camera.forwardVector());
-                Vec3 cross = dir.cross(cameraLook);
-
-                double pitch = getPitch(dir);
-                double yaw = getYaw(dir);
-
-                Vector3f dirUp = new Vector3f(0, 1, 0).rotate(quaternionf);
-                float roll = dirUp.angleSigned(cross.toVector3f(), dir.toVector3f());
-
-                quaternionf.rotateY((float) (-Mth.DEG_TO_RAD * yaw));
-
-                quaternionf.rotateX((float) (Mth.DEG_TO_RAD * (pitch - 90)));
-                quaternionf.rotateY(-roll - Mth.HALF_PI);
+                IRotationProvider.orientOverDirection(quaternionf, camera, dir);
             }
         }
     }
+
 
     @Override
     public boolean alwaysFacesCamera() {
         return (this == LOOK_AT_XYZ || this == LOOK_AT_Y || this == MOVEMENT_ALIGNED);
     }
 
-    // in degrees. Opposite of Vec3.fromRotation
-    public static double getPitch(Vec3 vec3) {
-        return -Math.toDegrees(Math.asin(vec3.y));
-    }
-
-    // in degrees
-    public static double getYaw(Vec3 vec3) {
-        return Math.toDegrees(Math.atan2(-vec3.x, vec3.z));
-    }
 
 }
 
