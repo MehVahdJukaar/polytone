@@ -1,2 +1,1 @@
-- added a new particle rotation mode
-- fixed custom particles ignoring hasPhysics
+some fixes

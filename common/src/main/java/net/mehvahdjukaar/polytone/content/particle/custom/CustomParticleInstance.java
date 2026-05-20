@@ -208,9 +208,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
     }
 
     private void tickInternal() {
-        if(this.type.debugId.toString().contains("lightray") && !this.type.debugId.toString().contains("emitter")){
-            int aa = 1;
-        }
         if (!this.type.isValid()) {
             this.remove();
             return;

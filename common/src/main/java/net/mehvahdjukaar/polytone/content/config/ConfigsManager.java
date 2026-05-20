@@ -36,7 +36,7 @@ public class ConfigsManager extends JsonPartialReloader {
     public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);
     public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", true);
     public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", 1);
-    public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", true);
+    public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", false);
     public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false);
 
     private static @NonNull OptionHolder<Boolean> builtinConfig(String id, boolean def) {

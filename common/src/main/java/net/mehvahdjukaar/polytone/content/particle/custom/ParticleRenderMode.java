@@ -28,7 +28,7 @@ public enum ParticleRenderMode implements StringRepresentable {
             case TERRAIN, SOLID -> RenderTypes.solidMovingBlock();
             case CUTOUT -> RenderTypes.cutoutMovingBlock();
             case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_MOVING_BLOCK_RENDERTYPE;
-            case TRANSLUCENT -> RenderTypes.cutoutMovingBlock();
+            case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
             // default was cutout mipped but it no longer exists
             default -> RenderTypes.cutoutMovingBlock();
         };
