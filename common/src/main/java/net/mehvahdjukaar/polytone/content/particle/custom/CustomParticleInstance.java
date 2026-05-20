@@ -235,7 +235,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
             Quaternionf instantRot = new Quaternionf();
             this.type.rotationProvider.setRotation(this, instantRot,
                     Minecraft.getInstance().gameRenderer.getMainCamera(), 0);
-            if (this.customRotation == null) {
+            if (this.customRotation == null || this.customRotationO == null) {
                 this.customRotation = new Quaternionf(instantRot);
                 this.customRotationO = new Quaternionf(instantRot);
             } else {
@@ -276,7 +276,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
     @Override
     public void move(double x, double y, double z) {
         if (x != 0 || y > 0 || z != 0) {
-            //I dont see why this would even be useful
+            //I don't see why this would even be useful. Only active for gravity particles as thats the most common case for this.
             stoppedByCollision = false;
         }
         super.move(x, y, z);
