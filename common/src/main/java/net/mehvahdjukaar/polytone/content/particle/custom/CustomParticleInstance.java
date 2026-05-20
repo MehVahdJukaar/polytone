@@ -43,6 +43,9 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     private boolean inFrustumLastTick = true;
 
+    private Quaternionf customRotation = null;
+    private Quaternionf customRotationO = null;
+
     protected CustomParticleInstance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                                      @Nullable BlockState state, CustomParticleType customType) {
         super(level, x, y, z, xSpeed, ySpeed, zSpeed, customType.spritePicker.getAny());
@@ -121,12 +124,19 @@ public class CustomParticleInstance extends SingleQuadParticle {
     @Override
     public void extract(QuadParticleRenderState quadParticleRenderState, Camera camera, float f) {
         Quaternionf quaternionf = new Quaternionf();
-        this.type.rotationProvider.setRotation(this, quaternionf, camera, f);
+        IRotationProvider rotProv = this.type.rotationProvider;
+        if (rotProv.updatesEveryRenderTick()) {
+            rotProv.setRotation(this, quaternionf, camera, f);
+        } else {
+            //set to slerped one
+            quaternionf.set(this.customRotationO.slerp(this.customRotation, f));
+        }
+
         if (this.roll != 0.0F) {
             quaternionf.rotateZ(Mth.lerp(f, this.oRoll, this.roll));
         }
         this.extractRotatedQuad(quadParticleRenderState, camera, quaternionf, f);
-        if (!this.type.rotationProvider.alwaysFacesCamera() && model == null) {
+        if (!rotProv.alwaysFacesCamera() && model == null) {
             quaternionf.rotateX(Mth.PI);
             //render back face
             this.extractRotatedQuad(quadParticleRenderState, camera, quaternionf, f);
@@ -220,6 +230,20 @@ public class CustomParticleInstance extends SingleQuadParticle {
         this.oRoll = this.roll;
         this.oQuadSize = this.quadSize;
 
+        if (!this.type.rotationProvider.updatesEveryRenderTick()) {
+            //handle initialized state where both are null
+            Quaternionf instantRot = new Quaternionf();
+            this.type.rotationProvider.setRotation(this, instantRot,
+                    Minecraft.getInstance().gameRenderer.getMainCamera(), 0);
+            if (this.customRotation == null) {
+                this.customRotation = new Quaternionf(instantRot);
+                this.customRotationO = new Quaternionf(instantRot);
+            } else {
+                this.customRotationO.set(this.customRotation);
+                this.customRotation.set(instantRot);
+            }
+        }
+
         boolean isTickTime = this.age % this.type.tickRate == 0;
 
         if (type.ticker != null && isTickTime) {
@@ -251,6 +275,10 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     public void move(double x, double y, double z) {
+        if (x != 0 || y > 0 || z != 0) {
+            //I dont see why this would even be useful
+            stoppedByCollision = false;
+        }
         super.move(x, y, z);
         if (type.killOnContact && this.age > 1) {
             Vec3 myPos = new Vec3(this.x, this.y, this.z);

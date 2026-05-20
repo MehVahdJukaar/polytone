@@ -8,7 +8,6 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -19,6 +18,10 @@ public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
     Codec<IRotationProvider> CODEC = CodecUtils.alternatives(
             CustomRotation.CODEC, CustomFacingRotation.CODEC, RotationMode.CODEC);
 
+    //if false we store old rot and interpolate
+    default boolean updatesEveryRenderTick() {
+        return true;
+    }
 
     boolean alwaysFacesCamera();
 
@@ -38,6 +41,11 @@ public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
                 IParticleExp.CODEC.optionalFieldOf("y_rot", IParticleExp.ZERO).forGetter(CustomRotation::yRot),
                 IParticleExp.CODEC.optionalFieldOf("z_rot", IParticleExp.ZERO).forGetter(CustomRotation::zRot)
         ).apply(instance, CustomRotation::new));
+
+        @Override
+        public boolean updatesEveryRenderTick() {
+            return false;
+        }
 
         @Override
         public boolean alwaysFacesCamera() {
@@ -71,6 +79,11 @@ public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
         @Override
         public boolean alwaysFacesCamera() {
             return true;
+        }
+
+        @Override
+        public boolean updatesEveryRenderTick() {
+            return false;
         }
 
         @Override
