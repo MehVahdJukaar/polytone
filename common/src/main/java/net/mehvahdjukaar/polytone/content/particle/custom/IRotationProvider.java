@@ -47,12 +47,30 @@ public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
         @Override
         public void setRotation(@Nullable SingleQuadParticle particle, Quaternionf quaternionf, Camera camera, float partialTicks) {
             if (particle == null) return;
+
+            // use cached per-tick values so we can interpolate at framerate
+            if (particle instanceof CustomParticleInstance cpi) {
+                float x = lerpAngle(partialTicks, cpi.oXRotation, cpi.xRotation);
+                float y = lerpAngle(partialTicks, cpi.oYRotation, cpi.yRotation);
+                float z = lerpAngle(partialTicks, cpi.oZRotation, cpi.zRotation);
+                quaternionf.rotateXYZ(x, y, z);
+                return;
+            }
+
             var level = Minecraft.getInstance().level;
             double x = this.xRot.evaluate(particle, level);
             double y = this.yRot.evaluate(particle, level);
             double z = this.zRot.evaluate(particle, level);
 
             quaternionf.rotateXYZ((float) x, (float) y, (float) z);
+        }
+
+        // shortest-path angle lerp for mod(_, TAU) wraps
+        private static float lerpAngle(float t, float a, float b) {
+            float twoPi = (float) (Math.PI * 2.0);
+            float diff = ((b - a) % twoPi + twoPi) % twoPi;
+            if (diff > (float) Math.PI) diff -= twoPi;
+            return a + diff * t;
         }
 
     }

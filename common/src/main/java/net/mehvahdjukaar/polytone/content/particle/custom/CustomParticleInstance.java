@@ -40,6 +40,13 @@ public class CustomParticleInstance extends SingleQuadParticle {
     protected final List<IParticleTickable> tickables;
     protected float oQuadSize;
     protected double custom;
+    public float xRotation;
+    public float yRotation;
+    public float zRotation;
+    public float oXRotation;
+    public float oYRotation;
+    public float oZRotation;
+    private boolean rotationInitialized = false;
 
     private boolean inFrustumLastTick = true;
 
@@ -217,16 +224,38 @@ public class CustomParticleInstance extends SingleQuadParticle {
             return;
         }
 
+        // clear vanilla's permanent collision latch so the particle can resume physics
+        if (this.type.canUnstick) {
+            this.stoppedByCollision = false;
+        }
+
         this.type.spritePicker.pickSprite(this, false);
         super.tick();
         //interpolate our states
         this.oRoll = this.roll;
         this.oQuadSize = this.quadSize;
+        this.oXRotation = this.xRotation;
+        this.oYRotation = this.yRotation;
+        this.oZRotation = this.zRotation;
 
         boolean isTickTime = this.age % this.type.tickRate == 0;
 
         if (type.ticker != null && isTickTime) {
             type.ticker.tick(this, level);
+        }
+
+        // cache per-tick rotation eval for partial-tick lerp in setRotation
+        if (this.type.rotationProvider instanceof IRotationProvider.CustomRotation cr) {
+            this.xRotation = (float) cr.xRot().evaluate(this, level);
+            this.yRotation = (float) cr.yRot().evaluate(this, level);
+            this.zRotation = (float) cr.zRot().evaluate(this, level);
+            if (!this.rotationInitialized) {
+                // snap prev = current on spawn so first frame doesn't lerp from 0
+                this.oXRotation = this.xRotation;
+                this.oYRotation = this.yRotation;
+                this.oZRotation = this.zRotation;
+                this.rotationInitialized = true;
+            }
         }
 
         if (this.type.colormap != null) {

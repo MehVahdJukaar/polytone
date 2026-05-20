@@ -47,6 +47,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     protected final int lightLevel;
     protected final LiquidAffinity liquidAffinity;
     protected final boolean hasPhysics;
+    protected final boolean canUnstick;
     protected final boolean killOnContact;
     protected final boolean killWhenStill;
     protected final boolean killWhenNotInView;
@@ -63,7 +64,8 @@ public class CustomParticleType implements ICustomParticleFactory {
 
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
                                @Nullable Identifier model, Vec3 offset,
-                               int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
+                               int light, boolean hasPhysics, boolean canUnstick,
+                               boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
                                LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
                                boolean randomSprite,
                                int particleGroupLimit, boolean forceSpawn,
@@ -79,6 +81,7 @@ public class CustomParticleType implements ICustomParticleFactory {
         this.lazyEmitters = particles;
         this.lightLevel = light;
         this.hasPhysics = hasPhysics;
+        this.canUnstick = canUnstick;
         this.killOnContact = killOnContact;
         this.killWhenStill = killWhenStill;
         this.killWhenNotInView = killWhenNotInView;
@@ -99,6 +102,7 @@ public class CustomParticleType implements ICustomParticleFactory {
             Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(c -> c.offset),
             Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
             Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
+            Codec.BOOL.optionalFieldOf("can_unstick", false).forGetter(c -> c.canUnstick),
             Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
             Codec.BOOL.optionalFieldOf("kill_when_still", false).forGetter(c -> c.killWhenStill),
             Codec.BOOL.optionalFieldOf("kill_when_not_in_view", true).forGetter(c -> c.killWhenNotInView),
@@ -119,13 +123,15 @@ public class CustomParticleType implements ICustomParticleFactory {
 
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
                                Optional<Identifier> model, Vec3 offset,
-                               int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
+                               int light, boolean hasPhysics, boolean canUnstick,
+                               boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                boolean randomSprite,
                                int limit, boolean forceSpawn, Optional<CustomParticleInitializer> initializer,
                                ICustomParticleTicker ticker, List<ParticleSoundEmitter> sounds, int tickRate, List<Dynamic<?>> particles, int killSimilarInRadius) {
         this(renderType, rotationProvider, model.orElse(null), offset,
-                light, hasPhysics, killOnContact, killWhenStill,killWhenNotInView, liquidAffinity, colormap.orElse(null),
+                light, hasPhysics, canUnstick, killOnContact, killWhenStill, killWhenNotInView,
+                liquidAffinity, colormap.orElse(null),
                 randomSprite, limit, forceSpawn,
                 initializer.orElse(null), ticker, sounds, tickRate, particles, killSimilarInRadius);
     }
