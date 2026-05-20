@@ -275,11 +275,11 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     public void move(double x, double y, double z) {
-        if (x != 0 || y > 0 || z != 0) {
-            //I don't see why this would even be useful. Only active for gravity particles as thats the most common case for this.
+        super.move(x, y, z);
+        if (!type.sticky) {
+            //TODO: do it properly here. when collision stops this particle we dont move at all until the obstacle is removed, unless we would slide
             stoppedByCollision = false;
         }
-        super.move(x, y, z);
         if (type.killOnContact && this.age > 1) {
             Vec3 myPos = new Vec3(this.x, this.y, this.z);
             Vec3 wantedPos = new Vec3(this.xo + x, this.yo + y, this.zo + z);

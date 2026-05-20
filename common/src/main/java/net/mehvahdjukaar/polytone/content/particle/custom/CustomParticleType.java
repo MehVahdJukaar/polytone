@@ -55,6 +55,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     protected final Vec3 offset;
     protected final Optional<ParticleLimit> particleGroupLimit;
     protected final boolean forceSpawn;
+    protected final boolean sticky;
 
     protected final SpritePicker spritePicker;
 
@@ -69,7 +70,8 @@ public class CustomParticleType implements ICustomParticleFactory {
                                int particleGroupLimit, boolean forceSpawn,
                                @Nullable CustomParticleInitializer initializer, ICustomParticleTicker ticker,
                                @Nullable List<ParticleSoundEmitter> sounds,
-                               int tickRate, @Nullable List<Dynamic<?>> particles, int killSimilarInRadius) {
+                               int tickRate, @Nullable List<Dynamic<?>> particles, int killSimilarInRadius,
+                               boolean sticky) {
         this.renderType = renderType;
         this.spritePicker = new SpritePicker(randomSprite);
         this.model = model;
@@ -90,6 +92,7 @@ public class CustomParticleType implements ICustomParticleFactory {
         this.tickRate = tickRate;
         this.exclusionRadius = killSimilarInRadius;
         this.particleGroupLimit = particleGroupLimit > 0 ? Optional.of(new ParticleLimit(particleGroupLimit)) : Optional.empty();
+        this.sticky = sticky;
     }
 
     public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
@@ -114,7 +117,8 @@ public class CustomParticleType implements ICustomParticleFactory {
             ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
             ExtraCodecs.POSITIVE_INT.optionalFieldOf("tick_interval", 1).forGetter(c -> c.tickRate),
             Codec.PASSTHROUGH.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.lazyEmitters),
-            ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("exclusion_radius", 0).forGetter(c -> c.exclusionRadius)
+            ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("exclusion_radius", 0).forGetter(c -> c.exclusionRadius),
+            Codec.BOOL.optionalFieldOf("sticky", false).forGetter(c -> c.sticky)
     ).apply(i, CustomParticleType::new));
 
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
@@ -123,11 +127,15 @@ public class CustomParticleType implements ICustomParticleFactory {
                                LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
                                boolean randomSprite,
                                int limit, boolean forceSpawn, Optional<CustomParticleInitializer> initializer,
-                               ICustomParticleTicker ticker, List<ParticleSoundEmitter> sounds, int tickRate, List<Dynamic<?>> particles, int killSimilarInRadius) {
+                               ICustomParticleTicker ticker, List<ParticleSoundEmitter> sounds, int tickRate,
+                               List<Dynamic<?>> particles, int killSimilarInRadius,
+                               boolean sticky) {
         this(renderType, rotationProvider, model.orElse(null), offset,
-                light, hasPhysics, killOnContact, killWhenStill,killWhenNotInView, liquidAffinity, colormap.orElse(null),
+                light, hasPhysics, killOnContact, killWhenStill,killWhenNotInView,
+                liquidAffinity, colormap.orElse(null),
                 randomSprite, limit, forceSpawn,
-                initializer.orElse(null), ticker, sounds, tickRate, particles, killSimilarInRadius);
+                initializer.orElse(null), ticker, sounds, tickRate,
+                particles, killSimilarInRadius, sticky);
     }
 
     @Override
@@ -173,6 +181,7 @@ public class CustomParticleType implements ICustomParticleFactory {
 
             if (particleQueue != null) {
                 for (var p : particleQueue.getAll()) {
+                    //hack
                     if (p instanceof CustomParticleInstance inst && inst.type == this) {
                         //calculate distance between p and newParticle
                         double distSqrt = Mth.lengthSquared(
