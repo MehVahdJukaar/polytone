@@ -125,11 +125,12 @@ public class CustomParticleInstance extends SingleQuadParticle {
     public void extract(QuadParticleRenderState quadParticleRenderState, Camera camera, float f) {
         Quaternionf quaternionf = new Quaternionf();
         IRotationProvider rotProv = this.type.rotationProvider;
-        if (rotProv.updatesEveryRenderTick()) {
+        if (rotProv.updatesEveryRenderTick() || this.customRotationO == null) {
+            // no cached rotation yet, eval directly
             rotProv.setRotation(this, quaternionf, camera, f);
         } else {
-            //set to slerped one
-            quaternionf.set(this.customRotationO.slerp(this.customRotation, f));
+            // 3-arg slerp writes to dest, keeps customRotationO intact for next frame
+            this.customRotationO.slerp(this.customRotation, f, quaternionf);
         }
 
         if (this.roll != 0.0F) {
