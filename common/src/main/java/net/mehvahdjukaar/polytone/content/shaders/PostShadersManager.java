@@ -9,14 +9,17 @@ import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
+import net.minecraft.client.renderer.PostPass;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +29,7 @@ public class PostShadersManager extends JsonPartialReloader {
     private PolytoneGlobalUniforms globalUniforms = null;
 
     private final List<PostChainEffect> effects = new ArrayList<>();
+    private final IdentityHashMap<PostPass, PostChainEffect> passEffectMap = new IdentityHashMap<>();
 
     public PostShadersManager() {
         super("post_shaders");
@@ -45,9 +49,30 @@ public class PostShadersManager extends JsonPartialReloader {
 
     @Override
     protected void resetWithLevel(boolean logOff) {
-        synchronized (effects){
+        synchronized (effects) {
+            for (var e : effects) {
+                e.closeExpressionBuffers();
+            }
             effects.clear();
+            passEffectMap.clear();
         }
+    }
+
+    void registerPasses(PostChain chain, PostChainEffect effect) {
+        for (PostPass pass : chain.passes) {
+            passEffectMap.put(pass, effect);
+        }
+    }
+
+    void unregisterPasses(PostChain chain) {
+        for (PostPass pass : chain.passes) {
+            passEffectMap.remove(pass);
+        }
+    }
+
+    @Nullable
+    public PostChainEffect getEffectForPass(PostPass pass) {
+        return passEffectMap.get(pass);
     }
 
     private PolytoneGlobalUniforms getOrCreateUniforms() {
@@ -80,20 +105,17 @@ public class PostShadersManager extends JsonPartialReloader {
         }
     }
 
-    //TODO: add custom arbitrary uniforms
-    private final ThreadLocal<Boolean> addingPolytonePostChain = ThreadLocal.withInitial(() -> false);
-
     public void addPostPass(int width, int height, LevelTargetBundle targets, FrameGraphBuilder frameGraphBuilder, GpuBufferSlice gpuBufferSlice, CameraRenderState cameraRenderState) {
 
         ShaderManager sm = Minecraft.getInstance().getShaderManager();
-        addingPolytonePostChain.set(true);
         synchronized (effects) {
             for (var e : effects) {
                 PostChain pc = e.getPostChain(sm);
-                if (pc != null) pc.addToFrame(frameGraphBuilder, width, height, targets);
+                if (pc != null) {
+                    e.updateExpressionBuffers();
+                    pc.addToFrame(frameGraphBuilder, width, height, targets);
+                }
             }
         }
-        addingPolytonePostChain.set(false);
-
     }
 }
