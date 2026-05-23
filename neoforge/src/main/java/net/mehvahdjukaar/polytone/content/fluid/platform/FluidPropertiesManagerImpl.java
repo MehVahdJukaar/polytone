@@ -7,18 +7,12 @@ import net.mehvahdjukaar.polytone.content.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.FluidState;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector4f;
 
@@ -31,15 +25,10 @@ public class FluidPropertiesManagerImpl {
 
     public static void tryAddSpecial(Fluid fluid, FluidPropertyModifier prop) {
         FluidType fluidType = fluid.getFluidType();
-        //gets real one. will internally try to get wrapped but a map is empty now
         IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fluidType);
         if (!(ext instanceof FluidExtensionWrapper)) {
-            BlockColor tintColormap = prop.getColormap();
-            BlockColor fogColormap = prop.getFogColormap();
-            if (tintColormap instanceof IColorGetter c) {
-                tintColormap = Polytone.COLORMAPS.getOrCreateConcurrentColormap(c);
-            }
-            FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, tintColormap, fogColormap));
+            IColorGetter fogColormap = prop.getFogColormap();
+            FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, fogColormap));
         }
     }
 
@@ -56,48 +45,7 @@ public class FluidPropertiesManagerImpl {
     }
 
     private record FluidExtensionWrapper(IClientFluidTypeExtensions existingProperties,
-                                         @Nullable BlockColor tintColor,
-                                         @Nullable BlockColor fogColor) implements IClientFluidTypeExtensions {
-
-
-        @Override
-        public int getTintColor() {
-            if (tintColor != null) {
-                return tintColor.getColor(null, null, null, -1) | 0xff000000;
-            }
-            return existingProperties.getTintColor();
-        }
-
-        @Override
-        public int getTintColor(FluidStack stack) {
-            if (tintColor != null) {
-                return tintColor.getColor(null, null, null, -1) | 0xff000000;
-            }
-            return existingProperties.getTintColor();
-        }
-
-        @Override
-        public int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            if (tintColor != null) {
-                return tintColor.getColor(state.createLegacyBlock(), getter, pos, -1) | 0xff000000;
-            }
-            return existingProperties.getTintColor();
-        }
-
-        @Override
-        public Identifier getStillTexture() {
-            return existingProperties.getStillTexture();
-        }
-
-        @Override
-        public Identifier getFlowingTexture() {
-            return existingProperties.getFlowingTexture();
-        }
-
-        @Override
-        public @Nullable Identifier getOverlayTexture() {
-            return existingProperties.getOverlayTexture();
-        }
+                                         @Nullable IColorGetter fogColor) implements IClientFluidTypeExtensions {
 
         @Override
         public @Nullable Identifier getRenderOverlayTexture(Minecraft mc) {
@@ -106,52 +54,17 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public void renderOverlay(Minecraft mc, PoseStack poseStack, MultiBufferSource buffers) {
-            existingProperties.renderOverlay(mc, poseStack,buffers);
+            existingProperties.renderOverlay(mc, poseStack, buffers);
         }
 
         @Override
-        public @NotNull Vector4f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector4f fluidFogColor) {
+        public void modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector4f fluidFogColor) {
             if (fogColor != null) {
-                float[] unpack = ColorUtils.unpack(fogColor.getColor(null, level, null, -1));
-                return new Vector4f(unpack[0], unpack[1], unpack[2], fluidFogColor.w);
+                float[] unpack = ColorUtils.unpack(fogColor.sampleColor(null, null, null, null, null));
+                fluidFogColor.set(unpack[0], unpack[1], unpack[2], fluidFogColor.w);
+            } else {
+                existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
             }
-            return existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
-        }
-
-        //TODO: add back
-//        @Override
-//        public FogParameters modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, FogParameters fogParameters) {
-//            return existingProperties.modifyFogRender(camera, mode, renderDistance, partialTick, fogParameters);
-//        }
-
-        @Override
-        public Identifier getStillTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            return existingProperties.getStillTexture(state, getter, pos);
-        }
-
-        @Override
-        public Identifier getFlowingTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            return existingProperties.getFlowingTexture(state, getter, pos);
-        }
-
-        @Override
-        public Identifier getOverlayTexture(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            return existingProperties.getOverlayTexture(state, getter, pos);
-        }
-
-        @Override
-        public Identifier getStillTexture(FluidStack stack) {
-            return existingProperties.getStillTexture(stack);
-        }
-
-        @Override
-        public Identifier getOverlayTexture(FluidStack stack) {
-            return existingProperties.getOverlayTexture(stack);
-        }
-
-        @Override
-        public Identifier getFlowingTexture(FluidStack stack) {
-            return existingProperties.getFlowingTexture(stack);
         }
     }
 }

@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @Mixin(InventoryScreen.class)
 public abstract class InventoryScreenMixin {
 
-    @ModifyArg(method = "renderBg", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
+    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;extractEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
             , index = 1
     )
     public int modifyRenderEntityX(int x) {
@@ -24,8 +24,8 @@ public abstract class InventoryScreenMixin {
         return x;
     }
 
-    @ModifyArg(method = "renderBg", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
+    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;extractEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
             , index = 3
     )
     public int modifyRenderEntityX2(int x) {
@@ -39,8 +39,8 @@ public abstract class InventoryScreenMixin {
         return x;
     }
 
-    @ModifyArg(method = "renderBg", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
+    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;extractEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
             , index = 2
     )
     public int modifyRenderEntityY(int y) {
@@ -54,8 +54,8 @@ public abstract class InventoryScreenMixin {
         return y;
     }
 
-    @ModifyArg(method = "renderBg", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
+    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;extractEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
             , index = 4
     )
     public int modifyRenderEntityY2(int y) {
@@ -69,8 +69,8 @@ public abstract class InventoryScreenMixin {
         return y;
     }
 
-    @ModifyArg(method = "renderBg", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
+    @ModifyArg(method = "extractBackground", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;extractEntityInInventoryFollowsMouse(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIIIIFFFLnet/minecraft/world/entity/LivingEntity;)V")
             , index = 5
     )
     public int modifyRenderEntityScale(int y) {
@@ -83,8 +83,4 @@ public abstract class InventoryScreenMixin {
         }
         return y;
     }
-
-
-
-
 }

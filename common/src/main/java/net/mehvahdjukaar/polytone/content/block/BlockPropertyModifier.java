@@ -13,8 +13,8 @@ import net.mehvahdjukaar.polytone.content.sound.BlockSoundEmitter;
 import net.mehvahdjukaar.polytone.content.sound.PolytoneSoundType;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import static net.mehvahdjukaar.polytone.common.struc.ListUtils.mergeList;
 
 public record BlockPropertyModifier(
-        Optional<? extends BlockColor> tintGetter,
+        Optional<IColorGetter> tintGetter,
         Optional<SoundType> soundType,
         Optional<Function<BlockState, MapColor>> mapColor,
         Optional<Boolean> canOcclude,
@@ -68,7 +68,7 @@ public record BlockPropertyModifier(
         );
     }
 
-    public static BlockPropertyModifier ofBlockColor(BlockColor colormap) {
+    public static BlockPropertyModifier ofBlockColor(IColorGetter colormap) {
         return new BlockPropertyModifier(Optional.ofNullable(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
@@ -77,15 +77,15 @@ public record BlockPropertyModifier(
                 false, Targets.EMPTY, false);
     }
 
-    public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Block... blocks) {
+    public static BlockPropertyModifier coloringBlocks(IColorGetter colormap, Block... blocks) {
         return coloringBlocks(colormap, Set.of(Arrays.stream(blocks).map(BuiltInRegistries.BLOCK::getKey).toArray(Identifier[]::new)));
     }
 
-    public static BlockPropertyModifier coloringBlocks(BlockColor colormap, List<Block> blocks) {
+    public static BlockPropertyModifier coloringBlocks(IColorGetter colormap, List<Block> blocks) {
         return coloringBlocks(colormap, blocks.stream().map(BuiltInRegistries.BLOCK::getKey).collect(Collectors.toSet()));
     }
 
-    public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<Identifier> blocks) {
+    public static BlockPropertyModifier coloringBlocks(IColorGetter colormap, Set<Identifier> blocks) {
         Targets t = net.mehvahdjukaar.polytone.common.Targets.ofIds(blocks);
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
@@ -143,15 +143,18 @@ public record BlockPropertyModifier(
             }
         }
 
-        BlockColor oldColor = null;
+        BlockTintSource oldColor = null;
         if (tintGetter.isPresent()) {
             BlockColors blockColors = Minecraft.getInstance().getBlockColors();
-            oldColor = PlatStuff.getBlockColor(blockColors, block);
-            BlockColor blockColor = tintGetter.get();
+            List<BlockTintSource> oldLayers = blockColors.getTintSources(block.defaultBlockState());
+            if (!oldLayers.isEmpty()) {
+                oldColor = new IColorGetter.OfLayers(new ArrayList<>(oldLayers));
+            }
+            IColorGetter blockColor = tintGetter.get();
             if (blockColor instanceof IColorGetter cg) {
                 blockColor = Polytone.COLORMAPS.getOrCreateConcurrentColormap(cg);
             }
-            blockColors.register(blockColor, block);
+            blockColors.register(toLayersList(blockColor), block);
             Polytone.BLOCK_MODIFIERS.maybeAssignToDefaultGrassAndFoliage(block, blockColor);
         }
 
@@ -190,7 +193,7 @@ public record BlockPropertyModifier(
         }
 
         // returns old properties
-        return new BlockPropertyModifier(Optional.ofNullable(oldColor), Optional.ofNullable(oldSound),
+        return new BlockPropertyModifier(Optional.ofNullable((IColorGetter) oldColor), Optional.ofNullable(oldSound),
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),
                 Optional.empty(),
@@ -198,6 +201,12 @@ public record BlockPropertyModifier(
                 List.of(), List.of(), Optional.empty(),
                 Optional.ofNullable(oldType),
                 false, Targets.EMPTY, false);
+    }
+
+    private static List<BlockTintSource> toLayersList(BlockTintSource src) {
+        if (src instanceof IndexCompoundColorGetter icg) return icg.toLayersList();
+        if (src instanceof IColorGetter.OfLayers ol) return ol.layers();
+        return List.of(src);
     }
 
     public static final Codec<ChunkSectionLayer> SECTION_LAYER_CODEC = Codec.STRING.xmap(s -> ChunkSectionLayer.valueOf(s.toUpperCase(Locale.ROOT)), ChunkSectionLayer::label);
@@ -236,7 +245,8 @@ public record BlockPropertyModifier(
 
     @Nullable
     public IColorGetter getColormap() {
-        return (IColorGetter) tintGetter.orElse(null);
+        BlockTintSource ts = tintGetter.orElse(null);
+        return ts instanceof IColorGetter cg ? cg : null;
     }
 
 }

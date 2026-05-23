@@ -15,7 +15,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.Level;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.LightLayer;
 
 public class ParticleContextExpression extends PolytoneExpression implements IParticleExp {
@@ -75,7 +75,7 @@ public class ParticleContextExpression extends PolytoneExpression implements IPa
     }
 
 
-    public double evaluate(Particle particle, Level level) {
+    public double evaluate(Particle particle, ClientLevel level) {
         IExpression.IVars vb = expression.varBuilder();
         vb.setVariable(LIFE, particle.getLifetime());
         if (particle instanceof SingleQuadParticle sqp) {

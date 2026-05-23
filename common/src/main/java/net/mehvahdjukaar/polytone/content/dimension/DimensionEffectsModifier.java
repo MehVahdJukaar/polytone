@@ -10,6 +10,7 @@ import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.WeatherAttributes;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.dimension.DimensionType;
 
 import java.util.Optional;
@@ -19,7 +20,7 @@ import java.util.Optional;
 //now they are a per dimension environment effect modifier. we essentially modify dimension type
 public record DimensionEffectsModifier(DimensionEnvAttributeModifications attributeModifications,
                                        Optional<DimensionType.Skybox> skybox,
-                                       Optional<DimensionType.CardinalLightType> cardinalLightType,
+                                       Optional<CardinalLighting.Type> cardinalLightType,
                                        Optional<Float> ambientLight,
                                        Optional<Boolean> hasSkylight,
                                        Optional<Lightmap> lightmap, //TODO: finish adding
@@ -31,7 +32,7 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                     DimensionEnvAttributeModifications.CODEC.optionalFieldOf("attributes_modifiers",
                             DimensionEnvAttributeModifications.EMPTY).forGetter(DimensionEffectsModifier::attributeModifications),
                     DimensionType.Skybox.CODEC.optionalFieldOf("skybox").forGetter(DimensionEffectsModifier::skybox),
-                    DimensionType.CardinalLightType.CODEC.optionalFieldOf("cardinal_light").forGetter(DimensionEffectsModifier::cardinalLightType),
+                    CardinalLighting.Type.CODEC.optionalFieldOf("cardinal_light").forGetter(DimensionEffectsModifier::cardinalLightType),
                     Codec.FLOAT.optionalFieldOf("ambient_light").forGetter(DimensionEffectsModifier::ambientLight),
                     Codec.BOOL.optionalFieldOf("has_skylight").forGetter(DimensionEffectsModifier::hasSkylight),
 
@@ -74,7 +75,7 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
             accessor.setSkybox(this.skybox.get());
         }
 
-        Optional<DimensionType.CardinalLightType> oldCloud = Optional.empty();
+        Optional<CardinalLighting.Type> oldCloud = Optional.empty();
         if (this.cardinalLightType.isPresent()) {
             oldCloud = Optional.of(dimension.cardinalLightType());
             accessor.setCardinalLightType(this.cardinalLightType.get());

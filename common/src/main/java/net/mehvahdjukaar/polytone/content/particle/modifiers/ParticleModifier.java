@@ -8,8 +8,9 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
-import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -118,7 +119,7 @@ public class ParticleModifier {
         return this.targets;
     }
 
-    public void modify(@NotNull SingleQuadParticle particle, Level level, ParticleOptions options) {
+    public void modify(@NotNull SingleQuadParticle particle, ClientLevel level, ParticleOptions options) {
         if (filter != null) {
             if (!filter.test(options)) return;
         }
@@ -131,7 +132,11 @@ public class ParticleModifier {
             if (options instanceof BlockParticleOption bo) {
                 state = bo.getState();
             }
-            float[] unpack = ColorUtils.unpack(colormap.getColor(state, level, BlockPos.containing(particle.x, particle.y, particle.z), 0));
+            BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
+            BlockAndTintGetter bat = level instanceof BlockAndTintGetter b ? b : null;
+            int color = state != null && bat != null ? colormap.colorInWorld(state, bat, pos)
+                    : colormap.sampleColor(bat, state, pos.getCenter(), null, null);
+            float[] unpack = ColorUtils.unpack(color);
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
         if (lifeGetter != null) {
@@ -168,7 +173,7 @@ public class ParticleModifier {
         this.colormap = colormap;
     }
 
-    public BlockColor getColormap() {
+    public IColorGetter getColormap() {
         return this.colormap;
     }
 
@@ -191,7 +196,7 @@ public class ParticleModifier {
                 return bo.getState().getBlock() == forBlock;
             }
             if (forItem != null && particleOptions instanceof ItemParticleOption io) {
-                return io.getItem().getItem() == forItem;
+                return io.getItem().is(forItem);
             }
             return true;
         }

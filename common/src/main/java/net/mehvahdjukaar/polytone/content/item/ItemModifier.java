@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.common.Targets;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -77,7 +76,7 @@ public record ItemModifier(Optional<IColorGetter> barColor,
             DataComponentMap.Builder builder = DataComponentMap.builder();
             builder.addAll(components);
             builder.set(DataComponents.RARITY, rarity.get());
-            item.components = builder.build();
+            item.builtInRegistryHolder().bindComponents(builder.build());
         }
 
         // returns old properties

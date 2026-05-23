@@ -10,13 +10,15 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockState
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase offsetFunction Lnet/minecraft/world/level/block/state/BlockBehaviour$OffsetFunction;
 accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Collection;)V
 
+accessible class net/minecraft/client/renderer/state/gui/GuiRenderState$Node
+accessible method net/minecraft/client/renderer/state/gui/GuiRenderState$Node <init> (Lnet/minecraft/client/renderer/state/gui/GuiRenderState$Node;)V
+
 accessible field net/minecraft/client/renderer/PostChain passes Ljava/util/List;
 accessible field net/minecraft/client/renderer/PostPass infoUbo Lnet/minecraft/client/renderer/MappableRingBuffer;
 accessible field net/minecraft/client/renderer/MappableRingBuffer buffers [Lcom/mojang/blaze3d/buffers/GpuBuffer;
 
 accessible method net/minecraft/client/multiplayer/ClientLevel addEnvironmentAttributeLayers (Lnet/minecraft/world/attribute/EnvironmentAttributeSystem$Builder;)Lnet/minecraft/world/attribute/EnvironmentAttributeSystem$Builder;
 accessible field net/minecraft/world/effect/MobEffect AMBIENT_ALPHA I
-accessible class net/minecraft/client/resources/model/BlockModelRotation$WithUvLock
 accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;
 accessible class net/minecraft/server/packs/OverlayMetadataSection$OverlayEntry$IntermediateEntry
 accessible method net/minecraft/client/gui/screens/packs/PackSelectionScreen reload ()V
@@ -36,8 +38,6 @@ accessible field net/minecraft/client/OptionInstance caption Lnet/minecraft/netw
 accessible field net/minecraft/client/OptionInstance toString Ljava/util/function/Function;
 
 accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_PROJECTION_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
-
-accessible method net/minecraft/client/renderer/GameRenderer getFov (Lnet/minecraft/client/Camera;FZ)F
 
 accessible field net/minecraft/client/renderer/entity/EntityRenderDispatcher renderers Ljava/util/Map;
 
@@ -70,7 +70,6 @@ mutable field net/minecraft/client/renderer/BiomeColors GRASS_COLOR_RESOLVER Lne
 
 accessible field net/minecraft/world/effect/MobEffect particleFactory Ljava/util/function/Function;
 mutable field net/minecraft/world/effect/MobEffect particleFactory Ljava/util/function/Function;
-accessible class net/minecraft/client/renderer/block/model/BlockElement$Deserializer
 
 mutable field net/minecraft/world/entity/player/Player inventoryMenu Lnet/minecraft/world/inventory/InventoryMenu;
 
@@ -132,9 +131,6 @@ accessible field net/minecraft/world/level/border/BorderStatus color I
 accessible field net/minecraft/network/chat/TextColor value I
 mutable field net/minecraft/network/chat/TextColor value I
 
-accessible field net/minecraft/world/item/Item components Lnet/minecraft/core/component/DataComponentMap;
-mutable field net/minecraft/world/item/Item components Lnet/minecraft/core/component/DataComponentMap;
-
 # texture stuff
 accessible class net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
 accessible class net/minecraft/client/renderer/texture/SpriteContents$FrameInfo
@@ -177,7 +173,6 @@ mutable field net/minecraft/client/color/ColorLerper$Type colorByDye Ljava/util/
 accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase mapColor Lnet/minecraft/world/level/material/MapColor;
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase mapColor Lnet/minecraft/world/level/material/MapColor;
 
-accessible method net/minecraft/client/renderer/LightTexture calculateDarknessScale (Lnet/minecraft/world/entity/LivingEntity;FF)F
 
 # Shaders
 accessible method net/minecraft/client/renderer/RenderPipelines register (Lcom/mojang/blaze3d/pipeline/RenderPipeline;)Lcom/mojang/blaze3d/pipeline/RenderPipeline;
@@ -204,9 +199,6 @@ accessible field net/minecraft/core/MappedRegistry frozen Z
 accessible method net/minecraft/client/particle/ParticleResources register (Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/client/particle/ParticleProvider;)V
 accessible method net/minecraft/world/level/biome/Biome getTemperature (Lnet/minecraft/core/BlockPos;I)F
 
-accessible method net/minecraft/client/gui/GuiGraphics innerBlit (Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIIIFFFFI)V
-accessible class net/minecraft/client/gui/render/state/GuiRenderState$Node
-accessible method net/minecraft/client/gui/render/state/GuiRenderState$Node <init> (Lnet/minecraft/client/gui/render/state/GuiRenderState$Node;)V
 accessible field net/minecraft/client/renderer/fog/FogRenderer FOG_ENVIRONMENTS Ljava/util/List;
 accessible field net/minecraft/client/renderer/GameRenderer fogRenderer Lnet/minecraft/client/renderer/fog/FogRenderer;
 

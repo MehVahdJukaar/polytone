@@ -54,10 +54,10 @@ public class ParticleHitboxDebugRenderer {
                 SingleQuadParticle.Layer layer =
                         ((SingleQuadParticleAccessor) sq).invokeGetLayer();
 
-                if (layer == SingleQuadParticle.Layer.TERRAIN) {
+                if (layer == SingleQuadParticle.Layer.OPAQUE_TERRAIN) {
                     return 0xFF1CFF20; // green
                 }
-                else if (layer == SingleQuadParticle.Layer.ITEMS) {
+                else if (layer == SingleQuadParticle.Layer.OPAQUE_ITEMS) {
                     return 0xFF9C27B0; // orange
                 }
                 else if (layer == SingleQuadParticle.Layer.OPAQUE) {

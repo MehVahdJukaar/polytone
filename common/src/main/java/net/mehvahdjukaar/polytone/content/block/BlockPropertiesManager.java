@@ -12,7 +12,7 @@ import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.struc.PropertiesUtils;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
-import net.minecraft.client.color.block.BlockColor;
+import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
@@ -153,7 +153,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             }
 
             //fill inline colormaps colormapTextures
-            BlockColor tint = modifier.getColormap();
+            IColorGetter tint = modifier.getColormap();
             ColormapsManager.tryAcceptingTextureGroup(textures, id, tint, usedTextures, true);
 
             if (result.isEnabled()) addModifier(id, modifier);
@@ -236,7 +236,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         // modifiers.clear();
     }
 
-    protected void maybeAssignToDefaultGrassAndFoliage(Block block, BlockColor color) {
+    protected void maybeAssignToDefaultGrassAndFoliage(Block block, IColorGetter color) {
         //TODO: this doesnt work with IndexCompoundColorGetter
         ColorResolver cc = null;
         if (color instanceof IndexCompoundColorGetter ic) {
@@ -264,7 +264,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         optifineColormapsToBlocks.put(path, str);
     }
 
-    public boolean runTickers(BlockState state, Level level, BlockPos pos, TickSource source) {
+    public boolean runTickers(BlockState state, ClientLevel level, BlockPos pos, TickSource source) {
         ClientTickModifier m = particleAndSoundEmitters.get(state.getBlock());
         if (m != null) {
             for (var p : m.tickables) {
@@ -299,7 +299,7 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         if (true) return;
         var m = particleAndSoundEmitters.get(state.getBlock());
 
-        RandomSource random = level.random;
+        RandomSource random = level.getRandom();
         int i = pos.getX();
         int j = pos.getY();
         int k = pos.getZ();

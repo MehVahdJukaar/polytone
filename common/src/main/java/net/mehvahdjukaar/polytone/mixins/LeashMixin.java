@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.LeashFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class LeashMixin {
 
     @Inject(method = "addVertexPair", at = @At("HEAD"), cancellable = true)
-    private static void polytone$modifyLeashRender(VertexConsumer vertexConsumer, Matrix4f matrix4f, float f, float g, float h, float i, float j, float k, int l, boolean bl, EntityRenderState.LeashState leashState, CallbackInfo ci) {
+    private static void polytone$modifyLeashRender(VertexConsumer vertexConsumer, Matrix4fc matrix4f, float f, float g, float h, float i, float j, float k, int l, boolean bl, EntityRenderState.LeashState leashState, CallbackInfo ci) {
         if (PolytoneRenderTypes.addLeashVertexPair(vertexConsumer, matrix4f, f, g, h, i, j, k, l, bl, leashState)) {
             ci.cancel();
         }

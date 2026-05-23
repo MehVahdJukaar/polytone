@@ -8,19 +8,17 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
-import net.mehvahdjukaar.polytone.mixins.neoforge.BlockColorsAccessor;
 import net.mehvahdjukaar.polytone.mixins.neoforge.CreativeTabAccessor;
 import net.mehvahdjukaar.polytone.mixins.neoforge.ModifiableBiomeAccessor;
 import net.mehvahdjukaar.polytone.mixins.neoforge.ModifiableBiomeInfoBiomeInfoAccessor;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -107,8 +105,8 @@ public class PlatStuffImpl {
         return instance;
     }
 
-    public static BlockColor getBlockColor(BlockColors colors, Block block) {
-        return ((BlockColorsAccessor) colors).getBlockColors().get(block);
+    public static List<BlockTintSource> getBlockTintSources(BlockColors colors, Block block) {
+        return colors.getTintSources(block.defaultBlockState());
     }
 
     public static String maybeRemapName(String s) {
@@ -264,10 +262,7 @@ public class PlatStuffImpl {
     public static boolean dontCheckLoading = false;
 
     public static void setRenderType(Block block, ChunkSectionLayer renderType) {
-        dontCheckLoading = true;
-        ItemBlockRenderTypes.setRenderLayer(block, renderType);
-        //TODO: this might not cut it anymore in 1.21.5 too bad, one should use forge method instead
-        dontCheckLoading = false;
+        // ItemBlockRenderTypes removed in 26.1 — render layer is now baked per-quad via materialInfo().layer()
     }
 
     public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX,

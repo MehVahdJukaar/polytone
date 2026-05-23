@@ -18,7 +18,7 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.level.Level;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
@@ -72,7 +72,7 @@ public record ParticleParticleEmitter(
 
 
     @Override
-    public void tick(Particle particle, Level level) {
+    public void tick(Particle particle, ClientLevel level) {
         if (particleType.isEmpty()) return;
         float throttle = Polytone.CONFIGS.particlesThrottle.get();
         if (throttle < 1 && level.getRandom().nextFloat() > throttle) return;
@@ -104,7 +104,7 @@ public record ParticleParticleEmitter(
     }
 
 
-    private @Nullable ParticleOptions getParticleOptions(Particle particle, Level level) {
+    private @Nullable ParticleOptions getParticleOptions(Particle particle, ClientLevel level) {
         ParticleOptions po;
 
         var particleTypeValue = particleType.get().value();

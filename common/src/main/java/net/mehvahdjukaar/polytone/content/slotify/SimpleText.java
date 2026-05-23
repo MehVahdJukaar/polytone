@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -25,15 +25,15 @@ public record SimpleText(Component text, int x, int y, Optional<GuiDepthTarget> 
     ).apply(i, SimpleText::new));
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(GuiGraphicsExtractor GuiGraphicsExtractor, int mouseX, int mouseY, float partialTick) {
         Font font = Minecraft.getInstance().font;
 
-        GuiDepthTarget.renderAt(depth, guiGraphics, () -> {
-            guiGraphics.pose().pushMatrix();
+        GuiDepthTarget.renderAt(depth, GuiGraphicsExtractor, () -> {
+            GuiGraphicsExtractor.pose().pushMatrix();
             if (centered) {
-                guiGraphics.drawCenteredString(font, text, x, y, color);
-            } else guiGraphics.drawString(font, text, x, y, color);
-            guiGraphics.pose().popMatrix();
+                GuiGraphicsExtractor.centeredText(font, text, x, y, color);
+            } else GuiGraphicsExtractor.text(font, text, x, y, color);
+            GuiGraphicsExtractor.pose().popMatrix();
         });
 
     }

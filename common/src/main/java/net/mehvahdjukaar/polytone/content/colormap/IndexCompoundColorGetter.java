@@ -5,16 +5,18 @@ import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
-import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.color.block.BlockTintSource;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -92,16 +94,30 @@ public class IndexCompoundColorGetter implements IColorGetter {
     }
 
     @Override
-    public int getColor(@Nullable BlockState blockState, @Nullable BlockAndTintGetter level, @Nullable BlockPos blockPos, int tintIndex) {
-        BlockColor getter = getters.get(tintIndex);
-        if (getter == null) {
-            getter = getters.get(-1);
-        }
-        if (getter != null) {
-            return getter.getColor(blockState, level, blockPos, tintIndex);
-        }
-
+    public int colorInWorld(BlockState blockState, BlockAndTintGetter level, BlockPos blockPos) {
+        IColorGetter getter = getters.get(0);
+        if (getter == null) getter = getters.get(-1);
+        if (getter != null) return getter.colorInWorld(blockState, level, blockPos);
         return -1;
+    }
+
+    public List<BlockTintSource> toLayersList() {
+        IColorGetter wildcard = getters.get(-1);
+        int maxIndex = -1;
+        for (var entry : getters.int2ObjectEntrySet()) {
+            int key = entry.getIntKey();
+            if (key >= 0 && key > maxIndex) maxIndex = key;
+        }
+        if (maxIndex < 0) {
+            return wildcard != null ? List.of(wildcard) : List.of();
+        }
+        List<BlockTintSource> list = new ArrayList<>(maxIndex + 1);
+        for (int i = 0; i <= maxIndex; i++) {
+            IColorGetter g = getters.get(i);
+            if (g == null) g = wildcard;
+            list.add(g != null ? g : new IColorGetter.StaticColor(-1));
+        }
+        return list;
     }
 
 

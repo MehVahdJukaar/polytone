@@ -58,7 +58,6 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
     }
 
     public void renderExtras(GuiGraphicsExtractor poseStack, int mouseX, int mouseY, float partialTicks) {
-        //RenderSystem.enableDepthTest(); //TODO: 1.21.5 check
-        this.extraRenderables.forEach(r -> r.render(poseStack, mouseX, mouseY, partialTicks));
+        this.extraRenderables.forEach(r -> r.extractRenderState(poseStack, mouseX, mouseY, partialTicks));
     }
 }

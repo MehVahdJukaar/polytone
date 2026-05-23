@@ -8,21 +8,20 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 // hideous. We need to run CIM before model baking so we can bake extra auto generated models
 @Mixin(ModelManager.class)
 public class ModelManagerMixin {
 
-    //method_62663
-    @Inject(method = {"lambda$loadBlockModels$5", "method_62663"}, at = @At("HEAD"))
-    private static void polytone$loadCustomItemModels(ResourceManager resourceManager, CallbackInfoReturnable<Map> cir) {
+    @Inject(method = "loadBlockModels", at = @At("HEAD"))
+    private static void polytone$loadCustomItemModels(ResourceManager resourceManager, Executor executor, CallbackInfoReturnable<CompletableFuture> cir) {
         try {
             Polytone.onEarlyPackLoad(resourceManager);
         } catch (Exception e) {
             Polytone.LOGGER.error("Polytone: failed to process early reload", e);
             Polytone.displayEarlyReloadFailedToast();
         }
-
     }
 }

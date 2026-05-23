@@ -131,7 +131,7 @@ public interface ItemPredicate extends Predicate<ItemStack> {
     }
 
     MapCodec<ItemStackMatch> ITEMSTACK_MATCH = TYPES.register("itemstack_match",
-            ItemStack.SINGLE_ITEM_CODEC.fieldOf("itemstack")
+            ItemStack.OPTIONAL_CODEC.fieldOf("itemstack")
                     .xmap(ItemStackMatch::new, ItemStackMatch::item));
 
     record ItemStackMatch(ItemStack item) implements ItemPredicate {

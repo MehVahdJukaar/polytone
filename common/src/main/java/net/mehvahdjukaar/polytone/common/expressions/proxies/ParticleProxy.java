@@ -183,9 +183,8 @@ public class ParticleProxy extends PositionalProxy {
             return;
         }
         BlockState state = Blocks.AIR.defaultBlockState();
-        int color = c.getColor(state,
-                Minecraft.getInstance().level,
-                BlockPos.containing(particle.x, particle.y, particle.z), 0);
+        int color = c.colorInWorld(state, Minecraft.getInstance().level,
+                BlockPos.containing(particle.x, particle.y, particle.z));
 
         this.color(color);
     }

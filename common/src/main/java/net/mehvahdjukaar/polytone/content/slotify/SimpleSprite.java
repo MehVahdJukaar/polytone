@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -27,10 +27,10 @@ public record SimpleSprite(Identifier texture, int x, int y, int width, int heig
 
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(GuiGraphicsExtractor GuiGraphicsExtractor, int mouseX, int mouseY, float partialTick) {
         Runnable render = () ->
-                guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height);
-        GuiDepthTarget.renderAt(depth, guiGraphics, render);
+                GuiGraphicsExtractor.blitSprite(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height);
+        GuiDepthTarget.renderAt(depth, GuiGraphicsExtractor, render);
 
     }
 

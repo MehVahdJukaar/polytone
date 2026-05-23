@@ -3,8 +3,8 @@ package net.mehvahdjukaar.polytone;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.minecraft.client.Camera;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.particle.ParticleEngine;
@@ -73,7 +73,7 @@ public class PlatStuff {
 
     @Contract
     @PlatformImpl
-    public static BlockColor getBlockColor(BlockColors colors, Block block) {
+    public static List<BlockTintSource> getBlockTintSources(BlockColors colors, Block block) {
         throw new AssertionError();
     }
 

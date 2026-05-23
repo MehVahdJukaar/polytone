@@ -25,6 +25,7 @@ Follow these rules exactly:
 - If possible avoid re reading files you already read. You can also make some minor asumptions if it saves many calls and tokens
 - dont verify stuff like project being setup right, code style being consistent and all other things that would not add a lot of value are likely are already working
 - Stop yourself if you find yourself getting stuck in loops.
+- Make use of notes to note down discoveries to avoid having to re read very long files.
 
 ### AI use of IntelliJ / mixin MCP tools
 

@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.HolderLookup;
@@ -58,7 +58,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
     private int index = 0;
     private boolean active = false;
 
-    public boolean maybeModifyBlit(GuiGraphics gui, RenderPipeline pipeline, TextureAtlasSprite sprite,
+    public boolean maybeModifyBlit(GuiGraphicsExtractor gui, RenderPipeline pipeline, TextureAtlasSprite sprite,
                                    int x, int y, int width, int height, int color) {
         if (!active || blitModifiers.isEmpty()) return false;
         var mod = getMod(sprite);
@@ -89,7 +89,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
     }
 
     //partial blit
-    public boolean maybeModifyBlit(GuiGraphics gui, RenderPipeline pipeline, TextureAtlasSprite sprite,
+    public boolean maybeModifyBlit(GuiGraphicsExtractor gui, RenderPipeline pipeline, TextureAtlasSprite sprite,
                                    int x, int y,
                                    int textureWidth, int textureHeight,
                                    int uPosition, int vPosition, int uWidth, int vHeight,
@@ -177,7 +177,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
         }
     }
 
-    public boolean maybeFancifyHeart(Gui instance, GuiGraphics graphics, Gui.HeartType actualType, int i, int j, boolean bl, boolean bl2, boolean bl3) {
+    public boolean maybeFancifyHeart(Gui instance, GuiGraphicsExtractor graphics, Gui.HeartType actualType, int i, int j, boolean bl, boolean bl2, boolean bl3) {
         if (heartSprites.isEmpty()) return false;
         HeartSprites sprites = heartSprites.get(actualType);
         if (sprites != null) {

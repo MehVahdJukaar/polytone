@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 
 import java.util.List;
@@ -49,8 +49,7 @@ public record BlitModifier(TextureTarget target, int index, int xInc, int yInc, 
         }
 
         if (newTexture.isPresent()) {
-            var material = new Material(Sheets.GUI_SHEET, newTexture.get());
-            sprite = gui.getSprite(material);
+            sprite = gui.getSprite(new SpriteId(Sheets.GUI_SHEET, newTexture.get()));
         }
         float minU = u0 == -1 ? oldU0 : u0;
         float maxU = u1 == -1 ? oldU1 : u1;
@@ -67,7 +66,7 @@ public record BlitModifier(TextureTarget target, int index, int xInc, int yInc, 
         oldh += heightInc;
         oldY2 = oldY1 + oldh;
 
-        gui.innerBlit(pipeline, sprite.atlasLocation(), oldX1, oldX2, oldY1, oldY2, minU, maxU, minV, maxV, col);
+        ((GuiDepthTargetAware) gui).polytone$innerBlit(pipeline, sprite.atlasLocation(), oldX1, oldX2, oldY1, oldY2, minU, maxU, minV, maxV, col);
     }
 
 

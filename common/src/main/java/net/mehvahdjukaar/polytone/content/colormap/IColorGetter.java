@@ -5,21 +5,20 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.item.BarColor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.color.block.BlockTintSource;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
 
-public interface IColorGetter extends BlockColor, BarColor {
+public interface IColorGetter extends BlockTintSource, BarColor {
 
     default boolean needsToFillTexture() {
         return false;
@@ -32,27 +31,42 @@ public interface IColorGetter extends BlockColor, BarColor {
     int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
                     @Nullable Biome biome, @Nullable ItemStack item);
 
-    record OfBlock(BlockColor bc) implements IColorGetter {
+    @Override
+    default int color(BlockState state) {
+        return sampleColor(null, state, null, null, null);
+    }
+
+    @Override
+    default int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+        return sampleColor(level, state, pos.getCenter(), null, null);
+    }
+
+    record OfBlock(BlockTintSource bc) implements IColorGetter {
 
         @Override
-        public int getColor(BlockState state, BlockAndTintGetter reader, BlockPos pos, int tintIndex) {
-            return bc.getColor(state, reader, pos, tintIndex);
+        public int color(BlockState state) {
+            return bc.color(state);
+        }
+
+        @Override
+        public int colorInWorld(BlockState state, BlockAndTintGetter reader, BlockPos pos) {
+            return bc.colorInWorld(state, reader, pos);
         }
 
         @Override
         public int getItemColor(ItemStack itemStack, int i) {
             Minecraft mc = Minecraft.getInstance();
-            Level world = mc.level;
+            ClientLevel world = mc.level;
             if (world == null) return -1;
             BlockPos pos = mc.player.blockPosition();
             BlockState state = world.getBlockState(pos);
-            return bc.getColor(state, world, pos, i) | 0xff000000;
+            return bc.colorInWorld(state, world, pos) | 0xff000000;
         }
 
         @Override
         public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
             if (state != null && pos != null) {
-                return bc.getColor(state, null, BlockPos.containing(pos), 0) | 0xff000000;
+                return bc.color(state) | 0xff000000;
             }
             return -1;
         }
@@ -60,23 +74,26 @@ public interface IColorGetter extends BlockColor, BarColor {
     }
 
     //wraps around a color resolver. note that usually the block color get color internally calls the color resolver itself which with grass replacement might be us
-    record OfColorResolver(BlockColor bc, ColorResolver cr) implements IColorGetter, ColorResolver {
-
+    record OfColorResolver(BlockTintSource bc, ColorResolver cr) implements IColorGetter, ColorResolver {
 
         @Override
-        public int getColor(BlockState state, @Nullable BlockAndTintGetter reader, @Nullable BlockPos pos, int tintIndex) {
-            return bc.getColor(state, reader, pos, tintIndex);
+        public int color(BlockState state) {
+            return bc.color(state);
+        }
+
+        @Override
+        public int colorInWorld(BlockState state, @Nullable BlockAndTintGetter reader, BlockPos pos) {
+            return bc.colorInWorld(state, reader, pos);
         }
 
         @Override
         public int getItemColor(ItemStack stack, int tintIndex) {
             Minecraft mc = Minecraft.getInstance();
-            Level world = mc.level;
+            ClientLevel world = mc.level;
             if (world == null) return -1;
             BlockPos pos = mc.player.blockPosition();
             BlockState state = world.getBlockState(pos);
-            return bc.getColor(state, world, pos, tintIndex) | 0xff000000;
-
+            return bc.colorInWorld(state, world, pos) | 0xff000000;
         }
 
         @Override
@@ -99,8 +116,8 @@ public interface IColorGetter extends BlockColor, BarColor {
     record OfItem(BarColor ic) implements IColorGetter {
 
         @Override
-        public int getColor(BlockState state, BlockAndTintGetter reader, BlockPos pos, int tintIndex) {
-            return ic.getItemColor(ItemStack.EMPTY, tintIndex);
+        public int color(BlockState state) {
+            return ic.getItemColor(ItemStack.EMPTY, 0);
         }
 
         @Override
@@ -118,7 +135,7 @@ public interface IColorGetter extends BlockColor, BarColor {
     record StaticColor(int color) implements IColorGetter {
 
         @Override
-        public int getColor(BlockState state, BlockAndTintGetter reader, BlockPos pos, int tintIndex) {
+        public int color(BlockState state) {
             return color;
         }
 
@@ -150,15 +167,31 @@ public interface IColorGetter extends BlockColor, BarColor {
         }
 
         @Override
-        public int getColor(@NonNull BlockState blockState, @Nullable BlockAndTintGetter blockAndTintGetter, @Nullable BlockPos blockPos, int i) {
-            if (blockAndTintGetter instanceof LevelReader lr && blockPos != null) {
-                return (int) exp.evaluate(lr, blockPos.getCenter(), blockState);
-            }
-            return 0;
+        public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+            ClientLevel cl = level instanceof ClientLevel c ? c : Minecraft.getInstance().level;
+            return (int) exp.evaluate(cl, pos.getCenter(), state);
         }
 
     }
 
+
+    record OfLayers(List<BlockTintSource> layers) implements IColorGetter {
+        @Override
+        public int color(BlockState state) {
+            return layers.isEmpty() ? -1 : layers.get(0).color(state);
+        }
+
+        @Override
+        public int getItemColor(ItemStack stack, int tintIndex) {
+            return tintIndex < layers.size() ? layers.get(tintIndex).color(Blocks.AIR.defaultBlockState()) : -1;
+        }
+
+        @Override
+        public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
+            if (state == null) return -1;
+            return layers.isEmpty() ? -1 : layers.get(0).color(state);
+        }
+    }
 
     Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.COLOR.xmap(
             IColorGetter.StaticColor::new, g -> g instanceof StaticColor(int color) ? color : 0

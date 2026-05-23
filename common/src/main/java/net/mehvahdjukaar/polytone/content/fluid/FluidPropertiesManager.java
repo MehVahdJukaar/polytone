@@ -12,7 +12,7 @@ import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
-import net.minecraft.client.color.block.BlockColor;
+import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -95,7 +95,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             }
 
             //fill inline colormaps colormapTextures
-            BlockColor tint = modifier.getColormap();
+            IColorGetter tint = modifier.getColormap();
             ColormapsManager.tryAcceptingTexture(textures, id, tint, usedTextures, true);
 
             if (parsed.isEnabled()) this.addModifier(id, modifier);

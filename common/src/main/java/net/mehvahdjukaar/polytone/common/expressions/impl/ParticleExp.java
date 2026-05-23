@@ -5,6 +5,7 @@ import net.mehvahdjukaar.polytone.common.expressions.PolyExp;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.ParticleProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.RandomProxy;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.world.level.Level;
 import org.mvel2.MVEL;
@@ -30,7 +31,7 @@ public class ParticleExp extends PolyExp implements IParticleExp {
     }
 
     @Override
-    public double evaluate(Particle particle, Level level) {
+    public double evaluate(Particle particle, ClientLevel level) {
         ParticleProxy obj = new ParticleProxy(particle, level);
         Map<String, Object> vars = new HashMap<>();
         ExpUtils.addCommonVars(vars);

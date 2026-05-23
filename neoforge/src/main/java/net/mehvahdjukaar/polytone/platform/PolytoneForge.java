@@ -81,7 +81,7 @@ public class PolytoneForge {
 
 
     @SubscribeEvent
-    public void renderVistaDebug(RenderLevelStageEvent.AfterTripwireBlocks event) {
+    public void renderVistaDebug(RenderLevelStageEvent.AfterTranslucentParticles event) {
         ParticleHitboxDebugRenderer.emitGizmos();
     }
 
@@ -130,7 +130,7 @@ public class PolytoneForge {
     }
 
     @SubscribeEvent
-    public void renderStageEventAfterLevel(RenderLevelStageEvent.AfterParticles event) {
+    public void renderStageEventAfterLevel(RenderLevelStageEvent.AfterTranslucentParticles event) {
         PolytoneRenderTypes.cacheMatrices();
     }
 
@@ -141,7 +141,7 @@ public class PolytoneForge {
         SlotifyScreen ss = (SlotifyScreen) screen;
         if (ss.polytone$hasSprites()) {
 
-            GuiGraphicsExtractor graphics = event.getGuiGraphicsExtractor();
+            GuiGraphicsExtractor graphics = event.getGuiGraphics();
             graphics.nextStratum();
             Matrix3x2fStack poseStack = graphics.pose();
             poseStack.pushMatrix();

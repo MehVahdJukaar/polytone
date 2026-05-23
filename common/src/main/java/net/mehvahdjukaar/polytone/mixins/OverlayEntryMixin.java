@@ -34,7 +34,7 @@ public class OverlayEntryMixin implements PolyConditionalOverlay {
     }
 
 
-    @ModifyReturnValue(method = {"lambda$listCodecForPackType$0","method_72312"},
+    @ModifyReturnValue(method = {"lambda$listCodecForPackType$1","method_72312"},
             at = @At(value = "RETURN"))
     private static OverlayMetadataSection.OverlayEntry polytone$decodeListWithPolytoneCodec(
             OverlayMetadataSection.OverlayEntry original,

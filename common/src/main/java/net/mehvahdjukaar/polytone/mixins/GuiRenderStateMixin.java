@@ -4,8 +4,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.slotify.GuiDepthTarget;
 import net.mehvahdjukaar.polytone.content.slotify.GuiDepthTargetAware;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.state.GuiRenderState;
-import net.minecraft.client.gui.render.state.ScreenArea;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import net.minecraft.client.renderer.state.gui.ScreenArea;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -90,31 +90,18 @@ public abstract class GuiRenderStateMixin implements GuiDepthTargetAware {
             return current;
         }
 
-        // Predicate failed, insert a new node
-        GuiRenderState.Node newNode = new GuiRenderState.Node(current);
-
+        // Predicate failed, insert a new node using the public up() API
         if (addAbove) {
-            // Insert above
-            /*newNode.down = current;*/
-            newNode.up = current.up;
-            /*if (current.up != null) {
-                current.up.down = newNode;
-            }*/
-            current.up = newNode;
+            GuiRenderState.Node savedUp = current.up;
+            current.up = null; // force up() to create a fresh node
+            ((GuiRenderState) (Object) this).up();
+            GuiRenderState.Node newNode = this.current;
+            newNode.up = savedUp; // restore chain
+            return newNode;
         } else {
             Polytone.LOGGER.error("Can't insert below anymore!");
-            /*
-            // Insert below
-            newNode.up = current;
-            newNode.down = current.down;
-            if (current.down != null) {
-                current.down.up = newNode;
-            }
-            current.down = newNode; */
+            return current;
         }
-
-        this.current = newNode;
-        return newNode;
     }
 
 

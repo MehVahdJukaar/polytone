@@ -203,7 +203,7 @@ public class Lightmap {
                 skyBuffer.add(new Vector3f(skyLine[skyY]));
             } else {
                 // we have no colors. use vanilla logic
-                float skyBrightness = LightTexture.getBrightness(dimensionType, skyY) * skyLightIntensity;
+                float skyBrightness = net.minecraft.client.renderer.Lightmap.getBrightness(dimensionType,skyY) * skyLightIntensity;
                 skyBuffer.add(skyColor).mul(skyBrightness);
                 skyBuffer.mul(1 - lightGrayAmount);
             }
@@ -216,7 +216,7 @@ public class Lightmap {
                     torchBuffer.add(new Vector3f(torchLine[torchX]));
                 } else {
                     // we have no colors. use vanilla logic
-                    float torchR = LightTexture.getBrightness(dimensionType, torchX) * blockLightFlicker;
+                    float torchR = net.minecraft.client.renderer.Lightmap.getBrightness(dimensionType,torchX) * blockLightFlicker;
                     float torchG = torchR * ((torchR * 0.6F + 0.4F) * 0.6F + 0.4F);
                     float torchB = torchR * (torchR * torchR * 0.6F + 0.4F);
                     torchBuffer.set(torchR, torchG, torchB);

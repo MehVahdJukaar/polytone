@@ -9,8 +9,11 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
-import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
@@ -26,20 +29,32 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     // Builtin colormaps
     //TODO: delegate to grass so we have quark compat
-    public static final IColorGetter GRASS_COLOR = new IColorGetter.OfColorResolver((s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageGrassColor(l, p) : GrassColor.getDefaultColor(),
+    public static final IColorGetter GRASS_COLOR = new IColorGetter.OfColorResolver(
+            new BlockTintSource() {
+                @Override public int color(BlockState s) { return GrassColor.getDefaultColor(); }
+                @Override public int colorInWorld(BlockState s, BlockAndTintGetter l, BlockPos p) { return BiomeColors.getAverageGrassColor(l, p); }
+            },
             BiomeColors.GRASS_COLOR_RESOLVER);
 
-    public static final IColorGetter FOLIAGE_COLOR = new IColorGetter.OfColorResolver((s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageFoliageColor(l, p) : FoliageColor.get(0.5, 1.0),
+    public static final IColorGetter FOLIAGE_COLOR = new IColorGetter.OfColorResolver(
+            new BlockTintSource() {
+                @Override public int color(BlockState s) { return FoliageColor.get(0.5, 1.0); }
+                @Override public int colorInWorld(BlockState s, BlockAndTintGetter l, BlockPos p) { return BiomeColors.getAverageFoliageColor(l, p); }
+            },
             BiomeColors.FOLIAGE_COLOR_RESOLVER);
 
-    public static final IColorGetter DRY_FOLIAGE_COLOR = new IColorGetter.OfColorResolver((s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageDryFoliageColor(l, p) : DryFoliageColor.get(0.5, 1.0),
+    public static final IColorGetter DRY_FOLIAGE_COLOR = new IColorGetter.OfColorResolver(
+            new BlockTintSource() {
+                @Override public int color(BlockState s) { return DryFoliageColor.get(0.5, 1.0); }
+                @Override public int colorInWorld(BlockState s, BlockAndTintGetter l, BlockPos p) { return BiomeColors.getAverageDryFoliageColor(l, p); }
+            },
             BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER);
 
-    public static final IColorGetter WATER_COLOR = new IColorGetter.OfColorResolver((s, l, p, i) ->
-            l != null && p != null ? BiomeColors.getAverageWaterColor(l, p) : 0xFF000000,
+    public static final IColorGetter WATER_COLOR = new IColorGetter.OfColorResolver(
+            new BlockTintSource() {
+                @Override public int color(BlockState s) { return 0xFF000000; }
+                @Override public int colorInWorld(BlockState s, BlockAndTintGetter l, BlockPos p) { return BiomeColors.getAverageWaterColor(l, p); }
+            },
             BiomeColors.WATER_COLOR_RESOLVER);
 
     // custom defined colormaps
@@ -150,7 +165,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
     //helper methods
     public static void tryAcceptingTextureGroup(Map<Identifier, ArrayImage.Group> availableTextures,
-                                                Identifier defaultPath, BlockColor col, Set<Identifier> usedTexture, boolean strict) {
+                                                Identifier defaultPath, IColorGetter col, Set<Identifier> usedTexture, boolean strict) {
         if (col instanceof IColorGetter cg && !cg.needsToFillTexture()) {
             return;
         }
@@ -176,7 +191,7 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
         for (var g : blockColorGetters.int2ObjectEntrySet()) {
             int index = g.getIntKey();
-            BlockColor inner = g.getValue();
+            IColorGetter inner = g.getValue();
 
             if (inner instanceof Colormap c && c.needsToFillTexture()) {
 

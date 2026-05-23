@@ -141,7 +141,7 @@ public record BlockParticleEmitter(
         } else if (particleTypeValue == ParticleTypes.BLOCK || particleTypeValue == ParticleTypes.FALLING_DUST || particleTypeValue == ParticleTypes.BLOCK_MARKER || particleTypeValue == ParticleTypes.DUST_PILLAR) {
             po = new BlockParticleOption((ParticleType<BlockParticleOption>) particleTypeValue, state);
         } else if (particleTypeValue == ParticleTypes.ITEM) {
-            po = new ItemParticleOption((ParticleType<ItemParticleOption>) particleTypeValue, state.getBlock().asItem().getDefaultInstance());
+            po = new ItemParticleOption((ParticleType<ItemParticleOption>) particleTypeValue, state.getBlock().asItem());
         } else {
             Polytone.LOGGER.error("Unsupported particle type: {}", particleTypeValue);
             return null;

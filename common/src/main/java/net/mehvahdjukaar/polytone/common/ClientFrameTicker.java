@@ -28,9 +28,9 @@ public class ClientFrameTicker {
         var probe = camera.attributeProbe();
 
         time = level.getGameTime() + partialTicks;
-        dayTime = level.dimensionType().hasFixedTime() ? level.getDayTime() : level.getDayTime() + partialTicks;
         sunTime = probe.getValue(EnvironmentAttributes.SUN_ANGLE, partialTicks) / 360.0F;
-        //TODO: oter param like moon pos
+        dayTime = sunTime * 24000.0;
+        //TODO: other param like moon pos
 
         cameraBiome = level.getBiome(getCameraBlockPos());
 

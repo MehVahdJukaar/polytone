@@ -14,7 +14,6 @@ import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -142,7 +141,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
 
     private boolean reachedMainMenuHack = false;
 
-    public boolean maybeModifyLightTexture(LightTexture instance,
+    public boolean maybeModifyLightTexture(Object instance,
                                            GpuTextureView lightmap,
                                            Minecraft minecraft, ClientLevel level,
                                            float flicker, float partialTicks) {

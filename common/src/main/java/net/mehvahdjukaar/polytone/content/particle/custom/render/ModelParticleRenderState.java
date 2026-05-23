@@ -1,14 +1,15 @@
 package net.mehvahdjukaar.polytone.content.particle.custom.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleRenderMode;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.client.renderer.state.ParticleGroupRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.state.level.ParticleGroupRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.QuadCollection;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
@@ -67,8 +68,12 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
 
     private static void putModelBulkData(@NotNull QuadCollection quadCollection, int combinedLight, int combinedOverlay,
                                          PoseStack.Pose pose, VertexConsumer buffer, float r, float g, float b, float a) {
+        QuadInstance qi = new QuadInstance();
+        qi.setColor(((int)(a * 255) << 24) | ((int)(r * 255) << 16) | ((int)(g * 255) << 8) | (int)(b * 255));
+        qi.setLightCoords(combinedLight);
+        qi.setOverlayCoords(combinedOverlay);
         for (BakedQuad bakedQuad : quadCollection.getAll()) {
-            buffer.putBulkData(pose, bakedQuad, r, g, b, a, combinedLight, combinedOverlay);
+            buffer.putBakedQuad(pose, bakedQuad, qi);
         }
     }
 

@@ -10,12 +10,13 @@ import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapExp;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -143,9 +144,8 @@ public final class Colormap implements IColorGetter, ColorResolver {
         this.explicitTargetTexture = imageTarget.withPath(imageTarget.getPath().replace(".png", ""));
     }
 
-    // Dont use tint index
     @Override
-    public int getColor(@Nullable BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos, int i) {
+    public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
         if (level == null) return defaultColor;
         if (pos == null && (usesPos || usesBiome)) {
             return defaultColor;
@@ -196,7 +196,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     //calculate color blend. could just use vanilla impl tbh since we got above hack for sodium anyway
-    public int calculateBlendedColor(Level level, Vec3 p) {
+    public int calculateBlendedColor(ClientLevel level, Vec3 p) {
         BlockPos pos = BlockPos.containing(p);
         //Same as vanilla impl. We could have just called it. Just here so we call sampleColor instead of getColor with pos instead of x z
         int i = Minecraft.getInstance().options.biomeBlendRadius().get();
@@ -258,7 +258,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
             if (level == null) return defaultColor;
             biome = level.getBiome(BlockPos.containing(pos)).value();
         }
-        return sampleColor(player.level(), null, pos, biome, itemStack);
+        return sampleColor((ClientLevel) player.level(), null, pos, biome, itemStack);
     }
 
 

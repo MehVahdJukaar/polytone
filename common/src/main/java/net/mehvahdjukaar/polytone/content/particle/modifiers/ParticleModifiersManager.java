@@ -8,7 +8,7 @@ import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
-import net.minecraft.client.color.block.BlockColor;
+import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.HolderLookup;
@@ -18,7 +18,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.Level;
+import net.minecraft.client.multiplayer.ClientLevel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,7 +38,7 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
         super("particle_modifiers");
     }
 
-    public void maybeModify(ParticleOptions options, Level level, @NotNull Particle particle) {
+    public void maybeModify(ParticleOptions options, ClientLevel level, @NotNull Particle particle) {
         if (particle instanceof SingleQuadParticle sqp) {
             var mod = particleModifiers.get(options.getType());
             for (var modifier : mod) {
@@ -72,7 +72,7 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
             }
 
             //fill inline colormaps colormapTextures
-            BlockColor tint = modifier.getColormap();
+            IColorGetter tint = modifier.getColormap();
             ColormapsManager.tryAcceptingTexture(textures, id, tint, usedTextures, true);
 
             if (parsed.isEnabled()) this.addModifier(id, modifier);

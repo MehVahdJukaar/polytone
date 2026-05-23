@@ -89,7 +89,7 @@ public class CodecUtils {
         return new EitherLeftCodec<>(leftCodec);
     }
 
-    public static final Codec<ItemStack> ITEM_OR_STACK = Codec.withAlternative(ItemStack.SINGLE_ITEM_CODEC, BuiltInRegistries.ITEM.byNameCodec(),
+    public static final Codec<ItemStack> ITEM_OR_STACK = Codec.withAlternative(ItemStack.OPTIONAL_CODEC, BuiltInRegistries.ITEM.byNameCodec(),
             Item::getDefaultInstance);
 
     public static final Codec<List<ItemStack>> ITEMSTACK_OR_ITEMSTACK_LIST = singleOrList(ITEM_OR_STACK);

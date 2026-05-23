@@ -13,7 +13,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,7 +25,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMenu> extends Screen implements MenuAccess<T> {
-
 
     @Shadow
     protected int titleLabelX;
@@ -39,7 +40,9 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     @Shadow @Nullable protected Slot hoveredSlot;
     @Shadow protected int leftPos;
     @Shadow protected int topPos;
+    @Mutable @Final
     @Shadow protected int imageWidth;
+    @Mutable @Final
     @Shadow protected int imageHeight;
     @Unique
     private Integer polytone$customTitleColor;
@@ -70,7 +73,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
         }
     }
 
-    @ModifyArg(method = "renderLabels",
+    @ModifyArg(method = "extractLabels",
             index = 4,
             require = 1,
             at = @At(value = "INVOKE",
@@ -82,7 +85,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     }
 
 
-    @ModifyArg(method = "renderLabels",
+    @ModifyArg(method = "extractLabels",
             index = 4,
             require = 1,
             at = @At(value = "INVOKE",

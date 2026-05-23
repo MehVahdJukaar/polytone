@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
-import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,7 +12,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,17 +33,17 @@ public abstract class ClientLevelMixin extends Level {
             target = "Lnet/minecraft/world/level/block/Block;animateTick(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/util/RandomSource;)V"))
     public void polytone$extraParticles(Block instance, BlockState state, Level level, BlockPos pos, RandomSource random,
                                         Operation<Void> original) {
-        boolean cancels = Polytone.BLOCK_MODIFIERS.runTickers(state, level, pos, TickSource.ANIMATE_TICK);
+        boolean cancels = Polytone.BLOCK_MODIFIERS.runTickers(state,(ClientLevel) level, pos, TickSource.ANIMATE_TICK);
         if (!cancels) {
             original.call(instance, state, level, pos, random);
         }
     }
 
     @Inject(method = "addDestroyBlockEffect", at = @At("HEAD"), cancellable = true)
-    public void polytone$addExtraDestroyParticles(BlockPos pos, BlockState state, CallbackInfo ci) {
-        if (!state.isAir()) {
+    public void polytone$addExtraDestroyParticles(BlockPos pos, BlockState blockState, CallbackInfo ci) {
+        if (!blockState.isAir()) {
             //TODO: add more tick sources
-            boolean cancels = Polytone.BLOCK_MODIFIERS.runTickers(state, this, pos, TickSource.BLOCK_BROKEN);
+            boolean cancels = Polytone.BLOCK_MODIFIERS.runTickers(blockState, (ClientLevel)(Object)this, pos, TickSource.BLOCK_BROKEN);
             if (cancels) {
                 ci.cancel();
             }
@@ -57,7 +55,7 @@ public abstract class ClientLevelMixin extends Level {
     public void polytone$addExtraBreakingParticles(BlockPos pos, Direction direction, CallbackInfo ci) {
         BlockState state = this.getBlockState(pos);
         if (!state.isAir()) {
-            boolean cancels = Polytone.BLOCK_MODIFIERS.runTickers(state, this, pos, TickSource.BLOCK_CRACKING);
+            boolean cancels = Polytone.BLOCK_MODIFIERS.runTickers(state, (ClientLevel)(Object)this, pos, TickSource.BLOCK_CRACKING);
             if (cancels) {
                 ci.cancel();
             }

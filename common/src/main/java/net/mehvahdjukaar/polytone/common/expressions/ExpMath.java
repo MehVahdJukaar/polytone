@@ -181,8 +181,7 @@ public class ExpMath {
         var c = Polytone.COLORMAPS.get(colormap);
         if (c != null) {
             var pos = BlockPos.containing(x, y, z);
-            c.getColor(Blocks.AIR.defaultBlockState(), Minecraft.getInstance().level,
-                    pos, (int) tint);
+            c.colorInWorld(Blocks.AIR.defaultBlockState(), Minecraft.getInstance().level, pos);
         } else {
             Polytone.LOGGER.warn("Colormap '{}' not found!", colormap);
         }

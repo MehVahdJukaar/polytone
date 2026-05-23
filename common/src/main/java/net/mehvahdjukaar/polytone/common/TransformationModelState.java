@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.common;
 
 import com.mojang.math.Transformation;
-import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.renderer.block.dispatch.ModelState;
 import net.minecraft.core.BlockMath;
 import net.minecraft.core.Direction;
 import org.jetbrains.annotations.NotNull;

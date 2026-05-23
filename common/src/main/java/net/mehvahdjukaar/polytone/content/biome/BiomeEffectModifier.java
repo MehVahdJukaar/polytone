@@ -12,6 +12,7 @@ import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.attribute.EnvironmentAttribute;
@@ -282,7 +283,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     //legacy fog
 
     public interface FogParam {
-        float get(Level level);
+        float get(ClientLevel level);
 
         default float get() {
             var level = Minecraft.getInstance().level;
@@ -308,7 +309,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     public record FogExpression(BlockContextExpression map) implements FogParam {
 
         @Override
-        public float get(Level level) {
+        public float get(ClientLevel level) {
             var pos = ClientFrameTicker.getCameraPos();
             return (float) map.evaluate(level, pos, Blocks.AIR.defaultBlockState());
         }
@@ -317,7 +318,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     public record FogMap(Map<Weather, FogParam> map) implements FogParam {
 
         @Override
-        public float get(Level level) {
+        public float get(ClientLevel level) {
             Weather w = Weather.get(level);
             return map.getOrDefault(w, (l) -> 1).get(level);
         }

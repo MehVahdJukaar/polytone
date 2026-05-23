@@ -75,7 +75,7 @@ public class CameraProxy extends PositionalProxy {
         long nowTime = Minecraft.getInstance().level.getGameTime();
         if (nowTime != lastFovUpdate) {
             lastFovUpdate = nowTime;
-            cachedFov = Minecraft.getInstance().gameRenderer.getFov(camera, 0, true);
+            cachedFov = camera.getFov();
         }
         return cachedFov;
     }

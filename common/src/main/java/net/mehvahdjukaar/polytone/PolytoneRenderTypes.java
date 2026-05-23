@@ -2,19 +2,22 @@ package net.mehvahdjukaar.polytone;
 
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.SourceFactor;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderGroup;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MaterialMapper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -23,10 +26,12 @@ import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Blaze;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -36,7 +41,6 @@ import java.util.function.Supplier;
 
 import static net.minecraft.client.renderer.RenderPipelines.MATRICES_PROJECTION_SNIPPET;
 import static net.minecraft.client.renderer.RenderPipelines.register;
-import static net.minecraft.client.renderer.rendertype.RenderTypes.MOVING_BLOCK_SAMPLER;
 
 
 public class PolytoneRenderTypes {
@@ -46,8 +50,6 @@ public class PolytoneRenderTypes {
     }
 
     public static final ParticleRenderType PARTICLE_MODEL_GROUP = new ParticleRenderType(Polytone.res("particle_model").toString());
-
-    public static final MaterialMapper PARTICLES_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_PARTICLES, "particle");
 
     private static final BlendFunction ADDITIVE_TRANSLUCENT_BLEND =
             new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE);
@@ -62,9 +64,9 @@ public class PolytoneRenderTypes {
                     .withFragmentShader(Polytone.res("core/particle_no_cutoff")) //so we can use shader define. these shaders are identical
                     .withVertexFormat(DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS)
                     /* Blending Functions */
-                    .withDepthWrite(false) //affects depth buffer
+                    .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false)) //affects depth buffer
                     .withCull(true) //??
-                    .withBlend(ADDITIVE_TRANSLUCENT_BLEND)
+                    .withColorTargetState(new ColorTargetState(ADDITIVE_TRANSLUCENT_BLEND))
                     .build()
     );
 
@@ -73,7 +75,7 @@ public class PolytoneRenderTypes {
             RenderSetup.builder(ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE)
                     .bufferSize(64 * 1024)
                     .useLightmap()
-                    .withTexture("Sampler0", PARTICLES_MAPPER.sheet())
+                    .withTexture("Sampler0", TextureAtlas.LOCATION_PARTICLES)
                     .setOutline(RenderSetup.OutlineProperty.NONE)
                     .sortOnUpload()
                     .createRenderSetup());
@@ -92,13 +94,14 @@ public class PolytoneRenderTypes {
             .withFragmentShader("core/rendertype_translucent_moving_block")
             .withSampler("Sampler0")
             .withSampler("Sampler2")
-            .withBlend(ADDITIVE_TRANSLUCENT_BLEND)
+            .withColorTargetState(new ColorTargetState(ADDITIVE_TRANSLUCENT_BLEND))
             .withVertexFormat(DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS)
             .build());
 
     public static final RenderType ADDITIVE_TRANSLUCENT_MOVING_BLOCK_RENDERTYPE = RenderType.create(Polytone.MOD_ID + ":translucent_moving_block",
             RenderSetup.builder(ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE).useLightmap()
-                    .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, MOVING_BLOCK_SAMPLER)
+                    .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS,
+                            () -> RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true))
                     .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
                     .sortOnUpload().bufferSize(786432)
                     .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
@@ -134,7 +137,7 @@ public class PolytoneRenderTypes {
         return multiBufferSource.getBuffer(LEASH_RENDER_TYPE);
     }
 
-    public static boolean addLeashVertexPair(VertexConsumer vertexConsumer, Matrix4f matrix4f,
+    public static boolean addLeashVertexPair(VertexConsumer vertexConsumer, Matrix4fc matrix4f,
                                              float startX, float startY, float startZ,
 
                                              float yOffset,
@@ -145,7 +148,7 @@ public class PolytoneRenderTypes {
         float segment = (float) index / 24.0F;
         int blockLight = (int) Mth.lerp(segment, (float) leashState.startBlockLight, (float) leashState.endBlockLight);
         int skyLight = (int) Mth.lerp(segment, (float) leashState.startSkyLight, (float) leashState.endSkyLight);
-        int light = LightTexture.pack(blockLight, skyLight);
+        int light = LightCoordsUtil.pack(blockLight, skyLight);
 
         // Calculate vertex positions
         float z = startX * segment;

@@ -19,17 +19,17 @@ dependencies {
     apiInclude("org.mvel:mvel2:${mvel_version}")
 
 
-    modCompileOnly ("curse.maven:fabric-seasons-413523:5789846")
+  //  modCompileOnly ("curse.maven:fabric-seasons-413523:5789846")
 
 
     // modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
     //modImplementation "curse.maven:continuity-531351:5425853"
-    modCompileOnly("curse.maven:sodium-394468:7366772")
+   // modCompileOnly("curse.maven:sodium-394468:7366772")
     //modRuntimeOnly("curse.maven:irisshaders-455508:7805348")
     // modImplementation "curse.maven:distant-horizons-508933:6387715"
-    modCompileOnly("curse.maven:irisshaders-455508:6369436")
-    modCompileOnly("curse.maven:serene-seasons-291874:6182595")
-    modCompileOnly("com.terraformersmc:modmenu:4.0.6")
-    modCompileOnly("curse.maven:entity-model-features-844662:7400754")
-    modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")
+   // modCompileOnly("curse.maven:irisshaders-455508:6369436")
+   // modCompileOnly("curse.maven:serene-seasons-291874:6182595")
+   // modCompileOnly("com.terraformersmc:modmenu:4.0.6")
+    //modCompileOnly("curse.maven:entity-model-features-844662:7400754")
+   // modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")
 }

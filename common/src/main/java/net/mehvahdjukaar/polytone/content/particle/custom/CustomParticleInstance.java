@@ -9,10 +9,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SingleQuadParticle;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.state.QuadParticleRenderState;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.QuadCollection;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.util.Mth;
@@ -87,7 +87,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
         this.oQuadSize = quadSize;
 
         if (this.type.colormap != null) {
-            float[] unpack = ColorUtils.unpack(this.type.colormap.getColor(state, level, pos, 0));
+            float[] unpack = ColorUtils.unpack(this.type.colormap.colorInWorld(state, level, pos));
             this.setColor(unpack[0], unpack[1], unpack[2]);
         }
 
@@ -164,7 +164,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
                 quaternionf.w,
                 this.getQuadSize(f),
                 this.rCol, this.gCol, this.bCol, this.alpha,
-                this.getLightColor(f),
+                this.getLightCoords(f),
                 this.model
         );
     }
@@ -178,13 +178,13 @@ public class CustomParticleInstance extends SingleQuadParticle {
     }
 
     @Override
-    protected int getLightColor(float partialTick) {
-        int total = super.getLightColor(partialTick);
+    protected int getLightCoords(float partialTick) {
+        int total = super.getLightCoords(partialTick);
         if (this.type.lightLevel > 0) {
-            int sky = LightTexture.sky(total);
-            int block = LightTexture.block(total);
+            int sky = LightCoordsUtil.sky(total);
+            int block = LightCoordsUtil.block(total);
             block = Math.max(block, this.type.lightLevel);
-            return LightTexture.pack(block, sky);
+            return LightCoordsUtil.pack(block, sky);
         }
         return total;
     }
@@ -253,7 +253,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
         if (this.type.colormap != null) {
             BlockPos pos = BlockPos.containing(x, y, z);
-            float[] unpack = ColorUtils.unpack(this.type.colormap.getColor(null, level, pos, 0));
+            float[] unpack = ColorUtils.unpack(this.type.colormap.sampleColor(level, null, pos.getCenter(), null, null));
             this.setColor(unpack[0], unpack[1], unpack[2]);
         }
 

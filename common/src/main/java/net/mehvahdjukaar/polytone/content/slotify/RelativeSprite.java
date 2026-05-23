@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
@@ -36,15 +37,13 @@ public record RelativeSprite(Identifier texture, int x, int y, Optional<GuiDepth
         y1 += y;
         oldh += height;
         y2 = y1 + oldh;
-        var material = new Material(Sheets.GUI_SHEET, texture);
-        TextureAtlasSprite sprite = graphics.getSprite(material);
+        TextureAtlasSprite sprite = graphics.getSprite(new SpriteId(Sheets.GUI_SHEET, texture));
 
         int finalX = x1;
         int finalX1 = x2;
         int finalY = y1;
         int finalY1 = y2;
         GuiDepthTarget.renderAt(depth, graphics, () ->
-                graphics.innerBlit(pipeline, texture, finalX, finalX1, finalY, finalY1,
-                sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(), color));
+                graphics.blitSprite(pipeline, sprite, finalX, finalY, finalX1 - finalX, finalY1 - finalY, color));
     }
 }

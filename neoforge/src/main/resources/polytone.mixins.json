@@ -14,7 +14,6 @@
     "CreativeTabAccessor",
     "IClientFluidTypeExtensionsMixin",
     "InventoryScreenMixin",
-    "ItemBlockRenderTypesMixin",
     "ModelBlockRendererMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",

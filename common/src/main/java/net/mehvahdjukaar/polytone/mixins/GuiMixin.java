@@ -15,9 +15,9 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 public abstract class GuiMixin {
 
 
-    @WrapOperation(method = "renderHearts", at = @At(value = "INVOKE",
+    @WrapOperation(method = "extractHearts", at = @At(value = "INVOKE",
             ordinal = 0,
-            target = "Lnet/minecraft/client/gui/Gui;renderHeart(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Gui$HeartType;IIZZZ)V"))
+            target = "Lnet/minecraft/client/gui/Gui;extractHeart(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Gui$HeartType;IIZZZ)V"))
     public void polytone$renderFancyEmptyHeart(Gui instance, GuiGraphicsExtractor graphics, Gui.HeartType empty, int i, int j,
                                                boolean bl, boolean bl2, boolean bl3, Operation<Void> original,
                                                @Local Gui.HeartType actualType) {

@@ -12,7 +12,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -68,7 +68,7 @@ public class BiomeCompoundColorGetter implements IColorGetter {
     }
 
     @Override
-    public int getColor(BlockState blockState, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos, int i) {
+    public int colorInWorld(BlockState blockState, BlockAndTintGetter level, BlockPos pos) {
         if(level instanceof RenderSectionRegion rc){
             level = rc.level;
         }
@@ -79,10 +79,10 @@ public class BiomeCompoundColorGetter implements IColorGetter {
             Biome biome = l.getBiome(pos).value();
             IColorGetter g = getters.get(biome);
             if (g != null) {
-                return g.getColor(blockState, level, pos, i);
+                return g.colorInWorld(blockState, level, pos);
             }
         }
-        return defaultGetter.getColor(blockState, level, pos, i);
+        return defaultGetter.colorInWorld(blockState, level, pos);
     }
 
     @Override

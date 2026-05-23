@@ -40,7 +40,7 @@ public abstract class ColorResolverMixin extends Level {
         if (!this.tintCaches.containsKey(resolver) && resolver instanceof Colormap c) {
             //make copy of the map and assigns it as it has limited capacity
             var newMap = new Object2ObjectArrayMap<>(this.tintCaches);
-            newMap.put(resolver, new BlockTintCache(p -> c.calculateBlendedColor(this, p.getCenter())));
+            newMap.put(resolver, new BlockTintCache(p -> c.calculateBlendedColor((ClientLevel)(Object)this, p.getCenter())));
             this.tintCaches = newMap;
         }
     }

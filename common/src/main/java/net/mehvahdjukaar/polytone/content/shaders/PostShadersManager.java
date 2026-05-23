@@ -11,12 +11,12 @@ import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.PostPass;
 import net.minecraft.client.renderer.ShaderManager;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -94,7 +94,7 @@ public class PostShadersManager extends JsonPartialReloader {
         }
     }
 
-    public void captureLevelRendererParams(Matrix4f projectionMatrix, Matrix4f viewMatrix) {
+    public void captureLevelRendererParams(Matrix4fc projectionMatrix, Matrix4fc viewMatrix) {
         float angle = Minecraft.getInstance().levelRenderer.levelRenderState.skyRenderState.sunAngle;
         getOrCreateUniforms().update(projectionMatrix, viewMatrix, angle);
     }

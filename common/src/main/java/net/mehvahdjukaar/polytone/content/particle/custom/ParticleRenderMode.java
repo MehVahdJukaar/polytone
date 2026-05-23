@@ -37,7 +37,7 @@ public enum ParticleRenderMode implements StringRepresentable {
     public SingleQuadParticle.Layer getLayer(boolean hasModel) {
         if (hasModel) return CUSTOM_LAYER;
         return switch (this) {
-            case TERRAIN, SOLID, CUTOUT -> SingleQuadParticle.Layer.TERRAIN;
+            case TERRAIN, SOLID, CUTOUT -> SingleQuadParticle.Layer.OPAQUE_TERRAIN;
             case TRANSLUCENT, INVISIBLE -> SingleQuadParticle.Layer.TRANSLUCENT;
             case ADDITIVE_TRANSLUCENT -> ADDITIVE_TRANSLUCENT_LAYER;
             default -> SingleQuadParticle.Layer.OPAQUE;
