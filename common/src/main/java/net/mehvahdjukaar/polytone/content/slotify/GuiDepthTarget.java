@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.ExtraCodecs;
 
 import java.util.Optional;
@@ -15,9 +15,9 @@ public record GuiDepthTarget(int strata, int node, boolean addAbove) {
             Codec.BOOL.optionalFieldOf("add_above", true).forGetter(GuiDepthTarget::addAbove)
     ).apply(i, GuiDepthTarget::new));
 
-    public static void renderAt(Optional<GuiDepthTarget> depth, GuiGraphics guiGraphics, Runnable render) {
+    public static void renderAt(Optional<GuiDepthTarget> depth, GuiGraphicsExtractor GuiGraphicsExtractor, Runnable render) {
         if (depth.isPresent()) {
-            ((GuiDepthTargetAware) guiGraphics).polytone$renderInNode(depth.get(), render);
+            ((GuiDepthTargetAware) GuiGraphicsExtractor).polytone$renderInNode(depth.get(), render);
         } else {
             render.run();
         }

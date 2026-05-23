@@ -4,7 +4,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
@@ -35,7 +35,7 @@ public record BlitModifier(TextureTarget target, int index, int xInc, int yInc, 
     ).apply(i, BlitModifier::new));
 
 
-    public void blitModified(GuiGraphics gui, RenderPipeline pipeline,
+    public void blitModified(GuiGraphicsExtractor gui, RenderPipeline pipeline,
                              TextureAtlasSprite sprite,
                              int oldX1, int oldX2, int oldY1, int oldY2,
                              float oldU0, float oldU1, float oldV0, float oldV1,

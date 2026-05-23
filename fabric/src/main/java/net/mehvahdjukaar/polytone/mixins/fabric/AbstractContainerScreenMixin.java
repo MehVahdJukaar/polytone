@@ -72,7 +72,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             require = 1,
             at = @At(value = "INVOKE",
                     ordinal = 0,
-                    target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"))
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"))
     private int changeTitleColor(int fontColor) {
         if (polytone$customTitleColor != null) return polytone$customTitleColor;
         return fontColor;
@@ -84,7 +84,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             require = 1,
             at = @At(value = "INVOKE",
                     ordinal = 1,
-                    target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"))
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"))
     private int changeLabelColor(int fontColor) {
         if (polytone$customLabelColor != null) return polytone$customLabelColor;
         return fontColor;

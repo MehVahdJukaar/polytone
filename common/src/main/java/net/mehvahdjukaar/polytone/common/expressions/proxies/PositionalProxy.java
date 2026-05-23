@@ -13,7 +13,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.attribute.EnvironmentAttribute;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
@@ -107,7 +107,7 @@ public abstract class PositionalProxy {
     }
 
     public String block() {
-        return getStateInternal().getBlockHolder().getRegisteredName();
+        return getStateInternal().typeHolder().getRegisteredName();
     }
 
     public String blockState() {

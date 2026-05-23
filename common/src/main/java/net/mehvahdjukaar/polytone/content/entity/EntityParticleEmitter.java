@@ -94,10 +94,10 @@ public record EntityParticleEmitter(
         if (particleType.isEmpty()) return;
         Level level = entity.level();
         float throttle = Polytone.CONFIGS.particlesThrottle.get();
-        if (throttle < 1 && level.random.nextFloat() > throttle) return;
+        if (throttle < 1 && level.getRandom().nextFloat() > throttle) return;
 
         double spawnChance = chance.evaluate(entity);
-        if (level.random.nextFloat() < spawnChance) {
+        if (level.getRandom().nextFloat() < spawnChance) {
             for (int i = 0; i < count.evaluate(entity); i++) {
                 ParticleOptions po = getParticleOptions(entity);
                 if (po == null) return;

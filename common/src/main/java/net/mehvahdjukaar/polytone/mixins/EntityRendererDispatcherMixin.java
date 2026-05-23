@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,9 +24,7 @@ public class EntityRendererDispatcherMixin {
 
     @Inject(method = "submit", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderer;getRenderOffset(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;)Lnet/minecraft/world/phys/Vec3;"))
     private <S extends EntityRenderState> void polytone$onSubmit(
-            S entityRenderState, CameraRenderState cameraRenderState, double d, double e, double f,
-            PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CallbackInfo ci,
-            @Local EntityRenderer<?,?> renderer) {
-        Polytone.ENTITY_MODIFIERS.captureRenderStates(cameraRenderState, renderer);
+            S renderState, CameraRenderState camera, double x, double y, double z, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CallbackInfo ci, @Local EntityRenderer<?,?> renderer) {
+        Polytone.ENTITY_MODIFIERS.captureRenderStates(camera, renderer);
     }
 }

@@ -5,6 +5,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.BlockPos;
@@ -15,13 +16,13 @@ import org.jspecify.annotations.Nullable;
 
 @BeanAliases
 public class ParticleProxy extends PositionalProxy {
-    private final Level level;
+    private final ClientLevel level;
     private final Particle particle;
     private final BlockPos pos;
     @Nullable
     private final SingleQuadParticle quadParticle;
 
-    public ParticleProxy(Particle particle, Level level) {
+    public ParticleProxy(Particle particle, ClientLevel level) {
         super();
         this.particle = particle;
         if (particle instanceof SingleQuadParticle sqp) {
@@ -34,7 +35,7 @@ public class ParticleProxy extends PositionalProxy {
     }
 
     @Override
-    protected Level getLevelInternal() {
+    protected ClientLevel getLevelInternal() {
         return level;
     }
 

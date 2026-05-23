@@ -24,6 +24,7 @@ Follow these rules exactly:
 - Only run syntax/lint checks on large changes that are likely to introduce errors.
 - If possible avoid re reading files you already read. You can also make some minor asumptions if it saves many calls and tokens
 - dont verify stuff like project being setup right, code style being consistent and all other things that would not add a lot of value are likely are already working
+- Stop yourself if you find yourself getting stuck in loops.
 
 ### AI use of IntelliJ / mixin MCP tools
 

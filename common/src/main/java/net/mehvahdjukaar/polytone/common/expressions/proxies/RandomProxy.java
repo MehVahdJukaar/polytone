@@ -10,7 +10,7 @@ import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 @BeanAliases
 public class RandomProxy {
 
-    public static final RandomProxy GLOBAL = RandomProxy.of(RandomSource.createNewThreadLocalInstance());
+    public static final RandomProxy GLOBAL = RandomProxy.of(RandomSource.createThreadLocalInstance());
 
     private final RandomSource source;
 

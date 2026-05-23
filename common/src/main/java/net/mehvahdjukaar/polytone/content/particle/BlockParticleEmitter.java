@@ -11,6 +11,7 @@ import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -81,7 +82,7 @@ public record BlockParticleEmitter(
     ).apply(i, BlockParticleEmitter::new));
 
     @Override
-    public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
+    public void tick(ClientLevel level, BlockPos pos, BlockState state, TickSource source) {
         if (particleType.isEmpty()) {
             return;
         }
@@ -89,11 +90,11 @@ public record BlockParticleEmitter(
             return; //only spawn particles on the correct tick source
         }
         float throttle = Polytone.CONFIGS.particlesThrottle.get();
-        if (throttle < 1 && level.random.nextFloat() > throttle) return;
+        if (throttle < 1 && level.getRandom().nextFloat() > throttle) return;
 
         Vec3 v = pos.getCenter();
         double spawnChance = chance.evaluate(level, v, state);
-        if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {
+        if (level.getRandom().nextFloat() < spawnChance && predicate().test(state, level.getRandom())) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(pos);
                 if (!biomes.get().contains(biome)) return;
@@ -104,7 +105,7 @@ public record BlockParticleEmitter(
                 ParticleOptions po = getParticleOptions(level, pos, state);
                 if (po == null) return;
                 if (!TokenBuckerTracker.canEmitParticle(this)) return;
-                var pp = spawnLocation.getLocation(pos, state, level.random);
+                var pp = spawnLocation.getLocation(pos, state, level.getRandom());
                 level.addAlwaysVisibleParticle(po,
                         pp.x() + x.evaluate(level, v, state),
                         pp.y() + y.evaluate(level, v, state),
@@ -117,7 +118,7 @@ public record BlockParticleEmitter(
         }
     }
 
-    private @Nullable ParticleOptions getParticleOptions(Level level, BlockPos pos, BlockState state) {
+    private @Nullable ParticleOptions getParticleOptions(ClientLevel level, BlockPos pos, BlockState state) {
         ParticleOptions po;
 
         var particleTypeValue = particleType.get().value();

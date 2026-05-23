@@ -75,17 +75,17 @@ public record ParticleParticleEmitter(
     public void tick(Particle particle, Level level) {
         if (particleType.isEmpty()) return;
         float throttle = Polytone.CONFIGS.particlesThrottle.get();
-        if (throttle < 1 && level.random.nextFloat() > throttle) return;
+        if (throttle < 1 && level.getRandom().nextFloat() > throttle) return;
 
         double spawnChance = chance.evaluate(particle, level);
-        if (level.random.nextFloat() < spawnChance) {
+        if (level.getRandom().nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(BlockPos.containing(particle.x, particle.y, particle.z));
                 if (!biomes.get().contains(biome)) return;
             }
             if (predicate != AlwaysTrueTest.INSTANCE) {
                 var blockAt = level.getBlockState(BlockPos.containing(particle.x, particle.y, particle.z));
-                if (!predicate.test(blockAt, level.random)) return;
+                if (!predicate.test(blockAt, level.getRandom())) return;
             }
             for (int i = 0; i < count.evaluate(particle, level); i++) {
                 ParticleOptions po = getParticleOptions(particle, level);

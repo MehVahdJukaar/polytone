@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
 import net.mehvahdjukaar.polytone.common.struc.ListUtils;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import org.jetbrains.annotations.Nullable;
@@ -57,7 +57,7 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
         }
     }
 
-    public void renderExtras(GuiGraphics poseStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderExtras(GuiGraphicsExtractor poseStack, int mouseX, int mouseY, float partialTicks) {
         //RenderSystem.enableDepthTest(); //TODO: 1.21.5 check
         this.extraRenderables.forEach(r -> r.render(poseStack, mouseX, mouseY, partialTicks));
     }

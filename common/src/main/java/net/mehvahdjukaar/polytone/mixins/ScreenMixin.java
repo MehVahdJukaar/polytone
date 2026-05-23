@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.mixins;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -29,7 +29,7 @@ public abstract class ScreenMixin implements SlotifyScreen {
     }
 
     @Override
-    public void polytone$renderExtraSprites(GuiGraphics poseStack, int mouseX, int mouseY, float partialTicks) {
+    public void polytone$renderExtraSprites(GuiGraphicsExtractor poseStack, int mouseX, int mouseY, float partialTicks) {
         if (polytone$modifier != null) {
             polytone$modifier.renderExtras(poseStack, mouseX, mouseY, partialTicks);
         }

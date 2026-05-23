@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 public class ExpressionUtils {
 
-    private static final RandomSource RANDOM_SOURCE = RandomSource.createNewThreadLocalInstance();
+    private static final RandomSource RANDOM_SOURCE = RandomSource.createThreadLocalInstance();
 
     private static final ThreadLocal<Long> LAST_SEED = new ThreadLocal<>();
 
@@ -296,7 +296,7 @@ public class ExpressionUtils {
         seedRandom(SECONDARY.nextLong());
     }
 
-    private static final RandomSource SECONDARY = RandomSource.createNewThreadLocalInstance();
+    private static final RandomSource SECONDARY = RandomSource.createThreadLocalInstance();
 
 
 }

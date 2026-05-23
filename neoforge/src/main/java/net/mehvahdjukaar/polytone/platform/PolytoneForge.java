@@ -10,7 +10,7 @@ import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.debug.DebugEntryNoop;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.client.gui.components.debug.DebugScreenProfile;
@@ -141,7 +141,7 @@ public class PolytoneForge {
         SlotifyScreen ss = (SlotifyScreen) screen;
         if (ss.polytone$hasSprites()) {
 
-            GuiGraphics graphics = event.getGuiGraphics();
+            GuiGraphicsExtractor graphics = event.getGuiGraphicsExtractor();
             graphics.nextStratum();
             Matrix3x2fStack poseStack = graphics.pose();
             poseStack.pushMatrix();

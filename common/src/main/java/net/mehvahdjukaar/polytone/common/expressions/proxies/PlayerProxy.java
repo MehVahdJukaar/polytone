@@ -28,6 +28,6 @@ public class PlayerProxy extends AbstractEntityProxy {
     }
 
     public String itemUsed(){
-        return entity().getUseItem().getItemHolder().getRegisteredName();
+        return entity().getUseItem().typeHolder().getRegisteredName();
     }
 }

@@ -11,7 +11,6 @@ import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -107,7 +106,7 @@ public class Lightmap {
 
     //TODO:this needs to go into a shader
     //way too much to edit to use mixins, plus we lerp so overriding entirely is probably best way anyways
-    public void applyToLightTexture(LightTexture instance,
+    public void applyToLightTexture(Object instance,
                                     GpuTextureView lightmap,
                                     Minecraft minecraft, ClientLevel level,
                                     float flicker, float partialTicks) {

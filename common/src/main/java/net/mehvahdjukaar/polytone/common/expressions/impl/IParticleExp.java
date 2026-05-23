@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.common.expressions.impl;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.world.level.Level;
 
@@ -17,7 +18,7 @@ public interface IParticleExp {
                     ParticleContextExpression.CODEC, ParticleExp.TYPE.codec())
     );
 
-    double evaluate(Particle particle, Level level);
+    double evaluate(Particle particle, ClientLevel level);
 
     IParticleExp ZERO = (p, l) -> 0.0;
     IParticleExp ONE = (p, l) -> 1.0;

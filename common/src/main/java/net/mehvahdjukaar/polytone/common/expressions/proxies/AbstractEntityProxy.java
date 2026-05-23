@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -17,8 +18,8 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
     protected abstract LivingEntity livingEntity();
 
     @Override
-    protected Level getLevelInternal() {
-        return entity().level();
+    protected ClientLevel getLevelInternal() {
+        return (ClientLevel) entity().level();
     }
 
     @Override
@@ -72,13 +73,13 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
     public String mainHandItem() {
         LivingEntity le = livingEntity();
         if (le == null) return "minecraft:air";
-        return le.getMainHandItem().getItemHolder().getRegisteredName();
+        return le.getMainHandItem().typeHolder().getRegisteredName();
     }
 
     public String offHandItem() {
         LivingEntity le = livingEntity();
         if (le == null) return "minecraft:air";
-        return le.getOffhandItem().getItemHolder().getRegisteredName();
+        return le.getOffhandItem().typeHolder().getRegisteredName();
     }
 
     public String armor(String slot) {
@@ -92,7 +93,7 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
             default -> EquipmentSlot.MAINHAND;
         };
         if (eq == EquipmentSlot.MAINHAND) return "air";
-        return le.getItemBySlot(eq).getItemHolder().getRegisteredName();
+        return le.getItemBySlot(eq).typeHolder().getRegisteredName();
     }
 
     public double height() {

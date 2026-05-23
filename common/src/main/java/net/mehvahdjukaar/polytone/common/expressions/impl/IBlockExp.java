@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.common.expressions.impl;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,7 +23,7 @@ public interface IBlockExp {
                     BlockExp.TYPE.codec())
     );
 
-    double evaluate(LevelReader level, Vec3 pos, @Nullable BlockState state);
+    double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state);
 
     IBlockExp ZERO = (a, b, c) -> 0.0;
     IBlockExp ONE = (a, b, c) -> 1.0;

@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.IParticleTickable;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
@@ -50,9 +51,9 @@ public record ParticleSoundEmitter(
 
 
     @Override
-    public void tick(Particle particle, Level level) {
+    public void tick(Particle particle, ClientLevel level) {
         double spawnChance = chance.evaluate(particle, level);
-        if (level.random.nextFloat() < spawnChance) {
+        if (level.getRandom().nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(BlockPos.containing(particle.x, particle.y, particle.z));
                 if (!biomes.get().contains(biome)) return;

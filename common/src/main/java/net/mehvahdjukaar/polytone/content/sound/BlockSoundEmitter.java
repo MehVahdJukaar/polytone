@@ -5,15 +5,14 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
@@ -58,11 +57,11 @@ public record BlockSoundEmitter(
 
 
     @Override
-    public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
+    public void tick(ClientLevel level, BlockPos pos, BlockState state, TickSource source) {
         if (source != spawnSource) return;
         Vec3 p = pos.getCenter();
         double spawnChance = chance.evaluate(level, p, state);
-        if (level.random.nextFloat() < spawnChance) {
+        if (level.getRandom().nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(pos);
                 if (!biomes.get().contains(biome)) return;

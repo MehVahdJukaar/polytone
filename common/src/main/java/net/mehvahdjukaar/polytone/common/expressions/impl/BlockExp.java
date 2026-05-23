@@ -5,11 +5,10 @@ import net.mehvahdjukaar.polytone.common.expressions.PolyExp;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.BlockProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.RandomProxy;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.mvel2.MVEL;
 
@@ -34,7 +33,7 @@ public class BlockExp extends PolyExp implements IBlockExp {
     }
 
     @Override
-    public double evaluate(LevelReader level, Vec3 pos, @Nullable BlockState state) {
+    public double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state) {
         BlockProxy obj = new BlockProxy(level, pos, state);
         Map<String, Object> vars = new HashMap<>();
         ExpUtils.addCommonVars(vars);

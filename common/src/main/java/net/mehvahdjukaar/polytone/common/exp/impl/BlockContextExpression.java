@@ -10,6 +10,7 @@ import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelReader;
@@ -53,7 +54,7 @@ public class BlockContextExpression extends PolytoneExpression implements IBlock
     }
 
     @Override
-    public double evaluate(LevelReader level, @NotNull Vec3 p, @Nullable BlockState state) {
+    public double evaluate(ClientLevel level, @NotNull Vec3 p, @Nullable BlockState state) {
         BlockPos pos = BlockPos.containing(p);
         ExpressionUtils.seedRandom(state == null ? 42 : state.getSeed(pos));
 

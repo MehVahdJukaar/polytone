@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.mixins.neoforge;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.HopperScreen;
@@ -75,7 +75,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             require = 1,
             at = @At(value = "INVOKE",
                     ordinal = 0,
-                    target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"))
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"))
     private int polytone$changeTitleColor(int fontColor) {
         if (polytone$customTitleColor != null) return polytone$customTitleColor;
         return fontColor;
@@ -87,7 +87,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             require = 1,
             at = @At(value = "INVOKE",
                     ordinal = 1,
-                    target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"))
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V"))
     private int polytone$changeLabelColor(int fontColor) {
         if (polytone$customLabelColor != null) return polytone$customLabelColor;
         return fontColor;

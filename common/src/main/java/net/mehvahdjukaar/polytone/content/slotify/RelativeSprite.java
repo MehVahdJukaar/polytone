@@ -3,10 +3,9 @@ package net.mehvahdjukaar.polytone.content.slotify;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
@@ -25,7 +24,7 @@ public record RelativeSprite(Identifier texture, int x, int y, Optional<GuiDepth
     ).apply(i, RelativeSprite::new));
 
 
-    public void render(GuiGraphics graphics, RenderPipeline pipeline,
+    public void render(GuiGraphicsExtractor graphics, RenderPipeline pipeline,
                        int x1, int x2, int y1, int y2, int color) {
 
         int oldw = x2 - x1;

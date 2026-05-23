@@ -4,9 +4,9 @@ import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
@@ -31,7 +31,7 @@ public class CameraProxy extends PositionalProxy {
     }
 
     @Override
-    protected Level getLevelInternal() {
+    protected ClientLevel getLevelInternal() {
         return Minecraft.getInstance().level;
     }
 

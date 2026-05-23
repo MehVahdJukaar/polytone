@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins.accessor;
 
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -19,7 +20,7 @@ public interface DimensionTypeAccessor {
 
     @Mutable
     @Accessor(value = "cardinalLightType")
-    void setCardinalLightType(DimensionType.CardinalLightType cardinalLightType);
+    void setCardinalLightType(CardinalLighting.Type cardinalLightType);
 
     @Mutable
     @Accessor(value = "ambientLight")
