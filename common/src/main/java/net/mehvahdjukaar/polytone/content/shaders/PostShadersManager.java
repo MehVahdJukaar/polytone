@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.systems.RenderPass;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
@@ -83,8 +84,13 @@ public class PostShadersManager extends JsonPartialReloader {
     }
 
 
-    public void setupExtraUniforms(RenderPass pass) {
+    public void setupExtraUniforms(RenderPass pass, PostPass postPass) {
         pass.setUniform(GLOBALS_NAME, getOrCreateUniforms().getSlice());
+
+        PostChainEffect effect = getEffectForPass(postPass);
+        if (effect != null) {
+            effect.bindExpressionUniforms(pass);
+        }
     }
 
     public void onClose() {

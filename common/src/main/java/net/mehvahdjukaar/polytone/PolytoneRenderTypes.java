@@ -90,8 +90,8 @@ public class PolytoneRenderTypes {
     public static final RenderPipeline ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE = register(RenderPipeline.builder(
                     MATRICES_PROJECTION_SNIPPET)
             .withLocation(Polytone.res("pipeline/additive_translucent_moving_block"))
-            .withVertexShader("core/rendertype_translucent_moving_block")
-            .withFragmentShader("core/rendertype_translucent_moving_block")
+            .withVertexShader("core/block")
+            .withFragmentShader("core/block")
             .withSampler("Sampler0")
             .withSampler("Sampler2")
             .withColorTargetState(new ColorTargetState(ADDITIVE_TRANSLUCENT_BLEND))
