@@ -1,1 +1,1 @@
-- added expression driven uniforms for post shadears
+- fixed some issues with particle rotation and post shaders

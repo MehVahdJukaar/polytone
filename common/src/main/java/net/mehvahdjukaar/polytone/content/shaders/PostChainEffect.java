@@ -74,13 +74,14 @@ public final class PostChainEffect {
 
     void updateExpressionBuffers() {
         if (expressionBuffers == null) return;
+        var encoder = RenderSystem.getDevice().createCommandEncoder();
         for (var e : expressionUniforms.entrySet()) {
             GpuBuffer buf = expressionBuffers.get(e.getKey());
             if (buf == null) continue;
             float val = (float) e.getValue().evaluate();
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 ByteBuffer bb = Std140Builder.onStack(stack, FLOAT_UBO_SIZE).putFloat(val).get();
-                RenderSystem.getDevice().createCommandEncoder().writeToBuffer(buf.slice(), bb);
+                encoder.writeToBuffer(buf.slice(), bb);
             }
         }
     }

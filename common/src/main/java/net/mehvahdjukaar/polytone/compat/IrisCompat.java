@@ -10,10 +10,15 @@ import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 public class IrisCompat {
 
     public static void init() {
-        IrisApi.getInstance().assignPipeline(PolytoneRenderTypes.LEASH_PIPELINE, IrisProgram.PARTICLES);
+        //TEXTURED -> glowing
+        //Particles -> red green overlay
+        //BASIC -> glowing
+        //BLOCK works??
+        IrisApi.getInstance().assignPipeline(PolytoneRenderTypes.LEASH_PIPELINE, IrisProgram.BLOCK);
         IrisApi.getInstance().assignPipeline(PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE, IrisProgram.PARTICLES_TRANSLUCENT);
         IrisApi.getInstance().assignPipeline(PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE, IrisProgram.BLOCK_TRANSLUCENT);
     }
+
 
     public static boolean isIrisRenderOn() {
         WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();

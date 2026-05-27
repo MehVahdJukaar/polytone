@@ -13,7 +13,6 @@ import java.util.List;
 
 public record AlternativeCodec<A>(Codec<? extends A> ...codecs) implements Codec<A> {
 
-    @SafeVarargs
     public AlternativeCodec {
         //assert the codecs arent ourselves
         for (var codec : codecs) {

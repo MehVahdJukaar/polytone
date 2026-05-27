@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.TokenBuckerTracker;
+import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
@@ -12,7 +12,6 @@ import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.EmfCompat;
 import net.mehvahdjukaar.polytone.compat.EtfCompat;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -101,7 +100,7 @@ public record EntityParticleEmitter(
             for (int i = 0; i < count.evaluate(entity); i++) {
                 ParticleOptions po = getParticleOptions(entity);
                 if (po == null) return;
-                if(!TokenBuckerTracker.canEmitParticle(this))return;
+                if(!TokenBucketTracker.canEmitParticle(this))return;
                 Vector3f origin = new Vector3f(
                         (float) x.evaluate(entity),
                         (float) y.evaluate(entity),

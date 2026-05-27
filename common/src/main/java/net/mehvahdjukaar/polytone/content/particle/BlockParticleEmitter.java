@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.TokenBuckerTracker;
+import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
 import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
@@ -104,7 +104,7 @@ public record BlockParticleEmitter(
 
                 ParticleOptions po = getParticleOptions(level, pos, state);
                 if (po == null) return;
-                if (!TokenBuckerTracker.canEmitParticle(this)) return;
+                if (!TokenBucketTracker.canEmitParticle(this)) return;
                 var pp = spawnLocation.getLocation(pos, state, level.getRandom());
                 level.addAlwaysVisibleParticle(po,
                         pp.x() + x.evaluate(level, v, state),

@@ -83,7 +83,7 @@ public abstract class PositionalProxy {
 
     @Nullable
     protected Biome getBiomeInternal() {
-        BlockPos blockPos = updatedPos();
+            BlockPos blockPos = updatedPos();
         if (biomeCache == null) {
             var l = getLevelInternal();
             if (!(l instanceof LevelReader lr) || blockPos == null) return null;
@@ -125,6 +125,8 @@ public abstract class PositionalProxy {
     }
 
     public String biome() {
+          updatedPos();
+
         if (biomeNameCache == null) {
             if (biomeCache != null) {
                 if (!(getLevelInternal() instanceof Level)) {
