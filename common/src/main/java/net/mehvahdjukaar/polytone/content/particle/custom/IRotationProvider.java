@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
@@ -36,11 +37,17 @@ public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
                           IParticleExp yRot,
                           IParticleExp zRot) implements IRotationProvider {
 
-        public static final Codec<CustomRotation> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                IParticleExp.CODEC.optionalFieldOf("x_rot", IParticleExp.ZERO).forGetter(CustomRotation::xRot),
-                IParticleExp.CODEC.optionalFieldOf("y_rot", IParticleExp.ZERO).forGetter(CustomRotation::yRot),
-                IParticleExp.CODEC.optionalFieldOf("z_rot", IParticleExp.ZERO).forGetter(CustomRotation::zRot)
-        ).apply(instance, CustomRotation::new));
+        public static final Codec<CustomRotation> CODEC = RecordCodecBuilder.<CustomRotation>create(instance -> instance.group(
+                        IParticleExp.CODEC.optionalFieldOf("x_rot", IParticleExp.ZERO).forGetter(CustomRotation::xRot),
+                        IParticleExp.CODEC.optionalFieldOf("y_rot", IParticleExp.ZERO).forGetter(CustomRotation::yRot),
+                        IParticleExp.CODEC.optionalFieldOf("z_rot", IParticleExp.ZERO).forGetter(CustomRotation::zRot)
+                ).apply(instance, CustomRotation::new))
+                .validate(o -> {
+                    if (o.xRot == IParticleExp.ZERO && o.yRot == IParticleExp.ZERO && o.zRot == IParticleExp.ZERO) {
+                        return DataResult.error(() -> "must set at least one of the rotations");
+                    }
+                    return DataResult.success(o);
+                });
 
         @Override
         public boolean updatesEveryRenderTick() {
@@ -70,11 +77,17 @@ public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
                                 IParticleExp y,
                                 IParticleExp z) implements IRotationProvider {
 
-        public static final Codec<CustomRotation> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                IParticleExp.CODEC.optionalFieldOf("x_forward", IParticleExp.ZERO).forGetter(CustomRotation::xRot),
-                IParticleExp.CODEC.optionalFieldOf("y_forward", IParticleExp.ZERO).forGetter(CustomRotation::yRot),
-                IParticleExp.CODEC.optionalFieldOf("z_forward", IParticleExp.ZERO).forGetter(CustomRotation::zRot)
-        ).apply(instance, CustomRotation::new));
+        public static final Codec<CustomFacingRotation> CODEC = RecordCodecBuilder.<CustomFacingRotation>create(instance -> instance.group(
+                IParticleExp.CODEC.optionalFieldOf("x_forward", IParticleExp.ZERO).forGetter(CustomFacingRotation::x),
+                IParticleExp.CODEC.optionalFieldOf("y_forward", IParticleExp.ZERO).forGetter(CustomFacingRotation::y),
+                IParticleExp.CODEC.optionalFieldOf("z_forward", IParticleExp.ZERO).forGetter(CustomFacingRotation::z)
+        ).apply(instance, CustomFacingRotation::new)).validate(o -> {
+            if (o.x == IParticleExp.ZERO && o.y == IParticleExp.ZERO && o.z == IParticleExp.ZERO) {
+                return DataResult.error(() -> "must set at least one of the rotations");
+            }
+            ;
+            return DataResult.success(o);
+        });
 
         @Override
         public boolean alwaysFacesCamera() {

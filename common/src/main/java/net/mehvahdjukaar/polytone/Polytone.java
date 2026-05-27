@@ -1,8 +1,9 @@
 package net.mehvahdjukaar.polytone;
 
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.common.TokenBuckerTracker;
+import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.common.reloader.CompoundReloader;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
@@ -135,12 +136,13 @@ public class Polytone {
 
 
     public static void onTick(Level level) {
+        ExpUtils.onTick();
         GLOBAL_EXPRESSION.tick(level);
         ClientFrameTicker.onTick(level);
         ExpTicker.onTick(level);
         ENTITY_MODIFIERS.onTick(level);
         POST_SHADERS.tick();
-        TokenBuckerTracker.tick();
+        TokenBucketTracker.tick();
     }
 
     public static void onTagsReceived(HolderLookup.Provider registryAccess) {

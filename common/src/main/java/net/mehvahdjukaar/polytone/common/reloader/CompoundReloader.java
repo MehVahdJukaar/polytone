@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
-import net.mehvahdjukaar.polytone.common.TokenBuckerTracker;
+import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributesHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -154,7 +154,7 @@ public class CompoundReloader implements PreparableReloadListener {
 
 
     public void resetWithLevel(boolean isLogOff) {
-        TokenBuckerTracker.clear();
+        TokenBucketTracker.clear();
         for (var c : children) {
             c.resetWithLevel(isLogOff);
         }

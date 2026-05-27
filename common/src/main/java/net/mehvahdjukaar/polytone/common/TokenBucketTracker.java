@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class TokenBuckerTracker {
+public class TokenBucketTracker {
 
     private static final List<TokenBucket> BUCKETS = new ArrayList<>();
     //TODO: add these inside block and particle emitters

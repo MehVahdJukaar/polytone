@@ -88,6 +88,11 @@ public class PostShadersManager extends JsonPartialReloader {
     }
 
     public void onClose() {
+        synchronized (effects) {
+            for (var e : effects) {
+                e.closeExpressionBuffers();
+            }
+        }
         if (globalUniforms != null) {
             globalUniforms.close();
             globalUniforms = null;
