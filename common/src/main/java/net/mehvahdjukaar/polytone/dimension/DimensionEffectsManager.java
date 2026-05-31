@@ -38,7 +38,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
 
     //we cant store dimensions here since the dimension registry isnt synced to the client
     //!!map of dimension modifier IDs to modifiers
-    private final MapRegistry< DimensionEffectsModifier> dimensionEffects = new MapRegistry<>("Dimension Effects Modifiers");
+    private final MapRegistry<DimensionEffectsModifier> dimensionEffects = new MapRegistry<>("Dimension Effects Modifiers");
 
     //map of dimension ID to modifier
     private final Map<ResourceLocation, DimensionEffectsModifier> alteredVanillaEffects = new HashMap<>();
@@ -318,7 +318,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private static float[] lastSunset = null;
 
     public float @Nullable [] modifySunsetColor(float[] old) {
-        IColorGetter colormap = this.sunsetColormaps.get(Minecraft.getInstance().level.dimensionType());
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) return null;
+        IColorGetter colormap = this.sunsetColormaps.get(level.dimensionType());
         if (colormap == null) return null;
         var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(),
                 ClientFrameTicker.getCameraBiome().value(), null);
