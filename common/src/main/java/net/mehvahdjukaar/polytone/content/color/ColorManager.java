@@ -11,11 +11,11 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
-import net.mehvahdjukaar.polytone.common.exp.impl.EntityContextExpression;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.common.reloader.SingleJsonOrPropertiesReloadListener;
 import net.mehvahdjukaar.polytone.common.struc.Vec3f;
 import net.mehvahdjukaar.polytone.content.color.fog_env.FogEnvironmentMod;
+import net.mehvahdjukaar.polytone.content.entity.IRenderStateWithId;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -38,8 +38,10 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.border.BorderStatus;
 import net.minecraft.world.level.material.MapColor;
@@ -330,10 +332,10 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         doWith(obj, "xporb", (k, v) -> {
             switch (k) {
                 case "particle_replacement" -> Polytone.PARTICLE_MODIFIERS.setXpOrbReplace(v);
-                case "color" -> xpOrbColor = new EntityContextExpression(v.getAsString());
-                case "red" -> xpOrbColorR = new EntityContextExpression(v.getAsString());
-                case "green" -> xpOrbColorG = new EntityContextExpression(v.getAsString());
-                case "blue" -> xpOrbColorB = new EntityContextExpression(v.getAsString());
+                case "color" -> xpOrbColor = parseEntityExp(v);
+                case "red" -> xpOrbColorR = parseEntityExp(v);
+                case "green" -> xpOrbColorG = parseEntityExp(v);
+                case "blue" -> xpOrbColorB = parseEntityExp(v);
             }
         });
 
@@ -491,6 +493,12 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 .getFirst(); // this will throw if the element is not a valid color
     }
 
+    private static IEntityExp parseEntityExp(JsonElement obj) {
+        return IEntityExp.CODEC.decode(JsonOps.INSTANCE, obj)
+                .getOrThrow()
+                .getFirst();
+    }
+
     private static int parseColor(String str) {
         str = str.replace("#", "").replace("0x", "");
         return Integer.parseInt(str.trim(), 16);
@@ -588,25 +596,23 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     public float @Nullable [] getXpOrbColor(ExperienceOrbRenderState orb, float partialTicks) {
-     /*
-        Vec3 orbPos = new Vec3(orb.x, orb.y, orb.z);
+        if (xpOrbColor == null && xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         Level level = Minecraft.getInstance().level;
+        if (level == null) return null;
+        int id = ((IRenderStateWithId) orb).polytone$getId();
+        Entity entity = level.getEntity(id);
+        if (entity == null) return null;
         if (xpOrbColor != null) {
-            int color = (int) xpOrbColor.evaluate(orb);
+            int color = (int) xpOrbColor.evaluate(entity);
             return ColorUtils.unpack(color);
         }
-        if (xpOrbColorR == null && xpOrbColorG == null && xpOrbColorB == null) return null;
         float r = 0;
         float g = 0;
         float b = 0;
-        if (xpOrbColorR != null) r = (float) xpOrbColorR.evaluate(orb);
-        if (xpOrbColorG != null) g = (float) xpOrbColorG.evaluate(orb);
-        if (xpOrbColorB != null) b = (float) xpOrbColorB.evaluate(orb);
-
-      */
-        return null;
-        //TODO:
-        //return new float[]{r, g, b};
+        if (xpOrbColorR != null) r = (float) xpOrbColorR.evaluate(entity);
+        if (xpOrbColorG != null) g = (float) xpOrbColorG.evaluate(entity);
+        if (xpOrbColorB != null) b = (float) xpOrbColorB.evaluate(entity);
+        return new float[]{r, g, b};
     }
 
 
