@@ -136,7 +136,6 @@ public class Polytone {
 
 
     public static void onTick(Level level) {
-        ExpUtils.onTick();
         GLOBAL_EXPRESSION.tick(level);
         ClientFrameTicker.onTick(level);
         ExpTicker.onTick(level);

@@ -1,4 +1,4 @@
-accessWidener   v1  named
+accessWidener   v1  official
 
 
 mutable field net/minecraft/world/level/material/MapColor col I
@@ -21,13 +21,14 @@ accessible method net/minecraft/client/multiplayer/ClientLevel addEnvironmentAtt
 accessible field net/minecraft/world/effect/MobEffect AMBIENT_ALPHA I
 accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;
 accessible class net/minecraft/server/packs/OverlayMetadataSection$OverlayEntry$IntermediateEntry
+accessible method net/minecraft/server/packs/OverlayMetadataSection$OverlayEntry$IntermediateEntry <init> (Lnet/minecraft/server/packs/metadata/pack/PackFormat$IntermediaryFormat;Ljava/lang/String;)V
 accessible method net/minecraft/client/gui/screens/packs/PackSelectionScreen reload ()V
 
-accessible field net/minecraft/client/renderer/chunk/RenderSectionRegion level Lnet/minecraft/world/level/Level;
+accessible field net/minecraft/client/renderer/chunk/RenderSectionRegion level Lnet/minecraft/client/multiplayer/ClientLevel;
 
 accessible field net/minecraft/client/renderer/fog/environment/PowderedSnowFogEnvironment COLOR I
 mutable field net/minecraft/client/renderer/fog/environment/PowderedSnowFogEnvironment COLOR I
-accessible field net/minecraft/client/renderer/LevelRenderer levelRenderState Lnet/minecraft/client/renderer/state/LevelRenderState;
+accessible field net/minecraft/client/renderer/LevelRenderer levelRenderState Lnet/minecraft/client/renderer/state/level/LevelRenderState;
 
 accessible method net/minecraft/client/gui/components/CycleButton createLabelForValue (Ljava/lang/Object;)Lnet/minecraft/network/chat/Component;
 
@@ -124,6 +125,7 @@ accessible field net/minecraft/client/particle/Particle age I
 accessible field net/minecraft/client/particle/SingleQuadParticle quadSize F
 
 accessible class net/minecraft/world/level/biome/Biome$ClimateSettings
+accessible method net/minecraft/world/level/biome/Biome$ClimateSettings <init> (ZFLnet/minecraft/world/level/biome/Biome$TemperatureModifier;F)V
 
 mutable field net/minecraft/world/level/border/BorderStatus color I
 accessible field net/minecraft/world/level/border/BorderStatus color I

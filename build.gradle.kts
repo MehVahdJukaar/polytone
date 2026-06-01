@@ -7,7 +7,7 @@ plugins {
     id("com.possible-triangle.common") apply false
     id("com.possible-triangle.fabric") apply false
     id("com.possible-triangle.neoforge") apply false
-    id("net.mehvahdjukaar.candlelight") version "1.1.3" apply false
+    id("net.mehvahdjukaar.candlelight") version "1.2.1" apply false
     id("dev.mixinmcp.decompile") version "0.9.0" apply false
 }
 
@@ -104,44 +104,5 @@ subprojects {
         maven { url = uri("https://maven.firstdarkdev.xyz/snapshots") } // FirstDarkDev (snapshots)
         maven { url = uri("https://raw.githubusercontent.com/Fuzss/modresources/main/maven") } // Fuzss' Mod Resources
         maven { url = uri("https://maven.jamieswhiteshirt.com/libs-release") } // Jamie's Mods
-    }
-}
-
-
-
-tasks.register("buildAndPublishAll") {
-    group = "build"
-    description = "Runs clean, build, publish for all projects"
-
-    dependsOn(subprojects.map { it.tasks.named("clean") })
-    dependsOn(subprojects.map { it.tasks.named("build") })
-    dependsOn(subprojects.map { it.tasks.named("publish") })
-
-    finalizedBy("gitTag")
-}
-val mod_version: String by extra
-
-tasks.register("gitTag") {
-    group = "build"
-    doLast {
-        val execOps = serviceOf<ExecOperations>() // Fetches the service
-        val tag = mod_version
-        val stdout = ByteArrayOutputStream()
-
-        execOps.exec {
-            commandLine("git", "tag", "-l", tag)
-            standardOutput = stdout
-        }
-
-        if (!stdout.toString(Charset.defaultCharset()).trim().isEmpty()) {
-            logger.warn("Git tag '${tag}' already exists")
-        } else {
-            execOps.exec {
-                commandLine("git", "tag", "-a", tag, "-m", "Release $tag")
-            }
-            execOps.exec {
-                commandLine("git", "push", "origin", tag)
-            }
-        }
     }
 }

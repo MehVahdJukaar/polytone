@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -46,19 +46,19 @@ public class PolytoneFabric implements ClientModInitializer {
 
 
 
-        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(
+        LevelRenderEvents.BEFORE_GIZMOS.register(
                 context -> ParticleHitboxDebugRenderer.emitGizmos()
         );
         DebugScreenEntries.register(ParticleHitboxDebugRenderer.ID, new DebugEntryNoop());
         addToProfiles();
 
-        WorldRenderEvents.START_MAIN.register((context) ->
+        LevelRenderEvents.START_MAIN.register((context) ->
                 ClientFrameTicker.onRenderTick(context.gameRenderer().getMinecraft()));
 
-        WorldRenderEvents.END_MAIN.register(context ->
+        LevelRenderEvents.END_MAIN.register(context ->
                 PolytoneRenderTypes.onRenderLast());
 
-        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+        LevelRenderEvents.AFTER_SOLID_FEATURES.register(context -> {
             PolytoneRenderTypes.cacheMatrices(); //might not be enough. needs to be after particles but we dont have it
         });
 
@@ -74,7 +74,7 @@ public class PolytoneFabric implements ClientModInitializer {
             if (screen instanceof SlotifyScreen ss) {
                 ScreenModifier guiModifier = Polytone.SLOTIFY.getGuiModifier(screen);
                 if (guiModifier != null && !guiModifier.extraRenderables().isEmpty()) {
-                    ScreenEvents.afterRender(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) -> {
+                    ScreenEvents.afterExtract(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) -> {
 
                         var matrices = graphics.pose();
                         matrices.pushMatrix();

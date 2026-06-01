@@ -3,12 +3,12 @@ package net.mehvahdjukaar.polytone.platform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.MapCodec;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.client.particle.v1.ParticleRendererRegistry;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleGroupRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorResolverRegistry;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTabOutput;
 import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.fabricmc.fabric.impl.client.rendering.ColorResolverRegistryImpl;
@@ -25,13 +25,12 @@ import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleResources;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -57,7 +56,6 @@ import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
-import sereneseasons.api.season.SeasonHelper;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
@@ -80,11 +78,11 @@ public class PlatStuffImpl {
 
     public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final Identifier name) {
         ResourceLoader.get(PackType.CLIENT_RESOURCES)
-                .registerReloader(name, listener.get());
+                .registerReloadListener(name, listener.get());
     }
 
-    public static BlockColor getBlockColor(BlockColors colors, Block block) {
-        return ((BlockColorsAccessor) colors).getBlockColors().byId(BuiltInRegistries.BLOCK.getId(block));
+    public static List<BlockTintSource> getBlockTintSources(BlockColors colors, Block block) {
+        return colors.getTintSources(block.defaultBlockState());
     }
 
     public static String maybeRemapName(String s) {
@@ -122,11 +120,11 @@ public class PlatStuffImpl {
     public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
         if (!addedCallbacks.contains(key)) {
             addedCallbacks.add(key);
-            var event = ItemGroupEvents.MODIFY_ENTRIES_ALL;
+            var event = CreativeModeTabEvents.MODIFY_OUTPUT_ALL;
             event.addPhaseOrdering(Event.DEFAULT_PHASE, POLYTONE_PHASE);
-            event.register(POLYTONE_PHASE, (tab, entries) ->
+            event.register(POLYTONE_PHASE, (tab, output) ->
                     Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(
-                    BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(tab).get(), entries)));
+                            BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(tab).get(), output)));
 
         }
     }
@@ -148,15 +146,6 @@ public class PlatStuffImpl {
 
         Boolean oldSearch = null;
         Integer oldSearchWidth = null;
-        /*
-        if (mod.search().isPresent()) {
-            oldSearch = tab.hasSearchBar();
-            acc.setHasSearchBar(mod.search().get());
-        }
-        if (mod.searchWidth().isPresent()) {
-            oldSearchWidth = tab.getSearchBarWidth();
-            acc.setSearchBarWidth(mod.searchWidth().get());
-        }*/
 
         Boolean oldCanScroll = null;
         if (mod.canScroll().isPresent()) {
@@ -202,7 +191,7 @@ public class PlatStuffImpl {
     }
 
     public static CreativeModeTab createCreativeTab(Identifier id) {
-        return FabricItemGroup.builder().title(Component.literal(id.toString())).build();
+        return FabricCreativeModeTab.builder().title(Component.literal(id.toString())).build();
     }
 
     public static RegistryAccess hackyGetRegistryAccess() {
@@ -221,11 +210,12 @@ public class PlatStuffImpl {
 
 
     public static ChunkSectionLayer getRenderType(Block block) {
-        return ItemBlockRenderTypes.getChunkRenderType(block.defaultBlockState());
+        // ItemBlockRenderTypes removed in 26.1 — render layer is now baked per-quad
+        return null;
     }
 
     public static void setRenderType(Block block, ChunkSectionLayer renderType) {
-        ItemBlockRenderTypeAccessor.getTypeByBlock().put(block, renderType);
+        // ItemBlockRenderTypes removed in 26.1
     }
 
     public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX, int skyY, Vector3f combined) {
@@ -235,20 +225,15 @@ public class PlatStuffImpl {
         return gamma;
     }
 
-    private static final boolean SS = FabricLoader.getInstance().isModLoaded("sereneseasons");
-
-    public static float compatSSGetSeason(Level level) {
-        return SS ? (SeasonHelper.getSeasonState(level).getSubSeason().ordinal() / 11f) : 1f;
-    }
-
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
-        return ((ParticleResourcesAccessor) Minecraft.getInstance().particleResources)
-                .getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getId(type));
+        ParticleEngine engine = Minecraft.getInstance().particleEngine;
+        return engine.resourceManager.getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getKey(type));
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static void setParticleProvider(ParticleType<?> type, ParticleProvider<?> provider) {
-        ((ParticleResourcesAccessor) Minecraft.getInstance().particleResources)
-                .getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getId(type), provider);
+        ParticleEngine engine = Minecraft.getInstance().particleEngine;
+        ((java.util.Map) engine.resourceManager.getProviders()).put(BuiltInRegistries.PARTICLE_TYPE.getKey(type), provider);
     }
 
     public static ParticleType<ParticleOptions> makeParticleType(boolean forceSpawn) {
@@ -263,17 +248,16 @@ public class PlatStuffImpl {
     public static void unregisterParticleProvider(Identifier id) {
         var type = BuiltInRegistries.PARTICLE_TYPE.get(id);
         if (type.isPresent()) {
-            ParticleResources particleResources = Minecraft.getInstance().particleResources;
-            ((ParticleResourcesAccessor) particleResources)
-                    .getProviders()
-                    .remove(BuiltInRegistries.PARTICLE_TYPE.getId(type.get().value()));
+            ParticleEngine engine = Minecraft.getInstance().particleEngine;
+            engine.resourceManager.getProviders()
+                    .remove(BuiltInRegistries.PARTICLE_TYPE.getKey(type.get().value()));
         } else {
             Polytone.LOGGER.warn("Tried to unregister a particle provider for a particle type that does not exist: {}", id);
         }
     }
 
     public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,
-                                     FabricItemGroupEntries entries) implements ItemToTabEvent {
+                                     FabricCreativeModeTabOutput output) implements ItemToTabEvent {
 
         @Override
         public ResourceKey<CreativeModeTab> getTab() {
@@ -282,25 +266,27 @@ public class PlatStuffImpl {
 
         @Override
         public List<ItemStack> getAllItems() {
-            return entries.getDisplayStacks();
+            return output.getDisplayStacks();
         }
 
         @Override
         public void addItems(@Nullable Predicate<ItemStack> target, boolean after, List<ItemStack> items) {
             if (target == null) {
-                entries.acceptAll(items);
+                for (ItemStack stack : items) {
+                    output.accept(stack, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                }
             } else {
                 if (after) {
-                    entries.addAfter(target, items, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                    output.insertAfter(target, items, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                 } else {
-                    entries.addBefore(target, items, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                    output.insertBefore(target, items, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                 }
             }
         }
 
         @Override
         public void removeItems(Predicate<ItemStack> target) {
-            FabricItemGroupEntriesAccessor acc = ((FabricItemGroupEntriesAccessor) entries);
+            FabricItemGroupEntriesAccessor acc = ((FabricItemGroupEntriesAccessor) (Object) output);
             acc.getDisplayStacks().removeIf(target);
             acc.getSearchTabStacks().removeIf(target);
         }
@@ -347,7 +333,7 @@ public class PlatStuffImpl {
     }
 
     public static void registerParticleGroup(Consumer<PlatStuff.RegParticleGroup> eventConsumer) {
-        eventConsumer.accept(ParticleRendererRegistry::register);
+        eventConsumer.accept(ParticleGroupRegistry::register);
     }
 
     public static float getCamRoll(Camera camera) {
@@ -406,5 +392,10 @@ public class PlatStuffImpl {
         return "Fabric";
     }
 
+    private static final boolean SS = FabricLoader.getInstance().isModLoaded("sereneseasons");
+
+    public static float compatSSGetSeason(Level level) {
+        return SS ? 1f : 1f;
+    }
 
 }
