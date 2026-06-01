@@ -68,6 +68,7 @@ public class ClientFrameTicker {
             downfall = ColorUtils.getClimateSettings(biome.value()).downfall;
         }
         screenTime++;
+        Polytone.POST_SHADERS.tick();
     }
 
     public static float getRainAndThunder() {

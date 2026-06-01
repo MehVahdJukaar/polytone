@@ -49,6 +49,12 @@ public class ColormapsManager extends JsonImgPartialReloader {
         return colormaps.xmap(Supplier::get, s -> () -> s);
     }
 
+    @Nullable
+    public IColorGetter get(String name) {
+        var s = colormaps.getValue(name);
+        return s == null ? null : s.get();
+    }
+
     //dumb but better than codec madness since we have the supplier thing here
     public IColorGetter getOrCreateConcurrentColormap(IColorGetter colormap) {
         return concurrentColormaps.computeIfAbsent(colormap, IColorGetter::makeConcurrent);

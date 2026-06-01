@@ -50,4 +50,8 @@ public class BiomeIdMapperManager extends JsonPartialReloader {
     public Codec<BiomeIdMapper> byNameCodec() {
         return biomeIdMappers;
     }
+
+    public BiomeIdMapper get(String name) {
+        return biomeIdMappers.getValue(name);
+    }
 }

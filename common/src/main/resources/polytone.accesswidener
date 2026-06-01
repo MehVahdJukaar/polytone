@@ -229,3 +229,12 @@ accessible field net/minecraft/world/level/biome/BiomeSpecialEffects backgroundM
 mutable field net/minecraft/world/level/biome/BiomeSpecialEffects backgroundMusic Ljava/util/Optional;
 
 
+# Post shader composition (PostShadersHelper)
+accessible field net/minecraft/client/renderer/GameRenderer postEffect Lnet/minecraft/client/renderer/PostChain;
+accessible field net/minecraft/client/renderer/GameRenderer effectActive Z
+accessible field net/minecraft/client/renderer/PostChain screenTarget Lcom/mojang/blaze3d/pipeline/RenderTarget;
+accessible field net/minecraft/client/renderer/PostChain time F
+accessible field net/minecraft/client/renderer/PostChain lastStamp F
+accessible field net/minecraft/client/renderer/PostChain customRenderTargets Ljava/util/Map;
+accessible field net/minecraft/client/renderer/PostChain fullSizedTargets Ljava/util/List;
+accessible field net/minecraft/client/renderer/PostChain passes Ljava/util/List;

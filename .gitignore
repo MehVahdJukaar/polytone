@@ -1,4 +1,4 @@
-build/
+../build/
 *.ipr
 run/
 *.iws
@@ -17,3 +17,12 @@ classes/
 .vscode
 .settings
 *.launch
+/unique_lines.txt
+/.junie/memory/
+/.codex
+/.aiassistant/
+/.ai/
+/common/build/
+/fabric/build/
+/neoforge/build/
+/forge/build/

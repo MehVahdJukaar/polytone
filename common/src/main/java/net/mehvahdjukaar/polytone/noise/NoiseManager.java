@@ -31,6 +31,10 @@ public class NoiseManager extends JsonPartialReloader {
 
     private final MapRegistry<PerlinSimplexNoise> noises = new MapRegistry<>("Polytone Simplex Noises");
 
+    public PerlinSimplexNoise getNoise(String name) {
+        return noises.getValue(name);
+    }
+
     @Override
     protected void resetWithLevel(boolean logOff) {
         noises.clear();

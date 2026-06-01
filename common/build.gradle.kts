@@ -1,0 +1,18 @@
+plugins {
+    id("com.possible-triangle.common")
+}
+
+common {
+    accessWidener()
+}
+
+val exp4j_version: String by extra
+val mvel_version: String by extra
+
+dependencies {
+    implementation("net.objecthunter:exp4j:${exp4j_version}")
+    implementation("org.mvel:mvel2:${mvel_version}")
+
+    modCompileOnly("curse.maven:irisshaders-455508:5726475")
+    modCompileOnly("curse.maven:sodium-394468:6240355")
+}
