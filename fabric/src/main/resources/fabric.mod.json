@@ -16,7 +16,7 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "net.mehvahdjukaar.polytone.fabric.PolytoneFabric"
+      "net.mehvahdjukaar.polytone.platform.PolytoneFabric"
     ]
   },
   "mixins": [

@@ -11,8 +11,11 @@ val exp4j_version: String by extra
 val mvel_version: String by extra
 
 dependencies {
+
     include("net.objecthunter:exp4j:${exp4j_version}")
+    implementation("net.objecthunter:exp4j:${exp4j_version}")
     include("org.mvel:mvel2:${mvel_version}")
+    implementation("org.mvel:mvel2:${mvel_version}")
 
     // Mirror of common deps (the new setup needs every modCompileOnly/modImplementation in common to also live here)
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
