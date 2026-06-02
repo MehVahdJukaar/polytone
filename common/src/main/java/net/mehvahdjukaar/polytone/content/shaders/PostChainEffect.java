@@ -58,7 +58,7 @@ public final class PostChainEffect {
 
     /** Resource path of the vanilla post chain JSON file, e.g. {@code namespace:shaders/post/effect_name.json}. */
     public ResourceLocation chainResource() {
-        return postChain.withPath(p -> "shaders/post/" + p + ".json");
+        return postChain.withPath(p -> "post_effect/" + p + ".json");
     }
 
     public boolean shouldBeOn() {

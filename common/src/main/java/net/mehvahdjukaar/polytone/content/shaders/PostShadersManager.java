@@ -13,10 +13,12 @@ import net.minecraft.resources.ResourceLocation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Manages Polytone-defined post-shader effects.
@@ -30,9 +32,20 @@ import java.util.Map;
  */
 public class PostShadersManager extends JsonPartialReloader {
 
+    /**
+     * Set on the render thread while we're constructing a {@link PostChain} for a polytone effect.
+     * {@code PostChainMixin} reads this and, when true, rewrites the parsed JSON from the new
+     * (1.21.2+) post-effect schema into the old (1.21.1) one so pack-authored shaders written for
+     * recent MC versions still load. Anything else creating a PostChain (vanilla, other mods) sees
+     * the flag unset and is untouched.
+     */
+    public static final ThreadLocal<Boolean> POLYTONE_LOADING = ThreadLocal.withInitial(() -> false);
+
     private final List<PostChainEffect> effects = new ArrayList<>();
     /** Currently loaded chains, in render order. Keyed by effect instance. */
     private final LinkedHashMap<PostChainEffect, PostChain> activeChains = new LinkedHashMap<>();
+    /** Post chain IDs we already failed to load; skipped (silently) on subsequent ticks. */
+    private final Set<ResourceLocation> failedChains = new HashSet<>();
 
     public PostShadersManager() {
         super("post_shaders");
@@ -43,6 +56,7 @@ public class PostShadersManager extends JsonPartialReloader {
         synchronized (effects) {
             closeAllChains();
             effects.clear();
+            failedChains.clear();
             for (var e : jsons.entrySet()) {
                 ResourceLocation id = e.getKey();
                 JsonElement json = e.getValue();
@@ -65,6 +79,7 @@ public class PostShadersManager extends JsonPartialReloader {
         synchronized (effects) {
             closeAllChains();
             effects.clear();
+            failedChains.clear();
         }
     }
 
@@ -91,10 +106,14 @@ public class PostShadersManager extends JsonPartialReloader {
             // Open any new chains, preserving desired order
             activeChains.clear();
             for (PostChainEffect e : desired) {
+                if (failedChains.contains(e.postChain())) continue; // skip — already logged once
                 PostChain chain = keep.get(e);
                 if (chain == null) {
                     chain = tryLoadChain(e);
-                    if (chain == null) continue;
+                    if (chain == null) {
+                        failedChains.add(e.postChain());
+                        continue;
+                    }
                 }
                 activeChains.put(e, chain);
             }
@@ -102,6 +121,7 @@ public class PostShadersManager extends JsonPartialReloader {
     }
 
     private PostChain tryLoadChain(PostChainEffect effect) {
+        POLYTONE_LOADING.set(true);
         try {
             Minecraft mc = Minecraft.getInstance();
             PostChain chain = new PostChain(
@@ -118,6 +138,8 @@ public class PostShadersManager extends JsonPartialReloader {
         } catch (Exception ex) {
             Polytone.LOGGER.error("Failed to parse post shader chain '{}'", effect.postChain(), ex);
             return null;
+        } finally {
+            POLYTONE_LOADING.set(false);
         }
     }
 

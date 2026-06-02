@@ -33,6 +33,7 @@
     "ModelBlockRendererMixin",
     "ModelManagerMixin",
     "ParticleEngineMixin",
+    "PostChainMixin",
     "ScreenMixin",
     "SmithingScreenMixin",
     "SodiumBlockRendererMixin",
