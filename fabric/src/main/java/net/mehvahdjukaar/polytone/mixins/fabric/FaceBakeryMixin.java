@@ -14,7 +14,8 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(FaceBakery.class)
 public class FaceBakeryMixin {
 
-    @WrapWithCondition(method = "bakeQuad", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/cuboid/FaceBakery;recalculateWinding([Lorg/joml/Vector3fc;[JLnet/minecraft/core/Direction;)V"))
+    @WrapWithCondition(method = "bakeQuad(Lnet/minecraft/client/resources/model/ModelBaker$Interner;Lorg/joml/Vector3fc;Lorg/joml/Vector3fc;Lnet/minecraft/client/resources/model/cuboid/CuboidFace$UVs;Lcom/mojang/math/Quadrant;Lnet/minecraft/client/resources/model/geometry/BakedQuad$MaterialInfo;Lnet/minecraft/core/Direction;Lnet/minecraft/client/renderer/block/dispatch/ModelState;Lnet/minecraft/client/resources/model/cuboid/CuboidRotation;)Lnet/minecraft/client/resources/model/geometry/BakedQuad;",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/cuboid/FaceBakery;recalculateWinding([Lorg/joml/Vector3fc;[JLnet/minecraft/core/Direction;)V"))
     private static boolean poly$applyNeoFixForArbitraryRotations(Vector3fc[] vector3fcs, long[] ls, Direction direction,
                                                                  @Local(argsOnly = true) ModelState modelState) {
 

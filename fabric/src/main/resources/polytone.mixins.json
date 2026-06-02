@@ -6,19 +6,14 @@
   "mixins": [
   ],
   "client": [
-    "AbstractContainerScreenMixin",
-    "BlockColorsAccessor",
     "ClientLevelFabricMixin",
     "ColorResolverRegistryAccessor",
     "CreativeTabAccessor",
     "FabricItemGroupEntriesAccessor",
     "FaceBakeryMixin",
-    "InventoryScreenMixin",
-    "ModelBlockRendererMixin",
     "ParticleEngineAccessor",
     "ParticleResourcesAccessor",
     "RegistrySyncManagerMixin",
-    "TerrainParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

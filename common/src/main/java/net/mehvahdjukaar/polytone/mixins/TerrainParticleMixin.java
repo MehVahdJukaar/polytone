@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.mixins.neoforge;
+package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;

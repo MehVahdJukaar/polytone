@@ -9,6 +9,8 @@ fabric {
 
 val exp4j_version: String by extra
 val mvel_version: String by extra
+val fabric_loader_version: String by extra
+val fabric_api_version: String by extra
 
 dependencies {
 
@@ -17,6 +19,8 @@ dependencies {
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     apiInclude("org.mvel:mvel2:${mvel_version}")
+
+
 
 
     // No 26.1 build yet

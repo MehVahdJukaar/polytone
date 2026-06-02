@@ -7,17 +7,12 @@
     "RegistrySnapshotMixin"
   ],
   "client": [
-    "AbstractContainerScreenMixin",
-    "BlockColorsAccessor",
     "BuildCreativeModeTabContentsEventAccessor",
     "CreativeModeInventoryScreenMixin",
     "CreativeTabAccessor",
     "IClientFluidTypeExtensionsMixin",
-    "InventoryScreenMixin",
-    "ModelBlockRendererMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
-    "TerrainParticleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.mixins.fabric;
+package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -18,7 +18,6 @@ public class ModelBlockRendererMixin {
     private Vec3 polytone$modifyVisualOffset(BlockState state, BlockPos pos, Operation<Vec3> original) {
         Vec3 m = Polytone.BLOCK_MODIFIERS.maybeModifyOffset(state, pos);
         if (m != null) {
-
             return m;
         }
         return original.call(state, pos);

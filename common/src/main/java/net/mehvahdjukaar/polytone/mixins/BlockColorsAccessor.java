@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.mixins.fabric;
+package net.mehvahdjukaar.polytone.mixins;
 
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.block.BlockTintSource;

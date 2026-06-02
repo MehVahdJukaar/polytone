@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.mixins.neoforge;
+package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;

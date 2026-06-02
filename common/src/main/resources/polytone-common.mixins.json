@@ -13,6 +13,10 @@
     "SwampColorMixin"
   ],
   "client": [
+    "BlockColorsAccessor",
+    "ModelBlockRendererMixin",
+    "TerrainParticleMixin",
+    "InventoryScreenMixin",
     "AbstractContainerMenuMixin",
     "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
