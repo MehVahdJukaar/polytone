@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.mehvahdjukaar.polytone.item.IPolytoneItem;
+import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

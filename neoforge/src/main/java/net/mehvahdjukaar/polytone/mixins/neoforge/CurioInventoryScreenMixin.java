@@ -1,8 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins.neoforge;
 
-import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.world.item.CreativeModeTabs;
+import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;

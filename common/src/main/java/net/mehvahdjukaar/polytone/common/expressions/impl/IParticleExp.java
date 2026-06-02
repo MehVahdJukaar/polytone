@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.particle.ParticleContextExpression;
+import net.mehvahdjukaar.polytone.content.particle.ParticleContextExpression;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.world.level.Level;

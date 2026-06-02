@@ -1,8 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.texture.IDeltaProvider;
-import net.mehvahdjukaar.polytone.texture.IDeltaProviderContext;
-import net.mehvahdjukaar.polytone.texture.PolytoneTextureTicker;
+import net.mehvahdjukaar.polytone.content.texture.IDeltaProvider;
+import net.mehvahdjukaar.polytone.content.texture.IDeltaProviderContext;
+import net.mehvahdjukaar.polytone.content.texture.PolytoneTextureTicker;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.SpriteTicker;

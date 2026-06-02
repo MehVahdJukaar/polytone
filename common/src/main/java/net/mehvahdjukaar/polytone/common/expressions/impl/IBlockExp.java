@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;

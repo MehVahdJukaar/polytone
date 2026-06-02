@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.mixins.fabric;
 
-import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;

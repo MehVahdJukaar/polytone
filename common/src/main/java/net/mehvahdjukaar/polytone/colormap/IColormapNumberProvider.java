@@ -1,11 +1,10 @@
 package net.mehvahdjukaar.polytone.colormap;
 
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.utils.codec.ReferenceOrDirectCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;

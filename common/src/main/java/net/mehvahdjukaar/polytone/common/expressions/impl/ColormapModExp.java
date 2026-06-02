@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.common.expressions.impl;
 
-import net.mehvahdjukaar.polytone.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExp;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;

@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.server;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.color.MapColorHelper;
-import net.mehvahdjukaar.polytone.sound.PolytoneSoundType;
+import net.mehvahdjukaar.polytone.content.sound.PolytoneSoundType;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;

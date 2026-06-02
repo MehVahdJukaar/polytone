@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.mehvahdjukaar.polytone.texture.LeashTexture;
+import net.mehvahdjukaar.polytone.content.texture.LeashTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import org.joml.Matrix4f;

@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.texture.IDeltaProvider;
-import net.mehvahdjukaar.polytone.texture.IDeltaProviderContext;
+import net.mehvahdjukaar.polytone.content.texture.IDeltaProvider;
+import net.mehvahdjukaar.polytone.content.texture.IDeltaProviderContext;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import org.spongepowered.asm.mixin.Mixin;

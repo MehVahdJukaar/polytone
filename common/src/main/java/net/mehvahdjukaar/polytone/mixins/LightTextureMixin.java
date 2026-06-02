@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.lightmap.LightmapsManager;
+import net.mehvahdjukaar.polytone.content.lightmap.LightmapsManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
