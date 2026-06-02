@@ -11,8 +11,15 @@ val exp4j_version: String by extra
 val mvel_version: String by extra
 
 dependencies {
+
+
+    implementation("org.ow2.asm:asm:9.5")
+    implementation("org.ow2.asm:asm-commons:9.5")
+
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
+    //forgeRuntimeLibrary ( "net.objecthunter:exp4j:${exp4j_version}")
     apiInclude("org.mvel:mvel2:${mvel_version}")
+    //forgeRuntimeLibrary ("org.mvel:mvel2:${mvel_version}")
 
     // Mirror of common deps (the new setup needs every modCompileOnly/modImplementation in common to also live here)
     modCompileOnly("curse.maven:irisshaders-455508:5726475")

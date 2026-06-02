@@ -73,9 +73,9 @@ public class BlockContextExpression extends PolytoneExpression {
         if (hasSkyLight) vb.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, p));
         if (hasBlockLight) vb.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, p));
         if (hasTemperature)
-            vb.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(p).value()).temperature);
+            vb.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(p).value()).temperature());
         if (hasDownfall)
-            vb.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(p).value()).downfall);
+            vb.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(p).value()).downfall());
 
         if (hasState) STATE_HACK.set(level.getBlockState(p));
 
@@ -119,9 +119,9 @@ public class BlockContextExpression extends PolytoneExpression {
         if (hasSkyLight) vars.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, pos));
         if (hasBlockLight) vars.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, pos));
         if (hasTemperature)
-            vars.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(pos).value()).temperature);
+            vars.setVariable(TEMPERATURE, ColorUtils.getClimateSettings(level.getBiome(pos).value()).temperature());
         if (hasDownfall)
-            vars.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(pos).value()).downfall);
+            vars.setVariable(DOWNFALL, ColorUtils.getClimateSettings(level.getBiome(pos).value()).downfall());
 
         if (hasState) STATE_HACK.set(state);
 

@@ -199,8 +199,13 @@ public class ExpMath {
     }
 
     public static Object config(String key) {
-        // Stub - no config system on 1.21.1
-        return 0;
+        try {
+            ResourceLocation configKey = ResourceLocation.parse(key);
+            return Polytone.CONFIGS.getValue(configKey);
+        } catch (Exception e) {
+            Polytone.LOGGER.error("Could not parse Identifier '{}'", key, e);
+            return 0;
+        }
     }
 
     public static boolean modOn(String mod) {

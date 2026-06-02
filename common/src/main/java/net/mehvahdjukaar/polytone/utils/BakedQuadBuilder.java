@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.utils;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Transformation;
-import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
@@ -28,8 +28,7 @@ public interface BakedQuadBuilder extends VertexConsumer {
                 .translate(-0.5f, -0.5f, -0.5f));
     }
 
-    //
-    @ExpectPlatform
+    @PlatformImpl
     static BakedQuadBuilder create(TextureAtlasSprite sprite, @Nullable Matrix4f transformation) {
         throw new AssertionError();
     }

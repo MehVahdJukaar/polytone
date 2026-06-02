@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.block.BlockSetManager;
 import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostShadersManager;
 import net.mehvahdjukaar.polytone.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.entity.EntityModifiersManager;
@@ -89,6 +90,7 @@ public class Polytone {
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
     public static final PostShadersManager POST_SHADERS = new PostShadersManager();
+    public static final ConfigsManager CONFIGS = new ConfigsManager();
 
     private static final Set<ModelResourceLocation> EXTRA_MODELS = new HashSet<>();
 
@@ -107,7 +109,7 @@ public class Polytone {
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
-                CREATIVE_TABS_MODIFIERS, POST_SHADERS);
+                CREATIVE_TABS_MODIFIERS, POST_SHADERS, CONFIGS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         isDevEnv = devEnv;

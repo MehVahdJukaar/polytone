@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.neoforge;
+package net.mehvahdjukaar.polytone.platform;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -14,7 +14,6 @@ import net.mehvahdjukaar.polytone.mixins.neoforge.BlockColorsAccessor;
 import net.mehvahdjukaar.polytone.mixins.neoforge.CreativeTabAccessor;
 import net.mehvahdjukaar.polytone.mixins.neoforge.ModifiableBiomeAccessor;
 import net.mehvahdjukaar.polytone.mixins.neoforge.ModifiableBiomeInfoBiomeInfoAccessor;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;

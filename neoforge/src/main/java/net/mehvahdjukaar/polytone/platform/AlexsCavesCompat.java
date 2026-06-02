@@ -1,8 +1,7 @@
-package net.mehvahdjukaar.polytone.neoforge;
+package net.mehvahdjukaar.polytone.platform;
 
 import com.github.alexmodguy.alexscaves.client.ClientProxy;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;

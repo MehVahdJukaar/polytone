@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.utils.neoforge;
+package net.mehvahdjukaar.polytone.utils.platform;
 
 import com.mojang.math.Transformation;
 import net.mehvahdjukaar.polytone.utils.BakedQuadsTransformer;

@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.utils.fabric;
+package net.mehvahdjukaar.polytone.utils.platform;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonDeserializationContext;

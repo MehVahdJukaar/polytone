@@ -1,17 +1,12 @@
-package net.mehvahdjukaar.polytone.fluid.fabric;
+package net.mehvahdjukaar.polytone.fluid.platform;
 
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
-import net.fabricmc.fabric.api.tag.client.v1.ClientTags;
-import net.fabricmc.fabric.impl.registry.sync.packet.DirectRegistryPacketHandler;
-import net.fabricmc.fabric.mixin.itemgroup.ItemGroupsMixin;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.material.Fluid;
 
 public class FluidPropertiesManagerImpl {

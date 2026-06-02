@@ -149,12 +149,12 @@ public abstract class PositionalProxy {
 
     public double temperature() {
         Biome biome = getBiomeInternal();
-        return biome == null ? 0 : ColorUtils.getClimateSettings(biome).temperature;
+        return biome == null ? 0 : ColorUtils.getClimateSettings(biome).temperature();
     }
 
     public double downfall() {
         Biome biome = getBiomeInternal();
-        return biome == null ? 0 : ColorUtils.getClimateSettings(biome).downfall;
+        return biome == null ? 0 : ColorUtils.getClimateSettings(biome).downfall();
     }
 
     public double skyLight() {

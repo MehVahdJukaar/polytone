@@ -1,8 +1,7 @@
 package net.mehvahdjukaar.polytone;
 
 import com.mojang.blaze3d.vertex.VertexFormat;
-import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.mehvahdjukaar.polytone.particle.ExtraDataParticleOptions;
+import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.tabs.CreativeTabModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -42,38 +41,38 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class PlatStuff {
-    @ExpectPlatform
+    @PlatformImpl
     public static String maybeRemapName(String s) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static boolean isModStateValid() {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static <T> Iterable<Holder<T>> getTagEntries(HolderLookup.RegistryLookup<T> reg, TagKey<T> tag) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void addClientReloadListener(final Supplier<PreparableReloadListener> listener, final ResourceLocation name) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static String getVersion() {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void registerColorResolver(ColorResolver colormap) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void unregisterAllCustomColorResolves() {
         throw new AssertionError();
     }
@@ -83,115 +82,115 @@ public class PlatStuff {
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static void addSpecialModelRegistration(Consumer<SpecialModelEvent> eventListener) {
         throw new AssertionError();
     }
-    @ExpectPlatform
+    @PlatformImpl
     public static void doAddModels() {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static ItemColor getItemColor(ItemColors colors, Item item) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static boolean isModLoaded(String namespace) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static DimensionSpecialEffects getDimensionEffects(ResourceLocation type) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static CreativeTabModifier modifyTab(CreativeTabModifier mod, CreativeModeTab tab) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static void sortTabs() {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static CreativeModeTab createCreativeTab(ResourceLocation id) {
         throw new AssertionError();
     }
 
 
-    @ExpectPlatform
+    @PlatformImpl
     public static RegistryAccess hackyGetRegistryAccess() {
         throw new AssertionError();
 
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static Object getRenderType(Block block) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static void setRenderType(Block block, Object renderType) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX, int skyY, Vector3f combined) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static float compatACModifyGamma(float partialTicks, float gamma) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static float compatSSGetSeason(Level level) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void updateSearchTrees(SessionSearchTrees sessionSearchTrees, List<CreativeModeTab> needsTreeUpdated) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
         throw new AssertionError();
     }
 
     @Contract
-    @ExpectPlatform
+    @PlatformImpl
     public static void setParticleProvider(ParticleType<?> type, ParticleProvider<?> provider) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void unregisterParticleProvider(ResourceLocation id) {
         throw new AssertionError();
     }
@@ -250,23 +249,23 @@ public class PlatStuff {
     }
 
     //must be weakest generic otherwise we could have crashes when people assume the old generic due to implicit methods
-    @ExpectPlatform
+    @PlatformImpl
     public static ParticleType<ParticleOptions> makeParticleType(boolean forceSpawn) {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static RegistryAccess getServerRegistryAccess() {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
+    @PlatformImpl
     public static BakedModel getBakedModel(ModelResourceLocation model) {
         throw new AssertionError();
     }
 
 
-    @ExpectPlatform
+    @PlatformImpl
     public static void registerShaders(ResourceLocation event, VertexFormat format,
                                        Consumer<ShaderInstance> shaderConsumer) {
         throw new AssertionError();

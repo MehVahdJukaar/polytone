@@ -64,8 +64,8 @@ public class ClientFrameTicker {
             skyLight = level.getBrightness(LightLayer.SKY, cameraPos);
             blockLight = level.getBrightness(LightLayer.BLOCK, cameraPos);
             var biome = level.getBiome(cameraPos);
-            temperature = ColorUtils.getClimateSettings(biome.value()).temperature;
-            downfall = ColorUtils.getClimateSettings(biome.value()).downfall;
+            temperature = ColorUtils.getClimateSettings(biome.value()).temperature();
+            downfall = ColorUtils.getClimateSettings(biome.value()).downfall();
         }
         screenTime++;
         Polytone.POST_SHADERS.tick();

@@ -78,7 +78,7 @@ public interface IColormapNumberProvider {
         @Override
         public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
                               @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
-            return biome == null ? 0 : getClimateSettings(biome).temperature;
+            return biome == null ? 0 : getClimateSettings(biome).temperature();
         }
 
         @Override
@@ -104,7 +104,7 @@ public interface IColormapNumberProvider {
         @Override
         public float getValue(BlockState state, @NotNull BlockPos pos, @Nullable Biome biome,
                               @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
-            return biome == null ? 0 : getClimateSettings(biome).downfall;
+            return biome == null ? 0 : getClimateSettings(biome).downfall();
         }
 
         @Override

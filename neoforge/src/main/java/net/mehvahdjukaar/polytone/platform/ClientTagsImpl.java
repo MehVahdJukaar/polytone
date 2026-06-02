@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.neoforge;
+package net.mehvahdjukaar.polytone.platform;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;

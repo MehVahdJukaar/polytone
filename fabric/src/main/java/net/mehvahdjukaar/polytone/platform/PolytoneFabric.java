@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.fabric;
+package net.mehvahdjukaar.polytone.platform;
 
 import com.google.common.base.Preconditions;
 import net.fabricmc.api.ClientModInitializer;
@@ -18,9 +18,7 @@ import net.mehvahdjukaar.polytone.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;

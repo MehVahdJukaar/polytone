@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
-import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.joml.Matrix4f;
@@ -15,7 +15,7 @@ import java.util.function.IntUnaryOperator;
  */
 public interface BakedQuadsTransformer {
 
-    @ExpectPlatform
+    @PlatformImpl
     static BakedQuadsTransformer create() {
         throw new AssertionError();
     }
