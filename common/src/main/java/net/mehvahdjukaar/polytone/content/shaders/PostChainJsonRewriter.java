@@ -36,6 +36,20 @@ public final class PostChainJsonRewriter {
 
     private PostChainJsonRewriter() {}
 
+    /**
+     * Old-format pass {@code name} is a program lookup, so the {@code post/} subdirectory used by
+     * the new-format {@code fragment_shader} path is redundant — strip it (preserving any namespace).
+     * e.g. {@code "sunbathing:post/godrays"} → {@code "sunbathing:godrays"}; {@code "post/blit"} →
+     * {@code "blit"}. Inputs without a {@code post/} segment are returned unchanged.
+     */
+    static String stripPostPrefix(String fragmentShader) {
+        int colon = fragmentShader.indexOf(':');
+        String ns = colon >= 0 ? fragmentShader.substring(0, colon + 1) : "";
+        String path = colon >= 0 ? fragmentShader.substring(colon + 1) : fragmentShader;
+        if (path.startsWith("post/")) path = path.substring("post/".length());
+        return ns + path;
+    }
+
     /** True if this JSON appears to use the new format (object-typed {@code targets} or any pass with {@code fragment_shader}). */
     public static boolean isNewFormat(JsonObject root) {
         JsonElement targets = root.get("targets");
@@ -53,6 +67,7 @@ public final class PostChainJsonRewriter {
     public static void rewrite(JsonObject root) {
         rewriteTargets(root);
         rewritePasses(root);
+        int a =1;
     }
 
     private static void rewriteTargets(JsonObject root) {
@@ -93,7 +108,7 @@ public final class PostChainJsonRewriter {
         if (!in.has("fragment_shader")) return in; // already old, or unknown — pass through
 
         JsonObject out = new JsonObject();
-        out.addProperty("name", in.get("fragment_shader").getAsString());
+        out.addProperty("name", stripPostPrefix(in.get("fragment_shader").getAsString()));
 
         JsonArray inputs = in.has("inputs") && in.get("inputs").isJsonArray() ? in.getAsJsonArray("inputs") : new JsonArray();
         JsonArray auxtargets = new JsonArray();
