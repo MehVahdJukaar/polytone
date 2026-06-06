@@ -8,7 +8,6 @@
   ],
   "client": [
     "AbstractContainerMenuMixin",
-    "AnimatedTextureMixin",
     "AnimationMetadataSectionMixin",
     "AnimationMetadataSectionSerializerMixin",
     "BlockElementDeserializerMixin",
@@ -31,7 +30,6 @@
     "MinecraftMixin",
     "ModelBakeryMixin",
     "ModelBlockRendererMixin",
-    "ModelManagerMixin",
     "ParticleEngineMixin",
     "PostChainMixin",
     "ScreenMixin",

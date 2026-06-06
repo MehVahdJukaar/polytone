@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.mixins;
+package net.mehvahdjukaar.polytone.mixins.neoforge;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
@@ -18,7 +18,7 @@ import java.util.Map;
 @Mixin(ModelManager.class)
 public class ModelManagerMixin {
 
-    @Inject(method = "method_45895", at = @At("HEAD"))
+    @Inject(method = "lambda$loadBlockModels$7", at = @At("HEAD"))
     private static void polytone$loadCustomItemModels(ResourceManager resourceManager, CallbackInfoReturnable<Map> cir) {
         try {
             Polytone.onEarlyPackLoad(resourceManager);

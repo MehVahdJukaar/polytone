@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.mixins;
+package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import net.mehvahdjukaar.polytone.content.texture.IDeltaProvider;
 import net.mehvahdjukaar.polytone.content.texture.IDeltaProviderContext;

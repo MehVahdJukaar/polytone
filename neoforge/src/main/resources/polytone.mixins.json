@@ -18,6 +18,8 @@
     "InventoryScreenMixin",
     "ItemBlockRenderTypesMixin",
     "ItemColorsAccessor",
+    "AnimatedTextureMixin",
+    "ModelManagerMixin",
     "ModelRendererMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",

@@ -1,3 +1,6 @@
+import org.gradle.internal.fingerprint.classpath.impl.ClasspathFingerprintingStrategy.runtimeClasspath
+import org.jetbrains.kotlin.konan.library.impl.buildLibrary
+
 plugins {
     id("com.possible-triangle.neoforge")
 }
@@ -10,6 +13,9 @@ neoforge {
 val exp4j_version: String by extra
 val mvel_version: String by extra
 
+val localRuntime by configurations.dependencyScope("localRuntime")
+configurations.runtimeClasspath.configure { extendsFrom(localRuntime) }
+
 dependencies {
 
 
@@ -18,10 +24,14 @@ dependencies {
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     implementation("net.objecthunter:exp4j:${exp4j_version}")
-    //forgeRuntimeLibrary ( "net.objecthunter:exp4j:${exp4j_version}")
+   localRuntime("net.objecthunter:exp4j:${exp4j_version}")
+   serverAdditionalRuntimeClasspath("net.objecthunter:exp4j:${exp4j_version}")
+    clientAdditionalRuntimeClasspath("net.objecthunter:exp4j:${exp4j_version}")
     apiInclude("org.mvel:mvel2:${mvel_version}")
     implementation("org.mvel:mvel2:${mvel_version}")
-    //forgeRuntimeLibrary ("org.mvel:mvel2:${mvel_version}")
+    localRuntime("org.mvel:mvel2:${mvel_version}")
+    serverAdditionalRuntimeClasspath("org.mvel:mvel2:${mvel_version}")
+    clientAdditionalRuntimeClasspath("org.mvel:mvel2:${mvel_version}")
 
     // Mirror of common deps (the new setup needs every modCompileOnly/modImplementation in common to also live here)
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
