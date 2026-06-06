@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
@@ -9,8 +10,11 @@ import net.minecraft.client.renderer.PostChain;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.GsonHelper;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -18,6 +22,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -34,10 +39,8 @@ public class PostShadersManager extends JsonPartialReloader {
 
     /**
      * Set on the render thread while we're constructing a {@link PostChain} for a polytone effect.
-     * {@code PostChainMixin} reads this and, when true, rewrites the parsed JSON from the new
-     * (1.21.2+) post-effect schema into the old (1.21.1) one so pack-authored shaders written for
-     * recent MC versions still load. Anything else creating a PostChain (vanilla, other mods) sees
-     * the flag unset and is untouched.
+     * Loader-side mixins (e.g. fabric {@code EffectInstanceMixin}) read this and only intervene when
+     * it's true, so vanilla and other mods' shader loading is left strictly untouched.
      */
     public static final ThreadLocal<Boolean> POLYTONE_LOADING = ThreadLocal.withInitial(() -> false);
 
@@ -60,12 +63,18 @@ public class PostShadersManager extends JsonPartialReloader {
             for (var e : jsons.entrySet()) {
                 ResourceLocation id = e.getKey();
                 JsonElement json = e.getValue();
-                var result = PostChainEffect.CODEC.parse(JsonOps.INSTANCE, json);
-                if (result.isError()) {
-                    Polytone.LOGGER.warn("Failed to parse post shader '{}': {}", id, result.error().get().message());
-                    continue;
+                try {
+                    var result = PostChainEffect.CODEC.parse(JsonOps.INSTANCE, json);
+                    if (result.isError()) {
+                        Polytone.LOGGER.warn("Failed to parse post shader '{}': {}", id, result.error().get().message());
+                        continue;
+                    }
+                    effects.add(result.getOrThrow());
+                } catch (Exception ex) {
+                    // Belt-and-suspenders: never let one bad polytone post_shaders/*.json file
+                    // abort the reload for the rest of the pack.
+                    Polytone.LOGGER.warn("Failed to parse post shader '{}': {}", id, ex.getMessage());
                 }
-                effects.add(result.getOrThrow());
             }
         }
     }
@@ -121,14 +130,38 @@ public class PostShadersManager extends JsonPartialReloader {
     }
 
     private PostChain tryLoadChain(PostChainEffect effect) {
+        Minecraft mc = Minecraft.getInstance();
+        ResourceLocation chainRl = effect.chainResource();
+
+        // Peek at the chain JSON first so we can reject 1.21.2+ format packs with a clear message
+        // instead of letting vanilla blow up with an opaque parse error mid-load.
+        Optional<Resource> res = mc.getResourceManager().getResource(chainRl);
+        if (res.isEmpty()) {
+            Polytone.LOGGER.error("Post shader chain '{}' not found at {}", effect.postChain(), chainRl);
+            return null;
+        }
+        try (Reader reader = res.get().openAsReader()) {
+            JsonObject root = GsonHelper.parse(reader);
+            if (isNewFormatChain(root)) {
+                Polytone.LOGGER.error(
+                        "Post shader chain '{}' uses the 1.21.2+ post_effect format (fragment_shader / object-shaped targets / UBO-grouped uniforms). " +
+                                "Polytone for 1.21.1 only supports the 1.21.1 post-chain format (passes with 'name', flat 'uniforms' array, 'shaders/program/...json' programs). " +
+                                "Either downgrade the pack's shaders to the 1.21.1 format or use a polytone build for the matching MC version. Skipping this chain.",
+                        effect.postChain());
+                return null;
+            }
+        } catch (Exception ex) {
+            Polytone.LOGGER.error("Failed to read post shader chain '{}': {}", effect.postChain(), ex.getMessage());
+            return null;
+        }
+
         POLYTONE_LOADING.set(true);
         try {
-            Minecraft mc = Minecraft.getInstance();
             PostChain chain = new PostChain(
                     mc.getTextureManager(),
                     mc.getResourceManager(),
                     mc.getMainRenderTarget(),
-                    effect.chainResource()
+                    chainRl
             );
             chain.resize(mc.getMainRenderTarget().width, mc.getMainRenderTarget().height);
             return chain;
@@ -141,6 +174,23 @@ public class PostShadersManager extends JsonPartialReloader {
         } finally {
             POLYTONE_LOADING.set(false);
         }
+    }
+
+    /**
+     * Detects the 1.21.2+ post-effect schema. Signals: {@code targets} is a JSON object (rather
+     * than an array of strings/objects), or any pass declares {@code fragment_shader} (the new
+     * format's replacement for the 1.21.1 {@code name} field).
+     */
+    private static boolean isNewFormatChain(JsonObject root) {
+        JsonElement targets = root.get("targets");
+        if (targets != null && targets.isJsonObject()) return true;
+        JsonElement passes = root.get("passes");
+        if (passes != null && passes.isJsonArray()) {
+            for (JsonElement p : passes.getAsJsonArray()) {
+                if (p.isJsonObject() && p.getAsJsonObject().has("fragment_shader")) return true;
+            }
+        }
+        return false;
     }
 
     /** Resize all active chains to the new framebuffer dimensions. */

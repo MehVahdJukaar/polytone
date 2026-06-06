@@ -31,7 +31,6 @@
     "ModelBakeryMixin",
     "ModelBlockRendererMixin",
     "ParticleEngineMixin",
-    "PostChainMixin",
     "ScreenMixin",
     "SmithingScreenMixin",
     "SodiumBlockRendererMixin",
