@@ -1,13 +1,17 @@
 package net.mehvahdjukaar.polytone.mixins.codec_ui;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.polytone.common.codec_ui.Schema;
 import net.mehvahdjukaar.polytone.common.codec_ui.SchemaResolver;
 import net.mehvahdjukaar.polytone.common.codec_ui.internal.SchemaTags;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+
+import java.util.List;
 
 /**
  * Tags codecs returned by Codec's combinator default methods (xmap, flatXmap, ...) with the
@@ -101,6 +105,49 @@ public interface CodecXmapMixin {
     private Codec<?> polytone$tagDeprecated(Codec<?> wrapped) {
         polytone$inheritInner(wrapped);
         return wrapped;
+    }
+
+    // fieldOf(name) -> MapCodec<A>. The output is an anonymous MapCodec.of(...) that wraps
+    // `this` under a single named field. Tag it as a single-field Schema.Record so the
+    // RecordCodecBuilder mixin (which calls resolveMap on this MapCodec when handling the
+    // 2-arg of(getter, MapCodec) form) can unwrap it and inline the inner field type.
+    @ModifyReturnValue(method = "fieldOf(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;",
+            at = @At("RETURN"))
+    private MapCodec<?> polytone$tagFieldOf(MapCodec<?> wrapped, @Local(argsOnly = true) String name) {
+        polytone$tagSingleField(wrapped, name, false, null);
+        return wrapped;
+    }
+
+    @ModifyReturnValue(
+            method = "optionalFieldOf(Ljava/lang/String;Ljava/lang/Object;)Lcom/mojang/serialization/MapCodec;",
+            at = @At("RETURN"))
+    private MapCodec<?> polytone$tagOptionalFieldOfWithDefault(
+            MapCodec<?> wrapped, @Local(argsOnly = true) String name, @Local(argsOnly = true) Object defaultValue) {
+        polytone$tagSingleField(wrapped, name, true, defaultValue);
+        return wrapped;
+    }
+
+    @ModifyReturnValue(method = "optionalFieldOf(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;",
+            at = @At("RETURN"))
+    private MapCodec<?> polytone$tagOptionalFieldOf(MapCodec<?> wrapped, @Local(argsOnly = true) String name) {
+        polytone$tagSingleField(wrapped, name, true, null);
+        return wrapped;
+    }
+
+    @Unique
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void polytone$tagSingleField(MapCodec<?> wrapped, String name, boolean optional, Object defaultValue) {
+        if (wrapped == null) return;
+        try {
+            Codec<Object> inner = (Codec<Object>) this;
+            Schema<Object> innerSchema = SchemaTags.lookup(inner);
+            if (innerSchema == null) innerSchema = SchemaResolver.get().resolve(inner);
+            Schema.Field field = new Schema.Field(name, innerSchema, optional, defaultValue);
+            Schema.Record rec = new Schema.Record(Object.class, List.of(field));
+            SchemaTags.tag((MapCodec) wrapped, (Schema) rec);
+        } catch (Throwable ignored) {
+            // Best-effort.
+        }
     }
 
     /**

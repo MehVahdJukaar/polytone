@@ -54,12 +54,23 @@ public final class VanillaDispatches {
     private static <K> void registerRegistryBacked(Class<? super K> rawKeyType,
                                                    Registry<? extends K> registry,
                                                    Function<K, MapCodec<?>> codecOf) {
-        List<K> keys = new ArrayList<>();
-        for (K v : registry) keys.add(v);
+        // LAZY: re-snapshot each invocation so we get whatever's in the registry at the moment
+        // the editor opens (not at static-init time). Vanilla built-in registries are populated
+        // during the bootstrap phase, but lazy avoids any timing race with class-loading order.
+        java.util.function.Supplier<List<K>> keysSupplier = () -> {
+            List<K> snapshot = new ArrayList<>();
+            try {
+                for (K v : registry) snapshot.add(v);
+            } catch (Throwable t) {
+                net.mehvahdjukaar.polytone.Polytone.LOGGER.warn(
+                        "[codec_ui] Failed to iterate registry for {}: {}", rawKeyType.getSimpleName(), t.toString());
+            }
+            return snapshot;
+        };
         Function<K, String> nameOf = v -> {
             Identifier id = ((Registry) registry).getKey(v);
             return id != null ? id.toString() : String.valueOf(v);
         };
-        DispatchRegistry.register((Class<K>) rawKeyType, keys, codecOf, nameOf);
+        DispatchRegistry.register((Class<K>) rawKeyType, keysSupplier, codecOf, nameOf);
     }
 }

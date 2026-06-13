@@ -39,7 +39,7 @@ public final class OpaqueWidget implements SwingWidget {
         Font base = UIManager.getFont("TextArea.font");
         float size = base != null ? base.getSize2D() : 13f;
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, Math.round(size)));
-        textArea.setText("null");
+        textArea.setText("");
 
         scroll = new JScrollPane(textArea);
         // Min visible height ~120 logical px; let it grow with content.
@@ -49,6 +49,12 @@ public final class OpaqueWidget implements SwingWidget {
         defaultBorder = scroll.getBorder();
         errorBorder = BorderFactory.createLineBorder(ERROR_COLOR, 1);
 
+        JLabel hint = new JLabel("Raw JSON — no schema available for this field");
+        hint.setFont(UiScale.deriveFont(hint.getFont(), Font.ITALIC, -1f));
+        hint.setForeground(new Color(0x808080));
+        hint.setAlignmentX(Component.LEFT_ALIGNMENT);
+        hint.setBorder(BorderFactory.createEmptyBorder(0, 0, UiScale.px(2), 0));
+
         errorLabel.setForeground(ERROR_COLOR);
         errorLabel.setFont(UiScale.deriveFont(errorLabel.getFont(), Font.PLAIN, -1f));
         errorLabel.setVisible(false);
@@ -57,6 +63,7 @@ public final class OpaqueWidget implements SwingWidget {
 
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
         scroll.setAlignmentX(Component.LEFT_ALIGNMENT);
+        root.add(hint);
         root.add(scroll);
         root.add(errorLabel);
 
@@ -117,7 +124,7 @@ public final class OpaqueWidget implements SwingWidget {
     @Override
     public void setJson(@Nullable JsonElement value) {
         if (value == null) {
-            textArea.setText("null");
+            textArea.setText("");
         } else {
             textArea.setText(value.toString());
         }

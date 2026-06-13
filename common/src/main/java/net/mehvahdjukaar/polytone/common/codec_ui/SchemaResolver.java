@@ -308,10 +308,10 @@ public final class SchemaResolver {
         }
 
         for (DispatchRegistry.Hook<?> hook : DispatchRegistry.all()) {
-            Polytone.LOGGER.info("[codec_ui]   trying hook {} with {} keys", hook.keyType().getName(), hook.keys().size());
+            Polytone.LOGGER.info("[codec_ui]   trying hook {} with {} keys", hook.keyType().getName(), hook.keys().get().size());
             boolean any = false;
             LinkedHashMap<String, Schema<?>> local = new LinkedHashMap<>();
-            for (Object k : hook.keys()) {
+            for (Object k : hook.keys().get()) {
                 MapCodec<?> variantCodec = applyDecoder((Function) fn, k);
                 if (variantCodec == null) continue;
                 any = true;
@@ -332,7 +332,7 @@ public final class SchemaResolver {
         if (variants.isEmpty()) {
             Polytone.LOGGER.warn("[codec_ui]   No hook matched via decoder enumeration. Trying name-only fallback.");
             for (DispatchRegistry.Hook<?> hook : DispatchRegistry.all()) {
-                for (Object k : hook.keys()) {
+                for (Object k : hook.keys().get()) {
                     try {
                         MapCodec<?> variantCodec = ((Function<Object, MapCodec<?>>) hook.codecOf()).apply(k);
                         if (variantCodec == null) continue;

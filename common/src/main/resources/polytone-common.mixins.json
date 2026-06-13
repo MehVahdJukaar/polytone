@@ -12,8 +12,10 @@
     "PackRepositoryMixin",
     "SwampColorMixin",
     "codec_ui.CodecXmapMixin",
+    "codec_ui.MapCodecXmapMixin",
     "codec_ui.RecordCodecBuilderMixin",
-    "codec_ui.RecordCodecBuilderInstanceMixin"
+    "codec_ui.RecordCodecBuilderInstanceMixin",
+    "codec_ui.RegistryByNameCodecMixin"
   ],
   "client": [
     "AbstractContainerMenuMixin",

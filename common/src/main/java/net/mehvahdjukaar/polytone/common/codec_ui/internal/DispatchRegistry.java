@@ -30,8 +30,13 @@ public final class DispatchRegistry {
      * Note that the codec lookup function is only used as a fallback — the SchemaResolver
      * normally goes through the dispatch's own internal decoder function.
      */
+    /**
+     * Lazy key supplier — each call re-resolves the keys, so dispatches register at class-load
+     * time but the actual iteration happens at editor-open time when registries are fully populated
+     * (and, for dynamic registries, when a level / registryAccess is available).
+     */
     public record Hook<K>(Class<K> keyType,
-                          List<K> keys,
+                          java.util.function.Supplier<List<K>> keys,
                           Function<K, MapCodec<?>> codecOf,
                           Function<K, String> nameOf) {}
 
@@ -42,12 +47,10 @@ public final class DispatchRegistry {
     private DispatchRegistry() {}
 
     public static <K> void register(Class<K> keyType,
-                                    Iterable<K> keys,
+                                    java.util.function.Supplier<List<K>> keys,
                                     Function<K, MapCodec<?>> codecOf,
                                     Function<K, String> nameOf) {
-        java.util.ArrayList<K> snapshot = new java.util.ArrayList<>();
-        keys.forEach(snapshot::add);
-        HOOKS.put(keyType, new Hook<>(keyType, List.copyOf(snapshot), codecOf, nameOf));
+        HOOKS.put(keyType, new Hook<>(keyType, keys, codecOf, nameOf));
     }
 
     @SuppressWarnings("unchecked")
