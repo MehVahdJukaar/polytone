@@ -13,6 +13,7 @@
   },
   "license": "${mod_license}",
   "icon": "icon.png",
+  "accessWidener": "polytone.accesswidener",
   "environment": "client",
   "entrypoints": {
     "client": [
