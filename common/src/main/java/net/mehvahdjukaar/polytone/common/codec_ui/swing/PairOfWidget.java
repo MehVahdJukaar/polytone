@@ -22,13 +22,13 @@ public final class PairOfWidget implements SwingWidget {
         this.firstWidget = SwingWidgetFactory.create(schema.first());
         this.secondWidget = SwingWidgetFactory.create(schema.second());
 
-        root.setLayout(new GridLayout(1, 2, 4, 0));
+        root.setLayout(new GridLayout(1, 2, UiScale.px(8), 0));
 
-        JPanel firstCol = new JPanel(new BorderLayout(0, 2));
+        JPanel firstCol = new JPanel(new BorderLayout(0, UiScale.px(2)));
         firstCol.add(new JLabel("first"), BorderLayout.NORTH);
         firstCol.add(firstWidget.component(), BorderLayout.CENTER);
 
-        JPanel secondCol = new JPanel(new BorderLayout(0, 2));
+        JPanel secondCol = new JPanel(new BorderLayout(0, UiScale.px(2)));
         secondCol.add(new JLabel("second"), BorderLayout.NORTH);
         secondCol.add(secondWidget.component(), BorderLayout.CENTER);
 

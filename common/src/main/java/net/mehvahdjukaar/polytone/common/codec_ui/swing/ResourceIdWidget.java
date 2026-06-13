@@ -17,12 +17,16 @@ import java.awt.Frame;
 
 public final class ResourceIdWidget implements SwingWidget {
 
+    private static final String PLACEHOLDER = "(pick...)";
+
     private final @Nullable ResourceKey<? extends Registry<?>> registryKey;
-    private final JButton button = new JButton("<none>");
+    private final JButton button = new JButton(PLACEHOLDER);
     private @Nullable Identifier current;
 
     public ResourceIdWidget(Schema.ResourceId schema) {
         this.registryKey = schema.registry();
+        button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        button.setToolTipText("Click to pick an identifier");
         button.addActionListener(e -> openPicker());
     }
 

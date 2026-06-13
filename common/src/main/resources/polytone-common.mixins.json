@@ -10,7 +10,10 @@
     "OverlayIntermediateEntryMixin",
     "PackMixin",
     "PackRepositoryMixin",
-    "SwampColorMixin"
+    "SwampColorMixin",
+    "codec_ui.CodecXmapMixin",
+    "codec_ui.RecordCodecBuilderMixin",
+    "codec_ui.RecordCodecBuilderInstanceMixin"
   ],
   "client": [
     "AbstractContainerMenuMixin",

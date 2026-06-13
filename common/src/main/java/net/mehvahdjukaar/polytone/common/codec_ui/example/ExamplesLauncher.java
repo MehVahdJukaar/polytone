@@ -10,14 +10,15 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
@@ -40,15 +41,13 @@ import java.util.function.Consumer;
 /**
  * Production launcher: a Swing tool window with one button per SchemaCodec example.
  * Buttons are sourced from {@link CodecRegistry#all()} and grouped by {@code entry.group()}
- * in the order each group is first encountered. A FlatLaf scale picker and a live
- * substring filter sit above the scrollable button column.
+ * in the order each group is first encountered. A live substring filter sits above the
+ * scrollable button column.
+ *
+ * <p>Scaling is fully automatic. To override, pass {@code -Dflatlaf.uiScale=1.5x}
+ * (or 150%, 1.5, etc) on the JVM command line.</p>
  */
 public final class ExamplesLauncher {
-
-    private static final String[] SCALE_OPTIONS = {
-            "100%", "125%", "150%", "175%", "200%", "250%", "300%"
-    };
-    private static final String DEFAULT_SCALE = "100%";
 
     private ExamplesLauncher() {}
 
@@ -61,20 +60,29 @@ public final class ExamplesLauncher {
             JFrame frame = new JFrame("Polytone Codec Editor");
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-            JPanel content = new JPanel(new BorderLayout(0, UiScale.px(8)));
+            JPanel content = new JPanel(new BorderLayout(0, UiScale.px(12)));
             content.setBorder(BorderFactory.createEmptyBorder(
-                    UiScale.px(12), UiScale.px(12), UiScale.px(12), UiScale.px(12)));
+                    UiScale.px(16), UiScale.px(16), UiScale.px(16), UiScale.px(16)));
 
-            // ----- North: header + toolbar (scale combo) + search box -----
+            // ----- North: header + separator + search box -----
             JPanel north = new JPanel();
             north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));
+            north.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-            north.add(buildHeaderWithScalePicker(frame));
-            north.add(Box.createVerticalStrut(UiScale.px(6)));
+            north.add(buildHeader());
+            north.add(Box.createVerticalStrut(UiScale.px(10)));
+
+            JSeparator headerSep = new JSeparator();
+            headerSep.setAlignmentX(Component.LEFT_ALIGNMENT);
+            headerSep.setMaximumSize(new Dimension(Integer.MAX_VALUE, UiScale.px(1)));
+            north.add(headerSep);
+            north.add(Box.createVerticalStrut(UiScale.px(10)));
+
             JTextField searchField = new JTextField();
-            searchField.setMaximumSize(new Dimension(Integer.MAX_VALUE, UiScale.px(28)));
             searchField.setAlignmentX(Component.LEFT_ALIGNMENT);
-            searchField.putClientProperty("JTextField.placeholderText", "Search...");
+            searchField.setMaximumSize(new Dimension(Integer.MAX_VALUE, searchField.getPreferredSize().height));
+            searchField.putClientProperty("JTextField.placeholderText", "Search codecs...");
+            searchField.putClientProperty("JTextField.showClearButton", Boolean.TRUE);
             north.add(searchField);
 
             content.add(north, BorderLayout.NORTH);
@@ -82,9 +90,10 @@ public final class ExamplesLauncher {
             // ----- Center: grouped button column -----
             JPanel buttonColumn = new JPanel();
             buttonColumn.setLayout(new BoxLayout(buttonColumn, BoxLayout.Y_AXIS));
+            buttonColumn.setBorder(BorderFactory.createEmptyBorder(
+                    UiScale.px(4), 0, UiScale.px(4), 0));
 
             List<GroupBlock> groups = buildGroupedButtons(buttonColumn);
-
             buttonColumn.add(Box.createVerticalGlue());
 
             JScrollPane scroll = new JScrollPane(buttonColumn);
@@ -92,7 +101,18 @@ public final class ExamplesLauncher {
             scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
             scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
             scroll.getVerticalScrollBar().setUnitIncrement(UiScale.px(16));
+            scroll.getViewport().setOpaque(false);
             content.add(scroll, BorderLayout.CENTER);
+
+            // ----- South: auto-scale footer -----
+            JLabel footer = new JLabel("Auto-scaled: " + UiScale.scaleAsPercent()
+                    + "   (override with -Dflatlaf.uiScale=...)");
+            footer.setForeground(UIManager.getColor("Label.disabledForeground") != null
+                    ? UIManager.getColor("Label.disabledForeground")
+                    : new Color(0x888888));
+            footer.setFont(UiScale.deriveFont(footer.getFont(), Font.PLAIN, -1f));
+            footer.setBorder(BorderFactory.createEmptyBorder(UiScale.px(8), 0, 0, 0));
+            content.add(footer, BorderLayout.SOUTH);
 
             // ----- Wire search filtering -----
             searchField.getDocument().addDocumentListener(new DocumentListener() {
@@ -100,100 +120,46 @@ public final class ExamplesLauncher {
                 @Override public void removeUpdate(DocumentEvent e) { applyFilter(); }
                 @Override public void changedUpdate(DocumentEvent e) { applyFilter(); }
                 private void applyFilter() {
-                    String q = searchField.getText();
-                    filter(groups, q, buttonColumn);
+                    filter(groups, searchField.getText(), buttonColumn);
                 }
             });
 
             frame.setContentPane(content);
-            frame.setSize(UiScale.px(420), UiScale.px(620));
+            // Generous logical-px baselines so it's clearly readable at 1x and
+            // very comfortable at 2x. 540x720 at 1x becomes 1080x1440 at 2x.
+            frame.pack();
+            Dimension packed = frame.getSize();
+            int w = Math.max(packed.width, UiScale.px(540));
+            int h = Math.max(packed.height, UiScale.px(720));
+            frame.setSize(w, h);
+            frame.setMinimumSize(new Dimension(UiScale.px(480), UiScale.px(560)));
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });
     }
 
-    // -------------------- Header + scale picker --------------------
+    // -------------------- Header --------------------
 
-    private static JPanel buildHeaderWithScalePicker(JFrame frame) {
-        JPanel header = new JPanel(new BorderLayout(UiScale.px(8), 0));
+    private static JPanel buildHeader() {
+        JPanel header = new JPanel();
+        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         header.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JPanel titles = new JPanel();
-        titles.setLayout(new BoxLayout(titles, BoxLayout.Y_AXIS));
-
         JLabel title = new JLabel("Polytone Codec Editor");
-        title.setFont(title.getFont().deriveFont(Font.BOLD, UiScale.px(20)));
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // Derive font from L&F-scaled base — adds +6 logical pt; FlatLaf already scales the base.
+        title.setFont(UiScale.deriveFont(title.getFont(), Font.BOLD, 6f));
 
-        JLabel subtitle = new JLabel("Pick a value type to edit.");
-        subtitle.setForeground(new Color(0x666666));
-        subtitle.setBorder(BorderFactory.createEmptyBorder(UiScale.px(4), 0, UiScale.px(4), 0));
+        JLabel subtitle = new JLabel("Pick a value type to edit");
+        subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        subtitle.setForeground(UIManager.getColor("Label.disabledForeground") != null
+                ? UIManager.getColor("Label.disabledForeground")
+                : new Color(0x888888));
+        subtitle.setBorder(BorderFactory.createEmptyBorder(UiScale.px(2), 0, 0, 0));
 
-        titles.add(title);
-        titles.add(subtitle);
-
-        // Scale combo on the right.
-        JPanel scaleBar = new JPanel();
-        scaleBar.setLayout(new BoxLayout(scaleBar, BoxLayout.X_AXIS));
-        JLabel scaleLabel = new JLabel("Scale:");
-        scaleLabel.setForeground(new Color(0x666666));
-        scaleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, UiScale.px(6)));
-
-        JComboBox<String> scaleCombo = new JComboBox<>(SCALE_OPTIONS);
-        scaleCombo.setSelectedItem(currentScaleAsPercent());
-        scaleCombo.setMaximumSize(new Dimension(UiScale.px(90), UiScale.px(28)));
-        scaleCombo.addActionListener(e -> {
-            String pct = (String) scaleCombo.getSelectedItem();
-            if (pct == null) return;
-            applyFlatLafScale(pct);
-            SwingUtilities.invokeLater(() -> {
-                frame.pack();
-                frame.setSize(UiScale.px(420), UiScale.px(620));
-            });
-        });
-
-        scaleBar.add(scaleLabel);
-        scaleBar.add(scaleCombo);
-
-        header.add(titles, BorderLayout.WEST);
-        header.add(scaleBar, BorderLayout.EAST);
+        header.add(title);
+        header.add(subtitle);
         return header;
-    }
-
-    private static String currentScaleAsPercent() {
-        String current = System.getProperty("flatlaf.uiScale");
-        if (current == null || current.isBlank()) return DEFAULT_SCALE;
-        try {
-            // Accept "1.5", "1.5x", "150", "150%".
-            String s = current.trim().toLowerCase(Locale.ROOT);
-            if (s.endsWith("x")) s = s.substring(0, s.length() - 1);
-            if (s.endsWith("%")) s = s.substring(0, s.length() - 1);
-            float f = Float.parseFloat(s);
-            int pct = f < 10f ? Math.round(f * 100f) : Math.round(f);
-            String candidate = pct + "%";
-            for (String opt : SCALE_OPTIONS) {
-                if (opt.equals(candidate)) return opt;
-            }
-        } catch (Throwable ignored) {}
-        return DEFAULT_SCALE;
-    }
-
-    private static void applyFlatLafScale(String pct) {
-        String val = pct.replace("%", "");
-        String scale;
-        try {
-            scale = (Float.parseFloat(val) / 100f) + "x";
-        } catch (NumberFormatException ex) {
-            scale = "1.0x";
-        }
-        System.setProperty("flatlaf.uiScale", scale);
-        UIManager.put("flatlaf.uiScale", scale);
-        try {
-            com.formdev.flatlaf.FlatLaf.updateUI();
-        } catch (Throwable t) {
-            if (Polytone.LOGGER != null) {
-                Polytone.LOGGER.warn("FlatLaf updateUI failed: {}", t.toString());
-            }
-        }
     }
 
     // -------------------- Grouped buttons --------------------
@@ -202,12 +168,14 @@ public final class ExamplesLauncher {
     private static final class GroupBlock {
         final String groupName;
         final JLabel header;
+        final JSeparator separator;
         final List<JComponent> rows = new ArrayList<>();
         final List<String> labels = new ArrayList<>();
 
-        GroupBlock(String groupName, JLabel header) {
+        GroupBlock(String groupName, JLabel header, JSeparator separator) {
             this.groupName = groupName;
             this.header = header;
+            this.separator = separator;
         }
     }
 
@@ -219,10 +187,23 @@ public final class ExamplesLauncher {
         }
 
         List<GroupBlock> blocks = new ArrayList<>();
+        boolean firstGroup = true;
         for (Map.Entry<String, List<CodecRegistry.Entry>> e : buckets.entrySet()) {
+            if (!firstGroup) {
+                buttonColumn.add(Box.createVerticalStrut(UiScale.px(14)));
+            }
+            firstGroup = false;
+
             JLabel header = sectionHeader(e.getKey());
             buttonColumn.add(header);
-            GroupBlock block = new GroupBlock(e.getKey(), header);
+
+            JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
+            sep.setAlignmentX(Component.LEFT_ALIGNMENT);
+            sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, UiScale.px(1)));
+            buttonColumn.add(sep);
+            buttonColumn.add(Box.createVerticalStrut(UiScale.px(6)));
+
+            GroupBlock block = new GroupBlock(e.getKey(), header, sep);
 
             for (CodecRegistry.Entry entry : e.getValue()) {
                 JButton button = makeButton(entry);
@@ -246,9 +227,13 @@ public final class ExamplesLauncher {
         SchemaCodec<T> codec = (SchemaCodec<T>) entry.codec();
         String label = entry.label();
         JButton button = new JButton(label);
+        button.setHorizontalAlignment(SwingConstants.LEFT);
         button.setAlignmentX(Component.LEFT_ALIGNMENT);
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, UiScale.px(36)));
-        button.setPreferredSize(new Dimension(UiScale.px(280), UiScale.px(36)));
+        // Let the L&F decide the actual height (FlatLaf + Button.minimumHeight handles it);
+        // we only constrain the row to a full-width strip with a reasonable height ceiling.
+        int rowH = Math.max(button.getPreferredSize().height, UiScale.px(34));
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, rowH));
+        button.setPreferredSize(new Dimension(UiScale.px(280), rowH));
         Consumer<T> onSave = v -> log(label, v);
         button.addActionListener(e -> {
             SchemaEditor editor = new SwingSchemaEditor();
@@ -258,11 +243,14 @@ public final class ExamplesLauncher {
     }
 
     private static JLabel sectionHeader(String text) {
-        JLabel label = new JLabel(text);
+        JLabel label = new JLabel(text.toUpperCase(Locale.ROOT));
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        label.setFont(label.getFont().deriveFont(Font.ITALIC, UiScale.px(11)));
-        label.setForeground(new Color(0x666666));
-        label.setBorder(BorderFactory.createEmptyBorder(UiScale.px(8), 0, UiScale.px(2), 0));
+        // Smaller, bold, dim — no manual scaling. -1pt logical from L&F base.
+        label.setFont(UiScale.deriveFont(label.getFont(), Font.BOLD, -1f));
+        label.setForeground(UIManager.getColor("Label.disabledForeground") != null
+                ? UIManager.getColor("Label.disabledForeground")
+                : new Color(0x666666));
+        label.setBorder(BorderFactory.createEmptyBorder(0, 0, UiScale.px(2), 0));
         return label;
     }
 
@@ -274,17 +262,17 @@ public final class ExamplesLauncher {
 
         for (GroupBlock block : groups) {
             boolean anyVisible = false;
-            // Each label has one button + one strut row (2 components).
+            // rows: [button, strut, button, strut, ...]
             for (int i = 0; i < block.labels.size(); i++) {
                 String lbl = block.labels.get(i).toLowerCase(Locale.ROOT);
                 boolean show = empty || lbl.contains(q);
                 if (show) anyVisible = true;
-                // rows are stored as [button0, strut0, button1, strut1, ...]
                 int base = i * 2;
                 if (base < block.rows.size()) block.rows.get(base).setVisible(show);
                 if (base + 1 < block.rows.size()) block.rows.get(base + 1).setVisible(show);
             }
             block.header.setVisible(anyVisible);
+            block.separator.setVisible(anyVisible);
         }
 
         container.revalidate();

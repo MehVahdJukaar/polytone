@@ -39,7 +39,7 @@ public class PostChainsManager extends JsonPartialReloader {
     @Override
     protected Map<Identifier, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
         Map<Identifier, JsonElement> jsons = super.prepare(sharedState);
-        ShaderUniformsManager.registerUniformNames(jsons);
+        ShaderUniformsManager.registerExpressionUniformNames(jsons);
         return jsons;
     }
 

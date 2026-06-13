@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -45,7 +46,6 @@ public final class CodecRegistry {
         list.add(new Entry("Direction",                             "MC primitives",     VanillaCodecs.DIRECTION));
         list.add(new Entry("DyeColor",                              "MC primitives",     VanillaCodecs.DYE_COLOR));
         list.add(new Entry("ARGB color",                            "MC primitives",     VanillaCodecs.ARGB_COLOR));
-        list.add(new Entry("Instant (ISO8601)",                     "MC primitives",     VanillaCodecs.INSTANT));
         list.add(new Entry("Vector3f (opaque)",                     "MC primitives",     VanillaCodecs.VECTOR3F));
 
         // ----- MC registry types -----
@@ -86,6 +86,7 @@ public final class CodecRegistry {
         list.add(new Entry("raw Direction.CODEC",                  g, SchemaCodec.wrap(Direction.CODEC)));
         list.add(new Entry("raw MobEffectInstance.CODEC",          g, SchemaCodec.wrap(MobEffectInstance.CODEC)));
         list.add(new Entry("raw ItemStack.CODEC",                  g, SchemaCodec.wrap(ItemStack.CODEC)));
+        list.add(new Entry("raw RuleTest.CODEC",                   g, SchemaCodec.wrap(RuleTest.CODEC)));
 
         return List.copyOf(list);
     }

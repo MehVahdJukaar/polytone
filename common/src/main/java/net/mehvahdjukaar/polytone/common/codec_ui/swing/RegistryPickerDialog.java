@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -16,10 +17,12 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -45,32 +48,49 @@ public final class RegistryPickerDialog extends JDialog {
         this.onPick = onPick;
         this.allEntries = collectEntries(registryKey);
 
-        JPanel content = new JPanel(new BorderLayout(4, 4));
-        content.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        JPanel content = new JPanel(new BorderLayout(0, UiScale.px(10)));
+        content.setBorder(BorderFactory.createEmptyBorder(
+                UiScale.px(14), UiScale.px(14), UiScale.px(14), UiScale.px(14)));
 
-        JPanel top = new JPanel(new BorderLayout(4, 4));
-        top.add(new JLabel("Search:"), BorderLayout.WEST);
-        top.add(search, BorderLayout.CENTER);
-        content.add(top, BorderLayout.NORTH);
+        // ----- Header: title + search -----
+        JPanel north = new JPanel(new BorderLayout(0, UiScale.px(8)));
+        JLabel title = new JLabel(registryKey.identifier().toString());
+        title.setFont(UiScale.deriveFont(title.getFont(), Font.BOLD, 2f));
+        north.add(title, BorderLayout.NORTH);
 
+        search.putClientProperty("JTextField.placeholderText", "Filter...");
+        search.putClientProperty("JTextField.showClearButton", Boolean.TRUE);
+        north.add(search, BorderLayout.CENTER);
+        content.add(north, BorderLayout.NORTH);
+
+        // ----- Center: list -----
+        list.setVisibleRowCount(20);
         JScrollPane scroll = new JScrollPane(list);
-        scroll.setPreferredSize(UiScale.dim(400, 400));
+        scroll.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Component.borderColor")));
+        scroll.setPreferredSize(UiScale.dim(440, 460));
         content.add(scroll, BorderLayout.CENTER);
 
         if (allEntries.isEmpty()) {
             JLabel warn = new JLabel("(registry not available — no entries to pick from)");
-            warn.setForeground(java.awt.Color.RED);
-            content.add(warn, BorderLayout.NORTH);
+            warn.setForeground(new Color(0xC0392B));
+            warn.setBorder(BorderFactory.createEmptyBorder(UiScale.px(4), 0, 0, 0));
+            north.add(warn, BorderLayout.SOUTH);
         }
 
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        // ----- Footer: right-aligned action row -----
         JButton ok = new JButton("OK");
         JButton cancel = new JButton("Cancel");
+        ok.putClientProperty("JButton.buttonType", "default");
         ok.addActionListener(e -> confirm());
         cancel.addActionListener(e -> dispose());
-        buttons.add(ok);
-        buttons.add(cancel);
-        content.add(buttons, BorderLayout.SOUTH);
+
+        JPanel footer = new JPanel(new BorderLayout());
+        Box right = Box.createHorizontalBox();
+        right.add(cancel);
+        right.add(Box.createHorizontalStrut(UiScale.px(8)));
+        right.add(ok);
+        footer.add(right, BorderLayout.EAST);
+        content.add(footer, BorderLayout.SOUTH);
 
         setContentPane(content);
 
@@ -91,6 +111,7 @@ public final class RegistryPickerDialog extends JDialog {
             list.setSelectedValue(initial, true);
         }
 
+        getRootPane().setDefaultButton(ok);
         pack();
         setLocationRelativeTo(owner);
     }

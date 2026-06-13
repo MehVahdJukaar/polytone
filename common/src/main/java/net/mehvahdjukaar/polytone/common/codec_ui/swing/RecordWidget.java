@@ -6,12 +6,15 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.common.codec_ui.Schema;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,26 +26,50 @@ public final class RecordWidget implements SwingWidget {
     private final List<FieldEntry> entries = new ArrayList<>();
 
     public RecordWidget(Schema.Record<?> schema) {
+        // Outer padding inside the record so it doesn't crash into the scroll edge.
+        panel.setBorder(BorderFactory.createEmptyBorder(
+                UiScale.px(4), UiScale.px(2), UiScale.px(4), UiScale.px(2)));
+
+        Color mutedColor = UIManager.getColor("Label.disabledForeground");
+        if (mutedColor == null) mutedColor = new Color(0x888888);
+
         int row = 0;
         for (Schema.Field<?, ?> field : schema.fields()) {
             SwingWidget child = SwingWidgetFactory.create(field.schema());
             entries.add(new FieldEntry(field, child));
 
+            // Right-aligned label column.
+            JLabel name = new JLabel(field.name());
+            name.setFont(name.getFont().deriveFont(Font.PLAIN));
+
+            JPanel labelCell = new JPanel(new GridBagLayout());
+            GridBagConstraints lc = new GridBagConstraints();
+            lc.gridx = 0;
+            lc.anchor = GridBagConstraints.LINE_END;
+            labelCell.add(name, lc);
+            if (field.optional()) {
+                JLabel opt = new JLabel("opt");
+                opt.setFont(UiScale.deriveFont(opt.getFont(), Font.ITALIC, -2f));
+                opt.setForeground(mutedColor);
+                opt.setBorder(BorderFactory.createEmptyBorder(0, UiScale.px(6), 0, 0));
+                lc.gridx = 1;
+                labelCell.add(opt, lc);
+            }
+
             GridBagConstraints gc = new GridBagConstraints();
             gc.gridx = 0;
             gc.gridy = row;
-            gc.anchor = GridBagConstraints.NORTHWEST;
-            gc.insets = new Insets(2, 4, 2, 8);
-            String labelText = field.optional() ? field.name() + " (optional)" : field.name();
-            panel.add(new JLabel(labelText), gc);
+            gc.anchor = GridBagConstraints.LINE_END;
+            gc.insets = UiScale.insets(4, 4, 4, 10);
+            panel.add(labelCell, gc);
 
             gc = new GridBagConstraints();
             gc.gridx = 1;
             gc.gridy = row;
             gc.weightx = 1.0;
             gc.fill = GridBagConstraints.HORIZONTAL;
-            gc.anchor = GridBagConstraints.WEST;
-            gc.insets = new Insets(2, 0, 2, 4);
+            gc.anchor = GridBagConstraints.LINE_START;
+            gc.insets = UiScale.insets(4, 0, 4, 4);
             panel.add(child.component(), gc);
 
             row++;

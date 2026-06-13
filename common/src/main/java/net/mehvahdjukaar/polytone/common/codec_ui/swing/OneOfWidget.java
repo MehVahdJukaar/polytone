@@ -37,11 +37,12 @@ public final class OneOfWidget implements SwingWidget {
 
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
 
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, UiScale.px(6), 0));
         top.add(new JLabel(typeField + ":"));
         combo = new JComboBox<>(variantKeys.toArray(new String[0]));
         top.add(combo);
         root.add(top);
+        root.add(javax.swing.Box.createVerticalStrut(UiScale.px(4)));
         root.add(subHost);
 
         combo.addActionListener(e -> {

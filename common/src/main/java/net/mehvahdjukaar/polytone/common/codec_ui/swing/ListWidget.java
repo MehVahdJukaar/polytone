@@ -6,6 +6,7 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.common.codec_ui.Schema;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -28,17 +29,21 @@ public final class ListWidget implements SwingWidget {
         this.elementSchema = schema.element();
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
         rowsHost.setLayout(new BoxLayout(rowsHost, BoxLayout.Y_AXIS));
+        rowsHost.setAlignmentX(Component.LEFT_ALIGNMENT);
         root.add(rowsHost);
 
+        root.add(Box.createVerticalStrut(UiScale.px(4)));
+
         JPanel addBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        addBar.setAlignmentX(Component.LEFT_ALIGNMENT);
         JButton add = new JButton("+ Add");
+        add.putClientProperty("JButton.buttonType", "roundRect");
         add.addActionListener(e -> {
             addRow(null);
             root.revalidate();
             root.repaint();
         });
         addBar.add(add);
-        addBar.setAlignmentX(Component.LEFT_ALIGNMENT);
         root.add(addBar);
     }
 
@@ -53,10 +58,12 @@ public final class ListWidget implements SwingWidget {
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
         row.add(child.component());
-        row.add(javax.swing.Box.createHorizontalStrut(4));
+        row.add(Box.createHorizontalStrut(UiScale.px(6)));
 
-        JButton remove = new JButton("X");
-        remove.setMargin(new java.awt.Insets(0, 6, 0, 6));
+        JButton remove = new JButton("×"); // U+00D7 MULTIPLICATION SIGN
+        remove.setToolTipText("Remove");
+        remove.putClientProperty("JButton.buttonType", "borderless");
+        remove.setMargin(UiScale.insets(0, 4, 0, 4));
         remove.addActionListener(e -> {
             int idx = rowPanels.indexOf(row);
             if (idx >= 0) {
@@ -75,6 +82,7 @@ public final class ListWidget implements SwingWidget {
 
         rowPanels.add(row);
         rowsHost.add(row);
+        rowsHost.add(Box.createVerticalStrut(UiScale.px(4)));
     }
 
     @Override

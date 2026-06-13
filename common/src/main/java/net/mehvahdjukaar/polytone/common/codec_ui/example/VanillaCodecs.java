@@ -37,10 +37,6 @@ public final class VanillaCodecs {
             SchemaCodec.of(ExtraCodecs.ARGB_COLOR_CODEC,
                     new Schema.IntRange(Integer.MIN_VALUE, Integer.MAX_VALUE));
 
-    /** ISO8601 instant as a string. */
-    public static final SchemaCodec<Instant> INSTANT =
-            SchemaCodec.of(ExtraCodecs.INSTANT_ISO8601, Schema.str());
-
     // -------- registry pickers --------
 
     public static final SchemaCodec<Item> ITEM =
