@@ -15,7 +15,7 @@ public class GlRenderPassMixin {
     @Inject(method = "setPipeline", at = @At("TAIL"))
     private void poly$onSetPipeline(RenderPipeline renderPipeline, CallbackInfo ci) {
         RenderPass pass = (RenderPass) (Object) this;
-        Polytone.POST_SHADERS.setupExtraUniforms(pass);
-        Polytone.CORE_SHADERS.tryApply(pass, renderPipeline);
+        Polytone.POST_CHAINS.setupExtraUniforms(pass);
+        Polytone.SHADER_EFFECTS.tryApply(pass, renderPipeline);
     }
 }

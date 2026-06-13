@@ -44,7 +44,11 @@ public final class SwingSchemaEditor implements SchemaEditor {
     private static synchronized void setupSwingDefaults() {
         if (swingSetupDone) return;
         swingSetupDone = true;
-        // Hi-DPI: use auto scaling so 4K displays render at sane sizes.
+        // Hi-DPI: these system properties are best-effort. NeoForge initialises
+        // GraphicsEnvironment at JVM launch (java.awt.headless=true), which
+        // locks in the uiScale value before our code runs and renders these a
+        // no-op in practice. The real scaling is done by UiScale.applyToUIManager()
+        // after the L&F is installed.
         System.setProperty("sun.java2d.uiScale.enabled", "true");
         System.setProperty("sun.java2d.uiScale", "auto");
         // OpenGL pipeline: significantly faster than the default software renderer at 4K.
@@ -54,15 +58,26 @@ public final class SwingSchemaEditor implements SchemaEditor {
         System.setProperty("swing.aatext", "true");
     }
 
-    private static void applySystemLookAndFeel() {
+    private static void applyLookAndFeel() {
         try {
-            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
-        } catch (Throwable ignored) {
-            // Fall back to Nimbus if system L&F unavailable.
+            com.formdev.flatlaf.FlatLightLaf.setup();
+            // FlatLaf reads font.size from its own defaults; UiScale.applyToUIManager still applies on top.
+        } catch (Throwable t) {
+            // Fall back to system L&F if FlatLaf isn't on classpath at runtime
             try {
-                javax.swing.UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-            } catch (Throwable ignored2) {}
+                javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+            } catch (Throwable ignored) {}
         }
+    }
+
+    /**
+     * Install the L&amp;F and apply DPI-scaled fonts. Must run on the EDT before any
+     * JFrame/JDialog is constructed. Public so {@link net.mehvahdjukaar.polytone.common.codec_ui.example.ExamplesLauncher}
+     * can share the exact same bootstrap sequence.
+     */
+    public static void bootstrapLF() {
+        applyLookAndFeel();
+        UiScale.applyToUIManager();
     }
 
     // NeoForge launches with java.awt.headless=true and GraphicsEnvironment caches the flag.
@@ -88,7 +103,7 @@ public final class SwingSchemaEditor implements SchemaEditor {
     }
 
     private <A> void openOnEdt(SchemaCodec<A> codec, @Nullable A initial, Consumer<A> onSave) {
-        applySystemLookAndFeel();
+        bootstrapLF();
         SwingWidget rootWidget = SwingWidgetFactory.create(codec.schema());
 
         if (initial != null) {
@@ -213,12 +228,12 @@ public final class SwingSchemaEditor implements SchemaEditor {
         frame.pack();
 
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        int maxW = (int) Math.min(800, screen.getWidth() * 0.8);
-        int maxH = (int) Math.min(600, screen.getHeight() * 0.8);
+        int maxW = (int) Math.min(800 * UiScale.scale(), screen.getWidth() * 0.8);
+        int maxH = (int) Math.min(600 * UiScale.scale(), screen.getHeight() * 0.8);
         Dimension pref = frame.getSize();
         int w = Math.min(pref.width, maxW);
         int h = Math.min(pref.height, maxH);
-        frame.setSize(Math.max(w, 480), Math.max(h, 320));
+        frame.setSize(Math.max(w, UiScale.px(480)), Math.max(h, UiScale.px(320)));
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }

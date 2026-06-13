@@ -16,15 +16,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public final class PostChainEffect {
+/**
+ * Conditionally adds a post chain to the FrameGraph each frame.
+ *
+ * <p>{@code expression_uniforms} on this object are chain-level: they get bound to every
+ * pass shader in the chain. Implemented internally as a single
+ * {@link ExpressionUniformBuffers} registered with {@link ShaderUniformsManager} under each
+ * pass's pipeline fragment-shader id. Chain gating ({@link #turnOnCondition}) implicitly
+ * gates the binds too — when the chain isn't in the FrameGraph, its passes never bind.
+ */
+public final class PostChainActivator {
 
-    public static final Codec<PostChainEffect> CODEC = RecordCodecBuilder.create(
+    public static final Codec<PostChainActivator> CODEC = RecordCodecBuilder.create(
             i -> i.group(
                     Identifier.CODEC.fieldOf("post_chain").forGetter(p -> p.postChain),
                     ISimpleExp.CODEC.optionalFieldOf("activation_condition", ISimpleExp.ONE).forGetter(p -> p.turnOnCondition),
-                    ExpressionUniformBuffers.MAP_CODEC
-                            .optionalFieldOf("expression_uniforms", Map.of()).forGetter(p -> p.buffers.expressions())
-            ).apply(i, PostChainEffect::new));
+                    ExpressionUniformBuffers.CODEC
+                            .optionalFieldOf("expression_uniforms", new ExpressionUniformBuffers(Map.of()))
+                            .forGetter(p -> p.buffers)
+            ).apply(i, PostChainActivator::new));
 
     private final Identifier postChain;
     private final ISimpleExp turnOnCondition;
@@ -34,14 +44,10 @@ public final class PostChainEffect {
     private PostChain cachedPostChain = null;
     private final List<Identifier> registeredShaderIds = new ArrayList<>();
 
-    public PostChainEffect(Identifier postChain, ISimpleExp turnOnCondition, Map<String, ISimpleExp> expressionUniforms) {
+    public PostChainActivator(Identifier postChain, ISimpleExp turnOnCondition, ExpressionUniformBuffers buffers) {
         this.postChain = postChain;
         this.turnOnCondition = turnOnCondition;
-        this.buffers = new ExpressionUniformBuffers(expressionUniforms);
-    }
-
-    public ExpressionUniformBuffers buffers() {
-        return buffers;
+        this.buffers = buffers;
     }
 
     public void refreshEnabled() {
@@ -62,34 +68,30 @@ public final class PostChainEffect {
             }
         }
         if (isPostPassClosed(cachedPostChain)) {
-            closeBuffers();
-            cachedPostChain = null;
+            close();
             return null;
         }
         return cachedPostChain;
     }
 
-    public void updateBuffers() {
-        buffers.update();
-    }
-
-    void closeBuffers() {
+    void close() {
         unregisterByPassShaders();
         buffers.close();
+        cachedPostChain = null;
     }
 
     private void registerByPassShaders(PostChain chain) {
         if (buffers.isEmpty()) return;
         for (PostPass pass : chain.passes) {
             Identifier shaderId = ((PostPassAccessor) pass).polytone$getPipeline().getFragmentShader();
-            Polytone.CORE_SHADERS.registerExternal(shaderId, buffers);
+            Polytone.SHADER_EFFECTS.registerExternal(shaderId, buffers);
             registeredShaderIds.add(shaderId);
         }
     }
 
     private void unregisterByPassShaders() {
         for (Identifier id : registeredShaderIds) {
-            Polytone.CORE_SHADERS.unregisterExternal(id, buffers);
+            Polytone.SHADER_EFFECTS.unregisterExternal(id, buffers);
         }
         registeredShaderIds.clear();
     }

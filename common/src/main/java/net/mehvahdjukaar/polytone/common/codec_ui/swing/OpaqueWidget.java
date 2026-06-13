@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import java.awt.Dimension;
 
 public final class OpaqueWidget implements SwingWidget {
 
@@ -18,10 +17,10 @@ public final class OpaqueWidget implements SwingWidget {
     public OpaqueWidget() {
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(false);
-        textArea.setFont(new java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12));
+        textArea.setFont(new java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, UiScale.px(12)));
         textArea.setText("null");
         scroll = new JScrollPane(textArea);
-        scroll.setPreferredSize(new Dimension(400, 120));
+        scroll.setPreferredSize(UiScale.dim(400, 120));
     }
 
     @Override

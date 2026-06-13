@@ -25,8 +25,8 @@ import net.mehvahdjukaar.polytone.content.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
-import net.mehvahdjukaar.polytone.content.shaders.CoreShadersManager;
-import net.mehvahdjukaar.polytone.content.shaders.PostShadersManager;
+import net.mehvahdjukaar.polytone.content.shaders.PostChainsManager;
+import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.content.sound.SoundTypesManager;
@@ -84,8 +84,8 @@ public class Polytone {
     public static final ColorManager COLORS = new ColorManager();
     public static final GuiModifierManager SLOTIFY = new GuiModifierManager();
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
-    public static final PostShadersManager POST_SHADERS = new PostShadersManager();
-    public static final CoreShadersManager CORE_SHADERS = new CoreShadersManager();
+    public static final PostChainsManager POST_CHAINS = new PostChainsManager();
+    public static final ShaderUniformsManager SHADER_EFFECTS = new ShaderUniformsManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
     public static final GlobalExpressionsManager GLOBAL_EXPRESSION = new GlobalExpressionsManager();
@@ -105,7 +105,7 @@ public class Polytone {
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS,//LIGHTMAPS,
-                DIMENSION_MODIFIERS, POST_SHADERS, CORE_SHADERS,
+                DIMENSION_MODIFIERS, POST_CHAINS, SHADER_EFFECTS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
                 CREATIVE_TABS_MODIFIERS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
@@ -142,8 +142,7 @@ public class Polytone {
         ClientFrameTicker.onTick(level);
         ExpTicker.onTick(level);
         ENTITY_MODIFIERS.onTick(level);
-        POST_SHADERS.tick();
-        CORE_SHADERS.tick();
+        POST_CHAINS.tick();
         TokenBucketTracker.tick();
     }
 

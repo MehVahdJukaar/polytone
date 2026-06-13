@@ -19,8 +19,9 @@ import java.util.Map;
  */
 public final class ExpressionUniformBuffers {
 
-    public static final Codec<Map<String, ISimpleExp>> MAP_CODEC =
-            Codec.unboundedMap(Codec.STRING, ISimpleExp.CODEC);
+    public static final Codec<ExpressionUniformBuffers> CODEC =
+            Codec.unboundedMap(Codec.STRING, ISimpleExp.CODEC)
+                    .xmap(ExpressionUniformBuffers::new, ExpressionUniformBuffers::expressions);
 
     private static final int FLOAT_UBO_SIZE = new Std140SizeCalculator().putFloat().get();
 

@@ -19,7 +19,6 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.MouseAdapter;
@@ -55,7 +54,7 @@ public final class RegistryPickerDialog extends JDialog {
         content.add(top, BorderLayout.NORTH);
 
         JScrollPane scroll = new JScrollPane(list);
-        scroll.setPreferredSize(new Dimension(400, 400));
+        scroll.setPreferredSize(UiScale.dim(400, 400));
         content.add(scroll, BorderLayout.CENTER);
 
         if (allEntries.isEmpty()) {

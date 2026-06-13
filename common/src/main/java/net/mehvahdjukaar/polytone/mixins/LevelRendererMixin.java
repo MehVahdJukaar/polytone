@@ -47,7 +47,7 @@ public class LevelRendererMixin {
                           GpuBufferSlice gpuBufferSlice,
                           Vector4f vector4f,
                           boolean bl2, CallbackInfo ci) {
-        Polytone.POST_SHADERS.captureLevelRendererParams(project, modelView);
+        Polytone.POST_CHAINS.captureLevelRendererParams(project, modelView);
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addLateDebugPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/state/CameraRenderState;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Matrix4f;)V",
@@ -65,6 +65,6 @@ public class LevelRendererMixin {
                                     @Local FrameGraphBuilder frameGraphBuilder) {
         int i = this.minecraft.getMainRenderTarget().width;
         int j = this.minecraft.getMainRenderTarget().height;
-        Polytone.POST_SHADERS.addPostPass(i, j, this.targets, frameGraphBuilder, gpuBufferSlice, this.levelRenderState.cameraRenderState);
+        Polytone.POST_CHAINS.addPostPass(i, j, this.targets, frameGraphBuilder, gpuBufferSlice, this.levelRenderState.cameraRenderState);
     }
 }
