@@ -8,10 +8,12 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
+import net.fabricmc.fabric.api.event.player.ItemEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.codec_ui.example.FooExampleTrigger;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
 import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
@@ -24,6 +26,7 @@ import net.minecraft.client.gui.components.debug.DebugScreenProfile;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.InteractionResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +48,10 @@ public class PolytoneFabric implements ClientModInitializer {
         });
 
 
+        ItemEvents.USE.register((player, world, hand) -> {
+            FooExampleTrigger.open();
+            return InteractionResult.PASS;
+        });
 
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register(
                 context -> ParticleHitboxDebugRenderer.emitGizmos()

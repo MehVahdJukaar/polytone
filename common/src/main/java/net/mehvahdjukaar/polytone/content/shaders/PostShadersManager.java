@@ -9,17 +9,15 @@ import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
-import net.minecraft.client.renderer.PostPass;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,10 +27,16 @@ public class PostShadersManager extends JsonPartialReloader {
     private PolytoneGlobalUniforms globalUniforms = null;
 
     private final List<PostChainEffect> effects = new ArrayList<>();
-    private final IdentityHashMap<PostPass, PostChainEffect> passEffectMap = new IdentityHashMap<>();
 
     public PostShadersManager() {
         super("post_shaders");
+    }
+
+    @Override
+    protected Map<Identifier, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
+        Map<Identifier, JsonElement> jsons = super.prepare(sharedState);
+        CoreShadersManager.registerUniformNames(jsons);
+        return jsons;
     }
 
     @Override
@@ -50,29 +54,9 @@ public class PostShadersManager extends JsonPartialReloader {
     @Override
     protected void resetWithLevel(boolean logOff) {
         synchronized (effects) {
-            for (var e : effects) {
-                e.closeExpressionBuffers();
-            }
+            for (var e : effects) e.closeBuffers();
             effects.clear();
-            passEffectMap.clear();
         }
-    }
-
-    void registerPasses(PostChain chain, PostChainEffect effect) {
-        for (PostPass pass : chain.passes) {
-            passEffectMap.put(pass, effect);
-        }
-    }
-
-    void unregisterPasses(PostChain chain) {
-        for (PostPass pass : chain.passes) {
-            passEffectMap.remove(pass);
-        }
-    }
-
-    @Nullable
-    public PostChainEffect getEffectForPass(PostPass pass) {
-        return passEffectMap.get(pass);
     }
 
     private PolytoneGlobalUniforms getOrCreateUniforms() {
@@ -82,16 +66,13 @@ public class PostShadersManager extends JsonPartialReloader {
         return globalUniforms;
     }
 
-
     public void setupExtraUniforms(RenderPass pass) {
         pass.setUniform(GLOBALS_NAME, getOrCreateUniforms().getSlice());
     }
 
     public void onClose() {
         synchronized (effects) {
-            for (var e : effects) {
-                e.closeExpressionBuffers();
-            }
+            for (var e : effects) e.closeBuffers();
         }
         if (globalUniforms != null) {
             globalUniforms.close();
@@ -100,8 +81,10 @@ public class PostShadersManager extends JsonPartialReloader {
     }
 
     public void captureLevelRendererParams(Matrix4f projectionMatrix, Matrix4f viewMatrix) {
-        float angle = Minecraft.getInstance().levelRenderer.levelRenderState.skyRenderState.sunAngle;
-        getOrCreateUniforms().update(projectionMatrix, viewMatrix, angle);
+        Minecraft mc = Minecraft.getInstance();
+        float angle = mc.levelRenderer.levelRenderState.skyRenderState.sunAngle;
+        float dayTime = mc.level == null ? 0f : (float) (mc.level.getDayTime() % 24000L);
+        getOrCreateUniforms().update(projectionMatrix, viewMatrix, angle, dayTime);
     }
 
     public void tick() {
@@ -111,13 +94,11 @@ public class PostShadersManager extends JsonPartialReloader {
     }
 
     public void addPostPass(int width, int height, LevelTargetBundle targets, FrameGraphBuilder frameGraphBuilder, GpuBufferSlice gpuBufferSlice, CameraRenderState cameraRenderState) {
-
         ShaderManager sm = Minecraft.getInstance().getShaderManager();
         synchronized (effects) {
             for (var e : effects) {
                 PostChain pc = e.getPostChain(sm);
                 if (pc != null) {
-                    e.updateExpressionBuffers();
                     pc.addToFrame(frameGraphBuilder, width, height, targets);
                 }
             }

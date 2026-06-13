@@ -1,8 +1,10 @@
 package net.mehvahdjukaar.polytone.platform;
 
+import net.caffeinemc.mods.sodium.client.platform.PlatformHelper;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.codec_ui.example.FooExampleTrigger;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
@@ -30,6 +32,7 @@ import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import org.apache.logging.log4j.LogManager;
@@ -77,6 +80,13 @@ public class PolytoneForge {
                 DebugScreenEntryStatus.ALWAYS_ON);
         event.includeInProfile(ParticleHitboxDebugRenderer.ID, DebugScreenProfile.PERFORMANCE,
                 DebugScreenEntryStatus.ALWAYS_ON);
+    }
+
+
+    @SubscribeEvent
+    public void onClick(LivingEntityUseItemEvent event) {
+        //TODO: remove
+        FooExampleTrigger.open();
     }
 
 

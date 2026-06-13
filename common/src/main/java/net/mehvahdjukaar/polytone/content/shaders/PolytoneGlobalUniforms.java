@@ -16,18 +16,20 @@ public class PolytoneGlobalUniforms implements AutoCloseable {
             .putMat4f()
             .putMat4f()
             .putFloat()
+            .putFloat()
             .get();
 
     private final GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Polytone Global Settings UBO",
             GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_UNIFORM, UBO_SIZE);
 
-    public void update(Matrix4f projectionMat, Matrix4f viewMat, float sunAngle) {
+    public void update(Matrix4f projectionMat, Matrix4f viewMat, float sunAngle, float dayTime) {
 
         try (MemoryStack memoryStack = MemoryStack.stackPush()) {
             ByteBuffer byteBuffer = Std140Builder.onStack(memoryStack, UBO_SIZE)
                     .putMat4f(projectionMat)
                     .putMat4f(viewMat)
                     .putFloat(sunAngle- Mth.HALF_PI)
+                    .putFloat(dayTime)
                     .get();
             RenderSystem.getDevice().createCommandEncoder()
                     .writeToBuffer(this.buffer.slice(), byteBuffer);

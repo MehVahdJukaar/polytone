@@ -30,6 +30,7 @@
     "FishingHookRendererMixin",
     "GameRendererMixin",
     "GlProgramMixin",
+    "GlRenderPassMixin",
     "GuiGraphicsMixin",
     "GuiMixin",
     "GuiRenderStateMixin",
@@ -48,7 +49,6 @@
     "ParticleEngineMixin",
     "ParticleGroupMixin",
     "ParticleResourcesMixin",
-    "PostPassMixin",
     "QuadParticleGroupMixin",
     "RenderSetupMixin",
     "ScreenMixin",
@@ -64,7 +64,8 @@
     "accessor.BiomeAccessor",
     "accessor.DimensionTypeAccessor",
     "accessor.DustParticleOptionAccessor",
-    "accessor.ParticleAccessor"
+    "accessor.ParticleAccessor",
+    "accessor.PostPassAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
