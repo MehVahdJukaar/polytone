@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.common.codec_ui.example;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.codec_ui.SchemaCodec;
-import net.mehvahdjukaar.polytone.common.codec_ui.SchemaEditor;
 import net.mehvahdjukaar.polytone.common.codec_ui.swing.SwingSchemaEditor;
 import net.mehvahdjukaar.polytone.common.codec_ui.swing.UiScale;
 
@@ -58,11 +57,12 @@ public final class ExamplesLauncher {
             SwingSchemaEditor.bootstrapLF();
 
             JFrame frame = new JFrame("Polytone Codec Editor");
+            // Launcher stays open across editor sessions; closing it here exits the tool.
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-            JPanel content = new JPanel(new BorderLayout(0, UiScale.px(12)));
+            JPanel content = new JPanel(new BorderLayout(0, UiScale.med()));
             content.setBorder(BorderFactory.createEmptyBorder(
-                    UiScale.px(16), UiScale.px(16), UiScale.px(16), UiScale.px(16)));
+                    UiScale.large(), UiScale.large(), UiScale.large(), UiScale.large()));
 
             // ----- North: header + separator + search box -----
             JPanel north = new JPanel();
@@ -70,13 +70,13 @@ public final class ExamplesLauncher {
             north.setAlignmentX(Component.LEFT_ALIGNMENT);
 
             north.add(buildHeader());
-            north.add(Box.createVerticalStrut(UiScale.px(10)));
+            north.add(Box.createVerticalStrut(UiScale.med()));
 
             JSeparator headerSep = new JSeparator();
             headerSep.setAlignmentX(Component.LEFT_ALIGNMENT);
             headerSep.setMaximumSize(new Dimension(Integer.MAX_VALUE, UiScale.px(1)));
             north.add(headerSep);
-            north.add(Box.createVerticalStrut(UiScale.px(10)));
+            north.add(Box.createVerticalStrut(UiScale.med()));
 
             JTextField searchField = new JTextField();
             searchField.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -91,7 +91,7 @@ public final class ExamplesLauncher {
             JPanel buttonColumn = new JPanel();
             buttonColumn.setLayout(new BoxLayout(buttonColumn, BoxLayout.Y_AXIS));
             buttonColumn.setBorder(BorderFactory.createEmptyBorder(
-                    UiScale.px(4), 0, UiScale.px(4), 0));
+                    UiScale.small(), 0, UiScale.small(), 0));
 
             List<GroupBlock> groups = buildGroupedButtons(buttonColumn);
             buttonColumn.add(Box.createVerticalGlue());
@@ -107,11 +107,9 @@ public final class ExamplesLauncher {
             // ----- South: auto-scale footer -----
             JLabel footer = new JLabel("Auto-scaled: " + UiScale.scaleAsPercent()
                     + "   (override with -Dflatlaf.uiScale=...)");
-            footer.setForeground(UIManager.getColor("Label.disabledForeground") != null
-                    ? UIManager.getColor("Label.disabledForeground")
-                    : new Color(0x888888));
+            footer.setForeground(mutedColor());
             footer.setFont(UiScale.deriveFont(footer.getFont(), Font.PLAIN, -1f));
-            footer.setBorder(BorderFactory.createEmptyBorder(UiScale.px(8), 0, 0, 0));
+            footer.setBorder(BorderFactory.createEmptyBorder(UiScale.med(), 0, 0, 0));
             content.add(footer, BorderLayout.SOUTH);
 
             // ----- Wire search filtering -----
@@ -135,6 +133,10 @@ public final class ExamplesLauncher {
             frame.setMinimumSize(new Dimension(UiScale.px(480), UiScale.px(560)));
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
+
+            // Grab focus on the search field after the frame is realized so the user
+            // can immediately type to filter.
+            SwingUtilities.invokeLater(searchField::requestFocusInWindow);
         });
     }
 
@@ -152,9 +154,7 @@ public final class ExamplesLauncher {
 
         JLabel subtitle = new JLabel("Pick a value type to edit");
         subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-        subtitle.setForeground(UIManager.getColor("Label.disabledForeground") != null
-                ? UIManager.getColor("Label.disabledForeground")
-                : new Color(0x888888));
+        subtitle.setForeground(mutedColor());
         subtitle.setBorder(BorderFactory.createEmptyBorder(UiScale.px(2), 0, 0, 0));
 
         header.add(title);
@@ -180,6 +180,12 @@ public final class ExamplesLauncher {
     }
 
     private static List<GroupBlock> buildGroupedButtons(JPanel buttonColumn) {
+        // Force-load VanillaCodecs to guarantee companion registration runs before any
+        // schema is resolved. Static-init via static-final-field access has been unreliable
+        // in some loader configurations.
+        VanillaCodecs.bootstrap();
+        System.out.println("[codec_ui] >>> ExamplesLauncher: CodecRegistry.all() about to fire <<<");
+
         // Bucket entries by group in first-appearance order.
         Map<String, List<CodecRegistry.Entry>> buckets = new LinkedHashMap<>();
         for (CodecRegistry.Entry entry : CodecRegistry.all()) {
@@ -190,7 +196,8 @@ public final class ExamplesLauncher {
         boolean firstGroup = true;
         for (Map.Entry<String, List<CodecRegistry.Entry>> e : buckets.entrySet()) {
             if (!firstGroup) {
-                buttonColumn.add(Box.createVerticalStrut(UiScale.px(14)));
+                // LARGE gap between groups (sections).
+                buttonColumn.add(Box.createVerticalStrut(UiScale.large()));
             }
             firstGroup = false;
 
@@ -201,13 +208,14 @@ public final class ExamplesLauncher {
             sep.setAlignmentX(Component.LEFT_ALIGNMENT);
             sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, UiScale.px(1)));
             buttonColumn.add(sep);
-            buttonColumn.add(Box.createVerticalStrut(UiScale.px(6)));
+            buttonColumn.add(Box.createVerticalStrut(UiScale.small()));
 
             GroupBlock block = new GroupBlock(e.getKey(), header, sep);
 
             for (CodecRegistry.Entry entry : e.getValue()) {
                 JButton button = makeButton(entry);
-                Component strut = Box.createVerticalStrut(UiScale.px(6));
+                // MED gap between buttons in the same group.
+                Component strut = Box.createVerticalStrut(UiScale.small());
                 buttonColumn.add(button);
                 buttonColumn.add(strut);
 
@@ -236,10 +244,20 @@ public final class ExamplesLauncher {
         button.setPreferredSize(new Dimension(UiScale.px(280), rowH));
         Consumer<T> onSave = v -> log(label, v);
         button.addActionListener(e -> {
-            SchemaEditor editor = new SwingSchemaEditor();
-            editor.open(codec, null, onSave);
+            // Use the labeled overload so the editor's title bar reads "Edit: <label>".
+            // The editor reuses one persistent JFrame across calls (see SwingSchemaEditor).
+            new SwingSchemaEditor().open(codec, label, null, onSave);
         });
         return button;
+    }
+
+    // ---- Theming helpers ----
+
+    /** Subtitle / footer / section-header color — adapts to dark/light L&F. */
+    private static Color mutedColor() {
+        Color c = UIManager.getColor("Label.disabledForeground");
+        if (c != null) return c;
+        return new Color(0x999999);
     }
 
     private static JLabel sectionHeader(String text) {
@@ -247,9 +265,7 @@ public final class ExamplesLauncher {
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         // Smaller, bold, dim — no manual scaling. -1pt logical from L&F base.
         label.setFont(UiScale.deriveFont(label.getFont(), Font.BOLD, -1f));
-        label.setForeground(UIManager.getColor("Label.disabledForeground") != null
-                ? UIManager.getColor("Label.disabledForeground")
-                : new Color(0x666666));
+        label.setForeground(mutedColor());
         label.setBorder(BorderFactory.createEmptyBorder(0, 0, UiScale.px(2), 0));
         return label;
     }

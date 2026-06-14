@@ -28,11 +28,16 @@ public final class ListWidget implements SwingWidget {
     public ListWidget(Schema.ListOf<?> schema) {
         this.elementSchema = schema.element();
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
+        // Let the list widget stretch to fill the parent's available horizontal width
+        // so child rows can lay out flush with the form column.
+        root.setAlignmentX(Component.LEFT_ALIGNMENT);
+        root.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         rowsHost.setLayout(new BoxLayout(rowsHost, BoxLayout.Y_AXIS));
         rowsHost.setAlignmentX(Component.LEFT_ALIGNMENT);
+        rowsHost.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         root.add(rowsHost);
 
-        root.add(Box.createVerticalStrut(UiScale.px(4)));
+        root.add(Box.createVerticalStrut(UiScale.small()));
 
         JPanel addBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         addBar.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -58,7 +63,7 @@ public final class ListWidget implements SwingWidget {
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
         row.add(child.component());
-        row.add(Box.createHorizontalStrut(UiScale.px(6)));
+        row.add(Box.createHorizontalStrut(UiScale.small()));
 
         JButton remove = new JButton("×"); // U+00D7 MULTIPLICATION SIGN
         remove.setToolTipText("Remove");
@@ -82,7 +87,7 @@ public final class ListWidget implements SwingWidget {
 
         rowPanels.add(row);
         rowsHost.add(row);
-        rowsHost.add(Box.createVerticalStrut(UiScale.px(4)));
+        rowsHost.add(Box.createVerticalStrut(UiScale.med()));
     }
 
     @Override

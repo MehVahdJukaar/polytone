@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +26,10 @@ public final class EnumWidget implements SwingWidget {
             labels.add(s);
         }
         this.combo = new JComboBox<>(labels.toArray(new String[0]));
+        // Allow horizontal stretch in BoxLayout/GridBag parents.
+        int h = combo.getPreferredSize().height;
+        combo.setMaximumSize(new Dimension(Integer.MAX_VALUE, h));
+        combo.setMinimumSize(new Dimension(0, h));
     }
 
     @Override

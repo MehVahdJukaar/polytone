@@ -19,6 +19,8 @@ public sealed interface Schema<A> {
 
     record IntRange(int min, int max) implements Schema<Integer> {}
 
+    record Color(boolean hasAlpha) implements Schema<Integer> {}
+
     record LongRange(long min, long max) implements Schema<Long> {}
 
     record FloatRange(float min, float max) implements Schema<Float> {}
@@ -48,7 +50,15 @@ public sealed interface Schema<A> {
     // Escape hatches
     record Opaque<A>(Codec<A> codec, @Nullable A example) implements Schema<A> {}
 
-    record Custom<A>(Identifier widgetId, Object metadata) implements Schema<A> {}
+    /**
+     * Binds an arbitrary domain-specific widget to a codec. The {@code widgetDef} is
+     * opaque to this ADT (so the core schema layer stays UI-backend-agnostic); it is
+     * populated by a backend-specific combinator — e.g.
+     * {@link net.mehvahdjukaar.polytone.common.codec_ui.SchemaCodecs#withWidget} for Swing,
+     * which stores a {@link net.mehvahdjukaar.polytone.common.codec_ui.swing.SwingWidgetDef}
+     * here. Backends pattern-match on the runtime type of {@code widgetDef} to dispatch.
+     */
+    record Custom<A>(Object widgetDef) implements Schema<A> {}
 
     // ---- ergonomic helpers ----
 
@@ -63,4 +73,8 @@ public sealed interface Schema<A> {
     static Str str() { return new Str(0, Integer.MAX_VALUE, null); }
 
     static Bool bool() { return new Bool(); }
+
+    static Color colorRgb()  { return new Color(false); }
+
+    static Color colorArgb() { return new Color(true); }
 }

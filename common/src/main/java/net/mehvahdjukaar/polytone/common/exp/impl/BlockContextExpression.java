@@ -29,6 +29,9 @@ public class BlockContextExpression extends PolytoneExpression implements IBlock
         }
     }, javaxExpression -> DataResult.success(javaxExpression.getUnparsed()));
 
+    // bound by the expression-driven model selector to its "selector" value; 0 otherwise
+    private static final String V = "v";
+
     private final boolean hasState;
 
     public BlockContextExpression(String unparsed) {
@@ -53,7 +56,18 @@ public class BlockContextExpression extends PolytoneExpression implements IBlock
     }
 
     @Override
+    protected void buildVars(VarBuilder builder) {
+        super.buildVars(builder);
+        builder.add(V);
+    }
+
+    @Override
     public double evaluate(LevelReader level, @NotNull Vec3 p, @Nullable BlockState state) {
+        return evaluate(level, p, state, 0);
+    }
+
+    /** Variant that binds {@code v}, the value of a model selector's "selector" expression. */
+    public double evaluate(LevelReader level, @NotNull Vec3 p, @Nullable BlockState state, double v) {
         BlockPos pos = BlockPos.containing(p);
         ExpressionUtils.seedRandom(state == null ? 42 : state.getSeed(pos));
 
@@ -97,6 +111,8 @@ public class BlockContextExpression extends PolytoneExpression implements IBlock
         }
 
         if (hasRenderDistance) vars.setVariable(RENDER_DISTANCE, ClientFrameTicker.getRenderDistance());
+
+        vars.setVariable(V, v);
 
         return expression.evaluate(vars);
     }

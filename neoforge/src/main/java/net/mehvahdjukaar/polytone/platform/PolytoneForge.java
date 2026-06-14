@@ -5,6 +5,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.codec_ui.example.FooExampleTrigger;
+import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
+import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
@@ -64,6 +66,7 @@ public class PolytoneForge {
             NeoForge.EVENT_BUS.register(this);
             modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
             modBus.addListener(this::onRegisterDebugEntries);
+            modBus.addListener(this::onRegisterBlockStateModels);
         } else {
             LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
@@ -72,6 +75,10 @@ public class PolytoneForge {
                 .registerExtensionPoint(IConfigScreenFactory.class, (modContainer, arg) ->
                         Polytone.CONFIGS.createScreenForMainMenu(arg)
                 );
+    }
+
+    public void onRegisterBlockStateModels(RegisterBlockStateModels event) {
+        event.registerModel(ExpressionModel.ID, ExpressionBlockStateModel.Unbaked.CODEC);
     }
 
     public void onRegisterDebugEntries(RegisterDebugEntriesEvent event) {

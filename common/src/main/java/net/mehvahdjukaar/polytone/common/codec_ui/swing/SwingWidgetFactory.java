@@ -6,9 +6,20 @@ public final class SwingWidgetFactory {
 
     private SwingWidgetFactory() {}
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static SwingWidget create(Schema<?> schema) {
+        // Custom: dispatch via a SwingWidgetDef stored opaquely in Schema.Custom.
+        // Any Schema.Custom whose widgetDef isn't a SwingWidgetDef (e.g. a def for a
+        // different UI backend) falls through to the OpaqueWidget JSON fallback below.
+        if (schema instanceof Schema.Custom<?> c
+                && c.widgetDef() instanceof SwingWidgetDef<?> def) {
+            return ((SwingWidgetDef) def).create((Schema.Custom) c);
+        }
         if (schema instanceof Schema.Bool) {
             return new BoolWidget();
+        }
+        if (schema instanceof Schema.Color c) {
+            return new ColorWidget(c);
         }
         if (schema instanceof Schema.IntRange r) {
             int initial = clampInt(0, r.min(), r.max());
@@ -53,7 +64,7 @@ public final class SwingWidgetFactory {
         if (schema instanceof Schema.EitherOf<?, ?> either) {
             return new EitherOfWidget(either);
         }
-        // Opaque, Custom — opaque JSON fallback.
+        // Opaque, or Custom with a non-Swing widgetDef — opaque JSON fallback.
         return new OpaqueWidget();
     }
 

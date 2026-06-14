@@ -11,6 +11,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
+import java.awt.Dimension;
 
 public final class StringWidget implements SwingWidget {
 
@@ -20,6 +21,12 @@ public final class StringWidget implements SwingWidget {
         if (maxLen > 0 && maxLen < Integer.MAX_VALUE) {
             ((AbstractDocument) field.getDocument()).setDocumentFilter(new MaxLenFilter(maxLen));
         }
+        // Allow horizontal stretch in BoxLayout/GridBag parents. Without this the field
+        // sits at its 20-column preferred width and content overflows. Min width 0 so
+        // it never pushes the form wider than its container.
+        int h = field.getPreferredSize().height;
+        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, h));
+        field.setMinimumSize(new Dimension(0, h));
     }
 
     @Override

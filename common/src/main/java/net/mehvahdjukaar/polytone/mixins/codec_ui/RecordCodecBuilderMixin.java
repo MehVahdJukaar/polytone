@@ -59,9 +59,9 @@ public abstract class RecordCodecBuilderMixin {
     }
 
     /**
-     * On build, synthesise a Schema.Record from the accumulated field tags and attach it to
-     * the produced MapCodec. The Class<O> is unknown at this point — pass {@code Object.class}
-     * since the widget layer doesn't rely on it.
+     * On build, transfer the accumulated field tags to the OUTPUT MapCodec via
+     * {@link RecordFieldTags#onBuilt}. Resolver rebuilds the schema FRESH at lookup time so
+     * companions registered later still win. We do NOT eagerly populate {@link SchemaTags}.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     @ModifyReturnValue(method = "build", at = @At("RETURN"))
@@ -72,32 +72,7 @@ public abstract class RecordCodecBuilderMixin {
             RecordCodecBuilder<?, ?> builder = RecordCodecBuilder.unbox((App) builderBox);
             List<RecordFieldTags.Entry> entries = RecordFieldTags.get(builder);
             if (entries.isEmpty()) return result;
-
-            List<Schema.Field<?, ?>> fields = new ArrayList<>(entries.size());
-            SchemaResolver resolver = SchemaResolver.get();
-            for (RecordFieldTags.Entry e : entries) {
-                Schema<?> fieldSchema;
-                boolean optional;
-                if (e.mapCodec() != null) {
-                    // Delegate to MapCodec resolution; if it returns a single-field Record
-                    // (OptionalFieldCodec path), unwrap to its inner schema + optionality.
-                    Schema<?> mapSchema = resolver.resolveMap((MapCodec) e.mapCodec());
-                    if (mapSchema instanceof Schema.Record<?> rec && rec.fields().size() == 1) {
-                        Schema.Field<?, ?> inner = rec.fields().get(0);
-                        fieldSchema = inner.schema();
-                        optional = inner.optional();
-                    } else {
-                        fieldSchema = mapSchema;
-                        optional = false;
-                    }
-                } else {
-                    fieldSchema = resolver.resolve((Codec) e.elementCodec());
-                    optional = false;
-                }
-                fields.add(new Schema.Field(e.name(), fieldSchema, optional, null));
-            }
-            Schema.Record schema = new Schema.Record(Object.class, List.copyOf(fields));
-            SchemaTags.tag((MapCodec) result, (Schema) schema);
+            RecordFieldTags.onBuilt(result, entries);
         } catch (Throwable ignored) {
             // Best-effort.
         }

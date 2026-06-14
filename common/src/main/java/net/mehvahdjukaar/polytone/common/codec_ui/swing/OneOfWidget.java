@@ -13,6 +13,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,13 +38,18 @@ public final class OneOfWidget implements SwingWidget {
         variantKeys.addAll(variants.keySet());
 
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
+        root.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // Stretch in parent so the active variant sub-widget fills the form width.
+        root.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, UiScale.px(6), 0));
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, UiScale.small(), 0));
+        top.setAlignmentX(Component.LEFT_ALIGNMENT);
         top.add(new JLabel(typeField + ":"));
         combo = new JComboBox<>(variantKeys.toArray(new String[0]));
         top.add(combo);
         root.add(top);
-        root.add(javax.swing.Box.createVerticalStrut(UiScale.px(4)));
+        root.add(javax.swing.Box.createVerticalStrut(UiScale.small()));
+        subHost.setAlignmentX(Component.LEFT_ALIGNMENT);
         root.add(subHost);
 
         combo.addActionListener(e -> {

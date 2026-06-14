@@ -41,10 +41,8 @@ public abstract class MapCodecXmapMixin {
     private void polytone$inheritInner(MapCodec<?> wrapped) {
         if (wrapped == null || wrapped == (Object) this) return;
         try {
-            MapCodec<Object> inner = (MapCodec<Object>)(Object) this;
-            Schema<Object> innerSchema = SchemaTags.lookupMap(inner);
-            if (innerSchema == null) innerSchema = SchemaResolver.get().resolveMap(inner);
-            SchemaTags.tag((MapCodec) wrapped, (Schema) innerSchema);
+            net.mehvahdjukaar.polytone.common.codec_ui.internal.XmapTags.putMap(
+                    wrapped, (MapCodec<?>) (Object) this);
         } catch (Throwable ignored) {
             // Best-effort.
         }

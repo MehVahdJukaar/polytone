@@ -42,10 +42,10 @@ public final class SchemaRecordBuilder<A> {
 
     private <F> MapCodec<F> mapCodecFor(Field<A, F> field) {
         if (field.optional && field.defaultValue != null) {
-            return field.codec.codec().optionalFieldOf(field.name, field.defaultValue);
+            return field.codec.optionalFieldOf(field.name, field.defaultValue);
         }
         // required (or optional with null default - shouldn't really happen here)
-        return field.codec.codec().fieldOf(field.name);
+        return field.codec.fieldOf(field.name);
     }
 
     @SafeVarargs

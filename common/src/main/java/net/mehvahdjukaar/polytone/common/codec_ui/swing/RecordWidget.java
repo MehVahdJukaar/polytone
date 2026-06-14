@@ -12,6 +12,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -28,10 +30,15 @@ public final class RecordWidget implements SwingWidget {
     public RecordWidget(Schema.Record<?> schema) {
         // Outer padding inside the record so it doesn't crash into the scroll edge.
         panel.setBorder(BorderFactory.createEmptyBorder(
-                UiScale.px(4), UiScale.px(2), UiScale.px(4), UiScale.px(2)));
+                UiScale.small(), UiScale.small(), UiScale.small(), UiScale.small()));
+        // Allow horizontal stretch when nested inside another record / list / map row.
+        // BoxLayout in particular will only stretch a child up to its maximumSize, so
+        // without this nested records stay at their preferred (narrow) width.
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
         Color mutedColor = UIManager.getColor("Label.disabledForeground");
-        if (mutedColor == null) mutedColor = new Color(0x888888);
+        if (mutedColor == null) mutedColor = new Color(0x999999);
 
         int row = 0;
         for (Schema.Field<?, ?> field : schema.fields()) {
@@ -51,16 +58,17 @@ public final class RecordWidget implements SwingWidget {
                 JLabel opt = new JLabel("opt");
                 opt.setFont(UiScale.deriveFont(opt.getFont(), Font.ITALIC, -2f));
                 opt.setForeground(mutedColor);
-                opt.setBorder(BorderFactory.createEmptyBorder(0, UiScale.px(6), 0, 0));
+                opt.setBorder(BorderFactory.createEmptyBorder(0, UiScale.small(), 0, 0));
                 lc.gridx = 1;
                 labelCell.add(opt, lc);
             }
 
+            // MED vertical between rows, SMALL horizontal gap label↔widget.
             GridBagConstraints gc = new GridBagConstraints();
             gc.gridx = 0;
             gc.gridy = row;
             gc.anchor = GridBagConstraints.LINE_END;
-            gc.insets = UiScale.insets(4, 4, 4, 10);
+            gc.insets = new java.awt.Insets(UiScale.small(), UiScale.small(), UiScale.small(), UiScale.med());
             panel.add(labelCell, gc);
 
             gc = new GridBagConstraints();
@@ -69,7 +77,7 @@ public final class RecordWidget implements SwingWidget {
             gc.weightx = 1.0;
             gc.fill = GridBagConstraints.HORIZONTAL;
             gc.anchor = GridBagConstraints.LINE_START;
-            gc.insets = UiScale.insets(4, 0, 4, 4);
+            gc.insets = new java.awt.Insets(UiScale.small(), 0, UiScale.small(), UiScale.small());
             panel.add(child.component(), gc);
 
             row++;

@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.polytone.common.codec_ui.Schema;
 import net.mehvahdjukaar.polytone.common.codec_ui.SchemaResolver;
+import net.mehvahdjukaar.polytone.common.codec_ui.internal.FieldOfTags;
 import net.mehvahdjukaar.polytone.common.codec_ui.internal.SchemaTags;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -139,12 +140,12 @@ public interface CodecXmapMixin {
     private void polytone$tagSingleField(MapCodec<?> wrapped, String name, boolean optional, Object defaultValue) {
         if (wrapped == null) return;
         try {
-            Codec<Object> inner = (Codec<Object>) this;
-            Schema<Object> innerSchema = SchemaTags.lookup(inner);
-            if (innerSchema == null) innerSchema = SchemaResolver.get().resolve(inner);
-            Schema.Field field = new Schema.Field(name, innerSchema, optional, defaultValue);
-            Schema.Record rec = new Schema.Record(Object.class, List.of(field));
-            SchemaTags.tag((MapCodec) wrapped, (Schema) rec);
+            // Store a LAZY tag: just (name, innerCodec). The resolver computes the inner
+            // schema fresh at lookup time, so a companion registered AFTER this fieldOf
+            // mixin fires still wins. Required because MC bootstrap calls fieldOf during
+            // early init (e.g. BlockState.CODEC.fieldOf in RandomBlockStateMatchTest).
+            Codec<?> inner = (Codec<?>) (Object) this;
+            FieldOfTags.put(wrapped, name, inner, optional, defaultValue);
         } catch (Throwable ignored) {
             // Best-effort.
         }
@@ -160,14 +161,13 @@ public interface CodecXmapMixin {
     private void polytone$inheritInner(Codec<?> wrapped) {
         if (wrapped == null || wrapped == (Object) this) return;
         try {
-            Codec<Object> inner = (Codec<Object>) this;
-            Schema<Object> innerSchema = SchemaTags.lookup(inner);
-            if (innerSchema == null) {
-                innerSchema = SchemaResolver.get().resolve(inner);
-            }
-            SchemaTags.tag((Codec) wrapped, (Schema) innerSchema);
+            // LAZY: just record (wrapped -> inner). Resolver resolves inner fresh at lookup time.
+            // Previously we eagerly called SchemaResolver.resolve here, which captured stale
+            // (empty) schemas during MC bootstrap before companions were registered.
+            net.mehvahdjukaar.polytone.common.codec_ui.internal.XmapTags.putCodec(
+                    wrapped, (Codec<?>) (Object) this);
         } catch (Throwable ignored) {
-            // Best-effort; never propagate exceptions out of a constructor path.
+            // Best-effort.
         }
     }
 }

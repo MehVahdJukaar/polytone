@@ -94,4 +94,24 @@ public final class RecordFieldTags {
         List<Entry> v = TAGS.get(builder);
         return v == null ? List.of() : v;
     }
+
+    // ===== Output side: tags by built MapCodec for LAZY resolution =====
+    //
+    // The RCB build mixin transfers the accumulated entries to this map keyed by the OUTPUT
+    // MapCodec. The resolver consults it at lookup time and rebuilds the Schema.Record FRESH
+    // each call — so a companion registered after the RCB.build() ran (e.g. BlockState.CODEC
+    // registered after RandomBlockStateMatchTest's clinit) still wins, because we never cache
+    // a stale resolved schema.
+
+    private static final Map<MapCodec<?>, List<Entry>> BUILT_TAGS =
+            Collections.synchronizedMap(new WeakHashMap<>());
+
+    public static void onBuilt(MapCodec<?> result, List<Entry> entries) {
+        if (result == null || entries == null || entries.isEmpty()) return;
+        BUILT_TAGS.put(result, List.copyOf(entries));
+    }
+
+    public static @Nullable List<Entry> getBuilt(MapCodec<?> result) {
+        return BUILT_TAGS.get(result);
+    }
 }

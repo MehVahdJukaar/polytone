@@ -48,12 +48,12 @@ public final class RegistryPickerDialog extends JDialog {
         this.onPick = onPick;
         this.allEntries = collectEntries(registryKey);
 
-        JPanel content = new JPanel(new BorderLayout(0, UiScale.px(10)));
+        JPanel content = new JPanel(new BorderLayout(0, UiScale.med()));
         content.setBorder(BorderFactory.createEmptyBorder(
-                UiScale.px(14), UiScale.px(14), UiScale.px(14), UiScale.px(14)));
+                UiScale.large(), UiScale.large(), UiScale.large(), UiScale.large()));
 
         // ----- Header: title + search -----
-        JPanel north = new JPanel(new BorderLayout(0, UiScale.px(8)));
+        JPanel north = new JPanel(new BorderLayout(0, UiScale.med()));
         JLabel title = new JLabel(registryKey.identifier().toString());
         title.setFont(UiScale.deriveFont(title.getFont(), Font.BOLD, 2f));
         north.add(title, BorderLayout.NORTH);
@@ -73,7 +73,7 @@ public final class RegistryPickerDialog extends JDialog {
         if (allEntries.isEmpty()) {
             JLabel warn = new JLabel("(registry not available — no entries to pick from)");
             warn.setForeground(new Color(0xC0392B));
-            warn.setBorder(BorderFactory.createEmptyBorder(UiScale.px(4), 0, 0, 0));
+            warn.setBorder(BorderFactory.createEmptyBorder(UiScale.small(), 0, 0, 0));
             north.add(warn, BorderLayout.SOUTH);
         }
 
@@ -87,7 +87,7 @@ public final class RegistryPickerDialog extends JDialog {
         JPanel footer = new JPanel(new BorderLayout());
         Box right = Box.createHorizontalBox();
         right.add(cancel);
-        right.add(Box.createHorizontalStrut(UiScale.px(8)));
+        right.add(Box.createHorizontalStrut(UiScale.med()));
         right.add(ok);
         footer.add(right, BorderLayout.EAST);
         content.add(footer, BorderLayout.SOUTH);

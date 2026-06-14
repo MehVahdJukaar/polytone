@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import java.awt.Dimension;
 import java.awt.Frame;
 
 public final class ResourceIdWidget implements SwingWidget {
@@ -28,6 +29,11 @@ public final class ResourceIdWidget implements SwingWidget {
         button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         button.setToolTipText("Click to pick an identifier");
         button.addActionListener(e -> openPicker());
+        // Allow horizontal stretch so the button fills the form column and the long
+        // identifier text remains visible without resizing the window.
+        int h = button.getPreferredSize().height;
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, h));
+        button.setMinimumSize(new Dimension(0, h));
     }
 
     private void openPicker() {

@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.JComponent;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import java.awt.Dimension;
 
 /**
  * Single Swing widget for any numeric primitive schema variant.
@@ -24,6 +25,10 @@ public final class NumberWidget implements SwingWidget {
         this.kind = kind;
         // SpinnerNumberModel signed-Comparable ctor expects Comparable bounds. Pass raw numbers.
         this.spinner = new JSpinner(new SpinnerNumberModel(initial, (Comparable<?>) min, (Comparable<?>) max, step));
+        // Allow horizontal stretch in BoxLayout/GridBag parents.
+        int h = spinner.getPreferredSize().height;
+        spinner.setMaximumSize(new Dimension(Integer.MAX_VALUE, h));
+        spinner.setMinimumSize(new Dimension(0, h));
     }
 
     @Override

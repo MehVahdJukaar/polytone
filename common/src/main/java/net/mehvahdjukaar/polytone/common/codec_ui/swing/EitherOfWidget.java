@@ -10,6 +10,8 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 
 public final class EitherOfWidget implements SwingWidget {
@@ -29,12 +31,17 @@ public final class EitherOfWidget implements SwingWidget {
         this.rightWidget = SwingWidgetFactory.create(schema.right());
 
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
+        root.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // Stretch in parent so the active sub-widget can fill the form width.
+        root.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, UiScale.px(6), 0));
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, UiScale.small(), 0));
+        top.setAlignmentX(Component.LEFT_ALIGNMENT);
         combo = new JComboBox<>(new String[]{LEFT, RIGHT});
         top.add(combo);
         root.add(top);
-        root.add(javax.swing.Box.createVerticalStrut(UiScale.px(4)));
+        root.add(javax.swing.Box.createVerticalStrut(UiScale.small()));
+        subHost.setAlignmentX(Component.LEFT_ALIGNMENT);
         root.add(subHost);
 
         combo.addActionListener(e -> {

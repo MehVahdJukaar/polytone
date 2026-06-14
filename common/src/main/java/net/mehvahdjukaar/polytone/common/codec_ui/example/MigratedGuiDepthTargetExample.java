@@ -1,7 +1,9 @@
 package net.mehvahdjukaar.polytone.common.codec_ui.example;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.polytone.common.codec_ui.Schema;
 import net.mehvahdjukaar.polytone.common.codec_ui.SchemaCodec;
+import net.mehvahdjukaar.polytone.common.codec_ui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.codec_ui.SchemaRecordBuilder;
 import net.minecraft.util.ExtraCodecs;
 
@@ -34,20 +36,19 @@ import net.minecraft.util.ExtraCodecs;
  */
 public record MigratedGuiDepthTargetExample(int strata, int node, boolean addAbove) {
 
-    public static final SchemaCodec<MigratedGuiDepthTargetExample> SCHEMA_CODEC;
-
-    static {
-        // Mirror the original codecs: NON_NEGATIVE_INT for strata/node, BOOL for add_above.
-        // wrap() keeps the original codec's validation (non-negative check) while giving the UI
-        // an Opaque-fallback schema for these primitives.
-        SchemaCodec<Integer> nonNegInt = SchemaCodec.wrap(ExtraCodecs.NON_NEGATIVE_INT);
-        SchemaCodec<Boolean> boolCodec = SchemaCodec.wrap(Codec.BOOL);
-
-        SchemaRecordBuilder<MigratedGuiDepthTargetExample> b =
-                SchemaRecordBuilder.of(MigratedGuiDepthTargetExample.class);
-        var fStrata = b.field("strata", nonNegInt, MigratedGuiDepthTargetExample::strata);
-        var fNode = b.optional("node", nonNegInt, Integer.MAX_VALUE, MigratedGuiDepthTargetExample::node);
-        var fAddAbove = b.optional("add_above", boolCodec, true, MigratedGuiDepthTargetExample::addAbove);
-        SCHEMA_CODEC = b.build3(MigratedGuiDepthTargetExample::new, fStrata, fNode, fAddAbove);
-    }
+    // One-liner, mirrors RecordCodecBuilder.create exactly. The Instance overloads of field/optional
+    // accept BOTH raw Codec<F> AND SchemaCodec<F> — raw codecs are auto-wrapped via the resolver.
+    // For "strata" we pass an explicit SchemaCodec.of(..., IntRange(0, MAX)) because the auto-resolver
+    // can't infer the non-negative bound from ExtraCodecs.NON_NEGATIVE_INT (an opaque xmap chain).
+    // For "node" and "add_above" the raw codec is enough — auto gives IntRange (unbounded) and Bool.
+    public static final SchemaCodec<MigratedGuiDepthTargetExample> SCHEMA_CODEC = SchemaRecord.create(
+            MigratedGuiDepthTargetExample.class, i -> i.group(
+                    i.field("strata",
+                            SchemaCodec.of(ExtraCodecs.NON_NEGATIVE_INT, new Schema.IntRange(0, Integer.MAX_VALUE)),
+                            MigratedGuiDepthTargetExample::strata),
+                    i.optional("node", ExtraCodecs.NON_NEGATIVE_INT, Integer.MAX_VALUE,
+                            MigratedGuiDepthTargetExample::node),
+                    i.optional("add_above", Codec.BOOL, true,
+                            MigratedGuiDepthTargetExample::addAbove)
+            ).apply(i, MigratedGuiDepthTargetExample::new));
 }

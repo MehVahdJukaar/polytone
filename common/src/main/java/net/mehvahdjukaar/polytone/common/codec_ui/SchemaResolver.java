@@ -142,11 +142,19 @@ public final class SchemaResolver {
         Schema<?> cached = cache.get(codec);
         if (cached != null) return (Schema<A>) cached;
 
-        // Tier 0: mixin-attached side-channel tag (xmap/RCB-build construction time).
+        // Tier 0: mixin-attached side-channel tag (manual companions, hand-tagged codecs).
         Schema<A> tagged = SchemaTags.lookup(codec);
         if (tagged != null) {
             cache.put(codec, tagged);
             return tagged;
+        }
+
+        // Tier 0d: lazy xmap/stable/etc. wrapper tag — delegate to inner FRESH.
+        Codec<?> innerWrapped = net.mehvahdjukaar.polytone.common.codec_ui.internal.XmapTags.getCodec(codec);
+        if (innerWrapped != null) {
+            Schema<?> innerSchema = resolveCodec((Codec) innerWrapped, cache);
+            cache.put(codec, innerSchema);
+            return (Schema<A>) innerSchema;
         }
 
         // Insert opaque placeholder so cycles short-circuit.
@@ -161,16 +169,72 @@ public final class SchemaResolver {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private <A> Schema<A> resolveMapCodec(MapCodec<A> codec, IdentityHashMap<Object, Schema<?>> cache) {
         Schema<?> cached = cache.get(codec);
         if (cached != null) return (Schema<A>) cached;
 
-        // Tier 0: mixin-attached side-channel tag (RecordCodecBuilder.build mixin).
+        // Tier 0a: lazy fieldOf tag — resolve inner FRESH so companions registered after the
+        // fieldOf mixin fired still take effect.
+        net.mehvahdjukaar.polytone.common.codec_ui.internal.FieldOfTags.Entry foe =
+                net.mehvahdjukaar.polytone.common.codec_ui.internal.FieldOfTags.get(codec);
+        if (foe != null) {
+            System.out.println("[codec_ui] tier-0a fieldOf HIT: name=" + foe.name()
+                    + " innerCodec=" + foe.innerCodec().getClass().getSimpleName()
+                    + "@" + System.identityHashCode(foe.innerCodec()));
+            Schema<?> innerSchema = resolveCodec((Codec) foe.innerCodec(), cache);
+            Schema.Field field = new Schema.Field(foe.name(), innerSchema, foe.optional(), foe.defaultValue());
+            Schema rec = new Schema.Record(Object.class, java.util.List.of(field));
+            cache.put(codec, rec);
+            return rec;
+        }
+
+        // Tier 0b: lazy RecordCodecBuilder.build tag — rebuild the Schema.Record fresh from
+        // the accumulated field entries. Cached only in the per-resolve cache (not SchemaTags),
+        // so a companion registered after RCB.build() still affects the next resolve.
+        java.util.List<net.mehvahdjukaar.polytone.common.codec_ui.internal.RecordFieldTags.Entry> built =
+                net.mehvahdjukaar.polytone.common.codec_ui.internal.RecordFieldTags.getBuilt(codec);
+        if (built != null && !built.isEmpty()) {
+            java.util.List<Schema.Field<?, ?>> fields = new java.util.ArrayList<>(built.size());
+            for (var e : built) {
+                Schema<?> fieldSchema;
+                boolean optional;
+                Object defaultValue = null;
+                if (e.mapCodec() != null) {
+                    Schema<?> mapSchema = resolveMapCodec((MapCodec) e.mapCodec(), cache);
+                    if (mapSchema instanceof Schema.Record<?> rec && rec.fields().size() == 1) {
+                        Schema.Field<?, ?> inner = rec.fields().get(0);
+                        fieldSchema = inner.schema();
+                        optional = inner.optional();
+                        defaultValue = inner.defaultValue();
+                    } else {
+                        fieldSchema = mapSchema;
+                        optional = false;
+                    }
+                } else {
+                    fieldSchema = resolveCodec((Codec) e.elementCodec(), cache);
+                    optional = false;
+                }
+                fields.add(new Schema.Field(e.name(), fieldSchema, optional, defaultValue));
+            }
+            Schema rec = new Schema.Record(Object.class, java.util.List.copyOf(fields));
+            cache.put(codec, rec);
+            return rec;
+        }
+
+        // Tier 0c: eager side-channel tag (manual companion registrations via SchemaCodecs.registerCompanion).
         Schema<A> tagged = SchemaTags.lookupMap(codec);
         if (tagged != null) {
             cache.put(codec, tagged);
             return tagged;
+        }
+
+        // Tier 0d: lazy MapCodec xmap wrapper tag — delegate to inner FRESH.
+        MapCodec<?> innerWrappedMap = net.mehvahdjukaar.polytone.common.codec_ui.internal.XmapTags.getMap(codec);
+        if (innerWrappedMap != null) {
+            Schema<?> innerSchema = resolveMapCodec((MapCodec) innerWrappedMap, cache);
+            cache.put(codec, innerSchema);
+            return (Schema<A>) innerSchema;
         }
 
         // For MapCodec we fall back to Opaque over its codec() form.
@@ -258,6 +322,14 @@ public final class SchemaResolver {
             // the keyCodec's keys(); we use the MapCodec's first key if we can, else "type".
             String typeKey = extractFirstKey(keyCodec);
             LinkedHashMap<String, Schema<?>> variants = enumerateDispatchVariants(dispatch, cache);
+
+            // Generic fallback: if no registered hook matched, check whether the keyCodec is a
+            // registry-backed codec (tagged with a single-field Record carrying a ResourceId).
+            // If so, populate variants directly from that registry. Bodies stay Opaque since
+            // resolving 1000+ per-variant codecs (e.g. every Block) is impractical.
+            if (variants.isEmpty()) {
+                variants = enumerateFromRegistryTag(keyCodec, dispatch);
+            }
             return new Schema.OneOf<>(typeKey, variants);
         }
         if (codec instanceof SimpleMapCodec<?, ?> simple && SIMPLE_MAP_KEYCODEC != null && SIMPLE_MAP_ELEMENT != null) {
@@ -326,29 +398,9 @@ public final class SchemaResolver {
             }
         }
 
-        // Fallback: if no hook produced anything via decoder, populate keys-only with Opaque
-        // schemas. The dropdown will at least show the variant names; the body will be a raw JSON
-        // editor for each. Better than an empty dropdown.
-        if (variants.isEmpty()) {
-            Polytone.LOGGER.warn("[codec_ui]   No hook matched via decoder enumeration. Trying name-only fallback.");
-            for (DispatchRegistry.Hook<?> hook : DispatchRegistry.all()) {
-                for (Object k : hook.keys().get()) {
-                    try {
-                        MapCodec<?> variantCodec = ((Function<Object, MapCodec<?>>) hook.codecOf()).apply(k);
-                        if (variantCodec == null) continue;
-                        Schema<?> variantSchema = resolveMapCodec(variantCodec, cache);
-                        String name = ((Function<Object, String>) hook.nameOf()).apply(k);
-                        variants.put(name, variantSchema);
-                    } catch (Throwable t) {
-                        // wrong-K hook; skip
-                    }
-                }
-                if (!variants.isEmpty()) {
-                    Polytone.LOGGER.info("[codec_ui]   Fallback populated {} variants from {}", variants.size(), hook.keyType().getSimpleName());
-                    break;
-                }
-            }
-        }
+        // (Old name-only fallback removed: it picked the WRONG hook for unknown-K dispatches
+        // because hook.codecOf.apply(k) succeeds for any registered K regardless of whether
+        // the dispatch's actual K matches. Result: BlockState's dispatch got IntProvider variants.)
 
         Polytone.LOGGER.info("[codec_ui]   final variant count: {}", variants.size());
         return variants;
@@ -371,6 +423,63 @@ public final class SchemaResolver {
         } catch (Throwable ignored) {
             return null;
         }
+    }
+
+    /**
+     * Registry-backed dispatch fallback. When the dispatch's {@code keyCodec} is itself a
+     * single-field {@code Schema.Record} whose field schema is a {@link Schema.ResourceId},
+     * we know the dispatch is keyed on an identifier from a known registry. Populate the
+     * variants dropdown with every entry in that registry (label = identifier), using a placeholder
+     * Opaque schema for the variant body.
+     *
+     * <p>Bodies stay opaque on purpose — for large registries (Block, Item, etc.) resolving each
+     * variant's MapCodec would be expensive and rarely useful in this MVP. The user can still
+     * edit the body as raw JSON.</p>
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private LinkedHashMap<String, Schema<?>> enumerateFromRegistryTag(MapCodec<?> keyCodec, KeyDispatchCodec<?, ?> dispatch) {
+        LinkedHashMap<String, Schema<?>> variants = new LinkedHashMap<>();
+
+        // Try the lazy FieldOfTags first (typical case: BLOCK.byNameCodec().fieldOf("Name")).
+        // Resolve the inner Codec fresh and check if its schema is a ResourceId.
+        Schema.ResourceId rid = null;
+        net.mehvahdjukaar.polytone.common.codec_ui.internal.FieldOfTags.Entry foe =
+                net.mehvahdjukaar.polytone.common.codec_ui.internal.FieldOfTags.get(keyCodec);
+        if (foe != null) {
+            IdentityHashMap<Object, Schema<?>> tmpCache = new IdentityHashMap<>();
+            Schema<?> innerSchema = resolveCodec((Codec) foe.innerCodec(), tmpCache);
+            Polytone.LOGGER.info("[codec_ui]   registry-tag fallback: FieldOfTags inner={}, schema={}",
+                    foe.innerCodec().getClass().getSimpleName(), innerSchema);
+            if (innerSchema instanceof Schema.ResourceId r && r.registry() != null) rid = r;
+        }
+        // Fall back to eager SchemaTags entry (manual companion tagging on the keyCodec).
+        if (rid == null) {
+            Schema<?> keyCodecSchema = SchemaTags.lookupMap(keyCodec);
+            Polytone.LOGGER.info("[codec_ui]   registry-tag fallback: SchemaTags entry={}", keyCodecSchema);
+            if (keyCodecSchema instanceof Schema.Record<?> rec && rec.fields().size() == 1) {
+                Schema<?> fs = rec.fields().get(0).schema();
+                if (fs instanceof Schema.ResourceId r && r.registry() != null) rid = r;
+            }
+        }
+        if (rid == null) return variants;
+
+        try {
+            var holderOpt = net.minecraft.core.registries.BuiltInRegistries.REGISTRY.get(rid.registry().identifier());
+            if (holderOpt.isEmpty()) {
+                Polytone.LOGGER.warn("[codec_ui]   registry {} not found in BuiltInRegistries", rid.registry());
+                return variants;
+            }
+            net.minecraft.core.Registry<?> registry = (net.minecraft.core.Registry<?>) holderOpt.get().value();
+            int count = 0;
+            for (net.minecraft.resources.Identifier id : registry.keySet()) {
+                variants.put(id.toString(), new Schema.Opaque<>(null, null));
+                count++;
+            }
+            Polytone.LOGGER.info("[codec_ui]   registry-backed dispatch: populated {} variants from {}", count, rid.registry().identifier());
+        } catch (Throwable t) {
+            Polytone.LOGGER.warn("[codec_ui]   Failed to enumerate registry {}: {}", rid.registry(), t.toString());
+        }
+        return variants;
     }
 
     private static String extractFirstKey(MapCodec<?> keyCodec) {

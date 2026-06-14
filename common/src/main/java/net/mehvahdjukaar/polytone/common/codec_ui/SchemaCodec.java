@@ -1,13 +1,14 @@
 package net.mehvahdjukaar.polytone.common.codec_ui;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 
 /**
  * Pairing of a {@link Codec} with its {@link Schema}.
  */
-public sealed interface SchemaCodec<A> permits SchemaCodec.SimpleSchemaCodec {
-
-    Codec<A> codec();
+public sealed interface SchemaCodec<A> extends Codec<A> {
 
     Schema<A> schema();
 
@@ -22,5 +23,15 @@ public sealed interface SchemaCodec<A> permits SchemaCodec.SimpleSchemaCodec {
         return new SimpleSchemaCodec<>(codec, schema);
     }
 
-    record SimpleSchemaCodec<A>(Codec<A> codec, Schema<A> schema) implements SchemaCodec<A> {}
+    record SimpleSchemaCodec<A>(Codec<A> codec, Schema<A> schema) implements SchemaCodec<A> {
+        @Override
+        public <T> DataResult<Pair<A, T>> decode(DynamicOps<T> ops, T input) {
+            return codec.decode(ops, input);
+        }
+
+        @Override
+        public <T> DataResult<T> encode(A input, DynamicOps<T> ops, T prefix) {
+            return codec.encode(input, ops, prefix);
+        }
+    }
 }

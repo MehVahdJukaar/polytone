@@ -10,6 +10,7 @@ fabric {
 val exp4j_version: String by extra
 val mvel_version: String by extra
 val flatlaf_version: String by extra
+val rsyntaxtextarea_version: String by extra
 
 dependencies {
 
@@ -19,7 +20,7 @@ dependencies {
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     apiInclude("org.mvel:mvel2:${mvel_version}")
     apiInclude("com.formdev:flatlaf:${flatlaf_version}")
-
+    apiInclude("com.fifesoft:rsyntaxtextarea:${rsyntaxtextarea_version}")
 
     modCompileOnly ("curse.maven:fabric-seasons-413523:5789846")
 

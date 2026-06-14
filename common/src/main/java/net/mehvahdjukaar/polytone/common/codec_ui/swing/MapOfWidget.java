@@ -32,11 +32,15 @@ public final class MapOfWidget implements SwingWidget {
         this.keySchema = schema.key();
         this.valueSchema = schema.value();
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
+        // Allow the map widget to fill the parent's available horizontal width.
+        root.setAlignmentX(Component.LEFT_ALIGNMENT);
+        root.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         rowsHost.setLayout(new BoxLayout(rowsHost, BoxLayout.Y_AXIS));
         rowsHost.setAlignmentX(Component.LEFT_ALIGNMENT);
+        rowsHost.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         root.add(rowsHost);
 
-        root.add(Box.createVerticalStrut(UiScale.px(4)));
+        root.add(Box.createVerticalStrut(UiScale.small()));
 
         JPanel addBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         addBar.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -63,9 +67,9 @@ public final class MapOfWidget implements SwingWidget {
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
         row.add(keyWidget.component());
-        row.add(Box.createHorizontalStrut(UiScale.px(6)));
+        row.add(Box.createHorizontalStrut(UiScale.small()));
         row.add(valueWidget.component());
-        row.add(Box.createHorizontalStrut(UiScale.px(6)));
+        row.add(Box.createHorizontalStrut(UiScale.small()));
 
         JButton remove = new JButton("×");
         remove.setToolTipText("Remove");
@@ -89,7 +93,7 @@ public final class MapOfWidget implements SwingWidget {
 
         rowPanels.add(row);
         rowsHost.add(row);
-        rowsHost.add(Box.createVerticalStrut(UiScale.px(4)));
+        rowsHost.add(Box.createVerticalStrut(UiScale.med()));
     }
 
     @Override

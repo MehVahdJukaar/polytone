@@ -23,10 +23,19 @@ public final class UiScale {
 
     private UiScale() {}
 
+    // ---- Spacing tokens (LOGICAL px). Use these everywhere instead of ad-hoc numbers
+    // so the widget tree has a single, consistent rhythm.
+    //   SMALL  — gap inside a row (label↔widget, button↔button in a tight cluster)
+    //   MED    — gap between rows in a Record / List / Map
+    //   LARGE  — gap between sections; outer window margins
+    public static int small()  { return px(4);  }
+    public static int med()    { return px(8);  }
+    public static int large()  { return px(16); }
+
     /**
      * Initial scale factor for FlatLaf, returned as a {@code "Nx"} string
      * (e.g. {@code "2.0x"}). Pass this as the value of the {@code flatlaf.uiScale}
-     * system property BEFORE {@code FlatLightLaf.setup()}.
+     * system property BEFORE {@code FlatDarkLaf.setup()}.
      *
      * <p>Detection priority — first hit wins:
      * <ol>

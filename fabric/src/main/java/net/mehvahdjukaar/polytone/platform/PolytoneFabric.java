@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.platform;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.model.loading.v1.CustomUnbakedBlockStateModel;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
@@ -14,6 +15,8 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.codec_ui.example.FooExampleTrigger;
+import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
+import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
 import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
@@ -37,6 +40,7 @@ public class PolytoneFabric implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         SpecialModelsHandlerImpl.init();
+        CustomUnbakedBlockStateModel.register(ExpressionModel.ID, ExpressionBlockStateModel.Unbaked.CODEC);
         FabricLoader instance = FabricLoader.getInstance();
         Polytone.init(instance.isDevelopmentEnvironment(), false);
 
