@@ -33,7 +33,7 @@ public class PostChainsManager extends JsonPartialReloader {
     private final List<PostChainActivator> activators = new ArrayList<>();
 
     public PostChainsManager() {
-        super("post_chains");
+        super("post_chains", "post_shaders");
     }
 
     @Override

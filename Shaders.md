@@ -17,8 +17,9 @@ This feature lets you add custom post shaders to the game.
 To do so you'll need 3 files:
 - polytone post chain file in `[pack namespace]/polytone/post_chains`
 - post chain vanilla file in `[pack namespace]/post_effect`
-- additional shader files in `[pack namespace]/shaders/post`
+- additional shadaer files in `[pack namespace]/shaders/post`
 
+NOTE: this folder used to be called `post_shaders`. It was renamed to `post_chains`, so be sure to update older packs.
 
 The polytone file is super simple and can look like this
 
@@ -38,7 +39,7 @@ Refer to the mc wiki for info on how to construct those 2.
 
 
 
-# Extra Post Shader Uniforms
+# Extra Shader Uniforms
 
 Polytone adds new uniforms to your post shaders.
 These work on ANY post shaders and can be aded as follows by adding the following block to your shader file.
@@ -58,15 +59,21 @@ layout (std140) uniform PolyGlobals {
 
 ```
 
-`PolyGlobals` is now auto-bound to every render pass — not just post shaders. Declare the block in any vanilla, replaced, or custom shader and the values are available there too.
+The available fields are:
+- `PolyProjMat` - the world projection matrix
+- `PolyModelViewMat` - the world model-view (camera) matrix
+- `PolySunAngle` - the sun angle, offset so that 0 points at the horizon
+- `PolyDayTime` - the current world day time (0-24000)
+
+These are bound as a single std140 UBO, so they must be declared in this exact order. You may declare only the leading fields you actually use (e.g. just `PolyProjMat`), but never reorder or skip a field in the middle.
 
 
 
 ## Expression-Driven Uniforms
 
-You can define custom per-effect float uniforms driven by Polytone expressions directly in your polytone post chain file. This gives you full control over shader parameters at runtime thanks to the use of scripting expressions (see their page).
+You can define custom per-effect float uniforms driven by Polytone expressions directly in your polytone post shader file. This gives you full control over shader parameters at runtime thanks to the use of scripting expressions (see their page).
 
-Add an `expression_uniforms` map to your polytone post chain JSON:
+Add an `expression_uniforms` map to your polytone post shader JSON:
 
 ```json
 {
@@ -87,7 +94,9 @@ layout (std140) uniform MyIntensity {
 };
 ```
 
-You can then use `value` anywhere in that shader pass. The expression is re-evaluated every frame, so the uniform updates continuously.
+You can then use `value` anywhere in that shader. The expression is re-evaluated every frame, so the uniform updates continuously.
+
+When declared on a post chain file, these uniforms are bound to every pass in the chain, and only while the chain is active (so a disabled `activation_condition` also stops the binds).
 
 Expressions have access to all the standard Polytone variables: `g` (global), `p` (player), `c` (camera), `random`, math functions, and any global expressions you have defined.
 
@@ -96,31 +105,33 @@ Expressions have access to all the standard Polytone variables: `g` (global), `p
 Uniform expressions are calculated EVERY render tick. this makes them very expensive. Unless you need them to update in real time, consider using Global Expressions instead with possibly a low update rate. Then reference those values here in your uniforms.
 
 
+# Expression Uniforms on Any Shader
 
-# Shader Effects (any shader, 1.21.11+)
+The `expression_uniforms` shown above only target post chains. You can also inject the same kind of expression-driven uniforms into ANY shader (core shaders, rendertypes, etc.), not just post passes.
 
-Same expression-driven uniforms as above, but attachable to **any** shader — vanilla core shaders, user-replaced shaders, or post-chain pass shaders.
+To do so add a file under `[pack namespace]/polytone/shader_effects/`. The file PATH determines which shader it targets, following the standard Polytone path convention. For example:
 
-Files live in `[pack namespace]/polytone/shader_effects/<shader path>.json`. The **file path is the target shader id**, so
+```
+assets/minecraft/polytone/shader_effects/core/rendertype_solid.json
+```
 
-`assets/minecraft/polytone/shader_effects/core/rendertype_solid.json`
+targets the shader `minecraft:core/rendertype_solid`.
 
-targets `minecraft:core/rendertype_solid`.
-
-The JSON body is just a map of UBO-block-name → expression:
+The file body is just the uniform map itself (no `expression_uniforms` wrapper, no `post_chain` field):
 
 ```json
 {
-  "Intensity": "world_time * 0.001",
-  "TintRed": "p.biome == 'minecraft:nether_wastes' ? 1 : 0"
+  "MyIntensity": "sin(g.time * 0.05) * 0.5 + 0.5",
+  "DayProgress": "g.dayTime / 24000.0"
 }
 ```
 
-Shader side, declare each as a single-float UBO:
+Each key is a UBO block name, declared in the target shader exactly as before:
 
 ```glsl
-layout (std140) uniform Intensity { float value; };
-layout (std140) uniform TintRed   { float value; };
+layout (std140) uniform MyIntensity {
+    float value;
+};
 ```
 
-No `activation_condition` field — gate values inside the expression itself (`cond ? v : 0`). Vanilla shaders that don't declare the block are unaffected.
+The uniforms are bound whenever a pipeline using that shader (matched by either its fragment or vertex shader id) renders. The same Pro tip applies: these evaluate every frame, so prefer Global Expressions for values that don't need per-frame updates.

@@ -34,7 +34,7 @@ public class ShaderUniformsManager extends JsonPartialReloader {
     private final Map<Identifier, List<ExpressionUniformBuffers>> byShader = new HashMap<>();
 
     public ShaderUniformsManager() {
-        super("shader_effects");
+        super("shader_modifiers");
     }
 
     @Override

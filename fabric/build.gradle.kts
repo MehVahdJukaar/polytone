@@ -19,8 +19,6 @@ dependencies {
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     apiInclude("org.mvel:mvel2:${mvel_version}")
-    apiInclude("com.formdev:flatlaf:${flatlaf_version}")
-    apiInclude("com.fifesoft:rsyntaxtextarea:${rsyntaxtextarea_version}")
 
     modCompileOnly ("curse.maven:fabric-seasons-413523:5789846")
 

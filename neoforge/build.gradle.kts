@@ -21,7 +21,6 @@ dependencies {
     //forgeRuntimeLibrary ( "net.objecthunter:exp4j:${exp4j_version}")
     apiInclude("org.mvel:mvel2:${mvel_version}")
     //forgeRuntimeLibrary ("org.mvel:mvel2:${mvel_version}")
-    apiInclude("com.formdev:flatlaf:${flatlaf_version}")
 
     //   modImplementation ("curse.maven:embeddium-908741:6118392")
     modCompileOnly("curse.maven:curios-309927:6538253")
