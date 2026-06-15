@@ -1,10 +1,8 @@
 package net.mehvahdjukaar.polytone.platform;
 
-import net.caffeinemc.mods.sodium.client.platform.PlatformHelper;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.common.codec_ui.example.FooExampleTrigger;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
@@ -88,14 +86,6 @@ public class PolytoneForge {
         event.includeInProfile(ParticleHitboxDebugRenderer.ID, DebugScreenProfile.PERFORMANCE,
                 DebugScreenEntryStatus.ALWAYS_ON);
     }
-
-
-    @SubscribeEvent
-    public void onClick(LivingEntityUseItemEvent event) {
-        //TODO: remove
-        FooExampleTrigger.open();
-    }
-
 
     @SubscribeEvent
     public void renderVistaDebug(RenderLevelStageEvent.AfterTripwireBlocks event) {
