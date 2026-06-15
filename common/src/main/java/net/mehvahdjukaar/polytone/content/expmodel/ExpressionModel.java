@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.expmodel;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.BlockExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -55,16 +55,16 @@ public final class ExpressionModel {
     private ExpressionModel() {}
 
     /** One unbaked routing case: render {@code model} when {@code when} evaluates non-zero. */
-    public record Case(BlockContextExpression when, BlockStateModel.Unbaked model) {
+    public record Case(BlockExp when, BlockStateModel.Unbaked model) {
         public static final Codec<Case> CODEC = RecordCodecBuilder.create(i -> i.group(
-                BlockContextExpression.CODEC.fieldOf("when").forGetter(Case::when),
+                BlockExp.TYPE.codec().fieldOf("when").forGetter(Case::when),
                 BlockStateModel.Unbaked.CODEC.fieldOf("model").forGetter(Case::model)
         ).apply(i, Case::new));
     }
 
-    private record BakedCase(BlockContextExpression when, BlockStateModel model) {}
+    private record BakedCase(BlockExp when, BlockStateModel model) {}
 
-    public static Selector bake(List<Case> cases, Optional<BlockContextExpression> selector,
+    public static Selector bake(List<Case> cases, Optional<BlockExp> selector,
                                 BlockStateModel.Unbaked fallback, ModelBaker baker) {
         List<BakedCase> baked = new ArrayList<>(cases.size());
         for (Case c : cases) baked.add(new BakedCase(c.when(), c.model().bake(baker)));
@@ -79,10 +79,10 @@ public final class ExpressionModel {
     /** Baked selection logic shared by every loader's wrapper model. */
     public static final class Selector {
         private final List<BakedCase> cases;
-        private final BlockContextExpression selector; // nullable
+        private final BlockExp selector; // nullable
         private final BlockStateModel fallback;
 
-        private Selector(List<BakedCase> cases, BlockContextExpression selector, BlockStateModel fallback) {
+        private Selector(List<BakedCase> cases, BlockExp selector, BlockStateModel fallback) {
             this.cases = cases;
             this.selector = selector;
             this.fallback = fallback;

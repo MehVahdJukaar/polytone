@@ -4,7 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.client.model.loading.v1.CustomUnbakedBlockStateModel;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
-import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.expressions.impl.BlockExp;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -55,12 +55,12 @@ public record ExpressionBlockStateModel(ExpressionModel.Selector selector) imple
         return selector.particleIcon();
     }
 
-    public record Unbaked(List<ExpressionModel.Case> cases, Optional<BlockContextExpression> selector,
+    public record Unbaked(List<ExpressionModel.Case> cases, Optional<BlockExp> selector,
                           BlockStateModel.Unbaked fallback) implements CustomUnbakedBlockStateModel {
 
         public static final MapCodec<Unbaked> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 ExpressionModel.Case.CODEC.listOf().fieldOf("cases").forGetter(Unbaked::cases),
-                BlockContextExpression.CODEC.optionalFieldOf("selector").forGetter(Unbaked::selector),
+                BlockExp.TYPE.codec().optionalFieldOf("selector").forGetter(Unbaked::selector),
                 BlockStateModel.Unbaked.CODEC.fieldOf("fallback").forGetter(Unbaked::fallback)
         ).apply(i, Unbaked::new));
 
