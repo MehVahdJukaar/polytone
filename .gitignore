@@ -18,7 +18,7 @@ classes/
 .settings
 *.launch
 /unique_lines.txt
-/.junie/memory/
-/.codex
-/.aiassistant/
-/.ai/
+# Ignore all hidden (dot) files and directories
+.*
+!.gitignore
+CLAUDE.md

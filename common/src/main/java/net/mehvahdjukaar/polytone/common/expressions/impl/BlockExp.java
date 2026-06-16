@@ -25,6 +25,7 @@ public class BlockExp extends PolyExp implements IBlockExp {
                         ExpUtils.addCommonInputs(c);
                         c.addInput("o", BlockProxy.class);
                         c.addInput("object", BlockProxy.class);
+                        c.addInput("v", double.class);
                     }
             );
 
@@ -34,6 +35,11 @@ public class BlockExp extends PolyExp implements IBlockExp {
 
     @Override
     public double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state) {
+        return evaluate(level, pos, state, 0);
+    }
+
+    @Override
+    public double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state, double v) {
         BlockProxy obj = new BlockProxy(level, pos, state);
         Map<String, Object> vars = new HashMap<>();
         ExpUtils.addCommonVars(vars);
@@ -42,6 +48,7 @@ public class BlockExp extends PolyExp implements IBlockExp {
         RandomProxy rand = RandomProxy.posSeeded(BlockPos.containing(pos));
         vars.put("random", rand);
         vars.put("r", rand);
+        vars.put("v", v);
         return MVEL.executeExpression(expr, vars, double.class);
     }
 

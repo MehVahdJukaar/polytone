@@ -3,6 +3,8 @@ package net.mehvahdjukaar.polytone.platform;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
+import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
@@ -30,6 +32,7 @@ import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import org.apache.logging.log4j.LogManager;
@@ -61,6 +64,7 @@ public class PolytoneForge {
             NeoForge.EVENT_BUS.register(this);
             modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
             modBus.addListener(this::onRegisterDebugEntries);
+            modBus.addListener(this::onRegisterBlockStateModels);
         } else {
             LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
@@ -71,6 +75,10 @@ public class PolytoneForge {
                 );
     }
 
+    public void onRegisterBlockStateModels(RegisterBlockStateModels event) {
+        event.registerModel(ExpressionModel.ID, ExpressionBlockStateModel.Unbaked.CODEC);
+    }
+
     public void onRegisterDebugEntries(RegisterDebugEntriesEvent event) {
         event.register(ParticleHitboxDebugRenderer.ID, new DebugEntryNoop());
         event.includeInProfile(ParticleHitboxDebugRenderer.ID, DebugScreenProfile.DEFAULT,
@@ -78,7 +86,6 @@ public class PolytoneForge {
         event.includeInProfile(ParticleHitboxDebugRenderer.ID, DebugScreenProfile.PERFORMANCE,
                 DebugScreenEntryStatus.ALWAYS_ON);
     }
-
 
     @SubscribeEvent
     public void renderVistaDebug(RenderLevelStageEvent.AfterTranslucentParticles event) {

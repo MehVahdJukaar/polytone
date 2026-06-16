@@ -30,7 +30,8 @@ public abstract class GameRendererMixin {
 
     @Inject(method = "close", at = @At(value = "TAIL"))
     private void polytone$closeShaderStuff(CallbackInfo ci) {
-        Polytone.POST_SHADERS.onClose();
+        Polytone.POST_CHAINS.onClose();
+        Polytone.SHADER_EFFECTS.onClose();
     }
 
 }

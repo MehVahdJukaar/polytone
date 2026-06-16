@@ -9,6 +9,7 @@
     "ClientLevelFabricMixin",
     "ColorResolverRegistryAccessor",
     "CreativeTabAccessor",
+    "EquipmentLayerRendererMixin",
     "FabricItemGroupEntriesAccessor",
     "FaceBakeryMixin",
     "ParticleEngineAccessor",

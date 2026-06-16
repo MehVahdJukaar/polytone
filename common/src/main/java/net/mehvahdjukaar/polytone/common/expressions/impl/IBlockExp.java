@@ -25,6 +25,14 @@ public interface IBlockExp {
 
     double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state);
 
+    /**
+     * Variant that binds {@code v}, an externally supplied value (e.g. an expression-driven model
+     * selector's result). Implementations that don't support it simply ignore the value.
+     */
+    default double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state, double v) {
+        return evaluate(level, pos, state);
+    }
+
     IBlockExp ZERO = (a, b, c) -> 0.0;
     IBlockExp ONE = (a, b, c) -> 1.0;
     IBlockExp PARTICLE_RAND = (a, b, c) -> (Math.random() * 2 - 1) * 0.4;

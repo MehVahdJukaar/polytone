@@ -47,7 +47,9 @@ public class LevelRendererMixin {
                                boolean shouldRenderSky,
                                ChunkSectionsToRender chunkSectionsToRender,
                                CallbackInfo ci) {
-        Polytone.POST_SHADERS.captureLevelRendererParams(modelViewMatrix, modelViewMatrix);
+        Polytone.POST_CHAINS.captureLevelRendererParams(modelViewMatrix, modelViewMatrix);
+        // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
+        Polytone.SHADER_EFFECTS.updateAll();
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addLateDebugPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Matrix4fc;)V",
@@ -65,6 +67,6 @@ public class LevelRendererMixin {
                                     @Local FrameGraphBuilder frameGraphBuilder) {
         int i = this.minecraft.getMainRenderTarget().width;
         int j = this.minecraft.getMainRenderTarget().height;
-        Polytone.POST_SHADERS.addPostPass(i, j, this.targets, frameGraphBuilder, terrainFog, this.levelRenderState.cameraRenderState);
+        Polytone.POST_CHAINS.addPostPass(i, j, this.targets, frameGraphBuilder, terrainFog, this.levelRenderState.cameraRenderState);
     }
 }

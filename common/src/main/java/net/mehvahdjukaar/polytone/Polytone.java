@@ -21,11 +21,13 @@ import net.mehvahdjukaar.polytone.content.fluid.FluidPropertiesManager;
 import net.mehvahdjukaar.polytone.content.global_expressions.GlobalExpressionsManager;
 import net.mehvahdjukaar.polytone.content.item.CustomItemModelsManager;
 import net.mehvahdjukaar.polytone.content.item.ItemModifiersManager;
+import net.mehvahdjukaar.polytone.content.model.CustomModelsManager;
 import net.mehvahdjukaar.polytone.content.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
-import net.mehvahdjukaar.polytone.content.shaders.PostShadersManager;
+import net.mehvahdjukaar.polytone.content.shaders.PostChainsManager;
+import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.content.sound.SoundTypesManager;
@@ -68,6 +70,7 @@ public class Polytone {
     private static CompoundReloader COMPOUND_RELOADER;
     public static final BlockPropertiesManager BLOCK_MODIFIERS = new BlockPropertiesManager();
     public static final FluidPropertiesManager FLUID_MODIFIERS = new FluidPropertiesManager();
+    public static final CustomModelsManager CUSTOM_MODELS = new CustomModelsManager();
     public static final ItemModifiersManager ITEM_MODIFIERS = new ItemModifiersManager();
     public static final CustomItemModelsManager ITEM_MODELS = new CustomItemModelsManager();
     public static final BiomeEffectsManager BIOME_MODIFIERS = new BiomeEffectsManager();
@@ -83,7 +86,8 @@ public class Polytone {
     public static final ColorManager COLORS = new ColorManager();
     public static final GuiModifierManager SLOTIFY = new GuiModifierManager();
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
-    public static final PostShadersManager POST_SHADERS = new PostShadersManager();
+    public static final PostChainsManager POST_CHAINS = new PostChainsManager();
+    public static final ShaderUniformsManager SHADER_EFFECTS = new ShaderUniformsManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
     public static final GlobalExpressionsManager GLOBAL_EXPRESSION = new GlobalExpressionsManager();
@@ -101,9 +105,9 @@ public class Polytone {
         COMPOUND_RELOADER = new CompoundReloader(
                 CONFIGS, GLOBAL_EXPRESSION,
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
-                BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
+                BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS,//LIGHTMAPS,
-                DIMENSION_MODIFIERS, POST_SHADERS,
+                DIMENSION_MODIFIERS, POST_CHAINS, SHADER_EFFECTS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
                 CREATIVE_TABS_MODIFIERS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
@@ -140,7 +144,7 @@ public class Polytone {
         ClientFrameTicker.onTick(level);
         ExpTicker.onTick(level);
         ENTITY_MODIFIERS.onTick(level);
-        POST_SHADERS.tick();
+        POST_CHAINS.tick();
         TokenBucketTracker.tick();
     }
 

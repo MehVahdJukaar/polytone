@@ -26,6 +26,7 @@
     "ClientLevelMixin",
     "ColorResolverMixin",
     "ContextualBarRendererMixin",
+    "EntityModelSetMixin",
     "EntityRendererDispatcherMixin",
     "EntityRendererMixin",
     "EntityRenderStateMixin",
@@ -34,6 +35,7 @@
     "FishingHookRendererMixin",
     "GameRendererMixin",
     "GlProgramMixin",
+    "GlRenderPassMixin",
     "GuiGraphicsExtractorMixin",
     "GuiMixin",
     "GuiRenderStateMixin",
@@ -50,7 +52,6 @@
     "ParticleEngineMixin",
     "ParticleGroupMixin",
     "ParticleResourcesMixin",
-    "PostPassMixin",
     "QuadParticleGroupMixin",
     "RenderSetupMixin",
     "ScreenMixin",
@@ -66,7 +67,8 @@
     "accessor.BiomeAccessor",
     "accessor.DimensionTypeAccessor",
     "accessor.DustParticleOptionAccessor",
-    "accessor.ParticleAccessor"
+    "accessor.ParticleAccessor",
+    "accessor.PostPassAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

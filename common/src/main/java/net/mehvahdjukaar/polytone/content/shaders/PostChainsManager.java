@@ -10,39 +10,48 @@ import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
-import net.minecraft.client.renderer.PostPass;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4fc;
 
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PostShadersManager extends JsonPartialReloader {
+/**
+ * Owns post-chain activators (turn a {@link PostChain} on/off based on a condition) and the
+ * {@code PolyGlobals} UBO that gets bound to every render pass.
+ */
+public class PostChainsManager extends JsonPartialReloader {
 
     public static final String GLOBALS_NAME = "PolyGlobals";
     private PolytoneGlobalUniforms globalUniforms = null;
 
-    private final List<PostChainEffect> effects = new ArrayList<>();
-    private final IdentityHashMap<PostPass, PostChainEffect> passEffectMap = new IdentityHashMap<>();
+    private final List<PostChainActivator> activators = new ArrayList<>();
 
-    public PostShadersManager() {
-        super("post_shaders");
+    public PostChainsManager() {
+        super("post_chains", "post_shaders");
+    }
+
+    @Override
+    protected Map<Identifier, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
+        Map<Identifier, JsonElement> jsons = super.prepare(sharedState);
+        ShaderUniformsManager.registerExpressionUniformNames(jsons);
+        return jsons;
     }
 
     @Override
     protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        synchronized (effects) {
-            for (var j : Parsed.batchParseOnlyEnabled(jsons, PostChainEffect.CODEC,
-                    ops, "Post Shader Effects")) {
+        synchronized (activators) {
+            for (var j : Parsed.batchParseOnlyEnabled(jsons, PostChainActivator.CODEC,
+                    ops, "Post Chain Activators")) {
                 if (j != null) {
-                    effects.add(j.getValue());
+                    activators.add(j.getValue());
                 }
             }
         }
@@ -50,30 +59,10 @@ public class PostShadersManager extends JsonPartialReloader {
 
     @Override
     protected void resetWithLevel(boolean logOff) {
-        synchronized (effects) {
-            for (var e : effects) {
-                e.closeExpressionBuffers();
-            }
-            effects.clear();
-            passEffectMap.clear();
+        synchronized (activators) {
+            for (var e : activators) e.close();
+            activators.clear();
         }
-    }
-
-    void registerPasses(PostChain chain, PostChainEffect effect) {
-        for (PostPass pass : chain.passes) {
-            passEffectMap.put(pass, effect);
-        }
-    }
-
-    void unregisterPasses(PostChain chain) {
-        for (PostPass pass : chain.passes) {
-            passEffectMap.remove(pass);
-        }
-    }
-
-    @Nullable
-    public PostChainEffect getEffectForPass(PostPass pass) {
-        return passEffectMap.get(pass);
     }
 
     private PolytoneGlobalUniforms getOrCreateUniforms() {
@@ -83,21 +72,13 @@ public class PostShadersManager extends JsonPartialReloader {
         return globalUniforms;
     }
 
-
-    public void setupExtraUniforms(RenderPass pass, PostPass postPass) {
+    public void setupExtraUniforms(RenderPass pass) {
         pass.setUniform(GLOBALS_NAME, getOrCreateUniforms().getSlice());
-
-        PostChainEffect effect = getEffectForPass(postPass);
-        if (effect != null) {
-            effect.bindExpressionUniforms(pass);
-        }
     }
 
     public void onClose() {
-        synchronized (effects) {
-            for (var e : effects) {
-                e.closeExpressionBuffers();
-            }
+        synchronized (activators) {
+            for (var e : activators) e.close();
         }
         if (globalUniforms != null) {
             globalUniforms.close();
@@ -106,24 +87,24 @@ public class PostShadersManager extends JsonPartialReloader {
     }
 
     public void captureLevelRendererParams(Matrix4fc projectionMatrix, Matrix4fc viewMatrix) {
-        float angle = Minecraft.getInstance().levelRenderer.levelRenderState.skyRenderState.sunAngle;
-        getOrCreateUniforms().update(projectionMatrix, viewMatrix, angle);
+        Minecraft mc = Minecraft.getInstance();
+        float angle = mc.levelRenderer.levelRenderState.skyRenderState.sunAngle;
+        float dayTime = mc.level == null ? 0f : (float) (mc.level.getDayTime() % 24000L);
+        getOrCreateUniforms().update(projectionMatrix, viewMatrix, angle, dayTime);
     }
 
     public void tick() {
-        for (var j : effects) {
-            j.refreshEnabled();
+        for (var a : activators) {
+            a.refreshEnabled();
         }
     }
 
     public void addPostPass(int width, int height, LevelTargetBundle targets, FrameGraphBuilder frameGraphBuilder, GpuBufferSlice gpuBufferSlice, CameraRenderState cameraRenderState) {
-
         ShaderManager sm = Minecraft.getInstance().getShaderManager();
-        synchronized (effects) {
-            for (var e : effects) {
-                PostChain pc = e.getPostChain(sm);
+        synchronized (activators) {
+            for (var a : activators) {
+                PostChain pc = a.getPostChain(sm);
                 if (pc != null) {
-                    e.updateExpressionBuffers();
                     pc.addToFrame(frameGraphBuilder, width, height, targets);
                 }
             }

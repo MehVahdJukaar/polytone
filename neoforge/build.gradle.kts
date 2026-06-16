@@ -9,6 +9,7 @@ neoforge {
 
 val exp4j_version: String by extra
 val mvel_version: String by extra
+val flatlaf_version: String by extra
 
 dependencies {
 
