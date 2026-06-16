@@ -12,6 +12,7 @@
     "ClientLevelFabricMixin",
     "ColorResolverRegistryAccessor",
     "CreativeTabAccessor",
+    "EquipmentLayerRendererMixin",
     "FabricBlockRenderContextMixin",
     "FabricItemGroupEntriesAccessor",
     "FabricTerrainRendererContextMixin",

@@ -12,9 +12,12 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Binds expression-driven UBO uniforms to any pipeline whose vertex or fragment shader id
@@ -111,13 +114,28 @@ public class ShaderUniformsManager extends JsonPartialReloader {
         }
     }
 
+    /**
+     * Evaluates all expressions and uploads their UBO buffers. MUST be called once per frame from a
+     * point where no render pass is open (GPU buffer writes are illegal mid-pass), e.g. at
+     * {@code renderLevel} HEAD. {@link #tryApply} then only binds the already-updated buffers.
+     */
+    public void updateAll() {
+        if (byShader.isEmpty()) return;
+        // the same buffers can be registered under several shader ids; update each only once
+        Set<ExpressionUniformBuffers> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (List<ExpressionUniformBuffers> list : byShader.values()) {
+            for (ExpressionUniformBuffers b : list) {
+                if (seen.add(b)) b.update();
+            }
+        }
+    }
+
     public void tryApply(RenderPass pass, RenderPipeline pipeline) {
         if (byShader.isEmpty()) return;
         List<ExpressionUniformBuffers> list = byShader.get(pipeline.getFragmentShader());
         if (list == null) list = byShader.get(pipeline.getVertexShader());
         if (list == null) return;
         for (ExpressionUniformBuffers b : list) {
-            b.update();
             b.bind(pass);
         }
     }

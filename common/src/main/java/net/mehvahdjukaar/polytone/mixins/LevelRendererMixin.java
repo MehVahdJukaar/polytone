@@ -48,6 +48,8 @@ public class LevelRendererMixin {
                           Vector4f vector4f,
                           boolean bl2, CallbackInfo ci) {
         Polytone.POST_CHAINS.captureLevelRendererParams(project, modelView);
+        // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
+        Polytone.SHADER_EFFECTS.updateAll();
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addLateDebugPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/state/CameraRenderState;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Matrix4f;)V",
