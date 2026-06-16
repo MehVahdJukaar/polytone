@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.systems.RenderPass;
-import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
@@ -16,7 +16,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4fc;
 
 import java.util.ArrayList;
@@ -89,7 +88,7 @@ public class PostChainsManager extends JsonPartialReloader {
     public void captureLevelRendererParams(Matrix4fc projectionMatrix, Matrix4fc viewMatrix) {
         Minecraft mc = Minecraft.getInstance();
         float angle = mc.levelRenderer.levelRenderState.skyRenderState.sunAngle;
-        float dayTime = mc.level == null ? 0f : (float) (mc.level.getDayTime() % 24000L);
+        float dayTime = (float) ClientFrameTicker.getDayTime();
         getOrCreateUniforms().update(projectionMatrix, viewMatrix, angle, dayTime);
     }
 

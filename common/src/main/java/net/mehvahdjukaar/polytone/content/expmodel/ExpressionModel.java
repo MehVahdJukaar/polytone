@@ -5,13 +5,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.impl.BlockExp;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.LevelReader;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -91,8 +91,8 @@ public final class ExpressionModel {
         /** @return index of the first matching case, or -1 to mean the fallback. */
         public int selectIndex(BlockPos pos, BlockState state) {
             // The render-time level is a BlockAndTintGetter, but the expression engine wants a
-            // LevelReader for biome/light lookups - use the client level, same as colormaps do.
-            LevelReader level = Minecraft.getInstance().level;
+            // ClientLevel for biome/light lookups - use the client level, same as colormaps do.
+            ClientLevel level = Minecraft.getInstance().level;
             if (level == null) return -1;
             Vec3 p = Vec3.atLowerCornerOf(pos);
             double v = selector == null ? 0 : selector.evaluate(level, p, state);
@@ -111,8 +111,12 @@ public final class ExpressionModel {
             return fallback;
         }
 
-        public TextureAtlasSprite particleIcon() {
-            return fallback.particleIcon();
+        public Material.Baked particleMaterial() {
+            return fallback.particleMaterial();
+        }
+
+        public int materialFlags() {
+            return fallback.materialFlags();
         }
     }
 }

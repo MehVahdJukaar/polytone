@@ -3,17 +3,17 @@ package net.mehvahdjukaar.polytone.content.expmodel;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.client.model.loading.v1.CustomUnbakedBlockStateModel;
-import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
 import net.mehvahdjukaar.polytone.common.expressions.impl.BlockExp;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
@@ -40,19 +40,24 @@ public record ExpressionBlockStateModel(ExpressionModel.Selector selector) imple
     }
 
     @Override
-    public TextureAtlasSprite particleSprite(BlockAndTintGetter blockView, BlockPos pos, BlockState state) {
-        return selector.select(pos, state).particleSprite(blockView, pos, state);
+    public Material.Baked particleMaterial(BlockAndTintGetter blockView, BlockPos pos, BlockState state) {
+        return selector.select(pos, state).particleMaterial(blockView, pos, state);
     }
 
     @Override
-    public void collectParts(RandomSource random, List<BlockModelPart> parts) {
+    public void collectParts(RandomSource random, List<BlockStateModelPart> parts) {
         // no world context (e.g. inventory/baking probes) -> deterministic fallback
         selector.fallback().collectParts(random, parts);
     }
 
     @Override
-    public TextureAtlasSprite particleIcon() {
-        return selector.particleIcon();
+    public Material.Baked particleMaterial() {
+        return selector.particleMaterial();
+    }
+
+    @Override
+    public int materialFlags() {
+        return selector.materialFlags();
     }
 
     public record Unbaked(List<ExpressionModel.Case> cases, Optional<BlockExp> selector,

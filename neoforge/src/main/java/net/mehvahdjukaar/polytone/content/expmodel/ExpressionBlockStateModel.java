@@ -3,14 +3,14 @@ package net.mehvahdjukaar.polytone.content.expmodel;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.common.expressions.impl.BlockExp;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
@@ -25,12 +25,12 @@ import java.util.Optional;
 public record ExpressionBlockStateModel(ExpressionModel.Selector selector) implements DynamicBlockStateModel {
 
     @Override
-    public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockModelPart> parts) {
+    public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockStateModelPart> parts) {
         selector.select(pos, state).collectParts(random, parts);
     }
 
     @Override
-    public void collectParts(RandomSource random, List<BlockModelPart> parts) {
+    public void collectParts(RandomSource random, List<BlockStateModelPart> parts) {
         // no world context (e.g. inventory/baking probes) -> deterministic fallback
         selector.fallback().collectParts(random, parts);
     }
@@ -43,8 +43,13 @@ public record ExpressionBlockStateModel(ExpressionModel.Selector selector) imple
     }
 
     @Override
-    public TextureAtlasSprite particleIcon() {
-        return selector.particleIcon();
+    public Material.Baked particleMaterial() {
+        return selector.particleMaterial();
+    }
+
+    @Override
+    public int materialFlags() {
+        return selector.materialFlags();
     }
 
     public record Unbaked(List<ExpressionModel.Case> cases, Optional<BlockExp> selector,

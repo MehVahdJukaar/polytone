@@ -5,7 +5,7 @@ import net.mehvahdjukaar.polytone.content.model.WornModel;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.player.LocalPlayer;
@@ -106,7 +106,7 @@ public class PolytoneClientItemExtensions implements IClientItemExtensions {
     }
 
     @Override
-    public void renderFirstPersonOverlay(ItemStack stack, EquipmentSlot slot, Player player, GuiGraphics graphics,
+    public void renderFirstPersonOverlay(ItemStack stack, EquipmentSlot slot, Player player, GuiGraphicsExtractor graphics,
                                          DeltaTracker deltaTracker) {
         delegate.renderFirstPersonOverlay(stack, slot, player, graphics, deltaTracker);
     }

@@ -47,7 +47,7 @@ public class LevelRendererMixin {
                                boolean shouldRenderSky,
                                ChunkSectionsToRender chunkSectionsToRender,
                                CallbackInfo ci) {
-        Polytone.POST_CHAINS.captureLevelRendererParams(modelViewMatrix, modelViewMatrix);
+        Polytone.POST_CHAINS.captureLevelRendererParams(cameraState.projectionMatrix, modelViewMatrix);
         // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
         Polytone.SHADER_EFFECTS.updateAll();
     }
