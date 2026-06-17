@@ -35,7 +35,7 @@
     "FishingHookRendererMixin",
     "GameRendererMixin",
     "GlProgramMixin",
-    "GlRenderPassMixin",
+    "RenderPassMixin",
     "GuiGraphicsExtractorMixin",
     "GuiMixin",
     "GuiRenderStateMixin",

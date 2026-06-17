@@ -8,8 +8,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(targets = "com.mojang.blaze3d.opengl.GlRenderPass")
-public class GlRenderPassMixin {
+// 26.1 split the render pass into a RenderPass frontend (this) and a RenderPassBackend (GlRenderPass);
+// setPipeline delegates frontend -> backend, so we hook the frontend where `this` actually IS a RenderPass.
+@Mixin(RenderPass.class)
+public class RenderPassMixin {
 
     @Inject(method = "setPipeline", at = @At("TAIL"))
     private void poly$onSetPipeline(RenderPipeline renderPipeline, CallbackInfo ci) {

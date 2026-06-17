@@ -69,8 +69,13 @@ subprojects {
 
     tasks.withType<JavaCompile> {
         options.compilerArgs.addAll(listOf("-Xmaxerrs", "4000"))
+        options.release.set(25)
     }
 
+    configure<JavaPluginExtension> {
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
+    }
 
     repositories {
         // Standard repositories
