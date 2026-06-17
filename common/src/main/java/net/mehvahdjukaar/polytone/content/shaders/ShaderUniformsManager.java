@@ -130,13 +130,13 @@ public class ShaderUniformsManager extends JsonPartialReloader {
         }
     }
 
-    public void tryApply(RenderPass pass, RenderPipeline pipeline) {
+    public void tryApply(RenderPass pass, RenderPipeline pipeline, Set<String> declaredUniforms) {
         if (byShader.isEmpty()) return;
         List<ExpressionUniformBuffers> list = byShader.get(pipeline.getFragmentShader());
         if (list == null) list = byShader.get(pipeline.getVertexShader());
         if (list == null) return;
         for (ExpressionUniformBuffers b : list) {
-            b.bind(pass);
+            b.bind(pass, declaredUniforms);
         }
     }
 }

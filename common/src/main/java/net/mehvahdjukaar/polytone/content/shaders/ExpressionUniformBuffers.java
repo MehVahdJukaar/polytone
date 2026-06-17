@@ -12,6 +12,7 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.ByteBuffer;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Shared buffer plumbing for expression-driven uniforms. Each entry becomes a single-float
@@ -66,10 +67,13 @@ public final class ExpressionUniformBuffers {
         }
     }
 
-    public void bind(RenderPass pass) {
+    public void bind(RenderPass pass, Set<String> declaredUniforms) {
         if (buffers == null) return;
         for (var e : buffers.entrySet()) {
-            pass.setUniform(e.getKey(), e.getValue());
+            // skip blocks the bound program doesn't declare, else Iris/Sodium logs binding errors
+            if (declaredUniforms.contains(e.getKey())) {
+                pass.setUniform(e.getKey(), e.getValue());
+            }
         }
     }
 
