@@ -135,3 +135,16 @@ layout (std140) uniform MyIntensity {
 ```
 
 The uniforms are bound whenever a pipeline using that shader (matched by either its fragment or vertex shader id) renders. The same Pro tip applies: these evaluate every frame, so prefer Global Expressions for values that don't need per-frame updates.
+
+## Sodium compatibility (terrain & block shaders)
+
+Polytone binds the uniform values regardless of which rendering mod is active, but to actually *use* a custom uniform you must declare its UBO block in the target shader's GLSL — which means shipping a replacement `.vsh`/`.fsh` for that shader.
+
+For terrain and block shaders (`core/terrain`, `core/block`, etc.) **Sodium refuses core-shader replacement by default** and will log a warning instead of applying your shader:
+
+```
+The resource pack replaces terrain shaders, which are not supported
+  Files: shaders/core/terrain.vsh
+```
+
+To make these work under Sodium, the user must install the **Sodium Core Shader Support** mod, which re-enables vanilla core-shader replacement. With it installed, the terrain/block uniforms (and the GLSL overrides that consume them) work normally. This is a Sodium limitation, not a Polytone one — shaders Sodium doesn't reimplement (entities, particles, post chains, GUI, etc.) need no extra mod.

@@ -57,6 +57,7 @@
     "SingleQuadParticleAccessor",
     "SmithingScreenMixin",
     "SodiumBlockRendererMixin",
+    "SodiumChunkRendererMixin",
     "SpatialAttributeInterpolatorMixin",
     "SpriteContentsMixin",
     "SubmitNodeStorageMixin",
@@ -66,6 +67,7 @@
     "accessor.BiomeAccessor",
     "accessor.DimensionTypeAccessor",
     "accessor.DustParticleOptionAccessor",
+    "accessor.GlBufferAccessor",
     "accessor.ParticleAccessor",
     "accessor.PostPassAccessor"
   ],

@@ -7,6 +7,10 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
+import net.mehvahdjukaar.polytone.mixins.accessor.GlBufferAccessor;
+import org.lwjgl.opengl.GL30C;
+import org.lwjgl.opengl.GL31C;
+import org.lwjgl.opengl.GL32C;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -75,6 +79,29 @@ public final class ExpressionUniformBuffers {
                 pass.setUniform(e.getKey(), e.getValue());
             }
         }
+    }
+
+    /**
+     * Binds our UBO blocks directly to an arbitrary GL program by raw {@code glBindBufferBase},
+     * for programs not driven through Mojang's RenderPass (e.g. Sodium's chunk shader). Only
+     * blocks the program actually declares are bound (gated by {@code glGetUniformBlockIndex}),
+     * so passing a program without our blocks is a no-op.
+     *
+     * @param program          the GL program name (must be the currently bound program)
+     * @param nextBindingPoint the next free UBO binding point to use
+     * @return the next free binding point after the ones consumed here
+     */
+    public int bindBlocksToProgram(int program, int nextBindingPoint) {
+        if (buffers == null) return nextBindingPoint;
+        for (var e : buffers.entrySet()) {
+            int blockIndex = GL32C.glGetUniformBlockIndex(program, e.getKey());
+            if (blockIndex < 0) continue; // GL_INVALID_INDEX: block not declared in this program
+            int glId = ((GlBufferAccessor) (Object) e.getValue()).polytone$getHandle();
+            GL32C.glUniformBlockBinding(program, blockIndex, nextBindingPoint);
+            GL30C.glBindBufferBase(GL31C.GL_UNIFORM_BUFFER, nextBindingPoint, glId);
+            nextBindingPoint++;
+        }
+        return nextBindingPoint;
     }
 
     public void close() {
