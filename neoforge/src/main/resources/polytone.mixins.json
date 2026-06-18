@@ -7,7 +7,6 @@
     "RegistrySnapshotMixin"
   ],
   "client": [
-    "BuildCreativeModeTabContentsEventAccessor",
     "CreativeModeInventoryScreenMixin",
     "CreativeTabAccessor",
     "IClientFluidTypeExtensionsMixin",

@@ -48,6 +48,8 @@ public class ConfigsManager extends JsonPartialReloader {
                 def, 0, 1, 0.01f), Polytone.res(id));
     }
 
+    public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
+
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
     private final ThreadLocal<MapRegistry<OptionHolder<?>>> activeLoadConfigs = new ThreadLocal<>(); // from active packs
     private final File optionsFile;
@@ -84,7 +86,16 @@ public class ConfigsManager extends JsonPartialReloader {
         return needsPackReload.getAndSet(false);
     }
 
+    /** True if any loaded config was contributed by a pack (i.e. not one of Polytone's own builtins). */
+    public boolean hasPackConfigs() {
+        for (var option : configs.getValues()) {
+            if (!option.fileId.getNamespace().equals(Polytone.MOD_ID)) return true;
+        }
+        return false;
+    }
+
     public Screen createScreenForMainMenu(Screen parent) {
+        bubbleManager.onConfigOpened();
         return new ConfigScreen(parent, configs.getValues(), () -> {
             boolean anyChanged = false;
 
@@ -100,6 +111,7 @@ public class ConfigsManager extends JsonPartialReloader {
     }
 
     public Screen createScreenForPack(PackSelectionScreen parent) {
+        bubbleManager.onConfigOpened();
         Set<OptionHolder<?>> configs = this.configs.getValues();
 
         return new ConfigScreen(parent, configs, () -> {

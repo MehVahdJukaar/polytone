@@ -11,7 +11,6 @@ import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.common.reloader.PartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
@@ -119,21 +118,18 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         for (var tab : targets.compute(fileId, BuiltInRegistries.CREATIVE_MODE_TAB)) {
             ResourceKey<CreativeModeTab> key = tab.unwrapKey().get();
             modifiers.merge(key, mod, CreativeTabModifier::merge);
-
-            PlatStuff.addTabEventForTab(key);
         }
     }
 
-    public void modifyTab(ItemToTabEvent event) {
+    // Called from CreativeModeTabMixin at the tail of CreativeModeTab#buildContents, so it always
+    // runs after every other mod's tab event on both NeoForge and Fabric. See that mixin.
+    public void modifyTab(ItemToTabEvent event, HolderLookup.Provider access) {
         var tab = event.getTab();
         var mod = modifiers.get(tab);
-        if (mod != null) {
-            RegistryAccess access = PlatStuff.hackyGetRegistryAccess();
-            if (access != null) {
-                CreativeTabModifier v = mod.applyItemsAndAttributes(event, access);
-                //don't add custom tabs here!
-                if (!customTabs.containsKey(tab.identifier())) vanillaTabs.put(tab, v);
-            }
+        if (mod != null && access != null) {
+            CreativeTabModifier v = mod.applyItemsAndAttributes(event, access);
+            //don't add custom tabs here!
+            if (!customTabs.containsKey(tab.identifier())) vanillaTabs.put(tab, v);
         }
     }
 

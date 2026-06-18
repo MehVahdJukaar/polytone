@@ -133,10 +133,6 @@ public class PlatStuffImpl {
         ((ModifiableBiomeInfoBiomeInfoAccessor) (Object) modifiedInfo).setEffects(newEffects);
     }
 
-    public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
-
-    }
-
     private static Field VANILLA_TABS = null;
 
     public static void sortTabs() {

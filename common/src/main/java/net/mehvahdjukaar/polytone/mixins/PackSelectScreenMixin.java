@@ -3,9 +3,11 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.gui.ChatBubbleWidget;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.mehvahdjukaar.polytone.content.config.ExtraWidthHorizontalLayout;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutElement;
@@ -14,6 +16,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -82,11 +85,37 @@ public abstract class PackSelectScreenMixin extends Screen {
 
     @Unique
     private @NonNull SpriteIconButton poly$makeButton(int buttonW) {
-        return SpriteIconButton.builder(Component.translatable("options.accessibility"),
-                        (arg) -> Minecraft.getInstance().setScreen(
-                                Polytone.CONFIGS.createScreenForPack((PackSelectionScreen) (Screen) this)),
+        SpriteIconButton button = SpriteIconButton.builder(Component.translatable("options.accessibility"),
+                        (arg) -> {
+                            Polytone.CONFIGS.bubbleManager.onConfigButtonClicked();
+                            Minecraft.getInstance().setScreen(
+                                    Polytone.CONFIGS.createScreenForPack((PackSelectionScreen) (Screen) this));
+                        },
                         true).width(buttonW)
                 .sprite(Polytone.res("paint_brush"), 16, 16).build();
+        this.polytone$configButton = button;
+        return button;
+    }
+
+    @Unique
+    private @Nullable SpriteIconButton polytone$configButton;
+    @Unique
+    private final ChatBubbleWidget polytone$bubble =
+            new ChatBubbleWidget(0, 0, Component.empty()).setAnimated(true);
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        SpriteIconButton button = this.polytone$configButton;
+        if (button == null || !button.visible) return;
+
+        Component message = Polytone.CONFIGS.bubbleManager.getConfigButtonMessage(Polytone.CONFIGS.hasPackConfigs());
+        if (message == null) return;
+
+        if (!message.equals(this.polytone$bubble.getMessage())) {
+            this.polytone$bubble.setText(message);
+        }
+        this.polytone$bubble.renderPointingAt(graphics, button, this.width, mouseX, mouseY, partialTick);
     }
 
 }

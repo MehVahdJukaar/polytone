@@ -95,11 +95,6 @@ public class PlatStuff {
     }
 
     @PlatformImpl
-    public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
-        throw new AssertionError();
-    }
-
-    @PlatformImpl
     public static CreativeTabModifier modifyTab(CreativeTabModifier mod, CreativeModeTab tab) {
         throw new AssertionError();
     }

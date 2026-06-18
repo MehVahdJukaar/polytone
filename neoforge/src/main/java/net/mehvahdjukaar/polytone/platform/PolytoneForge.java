@@ -8,9 +8,6 @@ import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
-import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
-import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
-import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.debug.DebugEntryNoop;
@@ -31,7 +28,6 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
@@ -62,7 +58,6 @@ public class PolytoneForge {
         if (FMLEnvironment.getDist() == Dist.CLIENT) {
             Polytone.init(!FMLEnvironment.isProduction(), true);
             NeoForge.EVENT_BUS.register(this);
-            modBus.addListener(EventPriority.LOWEST, this::modifyCreativeTabs);
             modBus.addListener(this::onRegisterDebugEntries);
             modBus.addListener(this::onRegisterBlockStateModels);
         } else {
@@ -162,79 +157,5 @@ public class PolytoneForge {
     public void onLevelUnload(ClientPlayerNetworkEvent.LoggingOut event) {
         Polytone.onLogOut();
     }
-
-    public void modifyCreativeTabs(BuildCreativeModeTabContentsEvent event) {
-        Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(event));
-    }
-
-    public record ItemToTabEventImpl(BuildCreativeModeTabContentsEvent event) implements ItemToTabEvent {
-
-        @Override
-        public ResourceKey<CreativeModeTab> getTab() {
-            return event.getTabKey();
-        }
-
-        @Override
-        public Collection<ItemStack> getAllItems() {
-            return event.getParentEntries();
-        }
-
-        @Override
-        public void removeItems(Predicate<ItemStack> target) {
-            BuildCreativeModeTabContentsEventAccessor acc = ((BuildCreativeModeTabContentsEventAccessor) (Object) event);
-            acc.getParentEntries().removeIf(target);
-            acc.getSearchEntries().removeIf(target);
-        }
-
-        @Override
-        public void addItems(@Nullable Predicate<ItemStack> target, boolean after, List<ItemStack> items) {
-            if (target == null || target == ItemPredicate.TRUE_PRED || !event.getTab().hasAnyItems()) {
-                event.acceptAll(items);
-            } else {
-                if (after) {
-                    ItemStack last = findLast(event, target);
-                    if (last.isEmpty()) {
-                        return;
-                    }
-                    for (int j = items.size(); j > 0; j--) {
-                        event.insertAfter(last, items.get(j - 1), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                    }
-                } else {
-                    ItemStack first = findFirst(event, target);
-                    if (first.isEmpty()) {
-                        return;
-                    }
-                    for (var s : items) {
-                        event.insertBefore(first, s, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                    }
-                }
-            }
-        }
-
-        private ItemStack findFirst(BuildCreativeModeTabContentsEvent event, Predicate<ItemStack> target) {
-            for (var s : event.getParentEntries()) {
-                if (target.test(s)) {
-                    return s;
-                }
-            }
-            Polytone.LOGGER.error("Could not find target item in creative tab {}", event.getTab());
-            return ItemStack.EMPTY;
-        }
-
-        private ItemStack findLast(BuildCreativeModeTabContentsEvent event, Predicate<ItemStack> target) {
-            boolean foundOne = false;
-            ItemStack previous = ItemStack.EMPTY;
-            for (var s : event.getParentEntries()) {
-                if (target.test(s)) {
-                    foundOne = true;
-                    previous = s;
-                } else {
-                    if (foundOne) return previous;
-                }
-            }
-            return previous;
-        }
-    }
-
 
 }

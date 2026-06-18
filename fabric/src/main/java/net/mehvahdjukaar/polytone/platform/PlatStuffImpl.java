@@ -114,22 +114,6 @@ public class PlatStuffImpl {
         }
     }
 
-    private static final Set<ResourceKey<CreativeModeTab>> addedCallbacks = new HashSet<>();
-    private static final Identifier POLYTONE_PHASE = Polytone.res("modify_tabs");
-
-    public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
-        if (!addedCallbacks.contains(key)) {
-            addedCallbacks.add(key);
-            var event = CreativeModeTabEvents.MODIFY_OUTPUT_ALL;
-            event.addPhaseOrdering(Event.DEFAULT_PHASE, POLYTONE_PHASE);
-            event.register(POLYTONE_PHASE, (tab, output) ->
-                    Polytone.CREATIVE_TABS_MODIFIERS.modifyTab(new ItemToTabEventImpl(
-                            BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(tab).get(), output)));
-
-        }
-    }
-
-
     public static CreativeTabModifier modifyTab(CreativeTabModifier mod, CreativeModeTab tab) {
         CreativeTabAccessor acc = (CreativeTabAccessor) tab;
         Component oldName = null;
@@ -253,43 +237,6 @@ public class PlatStuffImpl {
         } else {
             Polytone.LOGGER.warn("Tried to unregister a particle provider for a particle type that does not exist: {}", id);
         }
-    }
-
-    public record ItemToTabEventImpl(ResourceKey<CreativeModeTab> tab,
-                                     FabricCreativeModeTabOutput output) implements ItemToTabEvent {
-
-        @Override
-        public ResourceKey<CreativeModeTab> getTab() {
-            return tab;
-        }
-
-        @Override
-        public List<ItemStack> getAllItems() {
-            return output.getDisplayStacks();
-        }
-
-        @Override
-        public void addItems(@Nullable Predicate<ItemStack> target, boolean after, List<ItemStack> items) {
-            if (target == null) {
-                for (ItemStack stack : items) {
-                    output.accept(stack, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                }
-            } else {
-                if (after) {
-                    output.insertAfter(target, items, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                } else {
-                    output.insertBefore(target, items, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                }
-            }
-        }
-
-        @Override
-        public void removeItems(Predicate<ItemStack> target) {
-            FabricItemGroupEntriesAccessor acc = ((FabricItemGroupEntriesAccessor) (Object) output);
-            acc.getDisplayStacks().removeIf(target);
-            acc.getSearchTabStacks().removeIf(target);
-        }
-
     }
 
     public static String getVersion() {
