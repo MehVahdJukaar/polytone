@@ -10,6 +10,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.GL20C;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,13 +132,32 @@ public class ShaderUniformsManager extends JsonPartialReloader {
         }
     }
 
-    public void tryApply(RenderPass pass, RenderPipeline pipeline) {
+    /**
+     * Binds all registered expression-uniform UBOs to the currently bound GL program by raw GL,
+     * for renderers that bypass Mojang's RenderPass (Sodium chunk shaders). Each buffer only binds
+     * the blocks the program actually declares, so this is safe to call for any bound program.
+     * Binding point 0 is left for Sodium's own {@code ChunkData} block; ours start at 1.
+     */
+    public void bindToCurrentGlProgram() {
+        if (byShader.isEmpty()) return;
+        int program = GL11C.glGetInteger(GL20C.GL_CURRENT_PROGRAM);
+        if (program == 0) return;
+        int point = 1;
+        Set<ExpressionUniformBuffers> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (List<ExpressionUniformBuffers> list : byShader.values()) {
+            for (ExpressionUniformBuffers b : list) {
+                if (seen.add(b)) point = b.bindBlocksToProgram(program, point);
+            }
+        }
+    }
+
+    public void tryApply(RenderPass pass, RenderPipeline pipeline, Set<String> declaredUniforms) {
         if (byShader.isEmpty()) return;
         List<ExpressionUniformBuffers> list = byShader.get(pipeline.getFragmentShader());
         if (list == null) list = byShader.get(pipeline.getVertexShader());
         if (list == null) return;
         for (ExpressionUniformBuffers b : list) {
-            b.bind(pass);
+            b.bind(pass, declaredUniforms);
         }
     }
 }

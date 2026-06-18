@@ -103,6 +103,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     private Vec3f fishingLineOffset = null;
 
+    @Nullable
+    private PaintingRenderType paintingRenderType = null;
+
     //don't use pls
     @Nullable
     private Integer swampDark = null;
@@ -395,6 +398,15 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 }
             }
         });
+
+        doWith(obj, "render_type", (k, v) -> {
+            if (k.equals("painting")) {
+                PaintingRenderType type = PaintingRenderType.byName(v.getAsString());
+                if (type != null) {
+                    paintingRenderType = type;
+                } else Polytone.LOGGER.warn("Unknown painting render type {}. Must be one of: solid, cutout, translucent", v.getAsString());
+            }
+        });
     }
 
     private void refreshSplash(Style style) {
@@ -522,6 +534,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         xpOrbColorB = null;
         fishingLineOffset = null;
         fishingLineColor = null;
+        paintingRenderType = null;
         skyFlashColor = null;
         voidDarknessOffset = null;
         horizonHeight = null;
@@ -624,5 +637,10 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     public Integer getFishingLineColor() {
         return fishingLineColor;
+    }
+
+    @Nullable
+    public PaintingRenderType getPaintingRenderType() {
+        return paintingRenderType;
     }
 }

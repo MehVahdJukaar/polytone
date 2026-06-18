@@ -21,6 +21,7 @@ import org.joml.Matrix4fc;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Owns post-chain activators (turn a {@link PostChain} on/off based on a condition) and the
@@ -71,8 +72,11 @@ public class PostChainsManager extends JsonPartialReloader {
         return globalUniforms;
     }
 
-    public void setupExtraUniforms(RenderPass pass) {
-        pass.setUniform(GLOBALS_NAME, getOrCreateUniforms().getSlice());
+    public void setupExtraUniforms(RenderPass pass, Set<String> declaredUniforms) {
+        // only bind PolyGlobals to passes whose shader actually declares the block (see RenderPassMixin)
+        if (declaredUniforms.contains(GLOBALS_NAME)) {
+            pass.setUniform(GLOBALS_NAME, getOrCreateUniforms().getSlice());
+        }
     }
 
     public void onClose() {
