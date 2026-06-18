@@ -227,13 +227,12 @@ public class PlatStuffImpl {
 
     public static ParticleProvider<?> getParticleProvider(ParticleType<?> type) {
         ParticleEngine engine = Minecraft.getInstance().particleEngine;
-        return engine.resourceManager.getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getKey(type));
+        return engine.resourceManager.getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getId(type));
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public static void setParticleProvider(ParticleType<?> type, ParticleProvider<?> provider) {
         ParticleEngine engine = Minecraft.getInstance().particleEngine;
-        ((java.util.Map) engine.resourceManager.getProviders()).put(BuiltInRegistries.PARTICLE_TYPE.getKey(type), provider);
+        engine.resourceManager.getProviders().put(BuiltInRegistries.PARTICLE_TYPE.getId(type), provider);
     }
 
     public static ParticleType<ParticleOptions> makeParticleType(boolean forceSpawn) {
@@ -250,7 +249,7 @@ public class PlatStuffImpl {
         if (type.isPresent()) {
             ParticleEngine engine = Minecraft.getInstance().particleEngine;
             engine.resourceManager.getProviders()
-                    .remove(BuiltInRegistries.PARTICLE_TYPE.getKey(type.get().value()));
+                    .remove(BuiltInRegistries.PARTICLE_TYPE.getId(type.get().value()));
         } else {
             Polytone.LOGGER.warn("Tried to unregister a particle provider for a particle type that does not exist: {}", id);
         }
