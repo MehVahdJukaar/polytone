@@ -95,7 +95,7 @@ public class ConfigsManager extends JsonPartialReloader {
     }
 
     public Screen createScreenForMainMenu(Screen parent) {
-        bubbleManager.onConfigOpened();
+        bubbleManager.onConfigOpened(hasPackConfigs());
         return new ConfigScreen(parent, configs.getValues(), () -> {
             boolean anyChanged = false;
 
@@ -111,7 +111,7 @@ public class ConfigsManager extends JsonPartialReloader {
     }
 
     public Screen createScreenForPack(PackSelectionScreen parent) {
-        bubbleManager.onConfigOpened();
+        bubbleManager.onConfigOpened(hasPackConfigs());
         Set<OptionHolder<?>> configs = this.configs.getValues();
 
         return new ConfigScreen(parent, configs, () -> {
