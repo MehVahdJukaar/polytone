@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
@@ -34,12 +35,11 @@ public class GlobalProxy {
     }
 
     public String season() {
-        // Stub - ISeason API doesn't exist on 1.21.1; season is exposed via ClientFrameTicker.getSeason() as a number
-        float s = ClientFrameTicker.getSeason();
-        if (s < 0.25f) return "spring";
-        if (s < 0.5f) return "summer";
-        if (s < 0.75f) return "autumn";
-        return "winter";
+        Level level = delegate();
+        if (level == null) {
+            return ISeason.SUMMER.lowercaseName();
+        }
+        return ISeason.get(level).lowercaseName();
     }
 
     public String dimensionType() {

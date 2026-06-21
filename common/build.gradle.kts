@@ -15,4 +15,5 @@ dependencies {
 
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
     modCompileOnly("curse.maven:sodium-394468:6240355")
+    modCompileOnly("curse.maven:serene-seasons-291874:6182596")
 }

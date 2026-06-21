@@ -19,6 +19,7 @@
     "FogFluidRendererMixin",
     "FogRendererMixin2",
     "GuiGraphicsMixin",
+    "HumanoidArmorLayerMixin",
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
     "ItemColorsAccessor",

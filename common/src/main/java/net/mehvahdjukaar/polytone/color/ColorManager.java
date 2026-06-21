@@ -82,6 +82,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private Integer fishingLineColor = null;
     @Nullable
     private Vec3f fishingLineOffset = null;
+    @Nullable
+    private PaintingRenderType paintingRenderType = null;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -185,6 +187,15 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 }
             }
 
+        });
+
+        doWith(obj, "render_type", (k, v) -> {
+            if (k.equals("painting")) {
+                PaintingRenderType type = PaintingRenderType.byName(v.getAsString());
+                if (type != null) {
+                    paintingRenderType = type;
+                } else Polytone.LOGGER.warn("Unknown painting render type {}. Must be one of: solid, cutout, translucent", v.getAsString());
+            }
         });
 
         doWith(obj, "world_border", (k, v) -> {
@@ -420,6 +431,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         xpOrbColorB = null;
         fishingLineOffset = null;
         fishingLineColor = null;
+        paintingRenderType = null;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();
@@ -532,5 +544,10 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     public Integer getFishingLineColor() {
         return fishingLineColor;
+    }
+
+    @Nullable
+    public PaintingRenderType getPaintingRenderType() {
+        return paintingRenderType;
     }
 }

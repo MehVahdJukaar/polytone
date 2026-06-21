@@ -15,6 +15,7 @@
     "CurioInventoryScreenMixin",
     "GuiGraphicsMixin",
     "IClientFluidTypeExtensionsMixin",
+    "IClientItemExtensionsMixin",
     "InventoryScreenMixin",
     "ItemBlockRenderTypesMixin",
     "ItemColorsAccessor",

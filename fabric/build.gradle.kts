@@ -23,4 +23,5 @@ dependencies {
 
     modCompileOnly("curse.maven:sodium-394468:6211305")
     modCompileOnly("curse.maven:serene-seasons-291874:6182595")
+    modCompileOnly("curse.maven:fabric-seasons-413523:5789846")
 }
