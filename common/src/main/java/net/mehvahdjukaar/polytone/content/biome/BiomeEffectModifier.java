@@ -39,7 +39,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     public static final Codec<BiomeEffectModifier> DIRECT_CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             ColorUtils.COLOR.optionalFieldOf("water_color").forGetter(BiomeEffectModifier::waterColor),
             ColorUtils.COLOR.optionalFieldOf("foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
-            ColorUtils.COLOR.optionalFieldOf("dry_foliage_color").forGetter(BiomeEffectModifier::foliageColorOverride),
+            ColorUtils.COLOR.optionalFieldOf("dry_foliage_color").forGetter(BiomeEffectModifier::dryFoliageColorOverride),
             ColorUtils.COLOR.optionalFieldOf("grass_color").forGetter(BiomeEffectModifier::grassColorOverride),
             BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier").forGetter(BiomeEffectModifier::grassColorModifier),
             BiomeEnvAttributeModifications.CODEC.optionalFieldOf("attributes_modifiers",
@@ -141,7 +141,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
         }
         newFoliageColorOverride.ifPresent(builder::foliageColorOverride);
 
-        Optional<Integer> newDryFoliageColorOverride = specialEffects.foliageColorOverride();
+        Optional<Integer> newDryFoliageColorOverride = specialEffects.dryFoliageColorOverride();
         if (dryFoliageColorOverride.isPresent()) {
             newDryFoliageColorOverride = dryFoliageColorOverride;
             changed = true;
