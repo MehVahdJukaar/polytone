@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.gui.PointingChatBubbleOverlay;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
-import net.mehvahdjukaar.polytone.content.config.ExtraWidthHorizontalLayout;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.layouts.LayoutElement;
@@ -31,30 +30,21 @@ public abstract class PackSelectScreenMixin extends Screen {
     @WrapOperation(method = "init", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/layouts/LinearLayout;addChild(Lnet/minecraft/client/gui/layouts/LayoutElement;)Lnet/minecraft/client/gui/layouts/LayoutElement;",
             ordinal = 3))
-    public <T extends LayoutElement> T polytone$addConfigButton(LinearLayout instance, T doneButton, Operation<T> original) {
+    public <T extends LayoutElement> T polytone$addConfigButton(LinearLayout footer, T doneButton, Operation<T> original) {
         ConfigsManager.ButtonPosition pos = Polytone.CONFIGS.getButtonPos();
-        if (pos == ConfigsManager.ButtonPosition.NONE) {
-            return original.call(instance, doneButton);
-        }
+        SpriteIconButton configButton = poly$makeButton(20);
 
-        int buttonW = 20;
-        int buttonSpacing = 8;
-        int extraX = pos == ConfigsManager.ButtonPosition.LEFT ? -buttonW - buttonSpacing + 2 : 0;
-        LinearLayout centerGroup = new ExtraWidthHorizontalLayout(-buttonW - buttonSpacing, extraX)
-                .spacing(buttonSpacing);
-        centerGroup.defaultCellSetting().alignHorizontallyLeft();
-
-        SpriteIconButton configButton = poly$makeButton(buttonW);
         if (pos == ConfigsManager.ButtonPosition.LEFT) {
-            centerGroup.addChild(configButton);
-            centerGroup.addChild(doneButton);
-        } else {
-            centerGroup.addChild(doneButton);
-            centerGroup.addChild(configButton);
+            footer.addChild(configButton);
         }
 
-        instance.addChild(centerGroup);
-        return doneButton;
+        T result = original.call(footer, doneButton);
+
+        if (pos == ConfigsManager.ButtonPosition.RIGHT) {
+            footer.addChild(configButton);
+        }
+
+        return result;
     }
 
     @Inject(method = "init", at = @At("TAIL"))

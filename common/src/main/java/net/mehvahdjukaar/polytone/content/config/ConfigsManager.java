@@ -62,6 +62,7 @@ public class ConfigsManager extends JsonPartialReloader {
         this.optionsFile = Minecraft.getInstance().gameDirectory.toPath().resolve("polytone_options.json").toFile();
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         loadConfigFromDisk();
+        registerBuiltins(configs);
     }
 
     private static OptionHolder<Boolean> builtinConfig(String id, boolean def) {
@@ -202,7 +203,6 @@ public class ConfigsManager extends JsonPartialReloader {
     }
 
     public ButtonPosition getButtonPos() {
-        if (configs.isEmpty()) return ButtonPosition.NONE;
         return (CompatHandler.EMF || CompatHandler.ETF) ? ButtonPosition.LEFT : ButtonPosition.RIGHT;
     }
 }
