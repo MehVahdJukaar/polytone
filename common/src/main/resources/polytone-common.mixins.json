@@ -4,7 +4,10 @@
   "compatibilityLevel": "JAVA_21",
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
-    "BlockElementRotationMixin"
+    "BlockElementRotationMixin",
+    "OverlayEntryMixin",
+    "PackMixin",
+    "PackRepositoryMixin"
   ],
   "client": [
     "AbstractContainerMenuMixin",
@@ -30,6 +33,8 @@
     "LightTextureMixin",
     "MinecraftMixin",
     "ModelBakeryMixin",
+    "OptionsMixin",
+    "PackSelectScreenMixin",
     "ModelBlockRendererMixin",
     "PaintingRendererMixin",
     "ParticleEngineMixin",

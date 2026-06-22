@@ -81,8 +81,9 @@ public class Parsed<T> {
             Codec.BOOL.optionalFieldOf("polytone_ignore", false).forGetter(b -> b),
             VersionRange.CODEC.optionalFieldOf("version").forGetter(b -> Optional.empty()),
             Codec.withAlternative(Codec.STRING.listOf(), Codec.STRING, List::of)
-                    .optionalFieldOf("require_mods", List.of()).forGetter(b -> List.of())
-    ).apply(instance, (ignore, version, modList) -> {
+                    .optionalFieldOf("require_mods", List.of()).forGetter(b -> List.of()),
+            ResourceLocation.CODEC.optionalFieldOf("require_config").forGetter(b -> Optional.empty())
+    ).apply(instance, (ignore, version, modList, configReq) -> {
         if (ignore) {
             return false;
         }
@@ -93,6 +94,9 @@ public class Parsed<T> {
             if (!PlatStuff.isModLoaded(s)) {
                 return false;
             }
+        }
+        if (configReq.isPresent() && !Polytone.CONFIGS.getBooleanConfig(configReq.get())) {
+            return false;
         }
         return true;
     }));

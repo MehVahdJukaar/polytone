@@ -11,6 +11,14 @@ mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBas
 
 accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Collection;)V
 
+# config-driven pack overlays + config screen
+accessible method net/minecraft/client/gui/screens/packs/PackSelectionScreen reload ()V
+accessible class net/minecraft/client/OptionInstance$ValueSet
+accessible class net/minecraft/client/OptionInstance$CycleableValueSet
+accessible class net/minecraft/client/OptionInstance$SliderableValueSet
+accessible field net/minecraft/client/OptionInstance caption Lnet/minecraft/network/chat/Component;
+accessible field net/minecraft/client/OptionInstance toString Ljava/util/function/Function;
+
 accessible field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
 mutable field net/minecraft/world/level/block/FenceGateBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
 accessible field net/minecraft/world/level/block/SignBlock type Lnet/minecraft/world/level/block/state/properties/WoodType;
@@ -191,7 +199,7 @@ mutable field net/minecraft/client/renderer/DimensionSpecialEffects forceBrightL
 accessible field net/minecraft/client/renderer/DimensionSpecialEffects constantAmbientLight Z
 mutable field net/minecraft/client/renderer/DimensionSpecialEffects constantAmbientLight Z
 
-
+accessible class net/minecraft/client/OptionInstance$ValueSet
 
 
 accessible field net/minecraft/world/item/alchemy/PotionContents BASE_POTION_COLOR I
