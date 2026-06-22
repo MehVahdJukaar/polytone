@@ -99,6 +99,7 @@ public class Polytone {
 
     //todo: cutout not working. splash color not working, 1.20 color accessor crash
     public static void init(boolean devEnv, boolean forge, boolean iris) {
+        PolytoneStub.initialized= true;
         COMPOUND_RELOADER = new CompoundReloader(
                 NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
@@ -194,19 +195,6 @@ public class Polytone {
 
     public static void addCustomModel(ModelResourceLocation model) {
         EXTRA_MODELS.add(model);
-    }
-
-    public static boolean isEntryDynamic(Registry<?> reg, ResourceLocation entryId) {
-        if (reg == BuiltInRegistries.CREATIVE_MODE_TAB) {
-            return CREATIVE_TABS_MODIFIERS.isDynamicTab(entryId);
-        }
-        if (reg == BuiltInRegistries.PARTICLE_TYPE) {
-            return CUSTOM_PARTICLES.isDynamicParticle(entryId);
-        }
-        if (reg == BuiltInRegistries.SOUND_EVENT) {
-            return SOUND_TYPES.isDynamicSound(entryId);
-        }
-        return false;
     }
 
     public static boolean isFutureId(ResourceLocation id) {

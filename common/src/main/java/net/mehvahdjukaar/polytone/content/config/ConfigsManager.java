@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.utils.FilesUtil;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
@@ -46,6 +47,8 @@ public class ConfigsManager extends JsonPartialReloader {
     public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", 1f);
     public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", false);
     public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false);
+
+    public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
 
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
     private final ThreadLocal<MapRegistry<OptionHolder<?>>> activeLoadConfigs = new ThreadLocal<>();
@@ -92,7 +95,15 @@ public class ConfigsManager extends JsonPartialReloader {
         return configs.isEmpty();
     }
 
+    public boolean hasPackConfigs() {
+        for (var option : configs.getValues()) {
+            if (!option.fileId.getNamespace().equals(Polytone.MOD_ID)) return true;
+        }
+        return false;
+    }
+
     public Screen createScreen(PackSelectionScreen parent) {
+        bubbleManager.onConfigOpened(hasPackConfigs());
         return new ConfigScreen(parent, configs.getValues(), () -> {
             boolean anyChanged = configs.getValues().stream().anyMatch(OptionHolder::checkAndClearUpdated);
             if (anyChanged) {
@@ -182,5 +193,16 @@ public class ConfigsManager extends JsonPartialReloader {
 
     public boolean isLenientLoading() {
         return lenientLoading.get();
+    }
+
+    public enum ButtonPosition {
+        NONE,
+        LEFT,
+        RIGHT
+    }
+
+    public ButtonPosition getButtonPos() {
+        if (configs.isEmpty()) return ButtonPosition.NONE;
+        return (CompatHandler.EMF || CompatHandler.ETF) ? ButtonPosition.LEFT : ButtonPosition.RIGHT;
     }
 }

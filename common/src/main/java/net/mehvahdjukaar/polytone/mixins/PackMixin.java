@@ -15,7 +15,7 @@ public class PackMixin {
 
     // Load this pack's configs eagerly, before the overlay metadata section (and its conditions) are parsed
     @Inject(method = "readPackMetadata", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/server/packs/PackResources;getMetadataSection(Lnet/minecraft/server/packs/metadata/MetadataSectionType;)Ljava/lang/Object;",
+            target = "Lnet/minecraft/server/packs/PackResources;getMetadataSection(Lnet/minecraft/server/packs/metadata/MetadataSectionSerializer;)Ljava/lang/Object;",
             ordinal = 0, shift = At.Shift.BEFORE))
     private static void polytone$onReadPackMetadata(PackLocationInfo location, Pack.ResourcesSupplier resources, int version,
                                                     CallbackInfoReturnable<Pack.Metadata> cir,
