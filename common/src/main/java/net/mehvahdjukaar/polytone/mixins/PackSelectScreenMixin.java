@@ -3,11 +3,10 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.gui.ChatBubbleWidget;
+import net.mehvahdjukaar.polytone.common.gui.PointingChatBubbleOverlay;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.mehvahdjukaar.polytone.content.config.ExtraWidthHorizontalLayout;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -58,6 +57,17 @@ public abstract class PackSelectScreenMixin extends Screen {
         return doneButton;
     }
 
+    @Inject(method = "init", at = @At("TAIL"))
+    private void polytone$addConfigBubbleOverlay(CallbackInfo ci) {
+        SpriteIconButton button = this.polytone$configButton;
+        if (button == null) return;
+
+        this.addRenderableOnly(new PointingChatBubbleOverlay(
+                button,
+                () -> this.width,
+                () -> Polytone.CONFIGS.bubbleManager.getConfigButtonMessage(Polytone.CONFIGS.hasPackConfigs())));
+    }
+
     @Unique
     private SpriteIconButton poly$makeButton(int buttonW) {
         SpriteIconButton button = SpriteIconButton.builder(Component.translatable("screen.polytone.configs.title"),
@@ -74,21 +84,4 @@ public abstract class PackSelectScreenMixin extends Screen {
 
     @Unique
     private @Nullable SpriteIconButton polytone$configButton;
-    @Unique
-    private final ChatBubbleWidget polytone$bubble =
-            new ChatBubbleWidget(0, 0, Component.empty()).setAnimated(true);
-
-    @Inject(method = "render", at = @At("TAIL"))
-    private void polytone$renderConfigBubble(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
-        SpriteIconButton button = this.polytone$configButton;
-        if (button == null || !button.visible) return;
-
-        Component message = Polytone.CONFIGS.bubbleManager.getConfigButtonMessage(Polytone.CONFIGS.hasPackConfigs());
-        if (message == null) return;
-
-        if (!message.equals(this.polytone$bubble.getMessage())) {
-            this.polytone$bubble.setText(message);
-        }
-        this.polytone$bubble.renderPointingAt(graphics, button, this.width, mouseX, mouseY, partialTick);
-    }
 }

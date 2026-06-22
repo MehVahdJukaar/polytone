@@ -3,10 +3,9 @@ package net.mehvahdjukaar.polytone.content.config;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.gui.ChatBubbleWidget;
+import net.mehvahdjukaar.polytone.common.gui.PointingChatBubbleOverlay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -26,8 +25,6 @@ public class ConfigScreen extends OptionsSubScreen {
 
     @Nullable
     private SpriteIconButton heartButton;
-    @Nullable
-    private ChatBubbleWidget supportBubble;
 
     public ConfigScreen(Screen screen, Collection<OptionHolder<?>> options, Runnable safeFunc) {
         super(screen, Minecraft.getInstance().options, TITLE);
@@ -35,6 +32,17 @@ public class ConfigScreen extends OptionsSubScreen {
             opt.put(e.fileId.getNamespace(), e.option);
         }
         this.safeFunc = safeFunc;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        if (this.heartButton != null) {
+            this.addRenderableOnly(new PointingChatBubbleOverlay(
+                    this.heartButton,
+                    () -> this.width,
+                    () -> Polytone.CONFIGS.bubbleManager.getHeartButtonMessage()));
+        }
     }
 
     @Override
@@ -72,22 +80,6 @@ public class ConfigScreen extends OptionsSubScreen {
                 .build();
         this.heartButton = heart;
         linearLayout.addChild(heart);
-    }
-
-    @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
-        if (this.heartButton == null || !this.heartButton.visible) return;
-
-        Component message = Polytone.CONFIGS.bubbleManager.getHeartButtonMessage();
-        if (message == null) return;
-
-        if (this.supportBubble == null) {
-            this.supportBubble = new ChatBubbleWidget(0, 0, message).setAnimated(true);
-        } else if (!message.equals(this.supportBubble.getMessage())) {
-            this.supportBubble.setText(message);
-        }
-        this.supportBubble.renderPointingAt(graphics, this.heartButton, this.width, mouseX, mouseY, partialTick);
     }
 
     @Override
