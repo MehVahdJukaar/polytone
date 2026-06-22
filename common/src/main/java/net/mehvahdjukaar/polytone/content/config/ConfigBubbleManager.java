@@ -9,8 +9,8 @@ import net.mehvahdjukaar.polytone.utils.FilesUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.GsonHelper;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
