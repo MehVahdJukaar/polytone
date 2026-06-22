@@ -144,13 +144,16 @@ public class Polytone {
 
         } catch (RuntimeException e) {
             Polytone.LOGGER.error("Failed to apply some Polytone modifiers on world load", e);
-
-            ToastComponent toastComponent = Minecraft.getInstance().getToasts();
-            SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
-                    Component.translatable("toast.polytone.lazy_load_fail"),
-                    Component.translatable("toast.polytone.load_fail"));
+            displayLateReloadFailedToast();
         }
 
+    }
+
+    public static void displayLateReloadFailedToast() {
+        var toastComponent = Minecraft.getInstance().getToasts();
+        SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
+                Component.translatable("toast.polytone.lazy_load_fail"),
+                Component.translatable("toast.polytone.load_fail"));
     }
 
     public static void onLoggedOut() {

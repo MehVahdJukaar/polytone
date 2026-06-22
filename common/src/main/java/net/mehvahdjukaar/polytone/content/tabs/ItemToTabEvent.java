@@ -9,12 +9,15 @@ import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
 public interface ItemToTabEvent {
 
     ResourceKey<CreativeModeTab> getTab();
+
+    Collection<ItemStack> getAllItems();
 
     void addItems(@Nullable Predicate<ItemStack> target, boolean after, List<ItemStack> items);
 

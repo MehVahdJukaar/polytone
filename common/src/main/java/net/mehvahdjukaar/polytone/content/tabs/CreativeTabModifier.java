@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -87,13 +87,14 @@ public record CreativeTabModifier(
         );
     }
 
-    public CreativeTabModifier applyItemsAndAttributes(ItemToTabEvent event, RegistryAccess access) {
+    public CreativeTabModifier applyItemsAndAttributes(ItemToTabEvent event, HolderLookup.Provider access) {
         for (var v : removals) {
             event.removeItems(v);
         }
 
+        outer:
         for (var v : additions) {
-            List<ItemStack> stacks = v.items();
+            List<ItemStack> stacks = v.items().get();
             if (stacks == null) continue;
             if (v.inverse()) {
                 List<ItemStack> newList = new ArrayList<>();
@@ -104,6 +105,13 @@ public record CreativeTabModifier(
                     }
                 }
                 stacks = newList;
+            }
+            for (var s : stacks) {
+                if (event.getAllItems().contains(s)) {
+                    Polytone.LOGGER.error("Attempted to add item {} to creative tab {} but it already contains it! This likely means you didnt add an item remover for said item. Pack load failed.", s, event.getTab());
+                    Polytone.displayLateReloadFailedToast();
+                    break outer;
+                }
             }
             if (v.before()) {
                 event.addBefore(v.predicate(), stacks.toArray(ItemStack[]::new));

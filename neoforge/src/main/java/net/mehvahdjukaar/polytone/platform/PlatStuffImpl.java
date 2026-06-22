@@ -156,13 +156,7 @@ public class PlatStuffImpl {
         ((ModifiableBiomeInfoBiomeInfoAccessor) (Object) modifiedInfo).setEffects(newEffects);
     }
 
-    public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
-
-    }
-
-    private static Field VANILLA_TABS = null;
-
-    public static void sortTabs() {
+    public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
         //needs to clear vanilla tabs cause neo is stupid
         if (VANILLA_TABS == null) {
             VANILLA_TABS = ObfuscationReflectionHelper.findField(CreativeModeTabRegistry.class, "DEFAULT_TABS");

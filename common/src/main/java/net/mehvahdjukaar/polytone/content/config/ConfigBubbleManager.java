@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class ConfigBubbleManager {
 
-    private static final int SUPPORT_THRESHOLD = 5;
+    private static final int SUPPORT_THRESHOLD = 3;
 
     private static final String KEY_CLICKED = "config_button_clicked";
     private static final String KEY_OPEN_COUNT = "open_count";
