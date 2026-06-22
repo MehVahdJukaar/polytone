@@ -22,6 +22,12 @@ classes/
 /.codex
 /.aiassistant/
 /.ai/
+
+# AI agent / IDE assistant configs (local only)
+.claude/
+.cursor/
+.junie/
+CLAUDE.md
 /common/build/
 /fabric/build/
 /neoforge/build/
