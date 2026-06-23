@@ -156,16 +156,28 @@ public class PlatStuffImpl {
         ((ModifiableBiomeInfoBiomeInfoAccessor) (Object) modifiedInfo).setEffects(newEffects);
     }
 
-    public static void applyBiomeSurgery(Biome biome, BiomeSpecialEffects newEffects) {
-        //needs to clear vanilla tabs cause neo is stupid
+    public static void sortTabs() {
+        // NeoForge sortTabs() appends to DEFAULT_TABS without clearing it first, so we must reset
+        // before re-sorting when dynamic tabs are registered. Guard against re-sorting when the
+        // registry doesn't yet contain all vanilla category tabs (would IndexOutOfBounds inside NeoForge).
+        int categoryTabs = 0;
+        for (CreativeModeTab tab : BuiltInRegistries.CREATIVE_MODE_TAB) {
+            if (tab.getType() == CreativeModeTab.Type.CATEGORY) {
+                categoryTabs++;
+            }
+        }
+        if (categoryTabs < 10) {
+            Polytone.LOGGER.warn("Skipping creative tab re-sort: expected at least 10 vanilla category tabs, found {}", categoryTabs);
+            return;
+        }
         if (VANILLA_TABS == null) {
             VANILLA_TABS = ObfuscationReflectionHelper.findField(CreativeModeTabRegistry.class, "DEFAULT_TABS");
         }
         try {
             ((List) VANILLA_TABS.get(null)).clear();
             CreativeModeTabRegistry.sortTabs();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Polytone.LOGGER.error("Failed to re-sort creative tabs", e);
         }
     }
 
@@ -185,6 +197,11 @@ public class PlatStuffImpl {
         return null;
     }
 
+
+    public static void addTabEventForTab(ResourceKey<CreativeModeTab> key) {
+        // No-op on NeoForge: a single BuildCreativeModeTabContentsEvent listener registered in
+        // PolytoneForge already fires for every tab, so we don't need per-tab registration.
+    }
 
     public static CreativeModeTab createCreativeTab(ResourceLocation id) {
         return CreativeModeTab.builder().title(Component.translatable(id.toString())).build();

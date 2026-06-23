@@ -306,6 +306,11 @@ public class PlatStuffImpl {
         }
 
         @Override
+        public Collection<ItemStack> getAllItems() {
+            return entries.getDisplayStacks();
+        }
+
+        @Override
         public void addItems(@Nullable Predicate<ItemStack> target, boolean after, List<ItemStack> items) {
             if (target == null) {
                 entries.acceptAll(items);
