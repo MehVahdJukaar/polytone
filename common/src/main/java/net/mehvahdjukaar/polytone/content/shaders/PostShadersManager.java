@@ -2,16 +2,21 @@ package net.mehvahdjukaar.polytone.content.shaders;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.Mth;
+import org.joml.Matrix4f;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -24,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.IntSupplier;
 
 /**
  * Manages Polytone-defined post-shader effects.
@@ -49,6 +55,20 @@ public class PostShadersManager extends JsonPartialReloader {
     private final LinkedHashMap<PostChainEffect, PostChain> activeChains = new LinkedHashMap<>();
     /** Post chain IDs we already failed to load; skipped (silently) on subsequent ticks. */
     private final Set<ResourceLocation> failedChains = new HashSet<>();
+
+    /**
+     * Level projection / camera matrices captured during {@code GameRenderer.renderLevel}, exposed to
+     * pass shaders as the {@code PolyProjMat} / {@code PolyModelViewMat} built-in uniforms.
+     */
+    private final Matrix4f projMat = new Matrix4f();
+    private final Matrix4f modelViewMat = new Matrix4f();
+
+    /**
+     * Standalone depth target for effects that declare {@code use_depth_buffer}. We can't sample the
+     * main framebuffer's own depth attachment while the post quad writes to it (read/write feedback
+     * loop), so we blit the level depth into this snapshot once per frame and sample that instead.
+     */
+    private TextureTarget depthSnapshot = null;
 
     public PostShadersManager() {
         super("post_shaders");
@@ -199,7 +219,20 @@ public class PostShadersManager extends JsonPartialReloader {
             for (PostChain c : activeChains.values()) {
                 c.resize(width, height);
             }
+            if (depthSnapshot != null) {
+                depthSnapshot.resize(width, height, Minecraft.ON_OSX);
+            }
         }
+    }
+
+    /**
+     * Capture the level projection and camera (model-view) matrices. Called from the
+     * {@code GameRenderer.renderLevel} mixin so the {@code PolyProjMat} / {@code PolyModelViewMat}
+     * built-in uniforms reflect the current frame's view.
+     */
+    public void captureLevelMatrices(Matrix4f projection, Matrix4f modelView) {
+        this.projMat.set(projection);
+        this.modelViewMat.set(modelView);
     }
 
     /**
@@ -211,17 +244,57 @@ public class PostShadersManager extends JsonPartialReloader {
     public void renderAfterMainPostEffect(float partialTicks) {
         synchronized (effects) {
             if (activeChains.isEmpty()) return;
+
+            Minecraft mc = Minecraft.getInstance();
+            float sunAngle = 0f;
+            float dayTime = 0f;
+            ClientLevel level = mc.level;
+            if (level != null) {
+                float partial = mc.getTimer().getGameTimeDeltaPartialTick(false);
+                // match 1.21.11: 0 = noon (sun straight up), measured from the horizon
+                sunAngle = level.getSunAngle(partial) - Mth.HALF_PI;
+                dayTime = (float) (level.getDayTime() % 24000L);
+            }
+
+            IntSupplier depthTexture = prepareDepthSnapshot(mc);
+
             for (var entry : activeChains.entrySet()) {
                 PostChainEffect effect = entry.getKey();
                 PostChain chain = entry.getValue();
                 try {
-                    effect.applyExpressionUniforms(chain);
+                    effect.applyUniforms(chain, projMat, modelViewMat, sunAngle, dayTime, depthTexture);
                     chain.process(partialTicks);
                 } catch (Exception e) {
                     Polytone.LOGGER.error("Error processing polytone post chain '{}'", chain.getName(), e);
                 }
             }
         }
+    }
+
+    /**
+     * If any active effect samples the depth buffer, blit the main render target's depth into a private
+     * snapshot target and return a supplier of its depth texture id. Returns {@code null} when no active
+     * effect needs depth (so the snapshot target is never allocated for packs that don't use it).
+     */
+    private IntSupplier prepareDepthSnapshot(Minecraft mc) {
+        boolean needed = false;
+        for (PostChainEffect e : activeChains.keySet()) {
+            if (e.useDepthBuffer()) {
+                needed = true;
+                break;
+            }
+        }
+        if (!needed) return null;
+
+        RenderTarget main = mc.getMainRenderTarget();
+        if (depthSnapshot == null) {
+            depthSnapshot = new TextureTarget(main.width, main.height, true, Minecraft.ON_OSX);
+            depthSnapshot.setClearColor(0f, 0f, 0f, 0f);
+        } else if (depthSnapshot.width != main.width || depthSnapshot.height != main.height) {
+            depthSnapshot.resize(main.width, main.height, Minecraft.ON_OSX);
+        }
+        depthSnapshot.copyDepthFrom(main);
+        return depthSnapshot::getDepthTextureId;
     }
 
     private void closeAllChains() {
@@ -232,5 +305,9 @@ public class PostShadersManager extends JsonPartialReloader {
             }
         }
         activeChains.clear();
+        if (depthSnapshot != null) {
+            depthSnapshot.destroyBuffers();
+            depthSnapshot = null;
+        }
     }
 }
