@@ -71,6 +71,14 @@ public class ConfigsManager extends JsonPartialReloader {
         loadConfigFromDisk();
     }
 
+    private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
+        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton)) {
+            b.loadFromJson(configFileSnapshot);
+            reg.unregister(b.fileId);
+            reg.register(b.fileId, b);
+        }
+    }
+
     private static void addConfig(Identifier id, PolyConfig<?> config,
                                   MapRegistry<OptionHolder<?>> reg,
                                   JsonObject dataJson) {
