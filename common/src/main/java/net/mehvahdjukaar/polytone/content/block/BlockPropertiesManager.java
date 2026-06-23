@@ -241,6 +241,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
                     break;
                 }
             }
+        }else if(color instanceof ColorResolver c){
+            cc = c;
         }
         if (block == Blocks.GRASS_BLOCK && cc != null) {
             vanillaGrassColorResolver = BiomeColors.GRASS_COLOR_RESOLVER;
