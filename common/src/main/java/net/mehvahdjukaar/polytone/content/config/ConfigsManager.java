@@ -38,6 +38,7 @@ public class ConfigsManager extends JsonPartialReloader {
     public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", 1);
     public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", false);
     public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false);
+    public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", true);
 
     private static @NonNull OptionHolder<Boolean> builtinConfig(String id, boolean def) {
         return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), 1, def), Polytone.res(id));
@@ -66,6 +67,14 @@ public class ConfigsManager extends JsonPartialReloader {
 
         // Only time we read disk automatically
         loadConfigFromDisk();
+    }
+
+    private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
+        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton)) {
+            b.loadFromJson(configFileSnapshot);
+            reg.unregister(b.fileId);
+            reg.register(b.fileId, b);
+        }
     }
 
     private static void addConfig(Identifier id, PolyConfig<?> config,
@@ -242,6 +251,7 @@ public class ConfigsManager extends JsonPartialReloader {
     }
 
     public ButtonPosition getButtonPos() {
+        if (!showConfigButton.get()) return ButtonPosition.NONE;
         if (configs.isEmpty()) return ButtonPosition.NONE;
         return (CompatHandler.EMF || CompatHandler.ETF) ? ButtonPosition.LEFT : ButtonPosition.RIGHT;
     }
