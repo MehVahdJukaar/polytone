@@ -77,6 +77,9 @@ import java.util.function.Supplier;
 
 public class PlatStuffImpl {
 
+    /** Cached reflective handle to {@code CreativeModeTabRegistry.DEFAULT_TABS}; resolved lazily on first re-sort. */
+    private static Field VANILLA_TABS = null;
+
     public static boolean isModStateValid() {
         return !ModLoader.hasErrors();
     }
