@@ -1,2 +1,1 @@
-- added expression driven random blockstate selectors (very powerful, can for instanec pick a model based off a biome)
-- added expression driven uniforms for any shader.
+- fixed a technically vanilla issue particle with same limit were grouped together
