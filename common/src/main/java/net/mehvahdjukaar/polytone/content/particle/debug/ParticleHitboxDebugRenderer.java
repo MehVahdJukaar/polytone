@@ -22,7 +22,6 @@ public class ParticleHitboxDebugRenderer {
     public static void emitGizmos() {
         Minecraft mc = Minecraft.getInstance();
         if (!mc.debugEntries.isCurrentlyEnabled(ID)) return;
-        if (!mc.debugEntries.isCurrentlyEnabled(DebugScreenEntries.ENTITY_HITBOXES)) return;
 
         Vec3 camera = mc.gameRenderer.getMainCamera().position();
 
