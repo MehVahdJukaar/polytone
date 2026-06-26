@@ -156,7 +156,6 @@ public class CustomParticleType implements ICustomParticleFactory {
         }
 
         BlockState state = opt instanceof BlockParticleOption bp ? bp.getState() : null;
-
         CustomParticleInstance newParticle = new CustomParticleInstance(world, x, y, z, xSpeed, ySpeed, zSpeed, state, this);
         if (opt instanceof ExtraDataParticleOptions ep) ep.apply(newParticle);
         if (this.hasPhysics) {
