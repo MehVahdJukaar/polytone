@@ -38,7 +38,8 @@ accessible class net/minecraft/client/OptionInstance$CycleableValueSet
 accessible field net/minecraft/client/OptionInstance caption Lnet/minecraft/network/chat/Component;
 accessible field net/minecraft/client/OptionInstance toString Ljava/util/function/Function;
 
-accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_PROJECTION_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+# 26.2: MATRICES_PROJECTION_SNIPPET removed/renamed
+#accessible field net/minecraft/client/renderer/RenderPipelines MATRICES_PROJECTION_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 
 accessible field net/minecraft/client/renderer/entity/EntityRenderDispatcher renderers Ljava/util/Map;
 
@@ -102,7 +103,8 @@ mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBas
 
 accessible field net/minecraft/world/item/CreativeModeTabs CACHED_PARAMETERS Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;
 
-accessible class net/minecraft/client/gui/Gui$HeartType
+# 26.2: Gui.HeartType moved/removed
+#accessible class net/minecraft/client/gui/Gui$HeartType
 
 accessible field net/minecraft/world/level/block/DoorBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
 mutable field net/minecraft/world/level/block/DoorBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
@@ -116,7 +118,8 @@ mutable field net/minecraft/world/level/block/ButtonBlock type Lnet/minecraft/wo
 accessible field net/minecraft/world/level/block/BasePressurePlateBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
 mutable field net/minecraft/world/level/block/BasePressurePlateBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
 
-accessible field net/minecraft/client/Minecraft particleResources Lnet/minecraft/client/particle/ParticleResources;
+# 26.2: particleResources removed from Minecraft (use particleEngine.resourceManager)
+#accessible field net/minecraft/client/Minecraft particleResources Lnet/minecraft/client/particle/ParticleResources;
 accessible field net/minecraft/client/particle/ParticleEngine resourceManager Lnet/minecraft/client/particle/ParticleResources;
 accessible field net/minecraft/client/particle/ParticleResources spriteSets Ljava/util/Map;
 accessible class net/minecraft/client/particle/ParticleResources$MutableSpriteSet
@@ -181,8 +184,9 @@ accessible method net/minecraft/client/renderer/RenderPipelines register (Lcom/m
 
 #ok
 
-accessible field net/minecraft/ChatFormatting color Ljava/lang/Integer;
-mutable field net/minecraft/ChatFormatting color Ljava/lang/Integer;
+# 26.2: ChatFormatting.color field removed (use getColor() / accessor instead)
+#accessible field net/minecraft/ChatFormatting color Ljava/lang/Integer;
+#mutable field net/minecraft/ChatFormatting color Ljava/lang/Integer;
 
 
 accessible field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
