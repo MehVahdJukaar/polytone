@@ -45,7 +45,7 @@ public class StringConfig extends PolyConfig<String> implements OptionInstance.C
     }
 
     @Override
-    public Function<OptionInstance<String>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<String> tooltipSupplier, Options options, int i, int j, int k, Consumer<String> consumer) {
+    public Function<OptionInstance<String>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<String> tooltipSupplier, Options options, int i, int j, int k, OptionInstance.ValueUpdateListener<? super String> consumer) {
         return (optionInstance) -> {
             Objects.requireNonNull(optionInstance);
             return CycleButton.builder(optionInstance.toString, (Supplier<String>) optionInstance::get)
@@ -54,7 +54,7 @@ public class StringConfig extends PolyConfig<String> implements OptionInstance.C
                     .displayState(CycleButton.DisplayState.VALUE)
                     .create(i, j, k, 20, Component.empty(), (cycleButton, object) -> {
                         this.valueSetter().set(optionInstance, object);
-                        consumer.accept(object);
+                        consumer.valueChanged(object);
                         cycleButton.setMessage(cycleButton.createLabelForValue(object));
                     });
         };

@@ -61,7 +61,7 @@ public class ConfigScreen extends OptionsSubScreen {
         //make it not save here
         this.saveFunc = () -> {
         };
-        this.minecraft.setScreen(new ConfigScreen(this.lastScreen, optionsPerCategory, saveFunc));
+        this.minecraft.gui.setScreen(new ConfigScreen(this.lastScreen, optionsPerCategory, saveFunc));
     }
 
     private void undoChanges() {
@@ -100,13 +100,13 @@ public class ConfigScreen extends OptionsSubScreen {
                 .width(width)
                 .build());
         linearLayout.addChild(Button.builder(CommonComponents.GUI_DONE,
-                        b -> this.minecraft.setScreen(this.lastScreen))
+                        b -> this.minecraft.gui.setScreen(this.lastScreen))
                 .width(width)
                 .build());
         //support links
         SpriteIconButton heart = SpriteIconButton.builder(
                         Component.translatable("screen.polytone.support.title"),
-                        b -> this.minecraft.setScreen(new SupportScreen(this)),
+                        b -> this.minecraft.gui.setScreen(new SupportScreen(this)),
                         true)
                 .size(20, 20)
                 .sprite(Polytone.res("heart"), 16, 16)

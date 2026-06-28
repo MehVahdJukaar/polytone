@@ -297,21 +297,21 @@ public class Polytone {
     public static final SystemToast.SystemToastId LENIENT_LOAD_WARN = new SystemToast.SystemToastId(1500);
 
     public static void displayLenientLoadToast() {
-        ToastManager toastComponent = Minecraft.getInstance().getToastManager();
+        ToastManager toastComponent = Minecraft.getInstance().gui.toastManager();
         SystemToast.addOrUpdate(toastComponent, LENIENT_LOAD_WARN,
                 Component.translatable("toast.polytone.lenient_load"),
                 Component.translatable("toast.polytone.lenient_load_desc"));
     }
 
     public static void displayEarlyReloadFailedToast() {
-        ToastManager toastComponent = Minecraft.getInstance().getToastManager();
+        ToastManager toastComponent = Minecraft.getInstance().gui.toastManager();
         SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
                 Component.translatable("toast.polytone.early_load_fail"),
                 Component.translatable("toast.polytone.load_fail"));
     }
 
     public static void displayLateReloadFailedToast() {
-        ToastManager toastComponent = Minecraft.getInstance().getToastManager();
+        ToastManager toastComponent = Minecraft.getInstance().gui.toastManager();
         SystemToast.addOrUpdate(toastComponent, SystemToast.SystemToastId.PACK_LOAD_FAILURE,
                 Component.translatable("toast.polytone.lazy_load_fail"),
                 Component.translatable("toast.polytone.load_fail"));

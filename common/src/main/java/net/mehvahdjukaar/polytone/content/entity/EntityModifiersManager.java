@@ -74,7 +74,7 @@ public class EntityModifiersManager extends JsonPartialReloader {
                 EntityModifier mod = emittersPerEntity.get(player.getType());
                 if (mod != null) {
                     if (spawnRecords.containsKey(player.getId())) return;
-                    Vec3 cameraPos = mc.gameRenderer.getMainCamera().position();
+                    Vec3 cameraPos = mc.gameRenderer.mainCamera().position();
                     var particleSpawns = mod.gatherParticleSpawnsWithoutModel(player, cameraPos);
                     spawnRecords.put(player.getId(), particleSpawns);
                 }

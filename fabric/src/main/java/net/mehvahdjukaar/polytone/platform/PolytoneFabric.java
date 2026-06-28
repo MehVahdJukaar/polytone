@@ -20,19 +20,16 @@ import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
 import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
-import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
 import net.minecraft.client.gui.components.debug.DebugEntryNoop;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.client.gui.components.debug.DebugScreenProfile;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionResult;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class PolytoneFabric implements ClientModInitializer {
 
@@ -58,14 +55,7 @@ public class PolytoneFabric implements ClientModInitializer {
         addToProfiles();
 
         LevelRenderEvents.START_MAIN.register((context) ->
-                ClientFrameTicker.onRenderTick(context.gameRenderer().getMinecraft()));
-
-        LevelRenderEvents.END_MAIN.register(context ->
-                PolytoneRenderTypes.onRenderLast());
-
-        LevelRenderEvents.AFTER_SOLID_FEATURES.register(context -> {
-            PolytoneRenderTypes.cacheMatrices(); //might not be enough. needs to be after particles but we dont have it
-        });
+                ClientFrameTicker.onRenderTick(Minecraft.getInstance()));
 
         ClientTickEvents.START_CLIENT_TICK.register((client) -> {
             if (client.level != null) {
@@ -102,9 +92,6 @@ public class PolytoneFabric implements ClientModInitializer {
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
                 Polytone.onLogOut());
-
-        ClientLifecycleEvents.CLIENT_STARTED.register(client ->
-                addRenderParticlesType());
     }
 
     private static void addToProfiles() {
@@ -122,11 +109,5 @@ public class PolytoneFabric implements ClientModInitializer {
     }
 
     public static MinecraftServer currentServer;
-
-    public static void addRenderParticlesType() {
-        List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());
-        renderOrder.add(PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE.get());
-        ParticleEngineAccessor.setRENDER_ORDER(renderOrder);
-    }
 
 }

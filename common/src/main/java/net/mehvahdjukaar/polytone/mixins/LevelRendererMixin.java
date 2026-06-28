@@ -9,7 +9,6 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LevelTargetBundle;
-import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import org.joml.Matrix4fc;
@@ -30,13 +29,10 @@ public class LevelRendererMixin {
 
     @Shadow
     @Final
-    private Minecraft minecraft;
+    private LevelRenderState levelRenderState;
 
-    @Shadow
-    @Final
-    public LevelRenderState levelRenderState;
-
-    @Inject(method = "renderLevel", at = @At("HEAD"))
+    // 26.2: LevelRenderer.renderLevel(...) -> render(...) (dropped the ChunkSectionsToRender param; it's a local now)
+    @Inject(method = "render", at = @At("HEAD"))
     public void poly$preRender(GraphicsResourceAllocator resourceAllocator,
                                DeltaTracker deltaTracker,
                                boolean renderOutline,
@@ -45,14 +41,15 @@ public class LevelRendererMixin {
                                GpuBufferSlice terrainFog,
                                Vector4f fogColor,
                                boolean shouldRenderSky,
-                               ChunkSectionsToRender chunkSectionsToRender,
                                CallbackInfo ci) {
         Polytone.POST_CHAINS.captureLevelRendererParams(cameraState.projectionMatrix, modelViewMatrix);
         // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
         Polytone.SHADER_EFFECTS.updateAll();
     }
 
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addLateDebugPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Matrix4fc;)V",
+    // 26.2: addLateDebugPass(...) was removed; inject our post passes into the frame graph right before it executes.
+    @Inject(method = "render", at = @At(value = "INVOKE",
+            target = "Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;execute(Lcom/mojang/blaze3d/resource/GraphicsResourceAllocator;Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder$Inspector;)V",
             shift = At.Shift.BEFORE))
     public void poly$addPostShaders(GraphicsResourceAllocator resourceAllocator,
                                     DeltaTracker deltaTracker,
@@ -62,11 +59,10 @@ public class LevelRendererMixin {
                                     GpuBufferSlice terrainFog,
                                     Vector4f fogColor,
                                     boolean shouldRenderSky,
-                                    ChunkSectionsToRender chunkSectionsToRender,
                                     CallbackInfo ci,
                                     @Local FrameGraphBuilder frameGraphBuilder) {
-        int i = this.minecraft.getMainRenderTarget().width;
-        int j = this.minecraft.getMainRenderTarget().height;
+        int i = Minecraft.getInstance().gameRenderer.mainRenderTarget().width;
+        int j = Minecraft.getInstance().gameRenderer.mainRenderTarget().height;
         Polytone.POST_CHAINS.addPostPass(i, j, this.targets, frameGraphBuilder, terrainFog, this.levelRenderState.cameraRenderState);
     }
 }

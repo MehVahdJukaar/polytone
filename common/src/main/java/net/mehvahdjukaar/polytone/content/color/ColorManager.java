@@ -17,7 +17,6 @@ import net.mehvahdjukaar.polytone.common.struc.Vec3f;
 import net.mehvahdjukaar.polytone.content.color.fog_env.FogEnvironmentMod;
 import net.mehvahdjukaar.polytone.content.entity.IRenderStateWithId;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.ColorLerper;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
@@ -31,7 +30,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ARGB;
@@ -60,7 +58,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     private final Map<DyeColor, Integer> vanillaFireworkColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaDiffuseColors = new EnumMap<>(DyeColor.class);
     private final Map<DyeColor, Integer> vanillaTextColors = new EnumMap<>(DyeColor.class);
-    private final Map<ChatFormatting, Integer> vanillaChatFormatting = new EnumMap<>(ChatFormatting.class);
     private final Object2IntMap<MobEffect> vanillaEffectColors = new Object2IntOpenHashMap<>();
     private final Map<MobEffect, Function<MobEffectInstance, ParticleOptions>> vanillaEffectParticles = new HashMap<>();
     private final EnumMap<BorderStatus, Integer> vanillaBorderStatus = new EnumMap<>(BorderStatus.class);
@@ -372,21 +369,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                         }
                     }
                 }
-            } else if (k.startsWith("code:")) {
-                String s = k.substring(5);
-                int code = Integer.parseInt(s);
-                ChatFormatting text = ChatFormatting.getById(code);
-                setTextColor(text, parseColor(v));
-            } else if (k.equals("code")) {
-                for (var entry : entries(v)) {
-                    String s = entry.getKey();
-                    int code = Integer.parseInt(s);
-                    ChatFormatting text = ChatFormatting.getById(code);
-                    setTextColor(text, parseColor(entry.getValue()));
-                }
+            } else if (k.startsWith("code:") || k.equals("code")) {
+                // 26.2: legacy §-code recoloring removed. ChatFormatting/TextColor are now immutable
+                // (no getById/getByName/color field), so globally overriding the 16 vanilla chat
+                // color codes is no longer supported.
+                Polytone.LOGGER.warn("Recoloring legacy chat formatting codes ('{}') is no longer supported as of MC 26.2", k);
             } else {
-                ChatFormatting text = ChatFormatting.getByName(k);
-                setTextColor(text, parseColor(v));
+                Polytone.LOGGER.warn("Unsupported 'text' color key '{}'. Recoloring named chat formatting is no longer supported as of MC 26.2", k);
             }
         });
 
@@ -411,7 +400,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     private void refreshSplash(Style style) {
         SplashManager.DEFAULT_STYLE = style;
-        SplashManager manager = Minecraft.getInstance().getSplashManager();
+        SplashManager manager = Minecraft.getInstance().gui.splashManager();
         var splashes = manager.splashes;
         List<Component> newSplashes = new ArrayList<>();
         for (Component c : splashes) {
@@ -420,14 +409,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         manager.splashes = newSplashes;
     }
 
-    private void setTextColor(ChatFormatting text, int col) {
-        if (!vanillaChatFormatting.containsKey(text)) {
-            vanillaChatFormatting.put(text, text.getColor());
-        }
-        text.color = col;
-        TextColor tc = TextColor.fromLegacyFormat(text);
-        tc.value = col;
-    }
 
     private static void doWith(JsonElement o, String key, BiConsumer<String, JsonElement> entryHandler) {
         if (!(o instanceof JsonObject obj)) return;
@@ -565,15 +546,6 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
             color.textColor = e.getValue();
         }
         vanillaTextColors.clear();
-
-        //chat formatting
-        for (var e : vanillaChatFormatting.entrySet()) {
-            ChatFormatting text = e.getKey();
-            text.color = e.getValue();
-            TextColor tc = TextColor.fromLegacyFormat(text);
-            tc.value = e.getValue();
-        }
-        vanillaChatFormatting.clear();
 
         //effects
         for (var e : vanillaEffectColors.object2IntEntrySet()) {

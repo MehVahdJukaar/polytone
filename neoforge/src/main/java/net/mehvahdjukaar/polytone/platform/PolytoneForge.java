@@ -127,17 +127,6 @@ public class PolytoneForge {
     }
 
     @SubscribeEvent
-    public void renderStageEventAfterLevel(RenderLevelStageEvent.AfterLevel event) {
-        PolytoneRenderTypes.onRenderLast();
-    }
-
-    @SubscribeEvent
-    public void renderStageEventAfterLevel(RenderLevelStageEvent.AfterTranslucentParticles event) {
-        PolytoneRenderTypes.cacheMatrices();
-    }
-
-
-    @SubscribeEvent
     public void renderScreen(ScreenEvent.Render.Post event) {
         Screen screen = event.getScreen();
         SlotifyScreen ss = (SlotifyScreen) screen;

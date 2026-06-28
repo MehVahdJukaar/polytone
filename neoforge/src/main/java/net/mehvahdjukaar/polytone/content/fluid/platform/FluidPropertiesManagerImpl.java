@@ -8,7 +8,7 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -53,8 +53,8 @@ public class FluidPropertiesManagerImpl {
         }
 
         @Override
-        public void renderOverlay(Minecraft mc, PoseStack poseStack, MultiBufferSource buffers) {
-            existingProperties.renderOverlay(mc, poseStack, buffers);
+        public void renderOverlay(Minecraft mc, PoseStack poseStack, SubmitNodeCollector submitNodeCollector) {
+            existingProperties.renderOverlay(mc, poseStack, submitNodeCollector);
         }
 
         @Override

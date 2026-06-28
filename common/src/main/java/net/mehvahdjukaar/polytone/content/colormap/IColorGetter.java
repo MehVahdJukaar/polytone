@@ -38,7 +38,7 @@ public interface IColorGetter extends BlockTintSource, BarColor {
 
     @Override
     default int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
-        return sampleColor(level, state, pos.getCenter(), null, null);
+        return sampleColor(level, state, Vec3.atCenterOf(pos), null, null);
     }
 
     record OfBlock(BlockTintSource bc) implements IColorGetter {
@@ -169,7 +169,7 @@ public interface IColorGetter extends BlockTintSource, BarColor {
         @Override
         public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
             ClientLevel cl = level instanceof ClientLevel c ? c : Minecraft.getInstance().level;
-            return (int) exp.evaluate(cl, pos.getCenter(), state);
+            return (int) exp.evaluate(cl, Vec3.atCenterOf(pos), state);
         }
 
     }

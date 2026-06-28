@@ -24,7 +24,7 @@ public class ClientFrameTicker {
         if (level == null) return;
         float partialTicks = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
-        Camera camera = mc.gameRenderer.getMainCamera();
+        Camera camera = mc.gameRenderer.mainCamera();
         var probe = camera.attributeProbe();
 
         time = level.getGameTime() + partialTicks;
@@ -56,7 +56,7 @@ public class ClientFrameTicker {
     }
 
     public static BlockPos getCameraBlockPos() {
-        return Minecraft.getInstance().gameRenderer.getMainCamera().blockPosition();
+        return Minecraft.getInstance().gameRenderer.mainCamera().blockPosition();
     }
 
     public static float getTemperature() {
@@ -68,7 +68,7 @@ public class ClientFrameTicker {
     }
 
     public static Vec3 getCameraPos() {
-        return Minecraft.getInstance().gameRenderer.getMainCamera().position();
+        return Minecraft.getInstance().gameRenderer.mainCamera().position();
     }
 
     public static Holder<Biome> getCameraBiome() {

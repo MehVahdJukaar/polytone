@@ -6,7 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -20,7 +20,7 @@ import java.util.*;
 
 public class GuiOverlayManager extends JsonPartialReloader {
 
-    private final Map<Gui.HeartType, HeartSprites> heartSprites = new EnumMap<>(Gui.HeartType.class);
+    private final Map<Hud.HeartType, HeartSprites> heartSprites = new EnumMap<>(Hud.HeartType.class);
     private final List<BlitModifier> blitModifiers = new ArrayList<>();
     private final Map<Identifier, BlitModifier> blitModifiersCache = new HashMap<>();
 
@@ -125,8 +125,8 @@ public class GuiOverlayManager extends JsonPartialReloader {
 
     private void reloadHearths(ResourceManager manager) {
         heartSprites.clear();
-        for (var h : Gui.HeartType.values()) {
-            if (h != Gui.HeartType.CONTAINER && h != Gui.HeartType.NORMAL) {
+        for (var h : Hud.HeartType.values()) {
+            if (h != Hud.HeartType.CONTAINER && h != Hud.HeartType.NORMAL) {
                 String name = h.name().toLowerCase(Locale.ROOT);
                 Identifier fullRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_full.png");
                 Identifier halfRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_half.png");
@@ -177,7 +177,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
         }
     }
 
-    public boolean maybeFancifyHeart(Gui instance, GuiGraphicsExtractor graphics, Gui.HeartType actualType, int i, int j, boolean bl, boolean bl2, boolean bl3) {
+    public boolean maybeFancifyHeart(Hud instance, GuiGraphicsExtractor graphics, Hud.HeartType actualType, int i, int j, boolean bl, boolean bl2, boolean bl3) {
         if (heartSprites.isEmpty()) return false;
         HeartSprites sprites = heartSprites.get(actualType);
         if (sprites != null) {

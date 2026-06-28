@@ -88,7 +88,7 @@ public abstract class PackSelectScreenMixin extends Screen {
         SpriteIconButton button = SpriteIconButton.builder(Component.translatable("options.accessibility"),
                         (arg) -> {
                             Polytone.CONFIGS.bubbleManager.onConfigButtonClicked();
-                            Minecraft.getInstance().setScreen(
+                            Minecraft.getInstance().gui.setScreen(
                                     Polytone.CONFIGS.createScreenForPack((PackSelectionScreen) (Screen) this));
                         },
                         true).width(buttonW)

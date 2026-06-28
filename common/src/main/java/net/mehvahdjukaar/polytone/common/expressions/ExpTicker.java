@@ -31,8 +31,8 @@ public class ExpTicker {
         rainAndThunder = level.getRainLevel(0) * 0.5f + level.getThunderLevel(0) * 0.5f;
         season = ISeason.getNumber(level);
 
-        if (mc.screen != lastScreen) {
-            lastScreen = mc.screen;
+        if (mc.gui.screen() != lastScreen) {
+            lastScreen = mc.gui.screen();
             screenTime = 0;
         }
     }

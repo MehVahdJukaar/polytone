@@ -31,9 +31,9 @@ dependencies {
 
      //modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
     // modImplementation ("curse.maven:continuity-531351:5425853")
-    modImplementation("curse.maven:sodium-394468:8111041") // 0.8.12+mc26.1.2
+    modCompileOnly("curse.maven:sodium-394468:8111041") // 0.8.12+mc26.1.2
     // re-enables vanilla core-shader replacement under Sodium (terrain/block shaders); version-locked to Sodium above
-    modImplementation("curse.maven:sodium-core-shader-support-956376:8120363") // 1.5.0-mc26.1.2-sodium0.8.12
+    modCompileOnly("curse.maven:sodium-core-shader-support-956376:8120363") // 1.5.0-mc26.1.2-sodium0.8.12
     //modRuntimeOnly("curse.maven:irisshaders-455508:7805348")
      //modImplementation ("curse.maven:distant-horizons-508933:6387715")
    // modCompileOnly("curse.maven:irisshaders-455508:6369436")

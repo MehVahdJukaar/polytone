@@ -92,7 +92,7 @@ public record BlockParticleEmitter(
         float throttle = Polytone.CONFIGS.particlesThrottle.get();
         if (throttle < 1 && level.getRandom().nextFloat() > throttle) return;
 
-        Vec3 v = pos.getCenter();
+        Vec3 v = Vec3.atCenterOf(pos);
         double spawnChance = chance.evaluate(level, v, state);
         if (level.getRandom().nextFloat() < spawnChance && predicate().test(state, level.getRandom())) {
             if (biomes.isPresent()) {
@@ -125,7 +125,7 @@ public record BlockParticleEmitter(
 
         if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().identifier())) {
             Map<String, Float> map = new HashMap<>();
-            Vec3 v = pos.getCenter();
+            Vec3 v = Vec3.atCenterOf(pos);
             r.ifPresent(exp -> map.put("red", (float) exp.evaluate(level, v, state)));
             g.ifPresent(exp -> map.put("green", (float) exp.evaluate(level, v, state)));
             b.ifPresent(exp -> map.put("blue", (float) exp.evaluate(level, v, state)));

@@ -54,7 +54,7 @@ public record CustomParticleInitializer(@Nullable IBlockExp size,
     }
 
     public void initialize(SingleQuadParticle particle, ClientLevel level, BlockState state, BlockPos pos) {
-        Vec3 v = pos.getCenter();
+        Vec3 v = Vec3.atCenterOf(pos);
         if (this.roll != null) {
             particle.roll = (float) this.roll.evaluate(level, v, state);
         }

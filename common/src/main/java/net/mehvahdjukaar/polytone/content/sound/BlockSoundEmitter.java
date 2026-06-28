@@ -59,7 +59,7 @@ public record BlockSoundEmitter(
     @Override
     public void tick(ClientLevel level, BlockPos pos, BlockState state, TickSource source) {
         if (source != spawnSource) return;
-        Vec3 p = pos.getCenter();
+        Vec3 p = Vec3.atCenterOf(pos);
         double spawnChance = chance.evaluate(level, p, state);
         if (level.getRandom().nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
@@ -67,7 +67,7 @@ public record BlockSoundEmitter(
                 if (!biomes.get().contains(biome)) return;
             }
 
-            Vec3 vec = pos.getCenter().add(
+            Vec3 vec = Vec3.atCenterOf(pos).add(
                     x.evaluate(level, p, state),
                     y.evaluate(level, p, state),
                     z.evaluate(level, p, state));

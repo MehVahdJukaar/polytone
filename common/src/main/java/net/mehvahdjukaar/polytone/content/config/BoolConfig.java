@@ -46,7 +46,7 @@ public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.Cy
     }
 
     @Override
-    public Function<OptionInstance<Boolean>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<Boolean> tooltipSupplier, Options options, int i, int j, int k, Consumer<Boolean> consumer) {
+    public Function<OptionInstance<Boolean>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<Boolean> tooltipSupplier, Options options, int i, int j, int k, OptionInstance.ValueUpdateListener<? super Boolean> consumer) {
         return (optionInstance) -> {
             Objects.requireNonNull(optionInstance);
             return CycleButton.builder(optionInstance.toString, (Supplier<Boolean>) optionInstance::get)
@@ -55,7 +55,7 @@ public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.Cy
                     .displayState(CycleButton.DisplayState.VALUE)
                     .create(i, j, k, 20, Component.empty(), (cycleButton, object) -> {
                         this.valueSetter().set(optionInstance, object);
-                        consumer.accept(object);
+                        consumer.valueChanged(object);
                         //Update text again
                         cycleButton.setMessage(cycleButton.createLabelForValue(object));
                     });

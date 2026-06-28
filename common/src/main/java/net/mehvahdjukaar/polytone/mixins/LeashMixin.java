@@ -4,10 +4,10 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.LeashFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,16 +18,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class LeashMixin {
 
     @Inject(method = "addVertexPair", at = @At("HEAD"), cancellable = true)
-    private static void polytone$modifyLeashRender(VertexConsumer vertexConsumer, Matrix4fc matrix4f, float f, float g, float h, float i, float j, float k, int l, boolean bl, EntityRenderState.LeashState leashState, CallbackInfo ci) {
-        if (PolytoneRenderTypes.addLeashVertexPair(vertexConsumer, matrix4f, f, g, h, i, j, k, l, bl, leashState)) {
+    private static void polytone$modifyLeashRender(VertexConsumer builder, Matrix4fc pose, float dx, float dy, float dz, float fudge, float dxOff, float dzOff, int k, boolean backwards, EntityRenderState.LeashState state, CallbackInfo ci) {
+        if (PolytoneRenderTypes.addLeashVertexPair(builder, pose, dx, dy, dz, fudge, dxOff, dzOff, k, backwards, state)) {
             ci.cancel();
         }
     }
 
-    @WrapOperation(method = "renderLeash", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource;getBuffer(Lnet/minecraft/client/renderer/rendertype/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;"))
-    private static VertexConsumer polytone$modifyLeashTexture(MultiBufferSource instance, RenderType renderType, Operation<VertexConsumer> original) {
-        VertexConsumer consumer = PolytoneRenderTypes.getLeashVertexConsumer(instance);
-        if (consumer != null) return consumer;
-        else return original.call(instance, renderType);
+    @WrapOperation(method = "prepare", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/rendertype/RenderTypes;leash()Lnet/minecraft/client/renderer/rendertype/RenderType;"))
+    private static RenderType polytone$modifyLeashTexture(Operation<RenderType> original) {
+        RenderType custom = PolytoneRenderTypes.getLeashRenderType();
+        return custom != null ? custom : original.call();
     }
 }

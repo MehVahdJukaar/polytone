@@ -235,7 +235,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
             //handle initialized state where both are null
             Quaternionf instantRot = new Quaternionf();
             this.type.rotationProvider.setRotation(this, instantRot,
-                    Minecraft.getInstance().gameRenderer.getMainCamera(), 0);
+                    Minecraft.getInstance().gameRenderer.mainCamera(), 0);
             if (this.customRotation == null || this.customRotationO == null) {
                 this.customRotation = new Quaternionf(instantRot);
                 this.customRotationO = new Quaternionf(instantRot);
@@ -253,7 +253,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
         if (this.type.colormap != null) {
             BlockPos pos = BlockPos.containing(x, y, z);
-            float[] unpack = ColorUtils.unpack(this.type.colormap.sampleColor(level, null, pos.getCenter(), null, null));
+            float[] unpack = ColorUtils.unpack(this.type.colormap.sampleColor(level, null, Vec3.atCenterOf(pos), null, null));
             this.setColor(unpack[0], unpack[1], unpack[2]);
         }
 
@@ -323,7 +323,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
 
     private boolean isBehindCamera() {
-        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
         if (camera.entity() == Minecraft.getInstance().player) {
             //check distance
             Vector3f cameraPos = camera.position().toVector3f();

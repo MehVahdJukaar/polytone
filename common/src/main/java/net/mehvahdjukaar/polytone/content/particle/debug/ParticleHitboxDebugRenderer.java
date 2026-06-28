@@ -23,13 +23,13 @@ public class ParticleHitboxDebugRenderer {
         Minecraft mc = Minecraft.getInstance();
         if (!mc.debugEntries.isCurrentlyEnabled(ID)) return;
 
-        Vec3 camera = mc.gameRenderer.getMainCamera().position();
+        Vec3 camera = mc.gameRenderer.mainCamera().position();
 
         for (var entry : mc.particleEngine.particles.entrySet()) {
             ParticleRenderType renderType = entry.getKey();
             ParticleGroup<?> group = entry.getValue();
 
-            for (var p : group.getAll()) {
+            for (var p : group.particles) {
                 if (camera.distanceToSqr(p.x, p.y, p.z) < 16 * 16) {
 
                     int color = getColor(renderType, p);

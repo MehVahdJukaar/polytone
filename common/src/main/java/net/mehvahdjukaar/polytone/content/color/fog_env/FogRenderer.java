@@ -91,7 +91,7 @@ public class FogRenderer {
                 }
             } else if (entity instanceof LivingEntity livingEntity2 && livingEntity2.hasEffect(MobEffects.NIGHT_VISION) && !livingEntity2.hasEffect(MobEffects.DARKNESS)
             ) {
-                o = GameRenderer.getNightVisionScale(livingEntity2, partialTicks);
+                o = GameRenderer.nightVisionScale(livingEntity2, partialTicks);
             } else {
                 o = 0.0F;
             }

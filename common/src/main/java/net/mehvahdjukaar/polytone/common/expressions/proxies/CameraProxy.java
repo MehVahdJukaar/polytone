@@ -25,7 +25,7 @@ public class CameraProxy extends PositionalProxy {
     }
 
     private Camera delegate() {
-        return Minecraft.getInstance().gameRenderer.getMainCamera();
+        return Minecraft.getInstance().gameRenderer.mainCamera();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import net.minecraft.world.phys.Vec3;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.minecraft.client.color.block.BlockTintCache;
@@ -51,7 +52,7 @@ public abstract class ColorResolverMixin extends Level {
         if (this.tintCaches.containsKey(resolver)) return;
         BlockTintCache cache;
         if (resolver instanceof Colormap c) {
-            cache = new BlockTintCache(p -> c.calculateBlendedColor((ClientLevel) (Object) this, p.getCenter()));
+            cache = new BlockTintCache(p -> c.calculateBlendedColor((ClientLevel) (Object) this, Vec3.atCenterOf(p)));
         } else if (resolver == BiomeColors.GRASS_COLOR_RESOLVER
                 || resolver == BiomeColors.FOLIAGE_COLOR_RESOLVER
                 || resolver == BiomeColors.WATER_COLOR_RESOLVER) {

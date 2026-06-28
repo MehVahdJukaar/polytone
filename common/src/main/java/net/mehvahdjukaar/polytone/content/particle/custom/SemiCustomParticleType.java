@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
+import net.minecraft.world.phys.Vec3;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
@@ -101,7 +102,7 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
 
                     if (this.colormap != null && particle instanceof SingleQuadParticle sqp) {
                         int color = state != null ? this.colormap.colorInWorld(state, level, pos)
-                                : this.colormap.sampleColor(level, null, pos.getCenter(), null, null);
+                                : this.colormap.sampleColor(level, null, Vec3.atCenterOf(pos), null, null);
                         float[] unpack = ColorUtils.unpack(color);
                         sqp.setColor(unpack[0], unpack[1], unpack[2]);
                     }

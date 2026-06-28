@@ -152,7 +152,7 @@ public class Lightmap {
         float waterVision = player.getWaterVision();
         float nightVisionScale;
         if (player.hasEffect(MobEffects.NIGHT_VISION)) {
-            nightVisionScale = GameRenderer.getNightVisionScale(player, partialTicks);
+            nightVisionScale = GameRenderer.nightVisionScale(player, partialTicks);
         } else if (waterVision > 0.0F && player.hasEffect(MobEffects.CONDUIT_POWER)) {
             nightVisionScale = waterVision;
         } else {

@@ -78,7 +78,7 @@ public class NumberConfig extends PolyConfig<Float> implements OptionInstance.Sl
 
 
     @Override
-    public Function<OptionInstance<Float>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<Float> tooltipSupplier, Options options, int i, int j, int k, Consumer<Float> consumer) {
+    public Function<OptionInstance<Float>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<Float> tooltipSupplier, Options options, int i, int j, int k, OptionInstance.ValueUpdateListener<? super Float> consumer) {
         return OptionInstance.SliderableValueSet.super.createButton(tooltipSupplier, options, i, j, k, consumer);
     }
 }

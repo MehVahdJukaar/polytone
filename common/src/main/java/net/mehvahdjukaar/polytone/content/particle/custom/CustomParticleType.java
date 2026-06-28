@@ -179,7 +179,7 @@ public class CustomParticleType implements ICustomParticleFactory {
             var particleQueue = Minecraft.getInstance().particleEngine.particles.get(particleRenderType);
 
             if (particleQueue != null) {
-                for (var p : particleQueue.getAll()) {
+                for (var p : particleQueue.particles) {
                     //hack
                     if (p instanceof CustomParticleInstance inst && inst.type == this) {
                         //calculate distance between p and newParticle

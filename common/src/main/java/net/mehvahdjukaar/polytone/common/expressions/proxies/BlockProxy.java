@@ -36,7 +36,7 @@ public class BlockProxy extends PositionalProxy {
 
     public BlockProxy(@NotNull BlockAndTintGetter level, @Nullable BlockPos pos, @Nullable BlockState state) {
         super(state);
-        this.p = pos == null ? Vec3.ZERO : pos.getBottomCenter();
+        this.p = pos == null ? Vec3.ZERO : Vec3.atBottomCenterOf(pos);
         this.pos = pos;
         this.level = level;
     }

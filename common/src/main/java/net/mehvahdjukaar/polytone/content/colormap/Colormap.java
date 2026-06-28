@@ -170,7 +170,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
             biome = l.getBiome(pos).value();
         }
 
-        return sampleColor(level, state, pos == null ? null : pos.getCenter(), biome, null);
+        return sampleColor(level, state, pos == null ? null : Vec3.atCenterOf(pos), biome, null);
     }
 
     @Override
@@ -213,7 +213,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
             int n;
             for (BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos(); cursor3D.advance(); m += n & 255) {
                 mutableBlockPos.set(cursor3D.nextX(), cursor3D.nextY(), cursor3D.nextZ());
-                n = this.sampleColor(level, state, mutableBlockPos.getCenter(), level.getBiome(mutableBlockPos).value(), null);
+                n = this.sampleColor(level, state, Vec3.atCenterOf(mutableBlockPos), level.getBiome(mutableBlockPos).value(), null);
                 k += (n & 16711680) >> 16;
                 l += (n & '\uff00') >> 8;
             }

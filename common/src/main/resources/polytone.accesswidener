@@ -77,6 +77,8 @@ mutable field net/minecraft/world/entity/player/Player inventoryMenu Lnet/minecr
 
 #particle clear
 accessible field net/minecraft/client/particle/ParticleEngine particles Ljava/util/Map;
+# 26.2: ParticleGroup.getAll() removed; expose backing queue instead
+accessible field net/minecraft/client/particle/ParticleGroup particles Ljava/util/Queue;
 
 
 accessible field net/minecraft/client/particle/Particle friction F
@@ -103,8 +105,8 @@ mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBas
 
 accessible field net/minecraft/world/item/CreativeModeTabs CACHED_PARAMETERS Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;
 
-# 26.2: Gui.HeartType moved/removed
-#accessible class net/minecraft/client/gui/Gui$HeartType
+# 26.2: Gui.HeartType moved to Hud.HeartType (private enum)
+accessible class net/minecraft/client/gui/Hud$HeartType
 
 accessible field net/minecraft/world/level/block/DoorBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;
 mutable field net/minecraft/world/level/block/DoorBlock type Lnet/minecraft/world/level/block/state/properties/BlockSetType;

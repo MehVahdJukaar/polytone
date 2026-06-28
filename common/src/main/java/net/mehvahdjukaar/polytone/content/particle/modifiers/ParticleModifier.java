@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.particle.modifiers;
 
+import net.minecraft.world.phys.Vec3;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
@@ -135,7 +136,7 @@ public class ParticleModifier {
             BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
             BlockAndTintGetter bat = level instanceof BlockAndTintGetter b ? b : null;
             int color = state != null && bat != null ? colormap.colorInWorld(state, bat, pos)
-                    : colormap.sampleColor(bat, state, pos.getCenter(), null, null);
+                    : colormap.sampleColor(bat, state, Vec3.atCenterOf(pos), null, null);
             float[] unpack = ColorUtils.unpack(color);
             particle.setColor(unpack[0], unpack[1], unpack[2]);
         }
