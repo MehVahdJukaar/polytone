@@ -1,0 +1,21 @@
+{
+  "pack": {
+    "pack_format": 75,
+    "description": [
+      "§6§lSUNBATHING §r§8v1.1",
+      "§7Godrays for both sun and moon"
+
+    ],
+    "min_format": 69,
+    "max_format": 90
+  },
+  "overlays": {
+    "entries": [
+      {
+        "min_format": 88,
+        "max_format": 90,
+        "directory": "reversed_z"
+      }
+    ]
+  }
+}

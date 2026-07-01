@@ -22,3 +22,4 @@ classes/
 .*
 !.gitignore
 CLAUDE.md
+/resourcepacks/NOTES.md

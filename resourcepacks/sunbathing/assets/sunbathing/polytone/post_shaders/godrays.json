@@ -1,0 +1,4 @@
+{
+  "activation_condition": "g.skyType()==1 && g.rain()<=0.1",
+  "post_chain": "sunbathing:godrays"
+}

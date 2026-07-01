@@ -1,1 +1,1 @@
-- ported to 26.2
+transparency fixes

@@ -14,6 +14,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
@@ -183,7 +184,10 @@ public final class Colormap implements IColorGetter, ColorResolver {
         if (colorMult != null) {
             sampled = colorMult.evaluate(sampled, level, state, pos, biome, biomeMapper, item);
         }
-        return sampled;
+        // 26.2 now respects the ALPHA of block tint colors (water=translucent -> alpha 0 = invisible,
+        // grass side overlay -> alpha 0 = untinted). Vanilla always produces opaque tints (ARGB.color),
+        // so force opaque here to match.
+        return ARGB.opaque(sampled);
     }
 
     // gets color for blend
@@ -218,7 +222,8 @@ public final class Colormap implements IColorGetter, ColorResolver {
                 l += (n & '\uff00') >> 8;
             }
 
-            return (k / j & 255) << 16 | (l / j & 255) << 8 | m / j & 255;
+            // force opaque alpha (see sampleColor) - 26.2 uses tint alpha
+            return ARGB.opaque((k / j & 255) << 16 | (l / j & 255) << 8 | m / j & 255);
         }
     }
 

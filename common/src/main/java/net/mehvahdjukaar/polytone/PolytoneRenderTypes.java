@@ -6,6 +6,7 @@ import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.BlendFactor;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderGroup;
@@ -44,7 +45,11 @@ public class PolytoneRenderTypes {
                     .withBindGroupLayout(BindGroupLayouts.SAMPLER0_SAMPLER2)
                     .withVertexBinding(0, DefaultVertexFormat.PARTICLE)
                     .withPrimitiveTopology(PrimitiveTopology.QUADS)
-                    .withDepthStencilState(DepthStencilState.DEFAULT)
+                    // No depth WRITE: the no-cutoff frag shader keeps fully-transparent fragments (for smooth
+                    // additive edges), so writing depth would let those invisible bits occlude clouds/translucents
+                    // drawn afterward. Depth TEST stays on (GREATER_THAN_OR_EQUAL = 26.2 reversed-Z) so solid
+                    // geometry still occludes the particle.
+                    .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
                     .withLocation(Polytone.res("pipeline/additive_particle"))
                     .withColorTargetState(new ColorTargetState(new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE)))
                     .build());
