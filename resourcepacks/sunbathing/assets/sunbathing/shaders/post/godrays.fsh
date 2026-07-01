@@ -27,14 +27,16 @@ layout(std140) uniform Globals {
     int UseRgss;
 };
 
-// --- CONFIGURATION ---
-const float GodRayIntensity = 0.5;
-const float MoonRayIntensity = 0.1;
-const int   GodRaySamples = 30;
+// Expression-driven config uniforms. Each block is filled from a Polytone config slider
+// via expression_uniforms in polytone/post_shaders/godrays.json (see config_entries/).
+layout(std140) uniform SunRayIntensity  { float uSunRayIntensity; };
+layout(std140) uniform MoonRayIntensity { float uMoonRayIntensity; };
+layout(std140) uniform RayQuality       { float uRayQuality; };
+layout(std140) uniform RayDensity       { float uRayDensity; };
+layout(std140) uniform RayDecay         { float uRayDecay; };
 
+// --- CONFIGURATION (fixed) ---
 const float Exposure = 0.25;
-const float Decay = 0.99;
-const float Density = 0.92;
 const float Weight = 0.25;
 
 const float SunSize = 0.06;
@@ -48,9 +50,6 @@ const vec3 SUN_CORE = vec3(1.0, 1.0, 0.9);
 const vec3 SUN_GLOW = vec3(1.0, 0.7, 0.3);
 const vec3 MOON_CORE = vec3(0.8, 0.9, 1.0);
 const vec3 MOON_GLOW = vec3(0.5, 0.6, 1.0);
-
-// Precomputed constants
-const float INV_SAMPLES = 1.0 / float(GodRaySamples);
 
 // --- NOISE ---
 float interleaved_gradient_noise(vec2 uv) {
@@ -102,7 +101,8 @@ float getSunShape(vec2 uv, vec2 lightUV, float aspect) {
 vec3 computeGodRays(vec2 lightUV, float screenFade, vec3 lightColor, float aspect) {
     if (screenFade <= 0.0) return vec3(0.0);
 
-    vec2 delta = (texCoord - lightUV) * INV_SAMPLES * Density;
+    int samples = max(1, int(uRayQuality));
+    vec2 delta = (texCoord - lightUV) * (1.0 / float(samples)) * uRayDensity;
 
     float noise = interleaved_gradient_noise(gl_FragCoord.xy);
     vec2 coord = texCoord + delta * noise;
@@ -110,7 +110,7 @@ vec3 computeGodRays(vec2 lightUV, float screenFade, vec3 lightColor, float aspec
     vec3 acc = vec3(0.0);
     float decayAcc = 1.0;
 
-    for (int i = 0; i < GodRaySamples; ++i) {
+    for (int i = 0; i < samples; ++i) {
         coord -= delta;
 
         // Branchless border mask
@@ -126,7 +126,7 @@ vec3 computeGodRays(vec2 lightUV, float screenFade, vec3 lightColor, float aspec
 
         acc += lightColor * light * decayAcc * Weight * borderMask;
 
-        decayAcc *= Decay;
+        decayAcc *= uRayDecay;
     }
 
     return acc * Exposure * screenFade;
@@ -165,13 +165,13 @@ void main() {
     if (sunW > 0.0) {
         float fade;
         vec3 data = getLightScreenPos(PolySunAngle, fade);
-        rays += computeGodRays(data.xy, fade, SUN_GLOW, aspect) * sunW * GodRayIntensity;
+        rays += computeGodRays(data.xy, fade, SUN_GLOW, aspect) * sunW * uSunRayIntensity;
     }
 
     if (moonW > 0.0) {
         float fade;
         vec3 data = getLightScreenPos(PolySunAngle + PI, fade);
-        rays += computeGodRays(data.xy, fade, MOON_GLOW, aspect) * moonW * MoonRayIntensity;
+        rays += computeGodRays(data.xy, fade, MOON_GLOW, aspect) * moonW * uMoonRayIntensity;
     }
 
     float depth = getDepth(texCoord);

@@ -1,4 +1,11 @@
 {
-  "activation_condition": "g.skyType()==1 && g.rain()<=0.1",
-  "post_chain": "sunbathing:godrays"
+  "activation_condition": "config('sunbathing:enabled') && g.skyType()==1 && g.rain()<=0.1",
+  "post_chain": "sunbathing:godrays",
+  "expression_uniforms": {
+    "SunRayIntensity": "config('sunbathing:sun_intensity')",
+    "MoonRayIntensity": "config('sunbathing:moon_intensity')",
+    "RayQuality": "config('sunbathing:quality')",
+    "RayDensity": "config('sunbathing:density')",
+    "RayDecay": "config('sunbathing:decay')"
+  }
 }

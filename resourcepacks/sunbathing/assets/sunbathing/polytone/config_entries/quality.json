@@ -1,0 +1,7 @@
+{
+  "default_value": 30.0,
+  "min": 4.0,
+  "max": 60.0,
+  "step": 1.0,
+  "display_order": 3
+}
