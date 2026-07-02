@@ -39,6 +39,7 @@ public class ConfigsManager extends JsonPartialReloader {
     public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", false);
     public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false);
     public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", true);
+    public final OptionHolder<Boolean> skyDepthWrite = builtinConfig("sky_depth_write", false);
 
     private static @NonNull OptionHolder<Boolean> builtinConfig(String id, boolean def) {
         return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), 1, def), Polytone.res(id));
@@ -72,7 +73,7 @@ public class ConfigsManager extends JsonPartialReloader {
     }
 
     private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
-        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton)) {
+        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, skyDepthWrite)) {
             b.loadFromJson(configFileSnapshot);
             reg.unregister(b.fileId);
             reg.register(b.fileId, b);
@@ -233,7 +234,7 @@ public class ConfigsManager extends JsonPartialReloader {
         activeLoadConfigs.remove();
         configs.clear();
         for (OptionHolder<?> builtin : List.of(lenientLoading, legacyParsing, particlesThrottle, particlesOffThread,
-                autoParticleRateLimit, showConfigButton)) {
+                autoParticleRateLimit, showConfigButton, skyDepthWrite)) {
             builtin.loadFromJson(configFileSnapshot);
             configs.register(builtin.fileId, builtin);
         }

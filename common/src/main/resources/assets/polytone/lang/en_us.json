@@ -32,5 +32,7 @@
   "config.polytone.custom_particles_async.tooltip": "Makes Custom Particles tick logic run on a different thread. Very crude and experimental. Might improve performance or not.",
   "config.polytone.header": "Polytone",
   "config.polytone.show_config_button": "Show Config Button",
-  "config.polytone.show_config_button.tooltip": "Shows the Polytone config button on the resource pack selection screen."
+  "config.polytone.show_config_button.tooltip": "Shows the Polytone config button on the resource pack selection screen.",
+  "config.polytone.sky_depth_write": "Sky Depth Write",
+  "config.polytone.sky_depth_write.tooltip": "Lets the sky shader write to the depth buffer. Only enable this with a resource pack whose sky shader writes gl_FragDepth (e.g. one that draws clouds meant to occlude god rays). Harmless with vanilla or non-depth sky shaders is NOT guaranteed — leave off otherwise."
 }

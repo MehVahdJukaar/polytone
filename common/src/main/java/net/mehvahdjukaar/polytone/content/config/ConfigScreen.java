@@ -109,7 +109,7 @@ public class ConfigScreen extends OptionsSubScreen {
                         b -> this.minecraft.gui.setScreen(new SupportScreen(this)),
                         true)
                 .size(20, 20)
-                .sprite(Polytone.res("heart"), 16, 16)
+                .sprite(Polytone.res("heart"), 12, 12)
                 .build();
         this.heartButton = heart;
         linearLayout.addChild(heart);

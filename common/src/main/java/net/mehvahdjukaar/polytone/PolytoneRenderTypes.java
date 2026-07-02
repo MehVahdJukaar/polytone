@@ -12,6 +12,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderGroup;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.BindGroupLayouts;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -54,6 +55,23 @@ public class PolytoneRenderTypes {
                     .withColorTargetState(new ColorTargetState(new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE)))
                     .build());
 
+
+    // Sky-disc pipeline variant WITH depth writing enabled. Mirrors vanilla RenderPipelines.SKY (MATRICES_FOG_SNIPPET
+    // + core/sky shaders, POSITION, TRIANGLE_FAN) but adds a depth-write state so a resource pack's sky fragment
+    // shader can stamp clouds into the depth buffer (e.g. so god-rays get occluded). Swapped in by SkyRendererMixin
+    // only when the sky_depth_write config is on. NOTE: vanilla core/sky does not write gl_FragDepth, so enabling this
+    // without a pack whose sky shader writes gl_FragDepth would make the whole sky disc write its geometric depth and
+    // break sky-depth assumptions elsewhere — hence the explicit opt-in config.
+    public static final RenderPipeline SKY_DEPTH_WRITE_PIPELINE = register(
+            RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
+                    .withLocation(Polytone.res("pipeline/sky_depth"))
+                    .withVertexShader("core/sky")
+                    .withFragmentShader("core/sky")
+                    .withVertexBinding(0, DefaultVertexFormat.POSITION)
+                    .withPrimitiveTopology(PrimitiveTopology.TRIANGLE_FAN)
+                    // reversed-Z depth test (26.2), depth WRITE on. Sky draws first on cleared depth so this always passes.
+                    .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
+                    .build());
 
     // Textured leash. Vanilla leashes are untextured colored quads (RenderTypes.leash()); this gives resource packs
     // a textured leash by reusing the in-world text pipeline (core/text, samples Sampler0) as a TRIANGLE_STRIP.

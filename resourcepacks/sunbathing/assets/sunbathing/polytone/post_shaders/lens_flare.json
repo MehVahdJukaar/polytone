@@ -1,4 +1,7 @@
 {
-  "activation_condition": "config('sunbathing:lens_flare') && g.skyType()==1 && g.rain()<=0.1",
-  "post_chain": "sunbathing:lens_flare"
+  "activation_condition": "config('sunbathing:lens_flare') > 0 && g.skyType()==1 && g.rain()<=0.1",
+  "post_chain": "sunbathing:lens_flare",
+  "expression_uniforms": {
+    "FlareStrength": "config('sunbathing:lens_flare')"
+  }
 }

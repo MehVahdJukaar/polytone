@@ -59,6 +59,7 @@
     "RenderSetupMixin",
     "ScreenMixin",
     "SingleQuadParticleAccessor",
+    "SkyRendererMixin",
     "SmithingScreenMixin",
     "SodiumBlockRendererMixin",
     "SodiumChunkRendererMixin",

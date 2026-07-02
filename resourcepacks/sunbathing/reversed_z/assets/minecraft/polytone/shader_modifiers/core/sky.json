@@ -1,0 +1,10 @@
+{
+  "CloudsEnabled": "config('sunbathing:clouds_enabled')",
+  "CloudCoverage": "config('sunbathing:cloud_coverage')",
+  "CloudDensity": "config('sunbathing:cloud_density')",
+  "CloudScale": "config('sunbathing:cloud_scale')",
+  "CloudSpeed": "config('sunbathing:cloud_speed')",
+  "CloudTime": "g.time()",
+  "CamX": "c.x()",
+  "CamZ": "c.z()"
+}

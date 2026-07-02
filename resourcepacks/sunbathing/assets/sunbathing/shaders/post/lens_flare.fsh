@@ -24,7 +24,9 @@ const float TRANSITION_WIDTH = radians(12.0);
 const float RING_POS = 1.15;       // ring position along the sun -> screen-center axis (past center)
 const float RING_RADIUS = 0.12;    // medium ring radius (fraction of screen height)
 const float RING_THICKNESS = 0.045;// width of the rainbow band
-const float FLARE_STRENGTH = 0.1;  // overall strength (kept very subtle)
+
+// Overall intensity, driven by the "Lens Flare" config slider (0..1) via expression_uniforms.
+layout(std140) uniform FlareStrength { float uFlareStrength; };
 
 // Day weight: 1 when the sun is the active light, 0 at night (mirrors godrays getLightWeights)
 float sunWeight(float angle) {
@@ -99,7 +101,8 @@ void main() {
             float band = 1.0 - smoothstep(0.0, 1.0, abs(x));  // bright at the ring, fades off the band
             vec3 rainbow = spectrum((x * 0.5 + 0.5) * 0.75);  // red (inner) -> blue (outer)
 
-            color.rgb += rainbow * band * FLARE_STRENGTH * gate;
+            // slider 1.0 -> 0.2 strength (0.5 -> 0.1, a subtle default), keeping headroom
+            color.rgb += rainbow * band * (uFlareStrength * 0.2) * gate;
         }
     }
 
