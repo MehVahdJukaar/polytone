@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.content.shaders;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EffectInstance;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.PostPass;
@@ -25,6 +26,9 @@ import java.util.function.IntSupplier;
  *       "MyUniform": "<MVEL expr>"                // applied to every pass
  *   },
  *   "use_depth_buffer": false,                    // optional, exposes the level depth as the "InDepth" sampler
+ *   "samplers": {                                 // optional, sampler name -> texture resource location
+ *       "MySampler": "namespace:textures/effect/noise.png"  // bound as "sampler2D MySampler" on every pass
+ *   },
  *   "priority": 0.0                               // 1.21.1-only: controls layering vs other Polytone effects
  * }
  * }</pre>
@@ -54,6 +58,8 @@ public final class PostChainEffect {
             Codec.unboundedMap(Codec.STRING, ISimpleExp.CODEC)
                     .optionalFieldOf("expression_uniforms", Map.of()).forGetter(p -> p.expressionUniforms),
             Codec.BOOL.optionalFieldOf("use_depth_buffer", false).forGetter(p -> p.useDepthBuffer),
+            Codec.unboundedMap(Codec.STRING, ResourceLocation.CODEC)
+                    .optionalFieldOf("samplers", Map.of()).forGetter(p -> p.samplers),
             Codec.FLOAT.optionalFieldOf("priority", 0f).forGetter(p -> p.priority)
     ).apply(i, PostChainEffect::new));
 
@@ -61,17 +67,20 @@ public final class PostChainEffect {
     private final ISimpleExp turnOnCondition;
     private final Map<String, ISimpleExp> expressionUniforms;
     private final boolean useDepthBuffer;
+    private final Map<String, ResourceLocation> samplers;
     private final float priority;
 
     public PostChainEffect(ResourceLocation postChain,
                            ISimpleExp turnOnCondition,
                            Map<String, ISimpleExp> expressionUniforms,
                            boolean useDepthBuffer,
+                           Map<String, ResourceLocation> samplers,
                            float priority) {
         this.postChain = postChain;
         this.turnOnCondition = turnOnCondition;
         this.expressionUniforms = expressionUniforms;
         this.useDepthBuffer = useDepthBuffer;
+        this.samplers = samplers;
         this.priority = priority;
     }
 
@@ -116,6 +125,11 @@ public final class PostChainEffect {
             }
             if (useDepthBuffer && depthTexture != null) {
                 effect.setSampler(DEPTH_SAMPLER, depthTexture);
+            }
+            for (var e : samplers.entrySet()) {
+                ResourceLocation texture = e.getValue();
+                effect.setSampler(e.getKey(),
+                        () -> Minecraft.getInstance().getTextureManager().getTexture(texture).getId());
             }
         }
     }
