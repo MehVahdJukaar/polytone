@@ -57,6 +57,16 @@ public class PostShadersManager extends JsonPartialReloader {
     private final Set<ResourceLocation> failedChains = new HashSet<>();
 
     /**
+     * Per-pass frame state for {@link net.mehvahdjukaar.polytone.mixins.PostPassMixin}. Set for the
+     * duration of each {@code PostChain.process()} call so uniforms are applied immediately before
+     * {@code EffectInstance.apply()} on every pass.
+     */
+    public static final ThreadLocal<ActivePostPassFrame> ACTIVE_POST_PASS = new ThreadLocal<>();
+
+    /** Whether {@link #captureLevelDepthSnapshot()} already copied level depth this frame. */
+    private boolean depthCapturedThisFrame = false;
+
+    /**
      * Level projection / camera matrices captured during {@code GameRenderer.renderLevel}, exposed to
      * pass shaders as the {@code PolyProjMat} / {@code PolyModelViewMat} built-in uniforms.
      */
@@ -236,6 +246,24 @@ public class PostShadersManager extends JsonPartialReloader {
     }
 
     /**
+     * Snapshot the main framebuffer's depth while level geometry is still intact. Called from
+     * {@code LevelRenderer.renderLevel} at return — before {@code GameRenderer} clears depth for
+     * first-person hand rendering.
+     */
+    public void captureLevelDepthSnapshot() {
+        synchronized (effects) {
+            if (!anyActiveEffectUsesDepth()) return;
+
+            Minecraft mc = Minecraft.getInstance();
+            RenderTarget main = mc.getMainRenderTarget();
+            ensureDepthSnapshot(main);
+            depthSnapshot.copyDepthFrom(main);
+            main.bindWrite(false);
+            depthCapturedThisFrame = true;
+        }
+    }
+
+    /**
      * Process all active Polytone post-shader chains. Each chain reads from and writes back to the
      * main render target, so subsequent chains see the previous chain's output.
      *
@@ -261,41 +289,62 @@ public class PostShadersManager extends JsonPartialReloader {
             for (var entry : activeChains.entrySet()) {
                 PostChainEffect effect = entry.getKey();
                 PostChain chain = entry.getValue();
+                ACTIVE_POST_PASS.set(new ActivePostPassFrame(
+                        effect, projMat, modelViewMat, sunAngle, dayTime, depthTexture));
                 try {
-                    effect.applyUniforms(chain, projMat, modelViewMat, sunAngle, dayTime, depthTexture);
                     chain.process(partialTicks);
                 } catch (Exception e) {
                     Polytone.LOGGER.error("Error processing polytone post chain '{}'", chain.getName(), e);
+                } finally {
+                    ACTIVE_POST_PASS.remove();
                 }
             }
+
+            depthCapturedThisFrame = false;
         }
     }
 
     /**
-     * If any active effect samples the depth buffer, blit the main render target's depth into a private
-     * snapshot target and return a supplier of its depth texture id. Returns {@code null} when no active
-     * effect needs depth (so the snapshot target is never allocated for packs that don't use it).
+     * If any active effect samples the depth buffer, return a supplier of the snapshot depth texture id.
+     * Prefer the copy taken at the end of {@code LevelRenderer.renderLevel}; fall back to copying now
+     * when level rendering did not run this frame.
      */
     private IntSupplier prepareDepthSnapshot(Minecraft mc) {
-        boolean needed = false;
-        for (PostChainEffect e : activeChains.keySet()) {
-            if (e.useDepthBuffer()) {
-                needed = true;
-                break;
-            }
-        }
-        if (!needed) return null;
+        if (!anyActiveEffectUsesDepth()) return null;
 
         RenderTarget main = mc.getMainRenderTarget();
+        ensureDepthSnapshot(main);
+        if (!depthCapturedThisFrame) {
+            depthSnapshot.copyDepthFrom(main);
+            main.bindWrite(false);
+        }
+        return depthSnapshot::getDepthTextureId;
+    }
+
+    private boolean anyActiveEffectUsesDepth() {
+        for (PostChainEffect e : activeChains.keySet()) {
+            if (e.useDepthBuffer()) return true;
+        }
+        return false;
+    }
+
+    private void ensureDepthSnapshot(RenderTarget main) {
         if (depthSnapshot == null) {
             depthSnapshot = new TextureTarget(main.width, main.height, true, Minecraft.ON_OSX);
             depthSnapshot.setClearColor(0f, 0f, 0f, 0f);
         } else if (depthSnapshot.width != main.width || depthSnapshot.height != main.height) {
             depthSnapshot.resize(main.width, main.height, Minecraft.ON_OSX);
         }
-        depthSnapshot.copyDepthFrom(main);
-        return depthSnapshot::getDepthTextureId;
     }
+
+    public record ActivePostPassFrame(
+            PostChainEffect effect,
+            Matrix4f projMat,
+            Matrix4f modelViewMat,
+            float sunAngle,
+            float dayTime,
+            IntSupplier depthTexture
+    ) {}
 
     private void closeAllChains() {
         for (PostChain c : activeChains.values()) {

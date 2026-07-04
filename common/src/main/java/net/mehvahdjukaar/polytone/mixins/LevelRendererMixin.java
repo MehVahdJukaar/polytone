@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import org.jetbrains.annotations.Nullable;
@@ -14,7 +15,9 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = LevelRenderer.class, priority = 1300)
 public class LevelRendererMixin {
@@ -34,6 +37,18 @@ public class LevelRendererMixin {
     private float polytone$modifyCloudHeight(float original) {
         Float f = Polytone.DIMENSION_MODIFIERS.modifyCloudHeight(this.level);
         return f != null ? f : original;
+    }
+
+    /**
+     * Copy level depth before {@code GameRenderer} clears it for first-person hand rendering.
+     */
+    @Inject(method = "renderLevel", at = @At("TAIL"))
+    private void polytone$captureLevelDepth(DeltaTracker deltaTracker, boolean renderBlockOutline,
+                                            Camera camera, GameRenderer gameRenderer,
+                                            net.minecraft.client.renderer.LightTexture lightTexture,
+                                            org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
+                                            CallbackInfo ci) {
+        Polytone.POST_SHADERS.captureLevelDepthSnapshot();
     }
 
     //TODO: add

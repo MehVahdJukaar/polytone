@@ -5,14 +5,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EffectInstance;
-import net.minecraft.client.renderer.PostChain;
-import net.minecraft.client.renderer.PostPass;
 import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 
 import java.util.Map;
-import java.util.function.IntSupplier;
 
 /**
  * A single Polytone post-shader entry parsed from {@code polytone/post_shaders/*.json}.
@@ -106,31 +101,27 @@ public final class PostChainEffect {
     }
 
     /**
-     * Push all per-frame uniforms (built-in globals + re-evaluated {@code expression_uniforms}) and,
-     * when enabled, the depth sampler into every pass of the chain. Must run before {@code chain.process}
-     * so the values are live when each pass calls {@code effect.apply()}.
-     *
-     * @param depthTexture supplier of the level depth texture id; only bound when {@link #useDepthBuffer} is set
+     * Push all per-frame uniforms for a single pass effect. Called from {@code PostPassMixin}
+     * immediately before {@code EffectInstance.apply()} so sampler/uniform state matches what
+     * {@code PostPass.process} just configured (notably {@code DiffuseSampler}).
      */
-    public void applyUniforms(PostChain chain, Matrix4f projMat, Matrix4f modelViewMat,
-                              float sunAngle, float dayTime, @Nullable IntSupplier depthTexture) {
-        for (PostPass pass : chain.passes) {
-            EffectInstance effect = pass.getEffect();
-            effect.safeGetUniform(PROJ_MAT).set(projMat);
-            effect.safeGetUniform(MODEL_VIEW_MAT).set(modelViewMat);
-            effect.safeGetUniform(SUN_ANGLE).set(sunAngle);
-            effect.safeGetUniform(DAY_TIME).set(dayTime);
-            for (var e : expressionUniforms.entrySet()) {
-                effect.safeGetUniform(e.getKey()).set((float) e.getValue().evaluate());
-            }
-            if (useDepthBuffer && depthTexture != null) {
-                effect.setSampler(DEPTH_SAMPLER, depthTexture);
-            }
-            for (var e : samplers.entrySet()) {
-                ResourceLocation texture = e.getValue();
-                effect.setSampler(e.getKey(),
-                        () -> Minecraft.getInstance().getTextureManager().getTexture(texture).getId());
-            }
+    public void applyUniformsToEffect(EffectInstance effect, PostShadersManager.ActivePostPassFrame frame) {
+        // Vanilla blit passes share the chain but don't declare Polytone uniforms; skip them.
+        if (effect.getUniform(PROJ_MAT) == null) return;
+        effect.safeGetUniform(PROJ_MAT).set(frame.projMat());
+        effect.safeGetUniform(MODEL_VIEW_MAT).set(frame.modelViewMat());
+        effect.safeGetUniform(SUN_ANGLE).set(frame.sunAngle());
+        effect.safeGetUniform(DAY_TIME).set(frame.dayTime());
+        for (var e : expressionUniforms.entrySet()) {
+            effect.safeGetUniform(e.getKey()).set((float) e.getValue().evaluate());
+        }
+        if (useDepthBuffer && frame.depthTexture() != null) {
+            effect.setSampler(DEPTH_SAMPLER, frame.depthTexture());
+        }
+        for (var e : samplers.entrySet()) {
+            ResourceLocation texture = e.getValue();
+            effect.setSampler(e.getKey(),
+                    () -> Minecraft.getInstance().getTextureManager().getTexture(texture).getId());
         }
     }
 }

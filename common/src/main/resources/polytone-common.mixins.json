@@ -39,6 +39,7 @@
     "PackSelectScreenMixin",
     "PaintingRendererMixin",
     "ParticleEngineMixin",
+    "PostPassMixin",
     "ScreenMixin",
     "SmithingScreenMixin",
     "SodiumBlockRendererMixin",

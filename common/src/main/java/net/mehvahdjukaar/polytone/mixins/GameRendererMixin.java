@@ -35,13 +35,13 @@ public abstract class GameRendererMixin {
         Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
     }
 
-    // Run Polytone post-shader chains on top of vanilla's post effect.
-    // Targets the first RenderTarget#bindWrite invoke in render(), which fires right after
-    // the optional vanilla postEffect.process() and before HUD rendering.
+    // Run Polytone post-shader chains on top of vanilla's post effect, once the main target is bound
+    // for compositing (after optional vanilla postEffect.process()).
     @Inject(method = "render",
             at = @At(value = "INVOKE",
                      target = "Lcom/mojang/blaze3d/pipeline/RenderTarget;bindWrite(Z)V",
-                     ordinal = 0))
+                     ordinal = 0,
+                     shift = At.Shift.AFTER))
     private void polytone$renderPolytonePostEffects(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.POST_SHADERS.renderAfterMainPostEffect(deltaTracker.getGameTimeDeltaTicks());
     }

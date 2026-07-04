@@ -6,16 +6,23 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.gui.PointingChatBubbleOverlay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.SpriteIconButton;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ConfigScreen extends OptionsSubScreen {
     private static final Component TITLE = Component.translatable("screen.polytone.configs.title");
@@ -85,7 +92,21 @@ public class ConfigScreen extends OptionsSubScreen {
     @Override
     protected void addOptions() {
         for (var cat : opt.keySet()) {
+            // 1.21.1's OptionsList has no addHeader, so we add a full-width centered label row as a category header
+            this.list.addSmall(List.<AbstractWidget>of(
+                    new StringWidget(this.list.getRowWidth(), 20, getCategoryHeader(cat), this.font).alignCenter()));
             this.list.addSmall(opt.get(cat).toArray(new OptionInstance[0]));
         }
+    }
+
+    private static Component getCategoryHeader(String modId) {
+        String key = "config." + modId + ".header";
+        if (I18n.exists(key)) return Component.translatable(key);
+        return Component.literal(getReadableName(modId));
+    }
+
+    private static String getReadableName(String name) {
+        return Arrays.stream(name.replace(":", "_").split("_"))
+                .map(StringUtils::capitalize).collect(Collectors.joining(" "));
     }
 }
