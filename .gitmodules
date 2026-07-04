@@ -1,0 +1,3 @@
+[submodule "resourcepacks/sunbathing"]
+	path = resourcepacks/sunbathing
+	url = git@github.com:MehVahdJukaar/sunbathing.git
