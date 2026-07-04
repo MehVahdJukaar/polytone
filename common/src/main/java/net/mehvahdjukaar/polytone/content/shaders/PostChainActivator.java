@@ -24,6 +24,11 @@ import java.util.Map;
  * {@link ExpressionUniformBuffers} registered with {@link ShaderUniformsManager} under each
  * pass's pipeline fragment-shader id. Chain gating ({@link #turnOnCondition}) implicitly
  * gates the binds too — when the chain isn't in the FrameGraph, its passes never bind.
+ *
+ * <p>{@code samplers} are chain-level custom texture bindings: {@code sampler name -> texture id}.
+ * The name must match a {@code sampler2D} declared in the pass pipeline's bind-group layout and
+ * used by its shader. Registered by pass fragment-shader id and bound by
+ * {@link PostChainsManager#bindExtraSamplers} (see {@code RenderPassMixin}).
  */
 public final class PostChainActivator {
 
@@ -33,21 +38,26 @@ public final class PostChainActivator {
                     ISimpleExp.CODEC.optionalFieldOf("activation_condition", ISimpleExp.ONE).forGetter(p -> p.turnOnCondition),
                     ExpressionUniformBuffers.CODEC
                             .optionalFieldOf("expression_uniforms", new ExpressionUniformBuffers(Map.of()))
-                            .forGetter(p -> p.buffers)
+                            .forGetter(p -> p.buffers),
+                    Codec.unboundedMap(Codec.STRING, Identifier.CODEC)
+                            .optionalFieldOf("samplers", Map.of()).forGetter(p -> p.samplers)
             ).apply(i, PostChainActivator::new));
 
     private final Identifier postChain;
     private final ISimpleExp turnOnCondition;
     private final ExpressionUniformBuffers buffers;
+    private final Map<String, Identifier> samplers;
 
     private boolean cachedOn = false;
     private PostChain cachedPostChain = null;
     private final List<Identifier> registeredShaderIds = new ArrayList<>();
 
-    public PostChainActivator(Identifier postChain, ISimpleExp turnOnCondition, ExpressionUniformBuffers buffers) {
+    public PostChainActivator(Identifier postChain, ISimpleExp turnOnCondition,
+                              ExpressionUniformBuffers buffers, Map<String, Identifier> samplers) {
         this.postChain = postChain;
         this.turnOnCondition = turnOnCondition;
         this.buffers = buffers;
+        this.samplers = samplers;
     }
 
     public void refreshEnabled() {
@@ -81,17 +91,19 @@ public final class PostChainActivator {
     }
 
     private void registerByPassShaders(PostChain chain) {
-        if (buffers.isEmpty()) return;
+        if (buffers.isEmpty() && samplers.isEmpty()) return;
         for (PostPass pass : chain.passes) {
             Identifier shaderId = ((PostPassAccessor) pass).polytone$getPipeline().getFragmentShader();
-            Polytone.SHADER_EFFECTS.registerExternal(shaderId, buffers);
+            if (!buffers.isEmpty()) Polytone.SHADER_EFFECTS.registerExternal(shaderId, buffers);
+            if (!samplers.isEmpty()) Polytone.POST_CHAINS.registerSamplers(shaderId, samplers);
             registeredShaderIds.add(shaderId);
         }
     }
 
     private void unregisterByPassShaders() {
         for (Identifier id : registeredShaderIds) {
-            Polytone.SHADER_EFFECTS.unregisterExternal(id, buffers);
+            if (!buffers.isEmpty()) Polytone.SHADER_EFFECTS.unregisterExternal(id, buffers);
+            if (!samplers.isEmpty()) Polytone.POST_CHAINS.unregisterSamplers(id, samplers);
         }
         registeredShaderIds.clear();
     }

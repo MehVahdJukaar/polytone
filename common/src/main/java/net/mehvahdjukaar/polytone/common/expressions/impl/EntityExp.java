@@ -10,7 +10,6 @@ import net.mehvahdjukaar.polytone.common.expressions.proxies.RandomProxy;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import org.mvel2.MVEL;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -42,7 +41,7 @@ public class EntityExp extends PolyExp implements IEntityExp {
         RandomProxy rand = RandomProxy.GLOBAL;
         vars.put("random", rand);
         vars.put("r", rand);
-        return MVEL.executeExpression(expr, vars, double.class);
+        return executeDouble(vars);
     }
 
 

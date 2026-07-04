@@ -4,7 +4,6 @@ import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExp;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.RandomProxy;
-import org.mvel2.MVEL;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -29,7 +28,7 @@ public class SimpleExp extends PolyExp implements ISimpleExp {
         RandomProxy rand = RandomProxy.GLOBAL;
         vars.put("random", rand);
         vars.put("r", rand);
-        return MVEL.executeExpression(expr, vars, double.class);
+        return executeDouble(vars);
     }
 
 
