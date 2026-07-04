@@ -108,5 +108,6 @@ subprojects {
         maven { url = uri("https://raw.githubusercontent.com/Fuzss/modresources/main/maven") } // Fuzss' Mod Resources
         maven { url = uri("https://maven.jamieswhiteshirt.com/libs-release") } // Jamie's Mods
         maven { url = uri("https://maven.ryanhcode.dev/releases") }
+        maven { url = uri("https://api.modrinth.com/maven") } // Modrinth (EMF, ETF)
     }
 }

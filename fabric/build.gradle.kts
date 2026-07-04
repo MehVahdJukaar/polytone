@@ -19,9 +19,12 @@ dependencies {
 
     // Mirror of common deps (the new setup needs every modCompileOnly/modImplementation in common to also live here)
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
-    modCompileOnly("curse.maven:sodium-394468:6240355")
+    modImplementation("curse.maven:sodium-394468:6382649") // sodium-fabric-0.6.13+mc1.21.1
 
-    modCompileOnly("curse.maven:sodium-394468:6211305")
     modCompileOnly("curse.maven:serene-seasons-291874:6182595")
     modCompileOnly("curse.maven:fabric-seasons-413523:5789846")
+
+    // Runtime-only: Entity Model Features (EMF) + Entity Texture Features (ETF), for testing OptiFine-style CEM/CET
+    modRuntimeOnly("maven.modrinth:entity-model-features:3.2.4-fabric-1.21")
+    modRuntimeOnly("maven.modrinth:entitytexturefeatures:7.1-fabric-1.21")
 }

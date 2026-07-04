@@ -48,7 +48,7 @@ public class ConfigScreen extends OptionsSubScreen {
             this.addRenderableOnly(new PointingChatBubbleOverlay(
                     this.heartButton,
                     () -> this.width,
-                    () -> Polytone.CONFIGS.bubbleManager.getHeartButtonMessage()));
+                    Polytone.CONFIGS.bubbleManager::getHeartButtonMessage));
         }
     }
 
@@ -73,7 +73,12 @@ public class ConfigScreen extends OptionsSubScreen {
 
     @Override
     protected void addFooter() {
-        LinearLayout linearLayout = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+        int buttonW = 20;
+        int spacing = 8;
+        // ExtraWidthHorizontalLayout under-reports its width by the heart button so that adding it
+        // appends to the right without shifting the centered Reset/Done buttons.
+        LinearLayout linearLayout = this.layout.addToFooter(
+                new ExtraWidthHorizontalLayout(-buttonW - spacing, 0).spacing(spacing));
         linearLayout.addChild(Button.builder(Component.translatable("screen.polytone.configs.reset"),
                 b -> resetValues()).build());
         linearLayout.addChild(Button.builder(CommonComponents.GUI_DONE,
@@ -82,7 +87,7 @@ public class ConfigScreen extends OptionsSubScreen {
                         Component.translatable("screen.polytone.support.title"),
                         b -> this.minecraft.setScreen(new SupportScreen(this)),
                         true)
-                .size(20, 20)
+                .size(buttonW, 20)
                 .sprite(Polytone.res("heart"), 16, 16)
                 .build();
         this.heartButton = heart;

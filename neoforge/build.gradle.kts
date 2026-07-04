@@ -1,5 +1,3 @@
-import org.gradle.internal.fingerprint.classpath.impl.ClasspathFingerprintingStrategy.runtimeClasspath
-import org.jetbrains.kotlin.konan.library.impl.buildLibrary
 
 plugins {
     id("com.possible-triangle.neoforge")
@@ -24,8 +22,8 @@ dependencies {
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     implementation("net.objecthunter:exp4j:${exp4j_version}")
-   localRuntime("net.objecthunter:exp4j:${exp4j_version}")
-   serverAdditionalRuntimeClasspath("net.objecthunter:exp4j:${exp4j_version}")
+    localRuntime("net.objecthunter:exp4j:${exp4j_version}")
+    serverAdditionalRuntimeClasspath("net.objecthunter:exp4j:${exp4j_version}")
     clientAdditionalRuntimeClasspath("net.objecthunter:exp4j:${exp4j_version}")
     apiInclude("org.mvel:mvel2:${mvel_version}")
     implementation("org.mvel:mvel2:${mvel_version}")
