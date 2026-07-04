@@ -300,6 +300,14 @@ public class PostShadersManager extends JsonPartialReloader {
                 }
             }
 
+            // Every PostChain.process() ends by unbinding its final pass's output target, which leaves
+            // framebuffer 0 (the default backbuffer) bound — NOT the main render target. Vanilla restores
+            // the main target right after its own gameRenderer.postEffect.process() via bindWrite(true);
+            // because we run our chains AFTER that restore, we must re-bind it ourselves. Otherwise the
+            // entire HUD (hotbar, inventory, F3, toasts, screens) is rendered into the backbuffer and then
+            // overwritten by the end-of-frame blit of the main target — i.e. the GUI vanishes.
+            mc.getMainRenderTarget().bindWrite(true);
+
             depthCapturedThisFrame = false;
         }
     }
