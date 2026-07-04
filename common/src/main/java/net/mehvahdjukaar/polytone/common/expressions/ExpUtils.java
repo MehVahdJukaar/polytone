@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.common.expressions;
 
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.*;
 import net.minecraft.Util;
 import org.mvel2.ParserContext;
@@ -164,12 +165,12 @@ public class ExpUtils {
 
         importStaticMethods(ctx, ExpMath.class);
         importStaticFieldTypes(ctx, ExpMath.class);
-        // Polytone.GLOBAL_EXPRESSION not present on 1.21.1 - skipped
+        Polytone.GLOBAL_EXPRESSION.addTypes(ctx);
     }
 
     public static void addCommonVars(Map<String, Object> vars) {
         vars.putAll(STATIC_GLOBALS);
-        // Polytone.GLOBAL_EXPRESSION not present on 1.21.1 - skipped
+        Polytone.GLOBAL_EXPRESSION.addValues(vars);
     }
 
 

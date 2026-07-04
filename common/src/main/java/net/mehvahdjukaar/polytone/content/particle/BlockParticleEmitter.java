@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
+import net.mehvahdjukaar.polytone.utils.TokenBucketTracker;
 import net.mehvahdjukaar.polytone.utils.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
@@ -81,6 +82,8 @@ public record BlockParticleEmitter(
     public void tick(Level level, BlockPos pos, BlockState state, TickSource source) {
         if (particleType.isEmpty()) return;
         if (source != spawnSource) return; //only spawn particles on the correct tick source
+        float throttle = Polytone.CONFIGS.particlesThrottle.get();
+        if (throttle < 1 && level.random.nextFloat() > throttle) return;
         double spawnChance = chance.getValue(level, pos, state);
         if (level.random.nextFloat() < spawnChance && predicate().test(state, level.random)) {
             if (biomes.isPresent()) {
@@ -92,6 +95,7 @@ public record BlockParticleEmitter(
 
                 ParticleOptions po = getParticleOptions(level, pos, state);
                 if (po == null) return;
+                if (!TokenBucketTracker.canEmitParticle(this)) return;
                 var pp = spawnLocation.getLocation(pos, state, level.random);
                 level.addAlwaysVisibleParticle(po,
                         pp.x() + x.getValue(level, pos, state),

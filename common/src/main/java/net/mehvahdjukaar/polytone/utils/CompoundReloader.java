@@ -135,6 +135,7 @@ public class CompoundReloader implements PreparableReloadListener {
 
 
     public void resetWithLevel(boolean isLogOff) {
+        TokenBucketTracker.clear();
         for (var c : children) {
             c.resetWithLevel(isLogOff);
         }

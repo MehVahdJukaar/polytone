@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.content.particle;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.TokenBucketTracker;
 import net.mehvahdjukaar.polytone.utils.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.particle.Particle;
@@ -70,6 +71,8 @@ public record ParticleParticleEmitter(
     @Override
     public void tick(Particle particle, Level level) {
         if (particleType.isEmpty()) return;
+        float throttle = Polytone.CONFIGS.particlesThrottle.get();
+        if (throttle < 1 && level.random.nextFloat() > throttle) return;
         double spawnChance = chance.getValue(particle, level);
         if (level.random.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
@@ -83,6 +86,7 @@ public record ParticleParticleEmitter(
             for (int i = 0; i < count.getValue(particle, level); i++) {
                 ParticleOptions po = getParticleOptions(particle, level);
                 if (po == null) return;
+                if (!TokenBucketTracker.canEmitParticle(this)) return;
                 level.addParticle(po,
                         particle.x + x.getValue(particle, level),
                         particle.y + y.getValue(particle, level),

@@ -2,30 +2,54 @@ package net.mehvahdjukaar.polytone.content.entity;
 
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class EntityModifiersManager extends JsonPartialReloader {
-    @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> obj, RegistryOps<JsonElement> ops, RegistryAccess access) {
 
+    private final Map<EntityType<?>, EntityModifier> emittersPerEntity = new HashMap<>();
+
+    public EntityModifiersManager() {
+        super("entity_modifiers");
+    }
+
+    @Override
+    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        for (var j : Parsed.batchParseOnlyEnabled(jsons, EntityModifier.CODEC, ops, "Entity Modifiers")) {
+            if (j.getValue() != null) {
+                addModifier(j.getKey(), j.getValue());
+            }
+        }
+    }
+
+    private void addModifier(ResourceLocation fileId, EntityModifier mod) {
+        for (var h : mod.targets().compute(fileId, BuiltInRegistries.ENTITY_TYPE.asLookup())) {
+            emittersPerEntity.merge(h.value(), mod, EntityModifier::merge);
+        }
     }
 
     @Override
     protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-
     }
 
     @Override
     protected void resetWithLevel(boolean logOff) {
-
+        emittersPerEntity.clear();
     }
 
-    public void onEntityTick(Entity entity){
-
+    public void onEntityTick(Entity entity) {
+        if (emittersPerEntity.isEmpty()) return;
+        EntityModifier mod = emittersPerEntity.get(entity.getType());
+        if (mod != null) {
+            mod.tick(entity);
+        }
     }
 }

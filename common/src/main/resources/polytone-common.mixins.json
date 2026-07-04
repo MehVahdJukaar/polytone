@@ -18,6 +18,7 @@
     "ColorResolverMixin",
     "DimensionSpecialEffectsMixin",
     "EntityModelSetMixin",
+    "EntityMixin",
     "FaceBakeryMixin",
     "FishingHookRendererMixin",
     "FogRendererMixin",
