@@ -37,9 +37,11 @@ public final class PolyExpType<T extends PolyExp> {
 
     public DataResult<T> create(String expressionStr) {
         try {
-            expressionStr = ExpUtils.upgrade(expressionStr);
-            Serializable expr = MVEL.compileExpression(expressionStr, this.context);
-            return DataResult.success(constructor.apply(expr, expressionStr));
+            String upgraded = ExpUtils.upgrade(expressionStr);
+            Serializable expr = MVEL.compileExpression(upgraded, this.context);
+            T result = constructor.apply(expr, upgraded);
+            result.unparsed = expressionStr; // keep the original for readable error messages
+            return DataResult.success(result);
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to compile expression: " + e.getMessage());
         }

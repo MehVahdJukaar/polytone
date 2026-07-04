@@ -31,6 +31,7 @@ public class GlRenderPassMixin {
         if (declared.isEmpty()) return;
         RenderPass pass = (RenderPass) (Object) this;
         Polytone.POST_CHAINS.setupExtraUniforms(pass, declared);
+        Polytone.POST_CHAINS.bindExtraSamplers(pass, renderPipeline, declared);
         Polytone.SHADER_EFFECTS.tryApply(pass, renderPipeline, declared);
     }
 }

@@ -10,7 +10,7 @@ public interface IParticleExp {
 
     Codec<IParticleExp> CODEC = Codec.lazyInitialized(() ->
             CodecUtils.alternatives(
-                    Codec.DOUBLE.xmap(
+                    CodecUtils.LENIENT_DOUBLE.xmap(
                             aDouble -> (level, pos) -> aDouble,
                             iBlockExp -> 0.0
                     ),

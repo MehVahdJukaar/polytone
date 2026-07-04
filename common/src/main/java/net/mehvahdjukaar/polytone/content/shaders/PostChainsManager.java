@@ -3,7 +3,13 @@ package net.mehvahdjukaar.polytone.content.shaders;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
+import com.mojang.blaze3d.textures.GpuTextureView;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
@@ -18,6 +24,7 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +39,8 @@ public class PostChainsManager extends JsonPartialReloader {
     private PolytoneGlobalUniforms globalUniforms = null;
 
     private final List<PostChainActivator> activators = new ArrayList<>();
+    // custom texture samplers keyed by pass fragment-shader id, registered by PostChainActivator
+    private final Map<Identifier, List<Map<String, Identifier>>> samplersByShader = new HashMap<>();
 
     public PostChainsManager() {
         super("post_chains", "post_shaders");
@@ -62,6 +71,7 @@ public class PostChainsManager extends JsonPartialReloader {
             for (var e : activators) e.close();
             activators.clear();
         }
+        samplersByShader.clear();
     }
 
     private PolytoneGlobalUniforms getOrCreateUniforms() {
@@ -75,6 +85,41 @@ public class PostChainsManager extends JsonPartialReloader {
         // only bind PolyGlobals to passes whose shader actually declares the block (see GlRenderPassMixin)
         if (declaredUniforms.contains(GLOBALS_NAME)) {
             pass.setUniform(GLOBALS_NAME, getOrCreateUniforms().getSlice());
+        }
+    }
+
+    /** External callers (PostChainActivator) register their custom samplers under a pass shader id. */
+    public void registerSamplers(Identifier shaderId, Map<String, Identifier> samplers) {
+        if (samplers.isEmpty()) return;
+        samplersByShader.computeIfAbsent(shaderId, k -> new ArrayList<>()).add(samplers);
+    }
+
+    public void unregisterSamplers(Identifier shaderId, Map<String, Identifier> samplers) {
+        List<Map<String, Identifier>> list = samplersByShader.get(shaderId);
+        if (list != null) {
+            list.remove(samplers);
+            if (list.isEmpty()) samplersByShader.remove(shaderId);
+        }
+    }
+
+    /**
+     * Binds custom textures declared in a post chain's {@code samplers} map to any pass whose
+     * pipeline fragment shader matches. Gated on {@code declaredUniforms} (which includes sampler
+     * names) so we never bind a sampler the program doesn't declare — see {@code RenderPassMixin}.
+     */
+    public void bindExtraSamplers(RenderPass pass, RenderPipeline pipeline, Set<String> declaredUniforms) {
+        if (samplersByShader.isEmpty()) return;
+        List<Map<String, Identifier>> list = samplersByShader.get(pipeline.getFragmentShader());
+        if (list == null) return;
+        var texManager = Minecraft.getInstance().getTextureManager();
+        // effect textures (noise/gradients) generally tile and look better filtered
+        GpuSampler sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR);
+        for (Map<String, Identifier> samplers : list) {
+            for (var e : samplers.entrySet()) {
+                if (!declaredUniforms.contains(e.getKey())) continue;
+                GpuTextureView view = texManager.getTexture(e.getValue()).getTextureView();
+                pass.bindTexture(e.getKey(), view, sampler);
+            }
         }
     }
 
