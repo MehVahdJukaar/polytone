@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.utils.codec;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -22,6 +23,31 @@ public class CodecUtils {
 
     public static Codec<String> STR_OR_DOUBLE_CODEC = Codec.withAlternative(Codec.STRING,
             Codec.DOUBLE.xmap( d->d+"", s->0.0));
+
+    // A double parsed from either a JSON number OR a JSON string holding a plain numeric literal
+    // (e.g. "0.5"). Lets a constant written as a string take the same fast constant-lambda path as
+    // a JSON number instead of being compiled/evaluated as an expression every frame.
+    public static final Codec<Double> LENIENT_DOUBLE = Codec.withAlternative(Codec.DOUBLE,
+            Codec.STRING.comapFlatMap(CodecUtils::parseDouble, s -> Double.toString(s)));
+
+    public static final Codec<Float> LENIENT_FLOAT = Codec.withAlternative(Codec.FLOAT,
+            Codec.STRING.comapFlatMap(CodecUtils::parseFloat, s -> Float.toString(s)));
+
+    private static DataResult<Double> parseDouble(String s) {
+        try {
+            return DataResult.success(Double.parseDouble(s.trim()));
+        } catch (NumberFormatException e) {
+            return DataResult.error(() -> "Not a numeric literal: " + s);
+        }
+    }
+
+    private static DataResult<Float> parseFloat(String s) {
+        try {
+            return DataResult.success(Float.parseFloat(s.trim()));
+        } catch (NumberFormatException e) {
+            return DataResult.error(() -> "Not a numeric literal: " + s);
+        }
+    }
 
     public static <E> Codec<HolderSet<E>> forwardAwareHomogeneousList(ResourceKey<? extends Registry<E>> registryKey) {
         return LenientHolderSetCodec.create(registryKey, new ForwardAwareRegistryFixedCodec<>(registryKey), false);

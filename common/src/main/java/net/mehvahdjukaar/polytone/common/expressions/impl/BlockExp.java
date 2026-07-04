@@ -11,7 +11,6 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.mvel2.MVEL;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -43,7 +42,7 @@ public class BlockExp extends PolyExp implements IBlockExp {
         RandomProxy rand = RandomProxy.posSeeded(BlockPos.containing(pos));
         vars.put("random", rand);
         vars.put("r", rand);
-        return MVEL.executeExpression(expr, vars, double.class);
+        return executeDouble(vars);
     }
 
 }

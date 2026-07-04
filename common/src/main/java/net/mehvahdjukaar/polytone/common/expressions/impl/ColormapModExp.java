@@ -13,7 +13,6 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.mvel2.MVEL;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -46,8 +45,7 @@ public class ColormapModExp extends PolyExp implements IColormapModExp {
         RandomProxy rand = pos == null ? RandomProxy.GLOBAL : RandomProxy.posSeeded(BlockPos.containing(pos));
         vars.put("random", rand);
         vars.put("r", rand);
-        double v = MVEL.executeExpression(expr, vars, double.class);
-        return (float) v;
+        return (float) executeDouble(vars);
     }
 
 }

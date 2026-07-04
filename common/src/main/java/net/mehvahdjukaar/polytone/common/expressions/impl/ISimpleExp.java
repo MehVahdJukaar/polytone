@@ -7,7 +7,7 @@ public interface ISimpleExp {
 
     Codec<ISimpleExp> CODEC = Codec.lazyInitialized(() -> (
             CodecUtils.alternatives(
-                    Codec.DOUBLE.xmap(
+                    CodecUtils.LENIENT_DOUBLE.xmap(
                             aDouble -> (ISimpleExp) () -> aDouble,
                             i -> 0.0
                     ),

@@ -14,7 +14,7 @@ public interface IColormapModExp {
 
     Codec<IColormapModExp> CODEC = Codec.lazyInitialized(() ->
             CodecUtils.alternatives(
-                    Codec.FLOAT.xmap(
+                    CodecUtils.LENIENT_FLOAT.xmap(
                             aDouble -> (IColormapModExp) (a, b, c, d, e, f, g, h, i) -> aDouble,
                             i -> 0.0f
                     ),

@@ -8,7 +8,7 @@ public interface IEntityExp {
 
     Codec<IEntityExp> CODEC = Codec.lazyInitialized(() ->
             CodecUtils.alternatives(
-                    Codec.DOUBLE.xmap(
+                    CodecUtils.LENIENT_DOUBLE.xmap(
                             aDouble -> (IEntityExp) (e) -> aDouble,
                             i -> 0.0
                     ),
