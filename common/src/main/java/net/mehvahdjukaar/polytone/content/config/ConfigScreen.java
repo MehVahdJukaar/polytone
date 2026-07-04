@@ -103,7 +103,6 @@ public class ConfigScreen extends OptionsSubScreen {
                         b -> this.minecraft.gui.setScreen(this.lastScreen))
                 .width(width)
                 .build());
-        //support links
         SpriteIconButton heart = SpriteIconButton.builder(
                         Component.translatable("screen.polytone.support.title"),
                         b -> this.minecraft.gui.setScreen(new SupportScreen(this)),

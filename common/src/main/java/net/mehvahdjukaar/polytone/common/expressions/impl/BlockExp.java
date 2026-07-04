@@ -10,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
-import org.mvel2.MVEL;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -49,7 +48,7 @@ public class BlockExp extends PolyExp implements IBlockExp {
         vars.put("random", rand);
         vars.put("r", rand);
         vars.put("v", v);
-        return MVEL.executeExpression(expr, vars, double.class);
+        return executeDouble(vars);
     }
 
 }

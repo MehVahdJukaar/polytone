@@ -15,7 +15,7 @@ public interface IBlockExp {
 
     Codec<IBlockExp> CODEC = Codec.lazyInitialized(() ->
             CodecUtils.alternatives(
-                    Codec.DOUBLE.xmap(
+                    CodecUtils.LENIENT_DOUBLE.xmap(
                             aDouble -> (level, pos, state) -> aDouble,
                             iBlockExp -> 0.0
                     ),
