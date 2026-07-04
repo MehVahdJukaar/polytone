@@ -35,6 +35,7 @@
     "EnvironmentAttributeEntryMixin",
     "EnvironmentSystemMixin",
     "FishingHookRendererMixin",
+    "FluidStateModelSetMixin",
     "GameRendererMixin",
     "GlProgramMixin",
     "RenderPassMixin",

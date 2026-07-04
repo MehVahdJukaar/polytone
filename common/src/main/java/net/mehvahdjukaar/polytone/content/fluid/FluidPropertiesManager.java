@@ -22,12 +22,19 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.material.FlowingFluid;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FluidPropertiesManager extends JsonImgPartialReloader {
 
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
+
+    // Thread-safe map of the fluid render tint (as a concurrent colormap), read from chunk-build
+    // worker threads by FluidStateModelSetMixin. Populated on the main thread during apply.
+    private final Map<Fluid, IColorGetter> concurrentTints = new ConcurrentHashMap<>();
 
     public FluidPropertiesManager() {
         super("fluid_modifiers", "fluid_properties");
@@ -116,6 +123,21 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
     @Override
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
+        // Precompute concurrent tints on the main thread (getOrCreateConcurrentColormap is not
+        // thread-safe) so the render-thread mixin only ever reads them.
+        for (var entry : modifiers.entrySet()) {
+            Fluid fluid = entry.getKey();
+            IColorGetter tint = entry.getValue().getColormap();
+            if (tint == null) continue;
+            IColorGetter concurrent = Polytone.COLORMAPS.getOrCreateConcurrentColormap(tint);
+            concurrentTints.put(fluid, concurrent);
+            // A modifier targeting one variant tints the whole fluid (matches the old FluidType-wide
+            // behaviour). Don't clobber an explicit per-variant modifier.
+            if (fluid instanceof FlowingFluid ff) {
+                concurrentTints.putIfAbsent(ff.getSource(), concurrent);
+                concurrentTints.putIfAbsent(ff.getFlowing(), concurrent);
+            }
+        }
         if (!modifiers.isEmpty()) {
             Polytone.LOGGER.info("Applied {} Fluid Modifiers", modifiers.size());
         }
@@ -124,6 +146,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     @Override
     protected void resetWithLevel(boolean logOff) {
         modifiers.clear();
+        concurrentTints.clear();
         clearSpecial();
         if (vanillaWaterColorResolver != null) {
             BiomeColors.WATER_COLOR_RESOLVER = vanillaWaterColorResolver;
@@ -158,6 +181,12 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
     public FluidPropertyModifier getModifier(Fluid water) {
         return modifiers.get(water);
+    }
+
+    // Render-thread safe: the tint to use as the fluid's FluidModel tintSource, or null for none.
+    @Nullable
+    public IColorGetter getConcurrentTint(Fluid fluid) {
+        return concurrentTints.get(fluid);
     }
 
 }
