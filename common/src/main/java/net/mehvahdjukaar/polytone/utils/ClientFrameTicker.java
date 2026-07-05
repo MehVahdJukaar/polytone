@@ -60,6 +60,10 @@ public class ClientFrameTicker {
     }
 
     public static void onTick(Level level) {
+        // Client-only ticker (drives GL post-shader loading). Guard against being called with a
+        // non-client level on a non-render thread (NeoForge's LevelTickEvent fires for the integrated
+        // server level too) — otherwise off-thread GL calls poison the post shader chains.
+        if (level != Minecraft.getInstance().level) return;
         if (cameraPos != null) {
             skyLight = level.getBrightness(LightLayer.SKY, cameraPos);
             blockLight = level.getBrightness(LightLayer.BLOCK, cameraPos);
