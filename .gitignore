@@ -1,4 +1,3 @@
-../build/
 *.ipr
 run/
 *.iws
@@ -32,7 +31,4 @@ CLAUDE.md
 /fabric/build/
 /neoforge/build/
 /forge/build/
-/build/
-/build/
-/build/
 /build/
