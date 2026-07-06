@@ -312,6 +312,19 @@ public class CustomParticleType implements CustomParticleFactory {
             }
         }
 
+        // Sodium 0.8.x injects into SingleQuadParticle.renderRotatedQuad(VertexConsumer, Camera, Quaternionf, float)
+        // and cancels it at HEAD, writing the quad straight to the consumer it was given. That would skip our
+        // inner renderRotatedQuad override below (buffer redirection, offset, model rendering). Overriding this
+        // overload too keeps dispatch out of the mixed-in superclass method.
+        @Override
+        protected void renderRotatedQuad(VertexConsumer buffer, Camera camera, Quaternionf quaternion, float partialTicks) {
+            Vec3 cameraPos = camera.getPosition();
+            float x = (float) (Mth.lerp(partialTicks, this.xo, this.x) - cameraPos.x());
+            float y = (float) (Mth.lerp(partialTicks, this.yo, this.y) - cameraPos.y());
+            float z = (float) (Mth.lerp(partialTicks, this.zo, this.z) - cameraPos.z());
+            this.renderRotatedQuad(buffer, quaternion, x, y, z, partialTicks);
+        }
+
         @Override
         protected void renderRotatedQuad(VertexConsumer consumer, Quaternionf quaternion, float x, float y, float z, float partialTicks) {
             Vec3 offset = this.type.offset;
