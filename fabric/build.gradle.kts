@@ -19,7 +19,7 @@ dependencies {
 
     // Mirror of common deps (the new setup needs every modCompileOnly/modImplementation in common to also live here)
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
-    modImplementation("curse.maven:sodium-394468:6382649") // sodium-fabric-0.6.13+mc1.21.1
+    modImplementation("maven.modrinth:sodium:mc1.21.1-0.8.12-fabric") // sodium 0.8.x line for 1.21.1
 
     modCompileOnly("curse.maven:serene-seasons-291874:6182595")
     modCompileOnly("curse.maven:fabric-seasons-413523:5789846")

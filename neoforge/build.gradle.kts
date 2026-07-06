@@ -33,7 +33,13 @@ dependencies {
 
     // Mirror of common deps (the new setup needs every modCompileOnly/modImplementation in common to also live here)
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
-    modCompileOnly("curse.maven:sodium-394468:6240355")
+    // sodium 0.8.12 neoforge: the distributed jar just JiJs the actual mod jar, extracted into mods/ (flatDir)
+    // (the fabric-* jars are sodium's own JiJ'd FRAPI shims, needed at runtime)
+    modImplementation(":sodium-neoforge-mod:0.8.12")
+    modRuntimeOnly(":fabric-api-base:0.4.42")
+    modRuntimeOnly(":fabric-block-view-api-v2:1.0.10")
+    modRuntimeOnly(":fabric-renderer-api-v1:3.4.1")
+    modRuntimeOnly(":fabric-rendering-data-attachment-v1:0.3.48")
 
     modCompileOnly("curse.maven:curios-continuation-1037991:5546342")
     modCompileOnly("curse.maven:embeddium-908741:6118392")

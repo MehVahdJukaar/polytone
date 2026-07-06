@@ -14,6 +14,7 @@ dependencies {
     implementation("org.mvel:mvel2:${mvel_version}")
 
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
-    modCompileOnly("curse.maven:sodium-394468:6240355")
+    // sodium 0.8.12 neoforge: the distributed jar just JiJs the actual mod jar, extracted into mods/ (flatDir)
+    modImplementation(":sodium-neoforge-mod:0.8.12")
     modCompileOnly("curse.maven:serene-seasons-291874:6182596")
 }
