@@ -312,6 +312,22 @@ public class CustomParticleType implements CustomParticleFactory {
             }
         }
 
+        // Particle-rendering optimizations (e.g. Sodium) inject at HEAD of
+        // SingleQuadParticle#renderRotatedQuad(VertexConsumer, Camera, Quaternionf, float) and cancel it,
+        // emitting a default quad directly. That bypasses our 6-arg renderRotatedQuad override below, where the
+        // additive-translucent consumer redirect and the custom offset are applied. By overriding this overload
+        // ourselves (mirroring vanilla) and not calling super, that fast path no longer targets our particles,
+        // so the redirect and offset run as intended, with or without such mods installed.
+        // See https://github.com/CaffeineMC/sodium/issues/3750
+        @Override
+        protected void renderRotatedQuad(VertexConsumer consumer, Camera camera, Quaternionf quaternion, float partialTicks) {
+            Vec3 cameraPos = camera.getPosition();
+            float x = (float) (Mth.lerp(partialTicks, this.xo, this.x) - cameraPos.x());
+            float y = (float) (Mth.lerp(partialTicks, this.yo, this.y) - cameraPos.y());
+            float z = (float) (Mth.lerp(partialTicks, this.zo, this.z) - cameraPos.z());
+            this.renderRotatedQuad(consumer, quaternion, x, y, z, partialTicks);
+        }
+
         @Override
         protected void renderRotatedQuad(VertexConsumer consumer, Quaternionf quaternion, float x, float y, float z, float partialTicks) {
             Vec3 offset = this.type.offset;

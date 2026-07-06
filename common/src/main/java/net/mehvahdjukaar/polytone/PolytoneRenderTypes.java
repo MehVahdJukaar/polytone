@@ -37,16 +37,18 @@ public class PolytoneRenderTypes extends RenderType {
 
         @Override
         public BufferBuilder begin(Tesselator builder, TextureManager textureManager) {
-            // Normally the modifyParticleConsumer redirect sends these vertices to DEFERRED_BUFFER_SOURCE,
-            // leaving this buffer empty. However, mods that optimize particle rendering (e.g. Sodium) may
-            // short-circuit SingleQuadParticle#renderRotatedQuad before our redirect runs, causing geometry
-            // to land here instead. Set up the additive-translucent state so such a stray draw is correct
-            // rather than rendered with leftover shader/blend state (which showed up as corrupted particles).
+          /*
+            Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
+            RenderSystem.activeTexture(GL13.GL_TEXTURE2);
+            RenderSystem.activeTexture(GL13.GL_TEXTURE0);
+            //because of custom render type fuckery...
             RenderSystem.setShader(() -> noAlphaCutoffShader);
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
             RenderSystem.depthMask(false);
             RenderSystem.enableBlend();
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE);
+
+           */
             return builder.begin(VertexFormat.Mode.QUADS, PARTICLE);
         }
 
