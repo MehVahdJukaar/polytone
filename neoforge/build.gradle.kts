@@ -35,11 +35,21 @@ dependencies {
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
     // sodium 0.8.12 neoforge: the distributed jar just JiJs the actual mod jar, extracted into mods/ (flatDir)
     // (the fabric-* jars are sodium's own JiJ'd FRAPI shims, needed at runtime)
-    modImplementation(":sodium-neoforge-mod:0.8.12")
-    modRuntimeOnly(":fabric-api-base:0.4.42")
-    modRuntimeOnly(":fabric-block-view-api-v2:1.0.10")
-    modRuntimeOnly(":fabric-renderer-api-v1:3.4.1")
-    modRuntimeOnly(":fabric-rendering-data-attachment-v1:0.3.48")
+    // These are flatDir deps (empty group). Published via modImplementation/modRuntimeOnly they land in the
+    // module metadata as "group": null and crash modifyMetadataFile (JsonNull). Instead: compileOnly for the
+    // API + localRuntime/additionalRuntimeClasspath so they still load in dev runs but are NOT published
+    // (same recipe as mvel above).
+    modCompileOnly(":sodium-neoforge-mod:0.8.12")
+    localRuntime(":sodium-neoforge-mod:0.8.12")
+    localRuntime(":fabric-api-base:0.4.42")
+    localRuntime(":fabric-block-view-api-v2:1.0.10")
+    localRuntime(":fabric-renderer-api-v1:3.4.1")
+    localRuntime(":fabric-rendering-data-attachment-v1:0.3.48")
+    clientAdditionalRuntimeClasspath(":sodium-neoforge-mod:0.8.12")
+    clientAdditionalRuntimeClasspath(":fabric-api-base:0.4.42")
+    clientAdditionalRuntimeClasspath(":fabric-block-view-api-v2:1.0.10")
+    clientAdditionalRuntimeClasspath(":fabric-renderer-api-v1:3.4.1")
+    clientAdditionalRuntimeClasspath(":fabric-rendering-data-attachment-v1:0.3.48")
 
     modCompileOnly("curse.maven:curios-continuation-1037991:5546342")
     modCompileOnly("curse.maven:embeddium-908741:6118392")

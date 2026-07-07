@@ -298,6 +298,15 @@ public class CustomParticleType implements CustomParticleFactory {
 
         @Override
         public void render(VertexConsumer buffer, Camera camera, float partialTicks) {
+            // Fast path: when this particle is just a plain camera-facing textured quad we defer to the
+            // vanilla SingleQuadParticle.render, which Sodium hijacks at HEAD to write straight into its
+            // packed particle buffer. getLightColor/getU0..V1 stay virtual there, so our sprite and
+            // light-level overrides still apply. When Sodium is absent this is simply the vanilla path.
+            if (canUseSodiumFastPath()) {
+                super.render(buffer, camera, partialTicks);
+                return;
+            }
+
             Quaternionf quaternionf = new Quaternionf();
             this.type.rotationProvider.applyRotation(this, quaternionf, camera, partialTicks);
             if (this.roll != 0.0F) {
@@ -312,10 +321,26 @@ public class CustomParticleType implements CustomParticleFactory {
             }
         }
 
+        // True only when our particle is exactly the quad Sodium's fast path builds, so we can safely let
+        // super.render take over. Requirements:
+        //  - LOOK_AT_XYZ specifically: Sodium billboards with camera left/up (== LOOKAT_XYZ). LOOK_AT_Y and
+        //    MOVEMENT_ALIGNED also report alwaysFacesCamera() but produce a different quad, so they are excluded.
+        //  - no model (Sodium only emits a textured quad, never a baked model)
+        //  - zero offset (Sodium builds the quad at the particle position)
+        //  - render mode that neither redirects the consumer (ADDITIVE_TRANSLUCENT) nor is one Sodium
+        //    mis-renders (TRANSLUCENT).
+        private boolean canUseSodiumFastPath() {
+            return this.model == null
+                    && this.type.rotationProvider == RotationMode.LOOK_AT_XYZ
+                    && this.type.offset.lengthSqr() == 0
+                    && this.type.renderType != RenderMode.TRANSLUCENT
+                    && this.type.renderType != RenderMode.ADDITIVE_TRANSLUCENT;
+        }
+
         // Sodium 0.8.x injects into SingleQuadParticle.renderRotatedQuad(VertexConsumer, Camera, Quaternionf, float)
         // and cancels it at HEAD, writing the quad straight to the consumer it was given. That would skip our
         // inner renderRotatedQuad override below (buffer redirection, offset, model rendering). Overriding this
-        // overload too keeps dispatch out of the mixed-in superclass method.
+        // overload too keeps dispatch out of the mixed-in superclass method whenever we take the slow path.
         @Override
         protected void renderRotatedQuad(VertexConsumer buffer, Camera camera, Quaternionf quaternion, float partialTicks) {
             Vec3 cameraPos = camera.getPosition();
