@@ -276,7 +276,8 @@ public class CustomParticleInstance extends SingleQuadParticle {
             type.ticker.tick(this, level);
         }
 
-        if (this.type.colormap != null) {
+        // cache_colormap: color is sampled once at spawn (see constructor) and never re-evaluated
+        if (!this.type.cacheColormap && this.type.colormap != null) {
             BlockPos pos = BlockPos.containing(x, y, z);
             // off-thread: skip unloaded chunks, otherwise the air fallback would give the wrong color
             if (level.hasChunkAt(pos)) {

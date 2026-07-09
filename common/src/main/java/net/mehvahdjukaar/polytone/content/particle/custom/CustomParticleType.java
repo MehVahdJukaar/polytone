@@ -51,6 +51,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     protected final boolean killWhenStill;
     protected final boolean killWhenNotInView;
     protected final @Nullable IColorGetter colormap;
+    protected final boolean cacheColormap;
     protected final IRotationProvider rotationProvider;
     protected final Vec3 offset;
     protected final Optional<ParticleLimit> particleGroupLimit;
@@ -65,7 +66,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
                                @Nullable Identifier model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
-                               LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
+                               LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap, boolean cacheColormap,
                                boolean randomSprite,
                                int particleGroupLimit, boolean forceSpawn,
                                @Nullable CustomParticleInitializer initializer, ICustomParticleTicker ticker,
@@ -87,6 +88,7 @@ public class CustomParticleType implements ICustomParticleFactory {
         this.liquidAffinity = liquidAffinity;
         this.forceSpawn = forceSpawn;
         this.colormap = colormap;
+        this.cacheColormap = cacheColormap;
         this.offset = offset;
         this.rotationProvider = rotationProvider;
         this.tickRate = tickRate;
@@ -108,6 +110,7 @@ public class CustomParticleType implements ICustomParticleFactory {
             LiquidAffinity.CODEC.optionalFieldOf("liquid_affinity", LiquidAffinity.ANY).forGetter(c -> c.liquidAffinity),
             //TODO: remove
             Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap)),
+            Codec.BOOL.optionalFieldOf("cache_colormap", false).forGetter(c -> c.cacheColormap),
             Codec.BOOL.optionalFieldOf("random_sprite", false).forGetter(c -> c.spritePicker.selectsRandom()),
             ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("limit", 0).forGetter(c ->
                     c.particleGroupLimit.map(ParticleLimit::limit).orElse(0)),
@@ -124,7 +127,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
                                Optional<Identifier> model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
-                               LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
+                               LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap, boolean cacheColormap,
                                boolean randomSprite,
                                int limit, boolean forceSpawn, Optional<CustomParticleInitializer> initializer,
                                ICustomParticleTicker ticker, List<ParticleSoundEmitter> sounds, int tickRate,
@@ -132,7 +135,7 @@ public class CustomParticleType implements ICustomParticleFactory {
                                boolean sticky) {
         this(renderType, rotationProvider, model.orElse(null), offset,
                 light, hasPhysics, killOnContact, killWhenStill,killWhenNotInView,
-                liquidAffinity, colormap.orElse(null),
+                liquidAffinity, colormap.orElse(null), cacheColormap,
                 randomSprite, limit, forceSpawn,
                 initializer.orElse(null), ticker, sounds, tickRate,
                 particles, killSimilarInRadius, sticky);
