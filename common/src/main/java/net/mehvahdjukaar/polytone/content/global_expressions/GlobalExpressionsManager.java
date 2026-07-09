@@ -59,6 +59,15 @@ public class GlobalExpressionsManager extends JsonPartialReloader {
         map.putAll(values);
     }
 
+    /**
+     * Runtime lookup for {@code global.value('name')}: resolves at evaluation time, so usable from
+     * expressions compiled before globals register (custom particles parse in the async prepare phase).
+     */
+    public double getValue(String key) {
+        Object d = values.get(key);
+        return d instanceof Number n ? n.doubleValue() : 0;
+    }
+
     public void addTypes(ParserContext ctx) {
         for (var e : values.entrySet()) {
             if (e.getValue() != null) {

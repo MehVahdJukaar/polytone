@@ -16,7 +16,7 @@
   "config.polytone.particles_throttle.tooltip": "Scales down the amount of custom spawned particles. Decrease to artificially lowers their spawn chance. This is a last resort option to increase performance in unoptimized packs and should normally not be used.",
   "config.polytone.particles_throttle": "Particle Spawn Throttle",
   "config.polytone.custom_particles_async": "Async Custom Particles",
-  "config.polytone.custom_particles_async.tooltip": "Makes Custom Particles tick logic run on a different thread. Very crude and experimental. Might improve performance or not.",
+  "config.polytone.custom_particles_async.tooltip": "Spreads Custom Particle ticking across multiple threads to reduce main-thread lag when using many custom particles.",
   "config.polytone.header": "Polytone",
   "config.polytone.show_config_button": "Show Config Button",
   "config.polytone.show_config_button.tooltip": "Shows the Polytone config button on the resource pack selection screen."

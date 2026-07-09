@@ -28,12 +28,8 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class CustomParticleInstance extends SingleQuadParticle {
-
-    private static final ExecutorService PARTICLE_THREAD = Executors.newWorkStealingPool();
 
     public final CustomParticleType type;
     protected final @Nullable QuadCollection model;
@@ -45,6 +41,9 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     private Quaternionf customRotation = null;
     private Quaternionf customRotationO = null;
+
+    // newborn awaiting its spawn-time ticker pass in the parallel batch (see PolytoneAsyncParticles)
+    boolean pendingInitTick = false;
 
     protected CustomParticleInstance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                                      @Nullable BlockState state, CustomParticleType customType) {
@@ -206,12 +205,25 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     public void tick() {
+        // Lifetime expires synchronously: the engine culls right after tick(), a deferred check
+        // makes every particle live one tick longer. super.tick()'s own check then never fires.
+        if (this.removed) return; // removed off-thread last tick, culled right after this call
+        if (this.age >= this.lifetime) {
+            this.remove();
+            return;
+        }
         if (Polytone.CONFIGS.particlesOffThread.get()) {
-            PARTICLE_THREAD.submit(this::tickInternal);
+            PolytoneAsyncParticles.enqueue(this); // physics + expression work runs in the parallel batch
         } else tickInternal();
     }
 
-    private void tickInternal() {
+    /** Spawn-time ticker pass for a newborn; deferred to the parallel batch when async is on. */
+    void initTick() {
+        this.type.ticker.tick(this, level);
+        this.setAge(0); // reset so the spawn-time pass doesn't age the particle
+    }
+
+    void tickInternal() {
         if (!this.type.isValid()) {
             this.remove();
             return;
@@ -235,7 +247,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
             //handle initialized state where both are null
             Quaternionf instantRot = new Quaternionf();
             this.type.rotationProvider.setRotation(this, instantRot,
-                    Minecraft.getInstance().gameRenderer.getMainCamera(), 0);
+                    PolytoneAsyncParticles.camera(), 0);
             if (this.customRotation == null || this.customRotationO == null) {
                 this.customRotation = new Quaternionf(instantRot);
                 this.customRotationO = new Quaternionf(instantRot);
@@ -253,8 +265,11 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
         if (this.type.colormap != null) {
             BlockPos pos = BlockPos.containing(x, y, z);
-            float[] unpack = ColorUtils.unpack(this.type.colormap.getColor(null, level, pos, 0));
-            this.setColor(unpack[0], unpack[1], unpack[2]);
+            // off-thread: skip unloaded chunks, otherwise the air fallback would give the wrong color
+            if (level.hasChunkAt(pos)) {
+                float[] unpack = ColorUtils.unpack(this.type.colormap.getColor(null, level, pos, 0));
+                this.setColor(unpack[0], unpack[1], unpack[2]);
+            }
         }
 
         if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo) {
@@ -262,9 +277,13 @@ public class CustomParticleInstance extends SingleQuadParticle {
         }
 
         if (type.liquidAffinity != LiquidAffinity.ANY) {
-            BlockState state = level.getBlockState(BlockPos.containing(x, y, z));
-            if (type.liquidAffinity == LiquidAffinity.LIQUIDS ^ !state.getFluidState().isEmpty()) {
-                this.remove();
+            BlockPos pos = BlockPos.containing(x, y, z);
+            // off-thread: skip unloaded chunks, otherwise the air fallback would wrongly kill the particle
+            if (level.hasChunkAt(pos)) {
+                BlockState state = level.getBlockState(pos);
+                if (type.liquidAffinity == LiquidAffinity.LIQUIDS ^ !state.getFluidState().isEmpty()) {
+                    this.remove();
+                }
             }
         }
         if (!this.removed && isTickTime) {
@@ -323,7 +342,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
 
     private boolean isBehindCamera() {
-        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Camera camera = PolytoneAsyncParticles.camera();
         if (camera.entity() == Minecraft.getInstance().player) {
             //check distance
             Vector3f cameraPos = camera.position().toVector3f();

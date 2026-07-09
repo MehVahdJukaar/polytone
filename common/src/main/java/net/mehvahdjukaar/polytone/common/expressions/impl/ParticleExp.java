@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.common.expressions.impl;
 
 import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
+import net.mehvahdjukaar.polytone.common.expressions.ParticleExpEnv;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExp;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.ParticleProxy;
@@ -26,6 +27,14 @@ public class ParticleExp extends PolyExp implements IParticleExp {
 
     protected ParticleExp(Serializable expr) {
         super(expr);
+    }
+
+    @Override
+    public double evaluate(Particle particle, Level level, ParticleExpEnv env) {
+        if (env == null) {
+            return evaluate(particle, level);
+        }
+        return executeDouble(env.prepare(particle, level));
     }
 
     @Override

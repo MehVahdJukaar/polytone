@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.common.expressions.ParticleExpEnv;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.jetbrains.annotations.Nullable;
@@ -59,47 +60,49 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
     }
 
     public void tick(CustomParticleInstance particle, ClientLevel level) {
+        // one reusable per-thread var environment for all field expressions of this tick
+        ParticleExpEnv env = ParticleExpEnv.get();
         if (this.roll != null) {
-            particle.roll = (float) this.roll.evaluate(particle, level);
+            particle.roll = (float) this.roll.evaluate(particle, level, env);
         }
         if (this.size != null) {
-            particle.quadSize = (float) this.size.evaluate(particle, level);
+            particle.quadSize = (float) this.size.evaluate(particle, level, env);
         }
         if (this.red != null) {
-            particle.rCol = (float) this.red.evaluate(particle, level);
+            particle.rCol = (float) this.red.evaluate(particle, level, env);
         }
         if (this.green != null) {
-            particle.gCol = (float) this.green.evaluate(particle, level);
+            particle.gCol = (float) this.green.evaluate(particle, level, env);
         }
         if (this.blue != null) {
-            particle.bCol = (float) this.blue.evaluate(particle, level);
+            particle.bCol = (float) this.blue.evaluate(particle, level, env);
         }
         if (this.alpha != null) {
-            particle.alpha = (float) this.alpha.evaluate(particle, level);
+            particle.alpha = (float) this.alpha.evaluate(particle, level, env);
         }
         if (this.x != null) {
-            particle.x = this.x.evaluate(particle, level);
+            particle.x = this.x.evaluate(particle, level, env);
         }
         if (this.y != null) {
-            particle.y = this.y.evaluate(particle, level);
+            particle.y = this.y.evaluate(particle, level, env);
         }
         if (this.z != null) {
-            particle.z = this.z.evaluate(particle, level);
+            particle.z = this.z.evaluate(particle, level, env);
         }
         if (this.dx != null) {
-            particle.xd = this.dx.evaluate(particle, level);
+            particle.xd = this.dx.evaluate(particle, level, env);
         }
         if (this.dy != null) {
-            particle.yd = this.dy.evaluate(particle, level);
+            particle.yd = this.dy.evaluate(particle, level, env);
         }
         if (this.dz != null) {
-            particle.zd = this.dz.evaluate(particle, level);
+            particle.zd = this.dz.evaluate(particle, level, env);
         }
         if (this.custom != null) {
-            particle.custom = this.custom.evaluate(particle, level);
+            particle.custom = this.custom.evaluate(particle, level, env);
         }
         if (this.removeIf != null) {
-            if (this.removeIf.evaluate(particle, level) > 0) {
+            if (this.removeIf.evaluate(particle, level, env) > 0) {
                 particle.remove();
             }
         }

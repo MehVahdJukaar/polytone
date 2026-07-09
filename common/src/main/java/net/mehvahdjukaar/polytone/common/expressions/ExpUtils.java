@@ -181,6 +181,11 @@ public class ExpUtils {
         Polytone.GLOBAL_EXPRESSION.addValues(vars);
     }
 
+    /** Just the truly static globals (math constants + singleton proxies), no per-tick values. */
+    public static void addStaticVars(Map<String, Object> vars) {
+        vars.putAll(STATIC_GLOBALS);
+    }
+
 
     private static void importStaticMethods(ParserContext ctx, Class<?> clazz) {
 
