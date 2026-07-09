@@ -5,6 +5,7 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -35,6 +36,13 @@ public class LevelRendererMixin {
     @Shadow
     @Final
     public LevelRenderState levelRenderState;
+
+    // Every section rebuild (block or light change) funnels through setSectionDirty; bump that
+    // section's light-cache version so particles there re-sample. Section coords come in directly.
+    @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"))
+    private void poly$invalidateParticleLight(int x, int y, int z, boolean important, CallbackInfo ci) {
+        ParticleLightCache.markSectionDirty(x, y, z);
+    }
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
     public void poly$preRender(GraphicsResourceAllocator graphicsResourceAllocator,

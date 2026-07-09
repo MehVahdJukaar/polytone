@@ -45,6 +45,11 @@ public class CustomParticleInstance extends SingleQuadParticle {
     // newborn awaiting its spawn-time ticker pass in the parallel batch (see PolytoneAsyncParticles)
     boolean pendingInitTick = false;
 
+    // light cache: re-sample only when the particle crosses a block, or its section's light changed
+    private long cachedLightKey = Long.MIN_VALUE;
+    private int cachedLightVersion;
+    private int cachedRawLight;
+
     protected CustomParticleInstance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                                      @Nullable BlockState state, CustomParticleType customType) {
         super(level, x, y, z, xSpeed, ySpeed, zSpeed, customType.spritePicker.getAny());
@@ -178,7 +183,15 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     protected int getLightColor(float partialTick) {
-        int total = super.getLightColor(partialTick);
+        int bx = Mth.floor(this.x), by = Mth.floor(this.y), bz = Mth.floor(this.z);
+        long blockKey = BlockPos.asLong(bx, by, bz);
+        int version = ParticleLightCache.sectionVersion(bx >> 4, by >> 4, bz >> 4);
+        if (blockKey != this.cachedLightKey || version != this.cachedLightVersion) {
+            this.cachedLightKey = blockKey;
+            this.cachedLightVersion = version;
+            this.cachedRawLight = super.getLightColor(partialTick); // the expensive world/light lookup
+        }
+        int total = this.cachedRawLight;
         if (this.type.lightLevel > 0) {
             int sky = LightTexture.sky(total);
             int block = LightTexture.block(total);
