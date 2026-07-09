@@ -5,8 +5,8 @@
   "toast.polytone.lazy_load_fail": "Polytone Late Resource Reload failed",
   "toast.polytone.early_load_fail": "Polytone Early Resource Reload failed",
   "screen.polytone.configs.title": "Polytone Packs Configs",
-  "screen.polytone.configs.reset": "Reset to Defaults",
-  "screen.polytone.configs.undo": "Undo changes",
+  "screen.polytone.configs.reset": "Reset",
+  "screen.polytone.configs.undo": "Undo",
   "config.polytone.lenient_loading.tooltip": "Attempts loading packs with errors. Not guaranteed to work. Do NOT enable this if you are a pack creator.",
   "config.polytone.lenient_loading": "Lenient Pack Loading",
   "config.polytone.legacy_parsing.tooltip": "Tries to translate formats from other mods to be parsed as Polytone files. Relevant for custom colors and colormaps.",
@@ -19,5 +19,14 @@
   "config.polytone.custom_particles_async.tooltip": "Spreads Custom Particle ticking across multiple threads to reduce main-thread lag when using many custom particles.",
   "config.polytone.header": "Polytone",
   "config.polytone.show_config_button": "Show Config Button",
-  "config.polytone.show_config_button.tooltip": "Shows the Polytone config button on the resource pack selection screen."
+  "config.polytone.show_config_button.tooltip": "Shows the Polytone config button on the resource pack selection screen.",
+  "config.polytone.section.loading": "Pack Loading",
+  "config.polytone.section.particles": "Particles",
+  "polytone.preset": "Preset",
+  "polytone.preset.custom": "Custom",
+  "polytone.tooltip.performance_impact": "Performance Impact: %s",
+  "polytone.performance_impact.low": "Low",
+  "polytone.performance_impact.medium": "Medium",
+  "polytone.performance_impact.high": "High",
+  "polytone.performance_impact.varies": "Varies"
 }
