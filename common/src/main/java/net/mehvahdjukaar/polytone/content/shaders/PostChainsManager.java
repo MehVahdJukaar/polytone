@@ -135,11 +135,11 @@ public class PostChainsManager extends JsonPartialReloader {
         Polytone.POST_TARGETS.close();
     }
 
-    public void captureLevelRendererParams(Matrix4f projectionMatrix, Matrix4f viewMatrix) {
+    public void captureLevelRendererParams(Matrix4f projectionMatrix, Matrix4f viewMatrix, float deltaTime) {
         Minecraft mc = Minecraft.getInstance();
         float angle = mc.levelRenderer.levelRenderState.skyRenderState.sunAngle;
         float dayTime = mc.level == null ? 0f : (float) (mc.level.getDayTime() % 24000L);
-        getOrCreateUniforms().update(projectionMatrix, viewMatrix, angle, dayTime);
+        getOrCreateUniforms().update(projectionMatrix, viewMatrix, angle, dayTime, deltaTime);
     }
 
     public void tick() {

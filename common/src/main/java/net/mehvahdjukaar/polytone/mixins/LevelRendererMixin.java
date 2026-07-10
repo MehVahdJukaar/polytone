@@ -55,7 +55,8 @@ public class LevelRendererMixin {
                           GpuBufferSlice gpuBufferSlice,
                           Vector4f vector4f,
                           boolean bl2, CallbackInfo ci) {
-        Polytone.POST_CHAINS.captureLevelRendererParams(project, modelView);
+        // deltaTime from this call's own tracker parameter, fresh every render call
+        Polytone.POST_CHAINS.captureLevelRendererParams(project, modelView, deltaTracker.getGameTimeDeltaTicks());
         // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
         Polytone.SHADER_EFFECTS.updateAll();
     }
