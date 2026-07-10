@@ -47,6 +47,7 @@
     "ModelBakeryMixin",
     "ModelManagerMixin",
     "OptionsMixin",
+    "OverlayMetadataSectionMixin",
     "PackSelectScreenMixin",
     "PaintingRendererMixin",
     "ParticleEngineMixin",
