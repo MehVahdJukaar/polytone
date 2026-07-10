@@ -9,6 +9,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
@@ -131,6 +132,7 @@ public class PostChainsManager extends JsonPartialReloader {
             globalUniforms.close();
             globalUniforms = null;
         }
+        Polytone.POST_TARGETS.close();
     }
 
     public void captureLevelRendererParams(Matrix4f projectionMatrix, Matrix4f viewMatrix) {
@@ -148,11 +150,13 @@ public class PostChainsManager extends JsonPartialReloader {
 
     public void addPostPass(int width, int height, LevelTargetBundle targets, FrameGraphBuilder frameGraphBuilder, GpuBufferSlice gpuBufferSlice, CameraRenderState cameraRenderState) {
         ShaderManager sm = Minecraft.getInstance().getShaderManager();
+        Polytone.POST_TARGETS.ensureAllocated(width, height);
+        PostChain.TargetBundle bundle = Polytone.POST_TARGETS.wrap(targets, frameGraphBuilder);
         synchronized (activators) {
             for (var a : activators) {
                 PostChain pc = a.getPostChain(sm);
                 if (pc != null) {
-                    pc.addToFrame(frameGraphBuilder, width, height, targets);
+                    pc.addToFrame(frameGraphBuilder, width, height, bundle);
                 }
             }
         }
