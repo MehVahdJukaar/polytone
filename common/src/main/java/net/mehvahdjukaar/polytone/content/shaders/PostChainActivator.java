@@ -69,7 +69,10 @@ public final class PostChainActivator {
         if (!cachedOn) return null;
         if (cachedPostChain == null) {
             try {
-                cachedPostChain = manager.getPostChain(postChain, LevelTargetBundle.MAIN_TARGETS);
+                // SORTING_TARGETS lets chains reference the Improved Transparency layer buffers.
+                // Validation only; the real handles come from the LevelTargetBundle at addToFrame.
+                cachedPostChain = manager.getPostChain(postChain, LevelTargetBundle.SORTING_TARGETS);
+                if (cachedPostChain == null) return null; // not resolvable yet (mid-reload), retry quietly
                 buffers.ensureInitialized("Polytone post expr uniform");
                 registerByPassShaders(cachedPostChain);
             } catch (Throwable ex) {
