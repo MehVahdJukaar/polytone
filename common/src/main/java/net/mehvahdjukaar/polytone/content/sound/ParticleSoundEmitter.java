@@ -61,8 +61,10 @@ public record ParticleSoundEmitter(
         double spawnChance = chance.evaluate(particle, level);
         if (rand.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
-                var biome = level.getBiome(BlockPos.containing(particle.x, particle.y, particle.z));
-                if (!biomes.get().contains(biome)) return;
+                BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
+                // off-thread (async particles): skip unloaded chunks, else the biome fallback misfires
+                if (!level.hasChunkAt(pos)) return;
+                if (!biomes.get().contains(level.getBiome(pos))) return;
             }
 
             Vec3 vec = new Vec3(particle.x, particle.y, particle.z).add(

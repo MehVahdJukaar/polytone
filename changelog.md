@@ -3,5 +3,6 @@
 - added more fields to config like category and image
 - big internal restructure and streamline
 - improved the async particle system (thanks mrchoo)
+- particle colormaps can now pick a cache policy (on_spawn / per_position / none)
 - added more default shader uniforms
 - fixed colormaps in env attributes not working

@@ -1,17 +1,19 @@
 package net.mehvahdjukaar.polytone.common;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class TokenBucketTracker {
 
-    private static final List<TokenBucket> BUCKETS = new ArrayList<>();
+    // canEmitParticle runs on particle-worker threads (async particles) while tick()/clear() run on
+    // the main thread, so both collections must tolerate concurrent access.
+    private static final Queue<TokenBucket> BUCKETS = new ConcurrentLinkedQueue<>();
     //TODO: add these inside block and particle emitters
-    private static final Map<Object, TokenBucket> OBJECTS_TOKENS = new Object2ObjectOpenHashMap<>();
+    private static final Map<Object, TokenBucket> OBJECTS_TOKENS = new ConcurrentHashMap<>();
 
     public static TokenBucket track(TokenBucket tb) {
         BUCKETS.add(tb);

@@ -1,8 +1,5 @@
 package net.mehvahdjukaar.polytone.content.config;
 
-import com.mojang.datafixers.util.Function10;
-import com.mojang.datafixers.util.Function11;
-import com.mojang.datafixers.util.Function13;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.codecui.SchemaCodec;
@@ -19,7 +16,6 @@ import org.jspecify.annotations.NonNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 
 public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
 
@@ -134,120 +130,30 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
         return DataResult.success(o);
     }
 
-    /** Extra (subclass-specific) field, deferred so it can be built on the codec's own Instance. */
-    @FunctionalInterface
-    interface FieldMaker<P, F> extends Function<SchemaRecord.Instance<P>, SchemaRecord.FieldRef<P, F>> {
-    }
-
-    /** Codec with exactly the 10 shared fields (BoolConfig-shaped), presets validated. */
-    static <T, P extends PolyConfig<T>> SchemaCodec<P> commonCodec(
-            Class<P> type, Codec<T> typeCodec,
-            Function10<Optional<String>, Map<String, T>, Map<String, T>, Integer, Optional<String>,
-                    Optional<Integer>, Optional<PerformanceImpact>, Boolean, Map<String, TooltipImage>, T, P> ctor) {
-        return validated(SchemaRecord.create(type, i -> i.group(
-                valueTranslationField(i),
-                presetsField(i, typeCodec),
-                sectionPresetsField(i, typeCodec),
-                displayOrderField(i),
-                sectionField(i),
-                sectionOrderField(i),
-                performanceImpactField(i),
-                wideField(i),
-                tooltipImagesField(i),
-                defaultValueField(i, typeCodec)
-        ).apply(i, ctor)));
-    }
-
-    /** The 10 shared fields plus one subclass extra (StringConfig-shaped), presets validated. */
-    static <T, P extends PolyConfig<T>, E1> SchemaCodec<P> commonCodec(
-            Class<P> type, Codec<T> typeCodec, FieldMaker<P, E1> extra1,
-            Function11<Optional<String>, Map<String, T>, Map<String, T>, Integer, Optional<String>,
-                    Optional<Integer>, Optional<PerformanceImpact>, Boolean, Map<String, TooltipImage>, T, E1, P> ctor) {
-        return validated(SchemaRecord.create(type, i -> i.group(
-                valueTranslationField(i),
-                presetsField(i, typeCodec),
-                sectionPresetsField(i, typeCodec),
-                displayOrderField(i),
-                sectionField(i),
-                sectionOrderField(i),
-                performanceImpactField(i),
-                wideField(i),
-                tooltipImagesField(i),
-                defaultValueField(i, typeCodec),
-                extra1.apply(i)
-        ).apply(i, ctor)));
-    }
-
-    /** The 10 shared fields plus three subclass extras (NumberConfig-shaped), presets validated. */
-    static <T, P extends PolyConfig<T>, E1, E2, E3> SchemaCodec<P> commonCodec(
-            Class<P> type, Codec<T> typeCodec,
-            FieldMaker<P, E1> extra1, FieldMaker<P, E2> extra2, FieldMaker<P, E3> extra3,
-            Function13<Optional<String>, Map<String, T>, Map<String, T>, Integer, Optional<String>,
-                    Optional<Integer>, Optional<PerformanceImpact>, Boolean, Map<String, TooltipImage>, T, E1, E2, E3, P> ctor) {
-        return validated(SchemaRecord.create(type, i -> i.group(
-                valueTranslationField(i),
-                presetsField(i, typeCodec),
-                sectionPresetsField(i, typeCodec),
-                displayOrderField(i),
-                sectionField(i),
-                sectionOrderField(i),
-                performanceImpactField(i),
-                wideField(i),
-                tooltipImagesField(i),
-                defaultValueField(i, typeCodec),
-                extra1.apply(i),
-                extra2.apply(i),
-                extra3.apply(i)
-        ).apply(i, ctor)));
+    /**
+     * The 10 shared fields, grouped in the order every subclass constructor lists them first.
+     * FieldRefs (not plain codec fields) so the codec editor renders configs structurally.
+     */
+    static <T, P extends PolyConfig<T>> SchemaRecord.Group10<P, Optional<String>, Map<String, T>, Map<String, T>,
+            Integer, Optional<String>, Optional<Integer>, Optional<PerformanceImpact>, Boolean,
+            Map<String, TooltipImage>, T> commonFields(SchemaRecord.Instance<P> i, Codec<T> typeCodec) {
+        return i.group(
+                SchemaRecord.optional("value_translation", Codec.STRING, PolyConfig::getValueTranslationKey),
+                SchemaRecord.optional("presets", Codec.unboundedMap(Codec.STRING, typeCodec), Map.of(), PolyConfig::getPresets),
+                SchemaRecord.optional("section_presets", Codec.unboundedMap(Codec.STRING, typeCodec), Map.of(), PolyConfig::getSectionPresets),
+                SchemaRecord.optional("display_order", Codec.INT, 0, PolyConfig::getDisplayOrder),
+                SchemaRecord.optional("section", Codec.STRING, PolyConfig::getSection),
+                SchemaRecord.optional("section_order", Codec.INT, PolyConfig::getSectionOrder),
+                SchemaRecord.optional("performance_impact", PerformanceImpact.CODEC, PolyConfig::getPerformanceImpact),
+                SchemaRecord.optional("wide", Codec.BOOL, false, PolyConfig::isWide),
+                SchemaRecord.optional("tooltip_images", Codec.unboundedMap(Codec.STRING, TooltipImage.CODEC), Map.of(), PolyConfig::getTooltipImages),
+                SchemaRecord.field("default_value", typeCodec, PolyConfig::getDefaultValue)
+        );
     }
 
     /** Wraps preset validation around the record codec while keeping its schema view. */
-    private static <T, P extends PolyConfig<T>> SchemaCodec<P> validated(SchemaCodec<P> record) {
+    static <T, P extends PolyConfig<T>> SchemaCodec<P> validated(SchemaCodec<P> record) {
         return SchemaCodec.lazy(record.validate(PolyConfig::validatePresets), record::schema);
-    }
-
-    // Individual field builders (SchemaRecord FieldRefs, so the codec editor renders configs
-    // structurally). Composed by commonCodec above; field order matches the shared prefix of
-    // every subclass constructor.
-    static <T, P extends PolyConfig<T>> SchemaRecord.FieldRef<P, Optional<String>> valueTranslationField(SchemaRecord.Instance<P> i) {
-        return i.optional("value_translation", Codec.STRING, PolyConfig::getValueTranslationKey);
-    }
-
-    static <T, P extends PolyConfig<T>> SchemaRecord.FieldRef<P, Map<String, T>> presetsField(SchemaRecord.Instance<P> i, Codec<T> typeCodec) {
-        return i.optional("presets", Codec.unboundedMap(Codec.STRING, typeCodec), Map.of(), PolyConfig::getPresets);
-    }
-
-    static <T, P extends PolyConfig<T>> SchemaRecord.FieldRef<P, Map<String, T>> sectionPresetsField(SchemaRecord.Instance<P> i, Codec<T> typeCodec) {
-        return i.optional("section_presets", Codec.unboundedMap(Codec.STRING, typeCodec), Map.of(), PolyConfig::getSectionPresets);
-    }
-
-    static <T, P extends PolyConfig<T>> SchemaRecord.FieldRef<P, Integer> displayOrderField(SchemaRecord.Instance<P> i) {
-        return i.optional("display_order", Codec.INT, 0, PolyConfig::getDisplayOrder);
-    }
-
-    static <T, P extends PolyConfig<T>> SchemaRecord.FieldRef<P, Optional<String>> sectionField(SchemaRecord.Instance<P> i) {
-        return i.optional("section", Codec.STRING, PolyConfig::getSection);
-    }
-
-    static <T, P extends PolyConfig<T>> SchemaRecord.FieldRef<P, Optional<Integer>> sectionOrderField(SchemaRecord.Instance<P> i) {
-        return i.optional("section_order", Codec.INT, PolyConfig::getSectionOrder);
-    }
-
-    static <T, P extends PolyConfig<T>> SchemaRecord.FieldRef<P, Optional<PerformanceImpact>> performanceImpactField(SchemaRecord.Instance<P> i) {
-        return i.optional("performance_impact", PerformanceImpact.CODEC, PolyConfig::getPerformanceImpact);
-    }
-
-    static <T, P extends PolyConfig<T>> SchemaRecord.FieldRef<P, Boolean> wideField(SchemaRecord.Instance<P> i) {
-        return i.optional("wide", Codec.BOOL, false, PolyConfig::isWide);
-    }
-
-    static <T, P extends PolyConfig<T>> SchemaRecord.FieldRef<P, Map<String, TooltipImage>> tooltipImagesField(SchemaRecord.Instance<P> i) {
-        return i.optional("tooltip_images", Codec.unboundedMap(Codec.STRING, TooltipImage.CODEC),
-                Map.of(), PolyConfig::getTooltipImages);
-    }
-
-    static <T, P extends PolyConfig<T>> SchemaRecord.FieldRef<P, T> defaultValueField(SchemaRecord.Instance<P> i, Codec<T> typeCodec) {
-        return i.field("default_value", typeCodec, PolyConfig::getDefaultValue);
     }
 
     // Mirrors Sodium's OptionImpact levels and colors so tooltips read consistently across mods.

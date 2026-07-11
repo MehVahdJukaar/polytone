@@ -90,10 +90,47 @@ public class CustomParticleInstance extends SingleQuadParticle {
         this.oQuadSize = quadSize;
 
         if (this.type.colormap != null) {
-            float[] unpack = ColorUtils.unpack(this.type.colormap.getColor(state, level, pos, 0));
-            this.setColor(unpack[0], unpack[1], unpack[2]);
+            // seed the initial color; PER_POSITION also records the current block so tick() only
+            // re-samples once the particle actually moves off it
+            sampleColormap(state, pos);
         }
 
+    }
+
+    // last block a PER_POSITION colormap was sampled at, plus its section version, so we re-evaluate
+    // only when the particle crosses a block or that block/light changes (mirrors the light cache)
+    private long colormapBlockKey = Long.MIN_VALUE;
+    private int colormapSectionVersion;
+
+    private void sampleColormap(@Nullable BlockState state, BlockPos pos) {
+        float[] unpack = ColorUtils.unpack(this.type.colormap.getter().getColor(state, level, pos, 0));
+        this.setColor(unpack[0], unpack[1], unpack[2]);
+        int bx = pos.getX(), by = pos.getY(), bz = pos.getZ();
+        this.colormapBlockKey = pos.asLong();
+        this.colormapSectionVersion = ParticleLightCache.sectionVersion(bx >> 4, by >> 4, bz >> 4);
+    }
+
+    /** Refresh the colormap color for this tick according to its {@link ParticleColor.CachePolicy}. */
+    private void tickColormap() {
+        switch (this.type.colormap.policy()) {
+            case ON_SPAWN -> { /* frozen at spawn */ }
+            case NONE -> resampleColormapAtCurrentPos();
+            case PER_POSITION -> {
+                int bx = Mth.floor(x), by = Mth.floor(y), bz = Mth.floor(z);
+                long key = BlockPos.asLong(bx, by, bz);
+                int version = ParticleLightCache.sectionVersion(bx >> 4, by >> 4, bz >> 4);
+                if (key != colormapBlockKey || version != colormapSectionVersion) {
+                    resampleColormapAtCurrentPos();
+                }
+            }
+        }
+    }
+
+    private void resampleColormapAtCurrentPos() {
+        BlockPos pos = BlockPos.containing(x, y, z);
+        // off-thread safe: skip unloaded chunks so we don't sample an air fallback
+        if (!level.hasChunkAt(pos)) return;
+        sampleColormap(level.getBlockState(pos), pos);
     }
 
 
@@ -267,7 +304,11 @@ public class CustomParticleInstance extends SingleQuadParticle {
             type.ticker.tick(this, level);
         }
 
-        // colormap color is sampled once at spawn (see constructor) and never re-evaluated
+        // colormap: sampled once at spawn (see constructor); ON_SPAWN keeps that frozen value,
+        // PER_POSITION / EVERY_TICK re-evaluate here per their cache policy
+        if (this.type.colormap != null) {
+            tickColormap();
+        }
 
         if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo) {
             this.remove();

@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.content.config;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -21,8 +22,9 @@ import java.util.function.Supplier;
 
 public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.CycleableValueSet<Boolean> {
 
-    public static final SchemaCodec<BoolConfig> CODEC =
-            PolyConfig.commonCodec(BoolConfig.class, Codec.BOOL, BoolConfig::new);
+    public static final SchemaCodec<BoolConfig> CODEC = PolyConfig.validated(
+            SchemaRecord.create(BoolConfig.class, i -> PolyConfig.commonFields(i, Codec.BOOL)
+                    .apply(i, BoolConfig::new)));
 
     private static final List<Boolean> VALUES = ImmutableList.of(Boolean.TRUE, Boolean.FALSE);
 

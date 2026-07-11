@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.config;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -16,10 +17,10 @@ import java.util.function.Supplier;
 
 public class StringConfig extends PolyConfig<String> implements OptionInstance.CycleableValueSet<String> {
 
-    public static final SchemaCodec<StringConfig> CODEC =
-            PolyConfig.commonCodec(StringConfig.class, Codec.STRING,
-                    i -> i.field("allowed_values", Codec.STRING.listOf(), c -> c.allowedValues),
-                    StringConfig::new);
+    public static final SchemaCodec<StringConfig> CODEC = PolyConfig.validated(
+            SchemaRecord.create(StringConfig.class, i -> PolyConfig.commonFields(i, Codec.STRING)
+                    .and(SchemaRecord.field("allowed_values", Codec.STRING.listOf(), c -> c.allowedValues))
+                    .apply(i, StringConfig::new)));
 
 
     private final List<String> allowedValues;

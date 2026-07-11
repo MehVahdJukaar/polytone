@@ -85,13 +85,12 @@ public record ParticleParticleEmitter(
 
         double spawnChance = chance.evaluate(particle, level);
         if (rand.nextFloat() < spawnChance) {
-            if (biomes.isPresent()) {
-                var biome = level.getBiome(BlockPos.containing(particle.x, particle.y, particle.z));
-                if (!biomes.get().contains(biome)) return;
-            }
-            if (predicate != AlwaysTrueTest.INSTANCE) {
-                var blockAt = level.getBlockState(BlockPos.containing(particle.x, particle.y, particle.z));
-                if (!predicate.test(blockAt, rand)) return;
+            if (biomes.isPresent() || predicate != AlwaysTrueTest.INSTANCE) {
+                BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
+                // off-thread (async particles): skip unloaded chunks, else the biome/air fallback misfires
+                if (!level.hasChunkAt(pos)) return;
+                if (biomes.isPresent() && !biomes.get().contains(level.getBiome(pos))) return;
+                if (predicate != AlwaysTrueTest.INSTANCE && !predicate.test(level.getBlockState(pos), rand)) return;
             }
             for (int i = 0; i < count.evaluate(particle, level); i++) {
                 ParticleOptions po = getParticleOptions(particle, level);

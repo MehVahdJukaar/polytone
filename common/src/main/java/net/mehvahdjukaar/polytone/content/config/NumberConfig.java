@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.config;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -18,12 +19,12 @@ import java.util.function.Function;
 
 public class NumberConfig extends PolyConfig<Float> implements OptionInstance.SliderableValueSet<Float> {
 
-    public static final SchemaCodec<NumberConfig> CODEC =
-            PolyConfig.commonCodec(NumberConfig.class, Codec.FLOAT,
-                    i -> i.optional("min", Codec.FLOAT, 0f, c -> c.min),
-                    i -> i.optional("max", Codec.FLOAT, 1f, c -> c.max),
-                    i -> i.optional("step", ExtraCodecs.POSITIVE_FLOAT, 0.1f, c -> c.step),
-                    NumberConfig::new);
+    public static final SchemaCodec<NumberConfig> CODEC = PolyConfig.validated(
+            SchemaRecord.create(NumberConfig.class, i -> PolyConfig.commonFields(i, Codec.FLOAT)
+                    .and(SchemaRecord.optional("min", Codec.FLOAT, 0f, c -> c.min))
+                    .and(SchemaRecord.optional("max", Codec.FLOAT, 1f, c -> c.max))
+                    .and(SchemaRecord.optional("step", ExtraCodecs.POSITIVE_FLOAT, 0.1f, c -> c.step))
+                    .apply(i, NumberConfig::new)));
 
     private final float step;
     private final float min;

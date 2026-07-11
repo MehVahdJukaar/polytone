@@ -217,6 +217,12 @@ public class ExpUtils {
             } else if (c == ')' || c == ']') {
                 depth--;
             } else if (depth == 0 && c == '?') {
+                // Elvis '?:' is not a ternary condition (its operand is a value, not a logical
+                // operand). Skip both chars so it's left intact instead of wrapped as '((a)!=0) ?: b'.
+                if (i + 1 < e.length() && e.charAt(i + 1) == ':') {
+                    i++;
+                    continue;
+                }
                 if (question < 0) question = i;
                 else ternaries++;
             } else if (depth == 0 && c == ':' && question >= 0) {

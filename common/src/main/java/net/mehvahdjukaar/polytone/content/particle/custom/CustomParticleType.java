@@ -7,8 +7,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
-import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
 import net.mehvahdjukaar.polytone.content.sound.ParticleSoundEmitter;
 import net.minecraft.client.Minecraft;
@@ -51,7 +49,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     protected final boolean killOnContact;
     protected final boolean killWhenStill;
     protected final boolean killWhenNotInView;
-    protected final @Nullable IColorGetter colormap;
+    protected final @Nullable ParticleColor colormap;
     protected final IRotationProvider rotationProvider;
     protected final Vec3 offset;
     protected final Optional<ParticleLimit> particleGroupLimit;
@@ -66,7 +64,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
                                @Nullable Identifier model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
-                               LiquidAffinity liquidAffinity, @Nullable IColorGetter colormap,
+                               LiquidAffinity liquidAffinity, @Nullable ParticleColor colormap,
                                boolean randomSprite,
                                int particleGroupLimit, boolean forceSpawn,
                                @Nullable CustomParticleInitializer initializer, ICustomParticleTicker ticker,
@@ -107,8 +105,7 @@ public class CustomParticleType implements ICustomParticleFactory {
             i.optional("kill_when_still", Codec.BOOL, false, c -> c.killWhenStill),
             i.optional("kill_when_not_in_view", Codec.BOOL, true, c -> c.killWhenNotInView),
             i.optional("liquid_affinity", LiquidAffinity.CODEC, LiquidAffinity.ANY, c -> c.liquidAffinity),
-            //TODO: remove
-            i.optional("colormap", Colormap.CODEC, c -> Optional.ofNullable(c.colormap)),
+            i.optional("colormap", ParticleColor.CODEC, c -> Optional.ofNullable(c.colormap)),
             i.optional("random_sprite", Codec.BOOL, false, c -> c.spritePicker.selectsRandom()),
             i.optional("limit", ExtraCodecs.NON_NEGATIVE_INT, 0, c ->
                     c.particleGroupLimit.map(ParticleLimit::limit).orElse(0)),
@@ -125,7 +122,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,
                                Optional<Identifier> model, Vec3 offset,
                                int light, boolean hasPhysics, boolean killOnContact, boolean killWhenStill, boolean killWhenNotInView,
-                               LiquidAffinity liquidAffinity, Optional<IColorGetter> colormap,
+                               LiquidAffinity liquidAffinity, Optional<ParticleColor> colormap,
                                boolean randomSprite,
                                int limit, boolean forceSpawn, Optional<CustomParticleInitializer> initializer,
                                ICustomParticleTicker ticker, List<ParticleSoundEmitter> sounds, int tickRate,
