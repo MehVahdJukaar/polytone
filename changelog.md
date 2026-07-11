@@ -1,1 +1,7 @@
-backports
+- added support for Nautilus Studio, allowing all Polytone content to be edited thereù
+- expressions can query neighbor blocks
+- added more fields to config like category and image
+- big internal restructure and streamline
+- improved the async particle system (thanks mrchoo)
+- added more default shader uniforms
+- fixed colormaps in env attributes not working

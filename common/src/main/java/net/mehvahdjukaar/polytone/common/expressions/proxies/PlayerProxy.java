@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -13,37 +14,6 @@ public class PlayerProxy extends AbstractEntityProxy {
     public PlayerProxy() {
     }
 
-    // Per-tick snapshot of hot player values, filled on the main thread before the parallel batch
-    // so worker expression reads become cached fields. Consulted only while snapshotActive.
-    private static volatile boolean snapshotActive = false;
-    private static double sX, sY, sZ, sXd, sYd, sZd, sSpeed, sWidth, sHeight;
-    private static boolean sCrouching;
-
-    /** Snapshot the current player (call on the main thread). No-op if there is no player. */
-    public static void beginSnapshot() {
-        Player p = Minecraft.getInstance().player;
-        if (p == null) {
-            snapshotActive = false;
-            return;
-        }
-        sX = p.getX();
-        sY = p.getY();
-        sZ = p.getZ();
-        var dm = p.getDeltaMovement();
-        sXd = dm.x;
-        sYd = dm.y;
-        sZd = dm.z;
-        sSpeed = dm.length();
-        sWidth = p.getBbWidth();
-        sHeight = p.getBbHeight();
-        sCrouching = p.isCrouching();
-        snapshotActive = true; // volatile write publishes the fields written above
-    }
-
-    public static void endSnapshot() {
-        snapshotActive = false;
-    }
-
     @Override
     protected Player entity() {
         return Minecraft.getInstance().player;
@@ -54,54 +24,68 @@ public class PlayerProxy extends AbstractEntityProxy {
         return Minecraft.getInstance().player;
     }
 
+    // Hot values read ExpTicker's per-tick player cache (refreshed each tick and again at
+    // particle-batch dispatch) so async workers never touch the live entity. Between ticks
+    // the player doesn't move, so cached and live reads agree; null cache -> live fallback.
+
     @Override
     public double x() {
-        return snapshotActive ? sX : super.x();
+        var s = ExpTicker.playerSnapshot();
+        return s != null ? s.x() : super.x();
     }
 
     @Override
     public double y() {
-        return snapshotActive ? sY : super.y();
+        var s = ExpTicker.playerSnapshot();
+        return s != null ? s.y() : super.y();
     }
 
     @Override
     public double z() {
-        return snapshotActive ? sZ : super.z();
+        var s = ExpTicker.playerSnapshot();
+        return s != null ? s.z() : super.z();
     }
 
     @Override
     public double xd() {
-        return snapshotActive ? sXd : super.xd();
+        var s = ExpTicker.playerSnapshot();
+        return s != null ? s.xd() : super.xd();
     }
 
     @Override
     public double yd() {
-        return snapshotActive ? sYd : super.yd();
+        var s = ExpTicker.playerSnapshot();
+        return s != null ? s.yd() : super.yd();
     }
 
     @Override
     public double zd() {
-        return snapshotActive ? sZd : super.zd();
+        var s = ExpTicker.playerSnapshot();
+        return s != null ? s.zd() : super.zd();
     }
 
     @Override
     public double speed() {
-        return snapshotActive ? sSpeed : super.speed();
+        var s = ExpTicker.playerSnapshot();
+        return s != null ? s.speed() : super.speed();
     }
 
     @Override
     public double width() {
-        return snapshotActive ? sWidth : super.width();
+        var s = ExpTicker.playerSnapshot();
+        return s != null ? s.width() : super.width();
     }
 
     @Override
     public double height() {
-        return snapshotActive ? sHeight : super.height();
+        var s = ExpTicker.playerSnapshot();
+        return s != null ? s.height() : super.height();
     }
 
     @Override
     public boolean crouching() {
-        return snapshotActive ? sCrouching : super.crouching();
+        var s = ExpTicker.playerSnapshot();
+        return s != null ? s.crouching() : super.crouching();
     }
 
     public double itemUseTicks(){

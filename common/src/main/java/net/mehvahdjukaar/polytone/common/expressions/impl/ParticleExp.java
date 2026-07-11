@@ -30,7 +30,7 @@ public class ParticleExp extends PolyExp implements IParticleExp {
     }
 
     @Override
-    public double evaluate(Particle particle, Level level, ParticleExpEnv env) {
+    public double evaluateAsync(Particle particle, Level level, ParticleExpEnv env) {
         if (env == null) {
             return evaluate(particle, level);
         }

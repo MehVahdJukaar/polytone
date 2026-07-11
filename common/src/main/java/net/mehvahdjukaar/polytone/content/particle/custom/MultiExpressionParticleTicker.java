@@ -63,46 +63,46 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
         // one reusable per-thread var environment for all field expressions of this tick
         ParticleExpEnv env = ParticleExpEnv.get();
         if (this.roll != null) {
-            particle.roll = (float) this.roll.evaluate(particle, level, env);
+            particle.roll = (float) this.roll.evaluateAsync(particle, level, env);
         }
         if (this.size != null) {
-            particle.quadSize = (float) this.size.evaluate(particle, level, env);
+            particle.quadSize = (float) this.size.evaluateAsync(particle, level, env);
         }
         if (this.red != null) {
-            particle.rCol = (float) this.red.evaluate(particle, level, env);
+            particle.rCol = (float) this.red.evaluateAsync(particle, level, env);
         }
         if (this.green != null) {
-            particle.gCol = (float) this.green.evaluate(particle, level, env);
+            particle.gCol = (float) this.green.evaluateAsync(particle, level, env);
         }
         if (this.blue != null) {
-            particle.bCol = (float) this.blue.evaluate(particle, level, env);
+            particle.bCol = (float) this.blue.evaluateAsync(particle, level, env);
         }
         if (this.alpha != null) {
-            particle.alpha = (float) this.alpha.evaluate(particle, level, env);
+            particle.alpha = (float) this.alpha.evaluateAsync(particle, level, env);
         }
         if (this.x != null) {
-            particle.x = this.x.evaluate(particle, level, env);
+            particle.x = this.x.evaluateAsync(particle, level, env);
         }
         if (this.y != null) {
-            particle.y = this.y.evaluate(particle, level, env);
+            particle.y = this.y.evaluateAsync(particle, level, env);
         }
         if (this.z != null) {
-            particle.z = this.z.evaluate(particle, level, env);
+            particle.z = this.z.evaluateAsync(particle, level, env);
         }
         if (this.dx != null) {
-            particle.xd = this.dx.evaluate(particle, level, env);
+            particle.xd = this.dx.evaluateAsync(particle, level, env);
         }
         if (this.dy != null) {
-            particle.yd = this.dy.evaluate(particle, level, env);
+            particle.yd = this.dy.evaluateAsync(particle, level, env);
         }
         if (this.dz != null) {
-            particle.zd = this.dz.evaluate(particle, level, env);
+            particle.zd = this.dz.evaluateAsync(particle, level, env);
         }
         if (this.custom != null) {
-            particle.custom = this.custom.evaluate(particle, level, env);
+            particle.custom = this.custom.evaluateAsync(particle, level, env);
         }
         if (this.removeIf != null) {
-            if (this.removeIf.evaluate(particle, level, env) > 0) {
+            if (this.removeIf.evaluateAsync(particle, level, env) > 0) {
                 particle.remove();
             }
         }

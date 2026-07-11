@@ -129,7 +129,9 @@ public class ExpUtils {
         return -1;
     }
 
-    // position of the first top-level plain '=' (not ==, !=, <=, >= or a compound assignment), or -1
+    // Position of the first top-level assignment '=' — plain or compound (+=, *=, ...) — or -1.
+    // Comparison '=' (==, !=, <=, >=) never counts. Compound assignments split like plain ones:
+    // assignment binds loosest, so only the right side is a logical expression to coerce.
     private static int topLevelAssignment(String e) {
         int depth = 0;
         char quote = 0;
@@ -146,7 +148,7 @@ public class ExpUtils {
             } else if (depth == 0 && c == '=') {
                 char prev = i > 0 ? e.charAt(i - 1) : 0;
                 char next = i + 1 < e.length() ? e.charAt(i + 1) : 0;
-                if (next != '=' && "=!<>+-*/%&|^".indexOf(prev) < 0) return i;
+                if (next != '=' && "=!<>".indexOf(prev) < 0) return i;
             }
         }
         return -1;

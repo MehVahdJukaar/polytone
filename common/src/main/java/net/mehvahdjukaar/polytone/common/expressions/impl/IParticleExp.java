@@ -25,7 +25,7 @@ public interface IParticleExp {
      * Evaluate using a reusable per-thread variable environment, avoiding a fresh var-map build per
      * call. Constants and the legacy exp4j path ignore the env and fall back to the plain overload.
      */
-    default double evaluate(Particle particle, Level level, ParticleExpEnv env) {
+    default double evaluateAsync(Particle particle, Level level, ParticleExpEnv env) {
         return evaluate(particle, level);
     }
 

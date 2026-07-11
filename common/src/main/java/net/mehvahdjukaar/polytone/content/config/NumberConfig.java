@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.config;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -18,23 +18,12 @@ import java.util.function.Function;
 
 public class NumberConfig extends PolyConfig<Float> implements OptionInstance.SliderableValueSet<Float> {
 
-    // Flat group instead of commonFields().and(...): Products chaining caps at 8 fields total.
-    public static final Codec<NumberConfig> CODEC = RecordCodecBuilder.<NumberConfig>create(instance ->
-            instance.group(
-                    PolyConfig.valueTranslationField(),
-                    PolyConfig.presetsField(Codec.FLOAT),
-                    PolyConfig.sectionPresetsField(Codec.FLOAT),
-                    PolyConfig.displayOrderField(),
-                    PolyConfig.sectionField(),
-                    PolyConfig.sectionOrderField(),
-                    PolyConfig.performanceImpactField(),
-                    PolyConfig.wideField(),
-                    PolyConfig.tooltipImagesField(),
-                    PolyConfig.defaultValueField(Codec.FLOAT),
-                    Codec.FLOAT.optionalFieldOf("min", 0f).forGetter(c -> c.min),
-                    Codec.FLOAT.optionalFieldOf("max", 1f).forGetter(c -> c.max),
-                    ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("step", 0.1f).forGetter(c -> c.step)
-            ).apply(instance, NumberConfig::new)).validate(PolyConfig::validatePresets);
+    public static final SchemaCodec<NumberConfig> CODEC =
+            PolyConfig.commonCodec(NumberConfig.class, Codec.FLOAT,
+                    i -> i.optional("min", Codec.FLOAT, 0f, c -> c.min),
+                    i -> i.optional("max", Codec.FLOAT, 1f, c -> c.max),
+                    i -> i.optional("step", ExtraCodecs.POSITIVE_FLOAT, 0.1f, c -> c.step),
+                    NumberConfig::new);
 
     private final float step;
     private final float min;

@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.config;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -16,21 +16,10 @@ import java.util.function.Supplier;
 
 public class StringConfig extends PolyConfig<String> implements OptionInstance.CycleableValueSet<String> {
 
-    // Flat group instead of commonFields().and(...): Products chaining caps at 8 fields total.
-    public static final Codec<StringConfig> CODEC = RecordCodecBuilder.<StringConfig>create(instance ->
-            instance.group(
-                    PolyConfig.valueTranslationField(),
-                    PolyConfig.presetsField(Codec.STRING),
-                    PolyConfig.sectionPresetsField(Codec.STRING),
-                    PolyConfig.displayOrderField(),
-                    PolyConfig.sectionField(),
-                    PolyConfig.sectionOrderField(),
-                    PolyConfig.performanceImpactField(),
-                    PolyConfig.wideField(),
-                    PolyConfig.tooltipImagesField(),
-                    PolyConfig.defaultValueField(Codec.STRING),
-                    Codec.STRING.listOf().fieldOf("allowed_values").forGetter(c -> c.allowedValues)
-            ).apply(instance, StringConfig::new)).validate(PolyConfig::validatePresets);
+    public static final SchemaCodec<StringConfig> CODEC =
+            PolyConfig.commonCodec(StringConfig.class, Codec.STRING,
+                    i -> i.field("allowed_values", Codec.STRING.listOf(), c -> c.allowedValues),
+                    StringConfig::new);
 
 
     private final List<String> allowedValues;
