@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.lightmap;
 
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -10,7 +10,7 @@ public interface ILightmapNumberProvider {
 
     MapRegistry<ILightmapNumberProvider> BUILTIN_PROVIDERS = new MapRegistry<>("Lightmap Number Providers");
 
-    Codec<ILightmapNumberProvider> CODEC = CodecUtils.referenceOrDirect(BUILTIN_PROVIDERS,
+    Codec<ILightmapNumberProvider> CODEC = SchemaCodecs.referenceOrDirect(BUILTIN_PROVIDERS,
             LightmapContextExpression.CODEC, true);
 
 

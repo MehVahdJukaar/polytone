@@ -2,7 +2,8 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Sheets;
@@ -18,20 +19,20 @@ public record BlitModifier(TextureTarget target, int index, int xInc, int yInc, 
                            float u0, float v0, float u1, float v1, int color, Optional<Identifier> newTexture,
                            List<RelativeSprite> extraSprites) {
 
-    public static final Codec<BlitModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            TextureTarget.CODEC.fieldOf("texture").forGetter(BlitModifier::target),
-            Codec.INT.optionalFieldOf("index", -1).forGetter(BlitModifier::index),
-            Codec.INT.optionalFieldOf("x_inc", 0).forGetter(BlitModifier::xInc),
-            Codec.INT.optionalFieldOf("y_inc", 0).forGetter(BlitModifier::yInc),
-            Codec.INT.optionalFieldOf("width_inc", 0).forGetter(BlitModifier::widthInc),
-            Codec.INT.optionalFieldOf("height_inc", 0).forGetter(BlitModifier::heightInc),
-            Codec.FLOAT.optionalFieldOf("u0", -1f).forGetter(BlitModifier::u0),
-            Codec.FLOAT.optionalFieldOf("v0", -1f).forGetter(BlitModifier::v0),
-            Codec.FLOAT.optionalFieldOf("u1", -1f).forGetter(BlitModifier::u1),
-            Codec.FLOAT.optionalFieldOf("v1", -1f).forGetter(BlitModifier::v1),
-            ColorUtils.COLOR.optionalFieldOf("color", -1).forGetter(BlitModifier::color),
-            Identifier.CODEC.optionalFieldOf("new_texture").forGetter(BlitModifier::newTexture),
-            RelativeSprite.CODEC.listOf().optionalFieldOf("overlays", List.of()).forGetter(BlitModifier::extraSprites)
+    public static final SchemaCodec<BlitModifier> CODEC = SchemaRecord.create(BlitModifier.class, i -> i.group(
+            i.field("texture", TextureTarget.CODEC, BlitModifier::target),
+            i.optional("index", Codec.INT, -1, BlitModifier::index),
+            i.optional("x_inc", Codec.INT, 0, BlitModifier::xInc),
+            i.optional("y_inc", Codec.INT, 0, BlitModifier::yInc),
+            i.optional("width_inc", Codec.INT, 0, BlitModifier::widthInc),
+            i.optional("height_inc", Codec.INT, 0, BlitModifier::heightInc),
+            i.optional("u0", Codec.FLOAT, -1f, BlitModifier::u0),
+            i.optional("v0", Codec.FLOAT, -1f, BlitModifier::v0),
+            i.optional("u1", Codec.FLOAT, -1f, BlitModifier::u1),
+            i.optional("v1", Codec.FLOAT, -1f, BlitModifier::v1),
+            i.optional("color", ColorUtils.COLOR, -1, BlitModifier::color),
+            i.optional("new_texture", Identifier.CODEC, BlitModifier::newTexture),
+            i.optional("overlays", RelativeSprite.CODEC.listOf(), List.of(), BlitModifier::extraSprites)
     ).apply(i, BlitModifier::new));
 
 

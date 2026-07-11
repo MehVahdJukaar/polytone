@@ -2,7 +2,8 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -15,13 +16,13 @@ public record RelativeSprite(Identifier texture, int x, int y, Optional<GuiDepth
                              int height) {
 
 
-    public static final Codec<RelativeSprite> CODEC = RecordCodecBuilder.create(i -> i.group(
-            Identifier.CODEC.fieldOf("texture").forGetter(RelativeSprite::texture),
-            Codec.INT.optionalFieldOf("x_inc", 0).forGetter(RelativeSprite::x),
-            Codec.INT.optionalFieldOf("y_inc", 0).forGetter(RelativeSprite::y),
-            GuiDepthTarget.CODEC.optionalFieldOf("depth").forGetter(RelativeSprite::depth),
-            Codec.INT.optionalFieldOf("width_inc", 0).forGetter(RelativeSprite::width),
-            Codec.INT.optionalFieldOf("height_inc", 0).forGetter(RelativeSprite::height)
+    public static final SchemaCodec<RelativeSprite> CODEC = SchemaRecord.create(RelativeSprite.class, i -> i.group(
+            i.field("texture", Identifier.CODEC, RelativeSprite::texture),
+            i.optional("x_inc", Codec.INT, 0, RelativeSprite::x),
+            i.optional("y_inc", Codec.INT, 0, RelativeSprite::y),
+            i.optional("depth", GuiDepthTarget.CODEC, RelativeSprite::depth),
+            i.optional("width_inc", Codec.INT, 0, RelativeSprite::width),
+            i.optional("height_inc", Codec.INT, 0, RelativeSprite::height)
     ).apply(i, RelativeSprite::new));
 
 

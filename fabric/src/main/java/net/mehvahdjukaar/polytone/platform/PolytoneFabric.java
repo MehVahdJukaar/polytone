@@ -9,12 +9,11 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
-import net.fabricmc.fabric.api.event.player.ItemEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.common.codec_ui.example.FooExampleTrigger;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
@@ -28,8 +27,6 @@ import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.client.gui.components.debug.DebugScreenProfile;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.InteractionResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,11 +48,6 @@ public class PolytoneFabric implements ClientModInitializer {
             }
         });
 
-
-        ItemEvents.USE.register((player, world, hand) -> {
-            FooExampleTrigger.open();
-            return InteractionResult.PASS;
-        });
 
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register(
                 context -> ParticleHitboxDebugRenderer.emitGizmos()
@@ -111,6 +103,11 @@ public class PolytoneFabric implements ClientModInitializer {
 
         ClientLifecycleEvents.CLIENT_STARTED.register(client ->
                 addRenderParticlesType());
+
+        ServerLifecycleEvents.SERVER_STARTING.register(server ->
+                Polytone.currentServer = server);
+        ServerLifecycleEvents.SERVER_STOPPED.register(server ->
+                Polytone.currentServer = null);
     }
 
     private static void addToProfiles() {
@@ -126,8 +123,6 @@ public class PolytoneFabric implements ClientModInitializer {
         newProfiles.put(DebugScreenProfile.PERFORMANCE, newPerf);
         DebugScreenEntries.PROFILES = newProfiles;
     }
-
-    public static MinecraftServer currentServer;
 
     public static void addRenderParticlesType() {
         List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());

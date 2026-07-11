@@ -5,7 +5,8 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
-import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
@@ -95,30 +96,30 @@ public class CustomParticleType implements ICustomParticleFactory {
         this.sticky = sticky;
     }
 
-    public static final Codec<CustomParticleType> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
-            ParticleRenderMode.CODEC.optionalFieldOf("render_type", ParticleRenderMode.OPAQUE).forGetter(c -> c.renderType),
-            IRotationProvider.CODEC.optionalFieldOf("rotation_mode", RotationMode.LOOK_AT_XYZ).forGetter(c -> c.rotationProvider),
-            Identifier.CODEC.optionalFieldOf("model").forGetter(c -> Optional.ofNullable(c.model)),
-            Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(c -> c.offset),
-            Codec.intRange(0, 15).optionalFieldOf("light_level", 0).forGetter(c -> c.lightLevel),
-            Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
-            Codec.BOOL.optionalFieldOf("kill_on_contact", false).forGetter(c -> c.killOnContact),
-            Codec.BOOL.optionalFieldOf("kill_when_still", false).forGetter(c -> c.killWhenStill),
-            Codec.BOOL.optionalFieldOf("kill_when_not_in_view", true).forGetter(c -> c.killWhenNotInView),
-            LiquidAffinity.CODEC.optionalFieldOf("liquid_affinity", LiquidAffinity.ANY).forGetter(c -> c.liquidAffinity),
+    public static final SchemaCodec<CustomParticleType> CODEC = SchemaRecord.create(CustomParticleType.class, i -> i.group(
+            i.optional("render_type", ParticleRenderMode.CODEC, ParticleRenderMode.OPAQUE, c -> c.renderType),
+            i.optional("rotation_mode", IRotationProvider.CODEC, RotationMode.LOOK_AT_XYZ, c -> c.rotationProvider),
+            i.optional("model", Identifier.CODEC, c -> Optional.ofNullable(c.model)),
+            i.optional("offset", Vec3.CODEC, Vec3.ZERO, c -> c.offset),
+            i.optional("light_level", Codec.intRange(0, 15), 0, c -> c.lightLevel),
+            i.optional("has_physics", Codec.BOOL, true, c -> c.hasPhysics),
+            i.optional("kill_on_contact", Codec.BOOL, false, c -> c.killOnContact),
+            i.optional("kill_when_still", Codec.BOOL, false, c -> c.killWhenStill),
+            i.optional("kill_when_not_in_view", Codec.BOOL, true, c -> c.killWhenNotInView),
+            i.optional("liquid_affinity", LiquidAffinity.CODEC, LiquidAffinity.ANY, c -> c.liquidAffinity),
             //TODO: remove
-            Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap)),
-            Codec.BOOL.optionalFieldOf("random_sprite", false).forGetter(c -> c.spritePicker.selectsRandom()),
-            ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("limit", 0).forGetter(c ->
+            i.optional("colormap", Colormap.CODEC, c -> Optional.ofNullable(c.colormap)),
+            i.optional("random_sprite", Codec.BOOL, false, c -> c.spritePicker.selectsRandom()),
+            i.optional("limit", ExtraCodecs.NON_NEGATIVE_INT, 0, c ->
                     c.particleGroupLimit.map(ParticleLimit::limit).orElse(0)),
-            Codec.BOOL.optionalFieldOf("force_spawn", false).forGetter(c -> c.forceSpawn),
-            CustomParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
-            ICustomParticleTicker.CODEC.optionalFieldOf("ticker", ICustomParticleTicker.NO_OP).forGetter(c -> c.ticker),
-            ParticleSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(c -> c.sounds),
-            ExtraCodecs.POSITIVE_INT.optionalFieldOf("tick_interval", 1).forGetter(c -> c.tickRate),
-            Codec.PASSTHROUGH.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(c -> c.lazyEmitters),
-            ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("exclusion_radius", 0).forGetter(c -> c.exclusionRadius),
-            Codec.BOOL.optionalFieldOf("sticky", false).forGetter(c -> c.sticky)
+            i.optional("force_spawn", Codec.BOOL, false, c -> c.forceSpawn),
+            i.optional("initializer", CustomParticleInitializer.CODEC, c -> Optional.ofNullable(c.initializer)),
+            i.optional("ticker", ICustomParticleTicker.CODEC, ICustomParticleTicker.NO_OP, c -> c.ticker),
+            i.optional("sound_emitters", ParticleSoundEmitter.CODEC.listOf(), List.of(), c -> c.sounds),
+            i.optional("tick_interval", ExtraCodecs.POSITIVE_INT, 1, c -> c.tickRate),
+            i.optional("particle_emitters", Codec.PASSTHROUGH.listOf(), List.of(), c -> c.lazyEmitters),
+            i.optional("exclusion_radius", ExtraCodecs.NON_NEGATIVE_INT, 0, c -> c.exclusionRadius),
+            i.optional("sticky", Codec.BOOL, false, c -> c.sticky)
     ).apply(i, CustomParticleType::new));
 
     private CustomParticleType(ParticleRenderMode renderType, IRotationProvider rotationProvider,

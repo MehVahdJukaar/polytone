@@ -1,20 +1,20 @@
 package net.mehvahdjukaar.polytone.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.exp.impl.EntityContextExpression;
 import net.minecraft.world.entity.Entity;
 
 public interface IEntityExp {
 
-    Codec<IEntityExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.alternatives(
-                    Codec.DOUBLE.xmap(
-                            aDouble -> (e) -> aDouble,
-                            iBlockExp -> 0.0
-                    ),
-                    EntityContextExpression.CODEC, EntityExp.TYPE.codec())
-    );
+    Codec<IEntityExp> CONSTANT_CODEC = Codec.DOUBLE.xmap(
+            aDouble -> (e) -> aDouble,
+            iBlockExp -> 0.0);
+
+    Codec<IEntityExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.alternatives(
+            "constant", CONSTANT_CODEC,
+            "legacy expression", EntityContextExpression.CODEC,
+            "expression", EntityExp.TYPE.codec()));
 
     double evaluate(Entity entity);
 

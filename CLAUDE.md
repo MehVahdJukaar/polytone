@@ -12,7 +12,6 @@ Follow these rules exactly:
 - TRUST the tools. For instance, if you search for a symbol, especially using "mixin" tools and it does not exist, don't use regex search; that's futile, it doesn't exist.
 - REALLY don't use regex searches! Mixin tools will give you ABSOLUTE answers. Don't do things stubbornly. Ask the user when in doubt.
 - ALWAYS use *mixin* tools when possible.
-- Unless specified, don't worry about compiling stuff. User will run compileJava and report eventual errors.
 - If you want to see the MC sources or libraries sources you really have to use the mixin tools.
 - **REALLY** If you have a reference to a field or element, search THAT using the mixin tools instead of searching by string!
 

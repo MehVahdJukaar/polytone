@@ -2,7 +2,8 @@ package net.mehvahdjukaar.polytone.content.sound;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.IParticleTickable;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
@@ -35,17 +36,17 @@ public record ParticleSoundEmitter(
           Codec.STRING.comapFlatMap(s -> DataResult.success(SoundSource.valueOf(s.toLowerCase(Locale.ROOT))),
                   s -> s.getName().toLowerCase(Locale.ROOT));
 
-    public static final Codec<ParticleSoundEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
-            CodecUtils.forwardAwareSoundEvent().fieldOf("sound").forGetter(ParticleSoundEmitter::sound),
-            SOUND_SOURCE_CODEC.optionalFieldOf("source", SoundSource.BLOCKS).forGetter(ParticleSoundEmitter::category),
-            IParticleExp.CODEC.optionalFieldOf("chance", IParticleExp.ONE).forGetter(ParticleSoundEmitter::chance),
-            IParticleExp.CODEC.optionalFieldOf("x", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::x),
-            IParticleExp.CODEC.optionalFieldOf("y", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::y),
-            IParticleExp.CODEC.optionalFieldOf("z", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::z),
-            IParticleExp.CODEC.optionalFieldOf("volume", IParticleExp.ONE).forGetter(ParticleSoundEmitter::volume),
-            IParticleExp.CODEC.optionalFieldOf("pitch", IParticleExp.ONE).forGetter(ParticleSoundEmitter::pitch),
-            Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(ParticleSoundEmitter::distanceDelay),
-            CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleSoundEmitter::biomes)
+    public static final SchemaCodec<ParticleSoundEmitter> CODEC = SchemaRecord.create(ParticleSoundEmitter.class, i -> i.group(
+            i.field("sound", CodecUtils.forwardAwareSoundEvent(), ParticleSoundEmitter::sound),
+            i.optional("source", SOUND_SOURCE_CODEC, SoundSource.BLOCKS, ParticleSoundEmitter::category),
+            i.optional("chance", IParticleExp.CODEC, IParticleExp.ONE, ParticleSoundEmitter::chance),
+            i.optional("x", IParticleExp.CODEC, IParticleExp.ZERO, ParticleSoundEmitter::x),
+            i.optional("y", IParticleExp.CODEC, IParticleExp.ZERO, ParticleSoundEmitter::y),
+            i.optional("z", IParticleExp.CODEC, IParticleExp.ZERO, ParticleSoundEmitter::z),
+            i.optional("volume", IParticleExp.CODEC, IParticleExp.ONE, ParticleSoundEmitter::volume),
+            i.optional("pitch", IParticleExp.CODEC, IParticleExp.ONE, ParticleSoundEmitter::pitch),
+            i.optional("distance_delay", Codec.BOOL, false, ParticleSoundEmitter::distanceDelay),
+            i.optional("biomes", CodecUtils.forwardAwareHomogeneousList(Registries.BIOME), ParticleSoundEmitter::biomes)
     ).apply(i, ParticleSoundEmitter::new));
 
 

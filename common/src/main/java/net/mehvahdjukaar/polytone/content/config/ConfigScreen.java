@@ -75,6 +75,18 @@ public class ConfigScreen extends OptionsSubScreen {
     protected void addFooter() {
         LinearLayout linearLayout = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
         int width = Mth.positiveCeilDiv(150 * 2 - 8, 3);
+        // Codec editor opener — sits left of Reset. Disabled (greyed) unless a world is loaded,
+        // and shows an animated spinner while the editor window boots (see EditorButton).
+        boolean inGame = Minecraft.getInstance().level != null;
+        // The editor lives in the separate PackEditor mod; grey out (with an install hint) when absent.
+        boolean packEditor = net.mehvahdjukaar.polytone.PlatStuff.isModLoaded("pack_editor");
+        Component editorTooltip = !packEditor
+                ? Component.translatable("screen.polytone.configs.codec_editor.no_mod")
+                : Component.translatable(inGame ? "screen.polytone.configs.codec_editor"
+                        : "screen.polytone.configs.codec_editor.disabled");
+        EditorButton editorButton = new EditorButton(20, 12, 12, packEditor, editorTooltip);
+        editorButton.active = inGame && packEditor;
+        linearLayout.addChild(editorButton);
         linearLayout.addChild(Button.builder(Component.translatable("screen.polytone.configs.reset"),
                         b -> {
                             resetValues();

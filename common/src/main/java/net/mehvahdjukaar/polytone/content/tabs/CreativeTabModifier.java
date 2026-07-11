@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Targets;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -41,7 +41,7 @@ public record CreativeTabModifier(
 
     public static final Codec<CreativeTabModifier> CODEC =
             RecordCodecBuilder.<CreativeTabModifier>create(i -> i.group(
-                            CodecUtils.ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
+                            SchemaCodecs.ITEM_OR_STACK.optionalFieldOf("icon").forGetter(CreativeTabModifier::icon),
                             Codec.BOOL.optionalFieldOf("search_bar").forGetter(CreativeTabModifier::search), //unused
                             Codec.INT.optionalFieldOf("search_bar_width").forGetter(CreativeTabModifier::searchWidth),
                             Codec.BOOL.optionalFieldOf("can_scroll").forGetter(CreativeTabModifier::canScroll),

@@ -6,6 +6,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IPackMetadataExp;
 import net.mehvahdjukaar.polytone.common.expressions.impl.PackMetadataExp;
@@ -29,7 +30,7 @@ public class ConditionUtils {
             ).apply(i, (mod, range) -> PlatStuff.isModLoaded(mod) &&
                     range.matches(PlatStuff.getModVersion(mod)))));
 
-    private static final Codec<Boolean> MODS_ENABLED_CODEC = CodecUtils.singleOrList(MOD_ENABLED_CODEC,
+    private static final Codec<Boolean> MODS_ENABLED_CODEC = SchemaCodecs.singleOrList(MOD_ENABLED_CODEC,
             ConditionUtils::boolAnd);
 
     private static final Codec<Boolean> CONFIG_MATCH_CODEC = Identifier.CODEC.xmap(
@@ -59,11 +60,11 @@ public class ConditionUtils {
             triState -> PackMetadataExp.TRUE);
 
 
-    public static final Codec<Boolean> CODEC_SINGLE_JSON = CodecUtils.alternatives(
-            CODEC_SINGLE_JSON_FULL, //old
-            CodecUtils.alternatives(
-                    CODEC_SINGLE_JSON_FULL,
-                    CODEC_EXPRESSION_SINGLE_JSON
+    public static final Codec<Boolean> CODEC_SINGLE_JSON = SchemaCodecs.alternatives(
+            "conditions", CODEC_SINGLE_JSON_FULL, //old
+            "keyed", SchemaCodecs.alternatives(
+                    "conditions", CODEC_SINGLE_JSON_FULL,
+                    "expression", CODEC_EXPRESSION_SINGLE_JSON
             ).fieldOf("polytone_condition").codec()
     );
 
@@ -109,13 +110,6 @@ public class ConditionUtils {
                                 t -> DataResult.success(Pair.of(TriState.TRUE, t))
                         ).orElseGet(() -> DataResult.error(() -> "Cannot encode an optional empty")));
     }
-
-    public static <T> Codec<List<T>> decodeListWithElementConditions(final Codec<T> ownerCodec) {
-        return Codec.of(
-                ownerCodec.listOf(),
-                listWithOptionalElements(createConditionalCodec(ownerCodec)));
-    }
-
 
     public static <A> Codec<List<A>> listWithOptionalElements(Codec<Optional<A>> elementCodec) {
         return listWithoutEmpty(elementCodec.listOf());

@@ -4,11 +4,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.CsvUtils;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
-import net.mehvahdjukaar.polytone.common.reloader.PartialReloader;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -23,7 +24,10 @@ import net.minecraft.world.item.CreativeModeTabs;
 
 import java.util.*;
 
-public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsModifiersManager.Resources> {
+public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModifier> {
+
+    // creative_tabs.csv sidecar — new creative-tab ids to register, keyed by pack namespace
+    private Map<Identifier, List<String>> extraTabs = Map.of();
 
     private final MapRegistry<CreativeModeTab> customTabs = new MapRegistry<>("Custom Creative Tabs");
 
@@ -33,18 +37,16 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> vanillaTabs = new HashMap<>();
 
     public CreativeTabsModifiersManager() {
-        super("creative_tab_modifiers");
+        super("Creative tab modifier", () -> SchemaCodec.wrap(CreativeTabModifier.CODEC),
+                "creative_tab_modifiers");
     }
 
 
     @Override
-    public Resources prepare(PreparableReloadListener.SharedState sharedState) {
+    public AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
         var resourceManager = sharedState.resourceManager();
-        var jsons = getJsonsInDirectories(resourceManager);
-
-        var types = CsvUtils.parseCsv(resourceManager, "creative_tabs");
-
-        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(types));
+        this.extraTabs = ImmutableMap.copyOf(CsvUtils.parseCsv(resourceManager, "creative_tabs"));
+        return super.prepare(sharedState);
     }
 
     @Override
@@ -65,15 +67,14 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        for (var e : resources.extraTabs.entrySet()) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        for (var e : this.extraTabs.entrySet()) {
             for (var str : e.getValue()) {
                 Identifier id = e.getKey().withPath(str);
                 registerNewTab(id);
             }
         }
-        for (var e : Parsed.batchParseOnlyEnabled(resources.tabsModifiers, CreativeTabModifier.CODEC,
-                ops, "creative tab modifier")) {
+        for (var e : parseEnabledJsons(resources.jsons(), ops)) {
             Identifier id = e.getKey();
             CreativeTabModifier mod = e.getValue();
             if (mod.registerTab()) {
@@ -141,9 +142,5 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
         return customTabs.containsKey(entryId);
     }
 
-
-    public record Resources(Map<Identifier, JsonElement> tabsModifiers,
-                            Map<Identifier, List<String>> extraTabs) {
-    }
 
 }

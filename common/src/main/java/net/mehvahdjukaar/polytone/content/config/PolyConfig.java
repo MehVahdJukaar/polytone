@@ -4,7 +4,7 @@ import com.mojang.datafixers.Products;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.minecraft.client.OptionInstance;
 import org.jspecify.annotations.NonNull;
 
@@ -18,8 +18,10 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
     private final int displayOrder;
     private final T defaultValue;
 
-    public static final Codec<PolyConfig<?>> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.alternatives(StringConfig.CODEC, NumberConfig.CODEC, BoolConfig.CODEC));
+    public static final Codec<PolyConfig<?>> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.alternatives(
+            "string", StringConfig.CODEC,
+            "number", NumberConfig.CODEC,
+            "bool", BoolConfig.CODEC));
 
     protected PolyConfig(Optional<String> valueTranslationKey, Map<String, T> presets, int order, T defaultValue) {
         this.valueTranslationKey = valueTranslationKey;

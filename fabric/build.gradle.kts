@@ -9,18 +9,19 @@ fabric {
 
 val exp4j_version: String by extra
 val mvel_version: String by extra
-val flatlaf_version: String by extra
-val rsyntaxtextarea_version: String by extra
+val codecui_version: String by extra
+val pack_editor_version: String by extra
 
 dependencies {
+    // Declarative codec schema API — remapped mod dep for dev + bundled (JiJ) into the shipped jar.
+    modImplementation("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
+    include("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
 
-    implementation("org.ow2.asm:asm:9.5")
-    implementation("org.ow2.asm:asm-commons:9.5")
+    // The editor UI is a SEPARATE mod — mod dep for dev, NOT bundled (users install it themselves).
+    modImplementation("net.mehvahdjukaar:pack_editor-fabric:${pack_editor_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     apiInclude("org.mvel:mvel2:${mvel_version}")
-    apiInclude("com.formdev:flatlaf:${flatlaf_version}")
-    apiInclude("com.fifesoft:rsyntaxtextarea:${rsyntaxtextarea_version}")
 
     modCompileOnly ("curse.maven:fabric-seasons-413523:5789846")
 

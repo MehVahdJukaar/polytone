@@ -3,12 +3,14 @@ package net.mehvahdjukaar.polytone;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
-import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
-import net.mehvahdjukaar.polytone.common.reloader.CompoundReloader;
+
+import net.mehvahdjukaar.polytone.common.reloader.PolytoneReloadManager;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapperManager;
+import net.mehvahdjukaar.polytone.compat.PolytoneEditor;
 import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.content.block.BlockSetManager;
@@ -40,6 +42,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
@@ -48,6 +51,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -66,7 +70,7 @@ public class Polytone {
 
     public static final Logger LOGGER = LogManager.getLogger("Polytone");
 
-    private static CompoundReloader COMPOUND_RELOADER;
+    private static PolytoneReloadManager COMPOUND_RELOADER;
     public static final BlockPropertiesManager BLOCK_MODIFIERS = new BlockPropertiesManager();
     public static final FluidPropertiesManager FLUID_MODIFIERS = new FluidPropertiesManager();
     public static final ItemModifiersManager ITEM_MODIFIERS = new ItemModifiersManager();
@@ -91,6 +95,22 @@ public class Polytone {
     public static final GlobalExpressionsManager GLOBAL_EXPRESSION = new GlobalExpressionsManager();
     public static final ConfigsManager CONFIGS = new ConfigsManager();
 
+    /**
+     * Every content manager in reload order — THE discovery list for anything that
+     * enumerates polytone content (the compound reloader, the pack editor via each manager's
+     * {@link ContentManager#name}/codec/companions). Available without {@link #init}
+     * so the editor's bare-JVM preview can discover too. Lightmaps are listed (they ARE
+     * editable content) but reload through their own path, not the compound.
+     */
+    public static final List<ContentManager<?>> MANAGERS = List.of(
+            CONFIGS, GLOBAL_EXPRESSION,
+            NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
+            BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
+            BIOME_MODIFIERS, LIGHTMAPS,
+            DIMENSION_MODIFIERS, POST_CHAINS, SHADER_EFFECTS,
+            PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
+            CREATIVE_TABS_MODIFIERS);
+
     private static final Future<Set<Identifier>> FUTURE_IDS = CompletableFuture.supplyAsync(Polytone::loadFutureIds);
 
     public static boolean iMessedUp = false;
@@ -98,26 +118,30 @@ public class Polytone {
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
 
+    /**
+     * The running (integrated or dedicated) server, set by the platform entry points on server
+     * start and cleared on stop. Null outside a world. This is THE datapack-side registry
+     * source ({@code currentServer.registryAccess()}) — the client-synced view lives on
+     * {@code Minecraft.getInstance().level} instead.
+     */
+    @Nullable
+    public static MinecraftServer currentServer;
+
 
     public static void init(boolean devEnv, boolean forge) {
-        COMPOUND_RELOADER = new CompoundReloader(
-                CONFIGS, GLOBAL_EXPRESSION,
-                NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
-                BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, ITEM_MODIFIERS, ITEM_MODELS,
-                BIOME_MODIFIERS,//LIGHTMAPS,
-                DIMENSION_MODIFIERS, POST_CHAINS, SHADER_EFFECTS,
-                PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
-                CREATIVE_TABS_MODIFIERS);
+        COMPOUND_RELOADER = new PolytoneReloadManager(MANAGERS.stream()
+                .filter(m -> m != LIGHTMAPS) // lightmaps reload through their own path
+                .toArray(ContentManager[]::new));
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         isDevEnv = devEnv;
         isForge = forge;
-
         //ItemModelOverrideList.testTrie();
         //GenericDirectorySpriteSource.init();
 
         PolytoneRenderTypes.init();
         if (CompatHandler.IRIS) IrisCompat.init();
+        if (CompatHandler.PACK_EDITOR) PolytoneEditor.init();
 
         //weather darken and other fog custom
         //independent fog env fog and sky fog stuff. also independent from render distnace
@@ -169,6 +193,8 @@ public class Polytone {
     public static void onLogOut() {
         COMPOUND_RELOADER.resetWithLevel(true);
         BiomeKeysCache.clear();
+        // The codec editor closes itself on logout (its own client-disconnect hook lives in the
+        // PackEditor mod), so there is nothing to do here.
     }
 
     public static void onEarlyPackLoad(ResourceManager manager) {

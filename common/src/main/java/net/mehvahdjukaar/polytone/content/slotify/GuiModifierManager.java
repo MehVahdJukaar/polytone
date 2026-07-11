@@ -2,8 +2,9 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -20,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class GuiModifierManager extends JsonPartialReloader {
+public class GuiModifierManager extends ContentManager<GuiModifier> {
 
     //value modifiers
     private final Map<MenuType<?>, Set<SlotModifier>> slotsByMenuId = new IdentityHashMap<>();
@@ -36,7 +37,7 @@ public class GuiModifierManager extends JsonPartialReloader {
     private static final Identifier INVENTORY = Identifier.parse("inventory");
 
     public GuiModifierManager() {
-        super("gui_modifiers");
+        super("GUI modifier", () -> SchemaCodec.wrap(GuiModifier.CODEC), "gui_modifiers");
     }
 
     @Override
@@ -50,10 +51,11 @@ public class GuiModifierManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        Map<Identifier, JsonElement> jsons = resources.jsons();
         List<GuiModifier> allModifiers = new ArrayList<>();
 
-        for (var entry : Parsed.batchParseOnlyEnabled(jsons, GuiModifier.CODEC, ops, "gui modifier")) {
+        for (var entry : parseEnabledJsons(jsons, ops)) {
             allModifiers.add(entry.getValue());
         }
 

@@ -4,28 +4,26 @@ import com.google.gson.JsonElement;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.systems.RenderPass;
-import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Owns post-chain activators (turn a {@link PostChain} on/off based on a condition) and the
  * {@code PolyGlobals} UBO that gets bound to every render pass.
  */
-public class PostChainsManager extends JsonPartialReloader {
+public class PostChainsManager extends ContentManager<PostChainActivator> {
 
     public static final String GLOBALS_NAME = "PolyGlobals";
     private PolytoneGlobalUniforms globalUniforms = null;
@@ -33,21 +31,20 @@ public class PostChainsManager extends JsonPartialReloader {
     private final List<PostChainActivator> activators = new ArrayList<>();
 
     public PostChainsManager() {
-        super("post_chains");
+        super("Post chain", () -> PostChainActivator.CODEC, "post_chains");
     }
 
     @Override
-    protected Map<Identifier, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
-        Map<Identifier, JsonElement> jsons = super.prepare(sharedState);
-        ShaderUniformsManager.registerExpressionUniformNames(jsons);
-        return jsons;
+    protected AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
+        AssetsFiles resources = super.prepare(sharedState);
+        ShaderUniformsManager.registerExpressionUniformNames(resources.jsons());
+        return resources;
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         synchronized (activators) {
-            for (var j : Parsed.batchParseOnlyEnabled(jsons, PostChainActivator.CODEC,
-                    ops, "Post Chain Activators")) {
+            for (var j : parseEnabledJsons(resources.jsons(), ops)) {
                 if (j != null) {
                     activators.add(j.getValue());
                 }

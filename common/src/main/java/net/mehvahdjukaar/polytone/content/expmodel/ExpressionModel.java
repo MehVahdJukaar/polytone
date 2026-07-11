@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.expmodel;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.minecraft.client.Minecraft;
@@ -56,9 +56,9 @@ public final class ExpressionModel {
 
     /** One unbaked routing case: render {@code model} when {@code when} evaluates non-zero. */
     public record Case(BlockContextExpression when, BlockStateModel.Unbaked model) {
-        public static final Codec<Case> CODEC = RecordCodecBuilder.create(i -> i.group(
-                BlockContextExpression.CODEC.fieldOf("when").forGetter(Case::when),
-                BlockStateModel.Unbaked.CODEC.fieldOf("model").forGetter(Case::model)
+        public static final SchemaCodec<Case> CODEC = SchemaRecord.create(Case.class, i -> i.group(
+                i.field("when", BlockContextExpression.CODEC, Case::when),
+                i.field("model", BlockStateModel.Unbaked.CODEC, Case::model)
         ).apply(i, Case::new));
     }
 

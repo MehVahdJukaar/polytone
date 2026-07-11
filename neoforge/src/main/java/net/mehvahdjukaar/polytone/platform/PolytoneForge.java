@@ -4,7 +4,6 @@ import net.caffeinemc.mods.sodium.client.platform.PlatformHelper;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.common.codec_ui.example.FooExampleTrigger;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
@@ -32,10 +31,12 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -91,15 +92,18 @@ public class PolytoneForge {
 
 
     @SubscribeEvent
-    public void onClick(LivingEntityUseItemEvent event) {
-        //TODO: remove
-        FooExampleTrigger.open();
-    }
-
-
-    @SubscribeEvent
     public void renderVistaDebug(RenderLevelStageEvent.AfterTripwireBlocks event) {
         ParticleHitboxDebugRenderer.emitGizmos();
+    }
+
+    @SubscribeEvent
+    public void onServerStarting(ServerAboutToStartEvent event) {
+        Polytone.currentServer = event.getServer();
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        Polytone.currentServer = null;
     }
 
     @SubscribeEvent

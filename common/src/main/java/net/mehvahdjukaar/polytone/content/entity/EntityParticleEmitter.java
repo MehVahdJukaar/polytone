@@ -2,10 +2,11 @@ package net.mehvahdjukaar.polytone.content.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
-import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
@@ -63,30 +64,28 @@ public record EntityParticleEmitter(
             list -> String.join(".", list)
     );
 
-    public static final Codec<EntityParticleEmitter> CODEC = RecordCodecBuilder.create(
-            i -> BiggerCodecs.group(i,
-                    BONE_CODEC.optionalFieldOf("bone",List.of()).forGetter(EntityParticleEmitter::bone),
-                    CodecUtils.predicate(Identifier.CODEC).optionalFieldOf("target_texture").forGetter(EntityParticleEmitter::textureId),
-                    CodecUtils.predicate(Codec.INT).optionalFieldOf("target_etf_variant").forGetter(EntityParticleEmitter::etfVariant),
-                    CodecUtils.predicate(Codec.INT).optionalFieldOf("target_emf_variant").forGetter(EntityParticleEmitter::emfVariant),
-                    CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("particle")
-                            .forGetter(EntityParticleEmitter::particleType),
-                    Codec.INT.optionalFieldOf("max_distance", 32).forGetter(EntityParticleEmitter::maxDistance),
-                    IEntityExp.CODEC.optionalFieldOf("chance", IEntityExp.ONE).forGetter(EntityParticleEmitter::chance),
-                    IEntityExp.CODEC.optionalFieldOf("count", IEntityExp.ONE).forGetter(EntityParticleEmitter::count),
-                    IEntityExp.CODEC.optionalFieldOf("x", IEntityExp.ZERO).forGetter(EntityParticleEmitter::x),
-                    IEntityExp.CODEC.optionalFieldOf("y", IEntityExp.ZERO).forGetter(EntityParticleEmitter::y),
-                    IEntityExp.CODEC.optionalFieldOf("z", IEntityExp.ZERO).forGetter(EntityParticleEmitter::z),
-                    IEntityExp.CODEC.optionalFieldOf("dx", IEntityExp.ZERO).forGetter(EntityParticleEmitter::dx),
-                    IEntityExp.CODEC.optionalFieldOf("dy", IEntityExp.ZERO).forGetter(EntityParticleEmitter::dy),
-                    IEntityExp.CODEC.optionalFieldOf("dz", IEntityExp.ZERO).forGetter(EntityParticleEmitter::dz),
-                    IEntityExp.CODEC.optionalFieldOf("r").forGetter(EntityParticleEmitter::r),
-                    IEntityExp.CODEC.optionalFieldOf("g").forGetter(EntityParticleEmitter::g),
-                    IEntityExp.CODEC.optionalFieldOf("b").forGetter(EntityParticleEmitter::b),
-                    IEntityExp.CODEC.optionalFieldOf("a").forGetter(EntityParticleEmitter::a),
-                    IEntityExp.CODEC.optionalFieldOf("roll").forGetter(EntityParticleEmitter::roll),
-                    IEntityExp.CODEC.optionalFieldOf("size").forGetter(EntityParticleEmitter::size),
-                    IEntityExp.CODEC.optionalFieldOf("custom").forGetter(EntityParticleEmitter::custom)
+    public static final SchemaCodec<EntityParticleEmitter> CODEC = SchemaRecord.create(EntityParticleEmitter.class, i -> i.group(
+                    i.optional("bone", BONE_CODEC, List.of(), EntityParticleEmitter::bone),
+                    i.optional("target_texture", SchemaCodecs.predicate(Identifier.CODEC), EntityParticleEmitter::textureId),
+                    i.optional("target_etf_variant", SchemaCodecs.predicate(Codec.INT), EntityParticleEmitter::etfVariant),
+                    i.optional("target_emf_variant", SchemaCodecs.predicate(Codec.INT), EntityParticleEmitter::emfVariant),
+                    i.field("particle", CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE), EntityParticleEmitter::particleType),
+                    i.optional("max_distance", Codec.INT, 32, EntityParticleEmitter::maxDistance),
+                    i.optional("chance", IEntityExp.CODEC, IEntityExp.ONE, EntityParticleEmitter::chance),
+                    i.optional("count", IEntityExp.CODEC, IEntityExp.ONE, EntityParticleEmitter::count),
+                    i.optional("x", IEntityExp.CODEC, IEntityExp.ZERO, EntityParticleEmitter::x),
+                    i.optional("y", IEntityExp.CODEC, IEntityExp.ZERO, EntityParticleEmitter::y),
+                    i.optional("z", IEntityExp.CODEC, IEntityExp.ZERO, EntityParticleEmitter::z),
+                    i.optional("dx", IEntityExp.CODEC, IEntityExp.ZERO, EntityParticleEmitter::dx),
+                    i.optional("dy", IEntityExp.CODEC, IEntityExp.ZERO, EntityParticleEmitter::dy),
+                    i.optional("dz", IEntityExp.CODEC, IEntityExp.ZERO, EntityParticleEmitter::dz),
+                    i.optional("r", IEntityExp.CODEC, EntityParticleEmitter::r),
+                    i.optional("g", IEntityExp.CODEC, EntityParticleEmitter::g),
+                    i.optional("b", IEntityExp.CODEC, EntityParticleEmitter::b),
+                    i.optional("a", IEntityExp.CODEC, EntityParticleEmitter::a),
+                    i.optional("roll", IEntityExp.CODEC, EntityParticleEmitter::roll),
+                    i.optional("size", IEntityExp.CODEC, EntityParticleEmitter::size),
+                    i.optional("custom", IEntityExp.CODEC, EntityParticleEmitter::custom)
             ).apply(i, EntityParticleEmitter::new));
 
     public void tick(Entity entity, Matrix4fc transform) {

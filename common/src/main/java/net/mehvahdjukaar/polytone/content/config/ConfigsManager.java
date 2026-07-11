@@ -6,11 +6,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.FilesUtil;
-import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.minecraft.client.Minecraft;
@@ -31,7 +32,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConfigsManager extends JsonPartialReloader {
+public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);
     public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", true);
@@ -58,7 +59,7 @@ public class ConfigsManager extends JsonPartialReloader {
     private final AtomicBoolean needsPackReload = new AtomicBoolean(false); //mega ugly
 
     public ConfigsManager() {
-        super("config_entries");
+        super("Config entry", () -> SchemaCodec.wrap(PolyConfig.CODEC), "config_entries");
         this.optionsFile = PlatStuff.getGamePath().resolve("config/polytone_options.json").toFile();
         this.gson = new GsonBuilder()
                 .setPrettyPrinting()
@@ -191,11 +192,10 @@ public class ConfigsManager extends JsonPartialReloader {
 
         MapRegistry<OptionHolder<?>> activePackReg = new MapRegistry<>("Active Pack Configs");
         activeLoadConfigs.set(activePackReg);
-        for (var j : Parsed.batchParseOnlyEnabled(jsons, PolyConfig.CODEC,
-                JsonOps.INSTANCE, "Configs")) {
+        for (var j : parseEnabledJsons(jsons, JsonOps.INSTANCE)) {
             if (j != null) {
                 Identifier id = j.getKey();
-                PolyConfig<?> config = j.getValue();
+                PolyConfig<?> config = (PolyConfig<?>) j.getValue();
                 addConfig(id, config, activePackReg, configFileSnapshot);
             }
         }
@@ -206,7 +206,8 @@ public class ConfigsManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void applyNormal(Map<Identifier, JsonElement> obj) {
+    protected void applyNormal(AssetsFiles resources) {
+        Map<Identifier, JsonElement> obj = resources.jsons();
         ConfigScreen.clearPresetCache();
 
         activeLoadConfigs.remove();
@@ -219,8 +220,8 @@ public class ConfigsManager extends JsonPartialReloader {
 
         Map<Identifier, PolyConfig<?>> parsed = new HashMap<>();
         //ignoring conditions here purposefully
-        for (var j : Parsed.batchParseOnlyEnabled(obj, PolyConfig.CODEC,
-                JsonOps.INSTANCE, "Configs")) {
+        Iterable<Map.Entry<Identifier, PolyConfig<?>>> parsedConfigs = parseEnabledJsons(obj, JsonOps.INSTANCE);
+        for (var j : parsedConfigs) {
             PolyConfig<?> p = j.getValue();
             parsed.put(j.getKey(), p);
         }

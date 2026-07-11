@@ -10,8 +10,6 @@ import java.util.Map;
 
 public class MapColorHelper {
 
-    public static final Codec<MapColor> CODEC = Codec.STRING.xmap(MapColorHelper::byName, mapColor -> "none");
-
     private static final Map<String, MapColor> colorNames = Util.make(() -> {
         Map<String, MapColor> map = new HashMap<>();
         map.put("none", MapColor.NONE);
@@ -119,6 +117,19 @@ public class MapColorHelper {
 
         return map;
     });
+
+    /**
+     * Declaration-site schema: enum dropdown over every accepted color name (canonical +
+     * OptiFine-compat aliases). Inference only sees STRING.xmap and would give plain text.
+     * Declared AFTER {@code colorNames} — the option list snapshots its keys at class-init.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static final Codec<MapColor> CODEC = net.mehvahdjukaar.codecui.SchemaCodec.of(
+            Codec.STRING.xmap(MapColorHelper::byName, mapColor -> "none"),
+            (net.mehvahdjukaar.codecui.Schema)
+                    new net.mehvahdjukaar.codecui.Schema.Enum<>(
+                            colorNames.keySet().stream().sorted().toList(),
+                            java.util.function.Function.identity()));
 
     @Nullable
     public static MapColor byName(String colorName) {

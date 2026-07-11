@@ -1,7 +1,8 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.ExtraCodecs;
 
@@ -9,10 +10,10 @@ import java.util.Optional;
 
 public record GuiDepthTarget(int strata, int node, boolean addAbove) {
 
-    public static final Codec<GuiDepthTarget> CODEC = RecordCodecBuilder.create(i -> i.group(
-            ExtraCodecs.NON_NEGATIVE_INT.fieldOf("strata").forGetter(GuiDepthTarget::strata),
-            ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("node", Integer.MAX_VALUE).forGetter(GuiDepthTarget::node),
-            Codec.BOOL.optionalFieldOf("add_above", true).forGetter(GuiDepthTarget::addAbove)
+    public static final SchemaCodec<GuiDepthTarget> CODEC = SchemaRecord.create(GuiDepthTarget.class, i -> i.group(
+            i.field("strata", ExtraCodecs.NON_NEGATIVE_INT, GuiDepthTarget::strata),
+            i.optional("node", ExtraCodecs.NON_NEGATIVE_INT, Integer.MAX_VALUE, GuiDepthTarget::node),
+            i.optional("add_above", Codec.BOOL, true, GuiDepthTarget::addAbove)
     ).apply(i, GuiDepthTarget::new));
 
     public static void renderAt(Optional<GuiDepthTarget> depth, GuiGraphics guiGraphics, Runnable render) {

@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.mehvahdjukaar.polytone.mixins.accessor.PostPassAccessor;
@@ -27,13 +27,12 @@ import java.util.Map;
  */
 public final class PostChainActivator {
 
-    public static final Codec<PostChainActivator> CODEC = RecordCodecBuilder.create(
+    public static final SchemaCodec<PostChainActivator> CODEC = SchemaRecord.create(PostChainActivator.class,
             i -> i.group(
-                    Identifier.CODEC.fieldOf("post_chain").forGetter(p -> p.postChain),
-                    ISimpleExp.CODEC.optionalFieldOf("activation_condition", ISimpleExp.ONE).forGetter(p -> p.turnOnCondition),
-                    ExpressionUniformBuffers.CODEC
-                            .optionalFieldOf("expression_uniforms", new ExpressionUniformBuffers(Map.of()))
-                            .forGetter(p -> p.buffers)
+                    i.field("post_chain", Identifier.CODEC, p -> p.postChain),
+                    i.optional("activation_condition", ISimpleExp.CODEC, ISimpleExp.ONE, p -> p.turnOnCondition),
+                    i.optional("expression_uniforms", ExpressionUniformBuffers.CODEC,
+                            new ExpressionUniformBuffers(Map.of()), p -> p.buffers)
             ).apply(i, PostChainActivator::new));
 
     private final Identifier postChain;

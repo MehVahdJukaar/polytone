@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
@@ -12,15 +11,15 @@ import org.jetbrains.annotations.Nullable;
 
 public interface IBlockExp {
 
-    Codec<IBlockExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.alternatives(
-                    Codec.DOUBLE.xmap(
-                            aDouble -> (level, pos, state) -> aDouble,
-                            iBlockExp -> 0.0
-                    ),
-                    BlockContextExpression.CODEC,
-                    BlockExp.TYPE.codec())
-    );
+    Codec<IBlockExp> CONSTANT_CODEC = Codec.DOUBLE.xmap(
+            aDouble -> (level, pos, state) -> aDouble,
+            iBlockExp -> 0.0);
+
+    // Wire codec + editor picker labels declared once each.
+    Codec<IBlockExp> CODEC = Codec.lazyInitialized(() -> net.mehvahdjukaar.codecui.SchemaCodecs.alternatives(
+            "constant", CONSTANT_CODEC,
+            "legacy expression", BlockContextExpression.CODEC,
+            "expression", BlockExp.TYPE.codec()));
 
     double evaluate(LevelReader level, Vec3 pos, @Nullable BlockState state);
 
