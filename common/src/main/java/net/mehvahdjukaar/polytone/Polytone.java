@@ -10,7 +10,7 @@ import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapperManager;
-import net.mehvahdjukaar.polytone.compat.PolytoneEditor;
+import net.mehvahdjukaar.polytone.compat.PackEditor;
 import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.content.block.BlockSetManager;
@@ -141,7 +141,7 @@ public class Polytone {
 
         PolytoneRenderTypes.init();
         if (CompatHandler.IRIS) IrisCompat.init();
-        if (CompatHandler.PACK_EDITOR) PolytoneEditor.init();
+        if (CompatHandler.PACK_EDITOR) PackEditor.init();
 
         //weather darken and other fog custom
         //independent fog env fog and sky fog stuff. also independent from render distnace

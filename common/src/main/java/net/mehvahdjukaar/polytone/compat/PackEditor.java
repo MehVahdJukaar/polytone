@@ -53,7 +53,7 @@ import java.util.stream.Stream;
  * mod being loaded (see {@code EditorButton} and the {@code Polytone.init} hook). With the mod
  * absent this class is never referenced and the in-game editor button grays out — nothing loads.</p>
  */
-public final class PolytoneEditor {
+public final class PackEditor {
 
     /**
      * Register Polytone's widget bindings and content codecs with PackEditor. Called once from
