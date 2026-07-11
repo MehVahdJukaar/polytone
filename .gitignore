@@ -18,10 +18,15 @@ classes/
 .settings
 *.launch
 /unique_lines.txt
-/.junie/memory/
+/.junie/
 /.codex
 /.aiassistant/
 /.ai/
+/.claude/
+/.cursor/
+/CLAUDE.md
+/GEMINI.md
+/AGENTS.md
 /neoforge/mods/fabric-api-base-0.4.42.jar
 /neoforge/mods/fabric-block-view-api-v2-1.0.10.jar
 /neoforge/mods/fabric-renderer-api-v1-3.4.1.jar
