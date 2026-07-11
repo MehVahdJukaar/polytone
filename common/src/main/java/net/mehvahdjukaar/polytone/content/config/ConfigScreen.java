@@ -79,7 +79,7 @@ public class ConfigScreen extends OptionsSubScreen {
         // and shows an animated spinner while the editor window boots (see EditorButton).
         boolean inGame = Minecraft.getInstance().level != null;
         // The editor lives in the separate PackEditor mod; grey out (with an install hint) when absent.
-        boolean packEditor = net.mehvahdjukaar.polytone.PlatStuff.isModLoaded("pack_editor");
+        boolean packEditor = net.mehvahdjukaar.polytone.PlatStuff.isModLoaded("nautilus_studio");
         Component editorTooltip = !packEditor
                 ? Component.translatable("screen.polytone.configs.codec_editor.no_mod")
                 : Component.translatable(inGame ? "screen.polytone.configs.codec_editor"

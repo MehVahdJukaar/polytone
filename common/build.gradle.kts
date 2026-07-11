@@ -10,7 +10,7 @@ val candlelight_version: String by extra
 val exp4j_version: String by extra
 val mvel_version: String by extra
 val codecui_version: String by extra
-val pack_editor_version: String by extra
+val nautilus_studio_version: String by extra
 
 
 dependencies {
@@ -18,7 +18,7 @@ dependencies {
     compileOnly ("net.mehvahdjukaar:codecui-common:${codecui_version}")
     // The pack editor UI is a SEPARATE mod (not bundled) — compile against it; the in-game
     // "open editor" button grays out at runtime when it isn't installed.
-    compileOnly ("net.mehvahdjukaar:pack_editor-common:${pack_editor_version}")
+    compileOnly ("net.mehvahdjukaar:nautilus_studio-common:${nautilus_studio_version}")
 
     implementation ("net.objecthunter:exp4j:${exp4j_version}")
     implementation ("org.mvel:mvel2:${mvel_version}")

@@ -38,7 +38,6 @@ public class BlockExp extends PolyExp implements IBlockExp {
         return evaluate(level, pos, state, 0);
     }
 
-    @Override
     public double evaluate(LevelReader level, Vec3 pos, @Nullable BlockState state, double v) {
         BlockProxy obj = new BlockProxy(level, pos, state);
         Map<String, Object> vars = new HashMap<>();

@@ -6,14 +6,13 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.codecui.Schema;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
-import net.mehvahdjukaar.packeditor.PackEditorApi;
-import net.mehvahdjukaar.packeditor.SchemaEditor.Side;
-import net.mehvahdjukaar.packeditor.platform.PackEditorClient;
-import net.mehvahdjukaar.packeditor.swing.widget.ExpressionWidget;
-import net.mehvahdjukaar.packeditor.workbench.CodecEntry;
-import net.mehvahdjukaar.packeditor.workbench.FileNames;
-import net.mehvahdjukaar.packeditor.workbench.PackWorkspace;
-import net.mehvahdjukaar.packeditor.workbench.SidecarAssets;
+import net.mehvahdjukaar.nautilus.NautilusStudioApi;
+import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
+import net.mehvahdjukaar.nautilus.swing.widget.ExpressionWidget;
+import net.mehvahdjukaar.nautilus.workbench.CodecEntry;
+import net.mehvahdjukaar.nautilus.workbench.FileNames;
+import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
+import net.mehvahdjukaar.nautilus.workbench.SidecarAssets;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.companion.CompanionSlot;
 import net.mehvahdjukaar.polytone.common.companion.CompanionSpec;
@@ -49,7 +48,7 @@ import java.util.stream.Stream;
  * game-service {@code GameHost} are provided by PackEditor itself — Polytone only contributes its
  * own content.
  *
- * <p>Everything here touches PackEditor classes, so callers MUST guard on the {@code pack_editor}
+ * <p>Everything here touches Nautilus Studio classes, so callers MUST guard on the {@code nautilus_studio}
  * mod being loaded (see {@code EditorButton} and the {@code Polytone.init} hook). With the mod
  * absent this class is never referenced and the in-game editor button grays out — nothing loads.</p>
  */
@@ -57,7 +56,7 @@ public final class PackEditor {
 
     /**
      * Register Polytone's widget bindings and content codecs with PackEditor. Called once from
-     * {@code Polytone.init} when the {@code pack_editor} mod is present.
+     * {@code Polytone.init} when the {@code nautilus_studio} mod is present.
      */
     public static void init() {
         // Widget bindings must exist before any schema resolves (companion registrations only).
@@ -67,17 +66,17 @@ public final class PackEditor {
 
     /** Open (or focus) the editor window. Any thread. */
     public static void open() {
-        PackEditorClient.openEditor();
+        NautilusStudioApi.openEditor();
     }
 
     /** Whether the editor window is currently open. Any thread. */
     public static boolean isOpen() {
-        return PackEditorClient.isOpen();
+        return NautilusStudioApi.isOpen();
     }
 
     /** Close the editor window if open — it is tied to the world and goes with it. Any thread. */
     public static void close() {
-        PackEditorClient.close();
+        NautilusStudioApi.close();
     }
 
     // -------------------- Content entries --------------------
@@ -93,10 +92,11 @@ public final class PackEditor {
             if (manager.contentCodec() == null) continue;
             for (String folder : manager.folderNames()) {
                 CompanionSpec<?> companions = manager.companions;
-                PackEditorApi.register(new CodecEntry(manager.name, "Polytone",
+                CodecEntry entry = new CodecEntry(manager.name, "Polytone",
                         manager.contentCodec(), Side.CLIENT_RESOURCES,
-                        Polytone.MOD_ID + "/" + folder,
-                        companions == null ? null : sidecarsFromSpec(companions)));
+                        Polytone.MOD_ID + "/" + folder);
+                if (companions != null) entry = entry.withSidecars(sidecarsFromSpec(companions));
+                NautilusStudioApi.register(entry);
             }
         }
     }

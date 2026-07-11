@@ -10,7 +10,7 @@ neoforge {
 val exp4j_version: String by extra
 val mvel_version: String by extra
 val codecui_version: String by extra
-val pack_editor_version: String by extra
+val nautilus_studio_version: String by extra
 
 dependencies {
     // Declarative codec schema API — runtime dep + bundled (JiJ) into the shipped jar.
@@ -18,7 +18,7 @@ dependencies {
     jarJar("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
 
     // The editor UI is a SEPARATE mod — runtime/compile dep, NOT jarJar'd (not bundled).
-    implementation("net.mehvahdjukaar:pack_editor-neoforge:${pack_editor_version}")
+    implementation("net.mehvahdjukaar:nautilus_studio-neoforge:${nautilus_studio_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     //forgeRuntimeLibrary ( "net.objecthunter:exp4j:${exp4j_version}")
