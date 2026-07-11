@@ -29,6 +29,7 @@ import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostChainsManager;
+import net.mehvahdjukaar.polytone.content.shaders.PostTargetsManager;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
@@ -90,6 +91,7 @@ public class Polytone {
     public static final ColorManager COLORS = new ColorManager();
     public static final GuiModifierManager SLOTIFY = new GuiModifierManager();
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
+    public static final PostTargetsManager POST_TARGETS = new PostTargetsManager();
     public static final PostChainsManager POST_CHAINS = new PostChainsManager();
     public static final ShaderUniformsManager SHADER_EFFECTS = new ShaderUniformsManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
@@ -109,7 +111,7 @@ public class Polytone {
             NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
             BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
             BIOME_MODIFIERS, LIGHTMAPS,
-            DIMENSION_MODIFIERS, POST_CHAINS, SHADER_EFFECTS,
+            DIMENSION_MODIFIERS, POST_TARGETS, POST_CHAINS, SHADER_EFFECTS,
             PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
             CREATIVE_TABS_MODIFIERS);
 

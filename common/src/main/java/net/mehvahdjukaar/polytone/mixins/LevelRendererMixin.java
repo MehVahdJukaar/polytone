@@ -5,6 +5,7 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -36,6 +37,13 @@ public class LevelRendererMixin {
     @Final
     public LevelRenderState levelRenderState;
 
+    // Every section rebuild (block or light change) funnels through setSectionDirty; bump that
+    // section's light-cache version so particles there re-sample. Section coords come in directly.
+    @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"))
+    private void poly$invalidateParticleLight(int x, int y, int z, boolean important, CallbackInfo ci) {
+        ParticleLightCache.markSectionDirty(x, y, z);
+    }
+
     @Inject(method = "renderLevel", at = @At("HEAD"))
     public void poly$preRender(GraphicsResourceAllocator graphicsResourceAllocator,
                           DeltaTracker deltaTracker,
@@ -47,7 +55,8 @@ public class LevelRendererMixin {
                           GpuBufferSlice gpuBufferSlice,
                           Vector4f vector4f,
                           boolean bl2, CallbackInfo ci) {
-        Polytone.POST_CHAINS.captureLevelRendererParams(project, modelView);
+        // deltaTime from this call's own tracker parameter, fresh every render call
+        Polytone.POST_CHAINS.captureLevelRendererParams(project, modelView, deltaTracker.getGameTimeDeltaTicks());
         // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
         Polytone.SHADER_EFFECTS.updateAll();
     }

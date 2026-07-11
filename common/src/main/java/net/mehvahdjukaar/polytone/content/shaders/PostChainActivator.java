@@ -6,7 +6,6 @@ import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.mehvahdjukaar.polytone.mixins.accessor.PostPassAccessor;
-import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.PostPass;
 import net.minecraft.client.renderer.ShaderManager;
@@ -69,7 +68,10 @@ public final class PostChainActivator {
         if (!cachedOn) return null;
         if (cachedPostChain == null) {
             try {
-                cachedPostChain = manager.getPostChain(postChain, LevelTargetBundle.MAIN_TARGETS);
+                // Sorting targets plus the pack's custom persistent targets. Validation only;
+                // the real handles come from the bundle at addToFrame.
+                cachedPostChain = manager.getPostChain(postChain, Polytone.POST_TARGETS.allowedTargets());
+                if (cachedPostChain == null) return null; // not resolvable yet (mid-reload), retry quietly
                 buffers.ensureInitialized("Polytone post expr uniform");
                 registerByPassShaders(cachedPostChain);
             } catch (Throwable ex) {

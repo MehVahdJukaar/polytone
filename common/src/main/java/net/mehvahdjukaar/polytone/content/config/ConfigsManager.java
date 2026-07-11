@@ -24,6 +24,7 @@ import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.util.GsonHelper;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,20 +35,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
-    public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);
-    public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", true);
-    public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", 1);
-    public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", false);
-    public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false);
-    public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", true);
+    public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", "loading", false);
+    public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", "loading", true);
+    public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", "particles", 1);
+    public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", "particles", false);
+    public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", "particles", true);
+    public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", null, true);
 
-    private static @NonNull OptionHolder<Boolean> builtinConfig(String id, boolean def) {
-        return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), 1, def), Polytone.res(id));
+    // a null section lists the entry ungrouped, without a header
+    private static @NonNull OptionHolder<Boolean> builtinConfig(String id, @Nullable String section, boolean def) {
+        return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), Map.of(), 1,
+                Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def), Polytone.res(id));
     }
 
-    private static @NonNull OptionHolder<Float> builtinConfig(String id, float def) {
-        return OptionHolder.create(new NumberConfig(Optional.empty(), Map.of(), 1,
-                def, 0, 1, 0.01f), Polytone.res(id));
+    private static @NonNull OptionHolder<Float> builtinConfig(String id, @Nullable String section, float def) {
+        return OptionHolder.create(new NumberConfig(Optional.empty(), Map.of(), Map.of(), 1,
+                Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def, 0, 1, 0.01f), Polytone.res(id));
     }
 
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
@@ -217,8 +220,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     @Override
     protected void applyNormal(AssetsFiles resources) {
         Map<Identifier, JsonElement> obj = resources.jsons();
-        ConfigScreen.clearPresetCache();
-
         activeLoadConfigs.remove();
         configs.clear();
         configs.register(lenientLoading.fileId, lenientLoading);

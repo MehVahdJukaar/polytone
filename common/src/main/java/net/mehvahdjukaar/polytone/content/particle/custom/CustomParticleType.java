@@ -169,10 +169,16 @@ public class CustomParticleType implements ICustomParticleFactory {
 
         //tick once
         //todo replace   initializer with ticker
-        this.ticker.tick(newParticle, world);
-        newParticle.setAge(0); //reset age after tick, so that it doesn't get affected by initializer tick
-        if (!newParticle.isAlive()) {
-            return null;
+        if (Polytone.CONFIGS.particlesOffThread.get()) {
+            // run the spawn-time ticker pass in this tick's parallel batch instead of on the main
+            // thread; the batch joins before render extract, so the first frame is identical
+            PolytoneAsyncParticles.enqueueInit(newParticle);
+        } else {
+            this.ticker.tick(newParticle, world);
+            newParticle.setAge(0); //reset age after tick, so that it doesn't get affected by initializer tick
+            if (!newParticle.isAlive()) {
+                return null;
+            }
         }
         if (exclusionRadius > 0) {
             ParticleRenderType particleRenderType = this.getParticleGroup();

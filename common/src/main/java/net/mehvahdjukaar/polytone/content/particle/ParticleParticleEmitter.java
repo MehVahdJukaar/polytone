@@ -7,9 +7,12 @@ import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.particle.custom.IParticleTickable;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.util.RandomSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -74,31 +77,35 @@ public record ParticleParticleEmitter(
     @Override
     public void tick(Particle particle, Level level) {
         if (particleType.isEmpty()) return;
+        // Per-particle random, never the shared level.random: emitters tick on worker threads when
+        // async particles are on and concurrent LegacyRandomSource access crashes.
+        RandomSource rand = particle instanceof CustomParticleInstance cpi ? cpi.getRandom() : level.random;
         float throttle = Polytone.CONFIGS.particlesThrottle.get();
-        if (throttle < 1 && level.random.nextFloat() > throttle) return;
+        if (throttle < 1 && rand.nextFloat() > throttle) return;
 
         double spawnChance = chance.evaluate(particle, level);
-        if (level.random.nextFloat() < spawnChance) {
+        if (rand.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(BlockPos.containing(particle.x, particle.y, particle.z));
                 if (!biomes.get().contains(biome)) return;
             }
             if (predicate != AlwaysTrueTest.INSTANCE) {
                 var blockAt = level.getBlockState(BlockPos.containing(particle.x, particle.y, particle.z));
-                if (!predicate.test(blockAt, level.random)) return;
+                if (!predicate.test(blockAt, rand)) return;
             }
             for (int i = 0; i < count.evaluate(particle, level); i++) {
                 ParticleOptions po = getParticleOptions(particle, level);
                 if (po == null) return;
                 if (!TokenBucketTracker.canEmitParticle(this)) return;
-                level.addParticle(po,
-                        particle.x + x.evaluate(particle, level),
-                        particle.y + y.evaluate(particle, level),
-                        particle.z + z.evaluate(particle, level),
-                        dx.evaluate(particle, level),
-                        dy.evaluate(particle, level),
-                        dz.evaluate(particle, level)
-                );
+                // Evaluate position/velocity now (on the ticking thread), but defer the actual spawn:
+                // ParticleEngine#particlesToAdd is not thread-safe, so it must be mutated on the main thread.
+                double sx = particle.x + x.evaluate(particle, level);
+                double sy = particle.y + y.evaluate(particle, level);
+                double sz = particle.z + z.evaluate(particle, level);
+                double sdx = dx.evaluate(particle, level);
+                double sdy = dy.evaluate(particle, level);
+                double sdz = dz.evaluate(particle, level);
+                PolytoneAsyncParticles.deferToMain(() -> level.addParticle(po, sx, sy, sz, sdx, sdy, sdz));
             }
         }
     }

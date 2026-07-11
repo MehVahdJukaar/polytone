@@ -5,9 +5,12 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.IParticleTickable;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.util.RandomSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
@@ -52,8 +55,11 @@ public record ParticleSoundEmitter(
 
     @Override
     public void tick(Particle particle, Level level) {
+        // per-particle random: this runs on a worker thread when async particles are on, and the
+        // shared level.random crashes when accessed from multiple threads
+        RandomSource rand = particle instanceof CustomParticleInstance cpi ? cpi.getRandom() : level.random;
         double spawnChance = chance.evaluate(particle, level);
-        if (level.random.nextFloat() < spawnChance) {
+        if (rand.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
                 var biome = level.getBiome(BlockPos.containing(particle.x, particle.y, particle.z));
                 if (!biomes.get().contains(biome)) return;
@@ -67,8 +73,9 @@ public record ParticleSoundEmitter(
             float v = (float) volume.evaluate(particle, level);
             float p = (float) pitch.evaluate(particle, level);
 
-            level.playLocalSound( vec.x, vec.y, vec.z,
-                    sound, category, v, p, false);
+            // SoundEngine is not thread-safe; play on the main thread when the batch joins
+            PolytoneAsyncParticles.deferToMain(() -> level.playLocalSound(vec.x, vec.y, vec.z,
+                    sound, category, v, p, false));
         }
     }
 

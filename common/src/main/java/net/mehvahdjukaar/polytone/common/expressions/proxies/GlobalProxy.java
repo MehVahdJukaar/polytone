@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
@@ -72,6 +73,11 @@ public class GlobalProxy {
 
     public double rain() {
         return ExpTicker.getRainAndThunder();
+    }
+
+    /** Runtime lookup of a global expression's current value by its variable name (e.g. 'minecraft_leaf_drift'). */
+    public double value(String key) {
+        return Polytone.GLOBAL_EXPRESSION.getValue(key);
     }
 
     public Object environmentAttribute(String value) {
