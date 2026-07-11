@@ -1,10 +1,10 @@
 package net.mehvahdjukaar.polytone.content.particle;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
-import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
@@ -49,25 +49,25 @@ public record ParticleParticleEmitter(
         Optional<HolderSet<Biome>> biomes
 ) implements IParticleTickable {
 
-    public static final Codec<ParticleParticleEmitter> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
-            CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("particle").forGetter(ParticleParticleEmitter::particleType),
-            IParticleExp.CODEC.optionalFieldOf("chance", IParticleExp.ONE).forGetter(ParticleParticleEmitter::chance),
-            IParticleExp.CODEC.optionalFieldOf("count", IParticleExp.ONE).forGetter(ParticleParticleEmitter::count),
-            IParticleExp.CODEC.optionalFieldOf("x", IParticleExp.PARTICLE_RAND).forGetter(ParticleParticleEmitter::x),
-            IParticleExp.CODEC.optionalFieldOf("y", IParticleExp.PARTICLE_RAND).forGetter(ParticleParticleEmitter::y),
-            IParticleExp.CODEC.optionalFieldOf("z", IParticleExp.PARTICLE_RAND).forGetter(ParticleParticleEmitter::z),
-            IParticleExp.CODEC.optionalFieldOf("dx", IParticleExp.ZERO).forGetter(ParticleParticleEmitter::dx),
-            IParticleExp.CODEC.optionalFieldOf("dy", IParticleExp.ZERO).forGetter(ParticleParticleEmitter::dy),
-            IParticleExp.CODEC.optionalFieldOf("dz", IParticleExp.ZERO).forGetter(ParticleParticleEmitter::dz),
-            IParticleExp.CODEC.optionalFieldOf("red").forGetter(ParticleParticleEmitter::r),
-            IParticleExp.CODEC.optionalFieldOf("green").forGetter(ParticleParticleEmitter::g),
-            IParticleExp.CODEC.optionalFieldOf("blue").forGetter(ParticleParticleEmitter::b),
-            IParticleExp.CODEC.optionalFieldOf("alpha").forGetter(ParticleParticleEmitter::a),
-            IParticleExp.CODEC.optionalFieldOf("roll").forGetter(ParticleParticleEmitter::roll),
-            IParticleExp.CODEC.optionalFieldOf("size").forGetter(ParticleParticleEmitter::size),
-            IParticleExp.CODEC.optionalFieldOf("custom").forGetter(ParticleParticleEmitter::custom),
-            CodecUtils.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(ParticleParticleEmitter::predicate),
-            CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleParticleEmitter::biomes)
+    public static final SchemaCodec<ParticleParticleEmitter> CODEC = SchemaRecord.create(ParticleParticleEmitter.class, i -> i.group(
+            i.field("particle", CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE), ParticleParticleEmitter::particleType),
+            i.optional("chance", IParticleExp.CODEC, IParticleExp.ONE, ParticleParticleEmitter::chance),
+            i.optional("count", IParticleExp.CODEC, IParticleExp.ONE, ParticleParticleEmitter::count),
+            i.optional("x", IParticleExp.CODEC, IParticleExp.PARTICLE_RAND, ParticleParticleEmitter::x),
+            i.optional("y", IParticleExp.CODEC, IParticleExp.PARTICLE_RAND, ParticleParticleEmitter::y),
+            i.optional("z", IParticleExp.CODEC, IParticleExp.PARTICLE_RAND, ParticleParticleEmitter::z),
+            i.optional("dx", IParticleExp.CODEC, IParticleExp.ZERO, ParticleParticleEmitter::dx),
+            i.optional("dy", IParticleExp.CODEC, IParticleExp.ZERO, ParticleParticleEmitter::dy),
+            i.optional("dz", IParticleExp.CODEC, IParticleExp.ZERO, ParticleParticleEmitter::dz),
+            i.optional("red", IParticleExp.CODEC, ParticleParticleEmitter::r),
+            i.optional("green", IParticleExp.CODEC, ParticleParticleEmitter::g),
+            i.optional("blue", IParticleExp.CODEC, ParticleParticleEmitter::b),
+            i.optional("alpha", IParticleExp.CODEC, ParticleParticleEmitter::a),
+            i.optional("roll", IParticleExp.CODEC, ParticleParticleEmitter::roll),
+            i.optional("size", IParticleExp.CODEC, ParticleParticleEmitter::size),
+            i.optional("custom", IParticleExp.CODEC, ParticleParticleEmitter::custom),
+            i.field("state_predicate", SchemaCodecs.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE), RuleTest.CODEC, ParticleParticleEmitter::predicate),
+            i.optional("biomes", CodecUtils.forwardAwareHomogeneousList(Registries.BIOME), ParticleParticleEmitter::biomes)
     ).apply(i, ParticleParticleEmitter::new));
 
 

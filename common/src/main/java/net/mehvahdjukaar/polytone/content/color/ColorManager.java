@@ -12,7 +12,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
-import net.mehvahdjukaar.polytone.common.reloader.SingleJsonOrPropertiesReloadListener;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.SingleFileContentManager;
 import net.mehvahdjukaar.polytone.common.struc.Vec3f;
 import net.mehvahdjukaar.polytone.content.color.fog_env.FogEnvironmentMod;
 import net.mehvahdjukaar.polytone.content.entity.IRenderStateWithId;
@@ -53,7 +54,7 @@ import java.util.function.Function;
 
 import static net.minecraft.world.effect.MobEffect.AMBIENT_ALPHA;
 
-public class ColorManager extends SingleJsonOrPropertiesReloadListener {
+public class ColorManager extends SingleFileContentManager<Void> {
 
     private static final int DEFAULT_COLOR = ARGB.colorFromFloat(1.0f, 1, 0, 0);
     private final Object2IntMap<MapColor> vanillaMapColors = new Object2IntOpenHashMap<>();
@@ -116,7 +117,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
-        super("colo_manager",
+        super("Color Manager",
                 "color.properties", "colors.json",
                 Polytone.MOD_ID, "colormatic", "vanadium", "optifine");
     }
@@ -154,7 +155,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        Map<Identifier, JsonElement> jsons = resources.jsons();
         var keySet = new ArrayList<>(jsons.keySet());
 
         for (var k : Lists.reverse(keySet)) {

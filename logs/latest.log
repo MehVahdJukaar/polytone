@@ -1,0 +1,8 @@
+[16:54:17] [AWT-EventQueue-0/INFO]: [codec_ui] FlatLaf class: com.formdev.flatlaf.FlatDarkLaf (dark=true)
+[16:54:17] [AWT-EventQueue-0/INFO]: [codec_ui] flatlaf.uiScale (system prop): 1.5x
+[16:54:17] [AWT-EventQueue-0/INFO]: [codec_ui] FlatLaf UIScale.getUserScaleFactor(): 1.5
+[16:54:17] [AWT-EventQueue-0/INFO]: [codec_ui] Toolkit.getScreenResolution(): 96
+[16:54:17] [AWT-EventQueue-0/INFO]: [codec_ui] Display mode: 2560x1600 @ 165Hz
+[16:54:17] [AWT-EventQueue-0/INFO]: [codec_ui] Detected initial scale: 1.5x
+[16:54:17] [AWT-EventQueue-0/INFO]: [codec_ui] Default font: javax.swing.plaf.FontUIResource[family=SansSerif,name=SansSerif,style=plain,size=20]
+[16:54:17] [AWT-EventQueue-0/INFO]: [codec_ui] GDK_SCALE env: null, GDK_DPI_SCALE env: null

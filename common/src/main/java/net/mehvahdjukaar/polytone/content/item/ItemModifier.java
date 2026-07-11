@@ -2,7 +2,8 @@ package net.mehvahdjukaar.polytone.content.item;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.model.WornModel;
@@ -50,23 +51,23 @@ public record ItemModifier(Optional<IColorGetter> barColor,
             },
             p -> p.name().toLowerCase(Locale.ROOT));
 
-    public static final Codec<ItemModifier> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final SchemaCodec<ItemModifier> CODEC = SchemaRecord.create(ItemModifier.class, i -> i.group(
             //TODO: register custom item model color sampler that takes in a colormap
             //IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> (Optional<IColorGetter>) b.tintGetter),
-            Colormap.CODEC.optionalFieldOf("bar_color").forGetter(ItemModifier::barColor),
-            Rarity.CODEC.optionalFieldOf("rarity").forGetter(ItemModifier::rarity),
-            TooltipAddition.CODEC.listOf().optionalFieldOf("tooltips", java.util.List.of()).forGetter(ItemModifier::tooltips),
-            ExtraCodecs.PATTERN.listOf().optionalFieldOf("removed_tooltips", List.of()).forGetter(ItemModifier::removedTooltips),
+            i.optional("bar_color", Colormap.CODEC, ItemModifier::barColor),
+            i.optional("rarity", Rarity.CODEC, ItemModifier::rarity),
+            i.optional("tooltips", TooltipAddition.CODEC.listOf(), java.util.List.of(), ItemModifier::tooltips),
+            i.optional("removed_tooltips", ExtraCodecs.PATTERN.listOf(), List.of(), ItemModifier::removedTooltips),
             //ItemModelOverride.CODEC.listOf().optionalFieldOf("custom_models", List.of()).forGetter(ItemModifier::customModels),
-            WornModel.CODEC.optionalFieldOf("worn_model").forGetter(ItemModifier::wornModel),
-            Colormap.CODEC.optionalFieldOf("armor_tint").forGetter(ItemModifier::armorTint),
-            Identifier.CODEC.optionalFieldOf("armor_texture").forGetter(ItemModifier::armorTexture),
-            ARM_POSE_CODEC.optionalFieldOf("arm_pose").forGetter(ItemModifier::armPose),
-            Identifier.CODEC.optionalFieldOf("scope_overlay").forGetter(ItemModifier::scopeOverlay),
-            Codec.BOOL.optionalFieldOf("bob_as_entity").forGetter(ItemModifier::bobAsEntity),
-            Codec.BOOL.optionalFieldOf("spread_as_entity").forGetter(ItemModifier::spreadAsEntity),
-            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(ItemModifier::targets)
-    ).apply(instance, ItemModifier::new));
+            i.optional("worn_model", WornModel.CODEC, ItemModifier::wornModel),
+            i.optional("armor_tint", Colormap.CODEC, ItemModifier::armorTint),
+            i.optional("armor_texture", Identifier.CODEC, ItemModifier::armorTexture),
+            i.optional("arm_pose", ARM_POSE_CODEC, ItemModifier::armPose),
+            i.optional("scope_overlay", Identifier.CODEC, ItemModifier::scopeOverlay),
+            i.optional("bob_as_entity", Codec.BOOL, ItemModifier::bobAsEntity),
+            i.optional("spread_as_entity", Codec.BOOL, ItemModifier::spreadAsEntity),
+            i.optional("targets", Targets.CODEC, Targets.EMPTY, ItemModifier::targets)
+    ).apply(i, ItemModifier::new));
 
     /*
     public record Partial(List<ItemModelOverride.Partial> customModels) {

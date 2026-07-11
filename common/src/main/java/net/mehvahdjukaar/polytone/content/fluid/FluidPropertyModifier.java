@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.fluid;
 
-import com.mojang.serialization.Decoder;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.common.Targets;
@@ -13,12 +13,12 @@ import java.util.Optional;
 public record FluidPropertyModifier(Optional<? extends BlockColor> colormap, Optional<IColorGetter> fogColormap,
                                     Targets targets) {
 
-    public static final Decoder<FluidPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
-            instance.group(
-                    Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> (Optional<IColorGetter>) c.colormap),
-                    Colormap.CODEC.optionalFieldOf("fog_colormap").forGetter(FluidPropertyModifier::fogColormap),
-                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(FluidPropertyModifier::targets)
-            ).apply(instance, FluidPropertyModifier::new));
+    public static final SchemaCodec<FluidPropertyModifier> CODEC = SchemaRecord.create(FluidPropertyModifier.class, i ->
+            i.group(
+                    i.optional("colormap", Colormap.CODEC, c -> (Optional<IColorGetter>) c.colormap),
+                    i.optional("fog_colormap", Colormap.CODEC, FluidPropertyModifier::fogColormap),
+                    i.optional("targets", Targets.CODEC, Targets.EMPTY, FluidPropertyModifier::targets)
+            ).apply(i, FluidPropertyModifier::new));
 
     // Other has priority
     public FluidPropertyModifier merge(FluidPropertyModifier newMod) {

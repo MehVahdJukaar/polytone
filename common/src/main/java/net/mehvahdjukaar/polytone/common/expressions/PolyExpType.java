@@ -35,6 +35,13 @@ public final class PolyExpType<T extends PolyExp> {
         return codec;
     }
 
+    /** Names of the declared MVEL inputs — used by the editor as insertable hint chips. */
+    public java.util.List<String> inputNames() {
+        var inputs = context.getInputs();
+        return inputs == null ? java.util.List.of()
+                : inputs.keySet().stream().sorted().toList();
+    }
+
     public DataResult<T> create(String expressionStr) {
         try {
             String upgraded = ExpUtils.upgrade(expressionStr);

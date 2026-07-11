@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.mixins.accessor.ParticleAccessor;
@@ -26,17 +26,17 @@ public record CustomParticleInitializer(@Nullable IBlockExp size,
                                         @Nullable IBlockExp hitboxSize,
                                         @Nullable IBlockExp custom) {
 
-    public static final Codec<CustomParticleInitializer> CODEC = RecordCodecBuilder.create(i -> i.group(
-            IBlockExp.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.size)),
-            IBlockExp.CODEC.optionalFieldOf("lifetime").forGetter(p -> Optional.ofNullable(p.lifetime)),
-            IBlockExp.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.red)),
-            IBlockExp.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.green)),
-            IBlockExp.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blue)),
-            IBlockExp.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
-            IBlockExp.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.roll)),
-            IBlockExp.CODEC.optionalFieldOf("friction").forGetter(p -> Optional.ofNullable(p.friction)),
-            IBlockExp.CODEC.optionalFieldOf("hitbox_size").forGetter(p -> Optional.ofNullable(p.hitboxSize)),
-            IBlockExp.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom))
+    public static final SchemaCodec<CustomParticleInitializer> CODEC = SchemaRecord.create(CustomParticleInitializer.class, i -> i.group(
+            i.optional("size", IBlockExp.CODEC, p -> Optional.ofNullable(p.size)),
+            i.optional("lifetime", IBlockExp.CODEC, p -> Optional.ofNullable(p.lifetime)),
+            i.optional("red", IBlockExp.CODEC, p -> Optional.ofNullable(p.red)),
+            i.optional("green", IBlockExp.CODEC, p -> Optional.ofNullable(p.green)),
+            i.optional("blue", IBlockExp.CODEC, p -> Optional.ofNullable(p.blue)),
+            i.optional("alpha", IBlockExp.CODEC, p -> Optional.ofNullable(p.alpha)),
+            i.optional("roll", IBlockExp.CODEC, p -> Optional.ofNullable(p.roll)),
+            i.optional("friction", IBlockExp.CODEC, p -> Optional.ofNullable(p.friction)),
+            i.optional("hitbox_size", IBlockExp.CODEC, p -> Optional.ofNullable(p.hitboxSize)),
+            i.optional("custom", IBlockExp.CODEC, p -> Optional.ofNullable(p.custom))
     ).apply(i, CustomParticleInitializer::new));
 
     private CustomParticleInitializer(Optional<IBlockExp> size, Optional<IBlockExp> lifetime,

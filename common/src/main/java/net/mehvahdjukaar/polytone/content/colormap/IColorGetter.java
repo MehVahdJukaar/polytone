@@ -2,6 +2,9 @@ package net.mehvahdjukaar.polytone.content.colormap;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.codecui.Schema;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.item.BarColor;
 import net.minecraft.client.Minecraft;
@@ -160,7 +163,7 @@ public interface IColorGetter extends BlockColor, BarColor {
     }
 
 
-    Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.COLOR.xmap(
+    SchemaCodec<IColorGetter> SINGLE_COLOR_CODEC = SchemaCodecs.xmap(ColorUtils.COLOR,
             IColorGetter.StaticColor::new, g -> g instanceof StaticColor(int color) ? color : 0
     );
 
@@ -169,6 +172,8 @@ public interface IColorGetter extends BlockColor, BarColor {
             g -> g instanceof ExpressionColor(IBlockExp exp) ? exp : IBlockExp.ZERO
     );
 
-    Codec<IColorGetter> SINGLE_COLOR_OR_EXPRESSION = Codec.withAlternative(
-            SINGLE_COLOR_CODEC, EXPRESSION_CODEC);
+    // One labeled picker: a color, or an MVEL expression.
+    SchemaCodec<IColorGetter> SINGLE_COLOR_OR_EXPRESSION = SchemaCodecs.withAlternative(
+            SchemaCodecs.alt("color", SINGLE_COLOR_CODEC),
+            SchemaCodecs.alt("expression", EXPRESSION_CODEC));
 }

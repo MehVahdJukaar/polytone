@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.common.struc;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
@@ -12,10 +11,7 @@ import net.minecraft.util.ARGB;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @SuppressWarnings("all")
 public record ArrayImage(int[][] pixels, int width, int height) {
@@ -73,48 +69,6 @@ public record ArrayImage(int[][] pixels, int width, int height) {
                 }
             }
             return pixelMatrix;
-        }
-    }
-
-    public static Map<Identifier, Group> groupTextures(Map<Identifier, ArrayImage> texturesColormap) {
-        Map<Identifier, Group> groupedMap = new LinkedHashMap<>();
-
-        Pattern pattern = Pattern.compile("(\\D+)(_\\d+)?");
-        for (var e : texturesColormap.entrySet()) {
-            Identifier id = e.getKey();
-            String str = id.getPath();
-            Matcher matcher = pattern.matcher(str);
-            if (matcher.matches()) {
-                String key = matcher.group(1); // Group 1: the word before underscore (if any)
-                String indexMatch = matcher.group(2); // Group 2: the underscore and digits (if any)
-
-                int index = -1; // Default index if there's no underscore and digits
-                if (indexMatch != null) {
-                    // Extracting the index from the matched group (removing the underscore)
-                    index = Integer.parseInt(indexMatch.substring(1));
-                }
-
-                // Creating or retrieving the Int2Object map for the key
-                groupedMap.computeIfAbsent(id.withPath(key), a -> new Group())
-                        .put(index, e.getValue());
-            }else{
-                //no match.
-                Group group = new Group();
-                group.put(-1, e.getValue());
-                groupedMap.put(id, group);
-            }
-        }
-        return groupedMap;
-    }
-
-    public static class Group extends Int2ObjectArrayMap<ArrayImage> {
-
-        public Group() {
-            super();
-        }
-
-        public ArrayImage getDefault(){
-            return this.get(-1);
         }
     }
 

@@ -2,11 +2,12 @@ package net.mehvahdjukaar.polytone.content.noise;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Decoder;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
@@ -17,18 +18,18 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class NoiseManager extends JsonPartialReloader {
+public class NoiseManager extends ContentManager<PerlinSimplexNoise> {
 
-    public static final Decoder<PerlinSimplexNoise> NOISE_CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-            Codec.INT.fieldOf("seed").forGetter(p -> 0),
-            Codec.INT.listOf().fieldOf("octaves").forGetter(p -> List.of())
-    ).apply(instance, (s, l) -> new PerlinSimplexNoise(RandomSource.create(s), l)));
+    public static final SchemaCodec<PerlinSimplexNoise> NOISE_CODEC = SchemaRecord.create(PerlinSimplexNoise.class, i -> i.group(
+            i.field("seed", Codec.INT, p -> 0),
+            i.field("octaves", Codec.INT.listOf(), p -> List.of())
+    ).apply(i, (s, l) -> new PerlinSimplexNoise(RandomSource.create(s), l)));
 
     public static final PerlinSimplexNoise DEFAULT =  new PerlinSimplexNoise(RandomSource.create(0), List.of(1));
 
 
     public NoiseManager() {
-        super("noises");
+        super("Noise", () -> NOISE_CODEC, "noises");
     }
 
     private final MapRegistry<PerlinSimplexNoise> noises = new MapRegistry<>("Polytone Simplex Noises");
@@ -44,14 +45,13 @@ public class NoiseManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
+        Map<Identifier, JsonElement> jsons = resources.jsons();
         for (var e : jsons.entrySet()) {
             var id = e.getKey();
             var json = e.getValue();
-            PerlinSimplexNoise noise = NOISE_CODEC.decode(ops, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Noise with json id " + id + "\n error: " + errorMsg))
-                    .getFirst();
+            PerlinSimplexNoise noise = decodeStrict(json, id, ops);
             noises.register(id, noise);
         }
         ExpressionUtils.regenNoiseFunctions(noises.getEntries());

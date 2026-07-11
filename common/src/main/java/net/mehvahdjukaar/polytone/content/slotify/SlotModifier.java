@@ -1,7 +1,8 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.minecraft.world.inventory.Slot;
 
@@ -10,14 +11,14 @@ import java.util.Optional;
 public record SlotModifier(Optional<IntRange> targets, int xOffset, int yOffset, int zOffset,
                            Optional<IntRange> targetX, Optional<IntRange> targetY, Optional<String> targetClass) {
 
-    public static final Codec<SlotModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            IntRange.CODEC.optionalFieldOf("slots").forGetter(SlotModifier::targets),
-            Codec.INT.optionalFieldOf("x_offset", 0).forGetter(SlotModifier::xOffset),
-            Codec.INT.optionalFieldOf("y_offset", 0).forGetter(SlotModifier::yOffset),
-            Codec.INT.optionalFieldOf("z_offset", 0).forGetter(SlotModifier::zOffset),
-            IntRange.CODEC.optionalFieldOf("target_x").forGetter(SlotModifier::targetX),
-            IntRange.CODEC.optionalFieldOf("target_y").forGetter(SlotModifier::targetY),
-            Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName).optionalFieldOf("target_class_name").forGetter(SlotModifier::targetClass)
+    public static final SchemaCodec<SlotModifier> CODEC = SchemaRecord.create(SlotModifier.class, i -> i.group(
+            i.optional("slots", IntRange.CODEC, SlotModifier::targets),
+            i.optional("x_offset", Codec.INT, 0, SlotModifier::xOffset),
+            i.optional("y_offset", Codec.INT, 0, SlotModifier::yOffset),
+            i.optional("z_offset", Codec.INT, 0, SlotModifier::zOffset),
+            i.optional("target_x", IntRange.CODEC, SlotModifier::targetX),
+            i.optional("target_y", IntRange.CODEC, SlotModifier::targetY),
+            i.optional("target_class_name", Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName), SlotModifier::targetClass)
     ).apply(i, SlotModifier::new));
 
     public void modify(Slot slot) {

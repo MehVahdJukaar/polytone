@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.common.attributes;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
@@ -25,7 +25,7 @@ public class ExtendedAttributeMod {
                                 return c.sampleColor(
                                         level,
                                         null,
-                                        ClientFrameTicker.getCameraPos(), null, null);
+                                        ClientFrameTicker.getCameraPos(), ClientFrameTicker.getCameraBiome().value(), null);
                             },
                             supplier -> new IColorGetter.StaticColor(supplier.get()));
 
@@ -40,7 +40,7 @@ public class ExtendedAttributeMod {
                             ex -> IBlockExp.ZERO);
             return Codec.either(originalCodec, (Codec) flaotCodec);
         }
-        return CodecUtils.eitherLeft(originalCodec);
+        return SchemaCodecs.eitherLeft(originalCodec);
     }
 
 

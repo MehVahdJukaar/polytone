@@ -1,8 +1,8 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.jetbrains.annotations.Nullable;
@@ -23,21 +23,21 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
                                             @Nullable IParticleExp custom,
                                             @Nullable IParticleExp removeIf) implements ICustomParticleTicker {
 
-    public static final Codec<MultiExpressionParticleTicker> CODEC = RecordCodecBuilder.create(i -> i.group(
-            IParticleExp.CODEC.optionalFieldOf("x").forGetter(p -> Optional.ofNullable(p.x)),
-            IParticleExp.CODEC.optionalFieldOf("y").forGetter(p -> Optional.ofNullable(p.y)),
-            IParticleExp.CODEC.optionalFieldOf("z").forGetter(p -> Optional.ofNullable(p.z)),
-            IParticleExp.CODEC.optionalFieldOf("dx").forGetter(p -> Optional.ofNullable(p.dx)),
-            IParticleExp.CODEC.optionalFieldOf("dy").forGetter(p -> Optional.ofNullable(p.dy)),
-            IParticleExp.CODEC.optionalFieldOf("dz").forGetter(p -> Optional.ofNullable(p.dz)),
-            IParticleExp.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.size)),
-            IParticleExp.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.red)),
-            IParticleExp.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.green)),
-            IParticleExp.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.blue)),
-            IParticleExp.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.alpha)),
-            IParticleExp.CODEC.optionalFieldOf("roll").forGetter(p -> Optional.ofNullable(p.roll)),
-            IParticleExp.CODEC.optionalFieldOf("custom").forGetter(p -> Optional.ofNullable(p.custom)),
-            IParticleExp.CODEC.optionalFieldOf("remove_condition").forGetter(p -> Optional.ofNullable(p.removeIf))
+    public static final SchemaCodec<MultiExpressionParticleTicker> CODEC = SchemaRecord.create(MultiExpressionParticleTicker.class, i -> i.group(
+            i.optional("x", IParticleExp.CODEC, p -> Optional.ofNullable(p.x)),
+            i.optional("y", IParticleExp.CODEC, p -> Optional.ofNullable(p.y)),
+            i.optional("z", IParticleExp.CODEC, p -> Optional.ofNullable(p.z)),
+            i.optional("dx", IParticleExp.CODEC, p -> Optional.ofNullable(p.dx)),
+            i.optional("dy", IParticleExp.CODEC, p -> Optional.ofNullable(p.dy)),
+            i.optional("dz", IParticleExp.CODEC, p -> Optional.ofNullable(p.dz)),
+            i.optional("size", IParticleExp.CODEC, p -> Optional.ofNullable(p.size)),
+            i.optional("red", IParticleExp.CODEC, p -> Optional.ofNullable(p.red)),
+            i.optional("green", IParticleExp.CODEC, p -> Optional.ofNullable(p.green)),
+            i.optional("blue", IParticleExp.CODEC, p -> Optional.ofNullable(p.blue)),
+            i.optional("alpha", IParticleExp.CODEC, p -> Optional.ofNullable(p.alpha)),
+            i.optional("roll", IParticleExp.CODEC, p -> Optional.ofNullable(p.roll)),
+            i.optional("custom", IParticleExp.CODEC, p -> Optional.ofNullable(p.custom)),
+            i.optional("remove_condition", IParticleExp.CODEC, p -> Optional.ofNullable(p.removeIf))
     ).apply(i, MultiExpressionParticleTicker::new));
 
     private MultiExpressionParticleTicker(Optional<IParticleExp> x, Optional<IParticleExp> y,

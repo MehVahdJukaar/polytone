@@ -1,15 +1,15 @@
 package net.mehvahdjukaar.polytone.content.lightmap;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.LegacyHelper;
 import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.Targets;
-import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.client.Minecraft;
@@ -30,13 +30,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LightmapsManager extends JsonImgPartialReloader {
+public class LightmapsManager extends ContentManager<Lightmap> {
 
     public static final Identifier GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
     private static final Identifier DEFAULT_LIGHTMAP = Identifier.withDefaultNamespace("default");
-
-    private static final Codec<Targets> TARGET_ONLY_CODEC = Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY)
-            .codec();
 
     //lightmap id to lightmap
     private final MapRegistry<Lightmap> lightmaps = new MapRegistry<>("Lightmaps");
@@ -47,11 +44,13 @@ public class LightmapsManager extends JsonImgPartialReloader {
     private Lightmap currentLightmap = null;
 
     public LightmapsManager() {
-        super("lightmaps");
+        // wrap(CODEC), not DIRECT_CODEC: pack files may also be a reference to another
+        // lightmap (referenceOrDirect), and the editor must accept exactly what files can be.
+        super("Lightmap", () -> SchemaCodec.wrap(Lightmap.CODEC), "lightmaps");
     }
 
     @Override
-    protected Resources prepare(PreparableReloadListener.SharedState sharedState) {
+    protected AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
         ResourceManager resourceManager = sharedState.resourceManager();
         var jsons = this.getJsonsInDirectories(resourceManager);
 
@@ -65,11 +64,11 @@ public class LightmapsManager extends JsonImgPartialReloader {
 
         textures.putAll(this.getImagesInDirectories(resourceManager));
 
-        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures));
+        return new AssetsFiles(jsons, textures);
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var images = resources.textures();
         var jsons = new HashMap<>(resources.jsons());
         lastDimension = null;
@@ -104,7 +103,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
             Parsed<Lightmap> parsed;
             Lightmap lightmap;
             if (j != null) {
-                parsed = Parsed.parseAlways(Lightmap.CODEC, j, ops, location, "lightmap");
+                parsed = parseJson(j, location, ops);
             } else {
                 //default samplers
                 parsed = Parsed.success(new Lightmap(), location);

@@ -12,25 +12,17 @@ import org.jetbrains.annotations.Nullable;
 
 public interface IBlockExp {
 
-    Codec<IBlockExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.alternatives(
-                    CodecUtils.LENIENT_DOUBLE.xmap(
-                            aDouble -> (level, pos, state) -> aDouble,
-                            iBlockExp -> 0.0
-                    ),
-                    BlockContextExpression.CODEC,
-                    BlockExp.TYPE.codec())
-    );
+    Codec<IBlockExp> CONSTANT_CODEC = CodecUtils.LENIENT_DOUBLE.xmap(
+            aDouble -> (level, pos, state) -> aDouble,
+            iBlockExp -> 0.0);
+
+    // Wire codec + editor picker labels declared once each.
+    Codec<IBlockExp> CODEC = Codec.lazyInitialized(() -> net.mehvahdjukaar.codecui.SchemaCodecs.alternatives(
+            "constant", CONSTANT_CODEC,
+            "legacy expression", BlockContextExpression.CODEC,
+            "expression", BlockExp.TYPE.codec()));
 
     double evaluate(LevelReader level, Vec3 pos, @Nullable BlockState state);
-
-    /**
-     * Variant that binds {@code v}, an externally supplied value (e.g. an expression-driven model
-     * selector's result). Implementations that don't support it simply ignore the value.
-     */
-    default double evaluate(LevelReader level, Vec3 pos, @Nullable BlockState state, double v) {
-        return evaluate(level, pos, state);
-    }
 
     IBlockExp ZERO = (a, b, c) -> 0.0;
     IBlockExp ONE = (a, b, c) -> 1.0;

@@ -461,7 +461,6 @@ public class LegacyHelper {
             }
         }
 
-        textures.keySet().removeAll(filteredTextures.keySet());
         parsedModifiers.keySet().removeAll(fluid.keySet());
 
         Map<Identifier, Parsed<FluidPropertyModifier>> converted = new HashMap<>();
@@ -511,7 +510,6 @@ public class LegacyHelper {
                 filteredTextures.put(id, modifier);
             }
         }
-        textures.keySet().removeAll(filteredTextures.keySet());
         parsedModifiers.keySet().removeAll(filtered.keySet());
 
         addConvertedBlockProperties(filtered, filteredTextures);

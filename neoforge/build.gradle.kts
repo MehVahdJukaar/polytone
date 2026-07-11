@@ -9,13 +9,16 @@ neoforge {
 
 val exp4j_version: String by extra
 val mvel_version: String by extra
-val flatlaf_version: String by extra
+val codecui_version: String by extra
+val pack_editor_version: String by extra
 
 dependencies {
+    // Declarative codec schema API — runtime dep + bundled (JiJ) into the shipped jar.
+    implementation("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
+    jarJar("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
 
-
-    implementation("org.ow2.asm:asm:9.5")
-    implementation("org.ow2.asm:asm-commons:9.5")
+    // The editor UI is a SEPARATE mod — runtime/compile dep, NOT jarJar'd (not bundled).
+    implementation("net.mehvahdjukaar:pack_editor-neoforge:${pack_editor_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     //forgeRuntimeLibrary ( "net.objecthunter:exp4j:${exp4j_version}")

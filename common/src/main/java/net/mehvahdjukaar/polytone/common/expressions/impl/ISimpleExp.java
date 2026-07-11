@@ -1,18 +1,19 @@
 package net.mehvahdjukaar.polytone.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 
 public interface ISimpleExp {
 
-    Codec<ISimpleExp> CODEC = Codec.lazyInitialized(() -> (
-            CodecUtils.alternatives(
-                    CodecUtils.LENIENT_DOUBLE.xmap(
-                            aDouble -> () -> aDouble,
-                            iBlockExp -> 0.0
-                    ),
-                    SimpleExp.TYPE.codec()
-            )));
+    Codec<ISimpleExp> CONSTANT_CODEC = CodecUtils.LENIENT_DOUBLE.xmap(
+            aDouble -> () -> aDouble,
+            iBlockExp -> 0.0);
+
+    // Wire codec + editor picker labels declared once each.
+    Codec<ISimpleExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.alternatives(
+            "constant", CONSTANT_CODEC,
+            "expression", SimpleExp.TYPE.codec()));
 
     double evaluate();
 

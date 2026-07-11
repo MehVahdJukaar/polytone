@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.color.fog_env;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
@@ -15,9 +15,9 @@ public record FogEnvironmentMod(boolean isEnabled, Integer baseColor) {
             Codec.withAlternative(
                     Codec.BOOL.xmap(aBoolean -> new FogEnvironmentMod(aBoolean, null),
                             powderSnowEnvMod -> powderSnowEnvMod.isEnabled),
-            RecordCodecBuilder.create(i -> i.group(
-                    Codec.BOOL.fieldOf("enabled").forGetter(FogEnvironmentMod::isEnabled),
-                    ColorUtils.COLOR.fieldOf("base_color").forGetter(FogEnvironmentMod::baseColor)
+            SchemaRecord.create(FogEnvironmentMod.class, i -> i.group(
+                    i.field("enabled", Codec.BOOL, FogEnvironmentMod::isEnabled),
+                    i.field("base_color", ColorUtils.COLOR, FogEnvironmentMod::baseColor)
             ).apply(i, FogEnvironmentMod::new)));
 
 

@@ -3,8 +3,8 @@ package net.mehvahdjukaar.polytone.content.entity;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.player.LocalPlayer;
@@ -25,20 +25,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EntityModifiersManager extends JsonPartialReloader {
+public class EntityModifiersManager extends ContentManager<EntityModifier> {
 
     private final Map<EntityType<?>, EntityModifier> emittersPerEntity = new HashMap<>();
 
     private final Int2ObjectOpenHashMap<List<ParticleSpawnRecord>> spawnRecords = new Int2ObjectOpenHashMap<>();
 
     public EntityModifiersManager() {
-        super("entity_modifiers");
+        super("Entity modifier", () -> EntityModifier.CODEC, "entity_modifiers");
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        for (var j : Parsed.batchParseOnlyEnabled(jsons, EntityModifier.CODEC,
-                ops, "Entity Modifiers")) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        Map<Identifier, JsonElement> jsons = resources.jsons();
+        for (var j : parseEnabledJsons(jsons, ops)) {
             if (j != null) {
                 addModifier(j.getKey(), j.getValue());
             }

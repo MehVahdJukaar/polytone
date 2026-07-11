@@ -4,7 +4,8 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
@@ -21,7 +22,7 @@ import java.util.Map;
  * keyed by {@link ModelLayerLocation}. Those layers are merged into the game's {@code EntityModelSet} so they bake
  * through the vanilla pipeline, which makes them visible to model replacing mods such as EMF.
  */
-public class CustomModelsManager extends JsonPartialReloader {
+public class CustomModelsManager extends ContentManager<ModelDefinition> {
 
     /** Sub layer name used for every Polytone model layer. */
     public static final String LAYER = "main";
@@ -30,7 +31,7 @@ public class CustomModelsManager extends JsonPartialReloader {
     private final Map<ModelLayerLocation, LayerDefinition> layers = new HashMap<>();
 
     public CustomModelsManager() {
-        super("custom_models");
+        super("Custom models", "custom_models");
     }
 
     /** Reference-by-id codec, used by {@code CodecUtils.referenceOrDirect} alongside {@link ModelDefinition#CODEC}. */
@@ -53,14 +54,14 @@ public class CustomModelsManager extends JsonPartialReloader {
 
     // Runs on every reload (no level needed) so layers exist before/while EntityModelSet bakes.
     @Override
-    protected void applyNormal(Map<Identifier, JsonElement> obj) {
-        load(obj, JsonOps.INSTANCE);
+    protected void applyNormal(AssetsFiles resources) {
+        load(resources.jsons(), JsonOps.INSTANCE);
     }
 
     // applyWithLevel wipes everything via resetWithLevel first, so we must reload here too on world load.
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> obj, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        load(obj, ops);
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        load(resources.jsons(), ops);
     }
 
     @Override
