@@ -4,27 +4,30 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
-import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.utils.AssetsFiles;
+import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public class ColormapsManager extends JsonImgPartialReloader {
+public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
 
     // Builtin colormaps
     //TODO: delegate to grass so we have quark compat
@@ -61,28 +64,33 @@ public class ColormapsManager extends JsonImgPartialReloader {
     }
 
     public ColormapsManager() {
-        super("colormaps");
+        super("Colormap", () -> SchemaCodecs.labeled(Colormap.DIRECT_CODEC),
+                ColormapTextures.singleTexture((Colormap c) -> c, "", "default"),
+                "colormaps");
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected AssetsFiles prepare(ResourceManager resourceManager) {
+        return new AssetsFiles(this.getJsonsInDirectories(resourceManager),
+                this.getImagesInDirectories(resourceManager));
+    }
+
+    @Override
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         addBuiltinColormaps();
 
         var jsons = resources.jsons();
-        var textures = new HashMap<>(resources.textures());
-
-        Set<ResourceLocation> usedTextures = new HashSet<>();
+        var textures = new TrackedTextures(resources.textures());
 
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
 
-            Colormap colormap = Colormap.DIRECT_CODEC.decode(ops, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Colormap with json id " + id + "\n error: " + errorMsg))
-                    .getFirst();
+            Colormap colormap = decodeStrict(json, id, ops);
             colormap.inlined = false;
-            tryAcceptingTexture(textures, id, colormap, usedTextures, true);
-
+            // companion-driven association: the singleTexture spec declared in the constructor
+            // enumerates the bound slot, and fill() resolves it against the scanned textures.
+            ColormapTextures.fill(companions, textures, id, colormap, true);
 
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, colormap);
@@ -103,13 +111,11 @@ public class ColormapsManager extends JsonImgPartialReloader {
 
 
         // creates orphaned texture colormaps
-        textures.keySet().removeAll(usedTextures);
-
-        for (var t : textures.entrySet()) {
+        for (var t : textures.unused().entrySet()) {
             ResourceLocation id = t.getKey();
             Colormap defaultColormap = Colormap.createDefTriangle();
             defaultColormap.inlined = false;
-            tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
+            ColormapTextures.fillDirect(textures, id, t.getValue(), defaultColormap);
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, defaultColormap);
         }
