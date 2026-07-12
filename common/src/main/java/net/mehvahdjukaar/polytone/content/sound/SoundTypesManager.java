@@ -4,10 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.CsvUtils;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.Parsed;
-import net.mehvahdjukaar.polytone.utils.PartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resources> {
+public class SoundTypesManager extends ContentManager<PolytoneSoundType, SoundTypesManager.Resources> {
 
     private final MapRegistry<SoundEvent> customSoundEvents = new MapRegistry<>("Custom Sound Events");
 
@@ -28,7 +29,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     private final MapRegistry<SoundType> customSoundTypes = new MapRegistry<>("Custom Sound Types");
 
     public SoundTypesManager() {
-        super("custom_sound_types", "sound_types");
+        super("sound_type", () -> SchemaCodecs.labeled(PolytoneSoundType.DIRECT_CODEC), "custom_sound_types", "sound_types");
     }
 
     @Nullable

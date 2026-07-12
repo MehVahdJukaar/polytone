@@ -6,32 +6,35 @@ import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.companion.CompanionSpec;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
 /**
  * A {@link PartialReloader} that also carries the two things the pack editor needs: a
  * {@link SchemaCodec} describing the content type ({@link #contentCodec()}) and an optional
  * {@link CompanionSpec} describing its sidecar files ({@link #companions}). Managers that expose
- * these become editable in Nautilus Studio; the reload lifecycle is unchanged from
- * {@code PartialReloader}, so converting a manager is opt-in and incremental.
+ * these become editable in Nautilus Studio; the reload lifecycle is inherited unchanged from
+ * {@link PartialReloader}, so converting a manager is opt-in and near-zero-friction — swap the base
+ * class and pass a codec to {@code super}; the existing {@code prepare}/{@code parseWithLevel}/… stay
+ * exactly as they were.
  *
- * <p>1.21.1 port of the 1.21.11 {@code common.reloader.ContentManager}: that version replaced the
- * reload base outright and drove off the newer {@code PreparableReloadListener.SharedState}
- * lifecycle. Here we keep 1.21.1's {@link PartialReloader} lifecycle and layer the editor-facing
- * API on top, so existing {@code PartialReloader} managers keep working untouched.</p>
+ * <p>1.21.1 port of the 1.21.11 {@code common.reloader.ContentManager}. That version replaced the
+ * reload base outright and forced an {@code AssetsFiles} prepare bundle on every manager; here we
+ * keep 1.21.1's {@link PartialReloader} lifecycle and its per-manager prepare type {@code T}, and
+ * only layer the editor-facing API on top. Existing {@code PartialReloader} managers are untouched.</p>
  *
- * @param <O> the decoded content type this manager's files parse into
+ * @param <O> the decoded content type this manager's files parse into (what the editor edits)
+ * @param <T> the prepare bundle type, same as {@link PartialReloader}'s (often {@link AssetsFiles})
  */
-public abstract class ContentManager<O> extends PartialReloader<AssetsFiles> {
+public abstract class ContentManager<O, T> extends PartialReloader<T> {
+
+    /** Every ContentManager built this run, in construction order; the editor registers the codec-backed ones. */
+    public static final List<ContentManager<?, ?>> REGISTRY = new CopyOnWriteArrayList<>();
 
     private final Supplier<@Nullable ? extends SchemaCodec<O>> contentCodec;
     public final String name;
@@ -51,6 +54,7 @@ public abstract class ContentManager<O> extends PartialReloader<AssetsFiles> {
         this.name = name;
         this.contentCodec = codec == null ? () -> null : Suppliers.memoize(codec::get);
         this.companions = companions;
+        REGISTRY.add(this);
     }
 
     /** The schema-aware file codec for this content type, or null when this manager isn't editable. */
@@ -62,7 +66,7 @@ public abstract class ContentManager<O> extends PartialReloader<AssetsFiles> {
         return List.of(names);
     }
 
-    // -------------------- parse helpers (condition-aware, via Parsed) --------------------
+    // -------------------- parse helpers (condition-aware, via the existing Parsed) --------------------
 
     /** Batch-decode jsons, yielding only entries whose conditions are met. */
     protected final Iterable<Map.Entry<ResourceLocation, O>> parseEnabledJsons(
@@ -98,25 +102,5 @@ public abstract class ContentManager<O> extends PartialReloader<AssetsFiles> {
     @Override
     public String toString() {
         return org.apache.commons.lang3.StringUtils.capitalize(name.replace("_", " ")) + " Reloader";
-    }
-
-    // -------------------- reload lifecycle (defaults; subclasses override selectively) --------------------
-
-    /** Default: gather every {@code .json} and sibling {@code .png} in this manager's folders. */
-    @Override
-    protected AssetsFiles prepare(ResourceManager resourceManager) {
-        return new AssetsFiles(getJsonsInDirectories(resourceManager), getImagesInDirectories(resourceManager));
-    }
-
-    @Override
-    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
-    }
-
-    @Override
-    protected void applyWithLevel(RegistryAccess access, boolean isLogIn) {
-    }
-
-    @Override
-    protected void resetWithLevel(boolean logOff) {
     }
 }
