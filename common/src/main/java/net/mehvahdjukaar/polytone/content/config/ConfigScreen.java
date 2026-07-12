@@ -3,6 +3,8 @@ package net.mehvahdjukaar.polytone.content.config;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.gui.ChatBubbleWidget;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
@@ -14,6 +16,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.OptionsList;
 import net.minecraft.client.gui.components.ResettableOptionWidget;
+import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -56,6 +59,9 @@ public class ConfigScreen extends OptionsSubScreen {
     private final Set<String> collapsedNamespaces = new LinkedHashSet<>();
     private final Map<String, Runnable> presetRederivers = new LinkedHashMap<>();
     private boolean suppressRederive;
+
+    private @Nullable SpriteIconButton heartButton;
+    private @Nullable ChatBubbleWidget supportBubble;
 
     public ConfigScreen(Screen lastScreen, Collection<OptionHolder<?>> options, Runnable saveFunc) {
         super(lastScreen, Minecraft.getInstance().options, TITLE);
@@ -121,6 +127,18 @@ public class ConfigScreen extends OptionsSubScreen {
                         b -> this.minecraft.setScreen(this.lastScreen))
                 .width(btnWidth).build());
 
+        // support links
+        SpriteIconButton heart = SpriteIconButton.builder(
+                        Component.translatable("screen.polytone.support.title"),
+                        b -> this.minecraft.setScreen(new SupportScreen(this)),
+                        true)
+                .size(20, 20)
+                .sprite(Polytone.res("heart"), 16, 16)
+                .build();
+        heart.setTooltip(Tooltip.create(Component.translatable("screen.polytone.support.tooltip")));
+        this.heartButton = heart;
+        footer.addChild(heart);
+
         layout.visitWidgets(this::addRenderableWidget);
         repositionElements();
     }
@@ -140,6 +158,21 @@ public class ConfigScreen extends OptionsSubScreen {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         renderCustomTooltip(guiGraphics, mouseX, mouseY);
+        renderSupportBubble(guiGraphics, mouseX, mouseY, partialTick);
+    }
+
+    private void renderSupportBubble(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        if (this.heartButton == null || !this.heartButton.visible) return;
+
+        Component message = Polytone.CONFIGS.bubbleManager.getHeartButtonMessage();
+        if (message == null) return;
+
+        if (this.supportBubble == null) {
+            this.supportBubble = new ChatBubbleWidget(0, 0, message).setAnimated(true);
+        } else if (!message.equals(this.supportBubble.getMessage())) {
+            this.supportBubble.setText(message);
+        }
+        this.supportBubble.renderPointingAt(guiGraphics, this.heartButton, this.width, mouseX, mouseY, partialTick);
     }
 
     /**

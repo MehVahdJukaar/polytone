@@ -42,6 +42,8 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", "particles", true);
     public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", null, true);
 
+    public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
+
     // a null section lists the entry ungrouped, without a header
     private static @NonNull OptionHolder<Boolean> builtinConfig(String id, @Nullable String section, boolean def) {
         return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), Map.of(), 1,
@@ -97,7 +99,15 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         return needsPackReload.getAndSet(false);
     }
 
+    public boolean hasPackConfigs() {
+        for (var option : configs.getValues()) {
+            if (!option.fileId.getNamespace().equals(Polytone.MOD_ID)) return true;
+        }
+        return false;
+    }
+
     public Screen createScreenForMainMenu(Screen parent) {
+        bubbleManager.onConfigOpened(hasPackConfigs());
         return new ConfigScreen(parent, configs.getValues(), () -> {
             boolean anyChanged = false;
 
@@ -114,6 +124,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     public Screen createScreenForPack(PackSelectionScreen parent) {
         Set<OptionHolder<?>> configs = this.configs.getValues();
+        bubbleManager.onConfigOpened(hasPackConfigs());
 
         return new ConfigScreen(parent, configs, () -> {
             boolean anyChanged = false;
