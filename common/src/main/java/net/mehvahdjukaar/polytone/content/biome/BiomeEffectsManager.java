@@ -3,8 +3,10 @@ package net.mehvahdjukaar.polytone.content.biome;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.core.Holder;
@@ -25,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BiomeEffectsManager extends JsonPartialReloader {
+public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier, Map<ResourceLocation, JsonElement>> {
 
     private final Map<ResourceLocation, BiomeSpecialEffects> vanillaEffects = new HashMap<>();
 
@@ -33,7 +35,12 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     private boolean needsDynamicApplication = true;
 
     public BiomeEffectsManager() {
-        super("biome_modifiers", "biome_effects");
+        super("biome_modifier", () -> SchemaCodecs.labeled(BiomeEffectModifier.CODEC), "biome_modifiers", "biome_effects");
+    }
+
+    @Override
+    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
+        return this.getJsonsInDirectories(resourceManager);
     }
 
     private final Map<Biome, BiomeEffectModifier> fogParametersModifiers = new HashMap<>();

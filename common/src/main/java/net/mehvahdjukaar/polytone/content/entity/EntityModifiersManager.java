@@ -1,8 +1,10 @@
 package net.mehvahdjukaar.polytone.content.entity;
 
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -13,12 +15,17 @@ import net.minecraft.world.entity.EntityType;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EntityModifiersManager extends JsonPartialReloader {
+public class EntityModifiersManager extends ContentManager<EntityModifier, Map<ResourceLocation, JsonElement>> {
 
     private final Map<EntityType<?>, EntityModifier> emittersPerEntity = new HashMap<>();
 
     public EntityModifiersManager() {
-        super("entity_modifiers");
+        super("entity_modifier", () -> SchemaCodecs.labeled(EntityModifier.CODEC), "entity_modifiers");
+    }
+
+    @Override
+    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
+        return this.getJsonsInDirectories(resourceManager);
     }
 
     @Override

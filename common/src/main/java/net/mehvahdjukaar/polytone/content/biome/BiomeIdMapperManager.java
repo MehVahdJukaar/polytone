@@ -3,8 +3,10 @@ package net.mehvahdjukaar.polytone.content.biome;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -12,12 +14,17 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.Map;
 
 //
-public class BiomeIdMapperManager extends JsonPartialReloader {
+public class BiomeIdMapperManager extends ContentManager<BiomeIdMapper, Map<ResourceLocation, JsonElement>> {
 
     private final MapRegistry<BiomeIdMapper> biomeIdMappers = new MapRegistry<>("Biome ID Mappers");
 
     public BiomeIdMapperManager() {
-        super("biome_id_mappers");
+        super("biome_id_mapper", () -> SchemaCodecs.labeled(BiomeIdMapper.CODEC), "biome_id_mappers");
+    }
+
+    @Override
+    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
+        return this.getJsonsInDirectories(resourceManager);
     }
 
     @Override

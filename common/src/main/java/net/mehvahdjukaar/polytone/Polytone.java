@@ -110,6 +110,11 @@ public class Polytone {
                 CREATIVE_TABS_MODIFIERS, POST_SHADERS, CONFIGS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
+        // Register editable content types with the Nautilus Studio pack editor, if that mod is present.
+        // Guarded so its classes never load when absent.
+        if (PlatStuff.isModLoaded("nautilus_studio")) {
+            net.mehvahdjukaar.polytone.compat.PolytoneEditor.init();
+        }
         isDevEnv = devEnv;
         isForge = forge;
         Polytone.iris = iris;

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.config;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.gui.PointingChatBubbleOverlay;
 import net.minecraft.client.Minecraft;
@@ -78,14 +79,26 @@ public class ConfigScreen extends OptionsSubScreen {
     protected void addFooter() {
         int buttonW = 20;
         int spacing = 8;
-        // ExtraWidthHorizontalLayout under-reports its width by the heart button so that adding it
-        // appends to the right without shifting the centered Reset/Done buttons.
+        // Nautilus Studio pack-editor button, only when that mod is installed.
+        boolean editorAvailable = PlatStuff.isModLoaded("nautilus_studio");
+        int extraButtons = 1 + (editorAvailable ? 1 : 0); // heart (+ editor)
+        // ExtraWidthHorizontalLayout under-reports its width by the trailing icon buttons so that
+        // adding them appends to the right without shifting the centered Reset/Done buttons.
         LinearLayout linearLayout = this.layout.addToFooter(
-                new ExtraWidthHorizontalLayout(-buttonW - spacing, 0).spacing(spacing));
+                new ExtraWidthHorizontalLayout(-extraButtons * (buttonW + spacing), 0).spacing(spacing));
         linearLayout.addChild(Button.builder(Component.translatable("screen.polytone.configs.reset"),
                 b -> resetValues()).build());
         linearLayout.addChild(Button.builder(CommonComponents.GUI_DONE,
                 b -> this.minecraft.setScreen(this.lastScreen)).build());
+        if (editorAvailable) {
+            linearLayout.addChild(SpriteIconButton.builder(
+                            Component.translatable("screen.polytone.editor.open"),
+                            b -> openEditor(),
+                            true)
+                    .size(buttonW, 20)
+                    .sprite(Polytone.res("codec_editor"), 16, 16)
+                    .build());
+        }
         SpriteIconButton heart = SpriteIconButton.builder(
                         Component.translatable("screen.polytone.support.title"),
                         b -> this.minecraft.setScreen(new SupportScreen(this)),
@@ -95,6 +108,23 @@ public class ConfigScreen extends OptionsSubScreen {
                 .build();
         this.heartButton = heart;
         linearLayout.addChild(heart);
+    }
+
+    /** Boot the Swing editor off-thread (heavy schema/window build); focus it if already open. */
+    private void openEditor() {
+        if (net.mehvahdjukaar.polytone.compat.PolytoneEditor.isOpen()) {
+            net.mehvahdjukaar.polytone.compat.PolytoneEditor.open();
+            return;
+        }
+        Thread t = new Thread(() -> {
+            try {
+                net.mehvahdjukaar.polytone.compat.PolytoneEditor.open();
+            } catch (Throwable e) {
+                Polytone.LOGGER.error("Failed to open Polytone codec editor", e);
+            }
+        }, "Polytone-Editor-Boot");
+        t.setDaemon(true);
+        t.start();
     }
 
     @Override

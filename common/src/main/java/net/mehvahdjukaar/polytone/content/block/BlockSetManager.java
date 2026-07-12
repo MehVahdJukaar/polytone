@@ -3,8 +3,10 @@ package net.mehvahdjukaar.polytone.content.block;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -12,14 +14,19 @@ import net.minecraft.world.level.block.state.properties.BlockSetType;
 
 import java.util.Map;
 
-public class BlockSetManager extends JsonPartialReloader {
+public class BlockSetManager extends ContentManager<BlockSetTypeProvider, Map<ResourceLocation, JsonElement>> {
 
     // we keep our own registry
     private final MapRegistry<BlockSetTypeProvider> blockSetTypes = new MapRegistry<>("Custom Block Set Types");
     private int counter = 0;
 
     public BlockSetManager() {
-        super("custom_block_sets", "block_sets");
+        super("block_set", () -> SchemaCodecs.labeled(BlockSetTypeProvider.CODEC), "custom_block_sets", "block_sets");
+    }
+
+    @Override
+    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
+        return this.getJsonsInDirectories(resourceManager);
     }
 
     public String getNextName() {
