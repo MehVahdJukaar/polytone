@@ -9,6 +9,8 @@ fabric {
 
 val exp4j_version: String by extra
 val mvel_version: String by extra
+val codecui_version: String by extra
+val nautilus_studio_version: String by extra
 
 dependencies {
 
@@ -16,6 +18,12 @@ dependencies {
     implementation("net.objecthunter:exp4j:${exp4j_version}")
     include("org.mvel:mvel2:${mvel_version}")
     implementation("org.mvel:mvel2:${mvel_version}")
+
+    // Declarative codec->schema engine — bundled (JiJ) into polytone
+    modImplementation("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
+    include("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
+    // Nautilus Studio pack editor UI — separate mod, NOT bundled
+    modImplementation("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
 
     // Mirror of common deps (the new setup needs every modCompileOnly/modImplementation in common to also live here)
     modCompileOnly("curse.maven:irisshaders-455508:5726475")

@@ -8,10 +8,17 @@ common {
 
 val exp4j_version: String by extra
 val mvel_version: String by extra
+val codecui_version: String by extra
+val nautilus_studio_version: String by extra
 
 dependencies {
     implementation("net.objecthunter:exp4j:${exp4j_version}")
     implementation("org.mvel:mvel2:${mvel_version}")
+
+    // Declarative codec->schema engine (compile against the common artifact; bundled per-loader below)
+    compileOnly("net.mehvahdjukaar:codecui-common:${codecui_version}")
+    // Nautilus Studio pack editor UI (separate mod; compileOnly here, runtime dep per-loader)
+    compileOnly("net.mehvahdjukaar:nautilus_studio-common:${nautilus_studio_version}")
 
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
     // sodium 0.8.12 neoforge: the distributed jar just JiJs the actual mod jar, extracted into mods/ (flatDir)

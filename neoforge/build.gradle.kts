@@ -10,6 +10,8 @@ neoforge {
 
 val exp4j_version: String by extra
 val mvel_version: String by extra
+val codecui_version: String by extra
+val nautilus_studio_version: String by extra
 
 val localRuntime by configurations.dependencyScope("localRuntime")
 configurations.runtimeClasspath.configure { extendsFrom(localRuntime) }
@@ -19,6 +21,12 @@ dependencies {
 
     implementation("org.ow2.asm:asm:9.5")
     implementation("org.ow2.asm:asm-commons:9.5")
+
+    // Declarative codec->schema engine — bundled (JiJ) into polytone
+    implementation("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
+    jarJar("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
+    // Nautilus Studio pack editor UI — separate mod, NOT bundled
+    implementation("net.mehvahdjukaar:nautilus_studio-neoforge:${nautilus_studio_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     implementation("net.objecthunter:exp4j:${exp4j_version}")
