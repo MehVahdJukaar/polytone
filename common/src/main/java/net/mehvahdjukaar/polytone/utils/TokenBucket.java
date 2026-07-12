@@ -36,13 +36,13 @@ public class TokenBucket {
     }
 
     // Called once per game tick
-    public void onTick() {
+    public synchronized void onTick() {
         if (tokens >= capacity) return;
         tokens = Math.min(capacity, tokens + refillPerTick);
     }
 
-    // Try to consume 1 token
-    public boolean tryAcquire() {
+    // Try to consume 1 token. Synchronized: async custom particles emit off-thread.
+    public synchronized boolean tryAcquire() {
         if (tokens > 0) {
             tokens--;
             return true;

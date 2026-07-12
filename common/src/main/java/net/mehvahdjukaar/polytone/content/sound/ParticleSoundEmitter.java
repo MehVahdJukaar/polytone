@@ -4,7 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.content.particle.ParticleContextExpression;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.IParticleTickable;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
@@ -12,6 +14,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.phys.Vec3;
@@ -51,11 +54,16 @@ public record ParticleSoundEmitter(
 
     @Override
     public void tick(Particle particle, Level level) {
+        // per-particle random: this runs on a worker thread when async particles are on, and the
+        // shared level.random crashes when accessed from multiple threads
+        RandomSource rand = particle instanceof CustomParticleInstance cpi ? cpi.getRandom() : level.random;
         double spawnChance = chance.getValue(particle, level);
-        if (level.random.nextFloat() < spawnChance) {
+        if (rand.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
-                var biome = level.getBiome(BlockPos.containing(particle.x, particle.y, particle.z));
-                if (!biomes.get().contains(biome)) return;
+                BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
+                // off-thread (async particles): skip unloaded chunks, else the biome fallback misfires
+                if (!level.hasChunkAt(pos)) return;
+                if (!biomes.get().contains(level.getBiome(pos))) return;
             }
 
             Vec3 vec = new Vec3(particle.x, particle.y, particle.z).add(
@@ -66,8 +74,9 @@ public record ParticleSoundEmitter(
             float v = (float) volume.getValue(particle, level);
             float p = (float) pitch.getValue(particle, level);
 
-            level.playLocalSound( vec.x, vec.y, vec.z,
-                    sound, category, v, p, false);
+            // SoundEngine is not thread-safe; play on the main thread when the batch joins
+            PolytoneAsyncParticles.deferToMain(() -> level.playLocalSound(vec.x, vec.y, vec.z,
+                    sound, category, v, p, false));
         }
     }
 
