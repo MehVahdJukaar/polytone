@@ -6,6 +6,7 @@ import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.polytone.common.expressions.impl.SimpleExp;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +27,8 @@ public record GuiModifier(Type type, String target,
                           List<SimpleSprite> sprites,
                           List<SimpleText> textList,
                           List<WidgetModifier> widgetModifiers,
-                          Map<String, SpecialOffset> specialOffsets) {
+                          Map<String, SpecialOffset> specialOffsets,
+                          @Nullable SimpleExp condition) {
 
     public GuiModifier(Type type, String target, List<SlotModifier> slotModifiers,
                        int titleX, int titleY, int labelX, int labelY,
@@ -34,10 +36,12 @@ public record GuiModifier(Type type, String target,
                        Optional<Integer> titleColor, Optional<Integer> labelColor,
                        List<SimpleSprite> sprites, List<SimpleText> textList,
                        List<WidgetModifier> widgetModifiers,
-                       Map<String, SpecialOffset> specialOffsets) {
+                       Map<String, SpecialOffset> specialOffsets,
+                       Optional<SimpleExp> condition) {
         this(type, target, slotModifiers, titleX, titleY, labelX, labelY,
                 xOff, yOff, wOff, hOff,
-                titleColor.orElse(null), labelColor.orElse(null), sprites, textList, widgetModifiers, specialOffsets);
+                titleColor.orElse(null), labelColor.orElse(null), sprites, textList, widgetModifiers, specialOffsets,
+                condition.orElse(null));
     }
 
 
@@ -71,7 +75,8 @@ public record GuiModifier(Type type, String target,
                     i.optional("sprites", SimpleSprite.CODEC.listOf(), List.of(), GuiModifier::sprites),
                     i.optional("texts", SimpleText.CODEC.listOf(), List.of(), GuiModifier::textList),
                     i.optional("widget_modifiers", WidgetModifier.CODEC.listOf(), List.of(), GuiModifier::widgetModifiers),
-                    i.optional("special_offsets", Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC), Map.of(), GuiModifier::specialOffsets)
+                    i.optional("special_offsets", Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC), Map.of(), GuiModifier::specialOffsets),
+                    i.optional("condition", SimpleExp.TYPE.codec(), g -> Optional.ofNullable(g.condition))
             ).apply(i, GuiModifier::new));
 
     // decode-side validation on top of the record codec; SchemaCodec.lazy keeps the schema view

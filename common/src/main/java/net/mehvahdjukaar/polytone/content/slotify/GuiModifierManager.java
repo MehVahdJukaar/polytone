@@ -28,10 +28,11 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
     private final Map<Class<?>, Set<SlotModifier>> slotsByClass = new IdentityHashMap<>();
     private final Map<String, Set<SlotModifier>> slotsByTitle = new HashMap<>();
 
-    //screen modifiers
-    public final Map<MenuType<?>, ScreenModifier> byMenuId = new IdentityHashMap<>();
-    public final Map<Class<?>, ScreenModifier> byClass = new IdentityHashMap<>();
-    public final Map<String, ScreenModifier> byTitle = new HashMap<>();
+    //screen modifiers. Lists (not merged at parse) so per-variant conditions survive; they are
+    //filtered by condition and merged together at lookup time in resolve(...)
+    public final Map<MenuType<?>, List<ScreenModifier>> byMenuId = new IdentityHashMap<>();
+    public final Map<Class<?>, List<ScreenModifier>> byClass = new IdentityHashMap<>();
+    public final Map<String, List<ScreenModifier>> byTitle = new HashMap<>();
 
 
     private static final Identifier INVENTORY = Identifier.parse("inventory");
@@ -70,7 +71,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
                     } else if (target.equals("ItemPickerMenu")) {
                         cl = CreativeModeInventoryScreen.ItemPickerMenu.class;
                     } else cl = Class.forName(target);
-                    byClass.merge(cl, ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
+                    byClass.computeIfAbsent(cl, k -> new ArrayList<>()).add(ScreenModifier.fromGuiMod(mod));
 
                     if (!mod.slotModifiers().isEmpty()) {
                         Set<SlotModifier> map = slotsByClass.computeIfAbsent(cl,
@@ -89,7 +90,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
                 Optional<MenuType<?>> menu = BuiltInRegistries.MENU.getOptional(menuId);
 
                 if (menu.isPresent() || isInventory) {
-                    byMenuId.merge(menu.orElse(null), ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
+                    byMenuId.computeIfAbsent(menu.orElse(null), k -> new ArrayList<>()).add(ScreenModifier.fromGuiMod(mod));
 
                     if (!mod.slotModifiers().isEmpty()) {
                         Set<SlotModifier> map = slotsByMenuId.computeIfAbsent(menu.orElse(null),
@@ -100,7 +101,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
             } else {
                 //title target
                 String title = mod.target();
-                byTitle.merge(title, ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
+                byTitle.computeIfAbsent(title, k -> new ArrayList<>()).add(ScreenModifier.fromGuiMod(mod));
 
                 if (!mod.slotModifiers().isEmpty()) {
                     Set<SlotModifier> map = slotsByTitle.computeIfAbsent(title,
@@ -120,16 +121,29 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
         }
     }
 
+    /** Keeps only the candidates whose condition currently passes, then merges them (file order). */
+    @Nullable
+    private static ScreenModifier resolve(@Nullable List<ScreenModifier> candidates) {
+        if (candidates == null) return null;
+        ScreenModifier acc = null;
+        for (ScreenModifier m : candidates) {
+            if (m.passesCondition()) {
+                acc = acc == null ? m : acc.merge(m);
+            }
+        }
+        return acc;
+    }
+
     private ScreenModifier getScreenModifier(AbstractContainerScreen<?> screen) {
         ScreenModifier m = null;
         AbstractContainerMenu menu = screen.getMenu();
         if (screen.getClass() == InventoryScreen.class) {
-            m = byClass.get(InventoryMenu.class);
+            m = resolve(byClass.get(InventoryMenu.class));
         } else if (screen.getClass() == CreativeModeInventoryScreen.class) {
-            m = byClass.get(CreativeModeInventoryScreen.ItemPickerMenu.class);
+            m = resolve(byClass.get(CreativeModeInventoryScreen.ItemPickerMenu.class));
         }
         if (menu != null) {
-            m = byClass.get(menu.getClass());
+            m = resolve(byClass.get(menu.getClass()));
         }
         if (m == null) {
             MenuType<?> type;
@@ -139,14 +153,14 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
                 //null for inventory?
                 type = null;
             }
-            m = byMenuId.get(type);
+            m = resolve(byMenuId.get(type));
         }
         return m;
     }
 
     @Nullable
     public ScreenModifier getGuiModifier(Screen screen) {
-        ScreenModifier m = byClass.get(screen.getClass());
+        ScreenModifier m = resolve(byClass.get(screen.getClass()));
         if (m == null && screen instanceof AbstractContainerScreen<?> as) {
             m = getScreenModifier(as);
         }
@@ -157,10 +171,10 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
             return null;
         }
         if (m == null) {
-            m = byTitle.get(c.getString());
+            m = resolve(byTitle.get(c.getString()));
         }
         if (m == null && c instanceof MutableComponent mc && mc.getContents() instanceof TranslatableContents tc) {
-            m = byTitle.get(tc.getKey());
+            m = resolve(byTitle.get(tc.getKey()));
         }
         return m;
     }

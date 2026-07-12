@@ -61,6 +61,7 @@ public class ConfigScreen extends OptionsSubScreen {
     private boolean suppressRederive;
 
     private @Nullable SpriteIconButton heartButton;
+    private @Nullable EditorButton editorButton;
     private @Nullable ChatBubbleWidget supportBubble;
 
     public ConfigScreen(Screen lastScreen, Collection<OptionHolder<?>> options, Runnable saveFunc) {
@@ -102,10 +103,11 @@ public class ConfigScreen extends OptionsSubScreen {
         this.layout.addTitleHeader(TITLE, this.font);
         this.layout.addToContents(this.list);
 
-        // Footer: Editor / Reset / Undo / Done
+        // Footer: centered Reset / Undo / Done row. The editor and heart icon buttons are NOT part of
+        // this row; they are free widgets pinned to the screen corners in repositionElements().
         LinearLayout footer = layout.addToFooter(LinearLayout.horizontal().spacing(8));
         int btnWidth = Mth.positiveCeilDiv(150 * 2 - 8, 3);
-        // Codec editor opener — sits left of Reset. Disabled (greyed) unless a world is loaded,
+        // Codec editor opener, pinned to the left screen edge. Disabled (greyed) unless a world is loaded,
         // and shows an animated spinner while the editor window boots (see EditorButton).
         boolean inGame = Minecraft.getInstance().level != null;
         // The editor lives in the separate PackEditor mod; grey out (with an install hint) when absent.
@@ -116,7 +118,8 @@ public class ConfigScreen extends OptionsSubScreen {
                         : "screen.polytone.configs.codec_editor.disabled");
         EditorButton editorButton = new EditorButton(20, 12, 12, packEditor, editorTooltip);
         editorButton.active = inGame && packEditor;
-        footer.addChild(editorButton);
+        this.editorButton = editorButton;
+
         footer.addChild(Button.builder(Component.translatable("screen.polytone.configs.reset"),
                         b -> resetAndRebuild())
                 .width(btnWidth).build());
@@ -127,7 +130,7 @@ public class ConfigScreen extends OptionsSubScreen {
                         b -> this.minecraft.setScreen(this.lastScreen))
                 .width(btnWidth).build());
 
-        // support links
+        // Support/heart button, pinned to the right screen edge.
         SpriteIconButton heart = SpriteIconButton.builder(
                         Component.translatable("screen.polytone.support.title"),
                         b -> this.minecraft.setScreen(new SupportScreen(this)),
@@ -137,9 +140,11 @@ public class ConfigScreen extends OptionsSubScreen {
                 .build();
         heart.setTooltip(Tooltip.create(Component.translatable("screen.polytone.support.tooltip")));
         this.heartButton = heart;
-        footer.addChild(heart);
 
         layout.visitWidgets(this::addRenderableWidget);
+        // Corner icon buttons: free widgets (added outside the layout) positioned in repositionElements().
+        this.addRenderableWidget(editorButton);
+        this.addRenderableWidget(heart);
         repositionElements();
     }
 
@@ -148,6 +153,16 @@ public class ConfigScreen extends OptionsSubScreen {
         this.layout.arrangeElements();
         if (this.list != null) {
             this.list.updateSize(this.width, this.layout);
+        }
+        // Pin the two icon buttons to opposite corners of the footer row so they track screen resizes.
+        int margin = 8;
+        int footerH = this.layout.getFooterHeight();
+        int y = this.height - footerH + (footerH - 20) / 2;
+        if (this.editorButton != null) {
+            this.editorButton.setPosition(margin, y);
+        }
+        if (this.heartButton != null) {
+            this.heartButton.setPosition(this.width - margin - this.heartButton.getWidth(), y);
         }
     }
 

@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone;
 
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.PolytoneInit;
 import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 
@@ -140,6 +141,8 @@ public class Polytone {
                 res("polytone_stuff"));
         isDevEnv = devEnv;
         isForge = forge;
+        // Marks Polytone as up so bootstrap-early mixins can safely start consulting it (see PolytoneInit).
+        PolytoneInit.INITIALIZED = true;
         //ItemModelOverrideList.testTrie();
         //GenericDirectorySpriteSource.init();
 

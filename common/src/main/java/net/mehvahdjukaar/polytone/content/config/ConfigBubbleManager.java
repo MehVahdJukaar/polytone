@@ -28,8 +28,9 @@ public class ConfigBubbleManager {
     private static final String KEY_SUPPORT_SHOWN = "support_bubble_shown";
     private static final String KEY_SUPPORT_DISMISSED = "support_dismissed";
 
-    private final File stateFile;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    private File stateFile;
 
     private boolean configClicked = false;
     private int openCount = 0;
@@ -37,8 +38,15 @@ public class ConfigBubbleManager {
     private boolean supportDismissed = false;
 
     public ConfigBubbleManager() {
-        this.stateFile = Minecraft.getInstance().gameDirectory.toPath().resolve("polytone_popup.json").toFile();
-        load();
+    }
+
+    //ugly lazy init.
+    private File stateFile() {
+        if (stateFile == null) {
+            stateFile = Minecraft.getInstance().gameDirectory.toPath().resolve("polytone_popup.json").toFile();
+            load();
+        }
+        return stateFile;
     }
 
     private void load() {
@@ -61,7 +69,7 @@ public class ConfigBubbleManager {
             jo.addProperty(KEY_OPEN_COUNT, openCount);
             jo.addProperty(KEY_SUPPORT_SHOWN, supportShown);
             jo.addProperty(KEY_SUPPORT_DISMISSED, supportDismissed);
-            FilesUtil.writeTextAtomically(stateFile.toPath(), writer ->
+            FilesUtil.writeTextAtomically(stateFile().toPath(), writer ->
                     GsonHelper.writeValue(gson.newJsonWriter(writer), jo, null));
         } catch (Exception e) {
             Polytone.LOGGER.error("Error saving polytone popup state", e);
@@ -69,6 +77,7 @@ public class ConfigBubbleManager {
     }
 
     public void onConfigButtonClicked() {
+        stateFile();
         if (!configClicked) {
             configClicked = true;
             save();
@@ -76,6 +85,7 @@ public class ConfigBubbleManager {
     }
 
     public void onConfigOpened(boolean hasPackConfigs) {
+        stateFile();
         if (hasPackConfigs) {
             openCount++;
             save();
@@ -83,6 +93,7 @@ public class ConfigBubbleManager {
     }
 
     public void onSupportPageOpened() {
+        stateFile();
         if (supportShown && !supportDismissed) {
             supportDismissed = true;
             save();
@@ -91,6 +102,7 @@ public class ConfigBubbleManager {
 
     @Nullable
     public Component getConfigButtonMessage(boolean hasPackConfigs) {
+        stateFile();
         if (shouldShowSupport()) return supportMessage();
         if (!configClicked && hasPackConfigs) {
             return Component.translatable("screen.polytone.config_button.bubble");
@@ -100,6 +112,7 @@ public class ConfigBubbleManager {
 
     @Nullable
     public Component getHeartButtonMessage() {
+        stateFile();
         return shouldShowSupport() ? supportMessage() : null;
     }
 

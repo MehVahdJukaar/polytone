@@ -1,7 +1,9 @@
+
 build/
 *.ipr
 run/
 *.iws
+
 out/
 *.iml
 .gradle/
@@ -34,3 +36,9 @@ classes/
 /common/mods/sodium-neoforge-mod-0.8.12.jar
 /neoforge/mods/sodium-neoforge-mod-0.8.12.jar
 /resourcepacks/builds/sunbathing-v1.5.zip
+/resourcepacks/config_test/assets/config_test/polytone/config_entries/a_enabled.json
+/resourcepacks/config_test/assets/config_test/polytone/config_entries/b_quality.json
+/resourcepacks/config_test/assets/config_test/polytone/config_entries/c_mode.json
+/resourcepacks/config_test/assets/config_test/polytone/config_entries/d_scale.json
+/resourcepacks/config_test/assets/config_test/lang/en_us.json
+/resourcepacks/config_test/pack.mcmeta
