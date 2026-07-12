@@ -213,7 +213,7 @@ public record BlockPropertyModifier(
     }
 
 
-    public static final Decoder<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
+    public static final Codec<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
                     //normal opt so it can fail when using modded sounds

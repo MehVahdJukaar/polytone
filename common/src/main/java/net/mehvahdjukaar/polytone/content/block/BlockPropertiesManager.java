@@ -4,9 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.colormap.ColormapTextures;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
+import net.mehvahdjukaar.polytone.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
@@ -30,7 +32,7 @@ import java.util.*;
 
 import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
-public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
+public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier, AssetsFiles> {
 
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();
 
@@ -44,8 +46,14 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     private ColorResolver vanillaGrassColorResolver = null;
     private ColorResolver vanillaFoliageColorResolver = null;
 
+    /** Optifine/Colormatic legacy .properties, scanned in prepare() and consumed in parseWithLevel(). */
+    private Map<ResourceLocation, Properties> ofProperties = Map.of();
+
     public BlockPropertiesManager() {
-        super("block_modifiers", "block_properties");
+        super("Block modifier", () -> SchemaCodecs.labeled(BlockPropertyModifier.CODEC),
+                ColormapTextures.groupedTexture(
+                        (BlockPropertyModifier m) -> m.getColormap()),
+                "block_modifiers", "block_properties");
     }
 
 
@@ -72,13 +80,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     }
 
 
-    public record Resources(Map<ResourceLocation, JsonElement> jsons,
-                            Map<ResourceLocation, ArrayImage> textures,
-                            Map<ResourceLocation, Properties> ofProperties) {
-    }
-
     @Override
-    protected Resources prepare(ResourceManager resourceManager) {
+    protected AssetsFiles prepare(ResourceManager resourceManager) {
         var jsons = this.getJsonsInDirectories(resourceManager);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
@@ -98,21 +101,19 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         Map<ResourceLocation, ArrayImage> myTextures = this.getImagesInDirectories(resourceManager);
         textures.putAll(myTextures);
 
-        return new Resources(
-                ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures),
-                ImmutableMap.copyOf(LegacyHelper.convertPaths(ofProperties)));
+        this.ofProperties = ImmutableMap.copyOf(LegacyHelper.convertPaths(ofProperties));
+        return new AssetsFiles(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures));
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
 
         var jsons = resources.jsons();
-        var textures = ArrayImage.groupTextures(resources.textures());
-        var textureCopy = new HashMap<>(resources.textures);
-        Set<ResourceLocation> usedTextures = new HashSet<>();
+        var textures = new TrackedTextures(resources.textures());
+        var textureCopy = new HashMap<>(resources.textures());
 
         LinkedListMultimap<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers = LinkedListMultimap.create();
-        LegacyHelper.convertBlockProperties(resources.ofProperties, textureCopy).forEach(parsedModifiers::put);
+        LegacyHelper.convertBlockProperties(this.ofProperties, textureCopy).forEach(parsedModifiers::put);
         LegacyHelper.convertInlinedPalettes(optifineColormapsToBlocks).forEach(parsedModifiers::put);
 
         LegacyHelper.convertOfBlockToFluidProp(parsedModifiers, textureCopy);
@@ -139,32 +140,27 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             Parsed<BlockPropertyModifier> result = entry.getValue();
             BlockPropertyModifier modifier = result.getResultOrPartial();
 
-            if (!modifier.hasColormap() && textures.containsKey(id)) {
+            if (!modifier.hasColormap()) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
-                var text = textures.get(id);
-                IndexCompoundColorGetter defaultSampler = IndexCompoundColorGetter.createDefault(text.keySet(), true);
-                modifier = modifier.merge(BlockPropertyModifier.ofBlockColor(defaultSampler));
+                Set<Integer> indices = ColormapTextures.usableTintIndices(textures, id);
+                if (!indices.isEmpty()) {
+                    IndexCompoundColorGetter defaultSampler = IndexCompoundColorGetter.createDefault(indices, true);
+                    modifier = modifier.merge(BlockPropertyModifier.ofBlockColor(defaultSampler));
+                }
             }
 
             //fill inline colormaps colormapTextures
-            BlockColor tint = modifier.getColormap();
-            ColormapsManager.tryAcceptingTextureGroup(textures, id, tint, usedTextures, true);
+            ColormapTextures.fill(companions, textures, id, modifier, true);
 
             if (result.isEnabled()) addModifier(id, modifier);
         }
 
-        textures.keySet().removeAll(usedTextures);
-
         // creates default modifiers for orphaned textures without one
-        for (var entry : textures.entrySet()) {
-            ResourceLocation id = entry.getKey();
-
-            ArrayImage.Group image = entry.getValue();
-
-            IndexCompoundColorGetter tintMap = IndexCompoundColorGetter.createDefault(image.keySet(), true);
-            ColormapsManager.tryAcceptingTextureGroup(textures, id, tintMap, usedTextures, true);
-
+        for (ResourceLocation id : ColormapTextures.orphanStems(textures)) {
+            IndexCompoundColorGetter tintMap = IndexCompoundColorGetter.createDefault(
+                    ColormapTextures.usableTintIndices(textures, id), true);
             BlockPropertyModifier modifier = BlockPropertyModifier.ofBlockColor(tintMap);
+            ColormapTextures.fill(companions, textures, id, modifier, true);
 
             addModifier(id, modifier);
         }

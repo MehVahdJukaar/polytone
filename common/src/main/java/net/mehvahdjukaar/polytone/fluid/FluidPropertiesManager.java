@@ -5,10 +5,11 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
-import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.polytone.colormap.ColormapTextures;
+import net.mehvahdjukaar.polytone.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.utils.*;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,12 +22,15 @@ import net.minecraft.world.level.material.Fluids;
 
 import java.util.*;
 
-public class FluidPropertiesManager extends JsonImgPartialReloader {
+public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier, AssetsFiles> {
 
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
 
     public FluidPropertiesManager() {
-        super("fluid_modifiers", "fluid_properties");
+        super("Fluid modifier", () -> SchemaCodecs.labeled(FluidPropertyModifier.CODEC),
+                ColormapTextures.singleTexture(
+                        (FluidPropertyModifier m) -> m.getColormap(), "", "default"),
+                "fluid_modifiers", "fluid_properties");
     }
 
     private Map<ResourceLocation, Parsed<FluidPropertyModifier>> extraModifiers;
@@ -42,7 +46,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected Resources prepare(ResourceManager resourceManager) {
+    protected AssetsFiles prepare(ResourceManager resourceManager) {
         var jsons = this.getJsonsInDirectories(resourceManager);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
@@ -56,17 +60,15 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         textures.putAll(this.getImagesInDirectories(resourceManager));
 
-        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures));
+        return new AssetsFiles(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures));
     }
 
     //TODO: this is a mess. Improve
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var jsons = resources.jsons();
-        var textures = new HashMap<>(resources.textures());
-
-        Set<ResourceLocation> usedTextures = new HashSet<>();
+        var textures = new TrackedTextures(resources.textures());
 
         LinkedListMultimap<ResourceLocation, Parsed<FluidPropertyModifier>> parsedModifiers =   LinkedListMultimap.create();
         extraModifiers.forEach(parsedModifiers::put);
@@ -84,25 +86,23 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             Parsed<FluidPropertyModifier> parsed = entry.getValue();
             FluidPropertyModifier modifier = parsed.getResultOrPartial();
 
-            if (!modifier.hasColormap() && textures.containsKey(id)) {
+            if (!modifier.hasColormap()
+                    && ColormapTextures.hasUsableTexture(companions, textures, id)) {
                 //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
                 modifier = modifier.merge(FluidPropertyModifier.ofBlockColor(Colormap.createDefTriangle()));
             }
 
             //fill inline colormaps colormapTextures
-            BlockColor tint = modifier.getColormap();
-            ColormapsManager.tryAcceptingTexture(textures, id, tint, usedTextures, true);
+            ColormapTextures.fill(companions, textures, id, modifier, true);
 
             if (parsed.isEnabled()) this.addModifier(id, modifier);
         }
 
         // creates orphaned texture colormaps & properties
-        textures.keySet().removeAll(usedTextures);
-
-        for (var t : textures.entrySet()) {
+        for (var t : textures.unused().entrySet()) {
             ResourceLocation id = t.getKey();
             Colormap defaultColormap = Colormap.createDefTriangle();
-            ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
+            ColormapTextures.fillDirect(textures, id, t.getValue(), defaultColormap);
 
             addModifier(id, new FluidPropertyModifier(Optional.of(defaultColormap),
                     Optional.empty(), Targets.EMPTY));
