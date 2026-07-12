@@ -9,7 +9,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.OptionsList;
 import net.minecraft.client.gui.components.SpriteIconButton;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
@@ -29,7 +31,7 @@ import java.util.stream.Collectors;
 public class ConfigScreen extends OptionsSubScreen {
     private static final Component TITLE = Component.translatable("screen.polytone.configs.title");
 
-    private final Multimap<String, OptionInstance<?>> opt = MultimapBuilder.hashKeys().arrayListValues().build();
+    private final Multimap<String, OptionHolder<?>> opt = MultimapBuilder.linkedHashKeys().arrayListValues().build();
     /** Namespaces the user has collapsed; their option rows are hidden until re-expanded. */
     private final Set<String> collapsed = new HashSet<>();
     private final Runnable safeFunc;
@@ -39,17 +41,39 @@ public class ConfigScreen extends OptionsSubScreen {
     @Nullable
     private SpriteIconButton editorButton;
 
+    // Shadows OptionsSubScreen.layout (which is final and built once in the constructor). That
+    // inherited layout is never emptied, so re-running the vanilla init on every namespace toggle
+    // (via rebuildWidgets) keeps re-appending the list/footer/title to it and visitWidgets then
+    // re-registers every stale copy — the "widgets pile up on collapse" bug. We instead run our
+    // own header/footer flow against a fresh layout each init, leaving the inherited one unused.
+    private HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+
     public ConfigScreen(Screen screen, Collection<OptionHolder<?>> options, Runnable safeFunc) {
         super(screen, Minecraft.getInstance().options, TITLE);
         for (OptionHolder<?> e : options) {
-            opt.put(e.fileId.getNamespace(), e.option);
+            opt.put(e.fileId.getNamespace(), e);
         }
         this.safeFunc = safeFunc;
     }
 
     @Override
     protected void init() {
-        super.init();
+        // Fresh layout every (re)init so a namespace toggle doesn't stack duplicate widgets;
+        // we deliberately do NOT call super.init(), which would drive the inherited final layout.
+        this.layout = new HeaderAndFooterLayout(this);
+        this.heartButton = null;
+        this.editorButton = null;
+        this.clearFocus();
+
+        this.list = new OptionsList(this.minecraft, this.width, this);
+        addOptions();
+        this.layout.addTitleHeader(TITLE, this.font);
+        this.layout.addToContents(this.list);
+        addFooter();
+
+        this.layout.visitWidgets(this::addRenderableWidget);
+        repositionElements();
+
         if (this.heartButton != null) {
             this.addRenderableOnly(new PointingChatBubbleOverlay(
                     this.heartButton,
@@ -63,29 +87,47 @@ public class ConfigScreen extends OptionsSubScreen {
         safeFunc.run();
     }
 
+    /** Reset every option to its declared default. */
     private void resetValues() {
-        for (var entry : opt.asMap().entrySet()) {
-            for (var option : entry.getValue()) {
-                resetOptionValue(option);
-            }
+        for (OptionHolder<?> holder : opt.values()) {
+            holder.resetToDefault();
         }
+        rebuildPreservingScroll();
     }
 
-    private <T> void resetOptionValue(OptionInstance<T> option) {
-        if (option.values() instanceof PolyConfig<T> c) {
-            option.set(c.getDefaultValue());
+    /** Revert every option to the value currently on disk (the last saved/loaded state). */
+    private void undoValues() {
+        for (OptionHolder<?> holder : opt.values()) {
+            holder.undoChanges();
+        }
+        rebuildPreservingScroll();
+    }
+
+    /**
+     * Option buttons are value snapshots, so a programmatic change (reset/undo) needs a rebuild to
+     * refresh their labels. Rebuild is now cheap and duplicate-free (fresh layout each init); we
+     * only restore the scroll position so the list doesn't jump.
+     */
+    private void rebuildPreservingScroll() {
+        double scroll = this.list != null ? this.list.scrollAmount() : 0;
+        this.rebuildWidgets();
+        if (this.list != null) {
+            this.list.setScrollAmount(scroll);
         }
     }
 
     @Override
     protected void addFooter() {
         int buttonW = 20;
-        // Centered Reset/Done row, as vanilla.
+        // Centered Reset / Undo / Done row. Widths sized so three buttons fit the vanilla footer.
+        int textBtnW = Mth.positiveCeilDiv(150 * 2 - 8, 3);
         LinearLayout linearLayout = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
         linearLayout.addChild(Button.builder(Component.translatable("screen.polytone.configs.reset"),
-                b -> resetValues()).build());
+                b -> resetValues()).width(textBtnW).build());
+        linearLayout.addChild(Button.builder(Component.translatable("screen.polytone.configs.undo"),
+                b -> undoValues()).width(textBtnW).build());
         linearLayout.addChild(Button.builder(CommonComponents.GUI_DONE,
-                b -> this.minecraft.setScreen(this.lastScreen)).build());
+                b -> this.minecraft.setScreen(this.lastScreen)).width(textBtnW).build());
 
         // Corner icon buttons: free widgets pinned to the screen edges in repositionElements().
         // Nautilus Studio pack-editor button on the LEFT, only when that mod is installed.
@@ -110,7 +152,11 @@ public class ConfigScreen extends OptionsSubScreen {
 
     @Override
     protected void repositionElements() {
-        super.repositionElements();
+        // Arrange our shadow layout (mirrors OptionsSubScreen#repositionElements, but on our layout).
+        this.layout.arrangeElements();
+        if (this.list != null) {
+            this.list.updateSize(this.width, this.layout);
+        }
         int margin = 8;
         int footerH = this.layout.getFooterHeight();
         int y = this.height - footerH + (footerH - 20) / 2;
@@ -148,7 +194,8 @@ public class ConfigScreen extends OptionsSubScreen {
                     this.list.getRowWidth(), 20, getCategoryHeader(cat), expanded, b -> toggleNamespace(cat));
             this.list.addSmall(List.<AbstractWidget>of(header));
             if (expanded) {
-                this.list.addSmall(opt.get(cat).toArray(new OptionInstance[0]));
+                this.list.addSmall(opt.get(cat).stream()
+                        .map(h -> h.option).toArray(OptionInstance[]::new));
             }
         }
     }

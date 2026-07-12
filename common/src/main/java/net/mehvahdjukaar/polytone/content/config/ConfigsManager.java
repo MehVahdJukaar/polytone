@@ -107,7 +107,7 @@ public class ConfigsManager extends JsonPartialReloader {
     public Screen createScreen(PackSelectionScreen parent) {
         bubbleManager.onConfigOpened(hasPackConfigs());
         return new ConfigScreen(parent, configs.getValues(), () -> {
-            boolean anyChanged = configs.getValues().stream().anyMatch(OptionHolder::checkAndClearUpdated);
+            boolean anyChanged = configs.getValues().stream().anyMatch(OptionHolder::hasUnsavedChanges);
             if (anyChanged) {
                 needsPackReload.set(true);
                 saveConfigsToDisk();

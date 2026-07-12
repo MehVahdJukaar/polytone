@@ -18,9 +18,6 @@ public final class TintedTextures {
     /** Index meaning "the default texture, applies to all tint indices". */
     public static final int DEFAULT_INDEX = -1;
 
-    private TintedTextures() {
-    }
-
     /** A name split into owning stem + tint index. */
     public record TintedName(String stem, int index) {
     }

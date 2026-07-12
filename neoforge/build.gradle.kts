@@ -26,7 +26,6 @@ dependencies {
     implementation("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
     jarJar("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
     // Nautilus Studio pack editor UI — separate mod, NOT bundled
-    implementation("net.mehvahdjukaar:nautilus_studio-neoforge:${nautilus_studio_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     implementation("net.objecthunter:exp4j:${exp4j_version}")
@@ -39,6 +38,7 @@ dependencies {
     serverAdditionalRuntimeClasspath("org.mvel:mvel2:${mvel_version}")
     clientAdditionalRuntimeClasspath("org.mvel:mvel2:${mvel_version}")
 
+    modCompileOnly("net.mehvahdjukaar:nautilus_studio-neoforge:${nautilus_studio_version}")
     // Mirror of common deps (the new setup needs every modCompileOnly/modImplementation in common to also live here)
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
     // sodium 0.8.12 neoforge: the distributed jar just JiJs the actual mod jar, extracted into mods/ (flatDir)
@@ -66,4 +66,8 @@ dependencies {
     modCompileOnly("curse.maven:citadel-331936:4786380")
     modCompileOnly("curse.maven:farmers-delight-398521:5772720")
     modCompileOnly("curse.maven:serene-seasons-291874:6182596")
+
+    // Runtime test deps from Modrinth (per-loader version IDs; version number in comment)
+    modRuntimeOnly("maven.modrinth:moonlight:9003gPaE")       // moonlight 1.21.1-3.1.0 (neoforge)
+    modRuntimeOnly("maven.modrinth:supplementaries:HAFNpQz4") // supplementaries 1.21.1-3.8.0 (neoforge)
 }
