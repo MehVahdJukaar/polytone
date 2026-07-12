@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
-import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderState;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -17,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -46,8 +46,8 @@ public class CustomParticleInstance extends SingleQuadParticle {
     boolean pendingInitTick = false;
 
     // light cache: re-samples only when the particle crosses a block, or its section changed
-    private final ParticleLightCache.Entry lightCache = new ParticleLightCache.Entry();
-    private final ParticleLightCache.Entry.Sampler lightSampler = super::getLightColor;
+    private final ParticleLightCache.Entry lightCache;
+    private final @Nullable ParticleColor.Cache colormapCache;
 
     protected CustomParticleInstance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                                      @Nullable BlockState state, CustomParticleType customType) {
@@ -89,48 +89,16 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
         this.oQuadSize = quadSize;
 
-        if (this.type.colormap != null) {
-            // seed the initial color; PER_POSITION also records the current block so tick() only
-            // re-samples once the particle actually moves off it
-            sampleColormap(state, pos);
-        }
+        // seed the spawn color; the cache also records the block so PER_POSITION only re-samples
+        // once the particle moves off it. null when this type has no colormap (the common case)
+        this.colormapCache = this.type.colormap == null ? null
+                : new ParticleColor.Cache(this, this.type.colormap, state, pos);
+        this.lightCache = new ParticleLightCache.Entry(super::getLightColor);
 
     }
 
-    // last block a PER_POSITION colormap was sampled at, plus its section version, so we re-evaluate
-    // only when the particle crosses a block or that block/light changes (mirrors the light cache)
-    private long colormapBlockKey = Long.MIN_VALUE;
-    private int colormapSectionVersion;
-
-    private void sampleColormap(@Nullable BlockState state, BlockPos pos) {
-        float[] unpack = ColorUtils.unpack(this.type.colormap.getter().getColor(state, level, pos, 0));
-        this.setColor(unpack[0], unpack[1], unpack[2]);
-        int bx = pos.getX(), by = pos.getY(), bz = pos.getZ();
-        this.colormapBlockKey = pos.asLong();
-        this.colormapSectionVersion = ParticleLightCache.sectionVersion(bx >> 4, by >> 4, bz >> 4);
-    }
-
-    /** Refresh the colormap color for this tick according to its {@link ParticleColor.CachePolicy}. */
-    private void tickColormap() {
-        switch (this.type.colormap.policy()) {
-            case ON_SPAWN -> { /* frozen at spawn */ }
-            case NONE -> resampleColormapAtCurrentPos();
-            case PER_POSITION -> {
-                int bx = Mth.floor(x), by = Mth.floor(y), bz = Mth.floor(z);
-                long key = BlockPos.asLong(bx, by, bz);
-                int version = ParticleLightCache.sectionVersion(bx >> 4, by >> 4, bz >> 4);
-                if (key != colormapBlockKey || version != colormapSectionVersion) {
-                    resampleColormapAtCurrentPos();
-                }
-            }
-        }
-    }
-
-    private void resampleColormapAtCurrentPos() {
-        BlockPos pos = BlockPos.containing(x, y, z);
-        // off-thread safe: skip unloaded chunks so we don't sample an air fallback
-        if (!level.hasChunkAt(pos)) return;
-        sampleColormap(level.getBlockState(pos), pos);
+    public Level getLevel() {
+        return level;
     }
 
 
@@ -219,7 +187,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     protected int getLightColor(float partialTick) {
-        int total = lightCache.get(this.x, this.y, this.z, partialTick, lightSampler);
+        int total = lightCache.get(this.x, this.y, this.z, partialTick);
         if (this.type.lightLevel > 0) {
             int sky = LightTexture.sky(total);
             int block = LightTexture.block(total);
@@ -258,7 +226,9 @@ public class CustomParticleInstance extends SingleQuadParticle {
         } else tickInternal();
     }
 
-    /** Spawn-time ticker pass for a newborn; deferred to the parallel batch when async is on. */
+    /**
+     * Spawn-time ticker pass for a newborn; deferred to the parallel batch when async is on.
+     */
     void initTick() {
         this.type.ticker.tick(this, level);
         this.setAge(0); // reset so the spawn-time pass doesn't age the particle
@@ -304,11 +274,9 @@ public class CustomParticleInstance extends SingleQuadParticle {
             type.ticker.tick(this, level);
         }
 
-        // colormap: sampled once at spawn (see constructor); ON_SPAWN keeps that frozen value,
-        // PER_POSITION / EVERY_TICK re-evaluate here per their cache policy
-        if (this.type.colormap != null) {
-            tickColormap();
-        }
+        // colormap: sampled once at spawn (see constructor); the cache policy decides whether to
+        // re-evaluate here (ON_SPAWN freezes, PER_POSITION on block change, NONE every tick)
+        if (colormapCache != null) colormapCache.tick();
 
         if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo) {
             this.remove();

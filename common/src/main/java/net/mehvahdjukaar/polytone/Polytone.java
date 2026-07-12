@@ -73,6 +73,7 @@ public class Polytone {
     public static final Logger LOGGER = LogManager.getLogger("Polytone");
 
     private static PolytoneReloadManager COMPOUND_RELOADER;
+    public static final GlobalExpressionsManager GLOBAL_EXPRESSION = new GlobalExpressionsManager();
     public static final BlockPropertiesManager BLOCK_MODIFIERS = new BlockPropertiesManager();
     public static final FluidPropertiesManager FLUID_MODIFIERS = new FluidPropertiesManager();
     public static final CustomModelsManager CUSTOM_MODELS = new CustomModelsManager();
@@ -96,7 +97,6 @@ public class Polytone {
     public static final ShaderUniformsManager SHADER_EFFECTS = new ShaderUniformsManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
-    public static final GlobalExpressionsManager GLOBAL_EXPRESSION = new GlobalExpressionsManager();
     public static final ConfigsManager CONFIGS = new ConfigsManager();
 
     /**

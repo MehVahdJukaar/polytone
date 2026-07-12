@@ -35,7 +35,7 @@ dependencies {
     // modImplementation "curse.maven:distant-horizons-508933:6387715"
     modCompileOnly("curse.maven:irisshaders-455508:6369436")
     modCompileOnly("curse.maven:serene-seasons-291874:6182595")
-    modCompileOnly("com.terraformersmc:modmenu:4.0.6")
+    modImplementation("com.terraformersmc:modmenu:17.0.0")
     modCompileOnly("curse.maven:entity-model-features-844662:7400754")
     modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")
 }

@@ -84,9 +84,9 @@ public class PolytoneForge {
     public void onRegisterDebugEntries(RegisterDebugEntriesEvent event) {
         event.register(ParticleHitboxDebugRenderer.ID, new DebugEntryNoop());
         event.includeInProfile(ParticleHitboxDebugRenderer.ID, DebugScreenProfile.DEFAULT,
-                DebugScreenEntryStatus.ALWAYS_ON);
+                DebugScreenEntryStatus.IN_OVERLAY);
         event.includeInProfile(ParticleHitboxDebugRenderer.ID, DebugScreenProfile.PERFORMANCE,
-                DebugScreenEntryStatus.ALWAYS_ON);
+                DebugScreenEntryStatus.IN_OVERLAY);
     }
 
     @SubscribeEvent

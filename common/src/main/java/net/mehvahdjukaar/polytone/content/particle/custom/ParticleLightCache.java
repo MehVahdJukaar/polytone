@@ -16,8 +16,6 @@ public final class ParticleLightCache {
     // reads/writes are atomic and per-frame task submission publishes main-thread bumps to workers.
     private static final int[] VERSIONS = new int[BUCKETS];
 
-    private ParticleLightCache() {}
-
     private static int bucket(int sx, int sy, int sz) {
         int h = (sx * 31 + sy) * 31 + sz;
         h ^= h >>> 15; // spread so neighbouring sections don't clump into one bucket
@@ -41,19 +39,24 @@ public final class ParticleLightCache {
      */
     public static final class Entry {
 
+        private final Sampler sampler; // the expensive world/light lookup, bound once at construction
         private long blockKey = Long.MIN_VALUE; // forces a first sample
         private int sectionVersion;
         private int rawLight;
 
+        public Entry(Sampler sampler) {
+            this.sampler = sampler;
+        }
+
         /** The raw (unboosted) light color at the given position, re-sampled only when stale. */
-        public int get(double x, double y, double z, float partialTick, Sampler sampler) {
+        public int get(double x, double y, double z, float partialTick) {
             int bx = Mth.floor(x), by = Mth.floor(y), bz = Mth.floor(z);
             long key = BlockPos.asLong(bx, by, bz);
             int version = sectionVersion(bx >> 4, by >> 4, bz >> 4);
             if (key != this.blockKey || version != this.sectionVersion) {
                 this.blockKey = key;
                 this.sectionVersion = version;
-                this.rawLight = sampler.sample(partialTick); // the expensive world/light lookup
+                this.rawLight = this.sampler.sample(partialTick);
             }
             return this.rawLight;
         }

@@ -15,12 +15,8 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.OptionsList;
 import net.minecraft.client.gui.components.ResettableOptionWidget;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.tabs.Tab;
-import net.minecraft.client.gui.components.tabs.TabManager;
-import net.minecraft.client.gui.components.tabs.TabNavigationBar;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
@@ -53,15 +49,12 @@ public class ConfigScreen extends OptionsSubScreen {
             MultimapBuilder.linkedHashKeys().arrayListValues().build();
     private Runnable saveFunc;
 
-    // Shadows OptionsSubScreen.layout (which is final): this screen runs its own header/footer/tab
+    // Shadows OptionsSubScreen.layout (which is final): this screen runs its own header/footer
     // flow instead of the OptionsSubScreen init, so the inherited layout stays unused.
     private HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
-    private final TabManager tabManager =
-            new TabManager(this::addRenderableWidget, this::removeWidget);
-    private final Map<String, OptionsList> listsByNamespace = new LinkedHashMap<>();
-    private final Map<String, ConfigTab> tabsByNamespace = new LinkedHashMap<>();
+    private @Nullable CollapsibleOptionsList list;
+    private final Set<String> collapsedNamespaces = new LinkedHashSet<>();
     private final Map<String, Runnable> presetRederivers = new LinkedHashMap<>();
-    private @Nullable TabNavigationBar tabNav;
     private boolean suppressRederive;
 
     public ConfigScreen(Screen lastScreen, Collection<OptionHolder<?>> options, Runnable saveFunc) {
@@ -78,7 +71,7 @@ public class ConfigScreen extends OptionsSubScreen {
         this.saveFunc = saveFunc;
     }
 
-    /** Required by OptionsSubScreen; lists are managed per tab, so this stays empty. */
+    /** Required by OptionsSubScreen; the single list is built in {@link #init()}, so this stays empty. */
     @Override
     protected void addOptions() {
     }
@@ -90,33 +83,18 @@ public class ConfigScreen extends OptionsSubScreen {
 
     @Override
     protected void init() {
-        // Fresh layout + tab state every (re)init so window resizes don't double-add widgets.
-        // OptionsSubScreen's inherited `layout` field is reassigned here instead of mutated.
+        // Fresh layout every (re)init so window resizes don't double-add widgets.
         this.layout = new HeaderAndFooterLayout(this);
-        this.listsByNamespace.clear();
-        this.tabsByNamespace.clear();
         this.presetRederivers.clear();
-        this.tabNav = null;
+        this.list = null;
         // Drop stale focus across the rebuild: a widget keeping focus through a window resize
         // can pin its tooltip on screen next to the hovered one (focused tooltips ignore hover).
         this.clearFocus();
 
-        // One OptionsList per pack namespace, wrapped in a tab that owns it.
-        for (String modId : optionsPerCategory.keySet()) {
-            OptionsList list = new OptionsList(this.minecraft, this.width, this);
-            populateList(list, modId);
-            listsByNamespace.put(modId, list);
-            tabsByNamespace.put(modId, new ConfigTab(modId, tabTitle(modId), list));
-        }
-
-        // Tab nav: built when there's >1 pack. Added as a top-level renderable (not into the
-        // HeaderAndFooterLayout), same pattern as StatsScreen / CreateWorldScreen.
-        if (tabsByNamespace.size() > 1) {
-            tabNav = TabNavigationBar.builder(tabManager, this.width)
-                    .addTabs(tabsByNamespace.values().toArray(new Tab[0]))
-                    .build();
-            addRenderableWidget(tabNav);
-        }
+        this.list = new CollapsibleOptionsList(this.minecraft, this.width, this);
+        populateList(this.list);
+        this.layout.addTitleHeader(TITLE, this.font);
+        this.layout.addToContents(this.list);
 
         // Footer: Editor / Reset / Undo / Done
         LinearLayout footer = layout.addToFooter(LinearLayout.horizontal().spacing(8));
@@ -145,32 +123,14 @@ public class ConfigScreen extends OptionsSubScreen {
 
         layout.visitWidgets(this::addRenderableWidget);
         repositionElements();
-
-        // Activate first tab (or the only tab if there's no nav bar).
-        if (tabNav != null) {
-            tabNav.selectTab(0, false);
-        } else if (!tabsByNamespace.isEmpty()) {
-            tabManager.setCurrentTab(tabsByNamespace.values().iterator().next(), false);
-        }
     }
 
     @Override
     protected void repositionElements() {
-        int headerBottom = 0;
-        if (tabNav != null) {
-            tabNav.setWidth(this.width);
-            tabNav.arrangeElements();
-            headerBottom = tabNav.getRectangle().bottom();
-            layout.setHeaderHeight(headerBottom);
+        this.layout.arrangeElements();
+        if (this.list != null) {
+            this.list.updateSize(this.width, this.layout);
         }
-        layout.arrangeElements();
-        ScreenRectangle area = new ScreenRectangle(
-                0,
-                headerBottom,
-                this.width,
-                this.height - headerBottom - layout.getFooterHeight()
-        );
-        tabManager.setTabArea(area);
     }
 
     // gap before the impact line, matching the 4px tooltip image margins
@@ -187,16 +147,13 @@ public class ConfigScreen extends OptionsSubScreen {
      * tooltips. The built-in text tooltip is suppressed in {@link OptionHolder} for these entries.
      */
     private void renderCustomTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        String modId = currentTabNamespace();
-        if (modId == null) return;
-        OptionsList list = listsByNamespace.get(modId);
-        if (list == null) return;
+        if (this.list == null) return;
 
-        for (OptionHolder<?> holder : optionsPerCategory.get(modId)) {
+        for (OptionHolder<?> holder : optionsPerCategory.values()) {
             if (!(holder.option.values() instanceof PolyConfig<?> config)) continue;
             boolean hasImpact = config.getPerformanceImpact().isPresent();
             if (config.getTooltipImages().isEmpty() && !hasImpact) continue; // plain entries use the built-in tooltip
-            AbstractWidget widget = list.findOption(holder.option);
+            AbstractWidget widget = this.list.findOption(holder.option);
             if (widget == null || !widget.isHovered()) continue;
 
             List<ClientTooltipComponent> components = new ArrayList<>();
@@ -249,55 +206,70 @@ public class ConfigScreen extends OptionsSubScreen {
 
     // --- list population ---
 
-    private void populateList(OptionsList list, String modId) {
-        Collection<OptionHolder<?>> options = optionsPerCategory.get(modId);
-        List<OptionHolder<?>> sorted = options.stream()
-                .sorted(Comparator.comparingInt((OptionHolder<?> o) -> {
-                                    if (o.option.values() instanceof PolyConfig<?> c) {
-                                        return c.getDisplayOrder();
-                                    }
-                                    return 0;
-                                })
-                                .thenComparing(o -> o.fileId)
-                )
-                .toList();
+    private void populateList(CollapsibleOptionsList list) {
+        for (String modId : optionsPerCategory.keySet()) {
+            boolean expanded = !collapsedNamespaces.contains(modId);
+            list.addNamespaceHeader(namespaceTitle(modId), expanded, () -> toggleNamespace(modId));
+            if (!expanded) continue;
 
-        // Group entries by section, keeping display_order within each; section placement is
-        // decided separately below.
-        Map<Optional<String>, List<OptionHolder<?>>> bySection = new LinkedHashMap<>();
-        for (OptionHolder<?> holder : sorted) {
-            bySection.computeIfAbsent(sectionOf(holder), k -> new ArrayList<>()).add(holder);
-        }
+            Collection<OptionHolder<?>> options = optionsPerCategory.get(modId);
+            List<OptionHolder<?>> sorted = options.stream()
+                    .sorted(Comparator.comparingInt((OptionHolder<?> o) -> {
+                                        if (o.option.values() instanceof PolyConfig<?> c) {
+                                            return c.getDisplayOrder();
+                                        }
+                                        return 0;
+                                    })
+                                    .thenComparing(o -> o.fileId)
+                    )
+                    .toList();
 
-        // "presets" feeds the pack-wide slider at the top of the tab, "section_presets" the
-        // slider of the entry's own section. Applying a stop on any slider re-derives the rest.
-        Map<String, List<PresetAction<?>>> overall = new LinkedHashMap<>();
-        Map<Optional<String>, Map<String, List<PresetAction<?>>>> sectionSliders = new LinkedHashMap<>();
-        for (OptionHolder<?> holder : sorted) {
-            collectPresetActions(overall, holder.option, false);
-            Optional<String> section = sectionOf(holder);
-            if (section.isPresent()) {
-                collectPresetActions(
-                        sectionSliders.computeIfAbsent(section, k -> new LinkedHashMap<>()),
-                        holder.option, true);
-            } else {
-                // section_presets on a sectionless entry has no section slider to live on;
-                // fold it into the pack-wide slider rather than dropping it silently.
-                collectPresetActions(overall, holder.option, true);
+            // Group entries by section, keeping display_order within each; section placement is
+            // decided separately below.
+            Map<Optional<String>, List<OptionHolder<?>>> bySection = new LinkedHashMap<>();
+            for (OptionHolder<?> holder : sorted) {
+                bySection.computeIfAbsent(sectionOf(holder), k -> new ArrayList<>()).add(holder);
+            }
+
+            // "presets" feeds the pack-wide slider at the top of the namespace, "section_presets"
+            // the slider of the entry's own section. Applying a stop on any slider re-derives the rest.
+            Map<String, List<PresetAction<?>>> overall = new LinkedHashMap<>();
+            Map<Optional<String>, Map<String, List<PresetAction<?>>>> sectionSliders = new LinkedHashMap<>();
+            for (OptionHolder<?> holder : sorted) {
+                collectPresetActions(overall, holder.option, false);
+                Optional<String> section = sectionOf(holder);
+                if (section.isPresent()) {
+                    collectPresetActions(
+                            sectionSliders.computeIfAbsent(section, k -> new LinkedHashMap<>()),
+                            holder.option, true);
+                } else {
+                    // section_presets on a sectionless entry has no section slider to live on;
+                    // fold it into the pack-wide slider rather than dropping it silently.
+                    collectPresetActions(overall, holder.option, true);
+                }
+            }
+
+            addPresetSlider(list, modId, overall, null);
+
+            for (Optional<String> section : orderedSections(bySection)) {
+                List<OptionHolder<?>> group = bySection.get(section);
+                if (group == null || group.isEmpty()) continue;
+                section.ifPresent(s -> {
+                    list.addHeader(sectionTitle(modId, s));
+                    addPresetSlider(list, modId, sectionSliders.get(section), s);
+                });
+                addOptionRows(list, group);
             }
         }
+    }
 
-        addPresetSlider(list, modId, overall, null);
-
-        for (Optional<String> section : orderedSections(bySection)) {
-            List<OptionHolder<?>> group = bySection.get(section);
-            if (group == null || group.isEmpty()) continue;
-            section.ifPresent(s -> {
-                list.addHeader(sectionTitle(modId, s));
-                addPresetSlider(list, modId, sectionSliders.get(section), s);
-            });
-            addOptionRows(list, group);
+    private void toggleNamespace(String modId) {
+        if (collapsedNamespaces.contains(modId)) {
+            collapsedNamespaces.remove(modId);
+        } else {
+            collapsedNamespaces.add(modId);
         }
+        rebuildPreservingScroll();
     }
 
     /**
@@ -363,32 +335,27 @@ public class ConfigScreen extends OptionsSubScreen {
     }
 
     /**
-     * Rebuilds every widget from current option values, then restores the selected tab. Option
-     * buttons are value snapshots, so programmatic changes (reset/undo/presets) need this.
+     * Rebuilds every widget from current option values, then restores scroll. Option buttons are
+     * value snapshots, so programmatic changes (reset/undo/presets) need this.
      */
-    private void rebuildPreservingTab() {
-        String selected = currentTabNamespace();
+    private void rebuildPreservingScroll() {
+        double scroll = this.list != null ? this.list.scrollAmount() : 0;
         this.rebuildWidgets();
-        if (tabNav != null && selected != null) {
-            int index = new ArrayList<>(tabsByNamespace.keySet()).indexOf(selected);
-            // init() already selected tab 0; only re-select another tab
-            if (index > 0) tabNav.selectTab(index, false);
+        if (this.list != null) {
+            this.list.setScrollAmount(scroll);
         }
     }
 
-    /** Resets only the currently selected tab's pack, so one pack's defaults don't clobber another's tweaks. */
     private void resetAndRebuild() {
-        String modId = currentTabNamespace();
-        if (modId == null) return;
         suppressRederive = true;
         try {
-            for (var option : optionsPerCategory.get(modId)) {
+            for (var option : optionsPerCategory.values()) {
                 option.resetToDefault();
             }
         } finally {
             suppressRederive = false;
         }
-        rebuildPreservingTab();
+        rebuildPreservingScroll();
     }
 
     /**
@@ -401,23 +368,14 @@ public class ConfigScreen extends OptionsSubScreen {
         }
     }
 
-    @Nullable
-    private String currentTabNamespace() {
-        if (tabManager.getCurrentTab() instanceof ConfigTab tab) {
-            return tab.modId;
-        }
-        return null;
-    }
-
     /**
      * Refreshes the given options' widgets in place via {@code OptionsList#resetOption}, the
      * vanilla live-update path, so labels follow programmatic changes without a screen rebuild.
      */
-    private void refreshOptionWidgets(String modId, Collection<OptionInstance<?>> options) {
-        OptionsList list = listsByNamespace.get(modId);
-        if (list == null) return;
+    private void refreshOptionWidgets(Collection<OptionInstance<?>> options) {
+        if (this.list == null) return;
         for (OptionInstance<?> option : options) {
-            list.resetOption(option);
+            this.list.resetOption(option);
         }
     }
 
@@ -430,12 +388,12 @@ public class ConfigScreen extends OptionsSubScreen {
         } finally {
             suppressRederive = false;
         }
-        rebuildPreservingTab();
+        rebuildPreservingScroll();
     }
 
-    // --- tab title resolution ---
+    // --- header title resolution ---
 
-    private Component tabTitle(String modId) {
+    private Component namespaceTitle(String modId) {
         String key = "config." + modId + ".header";
         Component c = Component.translatable(key);
         if (c.getString().equals(key)) {
@@ -520,7 +478,7 @@ public class ConfigScreen extends OptionsSubScreen {
             } finally {
                 suppressRederive = false;
             }
-            refreshOptionWidgets(modId, affected);
+            refreshOptionWidgets(affected);
             // Sliders are layered (overall + per-section): applying a stop here may change
             // what the other sliders should display, so they re-derive.
             rederiveOthersExcept(rederiveKey);
@@ -552,7 +510,7 @@ public class ConfigScreen extends OptionsSubScreen {
                     suppressRederive = false;
                 }
             }
-            refreshOptionWidgets(modId, List.of(opt));
+            refreshOptionWidgets(List.of(opt));
         });
         return opt;
     }
@@ -788,41 +746,5 @@ public class ConfigScreen extends OptionsSubScreen {
     public static String getReadableName(String name) {
         return Arrays.stream((name).replace(":", "_").split("_"))
                 .map(StringUtils::capitalize).collect(Collectors.joining(" "));
-    }
-
-    // --- tab implementation: holds one OptionsList, sizes it to fill the tab area ---
-
-    private static final class ConfigTab implements Tab {
-        private final String modId;
-        private final Component title;
-        private final OptionsList list;
-
-        ConfigTab(String modId, Component title, OptionsList list) {
-            this.modId = modId;
-            this.title = title;
-            this.list = list;
-        }
-
-        @Override
-        public Component getTabTitle() {
-            return title;
-        }
-
-        @Override
-        public Component getTabExtraNarration() {
-            return Component.empty();
-        }
-
-        @Override
-        public void visitChildren(Consumer<AbstractWidget> consumer) {
-            consumer.accept(list);
-        }
-
-        @Override
-        public void doLayout(ScreenRectangle area) {
-            // Same resize call StatsScreen's tabs use; unlike raw setters it re-clamps the scroll,
-            // else the list keeps a phantom scroll notch from its initial undersized construction.
-            list.updateSizeAndPosition(area.width(), area.height(), area.top());
-        }
     }
 }

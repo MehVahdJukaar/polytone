@@ -239,7 +239,53 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         for (var entry : parsed.entrySet()) {
             addConfig(entry.getKey(), entry.getValue(), configs, configFileSnapshot);
         }
+        registerDevTestConfigs();
         Polytone.LOGGER.info("Loaded {} Polytone config entries", configs.size());
+    }
+
+    /**
+     * Synthetic entries registered only in dev to exercise namespace grouping, sections, presets,
+     * wide rows, and performance-impact tooltips on the config screen.
+     */
+    private void registerDevTestConfigs() {
+        if (!Polytone.isDevEnv) return;
+
+        Map<String, Boolean> boolPresets = Map.of("enabled", true, "disabled", false);
+        Map<String, Float> floatPresets = Map.of("low", 0.25f, "high", 0.75f);
+
+        // Second namespace with two sections and a pack-wide preset slider.
+        addConfig(Identifier.fromNamespaceAndPath("test_pack_alpha", "dev_alpha_toggle"),
+                new BoolConfig(Optional.empty(), boolPresets, Map.of(), 0,
+                        Optional.of("alpha_group_a"), Optional.of(0), Optional.empty(), false, Map.of(), true),
+                configs, configFileSnapshot);
+        addConfig(Identifier.fromNamespaceAndPath("test_pack_alpha", "dev_alpha_throttle"),
+                new NumberConfig(Optional.empty(), floatPresets, Map.of("section_low", 0.1f), 1,
+                        Optional.of("alpha_group_a"), Optional.of(0), Optional.of(PolyConfig.PerformanceImpact.MEDIUM),
+                        false, Map.of(), 0.5f, 0, 1, 0.05f),
+                configs, configFileSnapshot);
+        addConfig(Identifier.fromNamespaceAndPath("test_pack_alpha", "dev_wide_note"),
+                new StringConfig(Optional.empty(), Map.of(), Map.of(), 0,
+                        Optional.of("alpha_group_b"), Optional.of(1), Optional.empty(), true, Map.of(),
+                        "balanced", List.of("balanced", "fast", "fancy")),
+                configs, configFileSnapshot);
+
+        // Third namespace: sectionless entry plus one named section.
+        addConfig(Identifier.fromNamespaceAndPath("test_pack_beta", "dev_sectionless"),
+                new BoolConfig(Optional.empty(), Map.of(), Map.of(), 0,
+                        Optional.empty(), Optional.empty(), Optional.of(PolyConfig.PerformanceImpact.LOW),
+                        false, Map.of(), false),
+                configs, configFileSnapshot);
+        addConfig(Identifier.fromNamespaceAndPath("test_pack_beta", "dev_grouped_flag"),
+                new BoolConfig(Optional.empty(), boolPresets, Map.of("off", false), 0,
+                        Optional.of("beta_misc"), Optional.of(0), Optional.of(PolyConfig.PerformanceImpact.HIGH),
+                        false, Map.of(), true),
+                configs, configFileSnapshot);
+
+        // Extra polytone-namespace row to show multiple namespaces from the same mod id still group once.
+        addConfig(Polytone.res("dev_polytone_extra"),
+                new BoolConfig(Optional.empty(), Map.of(), Map.of(), 99,
+                        Optional.of("particles"), Optional.empty(), Optional.empty(), false, Map.of(), false),
+                configs, configFileSnapshot);
     }
 
     public void beforeRepositoryRefresh() {
