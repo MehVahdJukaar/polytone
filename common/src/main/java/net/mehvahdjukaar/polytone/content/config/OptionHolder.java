@@ -8,7 +8,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -71,12 +70,21 @@ public class OptionHolder<T> {
     }
 
     public static <T> OptionHolder<T> create(PolyConfig<T> config, ResourceLocation id) {
-        String valueTranslationKey = config.getValueTranslationKey();
+        String valueTranslationKey = config.getValueTranslationKey().orElse(null);
         AtomicReference<T> lastSaved = new AtomicReference<>(config.getDefaultValue());
+
+        // Entries with a preview image or impact line get their full tooltip rendered by
+        // ConfigScreen; suppress the built-in text tooltip for those so the two don't stack.
+        boolean customRendered = !config.getTooltipImages().isEmpty()
+                || config.getPerformanceImpact().isPresent();
+        OptionInstance.TooltipSupplier<T> tooltipSupplier = customRendered
+                ? OptionInstance.noTooltip()
+                : OptionInstance.cachedConstantTooltip(Component.translatable(id.toLanguageKey("config", "tooltip")));
+
         var opt = new OptionInstance<>(id.toLanguageKey("config"),
-                OptionInstance.cachedConstantTooltip(Component.translatable(id.toLanguageKey("config", "tooltip"))),
+                tooltipSupplier,
                 (component, value) -> {
-                    MutableComponent valueName = formatValue(id, valueTranslationKey, value);
+                    MutableComponent valueName = formatValue(id, config, valueTranslationKey, value);
                     // Vanilla-style: an unsaved value reads in aqua until saved (or undone).
                     if (!lastSaved.get().equals(value)) valueName.withStyle(ChatFormatting.AQUA);
                     return genericValueLabel(component, valueName);
@@ -89,9 +97,10 @@ public class OptionHolder<T> {
     /**
      * Value label shown on the option button, in precedence order:
      * per-value lang key ({@code config.<ns>.<path>.<value>}) → the {@code value_translation} key used
-     * as a format string → the vanilla ON/OFF constants for booleans → the raw value as a literal.
+     * as a format string → the config type's own default formatting (ON/OFF for booleans, etc).
      */
-    private static MutableComponent formatValue(ResourceLocation id, @Nullable String valueTranslationKey, Object value) {
+    private static <T> MutableComponent formatValue(ResourceLocation id, PolyConfig<T> config,
+                                                    @Nullable String valueTranslationKey, T value) {
         String perValueKey = id.toLanguageKey("config") + "." + value;
         if (I18n.exists(perValueKey)) {
             return Component.translatable(perValueKey);
@@ -99,10 +108,6 @@ public class OptionHolder<T> {
         if (valueTranslationKey != null) {
             return Component.translatable(valueTranslationKey, value);
         }
-        if (value instanceof Boolean b) {
-            // Same constants vanilla uses for every boolean toggle (e.g. "Music: ON").
-            return (b ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF).copy();
-        }
-        return Component.literal(String.valueOf(value));
+        return config.formatValue(value);
     }
 }

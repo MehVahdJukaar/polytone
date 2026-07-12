@@ -1,59 +1,63 @@
 package net.mehvahdjukaar.polytone.content.config;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.ExtraCodecs;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class NumberConfig implements OptionInstance.SliderableValueSet<Float>, PolyConfig<Float> {
+public class NumberConfig extends PolyConfig<Float> implements OptionInstance.SliderableValueSet<Float> {
 
-    public static final Codec<NumberConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.STRING.optionalFieldOf("value_translation").forGetter(c -> Optional.ofNullable(c.valueTranslationKey)),
-            Codec.FLOAT.fieldOf("default_value").forGetter(c -> c.defaultValue),
-            Codec.FLOAT.optionalFieldOf("min", 0f).forGetter(c -> c.min),
-            Codec.FLOAT.optionalFieldOf("max", 1f).forGetter(c -> c.max),
-            ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("step", 0.1f).forGetter(c -> c.step)
-    ).apply(instance, NumberConfig::new));
+    public static final SchemaCodec<NumberConfig> CODEC = PolyConfig.validated(
+            SchemaRecord.create(NumberConfig.class, i -> PolyConfig.commonFields(i, Codec.FLOAT)
+                    .and(SchemaRecord.optional("min", Codec.FLOAT, 0f, c -> c.min))
+                    .and(SchemaRecord.optional("max", Codec.FLOAT, 1f, c -> c.max))
+                    .and(SchemaRecord.optional("step", ExtraCodecs.POSITIVE_FLOAT, 0.1f, c -> c.step))
+                    .apply(i, NumberConfig::new)));
 
-    private final @Nullable String valueTranslationKey;
-    private final float defaultValue;
     private final float step;
     private final float min;
     private final float max;
 
-    public NumberConfig(Optional<String> valueTranslation, float defaultValue, float min, float max, float step) {
-        this.defaultValue = defaultValue;
+    protected NumberConfig(Optional<String> valueTranslation, Map<String, Float> presets,
+                           Map<String, Float> sectionPresets, int order,
+                           Optional<String> section, Optional<Integer> sectionOrder,
+                           Optional<PerformanceImpact> performanceImpact,
+                           boolean wide, Map<String, TooltipImage> tooltipImages,
+                           float defaultValue, float min, float max, float step) {
+        super(valueTranslation, presets, sectionPresets, order, section, sectionOrder,
+                performanceImpact, wide, tooltipImages, defaultValue);
         this.step = step;
         this.min = min;
         this.max = max;
-        this.valueTranslationKey = valueTranslation.orElse(null);
     }
 
-    @Override
-    public @Nullable String getValueTranslationKey() {
-        return valueTranslationKey;
-    }
-
-    @Override
-    public Float getDefaultValue() {
-        return defaultValue;
+    /** Convenience constructor for the mod's own builtin configs (no presets/sections/etc). */
+    public NumberConfig(Optional<String> valueTranslation, float defaultValue, float min, float max, float step) {
+        this(valueTranslation, Map.of(), Map.of(), 0, Optional.empty(), Optional.empty(),
+                Optional.empty(), false, Map.of(), defaultValue, min, max, step);
     }
 
     @Override
     public double toSliderValue(Float object) {
+        //slider value is always normalized between 0 and 1
         return (object - min) / (max - min);
     }
 
     @Override
     public Float fromSliderValue(double d) {
         float v = (float) (min + (max - min) * d);
+        //snap to step
         if (step > 0) {
             v = Math.round(v / step) * step;
         }
@@ -69,6 +73,16 @@ public class NumberConfig implements OptionInstance.SliderableValueSet<Float>, P
     @Override
     public Codec<Float> codec() {
         return Codec.FLOAT;
+    }
+
+    @Override
+    public MutableComponent formatValue(Float value) {
+        // Trim float-math noise (e.g. 0.30000004) by rounding display to the configured step.
+        if (step > 0) {
+            int decimals = Math.max(0, (int) Math.ceil(-Math.log10(step)));
+            return Component.literal(String.format(Locale.ROOT, "%." + decimals + "f", value));
+        }
+        return Component.literal(String.valueOf(value));
     }
 
     @Override

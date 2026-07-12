@@ -44,7 +44,7 @@ public class EntityProxy extends AbstractEntityProxy {
     public String profession() {
         if (entity instanceof Villager v) {
             ResourceLocation key = BuiltInRegistries.VILLAGER_PROFESSION.getKey(v.getVillagerData().getProfession());
-            return key == null ? "" : key.toString();
+            return key.toString();
         }
         return "";
     }

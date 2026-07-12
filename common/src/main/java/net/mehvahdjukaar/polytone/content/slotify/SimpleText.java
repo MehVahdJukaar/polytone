@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -10,14 +11,15 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 
-public record SimpleText(Component text, int x, int y, int z,
+// x/y/z accept a constant number or an expression; color stays a packed ARGB int (doesn't interpolate as a double)
+public record SimpleText(Component text, ISimpleExp x, ISimpleExp y, ISimpleExp z,
                          int color, boolean centered) implements Renderable {
 
     public static final Codec<SimpleText> CODEC = RecordCodecBuilder.create(i -> i.group(
             ComponentSerialization.CODEC.fieldOf("text").forGetter(SimpleText::text),
-            Codec.INT.fieldOf("x").forGetter(SimpleText::x),
-            Codec.INT.fieldOf("y").forGetter(SimpleText::y),
-            Codec.INT.optionalFieldOf("z", 0).forGetter(SimpleText::z),
+            ISimpleExp.CODEC.fieldOf("x").forGetter(SimpleText::x),
+            ISimpleExp.CODEC.fieldOf("y").forGetter(SimpleText::y),
+            ISimpleExp.CODEC.optionalFieldOf("z", ISimpleExp.ZERO).forGetter(SimpleText::z),
             ColorUtils.CODEC.optionalFieldOf("color", -1).forGetter(SimpleText::color),
             Codec.BOOL.optionalFieldOf("centered", false).forGetter(SimpleText::centered)
     ).apply(i, SimpleText::new));
@@ -25,6 +27,9 @@ public record SimpleText(Component text, int x, int y, int z,
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         Font font = Minecraft.getInstance().font;
+        int x = (int) this.x.evaluate();
+        int y = (int) this.y.evaluate();
+        int z = (int) this.z.evaluate();
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(0,0, z);
         if (centered) {

@@ -1,2 +1,4 @@
-- added a workaround to avoid a sneaky sodium issue
-- this solves weirdness with custom particles.
+- misc recent fixes
+- gui modifiers are now expressions driven
+- gui modifiers can query the entity that was last interacted
+- this means

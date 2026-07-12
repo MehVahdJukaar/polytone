@@ -13,6 +13,8 @@ accessible method net/minecraft/core/Holder$Reference bindTags (Ljava/util/Colle
 
 # config-driven pack overlays + config screen
 accessible method net/minecraft/client/gui/screens/packs/PackSelectionScreen reload ()V
+# render a custom ClientTooltipComponent list (image + impact tooltips) with a positioner
+accessible method net/minecraft/client/gui/GuiGraphics renderTooltipInternal (Lnet/minecraft/client/gui/Font;Ljava/util/List;IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;)V
 accessible class net/minecraft/client/OptionInstance$ValueSet
 accessible class net/minecraft/client/OptionInstance$CycleableValueSet
 accessible class net/minecraft/client/OptionInstance$SliderableValueSet

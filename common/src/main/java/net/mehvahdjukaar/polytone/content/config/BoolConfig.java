@@ -2,45 +2,44 @@ package net.mehvahdjukaar.polytone.content.config;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
-public class BoolConfig implements OptionInstance.CycleableValueSet<Boolean>, PolyConfig<Boolean> {
+public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.CycleableValueSet<Boolean> {
 
-    public static final Codec<BoolConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.STRING.optionalFieldOf("value_translation").forGetter(c -> Optional.ofNullable(c.valueTranslationKey)),
-            Codec.BOOL.fieldOf("default_value").forGetter(c -> c.defaultValue)
-    ).apply(instance, BoolConfig::new));
+    public static final SchemaCodec<BoolConfig> CODEC = PolyConfig.validated(
+            SchemaRecord.create(BoolConfig.class, i -> PolyConfig.commonFields(i, Codec.BOOL)
+                    .apply(i, BoolConfig::new)));
 
     private static final List<Boolean> VALUES = ImmutableList.of(Boolean.TRUE, Boolean.FALSE);
-    private final @Nullable String valueTranslationKey;
-    private final boolean defaultValue;
 
+    protected BoolConfig(Optional<String> valueTranslation, Map<String, Boolean> presets,
+                         Map<String, Boolean> sectionPresets, int order,
+                         Optional<String> section, Optional<Integer> sectionOrder,
+                         Optional<PerformanceImpact> performanceImpact,
+                         boolean wide, Map<String, TooltipImage> tooltipImages, boolean defaultValue) {
+        super(valueTranslation, presets, sectionPresets, order, section, sectionOrder,
+                performanceImpact, wide, tooltipImages, defaultValue);
+    }
+
+    /** Convenience constructor for the mod's own builtin configs (no presets/sections/etc). */
     public BoolConfig(Optional<String> valueTranslation, boolean defaultValue) {
-        this.defaultValue = defaultValue;
-        this.valueTranslationKey = valueTranslation.orElse(null);
-    }
-
-    @Override
-    public @Nullable String getValueTranslationKey() {
-        return valueTranslationKey;
-    }
-
-    @Override
-    public Boolean getDefaultValue() {
-        return defaultValue;
+        this(valueTranslation, Map.of(), Map.of(), 0, Optional.empty(), Optional.empty(),
+                Optional.empty(), false, Map.of(), defaultValue);
     }
 
     @Override
@@ -51,6 +50,12 @@ public class BoolConfig implements OptionInstance.CycleableValueSet<Boolean>, Po
     @Override
     public Codec<Boolean> codec() {
         return Codec.BOOL;
+    }
+
+    @Override
+    public MutableComponent formatValue(Boolean value) {
+        // Same constants vanilla uses everywhere else for boolean toggles (Music: ON / Music: OFF).
+        return (value ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF).copy();
     }
 
     @Override

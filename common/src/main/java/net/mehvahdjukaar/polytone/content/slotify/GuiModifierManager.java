@@ -124,17 +124,31 @@ public class GuiModifierManager extends JsonPartialReloader {
         }
     }
 
+    /** Keeps only the candidates whose condition currently passes, then merges them (file order). */
+    @Nullable
+    private static ScreenModifier resolve(@Nullable List<ScreenModifier> candidates) {
+        if (candidates == null || candidates.isEmpty()) return null;
+        ScreenModifier acc = null;
+        for (ScreenModifier m : candidates) {
+            if (m.passesCondition()) {
+                acc = acc == null ? m : acc.merge(m);
+            }
+        }
+        return acc;
+    }
+
     private ScreenModifier getScreenModifier(AbstractContainerScreen<?> screen) {
-        ScreenModifier m = null;
+        List<ScreenModifier> list = null;
         AbstractContainerMenu menu = screen.getMenu();
         if (screen.getClass() == InventoryScreen.class) {
-            m = byClass.get(InventoryMenu.class);
+            list = byClass.get(InventoryMenu.class);
         } else if (screen.getClass() == CreativeModeInventoryScreen.class) {
-            m = byClass.get(CreativeModeInventoryScreen.ItemPickerMenu.class);
+            list = byClass.get(CreativeModeInventoryScreen.ItemPickerMenu.class);
         }
         if (menu != null) {
-            m = byClass.get(menu.getClass());
+            list = byClass.get(menu.getClass());
         }
+        ScreenModifier m = resolve(list);
         if (m == null) {
             MenuType<?> type;
             try {
@@ -142,14 +156,14 @@ public class GuiModifierManager extends JsonPartialReloader {
             } catch (Exception e) {
                 type = null;
             }
-            m = byMenuId.get(type);
+            m = resolve(byMenuId.get(type));
         }
         return m;
     }
 
     @Nullable
     public ScreenModifier getGuiModifier(Screen screen) {
-        ScreenModifier m = byClass.get(screen.getClass());
+        ScreenModifier m = resolve(byClass.get(screen.getClass()));
         if (m == null && screen instanceof AbstractContainerScreen<?> as) {
             m = getScreenModifier(as);
         }
@@ -160,10 +174,10 @@ public class GuiModifierManager extends JsonPartialReloader {
             return null;
         }
         if (m == null) {
-            m = byTitle.get(c.getString());
+            m = resolve(byTitle.get(c.getString()));
         }
         if (m == null && c instanceof MutableComponent mc && mc.getContents() instanceof TranslatableContents tc) {
-            m = byTitle.get(tc.getKey());
+            m = resolve(byTitle.get(tc.getKey()));
         }
         return m;
     }

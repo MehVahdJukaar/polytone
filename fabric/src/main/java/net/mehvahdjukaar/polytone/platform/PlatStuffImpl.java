@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.platform;
 
 import com.google.common.base.Suppliers;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.serialization.MapCodec;
@@ -449,6 +450,11 @@ public class PlatStuffImpl {
 
     public static String getModLoader() {
         return "Fabric";
+    }
+
+    public static void matchStencil(RenderTarget main, RenderTarget snapshot) {
+        // Fabric/vanilla has no enableStencil(); the main target is always plain depth, so there is
+        // nothing to mirror and copyDepthFrom's depth blit always matches.
     }
 
 }

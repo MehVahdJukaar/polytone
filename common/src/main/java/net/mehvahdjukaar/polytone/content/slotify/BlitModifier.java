@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -10,22 +11,26 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 import java.util.Optional;
 
-public record BlitModifier(ResourceLocation target, int index, int xInc, int yInc, int zInc, int widthInc, int heightInc,
-                           float u0, float v0, float u1, float v1, Optional<ResourceLocation> newTexture,
+// increments and UVs accept a constant number or an expression (evaluated per-blit). A UV of -1 means "keep original".
+public record BlitModifier(ResourceLocation target, int index, ISimpleExp xInc, ISimpleExp yInc, ISimpleExp zInc,
+                           ISimpleExp widthInc, ISimpleExp heightInc,
+                           ISimpleExp u0, ISimpleExp v0, ISimpleExp u1, ISimpleExp v1, Optional<ResourceLocation> newTexture,
                            List<RelativeSprite> extraSprites) {
+
+    private static final ISimpleExp MINUS_ONE = () -> -1.0;
 
     public static final Codec<BlitModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
             ResourceLocation.CODEC.fieldOf("texture").forGetter(BlitModifier::target),
             Codec.INT.optionalFieldOf("index", -1).forGetter(BlitModifier::index),
-            Codec.INT.optionalFieldOf("x_inc", 0).forGetter(BlitModifier::xInc),
-            Codec.INT.optionalFieldOf("y_inc", 0).forGetter(BlitModifier::yInc),
-            Codec.INT.optionalFieldOf("z_inc", 0).forGetter(BlitModifier::zInc),
-            Codec.INT.optionalFieldOf("width_inc", 0).forGetter(BlitModifier::widthInc),
-            Codec.INT.optionalFieldOf("height_inc", 0).forGetter(BlitModifier::heightInc),
-            Codec.FLOAT.optionalFieldOf("u0", -1f).forGetter(BlitModifier::u0),
-            Codec.FLOAT.optionalFieldOf("v0", -1f).forGetter(BlitModifier::v0),
-            Codec.FLOAT.optionalFieldOf("u1", -1f).forGetter(BlitModifier::u1),
-            Codec.FLOAT.optionalFieldOf("v1", -1f).forGetter(BlitModifier::v1),
+            ISimpleExp.CODEC.optionalFieldOf("x_inc", ISimpleExp.ZERO).forGetter(BlitModifier::xInc),
+            ISimpleExp.CODEC.optionalFieldOf("y_inc", ISimpleExp.ZERO).forGetter(BlitModifier::yInc),
+            ISimpleExp.CODEC.optionalFieldOf("z_inc", ISimpleExp.ZERO).forGetter(BlitModifier::zInc),
+            ISimpleExp.CODEC.optionalFieldOf("width_inc", ISimpleExp.ZERO).forGetter(BlitModifier::widthInc),
+            ISimpleExp.CODEC.optionalFieldOf("height_inc", ISimpleExp.ZERO).forGetter(BlitModifier::heightInc),
+            ISimpleExp.CODEC.optionalFieldOf("u0", MINUS_ONE).forGetter(BlitModifier::u0),
+            ISimpleExp.CODEC.optionalFieldOf("v0", MINUS_ONE).forGetter(BlitModifier::v0),
+            ISimpleExp.CODEC.optionalFieldOf("u1", MINUS_ONE).forGetter(BlitModifier::u1),
+            ISimpleExp.CODEC.optionalFieldOf("v1", MINUS_ONE).forGetter(BlitModifier::v1),
             ResourceLocation.CODEC.optionalFieldOf("new_texture").forGetter(BlitModifier::newTexture),
             RelativeSprite.CODEC.listOf().optionalFieldOf("overlays", List.of()).forGetter(BlitModifier::extraSprites)
     ).apply(i, BlitModifier::new));
@@ -42,21 +47,25 @@ public record BlitModifier(ResourceLocation target, int index, int xInc, int yIn
         if (newTexture.isPresent()) {
             sprite = Minecraft.getInstance().getGuiSprites().getSprite(newTexture.get());
         }
+        float u0 = (float) this.u0.evaluate();
+        float u1 = (float) this.u1.evaluate();
+        float v0 = (float) this.v0.evaluate();
+        float v1 = (float) this.v1.evaluate();
         float minU = u0 == -1 ? oldU0 : u0;
         float maxU = u1 == -1 ? oldU1 : u1;
         float minV = v0 == -1 ? oldV0 : v0;
         float maxV = v1 == -1 ? oldV1 : v1;
 
-        blitOffset += zInc;
+        blitOffset += (int) zInc.evaluate();
 
         int oldw = oldX2 - oldX1;
-        oldX1 += xInc;
-        oldw += widthInc;
+        oldX1 += (int) xInc.evaluate();
+        oldw += (int) widthInc.evaluate();
         oldX2 = oldX1 + oldw;
 
         int oldh = oldY2 - oldY1;
-        oldY1 += yInc;
-        oldh += heightInc;
+        oldY1 += (int) yInc.evaluate();
+        oldh += (int) heightInc.evaluate();
         oldY2 = oldY1 + oldh;
 
 
