@@ -67,6 +67,11 @@ public class GlobalExpressionsManager extends JsonPartialReloader {
         map.putAll(values);
     }
 
+    /** Current value of a single global expression by its MVEL variable name, or 0 if unknown. */
+    public double getValue(String key) {
+        return values.getOrDefault(key, 0.0);
+    }
+
     public void addTypes(ParserContext ctx) {
         for (var e : values.entrySet()) {
             if (e.getValue() != null) {

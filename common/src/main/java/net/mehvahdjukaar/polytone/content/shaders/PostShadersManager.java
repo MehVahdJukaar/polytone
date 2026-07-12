@@ -121,6 +121,7 @@ public class PostShadersManager extends JsonPartialReloader {
             closeAllChains();
             effects.clear();
             failedChains.clear();
+            Polytone.POST_TARGETS.close();
         }
     }
 
@@ -276,6 +277,8 @@ public class PostShadersManager extends JsonPartialReloader {
             if (activeChains.isEmpty()) return;
 
             Minecraft mc = Minecraft.getInstance();
+            // Keep persistent post targets allocated/sized to the frame so target_samplers resolve.
+            Polytone.POST_TARGETS.ensureAllocated(mc.getMainRenderTarget().width, mc.getMainRenderTarget().height);
             float sunAngle = 0f;
             float dayTime = 0f;
             // frame delta time in ticks (matches 1.21.11 PolyDeltaTime = deltaTracker.getGameTimeDeltaTicks())

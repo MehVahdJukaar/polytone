@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -11,9 +11,9 @@ import java.util.Map;
 
 public class OverridingParticleFactory<T extends ParticleOptions> implements ParticleProvider<T> {
 
-    private final CustomParticleFactory customFactory;
+    private final ICustomParticleFactory customFactory;
 
-    public OverridingParticleFactory(CustomParticleFactory factory) {
+    public OverridingParticleFactory(ICustomParticleFactory factory) {
         this.customFactory = factory;
     }
 

@@ -173,6 +173,11 @@ public class ExpUtils {
         Polytone.GLOBAL_EXPRESSION.addValues(vars);
     }
 
+    /** Static (constant) variables only, no dynamic globals; those are refreshed per-use. */
+    public static void addStaticVars(Map<String, Object> vars) {
+        vars.putAll(STATIC_GLOBALS);
+    }
+
 
     private static void importStaticMethods(ParserContext ctx, Class<?> clazz) {
 

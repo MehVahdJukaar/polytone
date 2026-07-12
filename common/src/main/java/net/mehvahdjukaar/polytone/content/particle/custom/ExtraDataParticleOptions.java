@@ -1,9 +1,8 @@
-package net.mehvahdjukaar.polytone.content.particle;
+package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
@@ -42,7 +41,7 @@ public record ExtraDataParticleOptions(Map<String, Float> extraData,
         return type;
     }
 
-    public void apply(Particle particle) {
+    public void apply(SingleQuadParticle particle) {
         if (extraData.isEmpty()) return;
         Float rot = extraData.get("roll");
         if (rot != null) {
@@ -70,7 +69,7 @@ public record ExtraDataParticleOptions(Map<String, Float> extraData,
             sp.quadSize = size;
         }
         Float custom = extraData.get("custom");
-        if (custom != null && particle instanceof CustomParticleType.Instance inst) {
+        if (custom != null && particle instanceof CustomParticleInstance inst) {
             inst.custom = custom;
         }
     }

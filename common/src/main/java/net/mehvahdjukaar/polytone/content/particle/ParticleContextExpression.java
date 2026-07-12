@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.utils.exp.PolytoneExpression;
 import net.mehvahdjukaar.polytone.utils.exp.IExpression;
 import net.minecraft.client.Minecraft;
@@ -94,7 +95,7 @@ public class ParticleContextExpression extends PolytoneExpression {
         vb.setVariable(Z, particle.z);
         vb.setVariable(AGE, particle.age);
         vb.setVariable(ROLL, particle.roll);
-        if (hasCustom && particle instanceof CustomParticleType.Instance i)
+        if (hasCustom && particle instanceof CustomParticleInstance i)
             vb.setVariable(CUSTOM, i.getCustom());
 
 

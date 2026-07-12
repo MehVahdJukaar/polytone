@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
@@ -65,6 +66,16 @@ public class GlobalProxy {
 
     public double rain() {
         return ExpTicker.getRainAndThunder();
+    }
+
+    /**
+     * Runtime lookup of a global expression's current value by its variable name, e.g.
+     * {@code global.value('minecraft_leaf_drift')}. Unlike referencing the global as a bare
+     * variable (which must exist when the calling expression COMPILES — not guaranteed, since
+     * managers parse in parallel during reload), this resolves at evaluation time. Missing -> 0.
+     */
+    public double value(String key) {
+        return Polytone.GLOBAL_EXPRESSION.getValue(key);
     }
 
     // Stub - EnvironmentAttribute system doesn't exist on 1.21.1

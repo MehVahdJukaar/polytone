@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.color.ColorManager;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostShadersManager;
+import net.mehvahdjukaar.polytone.content.shaders.PostTargetsManager;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.content.entity.EntityModifiersManager;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
@@ -17,7 +18,7 @@ import net.mehvahdjukaar.polytone.content.model.CustomModelsManager;
 import net.mehvahdjukaar.polytone.content.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.content.global_expressions.GlobalExpressionsManager;
 import net.mehvahdjukaar.polytone.noise.NoiseManager;
-import net.mehvahdjukaar.polytone.content.particle.CustomParticlesManager;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
@@ -86,6 +87,7 @@ public class Polytone {
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
+    public static final PostTargetsManager POST_TARGETS = new PostTargetsManager();
     public static final PostShadersManager POST_SHADERS = new PostShadersManager();
     public static final ConfigsManager CONFIGS = new ConfigsManager();
 
@@ -107,7 +109,7 @@ public class Polytone {
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
-                CREATIVE_TABS_MODIFIERS, POST_SHADERS, CONFIGS);
+                CREATIVE_TABS_MODIFIERS, POST_TARGETS, POST_SHADERS, CONFIGS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         // Register editable content types with the Nautilus Studio pack editor, if that mod is present.

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.shaders;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EffectInstance;
@@ -61,6 +62,8 @@ public final class PostChainEffect {
             Codec.BOOL.optionalFieldOf("use_depth_buffer", false).forGetter(p -> p.useDepthBuffer),
             Codec.unboundedMap(Codec.STRING, ResourceLocation.CODEC)
                     .optionalFieldOf("samplers", Map.of()).forGetter(p -> p.samplers),
+            Codec.unboundedMap(Codec.STRING, ResourceLocation.CODEC)
+                    .optionalFieldOf("target_samplers", Map.of()).forGetter(p -> p.targetSamplers),
             Codec.FLOAT.optionalFieldOf("priority", 0f).forGetter(p -> p.priority)
     ).apply(i, PostChainEffect::new));
 
@@ -69,6 +72,8 @@ public final class PostChainEffect {
     private final Map<String, ISimpleExp> expressionUniforms;
     private final boolean useDepthBuffer;
     private final Map<String, ResourceLocation> samplers;
+    /** Sampler name -> persistent {@link PostTargetsManager} target id; bound to that target's color texture. */
+    private final Map<String, ResourceLocation> targetSamplers;
     private final float priority;
 
     public PostChainEffect(ResourceLocation postChain,
@@ -76,12 +81,14 @@ public final class PostChainEffect {
                            Map<String, ISimpleExp> expressionUniforms,
                            boolean useDepthBuffer,
                            Map<String, ResourceLocation> samplers,
+                           Map<String, ResourceLocation> targetSamplers,
                            float priority) {
         this.postChain = postChain;
         this.turnOnCondition = turnOnCondition;
         this.expressionUniforms = expressionUniforms;
         this.useDepthBuffer = useDepthBuffer;
         this.samplers = samplers;
+        this.targetSamplers = targetSamplers;
         this.priority = priority;
     }
 
@@ -133,6 +140,14 @@ public final class PostChainEffect {
             ResourceLocation texture = e.getValue();
             effect.setSampler(e.getKey(),
                     () -> Minecraft.getInstance().getTextureManager().getTexture(texture).getId());
+        }
+        // Persistent post targets bound as samplers (read side of the 1.21.1 post-targets port).
+        for (var e : targetSamplers.entrySet()) {
+            ResourceLocation targetId = e.getValue();
+            effect.setSampler(e.getKey(), () -> {
+                var t = Polytone.POST_TARGETS.getTarget(targetId);
+                return t == null ? 0 : t.getColorTextureId();
+            });
         }
     }
 }
