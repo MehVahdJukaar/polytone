@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.common.expressions.impl.SimpleExp;
 import net.mehvahdjukaar.polytone.utils.codec.BiggerCodecs;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -25,7 +26,8 @@ public record GuiModifier(Type type, String target,
                           List<SimpleSprite> sprites,
                           List<SimpleText> textList,
                           List<WidgetModifier> widgetModifiers,
-                          Map<String, SpecialOffset> specialOffsets) {
+                          Map<String, SpecialOffset> specialOffsets,
+                          @Nullable SimpleExp condition) {
 
     public GuiModifier(Type type, String target, List<SlotModifier> slotModifiers,
                        int titleX, int titleY, int labelX, int labelY,
@@ -33,10 +35,12 @@ public record GuiModifier(Type type, String target,
                        Optional<Integer> titleColor, Optional<Integer> labelColor,
                        List<SimpleSprite> sprites, List<SimpleText> textList,
                        List<WidgetModifier> widgetModifiers,
-                       Map<String, SpecialOffset> specialOffsets) {
+                       Map<String, SpecialOffset> specialOffsets,
+                       Optional<SimpleExp> condition) {
         this(type, target, slotModifiers, titleX, titleY, labelX, labelY,
                 xOff, yOff, wOff, hOff,
-                titleColor.orElse(null), labelColor.orElse(null), sprites, textList, widgetModifiers, specialOffsets);
+                titleColor.orElse(null), labelColor.orElse(null), sprites, textList, widgetModifiers, specialOffsets,
+                condition.orElse(null));
     }
 
 
@@ -70,7 +74,8 @@ public record GuiModifier(Type type, String target,
                     SimpleSprite.CODEC.listOf().optionalFieldOf("sprites", List.of()).forGetter(GuiModifier::sprites),
                     SimpleText.CODEC.listOf().optionalFieldOf("texts", List.of()).forGetter(GuiModifier::textList),
                     WidgetModifier.CODEC.listOf().optionalFieldOf("widget_modifiers", List.of()).forGetter(GuiModifier::widgetModifiers),
-                    Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC).optionalFieldOf("special_offsets", Map.of()).forGetter(GuiModifier::specialOffsets)
+                    Codec.unboundedMap(Codec.STRING, SpecialOffset.CODEC).optionalFieldOf("special_offsets", Map.of()).forGetter(GuiModifier::specialOffsets),
+                    SimpleExp.TYPE.codec().optionalFieldOf("condition").forGetter(g -> Optional.ofNullable(g.condition))
 
             ).apply(i, GuiModifier::new)).comapFlatMap((instance) -> {
                 if (instance.type == Type.MENU_ID) {

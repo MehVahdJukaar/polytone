@@ -1,9 +1,12 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
+import net.minecraft.world.entity.npc.Villager;
 import org.jetbrains.annotations.Nullable;
 
 @BeanAliases
@@ -30,6 +33,20 @@ public class EntityProxy extends AbstractEntityProxy {
             }
         }
         return null;
+    }
+
+    public String entityType() {
+        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        return key == null ? "[unregistered]" : key.toString();
+    }
+
+    /** Villager/zombie-villager profession id (e.g. {@code minecraft:cleric}), or "" if not a villager. */
+    public String profession() {
+        if (entity instanceof Villager v) {
+            ResourceLocation key = BuiltInRegistries.VILLAGER_PROFESSION.getKey(v.getVillagerData().getProfession());
+            return key == null ? "" : key.toString();
+        }
+        return "";
     }
 
     @Override

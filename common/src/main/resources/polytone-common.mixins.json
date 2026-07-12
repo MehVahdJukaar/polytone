@@ -34,6 +34,7 @@
     "LightTextureMixin",
     "MinecraftMixin",
     "ModelBakeryMixin",
+    "MultiPlayerGameModeMixin",
     "ModelBlockRendererMixin",
     "OptionsMixin",
     "OverlayMetadataSectionMixin",

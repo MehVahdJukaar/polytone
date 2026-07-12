@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
@@ -265,5 +266,16 @@ public class PlatStuff {
                                        Consumer<ShaderInstance> shaderConsumer) {
         throw new AssertionError();
 
+    }
+
+    /**
+     * If {@code main} has a stencil-backed depth attachment (Forge-only {@code enableStencil()}), enable
+     * stencil on {@code snapshot} too so their depth formats match — otherwise a {@code copyDepthFrom} blit
+     * between them fails with GL {@code INVALID_OPERATION}. No-op on Fabric, where the main target is always
+     * plain depth.
+     */
+    @PlatformImpl
+    public static void matchStencil(RenderTarget main, RenderTarget snapshot) {
+        throw new AssertionError();
     }
 }

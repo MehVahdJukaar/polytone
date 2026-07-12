@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.mehvahdjukaar.polytone.common.expressions.impl.SimpleExp;
 import net.mehvahdjukaar.polytone.utils.Utils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -16,7 +17,8 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
                              @Nullable Integer titleColor, @Nullable Integer labelColor,
                              List<Renderable> extraRenderables,
                              List<WidgetModifier> widgetModifiers,
-                             Map<String, SpecialOffset> specialOffsets) {
+                             Map<String, SpecialOffset> specialOffsets,
+                             @Nullable SimpleExp condition) {
 
     public static ScreenModifier fromGuiMod(GuiModifier original) {
         List<Renderable> lis = new ArrayList<>(original.sprites());
@@ -26,7 +28,13 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
                 original.titleColor(), original.labelColor(),
                 lis,
                 new ArrayList<>(original.widgetModifiers()),
-                Map.copyOf(original.specialOffsets()));
+                Map.copyOf(original.specialOffsets()),
+                original.condition());
+    }
+
+    /** True if this modifier has no condition or its condition currently evaluates truthy. */
+    public boolean passesCondition() {
+        return condition == null || condition.evaluate() != 0;
     }
 
     public ScreenModifier merge(ScreenModifier newMod) {
@@ -43,7 +51,9 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
                 newMod.labelColor != null ? newMod.labelColor : this.labelColor,
                 Utils.mergeList(newMod.extraRenderables, this.extraRenderables),
                 Utils.mergeList(newMod.widgetModifiers, this.widgetModifiers),
-                Utils.mergedMap(newMod.specialOffsets, this.specialOffsets)
+                Utils.mergedMap(newMod.specialOffsets, this.specialOffsets),
+                // conditions are already evaluated before merging, so the merged result carries none
+                null
         );
     }
 

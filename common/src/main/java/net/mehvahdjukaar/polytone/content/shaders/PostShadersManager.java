@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
@@ -360,6 +361,14 @@ public class PostShadersManager extends JsonPartialReloader {
         } else if (depthSnapshot.width != main.width || depthSnapshot.height != main.height) {
             depthSnapshot.resize(main.width, main.height, Minecraft.ON_OSX);
         }
+        // On (Neo)Forge a mod can call RenderTarget.enableStencil() on the main framebuffer (several of
+        // MehVahd's own mods do), which flips its depth attachment from GL_DEPTH_COMPONENT to a combined
+        // GL_DEPTH32F_STENCIL8. copyDepthFrom() blits GL_DEPTH_BUFFER_BIT, and that blit requires source and
+        // destination depth formats to match — otherwise GL raises INVALID_OPERATION and copies nothing, so
+        // the snapshot stays cleared and depth-driven effects (godrays, etc.) silently do nothing. Vanilla's
+        // own PostChain.addTempTarget propagates stencil to its temp targets; mirror the same onto our
+        // snapshot. The stencil API is Forge-only, hence the platform hop (no-op on Fabric).
+        PlatStuff.matchStencil(main, depthSnapshot);
     }
 
     public record ActivePostPassFrame(

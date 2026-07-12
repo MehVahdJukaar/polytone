@@ -32,10 +32,11 @@ public class GuiModifierManager extends JsonPartialReloader {
     private final Map<Class<?>, Set<SlotModifier>> slotsByClass = new IdentityHashMap<>();
     private final Map<String, Set<SlotModifier>> slotsByTitle = new HashMap<>();
 
-    //screen modifiers
-    public final Map<MenuType<?>, ScreenModifier> byMenuId = new IdentityHashMap<>();
-    public final Map<Class<?>, ScreenModifier> byClass = new IdentityHashMap<>();
-    public final Map<String, ScreenModifier> byTitle = new HashMap<>();
+    //screen modifiers. Lists (not merged at parse) so per-variant conditions survive; they are
+    //filtered by condition and merged together at lookup time in resolve(...)
+    public final Map<MenuType<?>, List<ScreenModifier>> byMenuId = new IdentityHashMap<>();
+    public final Map<Class<?>, List<ScreenModifier>> byClass = new IdentityHashMap<>();
+    public final Map<String, List<ScreenModifier>> byTitle = new HashMap<>();
 
 
     private static final ResourceLocation INVENTORY = ResourceLocation.parse("inventory");
@@ -73,7 +74,7 @@ public class GuiModifierManager extends JsonPartialReloader {
                     } else if (target.equals("ItemPickerMenu")) {
                         cl = CreativeModeInventoryScreen.ItemPickerMenu.class;
                     } else cl = Class.forName(target);
-                    byClass.merge(cl, ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
+                    byClass.computeIfAbsent(cl, k -> new ArrayList<>()).add(ScreenModifier.fromGuiMod(mod));
 
                     if (!mod.slotModifiers().isEmpty()) {
                         Set<SlotModifier> map = slotsByClass.computeIfAbsent(cl,
@@ -92,7 +93,7 @@ public class GuiModifierManager extends JsonPartialReloader {
                 Optional<MenuType<?>> menu = BuiltInRegistries.MENU.getOptional(menuId);
 
                 if (menu.isPresent() || isInventory) {
-                    byMenuId.merge(menu.orElse(null), ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
+                    byMenuId.computeIfAbsent(menu.orElse(null), k -> new ArrayList<>()).add(ScreenModifier.fromGuiMod(mod));
 
                     if (!mod.slotModifiers().isEmpty()) {
                         Set<SlotModifier> map = slotsByMenuId.computeIfAbsent(menu.orElse(null),
@@ -103,7 +104,7 @@ public class GuiModifierManager extends JsonPartialReloader {
             } else {
                 //title target
                 String title = mod.target();
-                byTitle.merge(title, ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
+                byTitle.computeIfAbsent(title, k -> new ArrayList<>()).add(ScreenModifier.fromGuiMod(mod));
 
                 if (!mod.slotModifiers().isEmpty()) {
                     Set<SlotModifier> map = slotsByTitle.computeIfAbsent(title,

@@ -18,6 +18,7 @@ import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -109,7 +110,7 @@ public class ConfigScreen extends OptionsSubScreen {
      * only restore the scroll position so the list doesn't jump.
      */
     private void rebuildPreservingScroll() {
-        double scroll = this.list != null ? this.list.scrollAmount() : 0;
+        double scroll = this.list != null ? this.list.getScrollAmount() : 0;
         this.rebuildWidgets();
         if (this.list != null) {
             this.list.setScrollAmount(scroll);

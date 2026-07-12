@@ -5,7 +5,9 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.utils.InteractionTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -81,5 +83,21 @@ public class GlobalProxy {
     // Stub - EnvironmentAttribute system doesn't exist on 1.21.1
     public Object environmentAttribute(String value) {
         return 0;
+    }
+
+    /**
+     * The last entity the player right-clicked, wrapped as an {@link EntityProxy}, or null if none
+     * (or it despawned). Lets expressions branch on "what opened this menu" - e.g. a gui_modifier
+     * condition {@code g.hasInteracted() && g.lastInteractedEntity.profession() == 'cleric'}.
+     * Guard access with {@link #hasInteracted()} since dereferencing a null proxy fails the expression.
+     */
+    @Nullable
+    public EntityProxy lastInteractedEntity() {
+        Entity e = InteractionTracker.getLastEntity();
+        return e == null ? null : new EntityProxy(e);
+    }
+
+    public boolean hasInteracted() {
+        return InteractionTracker.getLastEntity() != null;
     }
 }

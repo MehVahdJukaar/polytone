@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.platform;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.serialization.MapCodec;
@@ -414,5 +415,11 @@ public class PlatStuffImpl {
             }
         }
         COLOR_RESOLVERS = found;
+    }
+
+    public static void matchStencil(RenderTarget main, RenderTarget snapshot) {
+        if (main.isStencilEnabled() && !snapshot.isStencilEnabled()) {
+            snapshot.enableStencil(); // reallocates the snapshot's attachment to match main's depth+stencil format
+        }
     }
 }
