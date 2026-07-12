@@ -35,6 +35,9 @@ import java.util.Map;
  *     <li>{@code uniform mat4 PolyModelViewMat} — the camera/view (model-view) matrix</li>
  *     <li>{@code uniform float PolySunAngle} — sun angle in radians (0 = noon, like 1.21.11)</li>
  *     <li>{@code uniform float PolyDayTime} — world day time in ticks (0..24000)</li>
+ *     <li>{@code uniform float PolyDeltaTime} — frame delta time in ticks (real render delta)</li>
+ *     <li>{@code uniform ivec3 PolyPlayerBlockPos} / {@code uniform vec3 PolyPlayerOffset} — lerped player (feet)
+ *         position, split for float precision at large coords: {@code exact = vec3(PolyPlayerBlockPos) - PolyPlayerOffset}</li>
  *     <li>{@code uniform sampler2D InDepth} — level depth texture, only bound when {@code use_depth_buffer} is set</li>
  * </ul>
  * Shaders that don't declare a given uniform/sampler are unaffected ({@code safeGetUniform} no-ops).
@@ -45,6 +48,9 @@ public final class PostChainEffect {
     public static final String MODEL_VIEW_MAT = "PolyModelViewMat";
     public static final String SUN_ANGLE = "PolySunAngle";
     public static final String DAY_TIME = "PolyDayTime";
+    public static final String DELTA_TIME = "PolyDeltaTime";
+    public static final String PLAYER_BLOCK_POS = "PolyPlayerBlockPos";
+    public static final String PLAYER_OFFSET = "PolyPlayerOffset";
     public static final String DEPTH_SAMPLER = "InDepth";
 
     public static final Codec<PostChainEffect> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -112,6 +118,11 @@ public final class PostChainEffect {
         effect.safeGetUniform(MODEL_VIEW_MAT).set(frame.modelViewMat());
         effect.safeGetUniform(SUN_ANGLE).set(frame.sunAngle());
         effect.safeGetUniform(DAY_TIME).set(frame.dayTime());
+        effect.safeGetUniform(DELTA_TIME).set(frame.deltaTime());
+        var bp = frame.playerBlockPos();
+        effect.safeGetUniform(PLAYER_BLOCK_POS).set(bp.getX(), bp.getY(), bp.getZ());
+        var off = frame.playerOffset();
+        effect.safeGetUniform(PLAYER_OFFSET).set((float) off.x, (float) off.y, (float) off.z);
         for (var e : expressionUniforms.entrySet()) {
             effect.safeGetUniform(e.getKey()).set((float) e.getValue().evaluate());
         }

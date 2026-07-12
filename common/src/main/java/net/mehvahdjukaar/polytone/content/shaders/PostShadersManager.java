@@ -10,12 +10,14 @@ import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.PostChain;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 import java.io.IOException;
@@ -276,13 +278,24 @@ public class PostShadersManager extends JsonPartialReloader {
             Minecraft mc = Minecraft.getInstance();
             float sunAngle = 0f;
             float dayTime = 0f;
+            // frame delta time in ticks (matches 1.21.11 PolyDeltaTime = deltaTracker.getGameTimeDeltaTicks())
+            float deltaTime = mc.getTimer().getGameTimeDeltaTicks();
             ClientLevel level = mc.level;
+            float partial = mc.getTimer().getGameTimeDeltaPartialTick(false);
             if (level != null) {
-                float partial = mc.getTimer().getGameTimeDeltaPartialTick(false);
                 // match 1.21.11: 0 = noon (sun straight up), measured from the horizon
                 sunAngle = level.getSunAngle(partial) - Mth.HALF_PI;
                 dayTime = (float) (level.getDayTime() % 24000L);
             }
+
+            // lerped player (feet) position, split like vanilla's CameraBlockPos/CameraOffset so shaders
+            // keep float precision at large coordinates: exact = vec3(PolyPlayerBlockPos) - PolyPlayerOffset
+            Vec3 playerPos = mc.player == null ? Vec3.ZERO : mc.player.getPosition(partial);
+            BlockPos playerBlockPos = BlockPos.containing(playerPos);
+            Vec3 playerOffset = new Vec3(
+                    playerBlockPos.getX() - playerPos.x,
+                    playerBlockPos.getY() - playerPos.y,
+                    playerBlockPos.getZ() - playerPos.z);
 
             IntSupplier depthTexture = prepareDepthSnapshot(mc);
 
@@ -290,7 +303,8 @@ public class PostShadersManager extends JsonPartialReloader {
                 PostChainEffect effect = entry.getKey();
                 PostChain chain = entry.getValue();
                 ACTIVE_POST_PASS.set(new ActivePostPassFrame(
-                        effect, projMat, modelViewMat, sunAngle, dayTime, depthTexture));
+                        effect, projMat, modelViewMat, sunAngle, dayTime,
+                        deltaTime, playerBlockPos, playerOffset, depthTexture));
                 try {
                     chain.process(partialTicks);
                 } catch (Exception e) {
@@ -351,6 +365,9 @@ public class PostShadersManager extends JsonPartialReloader {
             Matrix4f modelViewMat,
             float sunAngle,
             float dayTime,
+            float deltaTime,
+            BlockPos playerBlockPos,
+            Vec3 playerOffset,
             IntSupplier depthTexture
     ) {}
 
