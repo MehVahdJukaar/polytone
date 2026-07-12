@@ -5,11 +5,26 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
+/**
+ * Clickable namespace header for the config screen: a disclosure chevron (▶ collapsed / ▼ expanded)
+ * followed by the bold namespace title. The chevron is a white polytone sprite, tinted per state.
+ * The whole row toggles the namespace; the list is rebuilt on toggle, so this widget only ever
+ * renders one state.
+ */
 class NamespaceHeaderWidget extends Button {
+    // White sprites under assets/polytone/textures/gui/sprites/config; the gui atlas picks them up
+    // by namespace and they are blitted 1:1 (native == on-screen size) to stay on the pixel grid.
+    private static final Identifier CHEVRON_COLLAPSED =
+            Identifier.fromNamespaceAndPath("polytone", "config/section_collapsed");
+    private static final Identifier CHEVRON_EXPANDED =
+            Identifier.fromNamespaceAndPath("polytone", "config/section_expanded");
+    // 7x7 native: one shy of the 8px glyph, since bold text gains a pixel and would otherwise overpower it.
     private static final int CHEVRON_SIZE = 7;
-    private static final int TEXT_GAP = 5;
+    private static final int TEXT_GAP = 3;
 
     private final Component boldTitle;
     private final boolean expanded;
@@ -31,24 +46,17 @@ class NamespaceHeaderWidget extends Button {
 
         int color = !this.active ? 0xA0A0A0 : highlighted ? 0xFFFFA0 : 0xFFFFFF;
 
+        // Vanilla vertical text centering (AbstractWidget#renderScrollingString): (h - 9)/2 + 1.
+        // Both the 8px glyph and the 8px chevron share this top, so they line up on the pixel grid.
+        int contentTop = this.getY() + (this.getHeight() - 9) / 2 + 1;
+
         int chevronX = this.getX() + 1;
-        int chevronY = this.getY() + (this.getHeight() - CHEVRON_SIZE) / 2;
-        drawChevron(guiGraphics, chevronX, chevronY, this.expanded, 0xFF000000 | color);
+        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
+                this.expanded ? CHEVRON_EXPANDED : CHEVRON_COLLAPSED,
+                chevronX, contentTop, CHEVRON_SIZE, CHEVRON_SIZE, 0xFF000000 | color);
 
         Font font = Minecraft.getInstance().font;
         int textX = chevronX + CHEVRON_SIZE + TEXT_GAP;
-        int textY = this.getY() + (this.getHeight() - font.lineHeight) / 2;
-        guiGraphics.drawString(font, this.boldTitle, textX, textY, 0xFF000000 | color);
-    }
-
-    private static void drawChevron(GuiGraphics guiGraphics, int x, int y, boolean expanded, int argb) {
-        int half = CHEVRON_SIZE / 2; // 3
-        for (int i = 0; i <= half; i++) {
-            if (expanded) {
-                guiGraphics.fill(x + i, y + i, x + CHEVRON_SIZE - i, y + i + 1, argb);
-            } else {
-                guiGraphics.fill(x + i, y + i, x + i + 1, y + CHEVRON_SIZE - i, argb);
-            }
-        }
+        guiGraphics.drawString(font, this.boldTitle, textX, contentTop, 0xFF000000 | color);
     }
 }

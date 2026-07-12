@@ -48,7 +48,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
             i.optional("targets", Targets.CODEC, Targets.EMPTY, BiomeEffectModifier::targets)
     ).apply(i, BiomeEffectModifier::new));
 
-    public static final Codec<BiomeEffectModifier> CODEC = SchemaCodecs.postProcess(DIRECT_CODEC,
+    public static final Codec<BiomeEffectModifier> CODEC = SchemaCodecs.withExtra(DIRECT_CODEC,
             ColorUtils.COLOR.optionalFieldOf("fog_color"),
             ColorUtils.COLOR.optionalFieldOf("sky_color"),
             //shitty backward compat. todo: remove

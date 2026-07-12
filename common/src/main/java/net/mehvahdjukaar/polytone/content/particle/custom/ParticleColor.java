@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.codecui.SchemaRecord;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.core.BlockPos;
@@ -94,7 +95,10 @@ public record ParticleColor(IColorGetter getter, CachePolicy policy) {
         private void sampleAndApply(Level level, @Nullable BlockState state, BlockPos pos) {
             blockKey = pos.asLong();
             sectionVersion = ParticleLightCache.sectionVersion(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
-            colormap.getter().getColor(state, level, pos, 0);
+            float[] unpack = ColorUtils.unpack(colormap.getter().getColor(state, level, pos, 0));
+            p.rCol = unpack[0];
+            p.gCol = unpack[1];
+            p.bCol = unpack[2];
         }
     }
 

@@ -255,7 +255,7 @@ public class ConfigScreen extends OptionsSubScreen {
                 List<OptionHolder<?>> group = bySection.get(section);
                 if (group == null || group.isEmpty()) continue;
                 section.ifPresent(s -> {
-                    list.addHeader(sectionTitle(modId, s));
+                    list.addSectionHeader(sectionTitle(modId, s));
                     addPresetSlider(list, modId, sectionSliders.get(section), s);
                 });
                 addOptionRows(list, group);
