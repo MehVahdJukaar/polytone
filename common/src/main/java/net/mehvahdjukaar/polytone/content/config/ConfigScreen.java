@@ -36,6 +36,8 @@ public class ConfigScreen extends OptionsSubScreen {
 
     @Nullable
     private SpriteIconButton heartButton;
+    @Nullable
+    private SpriteIconButton editorButton;
 
     public ConfigScreen(Screen screen, Collection<OptionHolder<?>> options, Runnable safeFunc) {
         super(screen, Minecraft.getInstance().options, TITLE);
@@ -78,20 +80,17 @@ public class ConfigScreen extends OptionsSubScreen {
     @Override
     protected void addFooter() {
         int buttonW = 20;
-        int spacing = 8;
-        // Nautilus Studio pack-editor button, only when that mod is installed.
-        boolean editorAvailable = PlatStuff.isModLoaded("nautilus_studio");
-        int extraButtons = 1 + (editorAvailable ? 1 : 0); // heart (+ editor)
-        // ExtraWidthHorizontalLayout under-reports its width by the trailing icon buttons so that
-        // adding them appends to the right without shifting the centered Reset/Done buttons.
-        LinearLayout linearLayout = this.layout.addToFooter(
-                new ExtraWidthHorizontalLayout(-extraButtons * (buttonW + spacing), 0).spacing(spacing));
+        // Centered Reset/Done row, as vanilla.
+        LinearLayout linearLayout = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
         linearLayout.addChild(Button.builder(Component.translatable("screen.polytone.configs.reset"),
                 b -> resetValues()).build());
         linearLayout.addChild(Button.builder(CommonComponents.GUI_DONE,
                 b -> this.minecraft.setScreen(this.lastScreen)).build());
-        if (editorAvailable) {
-            linearLayout.addChild(SpriteIconButton.builder(
+
+        // Corner icon buttons: free widgets pinned to the screen edges in repositionElements().
+        // Nautilus Studio pack-editor button on the LEFT, only when that mod is installed.
+        if (PlatStuff.isModLoaded("nautilus_studio")) {
+            this.editorButton = this.addRenderableWidget(SpriteIconButton.builder(
                             Component.translatable("screen.polytone.editor.open"),
                             b -> openEditor(),
                             true)
@@ -99,15 +98,28 @@ public class ConfigScreen extends OptionsSubScreen {
                     .sprite(Polytone.res("codec_editor"), 16, 16)
                     .build());
         }
-        SpriteIconButton heart = SpriteIconButton.builder(
+        // Support/heart button on the RIGHT.
+        this.heartButton = this.addRenderableWidget(SpriteIconButton.builder(
                         Component.translatable("screen.polytone.support.title"),
                         b -> this.minecraft.setScreen(new SupportScreen(this)),
                         true)
                 .size(buttonW, 20)
                 .sprite(Polytone.res("heart"), 16, 16)
-                .build();
-        this.heartButton = heart;
-        linearLayout.addChild(heart);
+                .build());
+    }
+
+    @Override
+    protected void repositionElements() {
+        super.repositionElements();
+        int margin = 8;
+        int footerH = this.layout.getFooterHeight();
+        int y = this.height - footerH + (footerH - 20) / 2;
+        if (this.editorButton != null) {
+            this.editorButton.setPosition(margin, y);
+        }
+        if (this.heartButton != null) {
+            this.heartButton.setPosition(this.width - margin - this.heartButton.getWidth(), y);
+        }
     }
 
     /** Boot the Swing editor off-thread (heavy schema/window build); focus it if already open. */
