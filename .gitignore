@@ -22,3 +22,16 @@ classes/
 .*
 !.gitignore
 CLAUDE.md
+/resourcepacks/config_test/assets/config_test/polytone/config_entries/a_enabled.json
+/resourcepacks/config_test/assets/config_test/polytone/config_entries/b_quality.json
+/resourcepacks/config_test/assets/config_test/polytone/config_entries/c_mode.json
+/resourcepacks/config_test/assets/config_test/polytone/config_entries/d_scale.json
+/resourcepacks/config_test/assets/config_test/lang/en_us.json
+/neoforge/mods/fabric-api-base-0.4.42.jar
+/neoforge/mods/fabric-block-view-api-v2-1.0.10.jar
+/neoforge/mods/fabric-renderer-api-v1-3.4.1.jar
+/neoforge/mods/fabric-rendering-data-attachment-v1-0.3.48.jar
+/resourcepacks/config_test/pack.mcmeta
+/common/mods/sodium-neoforge-mod-0.8.12.jar
+/neoforge/mods/sodium-neoforge-mod-0.8.12.jar
+/resourcepacks/builds/sunbathing-v1.5.zip
