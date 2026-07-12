@@ -65,6 +65,9 @@ public class LevelRendererMixin {
                                     ChunkSectionsToRender chunkSectionsToRender,
                                     CallbackInfo ci,
                                     @Local FrameGraphBuilder frameGraphBuilder) {
+        // Standard placement only. When post_chains_after_hand is on (default), chains run later,
+        // after the first-person hand, from GameRendererMixin so held items occlude depth effects.
+        if (Polytone.CONFIGS.postChainsAfterHand.get()) return;
         int i = this.minecraft.getMainRenderTarget().width;
         int j = this.minecraft.getMainRenderTarget().height;
         Polytone.POST_CHAINS.addPostPass(i, j, this.targets, frameGraphBuilder, terrainFog, this.levelRenderState.cameraRenderState);

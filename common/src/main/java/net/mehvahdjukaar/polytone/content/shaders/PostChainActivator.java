@@ -64,6 +64,11 @@ public final class PostChainActivator {
         cachedOn = turnOnCondition.evaluate() > 0;
     }
 
+    /** Whether this chain's activation condition currently passes (as of the last {@link #refreshEnabled}). */
+    public boolean isOn() {
+        return cachedOn;
+    }
+
     @Nullable
     public PostChain getPostChain(ShaderManager manager) {
         if (!cachedOn) return null;

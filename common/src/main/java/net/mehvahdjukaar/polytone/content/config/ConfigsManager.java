@@ -39,6 +39,10 @@ public class ConfigsManager extends JsonPartialReloader {
     public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", false);
     public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false);
     public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", true);
+    // When true (default) depth-reading post chains run after the first-person hand so held items
+    // (e.g. a shield) occlude effects like godrays. Turn off to run them in the standard spot,
+    // inside the level FrameGraph before the hand is drawn (the previous behaviour).
+    public final OptionHolder<Boolean> postChainsAfterHand = builtinConfig("post_chains_after_hand", true);
 
     private static @NonNull OptionHolder<Boolean> builtinConfig(String id, boolean def) {
         return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), 1, def), Polytone.res(id));
@@ -72,7 +76,7 @@ public class ConfigsManager extends JsonPartialReloader {
     }
 
     private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
-        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton)) {
+        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postChainsAfterHand)) {
             b.loadFromJson(configFileSnapshot);
             reg.unregister(b.fileId);
             reg.register(b.fileId, b);
@@ -233,7 +237,7 @@ public class ConfigsManager extends JsonPartialReloader {
         activeLoadConfigs.remove();
         configs.clear();
         for (OptionHolder<?> builtin : List.of(lenientLoading, legacyParsing, particlesThrottle, particlesOffThread,
-                autoParticleRateLimit, showConfigButton)) {
+                autoParticleRateLimit, showConfigButton, postChainsAfterHand)) {
             builtin.loadFromJson(configFileSnapshot);
             configs.register(builtin.fileId, builtin);
         }

@@ -32,5 +32,7 @@
   "config.polytone.custom_particles_async.tooltip": "Makes Custom Particles tick logic run on a different thread. Very crude and experimental. Might improve performance or not.",
   "config.polytone.header": "Polytone",
   "config.polytone.show_config_button": "Show Config Button",
-  "config.polytone.show_config_button.tooltip": "Shows the Polytone config button on the resource pack selection screen."
+  "config.polytone.show_config_button.tooltip": "Shows the Polytone config button on the resource pack selection screen.",
+  "config.polytone.post_chains_after_hand": "Held Item Occludes Post Shaders",
+  "config.polytone.post_chains_after_hand.tooltip": "Runs depth-reading post shaders (like godrays) after the first-person hand is drawn, so held items such as a shield correctly block them. Turn off to run post shaders in the older standard spot, before the hand."
 }
