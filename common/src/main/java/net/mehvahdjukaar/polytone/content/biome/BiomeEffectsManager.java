@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.biome;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -35,7 +35,7 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier, Map
     private boolean needsDynamicApplication = true;
 
     public BiomeEffectsManager() {
-        super("biome_modifier", () -> SchemaCodecs.labeled(BiomeEffectModifier.CODEC), "biome_modifiers", "biome_effects");
+        super("Biome modifier", () -> SchemaCodec.wrap(BiomeEffectModifier.CODEC), "biome_modifiers", "biome_effects");
     }
 
     @Override

@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class CustomItemModelsManager extends JsonPartialReloader {
+public class CustomItemModelsManager extends JsonPartialReloader<Void> {
 
 
     private final Map<Item, ItemModelOverrideList> itemModels = new Object2ObjectOpenHashMap<>();
@@ -30,7 +30,7 @@ public class CustomItemModelsManager extends JsonPartialReloader {
     private final Map<Item, List<ItemModelOverride>> itemModifiersModels = new HashMap<>();
 
     public CustomItemModelsManager() {
-        super("custom_item_models");
+        super("Custom item model", "custom_item_models");
 
     }
 

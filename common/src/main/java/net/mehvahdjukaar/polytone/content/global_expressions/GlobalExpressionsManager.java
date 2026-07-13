@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.global_expressions;
 
 import com.google.gson.JsonElement;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.Parsed;
@@ -13,14 +14,14 @@ import org.mvel2.ParserContext;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GlobalExpressionsManager extends JsonPartialReloader {
+public class GlobalExpressionsManager extends JsonPartialReloader<GlobalExpression> {
 
     private final MapRegistry<GlobalExpression> expressions = new MapRegistry<>("Global Expressions");
     private final Map<String, Double> values = new HashMap<>();
     private long lastGameTime = Long.MIN_VALUE;
 
     public GlobalExpressionsManager() {
-        super("global_expressions");
+        super("Global expression", () -> SchemaCodec.wrap(GlobalExpression.CODEC), "global_expressions");
     }
 
     // ResourceLocation has no toDebugFileName() on 1.21.1 - replicate it: a safe MVEL variable

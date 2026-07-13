@@ -13,6 +13,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -52,7 +53,7 @@ import java.util.function.IntSupplier;
  * {@code gameRenderer.postEffect}, never replacing or modifying it — so other mods
  * that toggle the vanilla post effect (e.g. spectator-mode shaders) keep working.</p>
  */
-public class PostShadersManager extends JsonPartialReloader {
+public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
 
     /**
      * Set on the render thread while we're constructing a {@link PostChain} for a polytone effect.
@@ -96,7 +97,7 @@ public class PostShadersManager extends JsonPartialReloader {
     private boolean depthCombineFailed = false;
 
     public PostShadersManager() {
-        super("post_shaders");
+        super("Post shader", () -> SchemaCodec.wrap(PostChainEffect.CODEC), "post_shaders");
     }
 
     @Override

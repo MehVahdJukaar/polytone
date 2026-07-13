@@ -6,6 +6,7 @@ import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
@@ -32,9 +33,9 @@ import java.util.Optional;
  * cross-frame persistence and exposes the targets for READ (as samplers). Writing into a persistent
  * target from a chain is not supported on 1.21.1's old PostChain (see gap note in the port report).</p>
  */
-public class PostTargetsManager extends JsonPartialReloader {
+public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.TargetSpec> {
 
-    private record TargetSpec(Optional<Integer> width, Optional<Integer> height, boolean useDepth) {
+    record TargetSpec(Optional<Integer> width, Optional<Integer> height, boolean useDepth) {
         static final Codec<TargetSpec> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.INT.optionalFieldOf("width").forGetter(TargetSpec::width),
                 Codec.INT.optionalFieldOf("height").forGetter(TargetSpec::height),
@@ -47,7 +48,7 @@ public class PostTargetsManager extends JsonPartialReloader {
     private final Map<ResourceLocation, RenderTarget> targets = new HashMap<>();
 
     public PostTargetsManager() {
-        super("post_targets");
+        super("Post target", () -> SchemaCodec.wrap(TargetSpec.CODEC), "post_targets");
     }
 
     @Override

@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-public class VariantTextureManager extends JsonPartialReloader {
+public class VariantTextureManager extends JsonPartialReloader<VariantTexture> {
 
     private final WeakHashMap<BakedQuad, Map<ResourceLocation, BakedQuad>> variantQuadsCache = new WeakHashMap<>();
 
@@ -40,7 +40,8 @@ public class VariantTextureManager extends JsonPartialReloader {
     private final Set<Block> forceTintBlocks = new HashSet<>();
 
     public VariantTextureManager() {
-        super("variant_textures");
+        // 1.21.1 VariantTexture.CODEC is only a Decoder, not a full Codec; not editable until ported.
+        super("Variant texture", "variant_textures");
     }
 
     @Override

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.gui.Gui;
@@ -17,13 +18,13 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class GuiOverlayManager extends JsonPartialReloader {
+public class GuiOverlayManager extends JsonPartialReloader<BlitModifier> {
 
     private final Map<Gui.HeartType, HeartSprites> heartSprites = new EnumMap<>(Gui.HeartType.class);
     private final Map<ResourceLocation, BlitModifier> blitModifiers = new HashMap<>();
 
     public GuiOverlayManager() {
-        super("overlay_modifiers");
+        super("Overlay modifier", () -> SchemaCodec.wrap(BlitModifier.CODEC), "overlay_modifiers");
     }
 
     @Override

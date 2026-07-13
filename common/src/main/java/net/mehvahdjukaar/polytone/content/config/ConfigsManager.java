@@ -9,6 +9,7 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.utils.FilesUtil;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.Parsed;
@@ -40,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * expressions. Configs are loaded eagerly per-pack at pack-discovery time (see PackMixin) so overlay
  * conditions can be evaluated before the resource reload.
  */
-public class ConfigsManager extends JsonPartialReloader {
+public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
 
     public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);
     public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", true);
@@ -60,7 +61,7 @@ public class ConfigsManager extends JsonPartialReloader {
     private final AtomicBoolean needsPackReload = new AtomicBoolean(false);
 
     public ConfigsManager() {
-        super("config_entries");
+        super("Config entry", () -> SchemaCodec.wrap(PolyConfig.CODEC), "config_entries");
         this.optionsFile = Minecraft.getInstance().gameDirectory.toPath().resolve("polytone_options.json").toFile();
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         loadConfigFromDisk();

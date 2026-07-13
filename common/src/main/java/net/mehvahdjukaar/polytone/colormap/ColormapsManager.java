@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.companion.TrackedTextures;
@@ -64,7 +64,7 @@ public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
     }
 
     public ColormapsManager() {
-        super("Colormap", () -> SchemaCodecs.labeled(Colormap.DIRECT_CODEC),
+        super("Colormap", () -> SchemaCodec.wrap(Colormap.DIRECT_CODEC),
                 ColormapTextures.singleTexture((Colormap c) -> c, "", "default"),
                 "colormaps");
     }

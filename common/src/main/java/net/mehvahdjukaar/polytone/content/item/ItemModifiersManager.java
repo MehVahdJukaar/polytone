@@ -5,6 +5,7 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.Colormap;
 import net.mehvahdjukaar.polytone.colormap.ColormapsManager;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.core.RegistryAccess;
@@ -19,14 +20,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ItemModifiersManager extends JsonImgPartialReloader {
+public class ItemModifiersManager extends JsonImgPartialReloader<ItemModifier> {
 
     private final Map<Item, ItemModifier> modifiers = new HashMap<>();
     private final Map<Item, ItemModifier> vanillaProperties = new HashMap<>();
 
 
     public ItemModifiersManager() {
-        super("item_modifiers", "item_properties");
+        super("Item modifier", () -> SchemaCodec.wrap(ItemModifier.CODEC), "item_modifiers", "item_properties");
     }
 
     // early reload to grab the extra models we need to add.

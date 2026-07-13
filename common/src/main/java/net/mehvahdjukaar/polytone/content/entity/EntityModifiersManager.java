@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.entity;
 
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -20,7 +20,7 @@ public class EntityModifiersManager extends ContentManager<EntityModifier, Map<R
     private final Map<EntityType<?>, EntityModifier> emittersPerEntity = new HashMap<>();
 
     public EntityModifiersManager() {
-        super("entity_modifier", () -> SchemaCodecs.labeled(EntityModifier.CODEC), "entity_modifiers");
+        super("Entity modifier", () -> SchemaCodec.wrap(EntityModifier.CODEC), "entity_modifiers");
     }
 
     @Override

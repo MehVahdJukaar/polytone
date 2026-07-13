@@ -17,7 +17,7 @@ import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 import java.util.List;
 import java.util.Map;
 
-public class NoiseManager extends JsonPartialReloader {
+public class NoiseManager extends JsonPartialReloader<PerlinSimplexNoise> {
 
     public static final Decoder<PerlinSimplexNoise> NOISE_CODEC = RecordCodecBuilder.create((instance) -> instance.group(
             Codec.INT.fieldOf("seed").forGetter(p -> 0),
@@ -26,7 +26,7 @@ public class NoiseManager extends JsonPartialReloader {
 
 
     public NoiseManager() {
-        super("noises");
+        super("Noise", "noises");
     }
 
     private final MapRegistry<PerlinSimplexNoise> noises = new MapRegistry<>("Polytone Simplex Noises");

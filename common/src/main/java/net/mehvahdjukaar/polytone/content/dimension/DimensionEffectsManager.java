@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class DimensionEffectsManager extends JsonImgPartialReloader {
+public class DimensionEffectsManager extends JsonImgPartialReloader<DimensionEffectsModifier> {
 
     //we cant store dimensions here since the dimension registry isnt synced to the client
     //!!map of dimension modifier IDs to modifiers
@@ -56,7 +56,8 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private final Map<ResourceLocation, Parsed<DimensionEffectsModifier>> extraMods = new HashMap<>();
 
     public DimensionEffectsManager() {
-        super("dimension_modifiers", "dimension_effects");
+        // 1.21.1 DimensionEffectsModifier.CODEC is only a Decoder, not a full Codec; not editable until ported.
+        super("Dimension modifier", "dimension_modifiers", "dimension_effects");
     }
 
     @Override

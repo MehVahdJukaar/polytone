@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.gui.GuiGraphics;
@@ -25,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class GuiModifierManager extends JsonPartialReloader {
+public class GuiModifierManager extends JsonPartialReloader<GuiModifier> {
 
     //value modifiers
     private final Map<MenuType<?>, Set<SlotModifier>> slotsByMenuId = new IdentityHashMap<>();
@@ -42,7 +43,7 @@ public class GuiModifierManager extends JsonPartialReloader {
     private static final ResourceLocation INVENTORY = ResourceLocation.parse("inventory");
 
     public GuiModifierManager() {
-        super("gui_modifiers");
+        super("GUI modifier", () -> SchemaCodec.wrap(GuiModifier.CODEC), "gui_modifiers");
     }
 
     @Override

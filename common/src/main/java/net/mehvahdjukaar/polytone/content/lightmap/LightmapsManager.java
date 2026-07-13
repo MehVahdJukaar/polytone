@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -23,7 +24,7 @@ import net.minecraft.world.level.biome.Biome;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LightmapsManager extends JsonImgPartialReloader {
+public class LightmapsManager extends JsonImgPartialReloader<Lightmap> {
 
     public static final ResourceLocation GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
     private static final ResourceLocation DEFAULT_LIGHTMAP = ResourceLocation.withDefaultNamespace("default");
@@ -40,7 +41,7 @@ public class LightmapsManager extends JsonImgPartialReloader {
     private Lightmap currentLightmap = null;
 
     public LightmapsManager() {
-        super("lightmaps");
+        super("Lightmap", () -> SchemaCodec.wrap(Lightmap.CODEC), "lightmaps");
     }
 
     @Override

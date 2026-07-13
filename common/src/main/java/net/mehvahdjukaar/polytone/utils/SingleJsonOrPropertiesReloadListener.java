@@ -16,7 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public abstract class SingleJsonOrPropertiesReloadListener extends PartialReloader<Map<ResourceLocation, JsonElement>> {
+// Aggregated single-file content (e.g. colors.json): O is unused (never editable in the pack editor).
+public abstract class SingleJsonOrPropertiesReloadListener extends ContentManager<Object, Map<ResourceLocation, JsonElement>> {
     private static final Gson GSON = new Gson();
     private final String[] folders;
     private final String propertiesName;
@@ -26,7 +27,7 @@ public abstract class SingleJsonOrPropertiesReloadListener extends PartialReload
     protected SingleJsonOrPropertiesReloadListener(String myName,
                                                    String propertiesName, String jsonName,
                                                    String... possibleFolderLocations) {
-        super(myName);
+        super(myName, possibleFolderLocations);
         this.folders = possibleFolderLocations;
         this.propertiesName = propertiesName;
         this.jsonName = jsonName;

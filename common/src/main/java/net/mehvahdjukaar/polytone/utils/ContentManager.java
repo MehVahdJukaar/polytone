@@ -14,26 +14,8 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
-/**
- * A {@link PartialReloader} that also carries the two things the pack editor needs: a
- * {@link SchemaCodec} describing the content type ({@link #contentCodec()}) and an optional
- * {@link CompanionSpec} describing its sidecar files ({@link #companions}). Managers that expose
- * these become editable in Nautilus Studio; the reload lifecycle is inherited unchanged from
- * {@link PartialReloader}, so converting a manager is opt-in and near-zero-friction — swap the base
- * class and pass a codec to {@code super}; the existing {@code prepare}/{@code parseWithLevel}/… stay
- * exactly as they were.
- *
- * <p>1.21.1 port of the 1.21.11 {@code common.reloader.ContentManager}. That version replaced the
- * reload base outright and forced an {@code AssetsFiles} prepare bundle on every manager; here we
- * keep 1.21.1's {@link PartialReloader} lifecycle and its per-manager prepare type {@code T}, and
- * only layer the editor-facing API on top. Existing {@code PartialReloader} managers are untouched.</p>
- *
- * @param <O> the decoded content type this manager's files parse into (what the editor edits)
- * @param <T> the prepare bundle type, same as {@link PartialReloader}'s (often {@link AssetsFiles})
- */
 public abstract class ContentManager<O, T> extends PartialReloader<T> {
 
-    /** Every ContentManager built this run, in construction order; the editor registers the codec-backed ones. */
     public static final List<ContentManager<?, ?>> REGISTRY = new CopyOnWriteArrayList<>();
 
     private final Supplier<@Nullable ? extends SchemaCodec<O>> contentCodec;
@@ -57,13 +39,16 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
         REGISTRY.add(this);
     }
 
-    /** The schema-aware file codec for this content type, or null when this manager isn't editable. */
     public @Nullable SchemaCodec<O> contentCodec() {
         return contentCodec.get();
     }
 
     public Iterable<String> folderNames() {
         return List.of(names);
+    }
+
+    public @Nullable String primaryFolder() {
+        return names.length == 0 ? null : names[0];
     }
 
     // -------------------- parse helpers (condition-aware, via the existing Parsed) --------------------

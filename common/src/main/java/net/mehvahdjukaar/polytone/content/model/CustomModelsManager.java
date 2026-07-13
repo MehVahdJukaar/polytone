@@ -21,7 +21,7 @@ import java.util.Map;
  * keyed by {@link ModelLayerLocation}. Those layers are merged into the game's {@code EntityModelSet} so they bake
  * through the vanilla pipeline, which makes them visible to model replacing mods such as EMF.
  */
-public class CustomModelsManager extends JsonPartialReloader {
+public class CustomModelsManager extends JsonPartialReloader<ModelDefinition> {
 
     /** Sub layer name used for every Polytone model layer. */
     public static final String LAYER = "main";
@@ -30,7 +30,7 @@ public class CustomModelsManager extends JsonPartialReloader {
     private final Map<ModelLayerLocation, LayerDefinition> layers = new HashMap<>();
 
     public CustomModelsManager() {
-        super("custom_models");
+        super("Custom models", "custom_models");
     }
 
     /** Reference-by-id codec, used by {@code CodecUtils.referenceOrDirect} alongside {@link ModelDefinition#CODEC}. */

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.colormap.ColormapTextures;
 import net.mehvahdjukaar.polytone.colormap.IndexCompoundColorGetter;
@@ -50,7 +50,7 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
     private Map<ResourceLocation, Properties> ofProperties = Map.of();
 
     public BlockPropertiesManager() {
-        super("Block modifier", () -> SchemaCodecs.labeled(BlockPropertyModifier.CODEC),
+        super("Block modifier", () -> SchemaCodec.wrap(BlockPropertyModifier.CODEC),
                 ColormapTextures.groupedTexture(
                         (BlockPropertyModifier m) -> m.getColormap()),
                 "block_modifiers", "block_properties");

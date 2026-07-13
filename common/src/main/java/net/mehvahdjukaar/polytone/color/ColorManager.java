@@ -87,7 +87,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
-        super("colo_manager",
+        super("Color Manager",
                 "color.properties", "colors.json",
                 Polytone.MOD_ID, "colormatic", "vanadium", "optifine");
     }
