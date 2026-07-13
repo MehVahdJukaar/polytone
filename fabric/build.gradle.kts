@@ -29,7 +29,7 @@ dependencies {
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
     modImplementation("maven.modrinth:sodium:mc1.21.1-0.8.12-fabric") // sodium 0.8.x line for 1.21.1
 
-    modCompileOnly("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
+    modImplementation("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
     modCompileOnly("curse.maven:serene-seasons-291874:6182595")
     modCompileOnly("curse.maven:fabric-seasons-413523:5789846")
 

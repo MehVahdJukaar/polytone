@@ -15,8 +15,8 @@
   "polytone.performance_impact.medium": "Medium",
   "polytone.performance_impact.high": "High",
   "polytone.performance_impact.varies": "Varies",
-  "screen.polytone.editor.open": "Open Pack Editor",
-  "screen.polytone.editor.no_mod": "Requires the §bNautilus Studio§r editor mod.\nClick to download.",
+  "screen.polytone.editor.open": "Open §dNautilus Studio§r",
+  "screen.polytone.editor.no_mod": "Requires the §dNautilus Studio§r editor mod.\nClick to download.",
   "screen.polytone.support.title": "Polytone",
   "screen.polytone.support.section.donate": "Enjoying Polytone? Support me here <3",
   "screen.polytone.support.section.help": "Need help? Feel free to ask!",
@@ -40,5 +40,7 @@
   "config.polytone.custom_particles_async.tooltip": "Makes Custom Particles tick logic run on a different thread. Very crude and experimental. Might improve performance or not.",
   "config.polytone.header": "Polytone",
   "config.polytone.show_config_button": "Show Config Button",
-  "config.polytone.show_config_button.tooltip": "Shows the Polytone config button on the resource pack selection screen."
+  "config.polytone.show_config_button.tooltip": "Shows the Polytone config button on the resource pack selection screen.",
+  "config.polytone.post_shaders_occlude_held_items": "Held Items Occlude Post Shaders",
+  "config.polytone.post_shaders_occlude_held_items.tooltip": "Make post shaders apply at a later stage allowing them to be occluded by held items. Experimental"
 }

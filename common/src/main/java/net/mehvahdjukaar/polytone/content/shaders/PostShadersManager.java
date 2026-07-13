@@ -4,6 +4,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -11,6 +17,7 @@ import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.PostChain;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
@@ -20,6 +27,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -82,6 +90,10 @@ public class PostShadersManager extends JsonPartialReloader {
      * loop), so we blit the level depth into this snapshot once per frame and sample that instead.
      */
     private TextureTarget depthSnapshot = null;
+
+    /** Fullscreen depth-only shader that folds the held-item depth into {@link #depthSnapshot}. */
+    private ShaderInstance depthCombineShader = null;
+    private boolean depthCombineFailed = false;
 
     public PostShadersManager() {
         super("post_shaders");
@@ -303,6 +315,15 @@ public class PostShadersManager extends JsonPartialReloader {
 
             IntSupplier depthTexture = prepareDepthSnapshot(mc);
 
+            // The depth snapshot is taken at the end of level rendering, before GameRenderer clears the
+            // depth buffer to draw the first-person hand. So held items (a raised shield) aren't in the
+            // depth that effects like godrays sample, and they leak straight through. Fold the hand depth
+            // back into the snapshot here (we run after the hand) so held items occlude depth effects.
+            if (depthTexture != null && depthCapturedThisFrame
+                    && Polytone.CONFIGS.postShadersOccludeHeldItems.get()) {
+                foldHeldItemDepthIntoSnapshot(mc);
+            }
+
             for (var entry : activeChains.entrySet()) {
                 PostChainEffect effect = entry.getKey();
                 PostChain chain = entry.getValue();
@@ -345,6 +366,58 @@ public class PostShadersManager extends JsonPartialReloader {
             main.bindWrite(false);
         }
         return depthSnapshot::getDepthTextureId;
+    }
+
+    /**
+     * Draw the (hand-only) main depth into the world-depth snapshot with a LEQUAL depth test, leaving
+     * {@code min(worldDepth, handDepth)} per pixel. Runs after the first-person hand has been drawn, so
+     * held items now occlude depth-driven post effects instead of leaking through them.
+     */
+    private void foldHeldItemDepthIntoSnapshot(Minecraft mc) {
+        ShaderInstance shader = getDepthCombineShader(mc);
+        if (shader == null) return;
+
+        RenderTarget main = mc.getMainRenderTarget();
+
+        depthSnapshot.bindWrite(true);
+
+        RenderSystem.disableBlend();
+        RenderSystem.disableCull();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
+        RenderSystem.depthMask(true);
+        RenderSystem.colorMask(false, false, false, false);
+
+        shader.setSampler("InSampler", main.getDepthTextureId());
+        RenderSystem.setShader(() -> shader);
+
+        BufferBuilder bb = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bb.addVertex(-1f, -1f, 0f).setUv(0f, 0f);
+        bb.addVertex(1f, -1f, 0f).setUv(1f, 0f);
+        bb.addVertex(1f, 1f, 0f).setUv(1f, 1f);
+        bb.addVertex(-1f, 1f, 0f).setUv(0f, 1f);
+        BufferUploader.drawWithShader(bb.buildOrThrow());
+
+        // Restore neutral state; the chain loop and vanilla's later HUD pass set up their own.
+        RenderSystem.colorMask(true, true, true, true);
+        RenderSystem.depthMask(true);
+        RenderSystem.disableDepthTest();
+        RenderSystem.enableCull();
+        main.bindWrite(false);
+    }
+
+    private ShaderInstance getDepthCombineShader(Minecraft mc) {
+        if (depthCombineShader == null && !depthCombineFailed) {
+            try {
+                depthCombineShader = new ShaderInstance(mc.getResourceManager(),
+                        "polytone_depth_combine", DefaultVertexFormat.POSITION_TEX);
+            } catch (Exception e) {
+                depthCombineFailed = true;
+                Polytone.LOGGER.error("Failed to load polytone_depth_combine shader; " +
+                        "held items will not occlude depth-driven post shaders", e);
+            }
+        }
+        return depthCombineShader;
     }
 
     private boolean anyActiveEffectUsesDepth() {
@@ -395,5 +468,10 @@ public class PostShadersManager extends JsonPartialReloader {
             depthSnapshot.destroyBuffers();
             depthSnapshot = null;
         }
+        if (depthCombineShader != null) {
+            depthCombineShader.close();
+            depthCombineShader = null;
+        }
+        depthCombineFailed = false;
     }
 }
