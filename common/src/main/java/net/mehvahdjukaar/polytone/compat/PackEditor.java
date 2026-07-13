@@ -10,7 +10,7 @@ import net.mehvahdjukaar.nautilus.NautilusStudioApi;
 import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
 import net.mehvahdjukaar.nautilus.swing.widget.ExpressionWidget;
 import net.mehvahdjukaar.nautilus.workbench.CodecEntry;
-import net.mehvahdjukaar.nautilus.workbench.FileNames;
+import net.mehvahdjukaar.nautilus.workbench.FileNamesUtil;
 import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
 import net.mehvahdjukaar.nautilus.workbench.SidecarAssets;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -184,7 +184,7 @@ public final class PackEditor {
         return (jsonFile, pack, parsedValue) -> {
             Path dir = jsonFile.getParent();
             if (dir == null || !Files.isDirectory(dir)) return List.of();
-            String stem = FileNames.stem(String.valueOf(jsonFile.getFileName()));
+            String stem = FileNamesUtil.stem(String.valueOf(jsonFile.getFileName()));
 
             Map<String, Path> siblings = new LinkedHashMap<>(); // lowercase name -> path
             try (Stream<Path> stream = Files.list(dir)) {
