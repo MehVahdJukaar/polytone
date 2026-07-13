@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone;
 
+import net.mehvahdjukaar.polytone.compat.PolytoneNautilus;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertiesManager;
@@ -30,12 +31,9 @@ import net.mehvahdjukaar.polytone.utils.CompoundReloader;
 import net.mehvahdjukaar.polytone.utils.GenericDirectorySpriteSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -115,7 +113,7 @@ public class Polytone {
         // Register editable content types with the Nautilus Studio pack editor, if that mod is present.
         // Guarded so its classes never load when absent.
         if (PlatStuff.isModLoaded("nautilus_studio")) {
-            net.mehvahdjukaar.polytone.compat.PolytoneEditor.init();
+            PolytoneNautilus.init();
         }
         isDevEnv = devEnv;
         isForge = forge;

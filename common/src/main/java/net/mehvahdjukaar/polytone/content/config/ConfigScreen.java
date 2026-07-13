@@ -7,6 +7,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.gui.PointingChatBubbleOverlay;
+import net.mehvahdjukaar.polytone.compat.PolytoneNautilus;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -73,8 +74,10 @@ public class ConfigScreen extends OptionsSubScreen {
     @Nullable
     private SpriteIconButton heartButton;
     @Nullable
-    private SpriteIconButton editorButton;
+    private EditorIconButton editorButton;
     private boolean rebuildScheduled;
+    /** True while the editor window is booting off-thread, so the button shows its loading icon. */
+    private volatile boolean editorBooting;
 
     // Shadows OptionsSubScreen.layout (which is final and built once in the constructor). That
     // inherited layout is never emptied, so re-running the vanilla init on every namespace toggle
@@ -142,13 +145,10 @@ public class ConfigScreen extends OptionsSubScreen {
         // Nautilus Studio pack-editor button (left) — always shown. With the editor mod present it
         // opens the editor; without it, its tooltip explains and a click opens the download page.
         boolean editorAvailable = PlatStuff.isModLoaded("nautilus_studio");
-        SpriteIconButton editor = SpriteIconButton.builder(
-                        Component.translatable("screen.polytone.editor.open"),
-                        b -> onEditorPressed(editorAvailable),
-                        true)
-                .size(iconW, 20)
-                .sprite(Polytone.res("codec_editor"), 16, 16)
-                .build();
+        EditorIconButton editor = new EditorIconButton(iconW, 20,
+                Component.translatable("screen.polytone.editor.open"),
+                editorAvailable, this,
+                b -> onEditorPressed(editorAvailable));
         editor.setTooltip(Tooltip.create(Component.translatable(
                 editorAvailable ? "screen.polytone.editor.open" : "screen.polytone.editor.no_mod")));
         this.editorButton = footer.addChild(editor);
@@ -191,15 +191,18 @@ public class ConfigScreen extends OptionsSubScreen {
 
     /** Boot the Swing editor off-thread (heavy schema/window build); focus it if already open. */
     private void openEditor() {
-        if (net.mehvahdjukaar.polytone.compat.PolytoneEditor.isOpen()) {
-            net.mehvahdjukaar.polytone.compat.PolytoneEditor.open();
+        if (PolytoneNautilus.isOpen()) {
+            PolytoneNautilus.open();
             return;
         }
+        this.editorBooting = true;
         Thread t = new Thread(() -> {
             try {
-                net.mehvahdjukaar.polytone.compat.PolytoneEditor.open();
+                PolytoneNautilus.open();
             } catch (Throwable e) {
                 Polytone.LOGGER.error("Failed to open Polytone codec editor", e);
+            } finally {
+                this.editorBooting = false;
             }
         }, "Polytone-Editor-Boot");
         t.setDaemon(true);
@@ -723,5 +726,49 @@ public class ConfigScreen extends OptionsSubScreen {
     public static String getReadableName(String name) {
         return Arrays.stream(name.replace(":", "_").split("_"))
                 .map(StringUtils::capitalize).collect(Collectors.joining(" "));
+    }
+
+    /**
+     * Icon-only footer button that swaps its icon with the editor state: the animated "loading"
+     * sprite while the editor window boots off-thread, an "on" sprite once it is open, and the plain
+     * sprite otherwise (also the fixed icon when the editor mod isn't installed). Subclasses Button
+     * directly rather than SpriteIconButton because the latter's sprite field is final.
+     */
+    private static final class EditorIconButton extends Button {
+        private static final ResourceLocation SPRITE = Polytone.res("codec_editor");
+        private static final ResourceLocation SPRITE_ON = Polytone.res("codec_editor_on");
+        private static final ResourceLocation SPRITE_LOADING = Polytone.res("codec_editor_loading");
+        private static final int ICON = 16;
+
+        private final ConfigScreen screen;
+        private final boolean available;
+
+        EditorIconButton(int width, int height, Component message, boolean available,
+                         ConfigScreen screen, OnPress onPress) {
+            super(0, 0, width, height, message, onPress, DEFAULT_NARRATION);
+            this.available = available;
+            this.screen = screen;
+        }
+
+        private ResourceLocation icon() {
+            // Guard on availability before touching PolytoneEditor: with nautilus_studio absent that
+            // class must never load.
+            if (!available) return SPRITE;
+            if (screen.editorBooting) return SPRITE_LOADING;
+            return PolytoneNautilus.isOpen() ? SPRITE_ON : SPRITE;
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+            super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
+            int x = this.getX() + this.getWidth() / 2 - ICON / 2;
+            int y = this.getY() + this.getHeight() / 2 - ICON / 2;
+            guiGraphics.blitSprite(this.icon(), x, y, ICON, ICON);
+        }
+
+        @Override
+        public void renderString(GuiGraphics guiGraphics, Font font, int color) {
+            // Icon-only: no label.
+        }
     }
 }
