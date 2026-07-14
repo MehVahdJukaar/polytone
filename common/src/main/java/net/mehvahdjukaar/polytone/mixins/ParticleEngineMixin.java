@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -65,5 +66,30 @@ public abstract class ParticleEngineMixin {
     @Inject(method = "render", at = @At("HEAD"))
     public void onRenderLast(LightTexture lightTexture, Camera camera, float partialTick, CallbackInfo ci) {
         PolytoneRenderTypes.cacheMatrices();
+    }
+
+    // Async custom particle batch: joined before anything reads (render, via LevelRendererMixin) or
+    // mutates (next tick, level change) particle state; dispatched at tick TAIL so the batch overlaps
+    // the rest of the game tick.
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void polytone$joinBeforeTick(CallbackInfo ci) {
+        PolytoneAsyncParticles.awaitTicks();
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void polytone$dispatchAsyncParticleTicks(CallbackInfo ci) {
+        if (Polytone.CONFIGS.particlesOffThread.get()) {
+            PolytoneAsyncParticles.dispatch();
+        }
+    }
+
+    @Inject(method = "setLevel", at = @At("HEAD"))
+    private void polytone$joinBeforeLevelChange(CallbackInfo ci) {
+        PolytoneAsyncParticles.awaitTicks();
+    }
+
+    @Inject(method = "clearParticles", at = @At("HEAD"))
+    private void polytone$joinBeforeClear(CallbackInfo ci) {
+        PolytoneAsyncParticles.awaitTicks();
     }
 }

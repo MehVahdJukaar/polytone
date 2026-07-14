@@ -36,7 +36,6 @@ public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.Cy
                 performanceImpact, wide, tooltipImages, defaultValue);
     }
 
-    /** Convenience constructor for the mod's own builtin configs (no presets/sections/etc). */
     public BoolConfig(Optional<String> valueTranslation, boolean defaultValue) {
         this(valueTranslation, Map.of(), Map.of(), 0, Optional.empty(), Optional.empty(),
                 Optional.empty(), false, Map.of(), defaultValue);

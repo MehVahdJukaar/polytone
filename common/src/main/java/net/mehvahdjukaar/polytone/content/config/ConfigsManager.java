@@ -47,7 +47,7 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
     public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", true);
     public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", 1f);
     public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", false);
-    public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false);
+    public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", true);
     public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", true);
     public final OptionHolder<Boolean> postShadersOccludeHeldItems = builtinConfig("post_shaders_occlude_held_items", true);
 

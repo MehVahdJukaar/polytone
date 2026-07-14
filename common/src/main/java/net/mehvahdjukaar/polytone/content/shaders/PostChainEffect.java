@@ -16,7 +16,7 @@ import java.util.Map;
  * <p>Schema (matches 1.21.11):
  * <pre>{@code
  * {
- *   "post_chain": "namespace:effect_name",        // refers to assets/namespace/shaders/post/effect_name.json
+ *   "post_chain": "namespace:effect_name",        // refers to assets/namespace/post_effect/effect_name.json
  *   "activation_condition": "<MVEL expr, >0 enables>",  // optional, defaults to always-on
  *   "expression_uniforms": {                      // optional, name -> MVEL expression (float)
  *       "MyUniform": "<MVEL expr>"                // applied to every pass
@@ -32,14 +32,14 @@ import java.util.Map;
  * <p><b>Built-in uniforms.</b> Every pass shader may declare any of these and Polytone fills them in
  * each frame (the 1.21.1 equivalent of the 1.21.11 {@code PolyGlobals} UBO block):
  * <ul>
- *     <li>{@code uniform mat4 PolyProjMat} — the level projection matrix</li>
- *     <li>{@code uniform mat4 PolyModelViewMat} — the camera/view (model-view) matrix</li>
- *     <li>{@code uniform float PolySunAngle} — sun angle in radians (0 = noon, like 1.21.11)</li>
- *     <li>{@code uniform float PolyDayTime} — world day time in ticks (0..24000)</li>
- *     <li>{@code uniform float PolyDeltaTime} — frame delta time in ticks (real render delta)</li>
- *     <li>{@code uniform ivec3 PolyPlayerBlockPos} / {@code uniform vec3 PolyPlayerOffset} — lerped player (feet)
+ *     <li>{@code uniform mat4 PolyProjMat} - the level projection matrix</li>
+ *     <li>{@code uniform mat4 PolyModelViewMat} - the camera/view (model-view) matrix</li>
+ *     <li>{@code uniform float PolySunAngle} - sun angle in radians (0 = noon, like 1.21.11)</li>
+ *     <li>{@code uniform float PolyDayTime} - world day time in ticks (0..24000)</li>
+ *     <li>{@code uniform float PolyDeltaTime} - frame delta time in ticks (real render delta)</li>
+ *     <li>{@code uniform ivec3 PolyPlayerBlockPos} / {@code uniform vec3 PolyPlayerOffset} - lerped player (feet)
  *         position, split for float precision at large coords: {@code exact = vec3(PolyPlayerBlockPos) - PolyPlayerOffset}</li>
- *     <li>{@code uniform sampler2D InDepth} — level depth texture, only bound when {@code use_depth_buffer} is set</li>
+ *     <li>{@code uniform sampler2D InDepth} - level depth texture, only bound when {@code use_depth_buffer} is set</li>
  * </ul>
  * Shaders that don't declare a given uniform/sampler are unaffected ({@code safeGetUniform} no-ops).
  */
@@ -104,7 +104,7 @@ public final class PostChainEffect {
         return useDepthBuffer;
     }
 
-    /** Resource path of the vanilla post chain JSON file, e.g. {@code namespace:shaders/post/effect_name.json}. */
+    /** Resource path of the post chain JSON file, e.g. {@code namespace:post_effect/effect_name.json} (1.21.11 location, shared with packs made for it). */
     public ResourceLocation chainResource() {
         return postChain.withPath(p -> "post_effect/" + p + ".json");
     }

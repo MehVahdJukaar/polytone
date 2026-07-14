@@ -42,7 +42,6 @@ public class NumberConfig extends PolyConfig<Float> implements OptionInstance.Sl
         this.max = max;
     }
 
-    /** Convenience constructor for the mod's own builtin configs (no presets/sections/etc). */
     public NumberConfig(Optional<String> valueTranslation, float defaultValue, float min, float max, float step) {
         this(valueTranslation, Map.of(), Map.of(), 0, Optional.empty(), Optional.empty(),
                 Optional.empty(), false, Map.of(), defaultValue, min, max, step);

@@ -3,6 +3,8 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -49,6 +51,24 @@ public class LevelRendererMixin {
                                             org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
                                             CallbackInfo ci) {
         Polytone.POST_SHADERS.captureLevelDepthSnapshot();
+    }
+
+    // Join the async particle tick batch before anything in the frame reads particle state
+    // (particles render inside renderLevel on both loaders).
+    @Inject(method = "renderLevel", at = @At("HEAD"))
+    private void polytone$joinAsyncParticles(DeltaTracker deltaTracker, boolean renderBlockOutline,
+                                             Camera camera, GameRenderer gameRenderer,
+                                             net.minecraft.client.renderer.LightTexture lightTexture,
+                                             org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
+                                             CallbackInfo ci) {
+        PolytoneAsyncParticles.awaitTicks();
+    }
+
+    // Every section rebuild (block or light change) funnels through setSectionDirty; bump that
+    // section's light-cache version so particles there re-sample. Section coords come in directly.
+    @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"))
+    private void polytone$invalidateParticleLight(int x, int y, int z, boolean important, CallbackInfo ci) {
+        ParticleLightCache.markSectionDirty(x, y, z);
     }
 
     //TODO: add

@@ -37,7 +37,6 @@ public final class ParticleExpEnv {
         return POOL.get();
     }
 
-    /** Readies the environment for one field expression and returns the var map to evaluate with. */
     public Map<String, Object> prepare(Particle particle, Level level) {
         vars.keySet().retainAll(baseKeys); // drop variables assigned by the previous field
         Polytone.GLOBAL_EXPRESSION.addValues(vars); // dynamic globals refresh once per prepare

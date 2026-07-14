@@ -197,7 +197,7 @@ public class CustomParticleType implements ICustomParticleFactory {
                                 //If it is still alive, we should not spawn a new one in the same place.
                                 return null;
                             } else {
-                                //It's dead, but still present — remove it to make room for the new one
+                                //It's dead, but still present - remove it to make room for the new one
                                 inst.remove();
                             }
                         }

@@ -19,7 +19,6 @@ public class InteractionTracker {
         lastEntity = new WeakReference<>(entity);
     }
 
-    /** The last-interacted entity, or null if none / it's gone / it was removed. */
     @Nullable
     public static Entity getLastEntity() {
         Entity e = lastEntity.get();

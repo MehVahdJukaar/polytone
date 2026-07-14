@@ -40,11 +40,11 @@ public class EntityProxy extends AbstractEntityProxy {
         return key == null ? "[unregistered]" : key.toString();
     }
 
-    /** Villager/zombie-villager profession id (e.g. {@code minecraft:cleric}), or "" if not a villager. */
+    /** Villager profession id (e.g. {@code minecraft:cleric}), or "" if not a villager. */
     public String profession() {
         if (entity instanceof Villager v) {
             ResourceLocation key = BuiltInRegistries.VILLAGER_PROFESSION.getKey(v.getVillagerData().getProfession());
-            return key.toString();
+            return key == null ? "" : key.toString();
         }
         return "";
     }

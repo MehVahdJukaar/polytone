@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.utils;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -62,8 +63,10 @@ public class ClientFrameTicker {
     public static void onTick(Level level) {
         // Client-only ticker (drives GL post-shader loading). Guard against being called with a
         // non-client level on a non-render thread (NeoForge's LevelTickEvent fires for the integrated
-        // server level too) — otherwise off-thread GL calls poison the post shader chains.
+        // server level too) - otherwise off-thread GL calls poison the post shader chains.
         if (level != Minecraft.getInstance().level) return;
+        // keep the async player-stats cache in step with the tick (cleared to null when no player)
+        ExpTicker.refreshPlayerSnapshot();
         if (cameraPos != null) {
             skyLight = level.getBrightness(LightLayer.SKY, cameraPos);
             blockLight = level.getBrightness(LightLayer.BLOCK, cameraPos);

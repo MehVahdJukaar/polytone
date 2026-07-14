@@ -29,7 +29,7 @@ import java.util.Optional;
  * {@code LevelTargetBundle.SORTING_TARGETS}) so chains could both READ and WRITE them as first-class
  * framegraph resources. 1.21.1 uses the OLD {@code net.minecraft.client.renderer.PostChain}, which
  * has no framegraph, no {@code TargetBundle}, and manages its own targets internally from the pack
- * JSON — so that write-side splicing has NO equivalent here. This port keeps the allocation +
+ * JSON - so that write-side splicing has NO equivalent here. This port keeps the allocation +
  * cross-frame persistence and exposes the targets for READ (as samplers). Writing into a persistent
  * target from a chain is not supported on 1.21.1's old PostChain (see gap note in the port report).</p>
  */
@@ -73,7 +73,6 @@ public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.T
         this.dirty = true;
     }
 
-    /** The persistent target for {@code id}, or null if none is declared. */
     @Nullable
     public RenderTarget getTarget(ResourceLocation id) {
         return targets.get(id);

@@ -27,7 +27,6 @@ public final class ParticleLightCache {
         VERSIONS[bucket(sectionX, sectionY, sectionZ)]++;
     }
 
-    /** Current invalidation version for the given section. */
     public static int sectionVersion(int sectionX, int sectionY, int sectionZ) {
         return VERSIONS[bucket(sectionX, sectionY, sectionZ)];
     }
@@ -48,7 +47,6 @@ public final class ParticleLightCache {
             this.sampler = sampler;
         }
 
-        /** The raw (unboosted) light color at the given position, re-sampled only when stale. */
         public int get(double x, double y, double z, float partialTick) {
             int bx = Mth.floor(x), by = Mth.floor(y), bz = Mth.floor(z);
             long key = BlockPos.asLong(bx, by, bz);

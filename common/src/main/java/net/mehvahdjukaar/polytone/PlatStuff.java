@@ -270,7 +270,7 @@ public class PlatStuff {
 
     /**
      * If {@code main} has a stencil-backed depth attachment (Forge-only {@code enableStencil()}), enable
-     * stencil on {@code snapshot} too so their depth formats match — otherwise a {@code copyDepthFrom} blit
+     * stencil on {@code snapshot} too so their depth formats match - otherwise a {@code copyDepthFrom} blit
      * between them fails with GL {@code INVALID_OPERATION}. No-op on Fabric, where the main target is always
      * plain depth.
      */

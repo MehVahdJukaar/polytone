@@ -32,7 +32,6 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
                 original.condition());
     }
 
-    /** True if this modifier has no condition or its condition currently evaluates truthy. */
     public boolean passesCondition() {
         return condition == null || condition.evaluate() != 0;
     }

@@ -46,11 +46,12 @@ import java.util.function.IntSupplier;
 /**
  * Manages Polytone-defined post-shader effects.
  *
- * <p>Effects are defined via {@code assets/<ns>/polytone/post_shaders/*.json} and refer to vanilla
- * post-chain JSONs at {@code assets/<ns>/shaders/post/<name>.json}.</p>
+ * <p>Effects are defined via {@code assets/<ns>/polytone/post_chains/*.json} (or the legacy
+ * {@code post_shaders} folder) and refer to chain JSONs at {@code assets/<ns>/post_effect/<name>.json},
+ * the same location 1.21.11 uses, so packs can share files.</p>
  *
  * <p>Polytone post-chains are processed as additional passes after the vanilla
- * {@code gameRenderer.postEffect}, never replacing or modifying it — so other mods
+ * {@code gameRenderer.postEffect}, never replacing or modifying it - so other mods
  * that toggle the vanilla post effect (e.g. spectator-mode shaders) keep working.</p>
  */
 public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
@@ -97,7 +98,7 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
     private boolean depthCombineFailed = false;
 
     public PostShadersManager() {
-        super("Post shader", () -> SchemaCodec.wrap(PostChainEffect.CODEC), "post_shaders");
+        super("Post shader", () -> SchemaCodec.wrap(PostChainEffect.CODEC), "post_chains", "post_shaders");
     }
 
     @Override
@@ -162,7 +163,7 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
             // Open any new chains, preserving desired order
             activeChains.clear();
             for (PostChainEffect e : desired) {
-                if (failedChains.contains(e.postChain())) continue; // skip — already logged once
+                if (failedChains.contains(e.postChain())) continue; // skip - already logged once
                 PostChain chain = keep.get(e);
                 if (chain == null) {
                     chain = tryLoadChain(e);
@@ -264,7 +265,7 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
 
     /**
      * Snapshot the main framebuffer's depth while level geometry is still intact. Called from
-     * {@code LevelRenderer.renderLevel} at return — before {@code GameRenderer} clears depth for
+     * {@code LevelRenderer.renderLevel} at return - before {@code GameRenderer} clears depth for
      * first-person hand rendering.
      */
     public void captureLevelDepthSnapshot() {
@@ -341,11 +342,11 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
             }
 
             // Every PostChain.process() ends by unbinding its final pass's output target, which leaves
-            // framebuffer 0 (the default backbuffer) bound — NOT the main render target. Vanilla restores
+            // framebuffer 0 (the default backbuffer) bound - NOT the main render target. Vanilla restores
             // the main target right after its own gameRenderer.postEffect.process() via bindWrite(true);
             // because we run our chains AFTER that restore, we must re-bind it ourselves. Otherwise the
             // entire HUD (hotbar, inventory, F3, toasts, screens) is rendered into the backbuffer and then
-            // overwritten by the end-of-frame blit of the main target — i.e. the GUI vanishes.
+            // overwritten by the end-of-frame blit of the main target - i.e. the GUI vanishes.
             mc.getMainRenderTarget().bindWrite(true);
 
             depthCapturedThisFrame = false;
@@ -438,7 +439,7 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
         // On (Neo)Forge a mod can call RenderTarget.enableStencil() on the main framebuffer (several of
         // MehVahd's own mods do), which flips its depth attachment from GL_DEPTH_COMPONENT to a combined
         // GL_DEPTH32F_STENCIL8. copyDepthFrom() blits GL_DEPTH_BUFFER_BIT, and that blit requires source and
-        // destination depth formats to match — otherwise GL raises INVALID_OPERATION and copies nothing, so
+        // destination depth formats to match - otherwise GL raises INVALID_OPERATION and copies nothing, so
         // the snapshot stays cleared and depth-driven effects (godrays, etc.) silently do nothing. Vanilla's
         // own PostChain.addTempTarget propagates stencil to its temp targets; mirror the same onto our
         // snapshot. The stencil API is Forge-only, hence the platform hop (no-op on Fabric).

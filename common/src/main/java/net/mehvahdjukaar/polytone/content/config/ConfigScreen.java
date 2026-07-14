@@ -67,7 +67,6 @@ public class ConfigScreen extends OptionsSubScreen {
     private static final String NAUTILUS_URL = "https://github.com/MehVahdJukaar/pack_editor";
 
     private final Multimap<String, OptionHolder<?>> opt = MultimapBuilder.linkedHashKeys().arrayListValues().build();
-    /** Namespaces the user has collapsed; their option rows are hidden until re-expanded. */
     private final Set<String> collapsed = new HashSet<>();
     private final Runnable safeFunc;
 
@@ -76,13 +75,12 @@ public class ConfigScreen extends OptionsSubScreen {
     @Nullable
     private EditorIconButton editorButton;
     private boolean rebuildScheduled;
-    /** True while the editor window is booting off-thread, so the button shows its loading icon. */
     private volatile boolean editorBooting;
 
     // Shadows OptionsSubScreen.layout (which is final and built once in the constructor). That
     // inherited layout is never emptied, so re-running the vanilla init on every namespace toggle
     // (via rebuildWidgets) keeps re-appending the list/footer/title to it and visitWidgets then
-    // re-registers every stale copy — the "widgets pile up on collapse" bug. We instead run our
+    // re-registers every stale copy - the "widgets pile up on collapse" bug. We instead run our
     // own header/footer flow against a fresh layout each init, leaving the inherited one unused.
     private HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
@@ -142,7 +140,7 @@ public class ConfigScreen extends OptionsSubScreen {
         int textBtnW = Mth.positiveCeilDiv(150 * 2 - 8, 3);
         LinearLayout footer = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
 
-        // Nautilus Studio pack-editor button (left) — always shown. With the editor mod present it
+        // Nautilus Studio pack-editor button (left) - always shown. With the editor mod present it
         // opens the editor; without it, its tooltip explains and a click opens the download page.
         boolean editorAvailable = PlatStuff.isModLoaded("nautilus_studio");
         EditorIconButton editor = new EditorIconButton(iconW, 20,
@@ -177,7 +175,6 @@ public class ConfigScreen extends OptionsSubScreen {
         }
     }
 
-    /** With the editor mod present, open it; otherwise send the user to its download page. */
     private void onEditorPressed(boolean available) {
         if (available) {
             openEditor();
@@ -189,7 +186,6 @@ public class ConfigScreen extends OptionsSubScreen {
         }, NAUTILUS_URL, true));
     }
 
-    /** Boot the Swing editor off-thread (heavy schema/window build); focus it if already open. */
     private void openEditor() {
         if (PolytoneNautilus.isOpen()) {
             PolytoneNautilus.open();
@@ -211,7 +207,6 @@ public class ConfigScreen extends OptionsSubScreen {
 
     // --- reset / undo ---
 
-    /** Reset every option to its declared default. */
     private void resetValues() {
         for (OptionHolder<?> holder : opt.values()) {
             holder.resetToDefault();
@@ -219,7 +214,6 @@ public class ConfigScreen extends OptionsSubScreen {
         rebuildPreservingScroll();
     }
 
-    /** Revert every option to the value currently on disk (the last saved/loaded state). */
     private void undoValues() {
         for (OptionHolder<?> holder : opt.values()) {
             holder.undoChanges();
@@ -312,7 +306,6 @@ public class ConfigScreen extends OptionsSubScreen {
         this.list.addSmall(List.<AbstractWidget>of(header));
     }
 
-    /** Non-collapsible sub-header for a section; a plain left-aligned label row. */
     private void addSectionHeader(Component title) {
         StringWidget widget = new StringWidget(this.list.getRowWidth(), 20,
                 title.copy().withStyle(ChatFormatting.GRAY), this.font);
@@ -320,11 +313,6 @@ public class ConfigScreen extends OptionsSubScreen {
         this.list.addSmall(List.<AbstractWidget>of(widget));
     }
 
-    /**
-     * Adds a section's options preserving order: entries flagged {@code "wide": true} get their own
-     * full-width row (addBig), the rest are packed two-per-row (addSmall). A run of normal options
-     * is flushed whenever a wide one interrupts it.
-     */
     private void addOptionRows(List<OptionHolder<?>> group) {
         List<OptionInstance<?>> pending = new ArrayList<>();
         for (OptionHolder<?> holder : group) {
@@ -358,10 +346,6 @@ public class ConfigScreen extends OptionsSubScreen {
         return holder.option.values() instanceof PolyConfig<?> c ? c.getSection() : Optional.empty();
     }
 
-    /**
-     * Top-to-bottom section order: the sectionless group first, then named sections by their
-     * {@code section_order} (smallest declared among the section's entries), alphabetical fallback.
-     */
     private static List<Optional<String>> orderedSections(Map<Optional<String>, List<OptionHolder<?>>> bySection) {
         return bySection.keySet().stream()
                 .sorted(Comparator
@@ -371,7 +355,6 @@ public class ConfigScreen extends OptionsSubScreen {
                 .toList();
     }
 
-    /** Smallest section_order declared by any entry in the section; MAX_VALUE if none declare it. */
     private static int sectionSortKey(List<OptionHolder<?>> entries) {
         int min = Integer.MAX_VALUE;
         for (OptionHolder<?> holder : entries) {
@@ -398,10 +381,6 @@ public class ConfigScreen extends OptionsSubScreen {
 
     // --- rich tooltip (preview image + performance impact) ---
 
-    /**
-     * Tooltip for a hovered option with a preview image and/or impact line, drawn like vanilla item
-     * tooltips. The built-in text tooltip is suppressed in {@link OptionHolder} for these entries.
-     */
     private void renderCustomTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         if (this.list == null) return;
 
@@ -446,7 +425,6 @@ public class ConfigScreen extends OptionsSubScreen {
         }
     }
 
-    /** An empty tooltip line that just reserves vertical space (renders nothing). */
     private record SpacerTooltip(int height) implements ClientTooltipComponent {
         @Override
         public int getWidth(Font font) {
@@ -539,7 +517,6 @@ public class ConfigScreen extends OptionsSubScreen {
         return () -> option.set(value);
     }
 
-    /** First key with an actual translation wins; generic "Preset" as the final fallback. */
     private static Component firstTranslated(@Nullable String... keys) {
         for (String key : keys) {
             if (key == null) continue;
@@ -574,7 +551,6 @@ public class ConfigScreen extends OptionsSubScreen {
         return I18n.exists(key) ? Component.translatable(key) : null;
     }
 
-    /** Per-stop tooltip: per-section override -> per-preset -> the general slider tooltip. */
     @Nullable
     private static Component presetTooltip(String modId, @Nullable String section, int index,
                                            List<String> names, @Nullable Component fallback) {

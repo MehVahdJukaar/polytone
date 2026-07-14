@@ -21,7 +21,6 @@ public class OptionHolder<T> {
 
     public final OptionInstance<T> option;
     public final ResourceLocation fileId;
-    /** Value last written to / read from disk; drives the "unsaved change" highlight + undo. */
     private final AtomicReference<T> lastSavedValue;
 
     private OptionHolder(OptionInstance<T> option, ResourceLocation registryID, AtomicReference<T> lastSavedValue) {
@@ -52,17 +51,14 @@ public class OptionHolder<T> {
         lastSavedValue.set(option.get());
     }
 
-    /** True while the current value differs from what's on disk (drives save-on-close + Undo). */
     public boolean hasUnsavedChanges() {
         return !option.get().equals(lastSavedValue.get());
     }
 
-    /** Revert to the value on disk (the last saved/loaded state). */
     public void undoChanges() {
         option.set(lastSavedValue.get());
     }
 
-    /** Reset to the config's declared default. */
     public void resetToDefault() {
         if (option.values() instanceof PolyConfig<T> c) {
             option.set(c.getDefaultValue());

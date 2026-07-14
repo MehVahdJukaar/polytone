@@ -20,7 +20,6 @@ public enum ParticleRenderMode implements StringRepresentable {
 
     public static final Codec<ParticleRenderMode> CODEC = StringRepresentable.fromEnum(ParticleRenderMode::values);
 
-    /** Vanilla block render type used when this particle renders a baked model. */
     public RenderType getBlock() {
         return switch (this) {
             case TERRAIN, SOLID -> RenderType.solid();
@@ -33,7 +32,6 @@ public enum ParticleRenderMode implements StringRepresentable {
         };
     }
 
-    /** Particle sheet used when this particle renders as a plain textured quad. */
     public ParticleRenderType getParticle() {
         return switch (this) {
             case TERRAIN -> ParticleRenderType.TERRAIN_SHEET;

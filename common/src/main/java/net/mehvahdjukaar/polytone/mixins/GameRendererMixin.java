@@ -48,7 +48,7 @@ public abstract class GameRendererMixin {
 
     // Capture the level projection / camera matrices so polytone post shaders can expose them as the
     // PolyProjMat / PolyModelViewMat built-in uniforms. Ordinal 0 is the projection matrix (with bob &
-    // confusion applied), ordinal 1 is the camera rotation (view) matrix — the same pair passed to
+    // confusion applied), ordinal 1 is the camera rotation (view) matrix - the same pair passed to
     // LevelRenderer.renderLevel right after this point.
     @Inject(method = "renderLevel",
             at = @At(value = "INVOKE",

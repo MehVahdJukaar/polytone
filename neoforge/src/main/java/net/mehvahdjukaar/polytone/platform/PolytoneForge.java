@@ -71,7 +71,7 @@ public class PolytoneForge {
     public void onTick(LevelTickEvent.Pre event) {
         // LevelTickEvent fires for EVERY level, including the integrated server's level on the server
         // thread. ClientFrameTicker is client-only and drives GL work (post shader chain loading), so
-        // only forward the client level tick — matches Fabric, which ticks client.level exclusively.
+        // only forward the client level tick - matches Fabric, which ticks client.level exclusively.
         if (!event.getLevel().isClientSide()) return;
         ClientFrameTicker.onTick(event.getLevel());
     }

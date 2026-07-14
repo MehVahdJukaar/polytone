@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
  * into a {@code minecraft:}-namespaced path, which throws on the embedded colon.
  *
  * <p>Safety: gated on {@link PostShadersManager#POLYTONE_LOADING} so it only acts while polytone
- * is constructing one of its own chains — vanilla and other mods' shader loading is left strictly
+ * is constructing one of its own chains - vanilla and other mods' shader loading is left strictly
  * untouched. Within that gate it only intervenes when the embedded name actually contains a colon,
  * and falls back to the original call on any parse failure.
  */

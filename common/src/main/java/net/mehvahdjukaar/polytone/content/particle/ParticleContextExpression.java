@@ -124,16 +124,21 @@ public class ParticleContextExpression extends PolytoneExpression {
 
         if (hasPlayer) {
             var e = Minecraft.getInstance().getCameraEntity();
-            vb.setVariable(PLAYER_X, e.getX());
-            vb.setVariable(PLAYER_Y, e.getY());
-            vb.setVariable(PLAYER_Z, e.getZ());
+            // camera entity can be null off-thread during disconnect
+            vb.setVariable(PLAYER_X, e == null ? 0 : e.getX());
+            vb.setVariable(PLAYER_Y, e == null ? 0 : e.getY());
+            vb.setVariable(PLAYER_Z, e == null ? 0 : e.getZ());
         }
         if (hasDistance) {
             var e = Minecraft.getInstance().getCameraEntity();
-            double x = particle.x - e.getX();
-            double y = particle.y - e.getY();
-            double z = particle.z - e.getZ();
-            vb.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+            if (e != null) {
+                double x = particle.x - e.getX();
+                double y = particle.y - e.getY();
+                double z = particle.z - e.getZ();
+                vb.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+            } else {
+                vb.setVariable(DISTANCE_SQUARED, 0);
+            }
         }
         if (hasPlayerSpeed) {
             vb.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());

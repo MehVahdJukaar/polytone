@@ -73,7 +73,7 @@ public class GlobalProxy {
     /**
      * Runtime lookup of a global expression's current value by its variable name, e.g.
      * {@code global.value('minecraft_leaf_drift')}. Unlike referencing the global as a bare
-     * variable (which must exist when the calling expression COMPILES — not guaranteed, since
+     * variable (which must exist when the calling expression COMPILES - not guaranteed, since
      * managers parse in parallel during reload), this resolves at evaluation time. Missing -> 0.
      */
     public double value(String key) {

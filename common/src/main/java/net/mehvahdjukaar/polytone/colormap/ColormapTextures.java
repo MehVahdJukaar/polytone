@@ -22,11 +22,11 @@ import java.util.function.Function;
  * The colormap-texture ↔ content contract, in ONE place and with ONE path: each content
  * type's {@link CompanionSpec} (built by {@link #singleTexture}/{@link #groupedTexture},
  * declared in the owning manager's constructor and read back via
- * {@code ContentManager.companions}) enumerates <em>bound</em> slots — accepted file names
+ * {@code ContentManager.companions}) enumerates <em>bound</em> slots - accepted file names
  * plus the inline {@link Colormap} that receives the texture, or a {@code texture_path}
  * remote location. The editor renders that slot list; the reload-time driver ({@link #fill})
  * walks the SAME list against the scanned textures.
- * There is no second, imperative fill path to drift from — names resolve directly against raw
+ * There is no second, imperative fill path to drift from - names resolve directly against raw
  * texture ids via {@link TintedTextures}.
  */
 public final class ColormapTextures {
@@ -34,7 +34,7 @@ public final class ColormapTextures {
     // -------------------- specs (the contract) --------------------
 
     /**
-     * Content associated with exactly ONE texture, {@code <stem><suffix>.png} — a standalone
+     * Content associated with exactly ONE texture, {@code <stem><suffix>.png} - a standalone
      * colormap or a modifier with an inline colormap named after it (fluid, particle: empty
      * suffix; item bar color: {@code "_bar"}). Tint-suffixed siblings are NOT associated: at
      * reload they become separate auto-generated content. No colormap in the parsed value →
@@ -55,7 +55,7 @@ public final class ColormapTextures {
                 Object col = parsedValue == null ? null : colormapGetter.apply(parsedValue);
                 if (col == null) return List.of(CompanionSlot.optional(label, stem + suffix + ".png"));
                 if (col instanceof Colormap c) return colormapSlots(c, stem + suffix, label);
-                return List.of(); // reference / expression / compound — no associated texture
+                return List.of(); // reference / expression / compound - no associated texture
             }
         };
     }
@@ -114,8 +114,6 @@ public final class ColormapTextures {
         };
     }
 
-    /** Slot(s) for one inline colormap: nothing when already filled, a remote slot when
-     *  {@code texture_path} points elsewhere, else its by-convention file. */
     private static List<CompanionSlot> colormapSlots(Colormap c, String siblingBase, String label) {
         if (!c.needsToFillTexture()) return List.of();
         ResourceLocation explicit = c.getExplicitTargetTexture();
@@ -130,7 +128,7 @@ public final class ColormapTextures {
 
     /**
      * THE reload-time association: walks {@code spec.expectedSlots} for this content instance
-     * and fills each bound, unfilled colormap from the scanned textures — accepted names
+     * and fills each bound, unfilled colormap from the scanned textures - accepted names
      * resolve in order against ids in the content's own directory (or the slot's
      * {@code texture_path} location). Bound ids are marked used on {@code textures};
      * {@code strict} = throw when a required slot stays empty.
@@ -169,7 +167,6 @@ public final class ColormapTextures {
         }
     }
 
-    /** Fill a colormap from a texture already located by exact id (orphan-texture defaults). */
     public static void fillDirect(TrackedTextures textures, ResourceLocation textureId, ArrayImage texture,
                                   Colormap colormap) {
         if (!colormap.needsToFillTexture()) return;
@@ -182,7 +179,7 @@ public final class ColormapTextures {
     }
 
     /**
-     * Whether any texture this content COULD use by convention exists — the managers'
+     * Whether any texture this content COULD use by convention exists - the managers'
      * "no colormap declared, but a texture is there → auto-attach a default" check, asked
      * value-agnostically (permissive slots).
      */
@@ -197,11 +194,6 @@ public final class ColormapTextures {
         return false;
     }
 
-    /**
-     * The tint indices for which textures of {@code contentId}'s stem exist in its directory
-     * ({@link TintedTextures#DEFAULT_INDEX} for the plain one) — drives the shape of
-     * auto-attached {@link IndexCompoundColorGetter}s.
-     */
     public static Set<Integer> usableTintIndices(TrackedTextures textures, ResourceLocation contentId) {
         String dir = dirOf(contentId.getPath());
         String stem = lastSegment(contentId.getPath());
@@ -217,7 +209,7 @@ public final class ColormapTextures {
     }
 
     /**
-     * Stem ids of textures nothing consumed — the "orphan textures become default content"
+     * Stem ids of textures nothing consumed - the "orphan textures become default content"
      * pass for tint-grouped content. A stem any of whose textures WAS consumed is skipped
      * entirely (its extra tints don't spawn a second modifier).
      */
