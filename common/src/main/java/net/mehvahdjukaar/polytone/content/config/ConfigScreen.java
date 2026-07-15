@@ -6,7 +6,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.gui.PointingChatBubbleOverlay;
+import net.mehvahdjukaar.polytone.content.common.gui.PointingChatBubbleOverlay;
 import net.mehvahdjukaar.polytone.compat.PolytoneNautilus;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;

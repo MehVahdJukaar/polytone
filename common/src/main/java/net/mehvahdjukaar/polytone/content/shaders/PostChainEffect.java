@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.shaders;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.ISimpleExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EffectInstance;
 import net.minecraft.resources.ResourceLocation;

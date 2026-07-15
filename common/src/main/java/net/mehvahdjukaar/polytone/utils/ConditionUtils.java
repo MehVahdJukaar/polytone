@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IPackMetadataExp;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.IPackMetadataExp;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.OverlayMetadataSection;
 

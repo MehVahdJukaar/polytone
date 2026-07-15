@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.item;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
+import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ModelResHelper;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.component.DataComponentMap;

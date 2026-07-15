@@ -1,4 +1,1 @@
-- misc recent fixes
-- gui modifiers are now expressions driven
-- gui modifiers can query the entity that was last interacted
-- this means
+- better Nautilus Studio integration.

@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.color.PaintingRenderType;
+import net.mehvahdjukaar.polytone.content.color.PaintingRenderType;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.PaintingRenderer;
 import net.minecraft.resources.ResourceLocation;

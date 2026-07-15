@@ -2,8 +2,7 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
-import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.mixins.accessor.ParticleAccessor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.SingleQuadParticle;

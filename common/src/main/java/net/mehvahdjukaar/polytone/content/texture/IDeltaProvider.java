@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.texture;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.colormap.ColormapExpressionProvider;
+import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.Minecraft;

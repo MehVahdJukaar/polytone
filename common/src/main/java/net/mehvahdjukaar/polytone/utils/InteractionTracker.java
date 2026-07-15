@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.utils;
 
+import net.mehvahdjukaar.polytone.content.common.expressions.proxies.GlobalProxy;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
@@ -8,7 +9,7 @@ import java.lang.ref.WeakReference;
 /**
  * Remembers the last entity the client player interacted with (right-clicked). Held weakly so it
  * can never keep an entity alive. Populated from a mixin on the client interaction path and read
- * by {@link net.mehvahdjukaar.polytone.common.expressions.proxies.GlobalProxy} so expressions can
+ * by {@link GlobalProxy} so expressions can
  * branch on "what opened this menu" (e.g. a villager's profession).
  */
 public class InteractionTracker {
