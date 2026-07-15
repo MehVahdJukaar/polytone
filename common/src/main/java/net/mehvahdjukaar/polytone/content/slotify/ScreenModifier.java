@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.mehvahdjukaar.polytone.common.expressions.impl.SimpleExp;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.SimpleExp;
 import net.mehvahdjukaar.polytone.utils.Utils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;

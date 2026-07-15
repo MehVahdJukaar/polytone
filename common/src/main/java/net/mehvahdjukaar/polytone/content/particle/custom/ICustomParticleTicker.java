@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
-import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.IParticleExp;
 import net.minecraft.client.multiplayer.ClientLevel;
 
 public interface ICustomParticleTicker {
