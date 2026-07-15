@@ -53,6 +53,10 @@ layout (std140) uniform PolyGlobals {
     mat4 PolyModelViewMat;
     float PolySunAngle;
     float PolyDayTime;
+    float PolyDeltaTime;
+    ivec3 PolyPlayerBlockPos;
+    vec3 PolyPlayerOffset;
+    vec3 PolySkyColor;
 };
 
 
@@ -64,6 +68,9 @@ The available fields are:
 - `PolyModelViewMat` - the world model-view (camera) matrix
 - `PolySunAngle` - the sun angle, offset so that 0 points at the horizon
 - `PolyDayTime` - the current world day time (0-24000)
+- `PolyDeltaTime` - ticks elapsed since the last rendered frame
+- `PolyPlayerBlockPos` / `PolyPlayerOffset` - lerped player (feet) position, split like vanilla's `CameraBlockPos`/`CameraOffset` to keep float precision at large coordinates: exact position = `vec3(PolyPlayerBlockPos) - PolyPlayerOffset`
+- `PolySkyColor` - the biome-blended sky color the sky renderer draws with this frame (0-1 RGB, includes biome effect / colormap overrides)
 
 These are bound as a single std140 UBO, so they must be declared in this exact order. You may declare only the leading fields you actually use (e.g. just `PolyProjMat`), but never reorder or skip a field in the middle.
 

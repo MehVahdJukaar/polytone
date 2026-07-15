@@ -7,6 +7,7 @@ import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -23,12 +24,13 @@ public class PolytoneGlobalUniforms implements AutoCloseable {
             .putFloat()
             .putIVec3()
             .putVec3()
+            .putVec3()
             .get();
 
     private final GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Polytone Global Settings UBO",
             GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_UNIFORM, UBO_SIZE);
 
-    public void update(Matrix4f projectionMat, Matrix4f viewMat, float sunAngle, float dayTime, float deltaTime) {
+    public void update(Matrix4f projectionMat, Matrix4f viewMat, float sunAngle, float dayTime, float deltaTime, int skyColor) {
 
         // lerped player (feet) position, split like vanilla's CameraBlockPos/CameraOffset so shaders
         // keep float precision at large coordinates: exact = vec3(PolyPlayerBlockPos) - PolyPlayerOffset
@@ -48,6 +50,11 @@ public class PolytoneGlobalUniforms implements AutoCloseable {
                     .putVec3((float) (playerBlockPos.getX() - playerPos.x),
                             (float) (playerBlockPos.getY() - playerPos.y),
                             (float) (playerBlockPos.getZ() - playerPos.z))
+                    // biome-blended sky color the sky renderer draws with (SkyRenderState.skyColor),
+                    // so it already reflects biome effect / colormap overrides
+                    .putVec3(ARGB.red(skyColor) / 255f,
+                            ARGB.green(skyColor) / 255f,
+                            ARGB.blue(skyColor) / 255f)
                     .get();
             RenderSystem.getDevice().createCommandEncoder()
                     .writeToBuffer(this.buffer.slice(), byteBuffer);

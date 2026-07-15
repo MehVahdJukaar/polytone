@@ -135,9 +135,10 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
 
     public void captureLevelRendererParams(Matrix4f projectionMatrix, Matrix4f viewMatrix, float deltaTime) {
         Minecraft mc = Minecraft.getInstance();
-        float angle = mc.levelRenderer.levelRenderState.skyRenderState.sunAngle;
+        var skyState = mc.levelRenderer.levelRenderState.skyRenderState;
+        float angle = skyState.sunAngle;
         float dayTime = mc.level == null ? 0f : (float) (mc.level.getDayTime() % 24000L);
-        getOrCreateUniforms().update(projectionMatrix, viewMatrix, angle, dayTime, deltaTime);
+        getOrCreateUniforms().update(projectionMatrix, viewMatrix, angle, dayTime, deltaTime, skyState.skyColor);
     }
 
     public void tick() {
