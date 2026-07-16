@@ -33,7 +33,6 @@ public abstract class ClientLevelFabricMixin {
             } catch (Exception e) {
                 try {
                     for (var f : ClientLevel.class.getDeclaredFields()) {
-                        //check if field is of class Reference2ReferenceMap.class
                         if (f.getType().isAssignableFrom(Reference2ReferenceMap.class)) {
                             fabricCacheField = f;
                             fabricCacheField.setAccessible(true);

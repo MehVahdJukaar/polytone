@@ -20,7 +20,6 @@ public abstract class DepthSearchTrie<K, KT, O, I> {
     public void insert(List<K> paths, O object) {
         TrieNode<K, KT, O> current = root;
 
-        // Traverse the trie to insert the path
         for (int i = 0; i <= paths.size() - 1; i++) {
             K folder = paths.get(i);
             Object folderType = getKeyOfType(folder);
@@ -32,7 +31,6 @@ public abstract class DepthSearchTrie<K, KT, O, I> {
             current = current.children.computeIfAbsent(folder, a -> new TrieNode<>());
         }
 
-        // Add the object to the final node
         if(current.object == null) current.object = new ArrayList<>();
         current.object.add(object);
     }

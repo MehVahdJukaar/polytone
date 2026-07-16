@@ -383,7 +383,6 @@ public class CustomParticleInstance extends TextureSheetParticle {
     private boolean isBehindCamera() {
         Camera camera = PolytoneAsyncParticles.camera();
         if (camera.getEntity() == Minecraft.getInstance().player) {
-            //check distance
             Vector3f cameraPos = camera.getPosition().toVector3f();
             Vector3f thisPos = new Vector3f((float) this.x, (float) this.y, (float) this.z);
             double distance = cameraPos.distanceSquared(thisPos);

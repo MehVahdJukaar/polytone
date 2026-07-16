@@ -140,7 +140,7 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier, Map
             fogScalars = new Vec2(1, 1);
         }
         if (fogScalars != null) {
-            float deltaTime = ClientFrameTicker.getDeltaTime(); // Get time since last frame
+            float deltaTime = ClientFrameTicker.getDeltaTime();
             float interpolationFactor = deltaTime * 0.1f;
 
             // Interpolate towards the fogScalars values

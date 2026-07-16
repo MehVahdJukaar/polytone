@@ -9,12 +9,14 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.mixins.accessor.LevelRendererShadowAccessor;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.ViewArea;
@@ -22,6 +24,8 @@ import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -30,6 +34,7 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Generates a directional (sun/moon) shadow depth map by replaying the level's already-compiled
@@ -46,15 +51,25 @@ import java.util.List;
  * camera frustum, so occluders behind/beside the player would be missing from the map and their
  * shadows would pop in and out as the view turns. We iterate the whole {@link ViewArea} grid and cull
  * against the light volume instead. Caveat: sections the camera has never looked at are not compiled
- * by vanilla, so their shadows appear only once they've been on screen at least once.</p>
+ * by vanilla, so their shadows appear only once they've been on screen at least once. When Sodium owns
+ * the chunk pipeline the vanilla grid is empty, so we take the fallback path below.</p>
  *
- * <p><b>Temporal stability.</b> Two measures keep the map from shimmering: the texel grid is anchored
- * to the WORLD ORIGIN (computed in double precision, so it survives large coordinates) rather than to
- * anything camera-relative, and the sun angle is quantized so the light basis - and with it the whole
- * grid - only changes in discrete steps a few times per second instead of continuously rotating.</p>
+ * <p><b>Sodium path.</b> Sodium builds one terrain render list per frame, culled to the camera
+ * frustum. Replaying it as-is drops off-screen occluders (mountains, tree tops vanish when the view
+ * tilts down), so {@code SodiumShadowCuller} rebuilds that list against the light volume - occlusion
+ * culling off - before we replay it, then restores the camera list for the next frame.</p>
  *
- * <p>Follow-ups: depth-only shader instead of the full terrain shader, CSM cascades for range, a
- * Sodium path (Sodium bypasses vanilla's section grid entirely).</p>
+ * <p><b>Temporal stability.</b> The render is fully camera-relative and carries NO world-origin term -
+ * so it stays precise at any coordinate and the sun can rotate continuously (no stepping). Shadow
+ * edges are locked to the world block grid downstream, in the resolve shader, which snaps sample
+ * positions using {@code PolyShadowCamFract} = fract(camPos) - a bounded [0,1) value, the only place
+ * world alignment is needed and the only place it's cheap and exact. (History: an earlier version
+ * texel-snapped the projection using the camera's ABSOLUTE world position; that coupled the grid to
+ * the world origin, and because the coupling scaled with |camPos| a rotating sun made the grid crawl
+ * far from spawn - which forced an ugly quantization of the sun angle. Moving alignment into the
+ * shader removed both problems.)</p>
+ *
+ * <p>Follow-ups: depth-only shader instead of the full terrain shader, CSM cascades for range.</p>
  */
 public class ShadowMapManager {
 
@@ -67,11 +82,6 @@ public class ShadowMapManager {
     private static final float COVERAGE = 64f;
     /** Half-depth of the ortho box along the light axis, in blocks. */
     private static final float DEPTH_RANGE = 256f;
-    /**
-     * The sun angle is quantized to this many steps per day so the light basis stays constant between
-     * steps (a continuously rotating grid crawls). 2048 steps = one step every ~12 ticks (~0.6 s).
-     */
-    private static final int SUN_ANGLE_STEPS = 2048;
 
     private TextureTarget shadowTarget = null;
     /** Light view-projection (camera-relative space), matching the coordinate space of the depth map. */
@@ -144,18 +154,12 @@ public class ShadowMapManager {
         Matrix4f lightProj = new Matrix4f().ortho(
                 -COVERAGE, COVERAGE, -COVERAGE, COVERAGE, -DEPTH_RANGE, DEPTH_RANGE);
 
-        // Texel snapping, anchored at the WORLD ORIGIN so the grid never re-phases as the camera
-        // moves. (Anchoring to anything that changes with the camera - e.g. the block corner under
-        // it - makes the grid jump when the anchor does, because a 1-block world step projects to a
-        // non-integer number of oblique shadow texels.) s = light-space x/y of the camera's absolute
-        // world position; the projection is nudged so world points always land on the same texel
-        // phase. Double precision keeps the mod-texel result exact at large coordinates.
-        double sx = lightView.m00() * camPos.x + lightView.m10() * camPos.y + lightView.m20() * camPos.z;
-        double sy = lightView.m01() * camPos.x + lightView.m11() * camPos.y + lightView.m21() * camPos.z;
-        double texel = 2.0 * COVERAGE / SHADOW_RES; // world-space size of one shadow texel
-        lightProj.m30(lightProj.m30() + (float) ((sx - Math.round(sx / texel) * texel) / COVERAGE));
-        lightProj.m31(lightProj.m31() + (float) ((sy - Math.round(sy / texel) * texel) / COVERAGE));
-
+        // No world-origin texel snap: the whole shadow render is camera-relative, so nothing here
+        // needs the camera's absolute world position. World-grid stability is instead enforced
+        // downstream in the resolve shader, which snaps sample positions to a world-block grid using
+        // PolyShadowCamFract (fract(camPos), always in [0,1) - precision-safe at any coordinate). That
+        // is also what lets the sun rotate continuously without the grid crawling; see the class
+        // "Temporal stability" note and computeLightDir.
         shadowMatrix.set(lightProj).mul(lightView);
 
         collectShadowSections(mc, lightView, camPos);
@@ -179,12 +183,17 @@ public class ShadowMapManager {
             // No compiled vanilla sections -> Sodium has replaced the chunk pipeline (its terrain
             // never touches the vanilla grid). Sodium @Overwrites renderSectionLayer and forwards
             // whatever matrices we pass to its own drawChunkLayer, so invoking it replays Sodium's
-            // terrain with the light matrices. Its render lists are camera-frustum culled though,
-            // so off-screen occluders don't cast shadows on this path (shadow pop when turning).
+            // terrain with the light matrices. Sodium's render list is CAMERA-frustum culled, so we
+            // first rebuild it against the light volume (occluders that aren't on screen still cast
+            // shadows) - otherwise mountains / tree tops drop out of the map when the view turns.
+            boolean sodium = CompatHandler.SODIUM
+                    && SodiumShadowCuller.reCull(mc, cam, lightView, camPos, COVERAGE, DEPTH_RANGE);
             LevelRendererShadowAccessor lr = (LevelRendererShadowAccessor) mc.levelRenderer;
             lr.polytone$renderSectionLayer(RenderType.solid(), camPos.x, camPos.y, camPos.z, lightView, lightProj);
             lr.polytone$renderSectionLayer(RenderType.cutoutMipped(), camPos.x, camPos.y, camPos.z, lightView, lightProj);
             lr.polytone$renderSectionLayer(RenderType.cutout(), camPos.x, camPos.y, camPos.z, lightView, lightProj);
+            // Restore Sodium's camera list for next frame's main terrain draw (see SodiumShadowCuller).
+            if (sodium) SodiumShadowCuller.finish();
         }
 
         // Entities are not part of the chunk VBOs - re-dispatch them with the light matrices.
@@ -248,11 +257,62 @@ public class ShadowMapManager {
                 // Never let one broken entity renderer (called outside its usual pass) kill the frame.
             }
         }
+
+        drawBlockEntities(mc, level, camPos, bufferSource, poseStack,
+                r00, r10, r20, r01, r11, r21, r02, r12, r22);
+
         bufferSource.endBatch();
 
         mvStack.popMatrix();
         RenderSystem.applyModelViewMatrix();
         RenderSystem.setProjectionMatrix(savedProj, savedSorting);
+    }
+
+    /**
+     * Block entities (chests, banners, signs, ...) live in neither the chunk VBOs nor the entity list,
+     * so they need a separate dispatch to cast shadows. Renderer-agnostic: we read them straight off
+     * the loaded chunks around the camera (works identically on vanilla and Sodium), light-volume cull,
+     * and render camera-relative into the same batch as the entities (globals already point at the
+     * light matrices). Scanned within the lateral coverage only - a small local occluder set - so a
+     * block entity hundreds of blocks away along a low sun is out of scope (its shadow would be past the
+     * cascade anyway). Called from inside {@link #drawEntities}; the rotation rows are its light axes.
+     */
+    private void drawBlockEntities(Minecraft mc, ClientLevel level, Vec3 camPos,
+                                   MultiBufferSource bufferSource, PoseStack poseStack,
+                                   float r00, float r10, float r20,
+                                   float r01, float r11, float r21,
+                                   float r02, float r12, float r22) {
+        BlockEntityRenderDispatcher beDispatcher = mc.getBlockEntityRenderDispatcher();
+        float partial = mc.getTimer().getGameTimeDeltaPartialTick(false);
+
+        int camChunkX = Mth.floor(camPos.x) >> 4;
+        int camChunkZ = Mth.floor(camPos.z) >> 4;
+        int chunkRadius = Mth.ceil(COVERAGE / 16f) + 1;
+        float radius = 1.5f; // most block entities fit in a block; slack for taller ones (beds, chests)
+
+        for (int cx = camChunkX - chunkRadius; cx <= camChunkX + chunkRadius; cx++) {
+            for (int cz = camChunkZ - chunkRadius; cz <= camChunkZ + chunkRadius; cz++) {
+                LevelChunk chunk = level.getChunk(cx, cz);
+                for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
+                    BlockPos pos = entry.getKey();
+                    float ex = (float) (pos.getX() + 0.5 - camPos.x);
+                    float ey = (float) (pos.getY() + 0.5 - camPos.y);
+                    float ez = (float) (pos.getZ() + 0.5 - camPos.z);
+                    if (Math.abs(r00 * ex + r10 * ey + r20 * ez) > COVERAGE + radius) continue;
+                    if (Math.abs(r01 * ex + r11 * ey + r21 * ez) > COVERAGE + radius) continue;
+                    if (Math.abs(r02 * ex + r12 * ey + r22 * ez) > DEPTH_RANGE + radius) continue;
+
+                    poseStack.pushPose();
+                    poseStack.translate(pos.getX() - camPos.x, pos.getY() - camPos.y, pos.getZ() - camPos.z);
+                    try {
+                        beDispatcher.render(entry.getValue(), partial, poseStack, bufferSource);
+                    } catch (Exception e) {
+                        // Never let one broken block-entity renderer kill the frame.
+                    }
+                    poseStack.popPose();
+                }
+            }
+        }
     }
 
     /**
@@ -330,13 +390,12 @@ public class ShadowMapManager {
      * {@code LevelRenderer.renderSky}: the sun quad sits at local {@code (0,100,0)} after a
      * {@code Y(-90deg)} then {@code X(getSunAngle)} rotation, which resolves to a world direction of
      * {@code (-sin a, cos a, 0)} with {@code a = getSunAngle} (straight up at noon; vanilla's sun
-     * travels purely east-up-west). The angle is quantized to {@link #SUN_ANGLE_STEPS} so shadows
-     * step discretely instead of crawling continuously. Once the sun drops below the horizon we flip
-     * to the moon on the opposite side.
+     * travels purely east-up-west). Used continuously - it tracks the game's real sun with no stepping,
+     * now that the grid stabilization no longer depends on a frozen light basis (see the render
+     * method). Once the sun drops below the horizon we flip to the moon on the opposite side.
      */
     private static Vector3f computeLightDir(ClientLevel level, float partial) {
         float a = level.getSunAngle(partial);
-        a = (float) (Math.round((double) a * SUN_ANGLE_STEPS / (Math.PI * 2)) * (Math.PI * 2) / SUN_ANGLE_STEPS);
         Vector3f sunDir = new Vector3f(-Mth.sin(a), Mth.cos(a), 0f); // already unit length
         if (sunDir.y < 0f) sunDir.negate(); // sun below horizon -> moonlight from the opposite side
         return sunDir;

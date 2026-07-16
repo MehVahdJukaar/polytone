@@ -326,7 +326,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader<DimensionEff
         var color = colormap.sampleColor(null, ClientFrameTicker.getCameraPos(),
                 ClientFrameTicker.getCameraBiome().value(), null);
 
-        float deltaTime = ClientFrameTicker.getDeltaTime(); // Get time since last frame
+        float deltaTime = ClientFrameTicker.getDeltaTime();
         float interpolationFactor = deltaTime * 0.1f;
 
 

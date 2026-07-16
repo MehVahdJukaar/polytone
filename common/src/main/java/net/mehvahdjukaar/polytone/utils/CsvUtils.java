@@ -26,10 +26,10 @@ public class CsvUtils {
                 try (Reader reader = r.openAsReader()) {
                     BufferedReader bufferedReader = new BufferedReader(reader);
                     List<String> lines = bufferedReader.lines()
-                            .map(line -> line.split(",")) // Splitting by comma
+                            .map(line -> line.split(","))
                             .flatMap(Arrays::stream)
                             .map(String::trim)
-                            .filter(v -> ResourceLocation.tryParse(v) != null && !v.isEmpty())// Removing extra spaces
+                            .filter(v -> ResourceLocation.tryParse(v) != null && !v.isEmpty())
                             .toList();
                     if (!lines.isEmpty()) idList.put(e.getKey(), lines);
                 } catch (IllegalArgumentException | IOException | JsonParseException ex) {

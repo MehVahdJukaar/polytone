@@ -164,7 +164,6 @@ public class CustomParticleType implements ICustomParticleFactory {
             }
         }
 
-        //tick once
         //todo replace   initializer with ticker
         if (Polytone.CONFIGS.particlesOffThread.get()) {
             // run the spawn-time ticker pass in this tick's parallel batch instead of on the main
@@ -186,7 +185,6 @@ public class CustomParticleType implements ICustomParticleFactory {
                 for (var p : particleQueue) {
                     //hack
                     if (p instanceof CustomParticleInstance inst && inst.type == this) {
-                        //calculate distance between p and newParticle
                         double distSqrt = Mth.lengthSquared(
                                 inst.x - newParticle.x,
                                 inst.y - newParticle.y,

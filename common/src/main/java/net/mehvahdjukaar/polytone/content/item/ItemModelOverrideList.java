@@ -28,7 +28,6 @@ public class ItemModelOverrideList {
 
     private boolean populated = false;
 
-    // initialize
     public void populateModels(RegistryAccess registryAccess) {
         // staff : name "staff", enchant "fire
         // spear : name "sprear"

@@ -88,7 +88,6 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
 
                 BlockPos pos = BlockPos.containing(x, y, z);
 
-                //initialize
                 if (initializer != null && particle instanceof SingleQuadParticle sqp) {
                     initializer.initialize(sqp, level, state, pos);
 
@@ -162,7 +161,6 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
 
         constructor.setAccessible(true);
 
-        // Use no-arg constructor or pass the specific argument
         return (T) (constructor.getParameterCount() == 0 ? constructor.newInstance() : constructor.newInstance(arg));
     }
 }

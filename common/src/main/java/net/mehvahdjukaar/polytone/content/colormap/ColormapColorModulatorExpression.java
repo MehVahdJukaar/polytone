@@ -145,7 +145,6 @@ public class ColormapColorModulatorExpression {
                 vb.setVariable(DAMAGE, damage);
             } else vb.setVariable(DAMAGE, 0);
 
-            // Evaluate the expressionression
             //this state hack won't even work as its multithreaded lmao
 
             if (hasState) STATE_HACK.set(state);

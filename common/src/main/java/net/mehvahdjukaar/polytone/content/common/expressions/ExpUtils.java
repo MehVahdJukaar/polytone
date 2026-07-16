@@ -19,14 +19,6 @@ import java.util.Map;
 
 public class ExpUtils {
 
-    private static final Map<String, String> RENAMES = Map.of(
-            "POS_X", "o.x",
-            "POS_Y", "o.y",
-            "POS_Z", "o.z",
-            "TIME", "g.time",
-            "RAND", "r.next()"
-    );
-
     @SuppressWarnings("CollectionAddAllCanBeReplacedWithConstructor")
     private static final Map<String, Object> STATIC_GLOBALS = Util.make(() -> {
         Map<String, Object> m = new HashMap<>();
@@ -41,11 +33,6 @@ public class ExpUtils {
     });
 
     public static String upgrade(String expr) {
-        //Keeping backward compat for now
-        /*
-        for (var e : RENAMES.entrySet()) {
-            expr = expr.replace(e.getKey(), e.getValue());
-        }*/
         return coerceLogicalOperands(expr);
     }
 
@@ -60,7 +47,7 @@ public class ExpUtils {
      * {@code true} is truthy). Purely numeric expressions (no {@code &&}/{@code ||}/{@code !}) are
      * left untouched.
      */
-    public static String coerceLogicalOperands(String expr) {
+    private static String coerceLogicalOperands(String expr) {
         String withParens = coerceInsideParens(expr);
         List<int[]> ops = topLevelLogicalOps(withParens);
         if (ops.isEmpty()) {
@@ -183,7 +170,6 @@ public class ExpUtils {
 
     private static void importStaticMethods(ParserContext ctx, Class<?> clazz) {
 
-        // Import static methods
         for (Method method : clazz.getMethods()) {
             if (Modifier.isStatic(method.getModifiers()) && method.getDeclaringClass() == clazz) {
                 ctx.addImport(method.getName(), new MethodStub(method));

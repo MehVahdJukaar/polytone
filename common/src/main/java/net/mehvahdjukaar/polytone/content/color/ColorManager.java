@@ -85,6 +85,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     private PaintingRenderType paintingRenderType = null;
 
+    private boolean entityShadowsDisabled = false;
+
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
         super("Color Manager",
@@ -342,6 +344,14 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 }
             }
         });
+
+        if (obj.has("entity_shadows")) {
+            JsonElement v = obj.get("entity_shadows");
+            if (v.isJsonPrimitive()) {
+                // false disables the blob shadows rendered under entities. getAsBoolean also accepts the string "false" from .properties files
+                entityShadowsDisabled = !v.getAsBoolean();
+            }
+        }
     }
 
     private void setTextColor(ChatFormatting text, int col) {
@@ -432,6 +442,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         fishingLineOffset = null;
         fishingLineColor = null;
         paintingRenderType = null;
+        entityShadowsDisabled = false;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();
@@ -549,5 +560,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     public PaintingRenderType getPaintingRenderType() {
         return paintingRenderType;
+    }
+
+    public boolean areEntityShadowsDisabled() {
+        return entityShadowsDisabled;
     }
 }

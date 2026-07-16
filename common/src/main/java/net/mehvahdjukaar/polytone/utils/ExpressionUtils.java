@@ -252,7 +252,6 @@ public class ExpressionUtils {
         });
 
         if (NOISE_FUNCS.size() > 1) {
-            //print names
             Polytone.LOGGER.info("Registered custom noise functions: {}",
                     NOISE_FUNCS.stream().map(Function::getName).toList());
         }
@@ -270,19 +269,16 @@ public class ExpressionUtils {
     private static final Pattern HEX_PATTERN = Pattern.compile("(?:#|0x)[0-9a-fA-F]+");
 
     public static String removeHex(String s) {
-        // Create a Matcher object
         Matcher matcher = HEX_PATTERN.matcher(s);
-        // StringBuffer to build the modified expression
         StringBuilder sb = new StringBuilder();
 
         // Iterate through the matches and replace each with its decimal equivalent
         while (matcher.find()) {
-            String hexString = matcher.group().replace("#", "").replace("0x", ""); // Remove the prefix
+            String hexString = matcher.group().replace("#", "").replace("0x", "");
             long decimalValue = Long.parseLong(hexString, 16);
             matcher.appendReplacement(sb, Long.toString(decimalValue));
         }
 
-        // Append the remaining part of the original expression
         matcher.appendTail(sb);
 
         return sb.toString();

@@ -7,21 +7,18 @@ public class FrequencyOrderedCollection<T> implements Collection<T> {
     private final Map<T, Integer> frequencies = new HashMap<>();
     private List<Map.Entry<T, Integer>> sortedEntries = new ArrayList<>();
 
-    // Add an element with a default count of 1
     @Override
     public boolean add(T obj) {
         return add(obj, 1);
     }
 
-    // Add an element with a specified count
     public boolean add(T obj, int count) {
         if (count <= 0) {
-            return false; // Do not add if count is non-positive
+            return false;
         }
         boolean wasAdded = frequencies.containsKey(obj);
         frequencies.merge(obj, count, Integer::sum);
 
-        // Update sortedEntries list if the element was already in the map
         if (wasAdded) {
             updateSortedEntries();
         } else {
@@ -32,22 +29,19 @@ public class FrequencyOrderedCollection<T> implements Collection<T> {
         return true;
     }
 
-    // Remove a specific number of occurrences of an element
     public boolean remove(T obj, int count) {
         if (count <= 0 || !frequencies.containsKey(obj)) {
-            return false; // Do nothing if count is non-positive or object doesn't exist
+            return false;
         }
         frequencies.merge(obj, -count, (oldCount, delta) -> {
             int newCount = oldCount + delta;
-            return (newCount > 0) ? newCount : null; // If count goes to 0 or below, remove entry
+            return (newCount > 0) ? newCount : null;
         });
 
-        // Update sortedEntries list
         updateSortedEntries();
         return true;
     }
 
-    // Remove all occurrences of an element
     @Override
     public boolean remove(Object obj) {
         if (frequencies.remove(obj) != null) {
@@ -57,31 +51,27 @@ public class FrequencyOrderedCollection<T> implements Collection<T> {
         return false;
     }
 
-    // Remove all occurrences of an element
     public boolean removeAllOccurrences(T obj) {
         return remove(obj);
     }
 
-    // Update sortedEntries list based on current frequencies
     private void updateSortedEntries() {
         sortedEntries = new ArrayList<>(frequencies.entrySet());
         sortedEntries.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
     }
 
-    // Get the element with the highest frequency
     public T getFirst() {
         if (!sortedEntries.isEmpty()) {
             return sortedEntries.get(0).getKey();
         }
-        return null; // Return null if the collection is empty
+        return null;
     }
 
-    // Get the element with the lowest frequency
     public T getLast() {
         if (!sortedEntries.isEmpty()) {
             return sortedEntries.get(sortedEntries.size() - 1).getKey();
         }
-        return null; // Return null if the collection is empty
+        return null;
     }
 
     @Override

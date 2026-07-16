@@ -175,13 +175,10 @@ public class Polytone {
     }
 
     public static void logException(Exception e, String message) {
-        // Find the Log4j logging directory
         String logDir = getLog4jDirectory().orElse(Paths.get("logs").toAbsolutePath().toString());
 
-        // Create the full path for the new log file
         String logFilePath = Paths.get(logDir, "polytone.log").toString();
 
-        // Write the exception to the new log file
         try (PrintWriter writer = new PrintWriter(new FileWriter(logFilePath, false))) {
             writer.println("Polytone version: " + PlatStuff.getVersion());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -237,7 +234,7 @@ public class Polytone {
                 var reg = provider.lookupOrThrow(v);
                 for (var e : reg.listElements().toList()) {
                     writer.write(e.getRegisteredName());
-                    writer.newLine(); // writes a newline character
+                    writer.newLine();
                 }
             }
             System.out.println("File written successfully!");
@@ -250,7 +247,6 @@ public class Polytone {
 
     private static Set<ResourceLocation> loadFutureIds() {
         var res = Polytone.class.getClassLoader().getResourceAsStream("future_ids.txt");
-        //read
         Set<ResourceLocation> futureIds = new HashSet<>();
         if (res != null) {
             try (var reader = new BufferedReader(new InputStreamReader(res))) {

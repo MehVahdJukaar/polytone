@@ -41,6 +41,17 @@ uniform float NormalOffset;         // sample offset along the surface normal, i
 uniform float PixelGridRes;         // world-grid cells per block for pixelated shadows; 0 = smooth
 
 void main() {
+    // DEBUG (test pack only): draw the raw shadow depth map into the bottom-left corner so the
+    // light-POV render can be inspected directly. DebugSize = fraction of the screen it occupies.
+    const float DebugSize = 0.25;
+    if (texCoord.x < DebugSize && texCoord.y < DebugSize) {
+        float d = texture(InShadow, texCoord / DebugSize).r;
+        // Ortho depth clusters in a narrow band; stretch it a bit so occluders are actually visible.
+        float v = clamp((d - 0.5) * 4.0 + 0.5, 0.0, 1.0);
+        fragColor = vec4(vec3(v), 1.0);
+        return;
+    }
+
     vec3 color = texture(DiffuseSampler, texCoord).rgb;
     float depth = texture(InDepth, texCoord).r;
 
@@ -101,6 +112,14 @@ void main() {
         }
     }
     shadow /= 9.0;
+
+    // Fade shadows toward the edge of the single cascade instead of hard-cutting at the coverage
+    // boundary, so they don't pop in/out as the camera moves and the covered box slides over the
+    // world. d = 0 at the map center, 1 at the border; fade the outer ~15% ring. suv.z fades the far
+    // edge of the light depth range the same way.
+    vec2 d = abs(suv.xy - 0.5) * 2.0;
+    float edgeFade = 1.0 - smoothstep(0.85, 1.0, max(max(d.x, d.y), suv.z));
+    shadow *= edgeFade;
 
     color *= (1.0 - shadow * ShadowStrength);
     fragColor = vec4(color, 1.0);

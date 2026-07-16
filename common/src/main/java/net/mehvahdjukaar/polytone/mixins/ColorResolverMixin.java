@@ -72,9 +72,6 @@ public abstract class ColorResolverMixin extends Level {
         this.tintCaches = newMap;
     }
 
-    /**
-     * Remove all custom added resolvers
-     */
     @Inject(method = "clearTintCaches", at = @At("HEAD"))
     private void polytone$resetCustomColorResolvers(CallbackInfo info) {
         this.tintCaches.entrySet().removeIf(entry -> entry.getKey() instanceof Colormap);

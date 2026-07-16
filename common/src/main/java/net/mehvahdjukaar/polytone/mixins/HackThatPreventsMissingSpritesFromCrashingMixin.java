@@ -31,7 +31,6 @@ public class HackThatPreventsMissingSpritesFromCrashingMixin {
             at = @At("HEAD"), cancellable = true)
     public void polytone$setNullSprite(RandomSource randomSource, CallbackInfoReturnable<TextureAtlasSprite> cir) {
         if (this.sprites == null) {
-            //return random sprite instead
             cir.setReturnValue(Sheets.BANNER_BASE.sprite());
         }
     }

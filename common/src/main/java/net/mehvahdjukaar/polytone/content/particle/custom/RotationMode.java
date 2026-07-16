@@ -33,11 +33,11 @@ public enum RotationMode implements StringRepresentable, IRotationProvider {
             case NONE -> {
             }
             case LOOK_UP -> {
-                quaternionf.identity(); // Reset rotation
+                quaternionf.identity();
                 quaternionf.rotateX(Mth.HALF_PI);
             }
             case LOOK_WEST -> {
-                quaternionf.identity(); // Reset rotation
+                quaternionf.identity();
                 quaternionf.rotateY(Mth.HALF_PI);
             }
             case LOOK_AT_XYZ ->

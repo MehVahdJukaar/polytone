@@ -95,7 +95,6 @@ public record ArrayImage(int[][] pixels, int width, int height) {
                     index = Integer.parseInt(indexMatch.substring(1));
                 }
 
-                // Creating or retrieving the Int2Object map for the key
                 groupedMap.computeIfAbsent(id.withPath(key), a -> new Group())
                         .put(index, e.getValue());
             }else{

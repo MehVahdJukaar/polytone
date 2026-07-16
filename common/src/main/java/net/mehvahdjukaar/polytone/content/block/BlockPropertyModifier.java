@@ -133,7 +133,7 @@ public record BlockPropertyModifier(
             block.properties.canOcclude = canOcclude.get();
             for (var s : block.getStateDefinition().getPossibleStates()) {
                 s.canOcclude = canOcclude.get();
-                s.initCache(); //recalculate cache
+                s.initCache();
             }
         }
 
