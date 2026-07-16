@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.IColormapExp;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,8 +30,8 @@ import java.util.function.Function;
 
 public final class Colormap implements IColorGetter, ColorResolver {
 
-    private final IColormapNumberProvider xGetter;
-    private final IColormapNumberProvider yGetter;
+    private final IColormapExp xGetter;
+    private final IColormapExp yGetter;
     private final BiomeIdMapper biomeMapper;
     private final boolean triangular;
     private final boolean rounds;
@@ -48,11 +50,14 @@ public final class Colormap implements IColorGetter, ColorResolver {
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
+    // MVEL axis getters need the level for the `o`/`object` block proxy; the biome-blend and Sodium
+    // ColorResolver paths reach sampleColor without one, so stash it here like stateHack/yHack.
+    private final ThreadLocal<BlockAndTintGetter> levelHack = new ThreadLocal<>();
 
     static final Codec<Colormap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
             ColorUtils.CODEC.optionalFieldOf("default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
-            IColormapNumberProvider.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
-            IColormapNumberProvider.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
+            IColormapExp.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
+            IColormapExp.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
             Codec.BOOL.optionalFieldOf("triangular", false).forGetter(c -> c.triangular),
             Codec.BOOL.optionalFieldOf("rounds", true).forGetter(c -> c.rounds),
             Codec.BOOL.optionalFieldOf("biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
@@ -75,7 +80,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     // single or biome compound
     public static final Codec<IColorGetter> CODEC = Codec.withAlternative(Colormap.DIRECT_REFERENCE_OR_EXPRESSION, BiomeCompoundColorGetter.CODEC);
 
-    private Colormap(Optional<Integer> defaultColor, IColormapNumberProvider xGetter, IColormapNumberProvider yGetter,
+    private Colormap(Optional<Integer> defaultColor, IColormapExp xGetter, IColormapExp yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
                      Optional<ResourceLocation> explicitTargetTexture, Optional<ColormapColorModulatorExpression> colorMult) {
         this.defaultColor = defaultColor.orElse(null);
@@ -94,7 +99,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
         if (this.hasBiomeBlend) PlatStuff.registerColorResolver(this);
     }
 
-    private Colormap(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter, boolean triangular) {
+    private Colormap(IColormapExp xGetter, IColormapExp yGetter, boolean triangular) {
         this(Optional.empty(), xGetter, yGetter, triangular, true, Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty());
     }
@@ -148,6 +153,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     @Override
     public int getColor(@Nullable BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos, int i) {
         if (level == null) return defaultColor;
+        levelHack.set(level); // so sampleColor (incl. the biome-blend/Sodium detours) can feed MVEL axes the level
         if (pos == null && (usesPos || usesBiome)) {
             return defaultColor;
         }
@@ -174,8 +180,10 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
-        float temperature = Mth.clamp(xGetter.getValue(state, pos, biome, biomeMapper, item), 0, 1);
-        float humidity = Mth.clamp(yGetter.getValue(state, pos, biome, biomeMapper, item), 0, 1);
+        BlockAndTintGetter level = levelHack.get();
+        Vec3 vPos = pos == null ? null : pos.getCenter();
+        float temperature = Mth.clamp(xGetter.evaluate(level, state, vPos, biome, biomeMapper, item), 0, 1);
+        float humidity = Mth.clamp(yGetter.evaluate(level, state, vPos, biome, biomeMapper, item), 0, 1);
         int sampled = sample(humidity, temperature);
 
         if (colorMult != null) {
@@ -196,6 +204,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     //calculate color blend. could just use vanilla impl tbh since we got above hack for sodium anyway
     public int calculateBlendedColor(Level level, BlockPos pos) {
         //Same as vanilla impl. We could have just called it. Just here so we call sampleColor instead of getColor with pos instead of x z
+        levelHack.set(level);
         int i = Minecraft.getInstance().options.biomeBlendRadius().get();
         BlockState state = stateHack.get();
         if (i == 0) {
@@ -257,6 +266,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
                 biome = level.getBiome(pos).value();
             }
         }
+        levelHack.set(Minecraft.getInstance().level);
         return sampleColor(null, pos, biome, itemStack);
     }
 
@@ -265,45 +275,45 @@ public final class Colormap implements IColorGetter, ColorResolver {
 
 
     //Square map with those 2 getters
-    public static Colormap simple(IColormapNumberProvider xGetter, IColormapNumberProvider yGetter) {
+    public static Colormap simple(IColormapExp xGetter, IColormapExp yGetter) {
         return new Colormap(xGetter, yGetter, false);
     }
 
     public static Colormap createFixed() {
-        return new Colormap(Optional.empty(), IColormapNumberProvider.ZERO,
-                IColormapNumberProvider.ZERO, false, true, Optional.empty(),
+        return new Colormap(Optional.empty(), IColormapExp.ZERO,
+                IColormapExp.ZERO, false, true, Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     //this is dumb. dont use
     private static Colormap singleColor(int color) {
-        var c = new Colormap(IColormapNumberProvider.ZERO, IColormapNumberProvider.ZERO, false);
+        var c = new Colormap(IColormapExp.ZERO, IColormapExp.ZERO, false);
         c.acceptTexture(new ArrayImage(new int[][]{{color}}));
         return c;
     }
 
     public static Colormap createDefSquare() {
-        return new Colormap(IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, false);
+        return new Colormap(IColormapExp.TEMPERATURE, IColormapExp.DOWNFALL, false);
     }
 
     public static Colormap createDefTriangle() {
-        return new Colormap(IColormapNumberProvider.TEMPERATURE, IColormapNumberProvider.DOWNFALL, true);
+        return new Colormap(IColormapExp.TEMPERATURE, IColormapExp.DOWNFALL, true);
     }
 
     public static Colormap createTimeStrip() {
-        return new Colormap(IColormapNumberProvider.DAY_TIME, IColormapNumberProvider.ZERO, false);
+        return new Colormap(IColormapExp.DAY_TIME, IColormapExp.ZERO, false);
     }
 
     public static Colormap createBiomeId() {
         return new Colormap(Optional.empty(),
-                IColormapNumberProvider.BIOME_ID,
-                IColormapNumberProvider.Y_LEVEL,
+                IColormapExp.BIOME_ID,
+                IColormapExp.Y_LEVEL,
                 false, false, Optional.of(Boolean.TRUE), Optional.empty(), Optional.empty(),
                 Optional.empty());
     }
 
     public static Colormap createDamage() {
-        return new Colormap(IColormapNumberProvider.DAMAGE, IColormapNumberProvider.ZERO, false);
+        return new Colormap(IColormapExp.DAMAGE, IColormapExp.ZERO, false);
     }
 
 

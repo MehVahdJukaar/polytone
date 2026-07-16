@@ -35,7 +35,9 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier, Map
     private boolean needsDynamicApplication = true;
 
     public BiomeEffectsManager() {
-        super("Biome modifier", () -> SchemaCodec.wrap(BiomeEffectModifier.CODEC), "biome_modifiers", "biome_effects");
+        super(Spec.of("Biome modifier", () -> BiomeEffectModifier.CODEC)
+                .wikiPage("Biome-Effect-Modifiers")
+                .folders("biome_modifiers", "biome_effects"));
     }
 
     @Override

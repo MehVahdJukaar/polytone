@@ -33,10 +33,11 @@ public class ParticleModifiersManager extends ContentManager<ParticleModifier, A
     private ParticleOptions xpOrbReplaceParticle = null;
 
     public ParticleModifiersManager() {
-        super("Particle modifier", () -> SchemaCodec.wrap(ParticleModifier.CODEC),
-                ColormapTextures.singleTexture(
-                        (ParticleModifier m) -> m.getColormap(), "", "default"),
-                "particle_modifiers");
+        super(Spec.of("Particle modifier", () -> SchemaCodec.wrap(ParticleModifier.CODEC))
+                .wikiPage("Particle-Modifiers")
+                .companions(ColormapTextures.singleTexture(
+                        (ParticleModifier m) -> m.getColormap(), "", "default"))
+                .folders("particle_modifiers"));
     }
 
     @Override

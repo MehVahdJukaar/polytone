@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone;
 
-import net.mehvahdjukaar.polytone.compat.PolytoneNautilus;
+import net.mehvahdjukaar.polytone.compat.nautilus.PolytoneNautilus;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapperManager;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertiesManager;
@@ -109,7 +109,7 @@ public class Polytone {
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
-                CREATIVE_TABS_MODIFIERS, POST_TARGETS, POST_SHADERS, CONFIGS);
+                CREATIVE_TABS_MODIFIERS, POST_TARGETS, POST_SHADERS, SHADOWS, CONFIGS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         // Register editable content types with the Nautilus Studio pack editor, if that mod is present.

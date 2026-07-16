@@ -13,13 +13,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Pack.class)
 public class PackMixin {
 
-    // Load this pack's configs eagerly, before the overlay metadata section (and its conditions) are parsed
+    // Load this pack's configs eagerly, before the overlay metadata section (and its conditions) are parsed.
+    // We pass the resources supplier + version too so we can re-open the pack with its format overlays applied,
+    // otherwise config entries defined inside overlay directories would be invisible here (see loadCurrentPackConfigs).
     @Inject(method = "readPackMetadata", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/server/packs/PackResources;getMetadataSection(Lnet/minecraft/server/packs/metadata/MetadataSectionSerializer;)Ljava/lang/Object;",
             ordinal = 0, shift = At.Shift.BEFORE))
     private static void polytone$onReadPackMetadata(PackLocationInfo location, Pack.ResourcesSupplier resources, int version,
                                                     CallbackInfoReturnable<Pack.Metadata> cir,
                                                     @Local PackResources packResources) {
-        Polytone.CONFIGS.loadCurrentPackConfigs(packResources);
+        Polytone.CONFIGS.loadCurrentPackConfigs(packResources, resources, location, version);
     }
 }

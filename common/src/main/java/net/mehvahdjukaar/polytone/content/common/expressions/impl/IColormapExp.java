@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.content.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
@@ -21,12 +22,14 @@ public interface IColormapExp {
 
     MapRegistry<IColormapExp> BUILTIN_EXP = new MapRegistry<>("Colormap Number Providers");
 
+    // named builtin | constant | legacy exp4j expression (ColormapExpressionProvider) | MVEL expression (ColormapExp)
     Codec<IColormapExp> CODEC = Codec.lazyInitialized(() -> CodecUtils.referenceOrDirect(BUILTIN_EXP,
             CodecUtils.alternatives(
                     CodecUtils.LENIENT_FLOAT.xmap(
                             aDouble -> (IColormapExp) (a, b, c, d, e, f) -> aDouble,
                             i -> 0.0f
                     ),
+                    ColormapExpressionProvider.CODEC,
                     ColormapExp.TYPE.codec()), true));
 
     float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,

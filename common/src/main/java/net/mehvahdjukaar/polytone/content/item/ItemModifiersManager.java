@@ -27,7 +27,9 @@ public class ItemModifiersManager extends JsonImgPartialReloader<ItemModifier> {
 
 
     public ItemModifiersManager() {
-        super("Item modifier", () -> SchemaCodec.wrap(ItemModifier.CODEC), "item_modifiers", "item_properties");
+        super(Spec.of("Item modifier", () -> SchemaCodec.wrap(ItemModifier.CODEC))
+                .wikiPage("Item-Modifiers")
+                .folders("item_modifiers", "item_properties"));
     }
 
     // early reload to grab the extra models we need to add.

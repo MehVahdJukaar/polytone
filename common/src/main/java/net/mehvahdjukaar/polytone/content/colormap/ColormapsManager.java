@@ -64,9 +64,10 @@ public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
     }
 
     public ColormapsManager() {
-        super("Colormap", () -> SchemaCodec.wrap(Colormap.DIRECT_CODEC),
-                ColormapTextures.singleTexture((Colormap c) -> c, "", "default"),
-                "colormaps");
+        super(Spec.of("Colormap", () -> SchemaCodec.wrap(Colormap.DIRECT_CODEC))
+                .wikiPage("Colormaps")
+                .companions(ColormapTextures.singleTexture((Colormap c) -> c, "", "default"))
+                .folders("colormaps"));
     }
 
     @Override

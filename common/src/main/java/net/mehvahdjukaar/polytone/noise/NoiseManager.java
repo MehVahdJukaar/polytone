@@ -26,7 +26,7 @@ public class NoiseManager extends JsonPartialReloader<PerlinSimplexNoise> {
 
 
     public NoiseManager() {
-        super("Noise", "noises");
+        super(Spec.<PerlinSimplexNoise>of("Noise").folders("noises"));
     }
 
     private final MapRegistry<PerlinSimplexNoise> noises = new MapRegistry<>("Polytone Simplex Noises");

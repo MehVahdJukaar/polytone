@@ -17,18 +17,25 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.OverlayMetadataSection;
+import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.world.flag.FeatureFlagSet;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -61,7 +68,9 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
     private final AtomicBoolean needsPackReload = new AtomicBoolean(false);
 
     public ConfigsManager() {
-        super("Config entry", () -> SchemaCodec.wrap(PolyConfig.CODEC), "config_entries");
+        super(Spec.of("Config entry", () -> SchemaCodec.wrap(PolyConfig.CODEC))
+                .wikiPage("Polytone-Configs")
+                .folders("config_entries"));
         this.optionsFile = Minecraft.getInstance().gameDirectory.toPath().resolve("polytone_options.json").toFile();
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         loadConfigFromDisk();
@@ -160,17 +169,43 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
 
     // Called per-pack during pack discovery, before the resource reload happens, so overlay
     // conditions referencing this pack's configs can be evaluated.
-    public void loadCurrentPackConfigs(PackResources packResources) {
-        if (packResources.location().source() != PackSource.DEFAULT) return;
-        MultiPackResourceManager resourceManager = new MultiPackResourceManager(PackType.CLIENT_RESOURCES, List.of(packResources));
-        var jsons = this.getJsonsInDirectories(resourceManager);
+    // The pack is re-opened with its format overlays applied so that config entries defined inside
+    // overlay directories (e.g. a version overlay) are visible here. Without this, an overlay whose
+    // condition references such a config would only pick it up on a second reload, once the persistent
+    // config registry (populated by the real resource reload) had caught up.
+    public void loadCurrentPackConfigs(PackResources primary, Pack.ResourcesSupplier resources, PackLocationInfo location, int version) {
+        if (primary.location().source() != PackSource.DEFAULT) return;
 
-        MapRegistry<OptionHolder<?>> activePackReg = new MapRegistry<>("Active Pack Configs");
-        registerBuiltins(activePackReg);
-        activeLoadConfigs.set(activePackReg);
-        for (var j : Parsed.batchParseOnlyEnabled(jsons, PolyConfig.CODEC, JsonOps.INSTANCE, "Configs")) {
-            if (j != null) addConfig(j.getKey(), j.getValue(), activePackReg, configFileSnapshot);
+        List<String> overlays = collectFormatOverlays(primary, version);
+        PackResources fullPack = overlays.isEmpty() ? primary
+                : resources.openFull(location, new Pack.Metadata(Component.empty(),
+                PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), overlays));
+        try {
+            MultiPackResourceManager resourceManager = new MultiPackResourceManager(PackType.CLIENT_RESOURCES, List.of(fullPack));
+            var jsons = this.getJsonsInDirectories(resourceManager);
+
+            MapRegistry<OptionHolder<?>> activePackReg = new MapRegistry<>("Active Pack Configs");
+            registerBuiltins(activePackReg);
+            activeLoadConfigs.set(activePackReg);
+            for (var j : Parsed.batchParseOnlyEnabled(jsons, PolyConfig.CODEC, JsonOps.INSTANCE, "Configs")) {
+                if (j != null) addConfig(j.getKey(), j.getValue(), activePackReg, configFileSnapshot);
+            }
+        } finally {
+            if (fullPack != primary) fullPack.close();
         }
+    }
+
+    // Overlay directories that apply for this pack version. Config definitions almost always live in
+    // plain format/version overlays, so this is enough to make them visible before the real reload.
+    private static List<String> collectFormatOverlays(PackResources primary, int version) {
+        List<String> overlays = new ArrayList<>();
+        try {
+            OverlayMetadataSection section = primary.getMetadataSection(OverlayMetadataSection.TYPE);
+            if (section != null) overlays.addAll(section.overlaysForVersion(version));
+        } catch (Exception e) {
+            Polytone.LOGGER.error("Failed to read overlay metadata while loading configs for pack {}", primary.location().id(), e);
+        }
+        return overlays;
     }
 
     @Override

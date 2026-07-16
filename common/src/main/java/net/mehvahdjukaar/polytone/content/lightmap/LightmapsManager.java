@@ -41,7 +41,9 @@ public class LightmapsManager extends JsonImgPartialReloader<Lightmap> {
     private Lightmap currentLightmap = null;
 
     public LightmapsManager() {
-        super("Lightmap", () -> SchemaCodec.wrap(Lightmap.CODEC), "lightmaps");
+        super(Spec.of("Lightmap", () -> SchemaCodec.wrap(Lightmap.CODEC))
+                .wikiPage("Lightmaps")
+                .folders("lightmaps"));
     }
 
     @Override

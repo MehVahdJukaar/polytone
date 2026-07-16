@@ -27,10 +27,11 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
 
     public FluidPropertiesManager() {
-        super("Fluid modifier", () -> SchemaCodec.wrap(FluidPropertyModifier.CODEC),
-                ColormapTextures.singleTexture(
-                        (FluidPropertyModifier m) -> m.getColormap(), "", "default"),
-                "fluid_modifiers", "fluid_properties");
+        super(Spec.of("Fluid modifier", () -> SchemaCodec.wrap(FluidPropertyModifier.CODEC))
+                .wikiPage("Fluid-Properties-Modifiers")
+                .companions(ColormapTextures.singleTexture(
+                        (FluidPropertyModifier m) -> m.getColormap(), "", "default"))
+                .folders("fluid_modifiers", "fluid_properties"));
     }
 
     private Map<ResourceLocation, Parsed<FluidPropertyModifier>> extraModifiers;

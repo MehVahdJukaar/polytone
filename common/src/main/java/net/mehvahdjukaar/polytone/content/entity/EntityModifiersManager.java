@@ -20,7 +20,9 @@ public class EntityModifiersManager extends ContentManager<EntityModifier, Map<R
     private final Map<EntityType<?>, EntityModifier> emittersPerEntity = new HashMap<>();
 
     public EntityModifiersManager() {
-        super("Entity modifier", () -> SchemaCodec.wrap(EntityModifier.CODEC), "entity_modifiers");
+        super(Spec.of("Entity modifier", () -> SchemaCodec.wrap(EntityModifier.CODEC))
+                .wikiPage("Entity-Modifiers")
+                .folders("entity_modifiers"));
     }
 
     @Override

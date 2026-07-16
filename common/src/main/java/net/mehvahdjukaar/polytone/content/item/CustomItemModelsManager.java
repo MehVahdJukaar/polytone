@@ -30,7 +30,7 @@ public class CustomItemModelsManager extends JsonPartialReloader<Void> {
     private final Map<Item, List<ItemModelOverride>> itemModifiersModels = new HashMap<>();
 
     public CustomItemModelsManager() {
-        super("Custom item model", "custom_item_models");
+        super(Spec.<Void>of("Custom item model").folders("custom_item_models"));
 
     }
 

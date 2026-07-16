@@ -41,7 +41,7 @@ public class VariantTextureManager extends JsonPartialReloader<VariantTexture> {
 
     public VariantTextureManager() {
         // 1.21.1 VariantTexture.CODEC is only a Decoder, not a full Codec; not editable until ported.
-        super("Variant texture", "variant_textures");
+        super(Spec.<VariantTexture>of("Variant texture").wikiPage("Variant-Textures").folders("variant_textures"));
     }
 
     @Override

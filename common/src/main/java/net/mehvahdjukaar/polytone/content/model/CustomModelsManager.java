@@ -30,7 +30,7 @@ public class CustomModelsManager extends JsonPartialReloader<ModelDefinition> {
     private final Map<ModelLayerLocation, LayerDefinition> layers = new HashMap<>();
 
     public CustomModelsManager() {
-        super("Custom models", "custom_models");
+        super(Spec.<ModelDefinition>of("Custom models").folders("custom_models"));
     }
 
     /** Reference-by-id codec, used by {@code CodecUtils.referenceOrDirect} alongside {@link ModelDefinition#CODEC}. */

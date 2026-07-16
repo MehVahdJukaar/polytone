@@ -43,7 +43,9 @@ public class GuiModifierManager extends JsonPartialReloader<GuiModifier> {
     private static final ResourceLocation INVENTORY = ResourceLocation.parse("inventory");
 
     public GuiModifierManager() {
-        super("GUI modifier", () -> SchemaCodec.wrap(GuiModifier.CODEC), "gui_modifiers");
+        super(Spec.of("GUI modifier", () -> SchemaCodec.wrap(GuiModifier.CODEC))
+                .wikiPage("Gui-Modifiers")
+                .folders("gui_modifiers"));
     }
 
     @Override

@@ -48,7 +48,9 @@ public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.T
     private final Map<ResourceLocation, RenderTarget> targets = new HashMap<>();
 
     public PostTargetsManager() {
-        super("Post target", () -> SchemaCodec.wrap(TargetSpec.CODEC), "post_targets");
+        super(Spec.of("Post target", () -> SchemaCodec.wrap(TargetSpec.CODEC))
+                .wikiPage("Shaders")
+                .folders("post_targets"));
     }
 
     @Override

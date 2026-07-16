@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.content.colormap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.IColormapExp;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
@@ -12,13 +13,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-public class ColormapExpressionProvider extends PolytoneExpression implements IColormapNumberProvider {
+// Legacy exp4j-backed axis getter. Implements IColormapExp so it can sit alongside the MVEL
+// ColormapExp as a colormap-axis alternative (matches 1.21.11). Item/variant-texture consumers
+// still call getValue(...) directly.
+public class ColormapExpressionProvider extends PolytoneExpression implements IColormapExp {
 
     //Keywords
     protected static final String BIOME_VALUE = "BIOME_VALUE";
@@ -79,7 +86,14 @@ public class ColormapExpressionProvider extends PolytoneExpression implements IC
         return this.hasState;
     }
 
+    // IColormapExp entry point (colormap axis). exp4j reads live world state itself, so the level arg
+    // is unused here; we just adapt the Vec3 pos to the BlockPos-based getValue.
     @Override
+    public float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
+                          @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+        return getValue(state, pos == null ? null : BlockPos.containing(pos), biome, mapper, stack);
+    }
+
     public float getValue(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
                           @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
 

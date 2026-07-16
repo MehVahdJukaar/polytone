@@ -27,7 +27,7 @@ public abstract class SingleJsonOrPropertiesReloadListener extends ContentManage
     protected SingleJsonOrPropertiesReloadListener(String myName,
                                                    String propertiesName, String jsonName,
                                                    String... possibleFolderLocations) {
-        super(myName, possibleFolderLocations);
+        super(Spec.<Object>of(myName).folders(possibleFolderLocations));
         this.folders = possibleFolderLocations;
         this.propertiesName = propertiesName;
         this.jsonName = jsonName;

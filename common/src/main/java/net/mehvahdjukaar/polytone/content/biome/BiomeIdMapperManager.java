@@ -19,7 +19,9 @@ public class BiomeIdMapperManager extends ContentManager<BiomeIdMapper, Map<Reso
     private final MapRegistry<BiomeIdMapper> biomeIdMappers = new MapRegistry<>("Biome ID Mappers");
 
     public BiomeIdMapperManager() {
-        super("Biome id mapper", () -> SchemaCodec.wrap(BiomeIdMapper.CODEC), "biome_id_mappers");
+        super(Spec.of("Biome id mapper", () -> SchemaCodec.wrap(BiomeIdMapper.CODEC))
+                .wikiPage("Colormaps")
+                .folders("biome_id_mappers"));
     }
 
     @Override

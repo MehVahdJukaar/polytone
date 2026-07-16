@@ -2,9 +2,9 @@ package net.mehvahdjukaar.polytone.utils;
 
 import com.google.common.base.Suppliers;
 import com.google.gson.JsonElement;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.companion.CompanionSpec;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -18,28 +18,64 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
 
     public static final List<ContentManager<?, ?>> REGISTRY = new CopyOnWriteArrayList<>();
 
-    private final Supplier<@Nullable ? extends SchemaCodec<O>> contentCodec;
+    private final Supplier<@Nullable ? extends Codec<O>> contentCodec;
     public final String name;
     public final @Nullable CompanionSpec<O> companions;
+    private final @Nullable String wikiPage;
 
-    protected ContentManager(String name, String... folderNames) {
-        this(name, null, null, folderNames);
-    }
-
-    protected ContentManager(String name, Supplier<? extends SchemaCodec<O>> codec, String... folderNames) {
-        this(name, codec, null, folderNames);
-    }
-
-    protected ContentManager(String name, @Nullable Supplier<? extends SchemaCodec<O>> codec,
-                             @Nullable CompanionSpec<O> companions, String... folderNames) {
-        super(folderNames);
-        this.name = name;
-        this.contentCodec = codec == null ? () -> null : Suppliers.memoize(codec::get);
-        this.companions = companions;
+    protected ContentManager(Spec<O> spec) {
+        super(spec.folderNames);
+        this.name = spec.name;
+        this.contentCodec = spec.codec == null ? () -> null : Suppliers.memoize(spec.codec::get);
+        this.companions = spec.companions;
+        this.wikiPage = spec.wikiPage;
         REGISTRY.add(this);
     }
 
-    public @Nullable SchemaCodec<O> contentCodec() {
+    /** Fluent, order-independent replacement for a telescoping constructor. */
+    public static final class Spec<O> {
+        private final String name;
+        private String[] folderNames = new String[0];
+        private @Nullable Supplier<? extends Codec<O>> codec;
+        private @Nullable CompanionSpec<O> companions;
+        private @Nullable String wikiPage;
+
+        private Spec(String name) {
+            this.name = name;
+        }
+
+        /** For codec-less (non-editable) managers - O can't be inferred here, so give it explicitly: {@code Spec.<Foo>of(name)}. */
+        public static <O> Spec<O> of(String name) {
+            return new Spec<>(name);
+        }
+
+        /** O is inferred from the codec supplier, so callers never need a type witness. */
+        public static <O> Spec<O> of(String name, Supplier<? extends Codec<O>> codec) {
+            return new Spec<O>(name).codec(codec);
+        }
+
+        public Spec<O> codec(Supplier<? extends Codec<O>> codec) {
+            this.codec = codec;
+            return this;
+        }
+
+        public Spec<O> companions(CompanionSpec<O> companions) {
+            this.companions = companions;
+            return this;
+        }
+
+        public Spec<O> wikiPage(String wikiPage) {
+            this.wikiPage = wikiPage;
+            return this;
+        }
+
+        public Spec<O> folders(String... folders) {
+            this.folderNames = folders;
+            return this;
+        }
+    }
+
+    public @Nullable Codec<O> contentCodec() {
         return contentCodec.get();
     }
 
@@ -49,6 +85,11 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
 
     public @Nullable String primaryFolder() {
         return names.length == 0 ? null : names[0];
+    }
+
+    /** Wiki page slug shown as a help link in the pack editor. Managers without one just get no button. */
+    public @Nullable String wikiPage() {
+        return wikiPage;
     }
 
     // -------------------- parse helpers (condition-aware, via the existing Parsed) --------------------

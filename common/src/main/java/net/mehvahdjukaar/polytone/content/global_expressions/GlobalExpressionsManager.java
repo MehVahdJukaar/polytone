@@ -21,7 +21,9 @@ public class GlobalExpressionsManager extends JsonPartialReloader<GlobalExpressi
     private long lastGameTime = Long.MIN_VALUE;
 
     public GlobalExpressionsManager() {
-        super("Global expression", () -> SchemaCodec.wrap(GlobalExpression.CODEC), "global_expressions");
+        super(Spec.of("Global expression", () -> GlobalExpression.CODEC)
+                .wikiPage("Scripting-Expressions")
+                .folders("global_expressions"));
     }
 
     // ResourceLocation has no toDebugFileName() on 1.21.1 - replicate it: a safe MVEL variable

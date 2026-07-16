@@ -50,10 +50,11 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
     private Map<ResourceLocation, Properties> ofProperties = Map.of();
 
     public BlockPropertiesManager() {
-        super("Block modifier", () -> SchemaCodec.wrap(BlockPropertyModifier.CODEC),
-                ColormapTextures.groupedTexture(
-                        (BlockPropertyModifier m) -> m.getColormap()),
-                "block_modifiers", "block_properties");
+        super(Spec.of("Block modifier", () -> SchemaCodec.wrap(BlockPropertyModifier.CODEC))
+                .wikiPage("Block-Properties-Modifiers")
+                .companions(ColormapTextures.groupedTexture(
+                        (BlockPropertyModifier m) -> m.getColormap()))
+                .folders("block_modifiers", "block_properties"));
     }
 
 

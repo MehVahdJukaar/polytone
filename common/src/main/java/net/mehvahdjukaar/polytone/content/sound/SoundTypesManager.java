@@ -29,7 +29,9 @@ public class SoundTypesManager extends ContentManager<PolytoneSoundType, SoundTy
     private final MapRegistry<SoundType> customSoundTypes = new MapRegistry<>("Custom Sound Types");
 
     public SoundTypesManager() {
-        super("Sound type", () -> SchemaCodec.wrap(PolytoneSoundType.DIRECT_CODEC), "custom_sound_types", "sound_types");
+        super(Spec.of("Sound type", () -> PolytoneSoundType.DIRECT_CODEC)
+                .wikiPage("Custom-Sound-Events")
+                .folders("custom_sound_types", "sound_types"));
     }
 
     @Nullable

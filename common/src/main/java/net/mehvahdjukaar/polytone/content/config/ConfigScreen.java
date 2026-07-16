@@ -7,7 +7,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.common.gui.PointingChatBubbleOverlay;
-import net.mehvahdjukaar.polytone.compat.PolytoneNautilus;
+import net.mehvahdjukaar.polytone.compat.nautilus.PolytoneNautilus;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;

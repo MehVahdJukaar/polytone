@@ -57,7 +57,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader<DimensionEff
 
     public DimensionEffectsManager() {
         // 1.21.1 DimensionEffectsModifier.CODEC is only a Decoder, not a full Codec; not editable until ported.
-        super("Dimension modifier", "dimension_modifiers", "dimension_effects");
+        super(Spec.<DimensionEffectsModifier>of("Dimension modifier")
+                .wikiPage("Dimension-Effects-Modifiers")
+                .folders("dimension_modifiers", "dimension_effects"));
     }
 
     @Override

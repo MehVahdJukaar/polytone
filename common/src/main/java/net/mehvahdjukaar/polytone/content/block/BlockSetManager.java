@@ -21,7 +21,8 @@ public class BlockSetManager extends ContentManager<BlockSetTypeProvider, Map<Re
     private int counter = 0;
 
     public BlockSetManager() {
-        super("Block set", () -> SchemaCodec.wrap(BlockSetTypeProvider.CODEC), "custom_block_sets", "block_sets");
+        super(Spec.of("Block set", () -> SchemaCodec.wrap(BlockSetTypeProvider.CODEC))
+                .folders("custom_block_sets", "block_sets"));
     }
 
     @Override

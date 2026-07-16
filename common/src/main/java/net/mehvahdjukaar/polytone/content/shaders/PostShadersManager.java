@@ -98,7 +98,9 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
     private boolean depthCombineFailed = false;
 
     public PostShadersManager() {
-        super("Post shader", () -> SchemaCodec.wrap(PostChainEffect.CODEC), "post_chains", "post_shaders");
+        super(Spec.of("Post shader", () -> SchemaCodec.wrap(PostChainEffect.CODEC))
+                .wikiPage("Shaders")
+                .folders("post_chains", "post_shaders"));
     }
 
     @Override

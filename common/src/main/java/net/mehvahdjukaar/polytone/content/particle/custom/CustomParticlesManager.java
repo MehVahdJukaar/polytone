@@ -44,7 +44,9 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
             SchemaCodecs.alt("custom", CustomParticleType.CODEC));
 
     public CustomParticlesManager() {
-        super("Custom particle", () -> CUSTOM_OR_SEMI_CUSTOM_CODEC, "custom_particles");
+        super(Spec.of("Custom particle", () -> CUSTOM_OR_SEMI_CUSTOM_CODEC)
+                .wikiPage("Custom-Particle-Types")
+                .folders("custom_particles"));
     }
 
     @Override

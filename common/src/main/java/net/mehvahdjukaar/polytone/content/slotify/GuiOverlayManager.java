@@ -24,7 +24,9 @@ public class GuiOverlayManager extends JsonPartialReloader<BlitModifier> {
     private final Map<ResourceLocation, BlitModifier> blitModifiers = new HashMap<>();
 
     public GuiOverlayManager() {
-        super("Overlay modifier", () -> SchemaCodec.wrap(BlitModifier.CODEC), "overlay_modifiers");
+        super(Spec.of("Overlay modifier", () -> SchemaCodec.wrap(BlitModifier.CODEC))
+                .wikiPage("Screen-Sprite-Modifiers")
+                .folders("overlay_modifiers"));
     }
 
     @Override
