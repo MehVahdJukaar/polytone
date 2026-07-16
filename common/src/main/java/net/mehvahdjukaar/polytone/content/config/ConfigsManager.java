@@ -9,7 +9,6 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.utils.FilesUtil;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.Parsed;
@@ -68,7 +67,7 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
     private final AtomicBoolean needsPackReload = new AtomicBoolean(false);
 
     public ConfigsManager() {
-        super(Spec.of("Config entry", () -> SchemaCodec.wrap(PolyConfig.CODEC))
+        super(Spec.of("Config entry", () -> PolyConfig.CODEC)
                 .wikiPage("Polytone-Configs")
                 .folders("config_entries"));
         this.optionsFile = Minecraft.getInstance().gameDirectory.toPath().resolve("polytone_options.json").toFile();

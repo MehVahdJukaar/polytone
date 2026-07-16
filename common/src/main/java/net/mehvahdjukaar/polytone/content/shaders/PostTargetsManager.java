@@ -6,7 +6,6 @@ import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
@@ -48,7 +47,7 @@ public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.T
     private final Map<ResourceLocation, RenderTarget> targets = new HashMap<>();
 
     public PostTargetsManager() {
-        super(Spec.of("Post target", () -> SchemaCodec.wrap(TargetSpec.CODEC))
+        super(Spec.of("Post target", () -> TargetSpec.CODEC)
                 .wikiPage("Shaders")
                 .folders("post_targets"));
     }

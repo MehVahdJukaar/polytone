@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.content.block;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -21,7 +20,7 @@ public class BlockSetManager extends ContentManager<BlockSetTypeProvider, Map<Re
     private int counter = 0;
 
     public BlockSetManager() {
-        super(Spec.of("Block set", () -> SchemaCodec.wrap(BlockSetTypeProvider.CODEC))
+        super(Spec.of("Block set", () -> BlockSetTypeProvider.CODEC)
                 .folders("custom_block_sets", "block_sets"));
     }
 

@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.gui.Gui;
@@ -24,7 +23,7 @@ public class GuiOverlayManager extends JsonPartialReloader<BlitModifier> {
     private final Map<ResourceLocation, BlitModifier> blitModifiers = new HashMap<>();
 
     public GuiOverlayManager() {
-        super(Spec.of("Overlay modifier", () -> SchemaCodec.wrap(BlitModifier.CODEC))
+        super(Spec.of("Overlay modifier", () -> BlitModifier.CODEC)
                 .wikiPage("Screen-Sprite-Modifiers")
                 .folders("overlay_modifiers"));
     }

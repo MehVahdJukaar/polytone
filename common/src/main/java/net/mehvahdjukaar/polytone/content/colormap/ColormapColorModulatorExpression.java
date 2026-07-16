@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.IColormapModExp;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
@@ -14,9 +15,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -25,16 +28,16 @@ public class ColormapColorModulatorExpression {
 
     public static Codec<ColormapColorModulatorExpression> CODEC = RecordCodecBuilder.create(i ->
             i.group(
-                    Exp.CODEC.optionalFieldOf("red").forGetter(c -> c.red),
-                    Exp.CODEC.optionalFieldOf("green").forGetter(c -> c.green),
-                    Exp.CODEC.optionalFieldOf("blue").forGetter(c -> c.blue)
+                    IColormapModExp.CODEC.optionalFieldOf("red").forGetter(c -> c.red),
+                    IColormapModExp.CODEC.optionalFieldOf("green").forGetter(c -> c.green),
+                    IColormapModExp.CODEC.optionalFieldOf("blue").forGetter(c -> c.blue)
             ).apply(i, ColormapColorModulatorExpression::new));
 
-    private final Optional<Exp> red;
-    private final Optional<Exp> green;
-    private final Optional<Exp> blue;
+    private final Optional<IColormapModExp> red;
+    private final Optional<IColormapModExp> green;
+    private final Optional<IColormapModExp> blue;
 
-    protected ColormapColorModulatorExpression(Optional<Exp> red, Optional<Exp> green, Optional<Exp> blue) {
+    protected ColormapColorModulatorExpression(Optional<IColormapModExp> red, Optional<IColormapModExp> green, Optional<IColormapModExp> blue) {
         this.red = red;
         this.green = green;
         this.blue = blue;
@@ -42,9 +45,9 @@ public class ColormapColorModulatorExpression {
 
     public ColormapColorModulatorExpression createConcurrent() {
         return new ColormapColorModulatorExpression(
-                red.map(Exp::createConcurrent),
-                green.map(Exp::createConcurrent),
-                blue.map(Exp::createConcurrent)
+                red.map(IColormapModExp::createConcurrent),
+                green.map(IColormapModExp::createConcurrent),
+                blue.map(IColormapModExp::createConcurrent)
         );
     }
 
@@ -54,20 +57,21 @@ public class ColormapColorModulatorExpression {
         float green = values[1];
         float blue = values[2];
 
-        float newRed = this.red.map(exp -> exp.getValue(red, green, blue, state, pos, biome, mapper, stack)).orElse(red);
-        float newGreen = this.green.map(exp -> exp.getValue(red, green, blue, state, pos, biome, mapper, stack)).orElse(green);
-        float newBlue = this.blue.map(exp -> exp.getValue(red, green, blue, state, pos, biome, mapper, stack)).orElse(blue);
+        Vec3 vPos = pos == null ? null : pos.getCenter();
+        float newRed = this.red.map(exp -> exp.evaluate(red, green, blue, null, state, vPos, biome, mapper, stack)).orElse(red);
+        float newGreen = this.green.map(exp -> exp.evaluate(red, green, blue, null, state, vPos, biome, mapper, stack)).orElse(green);
+        float newBlue = this.blue.map(exp -> exp.evaluate(red, green, blue, null, state, vPos, biome, mapper, stack)).orElse(blue);
         return ColorUtils.pack(newRed, newGreen, newBlue);
     }
 
-    protected static class Exp extends ColormapExpressionProvider {
+    public static class Exp extends ColormapExpressionProvider implements IColormapModExp {
 
         private static final String RED = "RED";
         private static final String GREEN = "GREEN";
         private static final String BLUE = "BLUE";
         private static final String ALPHA = "ALPHA";
 
-        protected static final Codec<Exp> CODEC = CodecUtils.STR_OR_DOUBLE_CODEC.flatXmap(s -> {
+        public static final Codec<Exp> CODEC = CodecUtils.STR_OR_DOUBLE_CODEC.flatXmap(s -> {
             try {
                 return DataResult.success(new Exp(s));
             } catch (Exception e) {
@@ -83,6 +87,13 @@ public class ColormapColorModulatorExpression {
             super(unparsed, concurrent);
         }
 
+
+        @Override
+        public float evaluate(float r, float g, float b, @Nullable BlockAndTintGetter level,
+                              @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,
+                              @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+            return getValue(r, g, b, state, pos == null ? null : BlockPos.containing(pos), biome, mapper, stack);
+        }
 
         public float getValue(float r, float g, float b, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
             //mega ugly

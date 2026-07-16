@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.lightmap;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.LightmapExp;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.util.Mth;
@@ -10,8 +11,8 @@ public interface ILightmapNumberProvider {
 
     MapRegistry<ILightmapNumberProvider> BUILTIN_PROVIDERS = new MapRegistry<>("Lightmap Number Providers");
 
-    Codec<ILightmapNumberProvider> CODEC = CodecUtils.referenceOrDirect(BUILTIN_PROVIDERS,
-            LightmapContextExpression.CODEC, true);
+    Codec<ILightmapNumberProvider> CODEC = Codec.lazyInitialized(() -> CodecUtils.referenceOrDirect(BUILTIN_PROVIDERS,
+            CodecUtils.alternatives(LightmapContextExpression.CODEC, LightmapExp.TYPE.codec()), true));
 
 
     double getValue(float time, float rain, float thunder);

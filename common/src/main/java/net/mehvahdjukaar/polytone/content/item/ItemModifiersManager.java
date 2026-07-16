@@ -5,7 +5,6 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.core.RegistryAccess;
@@ -27,7 +26,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader<ItemModifier> {
 
 
     public ItemModifiersManager() {
-        super(Spec.of("Item modifier", () -> SchemaCodec.wrap(ItemModifier.CODEC))
+        super(Spec.of("Item modifier", () -> ItemModifier.CODEC)
                 .wikiPage("Item-Modifiers")
                 .folders("item_modifiers", "item_properties"));
     }

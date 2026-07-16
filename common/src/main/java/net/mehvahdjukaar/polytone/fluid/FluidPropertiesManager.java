@@ -5,7 +5,6 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapTextures;
 import net.mehvahdjukaar.polytone.companion.TrackedTextures;
@@ -27,7 +26,7 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
 
     public FluidPropertiesManager() {
-        super(Spec.of("Fluid modifier", () -> SchemaCodec.wrap(FluidPropertyModifier.CODEC))
+        super(Spec.of("Fluid modifier", () -> FluidPropertyModifier.CODEC)
                 .wikiPage("Fluid-Properties-Modifiers")
                 .companions(ColormapTextures.singleTexture(
                         (FluidPropertyModifier m) -> m.getColormap(), "", "default"))

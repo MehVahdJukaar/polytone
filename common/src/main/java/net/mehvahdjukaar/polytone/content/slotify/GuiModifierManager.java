@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.client.gui.GuiGraphics;
@@ -43,7 +42,7 @@ public class GuiModifierManager extends JsonPartialReloader<GuiModifier> {
     private static final ResourceLocation INVENTORY = ResourceLocation.parse("inventory");
 
     public GuiModifierManager() {
-        super(Spec.of("GUI modifier", () -> SchemaCodec.wrap(GuiModifier.CODEC))
+        super(Spec.of("GUI modifier", () -> GuiModifier.CODEC)
                 .wikiPage("Gui-Modifiers")
                 .folders("gui_modifiers"));
     }

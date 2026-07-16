@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
@@ -29,7 +28,7 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
     private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> vanillaTabs = new HashMap<>();
 
     public CreativeTabsModifiersManager() {
-        super(Spec.of("Creative tab modifier", () -> SchemaCodec.wrap(CreativeTabModifier.CODEC))
+        super(Spec.of("Creative tab modifier", () -> CreativeTabModifier.CODEC)
                 .wikiPage("Creative-Tab-Modifiers")
                 .folders("creative_tab_modifiers"));
     }

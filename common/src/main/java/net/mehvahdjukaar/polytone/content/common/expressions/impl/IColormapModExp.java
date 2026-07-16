@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.content.colormap.ColormapColorModulatorExpression;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -18,6 +19,7 @@ public interface IColormapModExp {
                             aDouble -> (IColormapModExp) (a, b, c, d, e, f, g, h, i) -> aDouble,
                             i -> 0.0f
                     ),
+                    ColormapColorModulatorExpression.Exp.CODEC,
                     ColormapModExp.TYPE.codec()));
 
     float evaluate(float r, float g, float b, @Nullable BlockAndTintGetter level,

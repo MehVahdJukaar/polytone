@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.content.biome;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -19,7 +18,7 @@ public class BiomeIdMapperManager extends ContentManager<BiomeIdMapper, Map<Reso
     private final MapRegistry<BiomeIdMapper> biomeIdMappers = new MapRegistry<>("Biome ID Mappers");
 
     public BiomeIdMapperManager() {
-        super(Spec.of("Biome id mapper", () -> SchemaCodec.wrap(BiomeIdMapper.CODEC))
+        super(Spec.of("Biome id mapper", () -> BiomeIdMapper.CODEC)
                 .wikiPage("Colormaps")
                 .folders("biome_id_mappers"));
     }

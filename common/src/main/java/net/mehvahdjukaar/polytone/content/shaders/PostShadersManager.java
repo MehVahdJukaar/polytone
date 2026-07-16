@@ -13,7 +13,6 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -98,7 +97,7 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
     private boolean depthCombineFailed = false;
 
     public PostShadersManager() {
-        super(Spec.of("Post shader", () -> SchemaCodec.wrap(PostChainEffect.CODEC))
+        super(Spec.of("Post shader", () -> PostChainEffect.CODEC)
                 .wikiPage("Shaders")
                 .folders("post_chains", "post_shaders"));
     }

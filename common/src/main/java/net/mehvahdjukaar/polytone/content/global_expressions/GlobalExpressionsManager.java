@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.content.global_expressions;
 
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.Parsed;

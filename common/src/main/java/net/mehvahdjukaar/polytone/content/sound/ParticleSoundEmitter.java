@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.sound;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.content.particle.ParticleContextExpression;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.IParticleTickable;
 import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
@@ -25,12 +25,12 @@ import java.util.Optional;
 public record ParticleSoundEmitter(
         SoundEvent sound,
         SoundSource category,
-        ParticleContextExpression chance,
-        ParticleContextExpression x,
-        ParticleContextExpression y,
-        ParticleContextExpression z,
-        ParticleContextExpression volume,
-        ParticleContextExpression pitch,
+        IParticleExp chance,
+        IParticleExp x,
+        IParticleExp y,
+        IParticleExp z,
+        IParticleExp volume,
+        IParticleExp pitch,
         boolean distanceDelay,
         Optional<HolderSet<Biome>> biomes) implements IParticleTickable {
 
@@ -41,12 +41,12 @@ public record ParticleSoundEmitter(
     public static final Codec<ParticleSoundEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
             CodecUtils.forwardAwareSoundEvent().fieldOf("sound").forGetter(ParticleSoundEmitter::sound),
             SOUND_SOURCE_CODEC.optionalFieldOf("source", SoundSource.BLOCKS).forGetter(ParticleSoundEmitter::category),
-            ParticleContextExpression.CODEC.optionalFieldOf("chance", ParticleContextExpression.ONE).forGetter(ParticleSoundEmitter::chance),
-            ParticleContextExpression.CODEC.optionalFieldOf("x", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::x),
-            ParticleContextExpression.CODEC.optionalFieldOf("y", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::y),
-            ParticleContextExpression.CODEC.optionalFieldOf("z", ParticleContextExpression.ZERO).forGetter(ParticleSoundEmitter::z),
-            ParticleContextExpression.CODEC.optionalFieldOf("volume", ParticleContextExpression.ONE).forGetter(ParticleSoundEmitter::volume),
-            ParticleContextExpression.CODEC.optionalFieldOf("pitch", ParticleContextExpression.ONE).forGetter(ParticleSoundEmitter::pitch),
+            IParticleExp.CODEC.optionalFieldOf("chance", IParticleExp.ONE).forGetter(ParticleSoundEmitter::chance),
+            IParticleExp.CODEC.optionalFieldOf("x", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::x),
+            IParticleExp.CODEC.optionalFieldOf("y", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::y),
+            IParticleExp.CODEC.optionalFieldOf("z", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::z),
+            IParticleExp.CODEC.optionalFieldOf("volume", IParticleExp.ONE).forGetter(ParticleSoundEmitter::volume),
+            IParticleExp.CODEC.optionalFieldOf("pitch", IParticleExp.ONE).forGetter(ParticleSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(ParticleSoundEmitter::distanceDelay),
             CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleSoundEmitter::biomes)
     ).apply(i, ParticleSoundEmitter::new));
@@ -57,7 +57,7 @@ public record ParticleSoundEmitter(
         // per-particle random: this runs on a worker thread when async particles are on, and the
         // shared level.random crashes when accessed from multiple threads
         RandomSource rand = particle instanceof CustomParticleInstance cpi ? cpi.getRandom() : level.random;
-        double spawnChance = chance.getValue(particle, level);
+        double spawnChance = chance.evaluate(particle, level);
         if (rand.nextFloat() < spawnChance) {
             if (biomes.isPresent()) {
                 BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
@@ -67,12 +67,12 @@ public record ParticleSoundEmitter(
             }
 
             Vec3 vec = new Vec3(particle.x, particle.y, particle.z).add(
-                    x.getValue(particle, level),
-                    y.getValue(particle, level),
-                    z.getValue(particle, level));
+                    x.evaluate(particle, level),
+                    y.evaluate(particle, level),
+                    z.evaluate(particle, level));
 
-            float v = (float) volume.getValue(particle, level);
-            float p = (float) pitch.getValue(particle, level);
+            float v = (float) volume.evaluate(particle, level);
+            float p = (float) pitch.evaluate(particle, level);
 
             // SoundEngine is not thread-safe; play on the main thread when the batch joins
             PolytoneAsyncParticles.deferToMain(() -> level.playLocalSound(vec.x, vec.y, vec.z,

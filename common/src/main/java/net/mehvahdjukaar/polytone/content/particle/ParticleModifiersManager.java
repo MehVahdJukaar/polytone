@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.content.particle;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapTextures;
@@ -33,7 +32,7 @@ public class ParticleModifiersManager extends ContentManager<ParticleModifier, A
     private ParticleOptions xpOrbReplaceParticle = null;
 
     public ParticleModifiersManager() {
-        super(Spec.of("Particle modifier", () -> SchemaCodec.wrap(ParticleModifier.CODEC))
+        super(Spec.of("Particle modifier", () -> ParticleModifier.CODEC)
                 .wikiPage("Particle-Modifiers")
                 .companions(ColormapTextures.singleTexture(
                         (ParticleModifier m) -> m.getColormap(), "", "default"))

@@ -6,7 +6,6 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -41,7 +40,7 @@ public class LightmapsManager extends JsonImgPartialReloader<Lightmap> {
     private Lightmap currentLightmap = null;
 
     public LightmapsManager() {
-        super(Spec.of("Lightmap", () -> SchemaCodec.wrap(Lightmap.CODEC))
+        super(Spec.of("Lightmap", () -> Lightmap.CODEC)
                 .wikiPage("Lightmaps")
                 .folders("lightmaps"));
     }
