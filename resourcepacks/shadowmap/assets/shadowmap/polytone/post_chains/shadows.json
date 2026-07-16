@@ -1,0 +1,13 @@
+{
+  "post_chain": "shadowmap:shadows",
+  "activation_condition": 1,
+  "use_depth_buffer": true,
+  "use_shadow_map": true,
+  "priority": 0.0,
+  "expression_uniforms": {
+    "ShadowStrength": "0.55",
+    "ShadowBias": "0.0006",
+    "NormalOffset": "0.12",
+    "PixelGridRes": "16"
+  }
+}

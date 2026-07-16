@@ -40,6 +40,10 @@ import java.util.Map;
  *     <li>{@code uniform ivec3 PolyPlayerBlockPos} / {@code uniform vec3 PolyPlayerOffset} - lerped player (feet)
  *         position, split for float precision at large coords: {@code exact = vec3(PolyPlayerBlockPos) - PolyPlayerOffset}</li>
  *     <li>{@code uniform sampler2D InDepth} - level depth texture, only bound when {@code use_depth_buffer} is set</li>
+ *     <li>{@code uniform sampler2D InShadow} + {@code uniform mat4 PolyShadowMat} - directional shadow depth map
+ *         and its light view-projection (camera-relative space), only bound when {@code use_shadow_map} is set.
+ *         Transform a reconstructed camera-relative world position by {@code PolyShadowMat}, do the perspective
+ *         divide, map to {@code [0,1]}, and compare against {@code InShadow} to test occlusion.</li>
  * </ul>
  * Shaders that don't declare a given uniform/sampler are unaffected ({@code safeGetUniform} no-ops).
  */
@@ -53,6 +57,10 @@ public final class PostChainEffect {
     public static final String PLAYER_BLOCK_POS = "PolyPlayerBlockPos";
     public static final String PLAYER_OFFSET = "PolyPlayerOffset";
     public static final String DEPTH_SAMPLER = "InDepth";
+    public static final String SHADOW_MAT = "PolyShadowMat";
+    public static final String SHADOW_LIGHT_DIR = "PolyShadowLightDir";
+    public static final String SHADOW_CAM_FRACT = "PolyShadowCamFract";
+    public static final String SHADOW_SAMPLER = "InShadow";
 
     public static final Codec<PostChainEffect> CODEC = RecordCodecBuilder.create(i -> i.group(
             ResourceLocation.CODEC.fieldOf("post_chain").forGetter(p -> p.postChain),
@@ -60,6 +68,7 @@ public final class PostChainEffect {
             Codec.unboundedMap(Codec.STRING, ISimpleExp.CODEC)
                     .optionalFieldOf("expression_uniforms", Map.of()).forGetter(p -> p.expressionUniforms),
             Codec.BOOL.optionalFieldOf("use_depth_buffer", false).forGetter(p -> p.useDepthBuffer),
+            Codec.BOOL.optionalFieldOf("use_shadow_map", false).forGetter(p -> p.useShadowMap),
             Codec.unboundedMap(Codec.STRING, ResourceLocation.CODEC)
                     .optionalFieldOf("samplers", Map.of()).forGetter(p -> p.samplers),
             Codec.unboundedMap(Codec.STRING, ResourceLocation.CODEC)
@@ -71,6 +80,7 @@ public final class PostChainEffect {
     private final ISimpleExp turnOnCondition;
     private final Map<String, ISimpleExp> expressionUniforms;
     private final boolean useDepthBuffer;
+    private final boolean useShadowMap;
     private final Map<String, ResourceLocation> samplers;
     /** Sampler name -> persistent {@link PostTargetsManager} target id; bound to that target's color texture. */
     private final Map<String, ResourceLocation> targetSamplers;
@@ -80,6 +90,7 @@ public final class PostChainEffect {
                            ISimpleExp turnOnCondition,
                            Map<String, ISimpleExp> expressionUniforms,
                            boolean useDepthBuffer,
+                           boolean useShadowMap,
                            Map<String, ResourceLocation> samplers,
                            Map<String, ResourceLocation> targetSamplers,
                            float priority) {
@@ -87,6 +98,7 @@ public final class PostChainEffect {
         this.turnOnCondition = turnOnCondition;
         this.expressionUniforms = expressionUniforms;
         this.useDepthBuffer = useDepthBuffer;
+        this.useShadowMap = useShadowMap;
         this.samplers = samplers;
         this.targetSamplers = targetSamplers;
         this.priority = priority;
@@ -102,6 +114,10 @@ public final class PostChainEffect {
 
     public boolean useDepthBuffer() {
         return useDepthBuffer;
+    }
+
+    public boolean useShadowMap() {
+        return useShadowMap;
     }
 
     /** Resource path of the post chain JSON file, e.g. {@code namespace:post_effect/effect_name.json} (1.21.11 location, shared with packs made for it). */
@@ -135,6 +151,16 @@ public final class PostChainEffect {
         }
         if (useDepthBuffer && frame.depthTexture() != null) {
             effect.setSampler(DEPTH_SAMPLER, frame.depthTexture());
+        }
+        if (useShadowMap) {
+            // Light view-projection + light direction + the shadow depth map rendered this frame (see ShadowMapManager).
+            effect.safeGetUniform(SHADOW_MAT).set(Polytone.SHADOWS.getShadowMatrix());
+            var dir = Polytone.SHADOWS.getLightDir();
+            effect.safeGetUniform(SHADOW_LIGHT_DIR).set(dir.x, dir.y, dir.z);
+            // Camera fract, letting the pass snap camera-relative positions to a world-aligned block grid.
+            var fract = Polytone.SHADOWS.getCamFract();
+            effect.safeGetUniform(SHADOW_CAM_FRACT).set(fract.x, fract.y, fract.z);
+            effect.setSampler(SHADOW_SAMPLER, Polytone.SHADOWS::getShadowTextureId);
         }
         for (var e : samplers.entrySet()) {
             ResourceLocation texture = e.getValue();

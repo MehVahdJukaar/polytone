@@ -51,6 +51,7 @@
     "XpOrbMixin",
     "accessor.BiomeAccessor",
     "accessor.DustParticleOptionAccessor",
+    "accessor.LevelRendererShadowAccessor",
     "accessor.ParticleAccessor",
     "accessor.SheepAccessor"
   ],

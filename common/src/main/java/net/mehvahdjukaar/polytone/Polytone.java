@@ -10,6 +10,7 @@ import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostShadersManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostTargetsManager;
+import net.mehvahdjukaar.polytone.content.shaders.ShadowMapManager;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.content.entity.EntityModifiersManager;
 import net.mehvahdjukaar.polytone.fluid.FluidPropertiesManager;
@@ -87,6 +88,7 @@ public class Polytone {
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
     public static final PostTargetsManager POST_TARGETS = new PostTargetsManager();
     public static final PostShadersManager POST_SHADERS = new PostShadersManager();
+    public static final ShadowMapManager SHADOWS = new ShadowMapManager();
     public static final ConfigsManager CONFIGS = new ConfigsManager();
 
     private static final Set<ModelResourceLocation> EXTRA_MODELS = new HashSet<>();

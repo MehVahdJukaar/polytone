@@ -51,6 +51,9 @@ public class LevelRendererMixin {
                                             org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
                                             CallbackInfo ci) {
         Polytone.POST_SHADERS.captureLevelDepthSnapshot();
+        // Render the directional shadow map here too: the visible-section list and compiled chunk
+        // VBOs are still current, and we're before GameRenderer clears depth for the first-person hand.
+        Polytone.SHADOWS.renderShadowPassIfNeeded();
     }
 
     // Join the async particle tick batch before anything in the frame reads particle state

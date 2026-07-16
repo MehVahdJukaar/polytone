@@ -429,6 +429,19 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
         return false;
     }
 
+    /**
+     * Whether any active chain declares {@code use_shadow_map}. Read from the render thread
+     * ({@code LevelRenderer.renderLevel} TAIL) to decide whether to render the shadow depth map.
+     */
+    public boolean anyActiveEffectUsesShadowMap() {
+        synchronized (effects) {
+            for (PostChainEffect e : activeChains.keySet()) {
+                if (e.useShadowMap()) return true;
+            }
+            return false;
+        }
+    }
+
     private void ensureDepthSnapshot(RenderTarget main) {
         if (depthSnapshot == null) {
             depthSnapshot = new TextureTarget(main.width, main.height, true, Minecraft.ON_OSX);
@@ -475,5 +488,6 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
             depthCombineShader = null;
         }
         depthCombineFailed = false;
+        Polytone.SHADOWS.close();
     }
 }

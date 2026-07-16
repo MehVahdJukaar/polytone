@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.content.common.expressions;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.expressions.proxies.*;
 import net.mehvahdjukaar.polytone.content.common.expressions.proxies.CameraProxy;
 import net.mehvahdjukaar.polytone.content.common.expressions.proxies.GlobalProxy;
 import net.mehvahdjukaar.polytone.content.common.expressions.proxies.PlayerProxy;

@@ -1,0 +1,15 @@
+{
+    "targets": [ "swap" ],
+    "passes": [
+        {
+            "name": "shadowmap:shadows",
+            "intarget": "minecraft:main",
+            "outtarget": "swap"
+        },
+        {
+            "name": "shadowmap:copy",
+            "intarget": "swap",
+            "outtarget": "minecraft:main"
+        }
+    ]
+}
