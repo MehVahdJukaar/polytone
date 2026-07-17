@@ -73,16 +73,9 @@ public final class PolytoneNautilus {
             NautilusStudioApi.register(entry);
         }
 
-        // Live colormap preview panel (2D image + marker + tinted swatch, block/biome/y/tint controls).
         NautilusStudioApi.registerPreview(Polytone.MOD_ID + "/colormaps", ColormapPreview::new);
     }
 
-    /**
-     * Schema companions binding the big expression editor to the LEAF expression codecs - the
-     * MVEL {@code PolyExpType}s (chips from their declared inputs, compile-check through the real
-     * parser) and the legacy exp4j ones. The union codecs (IColormapExp etc.) are labeled at
-     * their declaration sites; widget bindings must never leak into content code.
-     */
     private static void registerWidgetBindings() {
         // ---- MVEL expressions (the current system): one binding per PolyExpType leaf.
         SchemaCodecs.registerCompanion(ColormapExp.TYPE.codec(),

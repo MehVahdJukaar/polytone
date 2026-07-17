@@ -42,6 +42,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+
+// Probably bad code.
+
 // Generates a directional (sun/moon) shadow depth map by replaying the level's already-compiled chunk
 // VBOs from the light's point of view - nothing is re-meshed, we just point the terrain matrices at the
 // light's ortho view and redraw. Exposed to post chains as the InShadow sampler and PolyShadowMat
@@ -178,6 +181,7 @@ public class ShadowMapManager extends SingleJsonOrPropertiesReloadListener {
             boolean sodium = CompatHandler.SODIUM
                     && SodiumShadowCuller.reCull(mc, cam, lightView, camPos, coverage, depthRange);
             LevelRendererShadowAccessor lr = (LevelRendererShadowAccessor) mc.levelRenderer;
+            //TODO:use access wideners
             lr.polytone$renderSectionLayer(RenderType.solid(), camPos.x, camPos.y, camPos.z, lightView, lightProj);
             lr.polytone$renderSectionLayer(RenderType.cutoutMipped(), camPos.x, camPos.y, camPos.z, lightView, lightProj);
             lr.polytone$renderSectionLayer(RenderType.cutout(), camPos.x, camPos.y, camPos.z, lightView, lightProj);

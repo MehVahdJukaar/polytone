@@ -23,11 +23,12 @@ public abstract class SingleJsonOrPropertiesReloadListener extends ContentManage
     private final String propertiesName;
     private final String jsonName;
 
+    //TODO: improve constructor. string mess
     // Instead of getting all files in a folder, it gets all files at certain locations
     protected SingleJsonOrPropertiesReloadListener(String myName,
                                                    String propertiesName, String jsonName,
                                                    String... possibleFolderLocations) {
-        super(Spec.<Object>of(myName).folders(possibleFolderLocations));
+        super(Spec.of(myName).folders(possibleFolderLocations));
         this.folders = possibleFolderLocations;
         this.propertiesName = propertiesName;
         this.jsonName = jsonName;

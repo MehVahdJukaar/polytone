@@ -1,1 +1,1 @@
-- better Nautilus Studio integration.
+- added 

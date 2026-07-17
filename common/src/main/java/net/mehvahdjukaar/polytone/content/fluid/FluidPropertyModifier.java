@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.fluid;
+package net.mehvahdjukaar.polytone.content.fluid;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

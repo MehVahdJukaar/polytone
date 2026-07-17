@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins.fabric;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.fluid.FluidPropertyModifier;
+import net.mehvahdjukaar.polytone.content.fluid.FluidPropertyModifier;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.color.block.BlockColor;

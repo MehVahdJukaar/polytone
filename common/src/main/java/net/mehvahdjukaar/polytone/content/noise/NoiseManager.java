@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.noise;
+package net.mehvahdjukaar.polytone.content.noise;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;

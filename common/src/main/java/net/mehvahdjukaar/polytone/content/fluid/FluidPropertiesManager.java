@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.fluid;
+package net.mehvahdjukaar.polytone.content.fluid;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
