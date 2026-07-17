@@ -1,9 +1,12 @@
 package net.mehvahdjukaar.polytone.content.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
 import net.mehvahdjukaar.polytone.content.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.content.common.expressions.preview.PreviewContext;
+import net.mehvahdjukaar.polytone.content.common.expressions.preview.SimProxies;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
@@ -22,15 +25,19 @@ public interface IColormapExp {
 
     MapRegistry<IColormapExp> BUILTIN_EXP = new MapRegistry<>("Colormap Number Providers");
 
-    // named builtin | constant | legacy exp4j expression (ColormapExpressionProvider) | MVEL expression (ColormapExp)
-    Codec<IColormapExp> CODEC = Codec.lazyInitialized(() -> CodecUtils.referenceOrDirect(BUILTIN_EXP,
-            CodecUtils.alternatives(
-                    CodecUtils.LENIENT_FLOAT.xmap(
-                            aDouble -> (IColormapExp) (a, b, c, d, e, f) -> aDouble,
-                            i -> 0.0f
-                    ),
-                    ColormapExpressionProvider.CODEC,
-                    ColormapExp.TYPE.codec()), true));
+    Codec<IColormapExp> CONSTANT_CODEC = CodecUtils.LENIENT_FLOAT.xmap(
+            aDouble -> (a, b, c, d, e, f) -> aDouble,
+            iColormapExp -> 0.0f);
+
+    // Same wire codec as always; the labels only name the editor's picker options
+    // (otherwise they auto-label as "choice/number/custom/text").
+    Codec<IColormapExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.referenceOrDirect(BUILTIN_EXP,
+                    SchemaCodecs.alternatives(CONSTANT_CODEC, ColormapExpressionProvider.CODEC, ColormapExp.TYPE.codec()), true),
+            SchemaCodecs.alt("preset", BUILTIN_EXP),
+            SchemaCodecs.alt("constant", CONSTANT_CODEC),
+            SchemaCodecs.alt("legacy expression", ColormapExpressionProvider.CODEC),
+            SchemaCodecs.alt("expression", ColormapExp.TYPE.codec())));
 
     float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,
                    @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack);
@@ -79,8 +86,12 @@ public interface IColormapExp {
     IColormapExp ONE = BUILTIN_EXP.register("one", new Const(1));
 
     //why inverted. for sunset colormaps
-    IColormapExp DAY_TIME = BUILTIN_EXP.register("day_time", (level, state, pos, biome, mapper, stack) ->
-            (float) (1f - (ClientFrameTicker.getDayTime() % 24000 / 24000f)));
+    IColormapExp DAY_TIME = BUILTIN_EXP.register("day_time", (level, state, pos, biome, mapper, stack) -> {
+        // editor preview override; null in normal gameplay
+        SimProxies sim = PreviewContext.active();
+        double dayTime = sim != null ? sim.global.dayTime() : ClientFrameTicker.getDayTime();
+        return (float) (1f - (dayTime % 24000 / 24000f));
+    });
 
 
     IColormapExp TEMPERATURE = BUILTIN_EXP.register("temperature", new IColormapExp() {
@@ -191,7 +202,9 @@ public interface IColormapExp {
     IColormapExp SEASON = BUILTIN_EXP.register("season", new IColormapExp() {
         @Override
         public float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
-            return 1 - ExpTicker.getSeasonNumber();
+            // editor preview override; null in normal gameplay
+            SimProxies sim = PreviewContext.active();
+            return (float) (1 - (sim != null ? sim.global.seasonNumber() : ExpTicker.getSeasonNumber()));
         }
 
         @Override

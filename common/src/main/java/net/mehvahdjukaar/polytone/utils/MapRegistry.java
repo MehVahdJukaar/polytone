@@ -7,16 +7,18 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
+import net.mehvahdjukaar.codecui.EnumerableCodec;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-public class MapRegistry<T> implements Codec<T> {
+public class MapRegistry<T> implements Codec<T>, EnumerableCodec {
     private final BiMap<ResourceLocation, T> map = HashBiMap.create();
     private final List<ResourceLocation> orderedKeys = new ArrayList<>();
     private final String name;
@@ -27,6 +29,17 @@ public class MapRegistry<T> implements Codec<T> {
 
     public String getName() {
         return name;
+    }
+
+    // Lets codecui render this registry as a dropdown of its registered names.
+    @Override
+    public Map<String, ?> codecUiValues() {
+        Map<String, Object> out = new LinkedHashMap<>();
+        for (ResourceLocation id : orderedKeys) {
+            T value = map.get(id);
+            if (value != null) out.put(id.toString(), value);
+        }
+        return out;
     }
 
     public static <B> CodecMap<B> ofCodec(String name) {

@@ -1,0 +1,55 @@
+package net.mehvahdjukaar.polytone.content.common.expressions.preview;
+
+import net.mehvahdjukaar.polytone.compat.ISeason;
+import net.mehvahdjukaar.polytone.content.common.expressions.proxies.GlobalProxy;
+
+import java.util.List;
+
+public final class SimGlobalProxy extends GlobalProxy {
+
+    public final SimValue gameTime = SimValue.slider("Game time", 0, 24000, 0, 100);
+    public final SimValue dayTime = SimValue.slider("Day time", 0, 24000, 6000, 100);
+    public final SimValue rain = SimValue.slider("Rain / thunder", 0, 1, 0, 0.05);
+    public final SimValue season = SimValue.slider("Season", 0, 1, 0, 0.02);
+
+    private final List<SimValue> values = List.of(gameTime, dayTime, rain, season);
+
+    /** All inputs, in UI display order. */
+    public List<SimValue> values() {
+        return values;
+    }
+
+    public void clearReads() {
+        for (SimValue v : values) v.clearRead();
+    }
+
+    @Override
+    public double time() {
+        return gameTime.get();
+    }
+
+    @Override
+    public double dayTime() {
+        return dayTime.get();
+    }
+
+    @Override
+    public double rain() {
+        return rain.get();
+    }
+
+    @Override
+    public double seasonNumber() {
+        return season.get();
+    }
+
+    // Sub-seasons are ordered spring->winter (3 per season), so quartiles of the 0..1 season number
+    // map back onto the calendar season for g.season() string comparisons. Routing through
+    // seasonNumber() also records the read, so the one season slider serves both accessors.
+    @Override
+    public String season() {
+        ISeason[] order = {ISeason.SPRING, ISeason.SUMMER, ISeason.AUTUMN, ISeason.WINTER};
+        int idx = (int) Math.floor(Math.max(0, Math.min(0.999, seasonNumber())) * 4);
+        return order[idx].lowercaseName();
+    }
+}

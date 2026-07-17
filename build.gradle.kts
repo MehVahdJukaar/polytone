@@ -60,6 +60,14 @@ subprojects {
         }
     }
 
+    // The upload plugin does not expose CurseForge's mandatory environment group, so add it here.
+    // Polytone is client-side only.
+    tasks.withType<net.darkhax.curseforgegradle.TaskPublishCurseForge>().configureEach {
+        doFirst {
+            uploadArtifacts.forEach { it.addEnvironment("Client") }
+        }
+    }
+
     tasks.withType<JavaCompile> {
         options.compilerArgs.addAll(listOf("-Xmaxerrs", "4000"))
     }

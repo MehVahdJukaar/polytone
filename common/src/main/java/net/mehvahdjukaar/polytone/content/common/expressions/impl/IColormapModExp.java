@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapColorModulatorExpression;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
@@ -13,14 +14,17 @@ import org.jetbrains.annotations.Nullable;
 
 public interface IColormapModExp {
 
-    Codec<IColormapModExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.alternatives(
+    Codec<IColormapModExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.alternatives(
                     CodecUtils.LENIENT_FLOAT.xmap(
-                            aDouble -> (IColormapModExp) (a, b, c, d, e, f, g, h, i) -> aDouble,
+                            aDouble ->  (a, b, c, d, e, f, g, h, i) -> aDouble,
                             i -> 0.0f
                     ),
                     ColormapColorModulatorExpression.Exp.CODEC,
-                    ColormapModExp.TYPE.codec()));
+                    ColormapModExp.TYPE.codec()),
+            SchemaCodecs.alt("constant", CodecUtils.LENIENT_FLOAT),
+            SchemaCodecs.alt("legacy expression", ColormapColorModulatorExpression.Exp.CODEC),
+            SchemaCodecs.alt("expression", ColormapModExp.TYPE.codec())));
 
     float evaluate(float r, float g, float b, @Nullable BlockAndTintGetter level,
                    @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,

@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.core.BlockPos;
@@ -12,15 +13,15 @@ import org.jetbrains.annotations.Nullable;
 
 public interface IBlockExp {
 
-    Codec<IBlockExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.alternatives(
+    Codec<IBlockExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.alternatives(
                     CodecUtils.LENIENT_DOUBLE.xmap(
-                            aDouble -> (IBlockExp) (level, pos, state) -> aDouble,
+                            aDouble -> (level, pos, state) -> aDouble,
                             i -> 0.0
                     ),
                     BlockContextExpression.CODEC.xmap(
                             // wrap the existing 1.21.1 block expression so it satisfies the new interface
-                            bce -> (IBlockExp) (level, pos, state) -> {
+                            bce -> (level, pos, state) -> {
                                 if (level instanceof Level l) {
                                     return bce.getValue(l, BlockPos.containing(pos), state);
                                 }
@@ -28,7 +29,10 @@ public interface IBlockExp {
                             },
                             i -> BlockContextExpression.ZERO
                     ),
-                    BlockExp.TYPE.codec())
+                    BlockExp.TYPE.codec()),
+            SchemaCodecs.alt("constant", CodecUtils.LENIENT_DOUBLE),
+            SchemaCodecs.alt("legacy expression", BlockContextExpression.CODEC),
+            SchemaCodecs.alt("expression", BlockExp.TYPE.codec()))
     );
 
     double evaluate(LevelReader level, Vec3 pos, @Nullable BlockState state);

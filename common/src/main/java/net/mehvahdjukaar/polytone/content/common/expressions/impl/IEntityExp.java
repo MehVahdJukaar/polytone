@@ -1,18 +1,21 @@
 package net.mehvahdjukaar.polytone.content.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.world.entity.Entity;
 
 public interface IEntityExp {
 
-    Codec<IEntityExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.alternatives(
+    Codec<IEntityExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.alternatives(
                     CodecUtils.LENIENT_DOUBLE.xmap(
                             aDouble -> (IEntityExp) (e) -> aDouble,
                             i -> 0.0
                     ),
-                    EntityExp.TYPE.codec())
+                    EntityExp.TYPE.codec()),
+            SchemaCodecs.alt("constant", CodecUtils.LENIENT_DOUBLE),
+            SchemaCodecs.alt("expression", EntityExp.TYPE.codec()))
     );
 
     double evaluate(Entity entity);

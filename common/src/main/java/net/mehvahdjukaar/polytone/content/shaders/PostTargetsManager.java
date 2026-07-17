@@ -23,14 +23,9 @@ import java.util.Optional;
  * They keep their content across frames; polytone post effects can sample them by id via the
  * {@code target_samplers} field on a {@link PostChainEffect}.
  *
- * <p><b>1.21.1 port note.</b> The 1.21.11 original spliced these into the vanilla framegraph
- * {@code PostChain.TargetBundle} (via {@code FrameGraphBuilder.importExternal} +
- * {@code LevelTargetBundle.SORTING_TARGETS}) so chains could both READ and WRITE them as first-class
- * framegraph resources. 1.21.1 uses the OLD {@code net.minecraft.client.renderer.PostChain}, which
- * has no framegraph, no {@code TargetBundle}, and manages its own targets internally from the pack
- * JSON - so that write-side splicing has NO equivalent here. This port keeps the allocation +
- * cross-frame persistence and exposes the targets for READ (as samplers). Writing into a persistent
- * target from a chain is not supported on 1.21.1's old PostChain (see gap note in the port report).</p>
+ * <p>Read-only on 1.21.1: the old {@code net.minecraft.client.renderer.PostChain} has no framegraph
+ * to splice a write side into, so unlike the 1.21.11 original a chain can sample these targets but
+ * cannot write into one.</p>
  */
 public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.TargetSpec> {
 

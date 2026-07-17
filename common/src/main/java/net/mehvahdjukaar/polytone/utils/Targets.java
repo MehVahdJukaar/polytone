@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.utils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
@@ -95,14 +96,27 @@ public record Targets(List<Entry> entries) {
         <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg);
     }
 
-    private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = Codec.withAlternative(
-            (Codec<Entry>) (Object) SimpleLocation.SIMPLE_CODEC,
-            Codec.withAlternative((Codec<Entry>) (Object) TagLocation.TAG_CODEC, RegexLocation.REGEX_CODEC));
+    // The wire codecs are plain withAlternative folds; the labeled() wrappers only add the
+    // editor schema (lazy, and with the wiki's names for each branch) without touching the format.
+    private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = SchemaCodecs.labeled(
+            Codec.withAlternative(
+                    (Codec<Entry>) (Object) SimpleLocation.SIMPLE_CODEC,
+                    Codec.withAlternative((Codec<Entry>) (Object) TagLocation.TAG_CODEC, RegexLocation.REGEX_CODEC)),
+            SchemaCodecs.alt("id", SimpleLocation.SIMPLE_CODEC),
+            SchemaCodecs.alt("tag", TagLocation.TAG_CODEC),
+            SchemaCodecs.alt("regex", RegexLocation.REGEX_CODEC));
 
-    private static final Codec<Entry> ENTRY_CODEC = Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC);
+    private static final Codec<Entry> ENTRY_CODEC = SchemaCodecs.labeled(
+            Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC),
+            SchemaCodecs.alt("entry", SIMPLE_TAG_OR_REGEX_ENTRY_CODEC),
+            SchemaCodecs.alt("optional id", OptionalEntry.OPTIONAL_CODEC));
 
-    public static final Codec<Targets> CODEC = Codec.withAlternative(ENTRY_CODEC.xmap(List::of, List::getFirst),
-            ENTRY_CODEC.listOf()).xmap(Targets::new, t -> t.entries);
+    // Labeled AnyOf alternatives splice flat, so the selector shows [id, tag, regex, optional id, list].
+    public static final Codec<Targets> CODEC = SchemaCodecs.labeled(
+            Codec.withAlternative(ENTRY_CODEC.xmap(List::of, List::getFirst), ENTRY_CODEC.listOf())
+                    .xmap(Targets::new, t -> t.entries),
+            SchemaCodecs.alt("single", ENTRY_CODEC),
+            SchemaCodecs.alt("list", ENTRY_CODEC.listOf()));
 
     private record OptionalEntry(Entry entry, boolean required) implements Entry {
         public static final Codec<OptionalEntry> OPTIONAL_CODEC = RecordCodecBuilder.create(i -> i.group(

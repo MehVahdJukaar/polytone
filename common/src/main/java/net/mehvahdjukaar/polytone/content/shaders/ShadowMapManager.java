@@ -42,22 +42,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Generates a directional (sun/moon) shadow depth map by replaying the level's already-compiled chunk
- * VBOs from the light's point of view (nothing is re-meshed: we just point the terrain matrices at the
- * light's ortho view and redraw). Exposed to post chains as the {@code InShadow} sampler and
- * {@code PolyShadowMat} uniform (see {@link PostChainEffect}). Also the single-file reload listener for
- * its own {@code polytone/shadow_map.json} settings ({@link ShadowMapSettings}).
- *
- * <p>The load-bearing choices are explained at their use sites below: culling the whole
- * {@link ViewArea} grid against the light volume (not the camera frustum) so off-screen occluders
- * still cast; the Sodium re-cull ({@link SodiumShadowCuller}); the chunk-anchored texel snap; the
- * continuous sun angle. Follow-ups: depth-only shader, CSM cascades for range.</p>
- */
+// Generates a directional (sun/moon) shadow depth map by replaying the level's already-compiled chunk
+// VBOs from the light's point of view - nothing is re-meshed, we just point the terrain matrices at the
+// light's ortho view and redraw. Exposed to post chains as the InShadow sampler and PolyShadowMat
+// uniform (see PostChainEffect), and doubles as the reload listener for its own shadow_map.json settings.
 public class ShadowMapManager extends SingleJsonOrPropertiesReloadListener {
 
     public ShadowMapManager() {
-        // Also the single-file content manager for its own settings (polytone/shadow_map.json).
         super("Shadow Map", "shadow_map.properties", "shadow_map.json", Polytone.MOD_ID);
     }
 
@@ -147,11 +138,10 @@ public class ShadowMapManager extends SingleJsonOrPropertiesReloadListener {
         Matrix4f lightProj = new Matrix4f().ortho(
                 -coverage, coverage, -coverage, coverage, -depthRange, depthRange);
 
-        // Texel snap: keeps world geometry on the same shadow texels frame to frame (stops edge
-        // shimmer). Anchored to the camera's CHUNK corner, not the world origin: the snap offset's
-        // sensitivity to a rotating sun scales with the distance to the anchor, so a world-origin
-        // anchor (~|camPos|) shimmered badly far from spawn while a chunk-local one (<=16 blocks) does
-        // not. Re-anchors by <=0.5 texel only on chunk crossings. Doubles keep the mod exact.
+        // Texel snap keeps world geometry on the same shadow texels frame to frame (stops edge shimmer).
+        // Anchored to the camera's CHUNK corner, not the world origin: the snap offset's sensitivity to a
+        // rotating sun scales with distance to the anchor, so a world-origin anchor shimmered badly far
+        // from spawn while a chunk-local one (<=16 blocks) does not. Doubles keep the mod exact.
         double ax = camPos.x - Math.floor(camPos.x / 16.0) * 16.0;
         double ay = camPos.y - Math.floor(camPos.y / 16.0) * 16.0;
         double az = camPos.z - Math.floor(camPos.z / 16.0) * 16.0;
@@ -181,12 +171,10 @@ public class ShadowMapManager extends SingleJsonOrPropertiesReloadListener {
             drawLayer(mc, RenderType.cutoutMipped(), camPos, lightView, lightProj);
             drawLayer(mc, RenderType.cutout(), camPos, lightView, lightProj);
         } else {
-            // No compiled vanilla sections -> Sodium has replaced the chunk pipeline (its terrain
-            // never touches the vanilla grid). Sodium @Overwrites renderSectionLayer and forwards
-            // whatever matrices we pass to its own drawChunkLayer, so invoking it replays Sodium's
-            // terrain with the light matrices. Sodium's render list is CAMERA-frustum culled, so we
-            // first rebuild it against the light volume (occluders that aren't on screen still cast
-            // shadows) - otherwise mountains / tree tops drop out of the map when the view turns.
+            // No compiled vanilla sections -> Sodium has replaced the chunk pipeline. It @Overwrites
+            // renderSectionLayer and forwards our matrices to its own drawChunkLayer, so invoking it
+            // replays Sodium's terrain with the light matrices. Sodium's list is camera-frustum culled,
+            // so we first re-cull it against the light volume (see SodiumShadowCuller).
             boolean sodium = CompatHandler.SODIUM
                     && SodiumShadowCuller.reCull(mc, cam, lightView, camPos, coverage, depthRange);
             LevelRendererShadowAccessor lr = (LevelRendererShadowAccessor) mc.levelRenderer;

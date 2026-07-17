@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.common.expressions.impl;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.content.common.expressions.ParticleExpEnv;
 import net.mehvahdjukaar.polytone.content.particle.ParticleContextExpression;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
@@ -9,17 +10,20 @@ import net.minecraft.world.level.Level;
 
 public interface IParticleExp {
 
-    Codec<IParticleExp> CODEC = Codec.lazyInitialized(() ->
-            CodecUtils.alternatives(
+    Codec<IParticleExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.alternatives(
                     CodecUtils.LENIENT_DOUBLE.xmap(
-                            aDouble -> (IParticleExp) (p, l) -> aDouble,
+                            aDouble ->  (p, l) -> aDouble,
                             i -> 0.0
                     ),
                     ParticleContextExpression.CODEC.xmap(
-                            pce -> (IParticleExp) (particle, level) -> pce.getValue(particle, level),
+                            pce ->  (particle, level) -> pce.getValue(particle, level),
                             i -> ParticleContextExpression.ZERO
                     ),
-                    ParticleExp.TYPE.codec())
+                    ParticleExp.TYPE.codec()),
+            SchemaCodecs.alt("constant", CodecUtils.LENIENT_DOUBLE),
+            SchemaCodecs.alt("legacy expression", ParticleContextExpression.CODEC),
+            SchemaCodecs.alt("expression", ParticleExp.TYPE.codec()))
     );
 
     double evaluate(Particle particle, Level level);

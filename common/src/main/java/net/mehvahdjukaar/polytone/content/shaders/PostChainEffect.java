@@ -82,7 +82,7 @@ public final class PostChainEffect {
     private final boolean useDepthBuffer;
     private final boolean useShadowMap;
     private final Map<String, ResourceLocation> samplers;
-    /** Sampler name -> persistent {@link PostTargetsManager} target id; bound to that target's color texture. */
+    // Sampler name -> persistent PostTargetsManager target id; bound to that target's color texture.
     private final Map<String, ResourceLocation> targetSamplers;
     private final float priority;
 

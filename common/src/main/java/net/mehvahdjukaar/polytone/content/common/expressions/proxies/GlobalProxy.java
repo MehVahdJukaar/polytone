@@ -23,26 +23,17 @@ public class GlobalProxy {
 
     public double time() {
         Level delegate = delegate();
-        if (delegate == null) {
-            return 0;
-        }
-        return ClientFrameTicker.getGameTime();
+        return delegate == null ? 0 : ClientFrameTicker.getGameTime();
     }
 
     public double dayTime() {
         var level = delegate();
-        if (level == null) {
-            return 0;
-        }
-        return ClientFrameTicker.getDayTime();
+        return level == null ? 0 : ClientFrameTicker.getDayTime();
     }
 
     public String season() {
         Level level = delegate();
-        if (level == null) {
-            return ISeason.SUMMER.lowercaseName();
-        }
-        return ISeason.get(level).lowercaseName();
+        return level == null ? ISeason.SUMMER.lowercaseName() : ISeason.get(level).lowercaseName();
     }
 
     public String dimensionType() {
@@ -66,15 +57,17 @@ public class GlobalProxy {
         return Minecraft.getInstance().options.renderDistance().get();
     }
 
+    public double seaLevel() {
+        Level level = delegate();
+        return level == null ? 63 : level.getSeaLevel();
+    }
+
     public double rain() {
         return ExpTicker.getRainAndThunder();
     }
 
     /**
-     * Runtime lookup of a global expression's current value by its variable name, e.g.
-     * {@code global.value('minecraft_leaf_drift')}. Unlike referencing the global as a bare
-     * variable (which must exist when the calling expression COMPILES - not guaranteed, since
-     * managers parse in parallel during reload), this resolves at evaluation time. Missing -> 0.
+     * Runtime lookup of a global expression's current value by its variable name
      */
     public double value(String key) {
         return Polytone.GLOBAL_EXPRESSION.getValue(key);
@@ -85,12 +78,6 @@ public class GlobalProxy {
         return 0;
     }
 
-    /**
-     * The last entity the player right-clicked, wrapped as an {@link EntityProxy}, or null if none
-     * (or it despawned). Lets expressions branch on "what opened this menu" - e.g. a gui_modifier
-     * condition {@code g.hasInteracted() && g.lastInteractedEntity.profession() == 'cleric'}.
-     * Guard access with {@link #hasInteracted()} since dereferencing a null proxy fails the expression.
-     */
     @Nullable
     public EntityProxy lastInteractedEntity() {
         Entity e = InteractionTracker.getLastEntity();

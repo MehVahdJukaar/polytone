@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.content.common.expressions;
 
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.common.expressions.preview.PreviewContext;
+import net.mehvahdjukaar.polytone.content.common.expressions.preview.SimProxies;
 import net.mehvahdjukaar.polytone.content.common.expressions.proxies.CameraProxy;
 import net.mehvahdjukaar.polytone.content.common.expressions.proxies.GlobalProxy;
 import net.mehvahdjukaar.polytone.content.common.expressions.proxies.PlayerProxy;
@@ -159,12 +161,26 @@ public class ExpUtils {
     }
 
     public static void addCommonVars(Map<String, Object> vars) {
-        vars.putAll(STATIC_GLOBALS);
+        putGlobals(vars);
         Polytone.GLOBAL_EXPRESSION.addValues(vars);
     }
 
     public static void addStaticVars(Map<String, Object> vars) {
+        putGlobals(vars);
+    }
+
+    // The editor preview swaps its sim proxies in for the live ones; in-game this is one thread-local check.
+    private static void putGlobals(Map<String, Object> vars) {
         vars.putAll(STATIC_GLOBALS);
+        SimProxies sim = PreviewContext.active();
+        if (sim != null) {
+            vars.put("global", sim.global);
+            vars.put("g", sim.global);
+            vars.put("camera", sim.camera);
+            vars.put("c", sim.camera);
+            vars.put("player", sim.player);
+            vars.put("p", sim.player);
+        }
     }
 
 

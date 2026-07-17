@@ -17,12 +17,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Bridges a content type's {@link CompanionSpec} (the runtime-side companion-file contract) to the
- * editor's {@link SidecarAssets} view, so the Nautilus tab shows a colormap's {@code .png} textures
- * next to its json - present, expected-but-missing, and stray-but-unused. Same naming primitives as
- * the reload driver ({@code ColormapTextures.fill}), so the two can't drift.
- */
+// Bridges a content type's CompanionSpec (the runtime-side companion-file contract) to the editor's
+// SidecarAssets view, so the Nautilus tab shows a colormap's .png textures next to its json: present,
+// expected-but-missing, and stray-but-unused. Same naming primitives as the reload driver
+// (ColormapTextures.fill), so the two can't drift.
 final class CompanionSidecars {
 
     static SidecarAssets of(CompanionSpec<?> spec, Side side) {

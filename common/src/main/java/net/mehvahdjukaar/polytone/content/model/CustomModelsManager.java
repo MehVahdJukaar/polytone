@@ -33,7 +33,7 @@ public class CustomModelsManager extends JsonPartialReloader<ModelDefinition> {
         super(Spec.<ModelDefinition>of("Custom models").folders("custom_models"));
     }
 
-    /** Reference-by-id codec, used by {@code CodecUtils.referenceOrDirect} alongside {@link ModelDefinition#CODEC}. */
+    /** Reference-by-id codec, used by {@code SchemaCodecs.referenceOrDirect} alongside {@link ModelDefinition#CODEC}. */
     public Codec<ModelDefinition> byNameCodec() {
         return models;
     }

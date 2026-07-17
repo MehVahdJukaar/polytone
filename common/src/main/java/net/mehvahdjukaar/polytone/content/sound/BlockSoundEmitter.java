@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.content.sound;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
 import net.mehvahdjukaar.polytone.content.common.expressions.impl.IBlockExp;
@@ -50,7 +51,7 @@ public record BlockSoundEmitter(
             IBlockExp.CODEC.optionalFieldOf("volume", IBlockExp.ZERO).forGetter(BlockSoundEmitter::volume),
             IBlockExp.CODEC.optionalFieldOf("pitch", IBlockExp.ZERO).forGetter(BlockSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(BlockSoundEmitter::distanceDelay),
-            CodecUtils.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockSoundEmitter::predicate),
+            SchemaCodecs.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockSoundEmitter::predicate),
             TickSource.CODEC.optionalFieldOf("spawn_source", TickSource.ANIMATE_TICK).forGetter(BlockSoundEmitter::spawnSource),
             CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockSoundEmitter::biomes)
     ).apply(i, BlockSoundEmitter::new));

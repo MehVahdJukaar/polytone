@@ -63,9 +63,9 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
     public static final ThreadLocal<Boolean> POLYTONE_LOADING = ThreadLocal.withInitial(() -> false);
 
     private final List<PostChainEffect> effects = new ArrayList<>();
-    /** Currently loaded chains, in render order. Keyed by effect instance. */
+    // Currently loaded chains, in render order, keyed by effect instance.
     private final LinkedHashMap<PostChainEffect, PostChain> activeChains = new LinkedHashMap<>();
-    /** Post chain IDs we already failed to load; skipped (silently) on subsequent ticks. */
+    // Chain IDs we already failed to load; skipped silently on subsequent ticks.
     private final Set<ResourceLocation> failedChains = new HashSet<>();
 
     /**
@@ -75,24 +75,20 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
      */
     public static final ThreadLocal<ActivePostPassFrame> ACTIVE_POST_PASS = new ThreadLocal<>();
 
-    /** Whether {@link #captureLevelDepthSnapshot()} already copied level depth this frame. */
+    // Whether captureLevelDepthSnapshot() already copied level depth this frame.
     private boolean depthCapturedThisFrame = false;
 
-    /**
-     * Level projection / camera matrices captured during {@code GameRenderer.renderLevel}, exposed to
-     * pass shaders as the {@code PolyProjMat} / {@code PolyModelViewMat} built-in uniforms.
-     */
+    // Level projection / camera matrices captured during GameRenderer.renderLevel, exposed to pass
+    // shaders as the PolyProjMat / PolyModelViewMat built-in uniforms.
     private final Matrix4f projMat = new Matrix4f();
     private final Matrix4f modelViewMat = new Matrix4f();
 
-    /**
-     * Standalone depth target for effects that declare {@code use_depth_buffer}. We can't sample the
-     * main framebuffer's own depth attachment while the post quad writes to it (read/write feedback
-     * loop), so we blit the level depth into this snapshot once per frame and sample that instead.
-     */
+    // Standalone depth target for effects that declare use_depth_buffer. Can't sample the main
+    // framebuffer's own depth attachment while the post quad writes to it (read/write feedback loop),
+    // so we blit the level depth here once per frame and sample this instead.
     private TextureTarget depthSnapshot = null;
 
-    /** Fullscreen depth-only shader that folds the held-item depth into {@link #depthSnapshot}. */
+    // Fullscreen depth-only shader that folds the held-item depth into depthSnapshot.
     private ShaderInstance depthCombineShader = null;
     private boolean depthCombineFailed = false;
 
@@ -225,11 +221,8 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
         }
     }
 
-    /**
-     * Detects the 1.21.2+ post-effect schema. Signals: {@code targets} is a JSON object (rather
-     * than an array of strings/objects), or any pass declares {@code fragment_shader} (the new
-     * format's replacement for the 1.21.1 {@code name} field).
-     */
+    // Detects the 1.21.2+ post-effect schema: a `targets` JSON object (not an array), or a pass
+    // declaring `fragment_shader` (the new format's replacement for the 1.21.1 `name` field).
     private static boolean isNewFormatChain(JsonObject root) {
         JsonElement targets = root.get("targets");
         if (targets != null && targets.isJsonObject()) return true;
@@ -354,11 +347,9 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
         }
     }
 
-    /**
-     * If any active effect samples the depth buffer, return a supplier of the snapshot depth texture id.
-     * Prefer the copy taken at the end of {@code LevelRenderer.renderLevel}; fall back to copying now
-     * when level rendering did not run this frame.
-     */
+    // If any active effect samples the depth buffer, return a supplier of the snapshot depth texture id.
+    // Prefers the copy taken at the end of LevelRenderer.renderLevel; copies now as a fallback when level
+    // rendering did not run this frame.
     private IntSupplier prepareDepthSnapshot(Minecraft mc) {
         if (!anyActiveEffectUsesDepth()) return null;
 
@@ -371,11 +362,9 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
         return depthSnapshot::getDepthTextureId;
     }
 
-    /**
-     * Draw the (hand-only) main depth into the world-depth snapshot with a LEQUAL depth test, leaving
-     * {@code min(worldDepth, handDepth)} per pixel. Runs after the first-person hand has been drawn, so
-     * held items now occlude depth-driven post effects instead of leaking through them.
-     */
+    // Draw the (hand-only) main depth into the world-depth snapshot with a LEQUAL test, leaving
+    // min(worldDepth, handDepth) per pixel. Runs after the hand is drawn, so held items occlude
+    // depth-driven post effects instead of leaking through them.
     private void foldHeldItemDepthIntoSnapshot(Minecraft mc) {
         ShaderInstance shader = getDepthCombineShader(mc);
         if (shader == null) return;

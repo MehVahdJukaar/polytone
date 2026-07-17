@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.block;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
@@ -13,9 +14,12 @@ import java.util.Optional;
 
 public interface BlockSetTypeProvider {
 
-    Codec<BlockSetTypeProvider> CODEC = CodecUtils.referenceOrDirect(
-            CodecUtils.withAlternatives(Polytone.BLOCK_SET.byNameCodec(),
-                    Vanilla.CODEC, VanillaWood.CODEC), Custom.CODEC);
+    Codec<BlockSetTypeProvider> CODEC = SchemaCodecs.labeled(
+            SchemaCodecs.referenceOrDirect(
+                    CodecUtils.withAlternatives(Polytone.BLOCK_SET.byNameCodec(),
+                            Vanilla.CODEC, VanillaWood.CODEC), Custom.CODEC),
+            SchemaCodecs.alt("name", Codec.STRING),
+            SchemaCodecs.alt("custom", Custom.CODEC));
 
     BlockSetType getOrCreate(BlockSetType original, Optional<SoundType> customSound);
 

@@ -12,11 +12,20 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 public abstract class ContentManager<O, T> extends PartialReloader<T> {
 
     public static final List<ContentManager<?, ?>> REGISTRY = new CopyOnWriteArrayList<>();
+
+    /**
+     * Editor bridge, set by PolytoneNautilus when the Nautilus Studio mod is present. Resolves
+     * {@code (content folder, id)} to the raw json of that content file inside the pack currently
+     * open in the editor, so by-name references to content the running game hasn't loaded still
+     * decode there. Null (or a null result) everywhere else - reference decode then fails normally.
+     */
+    public static @Nullable BiFunction<String, ResourceLocation, @Nullable JsonElement> editorWorkspaceJsonLookup;
 
     private final Supplier<@Nullable ? extends Codec<O>> contentCodec;
     public final String name;

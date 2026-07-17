@@ -4,10 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 /**
- * Pack-overridable internals of the directional shadow map (see {@link ShadowMapManager}). Loaded from
- * a single {@code polytone/shadow_map.json} by {@link ShadowMapManager} itself; every field is optional
- * and falls back to {@link #DEFAULT}.
- *
  * @param coverage       half-width of the orthographic coverage box, in blocks (the shadowed radius
  *                       around the camera). Smaller = sharper shadows over a smaller area at the same
  *                       resolution.

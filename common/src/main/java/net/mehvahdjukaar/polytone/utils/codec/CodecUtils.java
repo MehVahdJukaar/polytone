@@ -2,23 +2,20 @@ package net.mehvahdjukaar.polytone.utils.codec;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+// Polytone-specific codecs only. Generic combinators (alternatives, referenceOrDirect, lenient
+// maps, field aliases, item stack codecs...) live in codecui's SchemaCodecs, which also pairs
+// them with their editor schemas.
 public class CodecUtils {
 
     public static Codec<String> STR_OR_DOUBLE_CODEC = Codec.withAlternative(Codec.STRING,
@@ -80,41 +77,8 @@ public class CodecUtils {
                 ()->BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY));
     }
 
-
-    public static <A, B> LenientUnboundedMapCodec<A, B> lenientUnboundedMap(Codec<A> keyCodec, Codec<B> elementCodec) {
-        return new LenientUnboundedMapCodec<>(keyCodec, elementCodec);
-    }
-
-    public static <A> MapCodec<A> lenientWithLog(Codec<A> elementCodec, String name, A defaultValue) {
-        return LenientCodecWithLog.of(elementCodec, name, defaultValue);
-    }
-
-    public static <A> MapCodec<Optional<A>> lenientWithLog(Codec<A> elementCodec, String name) {
-        return LenientCodecWithLog.of(elementCodec, name);
-    }
-
-    public static <B> MapCodec<Optional<B>> optionalAlias(Codec<B> codec, String primaryName, String alias) {
-        //first lenient so we can go to second
-        return AlternativeMapCodec.optionalAlias(codec, primaryName, alias);
-    }
-
-    @SafeVarargs
-    public static <A> Codec<A> alternatives(Codec<? extends A>... codecs) {
-        return new AlternativeCodec<>(codecs);
-    }
-
-    public static <B> MapCodec<B> alias(Codec<B> codec, String primaryName, String alias) {
-        return AlternativeMapCodec.alias(codec, primaryName, alias);
-    }
-
-    public static <E> ReferenceOrDirectCodec<E> referenceOrDirect(Codec<? extends E> reference, Codec<? extends E> direct) {
-        return new ReferenceOrDirectCodec<>(reference, direct);
-    }
-
-    public static <E> ReferenceOrDirectCodec<E> referenceOrDirect(Codec<? extends E> reference, Codec<? extends E> direct, boolean bothStrings) {
-        return new ReferenceOrDirectCodec<>(reference, direct, bothStrings);
-    }
-
+    // Unlike SchemaCodecs.alternatives this always encodes with primary and keeps
+    // withAlternative's first-success decode fold.
     @SafeVarargs
     public static <A> Codec<A> withAlternatives(Codec<A> primary, Codec<? extends A> ...secondary) {
         Codec<? super A> codec = primary;
@@ -123,19 +87,4 @@ public class CodecUtils {
         }
         return (Codec<A>) codec;
     }
-
-
-    public static final Codec<ItemStack> ITEM_OR_STACK = Codec.withAlternative(ItemStack.SINGLE_ITEM_CODEC, BuiltInRegistries.ITEM.byNameCodec(),
-            Item::getDefaultInstance);
-
-    public static final Codec<List<ItemStack>> ITEMSTACK_OR_ITEMSTACK_LIST = Codec.withAlternative(ITEM_OR_STACK.listOf(), ITEM_OR_STACK,
-            List::of);
-
-    public static final Codec<Supplier<List<ItemStack>>> ITEMSTACK_HOLDER_SET = RegistryCodecs.homogeneousList(Registries.ITEM)
-            .xmap(l -> () -> l.stream().map(Holder::value).map(ItemStack::new).toList(), s -> HolderSet.direct(s.get().stream().map(ItemStack::getItemHolder).toList()));
-
-    public static final Codec<Supplier<List<ItemStack>>> ITEMSTACK_OR_LIST_OR_HOLDER_SET =
-            Codec.withAlternative(
-                    ITEMSTACK_OR_ITEMSTACK_LIST.xmap(l -> () -> l, Supplier::get),
-                    ITEMSTACK_HOLDER_SET);
 }

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.colormap;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.color.block.BlockColor;
@@ -65,9 +66,11 @@ public class IndexCompoundColorGetter implements IColorGetter {
                         return DataResult.success(c);
                     });
 
-    // single or multiple
-    public static final Codec<IColorGetter> SINGLE_OR_MULTIPLE = Codec.withAlternative(Colormap.CODEC, DIRECT_CODEC,
-            iColorGetter -> iColorGetter);
+    // single or multiple; the single branch's labeled alternatives splice flat
+    public static final Codec<IColorGetter> SINGLE_OR_MULTIPLE = SchemaCodecs.labeled(
+            Codec.withAlternative(Colormap.CODEC, DIRECT_CODEC, iColorGetter -> iColorGetter),
+            SchemaCodecs.alt("single colormap", Colormap.CODEC),
+            SchemaCodecs.alt("indexed compound", DIRECT_CODEC));
 
 
     // default biome sample vanilla implementation

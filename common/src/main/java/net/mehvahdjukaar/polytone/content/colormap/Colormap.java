@@ -2,13 +2,13 @@ package net.mehvahdjukaar.polytone.content.colormap;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.content.common.expressions.impl.IColormapExp;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
@@ -69,16 +69,26 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
-    public static final Codec<IColorGetter> DIRECT_REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_CODEC,
-                    CodecUtils.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
-            Function.identity());
+    // The reference branch is shown as a plain id box (the wire codec resolves it against the
+    // colormap registry, and in the editor against the open pack too).
+    public static final Codec<IColorGetter> DIRECT_REFERENCE_OR_EXPRESSION = SchemaCodecs.labeled(
+            Codec.withAlternative(SINGLE_COLOR_CODEC,
+                    SchemaCodecs.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
+                    Function.identity()),
+            SchemaCodecs.alt("single color", SINGLE_COLOR_CODEC),
+            SchemaCodecs.alt("colormap reference", ResourceLocation.CODEC),
+            SchemaCodecs.alt("inline colormap", DIRECT_CODEC));
 
-    public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = Codec.withAlternative(SINGLE_COLOR_CODEC,
-            Polytone.COLORMAPS.byNameCodec());
+    public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = SchemaCodecs.labeled(
+            Codec.withAlternative(SINGLE_COLOR_CODEC, Polytone.COLORMAPS.byNameCodec()),
+            SchemaCodecs.alt("single color", SINGLE_COLOR_CODEC),
+            SchemaCodecs.alt("colormap reference", ResourceLocation.CODEC));
 
-
-    // single or biome compound
-    public static final Codec<IColorGetter> CODEC = Codec.withAlternative(Colormap.DIRECT_REFERENCE_OR_EXPRESSION, BiomeCompoundColorGetter.CODEC);
+    // single or biome compound; the labeled alternatives of the first branch splice flat
+    public static final Codec<IColorGetter> CODEC = SchemaCodecs.labeled(
+            Codec.withAlternative(Colormap.DIRECT_REFERENCE_OR_EXPRESSION, BiomeCompoundColorGetter.CODEC),
+            SchemaCodecs.alt("colormap", DIRECT_REFERENCE_OR_EXPRESSION),
+            SchemaCodecs.alt("biome compound", BiomeCompoundColorGetter.CODEC));
 
     private Colormap(Optional<Integer> defaultColor, IColormapExp xGetter, IColormapExp yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
@@ -180,6 +190,17 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
+        return sampleColor(state, pos, biome, item, null);
+    }
+
+    /**
+     * The real sampler, optionally instrumented. When {@code sink} is non-null the intermediates
+     * (axis outputs, sampled source pixel, final ARGB) are reported right where they are computed, so
+     * tooling never needs a second, drift-prone copy of the sampling math. {@code sink == null} is the
+     * runtime path and costs nothing beyond a null check.
+     */
+    public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
+                           @Nullable ItemStack item, @Nullable SampleSink sink) {
         BlockAndTintGetter level = levelHack.get();
         Vec3 vPos = pos == null ? null : pos.getCenter();
         float temperature = Mth.clamp(xGetter.evaluate(level, state, vPos, biome, biomeMapper, item), 0, 1);
@@ -189,7 +210,27 @@ public final class Colormap implements IColorGetter, ColorResolver {
         if (colorMult != null) {
             sampled = colorMult.getValue(sampled, state, pos, biome, biomeMapper, item);
         }
+        if (sink != null) {
+            long pixel = pixelIndex(humidity, temperature);
+            sink.report(temperature, humidity, (int) (pixel >>> 32), (int) (pixel & 0xFFFFFFFFL), sampled);
+        }
         return sampled;
+    }
+
+    /** Receives the intermediates of a single {@link #sampleColor} pass; used by the editor preview. */
+    public interface SampleSink {
+        // x/y are the clamped axis outputs (0..1); col/row is the sampled source-image pixel; argb is the final tint.
+        void report(float x, float y, int col, int row, int argb);
+    }
+
+    // Editor-preview entry: puts an explicit level into the same ThreadLocal the runtime paths use (so the
+    // axis expressions and MVEL block proxy see it), then runs the instrumented sampler. Not a second
+    // sampler - just level plumbing plus a delegate.
+    public int sampleColorForPreview(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
+                                     @Nullable ItemStack item, @Nullable BlockAndTintGetter level,
+                                     @Nullable SampleSink sink) {
+        this.levelHack.set(level);
+        return sampleColor(state, pos, biome, item, sink);
     }
 
     // gets color for blend
@@ -232,21 +273,23 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private int sample(float textY, float textX) {
         // dont ask questions here
         //if (Polytone.sodiumOn) return defValue;
-        if (triangular) textY *= textX;
-        int width = image.width();
-        int height = image.height();
+        long pixel = pixelIndex(textY, textX);
+        return image.pixels()[(int) (pixel & 0xFFFFFFFFL)][(int) (pixel >>> 32)];
+    }
 
-        int wm = width - 1;
-        int hm = height - 1;
+    // Maps the two axis outputs to a source-image pixel. High 32 bits = column (x/temperature axis),
+    // low 32 bits = row (y/humidity axis). Single source of truth shared by sample() and the sink path.
+    private long pixelIndex(float textY, float textX) {
+        if (triangular) textY *= textX;
+        int wm = image.width() - 1;
+        int hm = image.height() - 1;
 
         //gets rid of floating point errors for biome id map stuff
         int scaledW = rounds ? Math.round(textX * wm) : Mth.floor(textX * wm);
         int scaledH = rounds ? Math.round(textY * hm) : Mth.floor(textY * hm);
         int w = Math.max(wm - scaledW, 0);
         int h = Math.max(hm - scaledH, 0);
-
-
-        return image.pixels()[h][w];
+        return ((long) w << 32) | (h & 0xFFFFFFFFL);
     }
 
 

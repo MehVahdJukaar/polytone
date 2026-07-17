@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.sound;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -189,7 +190,10 @@ public class PolytoneSoundType extends SoundType {
                     CodecUtils.forwardAwareSoundEventHolder().fieldOf("fall_sound").forGetter(s -> s.fallSoundHolder)
             ).apply(instance, PolytoneSoundType::new));
 
-    public static final Codec<SoundType> CODEC = CodecUtils.referenceOrDirect(REFERENCE_OR_COPY_CODEC, DIRECT_CODEC);
+    public static final Codec<SoundType> CODEC = SchemaCodecs.labeled(
+            SchemaCodecs.referenceOrDirect(REFERENCE_OR_COPY_CODEC, DIRECT_CODEC),
+            SchemaCodecs.alt("name or copy", Codec.STRING),
+            SchemaCodecs.alt("inline sound type", DIRECT_CODEC));
 
 
     public final Holder<SoundEvent> breakSoundHolder;

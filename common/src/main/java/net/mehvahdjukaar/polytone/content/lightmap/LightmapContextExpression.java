@@ -13,7 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.jetbrains.annotations.NotNull;
 
-record LightmapContextExpression(ConcurrentExpression expression, String unparsed,
+public record LightmapContextExpression(ConcurrentExpression expression, String unparsed,
                                  boolean usesBiome) implements ILightmapNumberProvider {
 
     public static final Codec<LightmapContextExpression> CODEC = CodecUtils.STR_OR_DOUBLE_CODEC.flatXmap(s -> {

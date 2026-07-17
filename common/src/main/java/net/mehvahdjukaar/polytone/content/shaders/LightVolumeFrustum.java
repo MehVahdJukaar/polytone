@@ -4,19 +4,12 @@ import net.caffeinemc.mods.sodium.client.render.viewport.frustum.Frustum;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 
-/**
- * A Sodium culling {@link Frustum} shaped like the shadow map's orthographic light volume: a box of
- * half-width {@code coverage} on the two light-lateral axes and {@code depthRange} along the light
- * axis, centered on the camera. Used to re-cull Sodium's terrain from the light's point of view so
- * occluders behind/beside the player still cast shadows, instead of drawing the camera-frustum list.
- *
- * <p>All test coordinates arrive camera-relative (Sodium's {@code CameraTransform} pre-subtracts the
- * camera position), which is exactly the space the shadow ortho box lives in - so this only needs the
- * light basis, not the camera position. The visibility test is the same separating-axis idea as
- * {@code ShadowMapManager.collectShadowSections}: project the box center onto each light axis and
- * compare against the half-extent inflated by the tested box's own projected radius. It is
- * conservative (never a false "invisible"), which is what a shadow caster set wants.</p>
- */
+// A Sodium culling Frustum shaped like the shadow map's orthographic light volume: a box of half-width
+// coverage on the two light-lateral axes and depthRange along the light axis, centered on the camera.
+// Re-culls Sodium's terrain from the light's POV so occluders behind/beside the player still cast.
+// Test coordinates arrive camera-relative (Sodium pre-subtracts the camera position), the same space the
+// ortho box lives in, so only the light basis is needed. Same separating-axis test as
+// ShadowMapManager.collectShadowSections; conservative (never a false "invisible"), as a caster set wants.
 final class LightVolumeFrustum implements Frustum {
 
     // Rows of the light-view rotation = light-space axes expressed in (camera-relative) world coords.
