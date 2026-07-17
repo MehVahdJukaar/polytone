@@ -14,12 +14,9 @@ import java.util.Optional;
 
 public interface BlockSetTypeProvider {
 
-    Codec<BlockSetTypeProvider> CODEC = SchemaCodecs.labeled(
-            SchemaCodecs.referenceOrDirect(
-                    CodecUtils.withAlternatives(Polytone.BLOCK_SET.byNameCodec(),
-                            Vanilla.CODEC, VanillaWood.CODEC), Custom.CODEC),
-            SchemaCodecs.alt("name", Codec.STRING),
-            SchemaCodecs.alt("custom", Custom.CODEC));
+    Codec<BlockSetTypeProvider> CODEC = SchemaCodecs.referenceOrDirect(
+            CodecUtils.withAlternatives(Polytone.BLOCK_SET.byNameCodec(),
+                    Vanilla.CODEC, VanillaWood.CODEC), Custom.CODEC);
 
     BlockSetType getOrCreate(BlockSetType original, Optional<SoundType> customSound);
 

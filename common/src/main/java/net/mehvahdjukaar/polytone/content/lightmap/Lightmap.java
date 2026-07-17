@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.minecraft.resources.ResourceLocation;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionTarget;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
@@ -48,10 +47,8 @@ public class Lightmap {
                     Codec.FLOAT.optionalFieldOf("base_light", DEFAULT_BASE_LIGHT).forGetter(l -> l.baseLight)
             ).apply(instance, Lightmap::new));
 
-    public static final Codec<Lightmap> CODEC = SchemaCodecs.labeled(
-            SchemaCodecs.referenceOrDirect(Polytone.LIGHTMAPS.byNameCodec(), DIRECT_CODEC),
-            SchemaCodecs.alt("reference", ResourceLocation.CODEC),
-            SchemaCodecs.alt("inline lightmap", DIRECT_CODEC));
+    public static final Codec<Lightmap> CODEC = SchemaCodecs.referenceOrDirect(
+            Polytone.LIGHTMAPS.byNameCodec(), DIRECT_CODEC);
 
 
     private final DimensionTarget targets;

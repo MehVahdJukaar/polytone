@@ -15,10 +15,8 @@ import java.util.Map;
 public interface BiomeIdMapper {
 
 
-    Codec<BiomeIdMapper> CODEC = SchemaCodecs.labeled(
-            SchemaCodecs.referenceOrDirect(Polytone.BIOME_ID_MAPPERS.byNameCodec(), Custom.CUSTOM_CODEC, false),
-            SchemaCodecs.alt("reference", ResourceLocation.CODEC),
-            SchemaCodecs.alt("custom map", Custom.CUSTOM_CODEC));
+    Codec<BiomeIdMapper> CODEC = SchemaCodecs.referenceOrDirect(
+            Polytone.BIOME_ID_MAPPERS.byNameCodec(), Custom.CUSTOM_CODEC, false);
 
     BiomeIdMapper BY_INDEX = (biome) -> {
         int id = LegacyHelper.getBiomeId(biome);

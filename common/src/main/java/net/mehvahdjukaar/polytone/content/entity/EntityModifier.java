@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.entity;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.world.entity.Entity;
 
@@ -12,7 +13,7 @@ import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
 public record EntityModifier(List<EntityParticleEmitter> emitters, Targets targets) {
 
     public static final Codec<EntityModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            EntityParticleEmitter.CODEC.listOf().fieldOf("emitters").forGetter(EntityModifier::emitters),
+            SchemaCodecs.singleOrList(EntityParticleEmitter.CODEC).fieldOf("emitters").forGetter(EntityModifier::emitters),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(EntityModifier::targets)
     ).apply(i, EntityModifier::new));
 

@@ -190,10 +190,8 @@ public class PolytoneSoundType extends SoundType {
                     CodecUtils.forwardAwareSoundEventHolder().fieldOf("fall_sound").forGetter(s -> s.fallSoundHolder)
             ).apply(instance, PolytoneSoundType::new));
 
-    public static final Codec<SoundType> CODEC = SchemaCodecs.labeled(
-            SchemaCodecs.referenceOrDirect(REFERENCE_OR_COPY_CODEC, DIRECT_CODEC),
-            SchemaCodecs.alt("name or copy", Codec.STRING),
-            SchemaCodecs.alt("inline sound type", DIRECT_CODEC));
+    public static final Codec<SoundType> CODEC = SchemaCodecs.referenceOrDirect(
+            REFERENCE_OR_COPY_CODEC, DIRECT_CODEC);
 
 
     public final Holder<SoundEvent> breakSoundHolder;

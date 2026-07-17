@@ -1,16 +1,17 @@
 package net.mehvahdjukaar.polytone.content.color;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.codecui.Schema;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.minecraft.Util;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class MapColorHelper {
-
-    public static final Codec<MapColor> CODEC = Codec.STRING.xmap(MapColorHelper::byName, mapColor -> "none");
 
     private static final Map<String, MapColor> colorNames = Util.make(() -> {
         Map<String, MapColor> map = new HashMap<>();
@@ -119,6 +120,13 @@ public class MapColorHelper {
 
         return map;
     });
+
+    // Declared AFTER colorNames so the option list snapshots its keys at class-init. Inference only
+    // sees STRING.xmap and would give a plain text field; this makes the editor show a name dropdown.
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static final Codec<MapColor> CODEC = SchemaCodec.of(
+            Codec.STRING.xmap(MapColorHelper::byName, mapColor -> "none"),
+            (Schema) new Schema.Enum<>(colorNames.keySet().stream().sorted().toList(), Function.identity()));
 
     @Nullable
     public static MapColor byName(String colorName) {

@@ -3,6 +3,8 @@ package net.mehvahdjukaar.polytone.utils;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.codecui.Schema;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.mixins.accessor.BiomeAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -13,13 +15,16 @@ import java.util.Locale;
 //ML class
 public class ColorUtils {
 
-    //utility codec that serializes either a string or an integer
-    public static final Codec<Integer> CODEC = Codec.either(Codec.INT,
-            Codec.STRING.flatXmap(ColorUtils::isValidStringOrError, s->isValidStringOrError(s)
-                    .map(ColorUtils::formatString))).xmap(
-            either -> either.map(integer -> integer, s -> Integer.parseUnsignedInt(s, 16)),
-            integer -> Either.right("#" + String.format("%08X", integer))
-    );
+    //utility codec that serializes either a string or an integer.
+    //declared as a SchemaCodec so the editor shows a color picker (encodes as "#AARRGGBB" hex)
+    public static final SchemaCodec<Integer> CODEC = SchemaCodec.of(
+            Codec.either(Codec.INT,
+                    Codec.STRING.flatXmap(ColorUtils::isValidStringOrError, s -> isValidStringOrError(s)
+                            .map(ColorUtils::formatString))).xmap(
+                    either -> either.map(integer -> integer, s -> Integer.parseUnsignedInt(s, 16)),
+                    integer -> Either.right("#" + String.format("%08X", integer))
+            ),
+            new Schema.Color(true, true));
 
     private static String formatString(String s){
         return "#"+ s.toUpperCase(Locale.ROOT);

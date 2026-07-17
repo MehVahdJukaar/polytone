@@ -2,12 +2,15 @@ package net.mehvahdjukaar.polytone.content.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.minecraft.client.Camera;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+
+import java.util.Locale;
 
 @BeanAliases
 public class CameraProxy extends PositionalProxy {
@@ -59,6 +62,14 @@ public class CameraProxy extends PositionalProxy {
 
     public boolean detatched() {
         return delegate().isDetached();
+    }
+
+    public boolean firstPerson() {
+        return Minecraft.getInstance().options.getCameraType() == CameraType.FIRST_PERSON;
+    }
+
+    public String type() {
+        return Minecraft.getInstance().options.getCameraType().toString().toLowerCase(Locale.ROOT);
     }
 
     public double viewDistance() {

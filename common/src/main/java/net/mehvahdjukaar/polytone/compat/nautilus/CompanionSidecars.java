@@ -77,9 +77,11 @@ final class CompanionSidecars {
                 }
             }
             if (found != null) {
-                out.add(new SidecarAssets.Slot(found.getFileName().toString(), found,
-                        SidecarAssets.State.PRESENT, slot.label()));
-                claimed.add(found);
+                // a file matched by two slots is emitted once, not as two PRESENT rows
+                if (claimed.add(found)) {
+                    out.add(new SidecarAssets.Slot(found.getFileName().toString(), found,
+                            SidecarAssets.State.PRESENT, slot.label()));
+                }
             } else if (slot.required()) {
                 // optional-and-absent slots are fine to omit; only flag required ones as missing
                 out.add(new SidecarAssets.Slot(slot.canonicalName(), null,
