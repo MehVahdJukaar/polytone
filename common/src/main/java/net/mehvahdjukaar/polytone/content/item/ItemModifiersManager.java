@@ -3,8 +3,9 @@ package net.mehvahdjukaar.polytone.content.item;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.companion.TexturePart;
+import net.mehvahdjukaar.polytone.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
 import net.mehvahdjukaar.polytone.utils.Parsed;
 import net.minecraft.core.RegistryAccess;
@@ -15,20 +16,29 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.Item;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class ItemModifiersManager extends JsonImgPartialReloader<ItemModifier> {
+
+    private static final String BAR_SUFFIX = "_bar";
 
     private final Map<Item, ItemModifier> modifiers = new HashMap<>();
     private final Map<Item, ItemModifier> vanillaProperties = new HashMap<>();
 
 
+    private static final TexturePart<ItemModifier> TINT = TexturePart.plain("tint", ItemModifier::getTint);
+    private static final TexturePart<ItemModifier> BAR = TexturePart.suffix(BAR_SUFFIX, ItemModifier::getBarColor);
+
     public ItemModifiersManager() {
         super(Spec.of("Item modifier", () -> ItemModifier.CODEC)
                 .wikiPage("Item-Modifiers")
+                .textureParts(TINT, BAR)
                 .folders("item_modifiers", "item_properties"));
+    }
+
+    private static ItemModifier defaultFor(TexturePart<ItemModifier> part) {
+        return part == BAR ? ItemModifier.ofBarColor(Colormap.createDamage())
+                : ItemModifier.ofItemColor(Colormap.createDefTriangle());
     }
 
     // early reload to grab the extra models we need to add.
@@ -50,51 +60,36 @@ public class ItemModifiersManager extends JsonImgPartialReloader<ItemModifier> {
     @Override
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var jsons = resources.jsons();
-        var textures = new HashMap<>(resources.textures());
-
-        Set<ResourceLocation> usedTextures = new HashSet<>();
+        var textures = new TrackedTextures(resources.textures());
 
         Parsed.SortedMap<ItemModifier> parsedModifiers =
                 Parsed.batchParseAlways(jsons, ItemModifier.CODEC, ops, "item modifier");
 
         // add all modifiers (with or without texture)
         for (var entry : parsedModifiers.entrySet()) {
-            ResourceLocation tintId = entry.getKey();
+            ResourceLocation id = entry.getKey();
             Parsed<ItemModifier> result = entry.getValue();
             ItemModifier modifier = result.getResultOrPartial();
 
-            if (!modifier.hasTint() && textures.containsKey(tintId)) {
-                //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
-                modifier = modifier.merge(ItemModifier.ofItemColor(Colormap.createDefTriangle()));
+            // auto-attach defaults for lone textures, then fill inline colormaps from the scanned ones
+            for (var part : contentTexture.adoptable(textures, id, modifier).keySet()) {
+                modifier = modifier.merge(defaultFor(part));
             }
-            ResourceLocation barId = tintId.withSuffix("_bar");
-            if (!modifier.hasBarColor() && textures.containsKey(barId)) {
-                //if this map doesn't have a bar colormap defined, we set it to the default impl IF there's a texture it can use
-                modifier = modifier.merge(ItemModifier.ofBarColor(Colormap.createDamage()));
-            }
+            contentTexture.fill(textures, id, modifier, true);
 
-            //fill inline colormaps colormapTextures
-            ColormapsManager.tryAcceptingTexture(textures, tintId, modifier.getTint(), usedTextures, true);
-
-            ColormapsManager.tryAcceptingTexture(textures, barId, modifier.getBarColor(), usedTextures, true);
-
-            if (result.isEnabled()) addModifier(tintId, modifier);
+            if (result.isEnabled()) addModifier(id, modifier);
         }
 
-        // creates orphaned texture colormaps & properties
-        textures.keySet().removeAll(usedTextures);
-
-        for (var t : textures.entrySet()) {
-            ResourceLocation id = t.getKey();
-            if (id.getPath().endsWith("_bar")) {
-                Colormap defaultColormap = Colormap.createDamage();
-                ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
-                addModifier(id, ItemModifier.ofBarColor(defaultColormap));
-            } else {
-                Colormap defaultColormap = Colormap.createDefTriangle();
-                ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
-                addModifier(id, ItemModifier.ofItemColor(defaultColormap));
+        // creates orphaned texture colormaps & properties. A lone <name>_bar.png colors the
+        // durability bar of item <name> (the suffix is convention, not part of the target id)
+        for (var orphan : contentTexture.orphans(textures, parsedModifiers.keySet())) {
+            ItemModifier modifier = null;
+            for (var part : orphan.parts().keySet()) {
+                ItemModifier d = defaultFor(part);
+                modifier = modifier == null ? d : modifier.merge(d);
             }
+            contentTexture.fill(textures, orphan.stemId(), modifier, true);
+            addModifier(orphan.stemId(), modifier);
         }
     }
 

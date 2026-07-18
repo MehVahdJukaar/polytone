@@ -21,9 +21,12 @@ public interface IParticleExp {
                             i -> ParticleContextExpression.ZERO
                     ),
                     ParticleExp.TYPE.codec()),
-            SchemaCodecs.alt("constant", CodecUtils.LENIENT_DOUBLE),
-            SchemaCodecs.alt("legacy expression", ParticleContextExpression.CODEC),
-            SchemaCodecs.alt("expression", ParticleExp.TYPE.codec()))
+            // constant: plain number (LENIENT_DOUBLE would splice its double-or-string union into
+            // stray "number"/"text" options). expression before legacy: both encode as bare strings,
+            // so fit-scoring on load should land on the modern branch, not the deprecated one.
+            SchemaCodecs.alt("constant", Codec.DOUBLE),
+            SchemaCodecs.alt("expression", ParticleExp.TYPE.codec()),
+            SchemaCodecs.alt("legacy expression", ParticleContextExpression.CODEC))
     );
 
     double evaluate(Particle particle, Level level);

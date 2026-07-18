@@ -1,15 +1,16 @@
 package net.mehvahdjukaar.polytone.companion;
 
+import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+/** The scanned texture store of one reload pass, tracking which files got consumed by a colormap. */
 public final class TrackedTextures {
 
     private final Map<ResourceLocation, ArrayImage> textures;
@@ -19,20 +20,8 @@ public final class TrackedTextures {
         this.textures = new HashMap<>(initial);
     }
 
-    public @Nullable ArrayImage get(ResourceLocation id) {
-        return textures.get(id);
-    }
-
-    public boolean containsKey(ResourceLocation id) {
-        return textures.containsKey(id);
-    }
-
     public void putAll(Map<ResourceLocation, ArrayImage> extra) {
         textures.putAll(extra);
-    }
-
-    public void markUsed(ResourceLocation id) {
-        used.add(id);
     }
 
     public boolean isUsed(ResourceLocation id) {
@@ -43,11 +32,23 @@ public final class TrackedTextures {
         return textures.keySet();
     }
 
-    public Map<ResourceLocation, ArrayImage> unused() {
-        Map<ResourceLocation, ArrayImage> out = new LinkedHashMap<>();
-        for (var e : textures.entrySet()) {
-            if (!used.contains(e.getKey())) out.put(e.getKey(), e.getValue());
+    public @Nullable ResourceLocation find(ResourceLocation baseId, String fileName) {
+        ResourceLocation candidate = baseId.withPath(
+                TintNaming.directoryOf(baseId.getPath()) + stripPng(fileName));
+        return textures.containsKey(candidate) ? candidate : null;
+    }
+
+    public void fillColormap(ResourceLocation textureId, Colormap colormap) {
+        ArrayImage texture = textures.get(textureId);
+        if (texture == null || texture.pixels().length == 0) {
+            throw new IllegalStateException("Colormap texture at location " + textureId + " had invalid 0 dimension");
         }
-        return out;
+        colormap.acceptTexture(texture);
+        used.add(textureId);
+        colormap.debugID = textureId;
+    }
+
+    private static String stripPng(String name) {
+        return name.substring(0, name.length() - ".png".length());
     }
 }

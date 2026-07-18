@@ -5,9 +5,9 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapTextures;
-import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
+import net.mehvahdjukaar.polytone.companion.TexturePart;
 import net.mehvahdjukaar.polytone.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
@@ -48,11 +48,13 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
     /** Optifine/Colormatic legacy .properties, scanned in prepare() and consumed in parseWithLevel(). */
     private Map<ResourceLocation, Properties> ofProperties = Map.of();
 
+    private static final TexturePart<BlockPropertyModifier> TINTS =
+            TexturePart.tinted(BlockPropertyModifier::getColormap);
+
     public BlockPropertiesManager() {
         super(Spec.of("Block modifier", () -> BlockPropertyModifier.CODEC)
                 .wikiPage("Block-Properties-Modifiers")
-                .companions(ColormapTextures.groupedTexture(
-                        (BlockPropertyModifier m) -> m.getColormap()))
+                .textureParts(TINTS)
                 .folders("block_modifiers", "block_properties"));
     }
 
@@ -140,29 +142,24 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
             Parsed<BlockPropertyModifier> result = entry.getValue();
             BlockPropertyModifier modifier = result.getResultOrPartial();
 
-            if (!modifier.hasColormap()) {
-                //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
-                Set<Integer> indices = ColormapTextures.usableTintIndices(textures, id);
-                if (!indices.isEmpty()) {
-                    IndexCompoundColorGetter defaultSampler = IndexCompoundColorGetter.createDefault(indices, true);
-                    modifier = modifier.merge(BlockPropertyModifier.ofBlockColor(defaultSampler));
-                }
+            // auto-attach a default tint sampler when tint textures exist but no colormap is declared,
+            // then fill inline colormaps from the scanned textures
+            Set<Integer> indices = contentTexture.adoptable(textures, id, modifier).get(TINTS);
+            if (indices != null) {
+                modifier = modifier.merge(BlockPropertyModifier.ofBlockColor(
+                        IndexCompoundColorGetter.createDefault(indices, true)));
             }
-
-            //fill inline colormaps colormapTextures
-            ColormapTextures.fill(companions, textures, id, modifier, true);
+            contentTexture.fill(textures, id, modifier, true);
 
             if (result.isEnabled()) addModifier(id, modifier);
         }
 
         // creates default modifiers for orphaned textures without one
-        for (ResourceLocation id : ColormapTextures.orphanStems(textures)) {
-            IndexCompoundColorGetter tintMap = IndexCompoundColorGetter.createDefault(
-                    ColormapTextures.usableTintIndices(textures, id), true);
-            BlockPropertyModifier modifier = BlockPropertyModifier.ofBlockColor(tintMap);
-            ColormapTextures.fill(companions, textures, id, modifier, true);
-
-            addModifier(id, modifier);
+        for (var orphan : contentTexture.orphans(textures, parsedModifiers.keySet())) {
+            BlockPropertyModifier modifier = BlockPropertyModifier.ofBlockColor(
+                    IndexCompoundColorGetter.createDefault(orphan.parts().get(TINTS), true));
+            contentTexture.fill(textures, orphan.stemId(), modifier, true);
+            addModifier(orphan.stemId(), modifier);
         }
     }
 

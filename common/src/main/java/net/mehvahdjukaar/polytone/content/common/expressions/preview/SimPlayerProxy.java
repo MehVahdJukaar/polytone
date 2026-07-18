@@ -11,10 +11,13 @@ import java.util.List;
  */
 public final class SimPlayerProxy extends PlayerProxy {
 
-    public final SimValue x = SimValue.slider("Player X", -256, 256, 0, 1);
-    public final SimValue y = SimValue.slider("Player Y", -64, 320, 64, 1);
-    public final SimValue z = SimValue.slider("Player Z", -256, 256, 0, 1);
-    public final SimValue speed = SimValue.slider("Player speed", 0, 1, 0, 0.01);
+    // Private, not public: a public field named like an accessor (x -> x()) wins over the bean
+    // getter in MVEL, so g/p.x would read this SimValue instead of the overridden accessor. See
+    // SimGlobalProxy for the full explanation.
+    private final SimValue x = SimValue.slider("Player X", -256, 256, 0, 1);
+    private final SimValue y = SimValue.slider("Player Y", -64, 320, 64, 1);
+    private final SimValue z = SimValue.slider("Player Z", -256, 256, 0, 1);
+    private final SimValue speed = SimValue.slider("Player speed", 0, 1, 0, 0.01);
 
     private final List<SimValue> values = List.of(x, y, z, speed);
 

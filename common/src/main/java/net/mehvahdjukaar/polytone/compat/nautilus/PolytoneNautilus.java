@@ -63,8 +63,8 @@ public final class PolytoneNautilus {
 
             // Content types with companion textures (colormaps, block/fluid/particle tints) show their
             // sibling .png files in the editor via the SAME naming contract the reload driver uses.
-            if (manager.companions != null) {
-                entry = entry.withSidecars(CompanionSidecars.of(manager.companions, Side.CLIENT_RESOURCES));
+            if (manager.contentTexture != null) {
+                entry = entry.withSidecars(TextureSidecars.of(manager.contentTexture, Side.CLIENT_RESOURCES));
             }
 
             String page = manager.wikiPage();

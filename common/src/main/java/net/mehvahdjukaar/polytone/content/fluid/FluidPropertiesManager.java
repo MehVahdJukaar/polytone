@@ -5,9 +5,9 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapTextures;
+import net.mehvahdjukaar.polytone.companion.TexturePart;
 import net.mehvahdjukaar.polytone.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.RegistryAccess;
@@ -25,12 +25,19 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
 
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
 
+    private static final TexturePart<FluidPropertyModifier> TINT = TexturePart.plain("tint", FluidPropertyModifier::getColormap);
+    private static final TexturePart<FluidPropertyModifier> FOG = TexturePart.suffix("_fog", FluidPropertyModifier::getFogColormap);
+
     public FluidPropertiesManager() {
         super(Spec.of("Fluid modifier", () -> FluidPropertyModifier.CODEC)
                 .wikiPage("Fluid-Properties-Modifiers")
-                .companions(ColormapTextures.singleTexture(
-                        (FluidPropertyModifier m) -> m.getColormap(), "", "default"))
+                .textureParts(TINT, FOG)
                 .folders("fluid_modifiers", "fluid_properties"));
+    }
+
+    private static FluidPropertyModifier defaultFor(TexturePart<FluidPropertyModifier> part) {
+        return part == FOG ? FluidPropertyModifier.ofFogColor(Colormap.createDefTriangle())
+                : FluidPropertyModifier.ofBlockColor(Colormap.createDefTriangle());
     }
 
     private Map<ResourceLocation, Parsed<FluidPropertyModifier>> extraModifiers;
@@ -86,26 +93,24 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
             Parsed<FluidPropertyModifier> parsed = entry.getValue();
             FluidPropertyModifier modifier = parsed.getResultOrPartial();
 
-            if (!modifier.hasColormap()
-                    && ColormapTextures.hasUsableTexture(companions, textures, id)) {
-                //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
-                modifier = modifier.merge(FluidPropertyModifier.ofBlockColor(Colormap.createDefTriangle()));
+            // auto-attach defaults for lone textures, then fill inline colormaps from the scanned ones
+            for (var part : contentTexture.adoptable(textures, id, modifier).keySet()) {
+                modifier = modifier.merge(defaultFor(part));
             }
-
-            //fill inline colormaps colormapTextures
-            ColormapTextures.fill(companions, textures, id, modifier, true);
+            contentTexture.fill(textures, id, modifier, true);
 
             if (parsed.isEnabled()) this.addModifier(id, modifier);
         }
 
         // creates orphaned texture colormaps & properties
-        for (var t : textures.unused().entrySet()) {
-            ResourceLocation id = t.getKey();
-            Colormap defaultColormap = Colormap.createDefTriangle();
-            ColormapTextures.fillDirect(textures, id, t.getValue(), defaultColormap);
-
-            addModifier(id, new FluidPropertyModifier(Optional.of(defaultColormap),
-                    Optional.empty(), Targets.EMPTY));
+        for (var orphan : contentTexture.orphans(textures, parsedModifiers.keySet())) {
+            FluidPropertyModifier modifier = null;
+            for (var part : orphan.parts().keySet()) {
+                FluidPropertyModifier d = defaultFor(part);
+                modifier = modifier == null ? d : modifier.merge(d);
+            }
+            contentTexture.fill(textures, orphan.stemId(), modifier, true);
+            addModifier(orphan.stemId(), modifier);
         }
     }
 

@@ -11,11 +11,14 @@ import java.util.List;
  */
 public final class SimCameraProxy extends CameraProxy {
 
-    public final SimValue x = SimValue.slider("Camera X", -256, 256, 0, 1);
-    public final SimValue y = SimValue.slider("Camera Y", -64, 320, 64, 1);
-    public final SimValue z = SimValue.slider("Camera Z", -256, 256, 0, 1);
-    public final SimValue yaw = SimValue.slider("Camera yaw", -180, 180, 0, 1);
-    public final SimValue pitch = SimValue.slider("Camera pitch", -90, 90, 0, 1);
+    // Private, not public: a public field named like an accessor (x -> x()) wins over the bean
+    // getter in MVEL, so g/c.x would read this SimValue instead of the overridden accessor. See
+    // SimGlobalProxy for the full explanation.
+    private final SimValue x = SimValue.slider("Camera X", -256, 256, 0, 1);
+    private final SimValue y = SimValue.slider("Camera Y", -64, 320, 64, 1);
+    private final SimValue z = SimValue.slider("Camera Z", -256, 256, 0, 1);
+    private final SimValue yaw = SimValue.slider("Camera yaw", -180, 180, 0, 1);
+    private final SimValue pitch = SimValue.slider("Camera pitch", -90, 90, 0, 1);
 
     private final List<SimValue> values = List.of(x, y, z, yaw, pitch);
 

@@ -8,13 +8,11 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.companion.TexturePart;
 import net.mehvahdjukaar.polytone.companion.TrackedTextures;
-import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.AssetsFiles;
 import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
@@ -26,7 +24,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
@@ -94,10 +91,12 @@ public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
         return concurrentColormaps.computeIfAbsent(colormap, IColorGetter::makeConcurrent);
     }
 
+    private static final TexturePart<Colormap> TEXTURE = TexturePart.plain(c -> c);
+
     public ColormapsManager() {
         super(Spec.of("Colormap", () -> Colormap.DIRECT_CODEC)
                 .wikiPage("Colormaps")
-                .companions(ColormapTextures.singleTexture((Colormap c) -> c, "", "default"))
+                .textureParts(TEXTURE)
                 .folders("colormaps"));
     }
 
@@ -120,9 +119,9 @@ public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
 
             Colormap colormap = decodeStrict(json, id, ops);
             colormap.inlined = false;
-            // companion-driven association: the singleTexture spec declared in the constructor
-            // enumerates the bound slot, and fill() resolves it against the scanned textures.
-            ColormapTextures.fill(companions, textures, id, colormap, true);
+            // the contract declared on the Spec enumerates the bound slot,
+            // and fill() resolves it against the scanned textures.
+            contentTexture.fill(textures, id, colormap, true);
 
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, colormap);
@@ -143,13 +142,11 @@ public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
 
 
         // creates orphaned texture colormaps
-        for (var t : textures.unused().entrySet()) {
-            ResourceLocation id = t.getKey();
+        for (var orphan : contentTexture.orphans(textures, jsons.keySet())) {
             Colormap defaultColormap = Colormap.createDefTriangle();
             defaultColormap.inlined = false;
-            ColormapTextures.fillDirect(textures, id, t.getValue(), defaultColormap);
-            // we need to fill these before we parse the properties as they will be referenced below
-            add(id, defaultColormap);
+            contentTexture.fill(textures, orphan.stemId(), defaultColormap, true);
+            add(orphan.stemId(), defaultColormap);
         }
     }
 
@@ -190,94 +187,5 @@ public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
         }
     }
 
-
-    //helper methods
-    public static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> availableTextures,
-                                                ResourceLocation defaultPath, BlockColor col, Set<ResourceLocation> usedTexture, boolean strict) {
-        if (col instanceof IColorGetter cg && !cg.needsToFillTexture()) {
-            return;
-        }
-        if (col instanceof IndexCompoundColorGetter c) {
-            tryAcceptingTextureGroup(availableTextures, defaultPath, c, usedTexture, strict);
-        } else if (col instanceof Colormap c) {
-            tryAcceptingTextureGroup(availableTextures, defaultPath, c, usedTexture, strict);
-        }
-    }
-
-    private static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> availableTextures,
-                                                 ResourceLocation defaultPath, Colormap c, Set<ResourceLocation> usedTexture, boolean strict) {
-        ResourceLocation textureLoc = c.getTargetTexture(defaultPath);
-        ArrayImage.Group group = availableTextures.get(textureLoc);
-        ArrayImage texture = group != null ? group.getDefault() : null;
-        tryAcceptingTexture(texture, textureLoc, c, usedTexture, strict);
-    }
-
-    private static void tryAcceptingTextureGroup(Map<ResourceLocation, ArrayImage.Group> textures,
-                                                 ResourceLocation id, IndexCompoundColorGetter colormap,
-                                                 Set<ResourceLocation> usedTextures, boolean strict) {
-        var blockColorGetters = colormap.getGetters();
-
-        for (var g : blockColorGetters.int2ObjectEntrySet()) {
-            int index = g.getIntKey();
-            BlockColor inner = g.getValue();
-
-            if (inner instanceof Colormap c && c.needsToFillTexture()) {
-
-                var textureMap = textures.get(c.getTargetTexture(id));
-
-                if (strict && textureMap == null) {
-                    throw new IllegalStateException("Could not find a texture for tint index " + index + " for compound colormap " + id + "." +
-                            "Expected " + id + "_" + index);
-                }
-
-                if (blockColorGetters.size() == 1 || index == 0) {
-                    //try twice. first time doesn't throw
-                    tryAcceptingTexture(textureMap.getDefault(), id, c, usedTextures, false);
-                }
-                try {
-                    tryAcceptingTexture(textureMap.get(index), id, c, usedTextures, strict);
-                } catch (Exception e) {
-                    throw new IllegalStateException("Failed to apply a texture for tint index " + index + " for compound colormap " + id + "." +
-                            "Expected " + id + "_" + index + " : ", e);
-                }
-            }
-        }
-    }
-
-    public static void tryAcceptingTexture(Map<ResourceLocation, ArrayImage> availableTextures,
-                                           ResourceLocation defaultPath,
-                                           @Nullable Object col, Set<ResourceLocation> usedTexture, boolean strict) {
-        if (col instanceof Colormap colormap) {
-            ResourceLocation textureLoc = colormap.getTargetTexture(defaultPath);
-            ArrayImage texture = availableTextures.get(textureLoc);
-            tryAcceptingTexture(texture, textureLoc, colormap, usedTexture, strict);
-            colormap.debugID = textureLoc;
-        }
-    }
-
-    private static void tryAcceptingTexture(@Nullable ArrayImage selectedTexture, ResourceLocation textureLoc, Colormap colormap,
-                                            Set<ResourceLocation> usedTexture, boolean strict) {
-        if (!colormap.needsToFillTexture()) {
-            return; //we already are filled
-        }
-        //hack. for inlined this will be the parent modifier id.
-        String colormapName = colormap.inlined ? "Inlined Colormap from modifier " + textureLoc.toString() : "Colormap at " + textureLoc.toString();
-
-        if (selectedTexture != null) {
-            usedTexture.add(textureLoc);
-            if (selectedTexture.pixels().length == 0) {
-                throw new IllegalStateException("Colormap texture at location " + textureLoc + " had invalid 0 dimension");
-            }
-            colormap.acceptTexture(selectedTexture);
-        } else {
-            ResourceLocation explTarget = colormap.getExplicitTargetTexture();
-            if (explTarget != null) {
-                Polytone.LOGGER.error("Could not resolve explicit texture at location {}.png. Skipping", explTarget);
-            }
-            if (strict) {
-                throw new IllegalStateException("Could not find any colormap texture .png associated with path " + textureLoc + " for colormap '" + colormapName + "'");
-            }
-        }
-    }
 
 }

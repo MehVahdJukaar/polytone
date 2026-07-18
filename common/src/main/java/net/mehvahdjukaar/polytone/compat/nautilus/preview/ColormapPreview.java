@@ -167,6 +167,12 @@ public final class ColormapPreview implements TabPreview {
 
         liveToggle.setOpaque(false);
         liveToggle.setToolTipText("Sample the real world at the player's feet with the live clock, instead of the simulated inputs.");
+        // A JComboBox's minimum size defaults to its (wide) preferred size, which would keep the
+        // pickers row from ever shrinking and crop the biome picker/climate readout when narrow.
+        // Give both a small minimum so they collapse and truncate their text gracefully instead.
+        blockPicker.setMinimumSize(new Dimension(UiScale.px(60), blockPicker.getPreferredSize().height));
+        biomePicker.setMinimumSize(new Dimension(UiScale.px(60), biomePicker.getPreferredSize().height));
+
         liveToggle.addActionListener(e -> setLiveMode(liveToggle.isSelected()));
         blockPicker.addActionListener(e -> recompute());
         biomePicker.addActionListener(e -> recompute());
@@ -189,7 +195,8 @@ public final class ColormapPreview implements TabPreview {
     }
 
     private void buildLayout() {
-        // Toolbar: themed control rows stacked above the canvas (fixed height, so nothing stretches).
+        // Sticky header: only the mode toggle + status stay pinned. Keeping it to one short row means
+        // the header never grows tall enough to push the visuals below the fold.
         Box toolbar = Box.createVerticalBox();
 
         Box topRow = Box.createHorizontalBox();
@@ -199,6 +206,10 @@ public final class ColormapPreview implements TabPreview {
         topRow.add(Box.createHorizontalGlue());
         addRow(toolbar, topRow);
 
+        // Everything else lives in the scrolling body, so a crowded set of controls scrolls instead
+        // of clipping the visuals, and the panel can be dragged down to any size.
+        Box content = Box.createVerticalBox();
+
         pickersRow = Box.createHorizontalBox();
         pickersRow.add(inline("Block", blockPicker));
         pickersRow.add(Box.createHorizontalStrut(UiScale.med()));
@@ -206,13 +217,14 @@ public final class ColormapPreview implements TabPreview {
         pickersRow.add(Box.createHorizontalStrut(UiScale.med()));
         pickersRow.add(climateReadout);
         pickersRow.add(Box.createHorizontalGlue());
-        addRow(toolbar, pickersRow);
+        addRow(content, pickersRow);
 
         numericRow = Box.createHorizontalBox();
         numericRow.add(inline("Y level", withValue(ySlider, yLabel)));
-        addRow(toolbar, numericRow);
+        addRow(content, numericRow);
 
-        // Env-global + light sliders (visibility driven by detection).
+        // Env-global + light sliders (visibility driven by detection). Added raw (not via addRow) so
+        // it isn't height-capped: its preferred height changes as sliders are shown/hidden.
         envHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
         envSection.setAlignmentX(Component.LEFT_ALIGNMENT);
         skyRow.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -222,13 +234,13 @@ public final class ColormapPreview implements TabPreview {
         envContainer.add(skyRow);
         envContainer.add(blockRow);
         envContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
-        toolbar.add(envContainer);
+        content.add(envContainer);
+        content.add(Box.createVerticalStrut(UiScale.med()));
 
         // Canvas content: block view + result swatch, then the source texture with the sample marker.
         blockView.setBorder(UiTheme.hairlineBorder());
         imageView.setBorder(UiTheme.hairlineBorder());
 
-        Box content = Box.createVerticalBox();
         SquareRow topSquares = new SquareRow(UiScale.med(), UiScale.px(84), UiScale.px(196), blockView, swatch);
         topSquares.setAlignmentX(Component.LEFT_ALIGNMENT);
         content.add(topSquares);
@@ -238,6 +250,8 @@ public final class ColormapPreview implements TabPreview {
         content.add(textureRow);
 
         root = new PreviewSurface(toolbar, content);
+        // Let the host split pane drag the preview down to any size; the body scrolls when it doesn't fit.
+        root.setMinimumSize(new Dimension(UiScale.px(160), UiScale.px(120)));
     }
 
     private static void addRow(Box toolbar, JComponent row) {

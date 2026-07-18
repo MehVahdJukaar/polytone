@@ -3,8 +3,8 @@ package net.mehvahdjukaar.polytone.compat.nautilus;
 import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
 import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
 import net.mehvahdjukaar.nautilus.workbench.SidecarAssets;
-import net.mehvahdjukaar.polytone.companion.CompanionSlot;
-import net.mehvahdjukaar.polytone.companion.CompanionSpec;
+import net.mehvahdjukaar.polytone.companion.ContentTextures;
+import net.mehvahdjukaar.polytone.companion.TextureSlot;
 import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.Files;
@@ -17,16 +17,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-// Bridges a content type's CompanionSpec (the runtime-side companion-file contract) to the editor's
+// Bridges a content type's ContentTextures (the runtime-side texture contract) to the editor's
 // SidecarAssets view, so the Nautilus tab shows a colormap's .png textures next to its json: present,
-// expected-but-missing, and stray-but-unused. Same naming primitives as the reload driver
-// (ColormapTextures.fill), so the two can't drift.
-final class CompanionSidecars {
+// expected-but-missing, and stray-but-unused. Slot matching goes through the same
+// TextureSlot.findFirstMatch rule as the reload driver (ContentTextures.fill), so the two can't drift.
+final class TextureSidecars {
 
-    static SidecarAssets of(CompanionSpec<?> spec, Side side) {
+    static SidecarAssets of(ContentTextures<?> association, Side side) {
         return (jsonFile, pack, parsedValue) -> {
             try {
-                return discover(spec, side, jsonFile, pack, parsedValue);
+                return discover(association, side, jsonFile, pack, parsedValue);
             } catch (Exception e) {
                 // discover() must never throw on IO/parse problems - an empty view is the safe fallback
                 return List.of();
@@ -35,9 +35,10 @@ final class CompanionSidecars {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<SidecarAssets.Slot> discover(CompanionSpec<?> rawSpec, Side side,
+    private static List<SidecarAssets.Slot> discover(ContentTextures<?> rawAssociation, Side side,
                                                      Path jsonFile, PackWorkspace pack, Object parsedValue) {
-        CompanionSpec<Object> spec = (CompanionSpec<Object>) rawSpec;
+        // nautilus hands parsedValue over untyped; this is the one boundary where V is erased
+        ContentTextures<Object> association = (ContentTextures<Object>) rawAssociation;
 
         Path dir = jsonFile.getParent();
         Path nameP = jsonFile.getFileName();
@@ -56,26 +57,12 @@ final class CompanionSidecars {
         List<SidecarAssets.Slot> out = new ArrayList<>();
         Set<Path> claimed = new HashSet<>();
 
-        List<CompanionSlot> slots;
-        try {
-            slots = spec.expectedSlots(parsedValue, stem);
-        } catch (Exception e) {
-            slots = List.of();
-        }
-
-        for (CompanionSlot slot : slots) {
+        for (TextureSlot slot : association.expectedSlots(parsedValue, stem)) {
             if (slot.remoteLocation() != null) {
                 out.add(remoteSlot(slot, pack, side));
                 continue;
             }
-            Path found = null;
-            for (String accepted : slot.acceptedNames()) {
-                Path p = byName.get(accepted.toLowerCase(Locale.ROOT));
-                if (p != null) {
-                    found = p;
-                    break;
-                }
-            }
+            Path found = slot.findFirstMatch(name -> byName.get(name.toLowerCase(Locale.ROOT)));
             if (found != null) {
                 // a file matched by two slots is emitted once, not as two PRESENT rows
                 if (claimed.add(found)) {
@@ -83,7 +70,7 @@ final class CompanionSidecars {
                             SidecarAssets.State.PRESENT, slot.label()));
                 }
             } else if (slot.required()) {
-                // optional-and-absent slots are fine to omit; only flag required ones as missing
+                // unbound-and-absent slots are fine to omit; only flag bound ones as missing
                 out.add(new SidecarAssets.Slot(slot.canonicalName(), null,
                         SidecarAssets.State.MISSING, slot.label()));
             }
@@ -91,10 +78,10 @@ final class CompanionSidecars {
 
         // stray siblings the naming convention associates with this stem but no slot consumed
         for (Path p : siblings) {
-            if (claimed.contains(p)) continue;
             Path n = p.getFileName();
-            if (n == null || !Files.isRegularFile(p)) continue;
-            String label = safeClassify(spec, n.toString(), stem);
+            if (n == null || claimed.contains(p)) continue;
+            if (!byName.containsKey(n.toString().toLowerCase(Locale.ROOT))) continue; // not a regular file
+            String label = association.roleLabel(n.toString(), stem);
             if (label != null) {
                 out.add(new SidecarAssets.Slot(n.toString(), p, SidecarAssets.State.UNUSED, label));
             }
@@ -102,30 +89,23 @@ final class CompanionSidecars {
         return out;
     }
 
-    // A slot whose file lives at a resource location (texture_path), not next to the json.
-    private static SidecarAssets.Slot remoteSlot(CompanionSlot slot, PackWorkspace pack, Side side) {
-        ResourceLocation loc = ResourceLocation.parse(slot.remoteLocation());
+    // A slot whose file lives at a resource location (texture_path), not next to the json: try each
+    // accepted name in that location's directory; when none is in this pack, report the canonical
+    // name EXTERNAL (it resolves from vanilla or another pack, still previewable off the live stack).
+    private static SidecarAssets.Slot remoteSlot(TextureSlot slot, PackWorkspace pack, Side side) {
+        ResourceLocation location = slot.remoteLocation();
         String base = side == Side.SERVER_DATA ? "data" : "assets";
-        String path = loc.getPath();
+        String path = location.getPath();
         int slash = path.lastIndexOf('/');
-        String subDir = slash < 0 ? "" : path.substring(0, slash + 1);
+        String dir = slash < 0 ? "" : path.substring(0, slash + 1);
 
-        for (String accepted : slot.acceptedNames()) {
-            Path candidate = pack.root().resolve(base).resolve(loc.getNamespace()).resolve(subDir + accepted);
-            if (Files.isRegularFile(candidate)) {
-                return new SidecarAssets.Slot(accepted, candidate, SidecarAssets.State.PRESENT, slot.label());
-            }
+        SidecarAssets.Slot canonical = null;
+        for (String fileName : slot.acceptedNames()) {
+            SidecarAssets.Slot candidate = SidecarAssets.referenced(pack, base,
+                    location.withPath(dir + fileName), "", "", slot.label());
+            if (candidate.state() == SidecarAssets.State.PRESENT) return candidate;
+            if (canonical == null) canonical = candidate;
         }
-        // not in this pack - it resolves from vanilla or another pack, nothing local to edit
-        return new SidecarAssets.Slot(slot.canonicalName(), null,
-                SidecarAssets.State.EXTERNAL, slot.label(), loc);
-    }
-
-    private static String safeClassify(CompanionSpec<?> spec, String fileName, String stem) {
-        try {
-            return spec.classify(fileName, stem);
-        } catch (Exception e) {
-            return null;
-        }
+        return canonical;
     }
 }

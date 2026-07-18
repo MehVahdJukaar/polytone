@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.content.noise;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
 import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;

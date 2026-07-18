@@ -8,24 +8,17 @@ import java.util.Locale;
  * THE parser/printer for the colormap texture naming convention: {@code <stem>.png} is the
  * default texture (index {@value #DEFAULT_INDEX}, applies to all tint indices) and
  * {@code <stem>_<n>.png} the texture for tint index {@code n}. Single source of truth - the
- * runtime association driver ({@code ColormapTextures}) and the editor's companion view both
- * go through {@link #parse}/{@link #tintIndexOf}, so they can never disagree (the old regex
- * and hand-rolled copies did: stems containing digits failed the regex and fell out of
- * grouping).
+ * reload driver ({@link ContentTextures#fill}) and the editor's sidecar view both go through
+ * {@link #parse}/{@link #tintIndexOf}, so they can never disagree (the old regex and
+ * hand-rolled copies did: stems containing digits failed the regex and fell out of grouping).
  */
-public final class TintedTextures {
+public final class TintNaming {
 
-    /** Index meaning "the default texture, applies to all tint indices". */
     public static final int DEFAULT_INDEX = -1;
 
     public record TintedName(String stem, int index) {
     }
 
-    /**
-     * Splits a single path segment (no extension, no directories) into stem + tint index:
-     * {@code "foo_3"} → {@code (foo, 3)}; {@code "foo"} / {@code "foo_x"} / {@code "foo_"} →
-     * {@code (itself, DEFAULT_INDEX)}. A digit run too long for an int is not a suffix.
-     */
     public static TintedName parse(String name) {
         int us = name.lastIndexOf('_');
         if (us > 0) { // us == 0 would leave an empty stem - not a suffix then
@@ -61,5 +54,19 @@ public final class TintedTextures {
 
     public static String label(int index) {
         return index == DEFAULT_INDEX ? "default" : "tint " + index;
+    }
+
+    // path segment helpers shared by the companion classes
+
+    /** {@code "a/b/c"} → {@code "a/b/"}; no slash → {@code ""}. */
+    public static String directoryOf(String path) {
+        int slash = path.lastIndexOf('/');
+        return slash < 0 ? "" : path.substring(0, slash + 1);
+    }
+
+    /** {@code "a/b/c"} → {@code "c"}. */
+    public static String lastSegment(String path) {
+        int slash = path.lastIndexOf('/');
+        return slash < 0 ? path : path.substring(slash + 1);
     }
 }

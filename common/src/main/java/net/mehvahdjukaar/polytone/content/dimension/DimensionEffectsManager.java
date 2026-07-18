@@ -6,13 +6,13 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.companion.TexturePart;
+import net.mehvahdjukaar.polytone.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -30,9 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class DimensionEffectsManager extends JsonImgPartialReloader<DimensionEffectsModifier> {
 
@@ -55,11 +53,25 @@ public class DimensionEffectsManager extends JsonImgPartialReloader<DimensionEff
 
     private final Map<ResourceLocation, Parsed<DimensionEffectsModifier>> extraMods = new HashMap<>();
 
+    // first part = main feature: a plain <name>.png reads as fog
+    private static final TexturePart<DimensionEffectsModifier> FOG = TexturePart.suffix("_fog", DimensionEffectsModifier::getFogColormap);
+    private static final TexturePart<DimensionEffectsModifier> SKY = TexturePart.suffix("_sky", DimensionEffectsModifier::getSkyColormap);
+    private static final TexturePart<DimensionEffectsModifier> SUNSET = TexturePart.suffix("_sunset", DimensionEffectsModifier::getSunsetColormap);
+    private static final TexturePart<DimensionEffectsModifier> TERRAIN_FOG = TexturePart.suffix("_terrain_fog", DimensionEffectsModifier::getTerrainFogColormap);
+
     public DimensionEffectsManager() {
         // 1.21.1 DimensionEffectsModifier.CODEC is only a Decoder, not a full Codec; not editable until ported.
         super(Spec.<DimensionEffectsModifier>of("Dimension modifier")
                 .wikiPage("Dimension-Effects-Modifiers")
+                .textureParts(FOG, SKY, SUNSET, TERRAIN_FOG)
                 .folders("dimension_modifiers", "dimension_effects"));
+    }
+
+    private static DimensionEffectsModifier defaultFor(TexturePart<DimensionEffectsModifier> part) {
+        if (part == SKY) return DimensionEffectsModifier.ofSkyColor(Colormap.createDefTriangle());
+        if (part == SUNSET) return DimensionEffectsModifier.ofSunsetColor(Colormap.createTimeStrip());
+        if (part == TERRAIN_FOG) return DimensionEffectsModifier.ofTerrainFogColor(Colormap.createDefTriangle());
+        return DimensionEffectsModifier.ofFogColor(Colormap.createDefTriangle());
     }
 
     @Override
@@ -81,9 +93,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader<DimensionEff
     @Override
     protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var jsons = resources.jsons();
-        var textures = new HashMap<>(resources.textures());
-
-        Set<ResourceLocation> usedTextures = new HashSet<>();
+        var textures = new TrackedTextures(resources.textures());
 
         Parsed.SortedMap<DimensionEffectsModifier> parsedModifiers =
                 Parsed.batchParseAlways(jsons, DimensionEffectsModifier.CODEC, ops, "dimension modifier");
@@ -95,76 +105,27 @@ public class DimensionEffectsManager extends JsonImgPartialReloader<DimensionEff
             Parsed<DimensionEffectsModifier> parsed = entry.getValue();
             DimensionEffectsModifier modifier = parsed.getResultOrPartial();
 
-            BlockColor fog = modifier.getFogColormap();
-            BlockColor sky = modifier.getSkyColormap();
-            BlockColor sunset = modifier.getSunsetColormap();
-            BlockColor terrainFog = modifier.getTerrainFogColormap();
-
-            //adds implicit single texture
-            // just 1 colormap defined. gives to fog
-            if (textures.containsKey(id) && fog == null && sky == null) {
-                //if this map doesn't have any colormaps but has a texture we give it fog color
-                modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.createDefTriangle()));
-                fog = modifier.getFogColormap();
+            // auto-attach a default colormap for every texture present with no colormap declared,
+            // then fill inline colormaps from the scanned textures
+            for (var part : contentTexture.adoptable(textures, id, modifier).keySet()) {
+                modifier = modifier.merge(defaultFor(part));
             }
-
-            // if sky is not defined BUT they have a valid texture create a colormap for it
-            ResourceLocation skyId = id.withSuffix("_sky");
-            if (textures.containsKey(skyId) && sky == null) {
-                modifier = modifier.merge(DimensionEffectsModifier.ofSkyColor(Colormap.createDefTriangle()));
-                sky = modifier.getSkyColormap();
-            }
-
-            // if fog is not defined BUT they have a valid texture create a colormap for it
-            ResourceLocation fogId = id.withSuffix("_fog");
-            if (textures.containsKey(fogId) && sky == null) {
-                modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.createDefTriangle()));
-                fog = modifier.getFogColormap();
-            }
-
-            // if sunset is not defined BUT they have a valid texture create a colormap for it
-            ResourceLocation sunsetId = id.withSuffix("_sunset");
-            if (textures.containsKey(sunsetId) && sunset == null) {
-                modifier = modifier.merge(DimensionEffectsModifier.ofSunsetColor(Colormap.createTimeStrip()));
-                sunset = modifier.getSunsetColormap();
-            }
-
-            // if terrain fog is not defined BUT they have a valid texture create a colormap for it
-            ResourceLocation terrainFogId = id.withSuffix("_terrain_fog");
-            if (textures.containsKey(terrainFogId) && terrainFog == null) {
-                modifier = modifier.merge(DimensionEffectsModifier.ofFogColor(Colormap.createDefTriangle()));
-                terrainFog = modifier.getTerrainFogColormap();
-            }
-
-            //fill textures
-
-            // if just one of them is defined we try assigning to the deafult texture at id
-            if ((fog != null) ^ (sky != null) ^ (sunset != null) ^ (terrainFog != null)) {
-                ColormapsManager.tryAcceptingTexture(textures, id, fog, usedTextures, false);
-                ColormapsManager.tryAcceptingTexture(textures, id, sky, usedTextures, false);
-                ColormapsManager.tryAcceptingTexture(textures, id, sunset, usedTextures, false);
-            }
-
-            //try filling with standard textures paths, failing if they are not there
-            ColormapsManager.tryAcceptingTexture(textures, fogId, fog, usedTextures, true);
-            ColormapsManager.tryAcceptingTexture(textures, skyId, sky, usedTextures, true);
-            ColormapsManager.tryAcceptingTexture(textures, sunsetId, sunset, usedTextures, true);
-            ColormapsManager.tryAcceptingTexture(textures, terrainFogId, terrainFog, usedTextures, true);
+            contentTexture.fill(textures, id, modifier, true);
 
             if (parsed.isEnabled()) {
                 addModifier(id, modifier, access);
             }
         }
 
-        // creates orphaned texture colormaps & properties
-        textures.keySet().removeAll(usedTextures);
-
-        for (var t : textures.entrySet()) {
-            ResourceLocation id = t.getKey();
-            Colormap defaultColormap = Colormap.createDefTriangle();
-            ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
-
-            addModifier(id, DimensionEffectsModifier.ofFogColor(defaultColormap), access);
+        // creates orphaned texture colormaps & properties (legacy colormatic-style lone textures)
+        for (var orphan : contentTexture.orphans(textures, parsedModifiers.keySet())) {
+            DimensionEffectsModifier modifier = null;
+            for (var part : orphan.parts().keySet()) {
+                DimensionEffectsModifier d = defaultFor(part);
+                modifier = modifier == null ? d : modifier.merge(d);
+            }
+            contentTexture.fill(textures, orphan.stemId(), modifier, true);
+            addModifier(orphan.stemId(), modifier, access);
         }
     }
 

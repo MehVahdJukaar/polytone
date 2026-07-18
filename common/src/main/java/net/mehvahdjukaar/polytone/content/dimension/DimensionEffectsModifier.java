@@ -58,6 +58,12 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
                 false, false, Optional.empty(), DimensionTarget.EMPTY);
     }
 
+    public static DimensionEffectsModifier ofTerrainFogColor(Colormap colormap) {
+        return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(), Optional.empty(),
+                false, false, Optional.empty(), DimensionTarget.EMPTY);
+    }
+
     public static DimensionEffectsModifier ofSkyColor(Colormap colormap) {
         return new DimensionEffectsModifier(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(colormap), Optional.empty(),

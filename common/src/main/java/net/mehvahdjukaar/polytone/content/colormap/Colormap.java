@@ -41,7 +41,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private final boolean usesState;
 
     public boolean inlined = true;
-    ResourceLocation debugID = null;
+    public ResourceLocation debugID = null;
 
     private Integer defaultColor;
     private ArrayImage image = null;
@@ -75,13 +75,16 @@ public final class Colormap implements IColorGetter, ColorResolver {
             Codec.withAlternative(SINGLE_COLOR_CODEC,
                     SchemaCodecs.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
                     Function.identity()),
-            SchemaCodecs.alt("single color", SINGLE_COLOR_CODEC),
+            // label with the un-xmapped ColorUtils.CODEC: SINGLE_COLOR_CODEC is xmapped, which drops
+            // the Schema.Color tag, so it would resolve to the raw int-or-string union and splice into
+            // stray "integer"/"text" options instead of showing a color picker.
+            SchemaCodecs.alt("single color", ColorUtils.CODEC),
             SchemaCodecs.alt("colormap reference", ResourceLocation.CODEC),
             SchemaCodecs.alt("inline colormap", DIRECT_CODEC));
 
     public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = SchemaCodecs.labeled(
             Codec.withAlternative(SINGLE_COLOR_CODEC, Polytone.COLORMAPS.byNameCodec()),
-            SchemaCodecs.alt("single color", SINGLE_COLOR_CODEC),
+            SchemaCodecs.alt("single color", ColorUtils.CODEC),
             SchemaCodecs.alt("colormap reference", ResourceLocation.CODEC));
 
     // single or biome compound; the labeled alternatives of the first branch splice flat
@@ -147,7 +150,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return image == null;
     }
 
-    ResourceLocation getExplicitTargetTexture() {
+    public ResourceLocation getExplicitTargetTexture() {
         return explicitTargetTexture;
     }
 

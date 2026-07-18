@@ -22,9 +22,12 @@ public interface IColormapModExp {
                     ),
                     ColormapColorModulatorExpression.Exp.CODEC,
                     ColormapModExp.TYPE.codec()),
-            SchemaCodecs.alt("constant", CodecUtils.LENIENT_FLOAT),
-            SchemaCodecs.alt("legacy expression", ColormapColorModulatorExpression.Exp.CODEC),
-            SchemaCodecs.alt("expression", ColormapModExp.TYPE.codec())));
+            // constant: plain number (LENIENT_FLOAT would splice its float-or-string union into
+            // stray "number"/"text" options). expression before legacy: both encode as bare strings,
+            // so fit-scoring on load should land on the modern branch, not the deprecated one.
+            SchemaCodecs.alt("constant", Codec.FLOAT),
+            SchemaCodecs.alt("expression", ColormapModExp.TYPE.codec()),
+            SchemaCodecs.alt("legacy expression", ColormapColorModulatorExpression.Exp.CODEC)));
 
     float evaluate(float r, float g, float b, @Nullable BlockAndTintGetter level,
                    @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,

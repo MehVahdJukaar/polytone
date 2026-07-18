@@ -14,7 +14,9 @@ public interface IEntityExp {
                             i -> 0.0
                     ),
                     EntityExp.TYPE.codec()),
-            SchemaCodecs.alt("constant", CodecUtils.LENIENT_DOUBLE),
+            // plain number for the picker; the wire codec above still accepts numeric strings via
+            // LENIENT_DOUBLE. Labeling with LENIENT_DOUBLE would splice its union flat, leaking "number"/"text".
+            SchemaCodecs.alt("constant", Codec.DOUBLE),
             SchemaCodecs.alt("expression", EntityExp.TYPE.codec()))
     );
 

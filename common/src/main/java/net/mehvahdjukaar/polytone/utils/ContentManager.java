@@ -5,7 +5,8 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.DynamicOps;
-import net.mehvahdjukaar.polytone.companion.CompanionSpec;
+import net.mehvahdjukaar.polytone.companion.ContentTextures;
+import net.mehvahdjukaar.polytone.companion.TexturePart;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,14 +30,14 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
 
     private final Supplier<@Nullable ? extends Codec<O>> contentCodec;
     public final String name;
-    public final @Nullable CompanionSpec<O> companions;
+    public final @Nullable ContentTextures<O> contentTexture;
     private final @Nullable String wikiPage;
 
     protected ContentManager(Spec<O> spec) {
         super(spec.folderNames);
         this.name = spec.name;
         this.contentCodec = spec.codec == null ? () -> null : Suppliers.memoize(spec.codec::get);
-        this.companions = spec.companions;
+        this.contentTexture = spec.buildCompanionTextures();
         this.wikiPage = spec.wikiPage;
         REGISTRY.add(this);
     }
@@ -46,7 +47,7 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
         private final String name;
         private String[] folderNames = new String[0];
         private @Nullable Supplier<? extends Codec<O>> codec;
-        private @Nullable CompanionSpec<O> companions;
+        private @Nullable List<TexturePart<O>> textureParts;
         private @Nullable String wikiPage;
 
         private Spec(String name) {
@@ -68,9 +69,20 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
             return this;
         }
 
-        public Spec<O> companions(CompanionSpec<O> companions) {
-            this.companions = companions;
+        /**
+         * Declares the companion textures this content type carries. Order matters: the first
+         * part is the main feature, claiming plain {@code <stem>.png} files nothing else explains.
+         * The manager's parse pass drives adoption and orphan creation itself, off
+         * {@code contentTexture.adoptable}/{@code orphans}.
+         */
+        @SafeVarargs
+        public final Spec<O> textureParts(TexturePart<O>... parts) {
+            this.textureParts = List.of(parts);
             return this;
+        }
+
+        private @Nullable ContentTextures<O> buildCompanionTextures() {
+            return textureParts == null ? null : new ContentTextures<>(textureParts);
         }
 
         public Spec<O> wikiPage(String wikiPage) {

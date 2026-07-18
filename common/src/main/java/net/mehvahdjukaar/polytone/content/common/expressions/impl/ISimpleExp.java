@@ -14,7 +14,10 @@ public interface ISimpleExp {
                     ),
                     SimpleExp.TYPE.codec()
             ),
-            SchemaCodecs.alt("constant", CodecUtils.LENIENT_DOUBLE),
+            // plain number for the picker; the wire codec above still accepts numeric strings via
+            // LENIENT_DOUBLE. Labeling with LENIENT_DOUBLE would splice its float-or-string union flat
+            // and leak unlabeled "number"/"text" options.
+            SchemaCodecs.alt("constant", Codec.DOUBLE),
             SchemaCodecs.alt("expression", SimpleExp.TYPE.codec())));
 
     double evaluate();

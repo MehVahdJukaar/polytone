@@ -11,8 +11,8 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertyModifier;
+import net.mehvahdjukaar.polytone.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.common.expressions.impl.IColormapExp;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsModifier;
@@ -516,6 +516,17 @@ public class LegacyHelper {
     }
 
     // fot OF fog and sky. shit code...
+    // fills an OF-converted colormap from the local texture map (strict), resolving an explicit
+    // texture_path when present. Only conversions need this; regular content goes through
+    // TextureMatchingRule.fillColormapsTextures
+    private static void fillConvertedColormap(Map<ResourceLocation, ArrayImage> textures,
+                                              ResourceLocation id, @Nullable Object col) {
+        if (col instanceof Colormap c && c.needsToFillTexture()) {
+            ResourceLocation explicit = c.getExplicitTargetTexture();
+            new TrackedTextures(textures).fillColormap(explicit != null ? explicit : id, c);
+        }
+    }
+
     private static void addConvertedBlockProperties(Map<ResourceLocation, Parsed<BlockPropertyModifier>> modifiers, Map<ResourceLocation, ArrayImage> textures) {
         String[] names = new String[]{"overworld", "the_nether", "the_end"};
         Map<ResourceLocation, Parsed<DimensionEffectsModifier>> converted = new HashMap<>();
@@ -536,7 +547,7 @@ public class LegacyHelper {
 
                 skyCol = skyMod != null ? skyMod.getResultOrPartial().getColormap() : (skyImage == null ? null : Colormap.createDefTriangle());
                 if (skyCol != null) {
-                    ColormapsManager.tryAcceptingTexture(textures, skyKey, skyCol, new HashSet<>(), true);
+                    fillConvertedColormap(textures, skyKey, skyCol);
                 }
                 skyEnabled = skyMod == null || skyMod.isEnabled();
             }
@@ -552,7 +563,7 @@ public class LegacyHelper {
 
                 fogCol = fogMod != null ? fogMod.getResultOrPartial().getColormap() : (fogImage == null ? null : Colormap.createDefTriangle());
                 if (fogCol != null) {
-                    ColormapsManager.tryAcceptingTexture(textures, fogKey, fogCol, new HashSet<>(), true);
+                    fillConvertedColormap(textures, fogKey, fogCol);
                 }
                 fogEnabled = fogMod == null || fogMod.isEnabled();
             }
