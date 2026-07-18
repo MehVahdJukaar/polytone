@@ -1,1 +1,2 @@
-- added 
+- added shadowmap system
+- added colormap preview panel for nautilus

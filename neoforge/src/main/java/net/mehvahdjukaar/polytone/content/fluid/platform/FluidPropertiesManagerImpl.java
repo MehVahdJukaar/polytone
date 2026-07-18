@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.fluid.platform;
+package net.mehvahdjukaar.polytone.content.fluid.platform;
 
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.vertex.PoseStack;

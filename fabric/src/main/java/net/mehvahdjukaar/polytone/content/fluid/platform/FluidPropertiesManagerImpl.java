@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.fluid.platform;
+package net.mehvahdjukaar.polytone.content.fluid.platform;
 
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
