@@ -1,2 +1,2 @@
-- added shadowmap system
-- added colormap preview panel for nautilus
+ - added nautilus studio previews for colormaps, biome modifiers and particles
+ - big internal restructures
