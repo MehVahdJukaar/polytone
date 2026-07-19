@@ -35,6 +35,7 @@
     "sodium": "<=0.5.11"
   },
   "suggests": {
-    "sodium": "0.6.0"
+    "sodium": "0.6.0",
+    "nautilus_studio": ">=1.21.1-1.4.1"
   }
 }

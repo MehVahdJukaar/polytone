@@ -39,6 +39,8 @@ mutable field net/minecraft/world/entity/player/Player inventoryMenu Lnet/minecr
 
 #particle clear
 accessible field net/minecraft/client/particle/ParticleEngine particles Ljava/util/Map;
+# editor preview: build a child particle (with sprites) without adding it to the live engine queue
+accessible method net/minecraft/client/particle/ParticleEngine makeParticle (Lnet/minecraft/core/particles/ParticleOptions;DDDDDD)Lnet/minecraft/client/particle/Particle;
 
 # editor particle preview: position a throwaway Camera for the offscreen render
 accessible method net/minecraft/client/Camera <init> ()V

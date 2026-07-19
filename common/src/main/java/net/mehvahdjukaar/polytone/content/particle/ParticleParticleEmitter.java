@@ -10,7 +10,6 @@ import net.mehvahdjukaar.polytone.content.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.particle.custom.IParticleTickable;
-import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.util.RandomSource;
 import net.minecraft.core.BlockPos;
@@ -74,6 +73,32 @@ public record ParticleParticleEmitter(
     ).apply(i, ParticleParticleEmitter::new));
 
 
+    /**
+     * Where an emitted child goes. The default {@link #GAME_SINK} spawns it into the world; the editor
+     * preview swaps in its own to capture children instead. Returns false to stop emitting more this
+     * tick (throttled or full).
+     */
+    public interface ParticleSink {
+        boolean emit(ParticleParticleEmitter emitter, Level level, ParticleOptions options,
+                     double x, double y, double z, double dx, double dy, double dz);
+    }
+
+    public static final ParticleSink GAME_SINK = (emitter, level, po, x, y, z, dx, dy, dz) -> {
+        if (!TokenBucketTracker.canEmitParticle(emitter)) return false;
+        Polytone.CUSTOM_PARTICLES.spawnInWorld(po, level, x, y, z, dx, dy, dz);
+        return true;
+    };
+
+    // Per-thread: game emitters tick on worker threads (default sink), the editor preview on the render
+    // thread (its own sink), so the two never cross.
+    private static final ThreadLocal<ParticleSink> SINK = ThreadLocal.withInitial(() -> GAME_SINK);
+
+    /** Route this thread's emitted children through {@code sink}, or null to restore the world sink. */
+    public static void setSink(@Nullable ParticleSink sink) {
+        if (sink == null) SINK.remove();
+        else SINK.set(sink);
+    }
+
     @Override
     public void tick(Particle particle, Level level) {
         if (particleType.isEmpty()) return;
@@ -92,19 +117,18 @@ public record ParticleParticleEmitter(
                 if (biomes.isPresent() && !biomes.get().contains(level.getBiome(pos))) return;
                 if (predicate != AlwaysTrueTest.INSTANCE && !predicate.test(level.getBlockState(pos), rand)) return;
             }
+            ParticleSink sink = SINK.get();
             for (int i = 0; i < count.evaluate(particle, level); i++) {
                 ParticleOptions po = getParticleOptions(particle, level);
                 if (po == null) return;
-                if (!TokenBucketTracker.canEmitParticle(this)) return;
-                // Evaluate position/velocity now (on the ticking thread), but defer the actual spawn:
-                // ParticleEngine#particlesToAdd is not thread-safe, so it must be mutated on the main thread.
+                // Evaluate position/velocity now (on the ticking thread); the sink decides where it lands.
                 double sx = particle.x + x.evaluate(particle, level);
                 double sy = particle.y + y.evaluate(particle, level);
                 double sz = particle.z + z.evaluate(particle, level);
                 double sdx = dx.evaluate(particle, level);
                 double sdy = dy.evaluate(particle, level);
                 double sdz = dz.evaluate(particle, level);
-                PolytoneAsyncParticles.deferToMain(() -> level.addParticle(po, sx, sy, sz, sdx, sdy, sdz));
+                if (!sink.emit(this, level, po, sx, sy, sz, sdx, sdy, sdz)) return;
             }
         }
     }

@@ -13,6 +13,9 @@ import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.world.level.Level;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.resources.model.ModelResourceLocation;
@@ -190,5 +193,38 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
     @Nullable
     public ResourceLocation getId(CustomParticleType customParticleType) {
         return customParticleFactories.getKey(customParticleType);
+    }
+
+    public void spawnInWorld(ParticleOptions options, Level level, double x, double y, double z,
+                             double dx, double dy, double dz) {
+        PolytoneAsyncParticles.deferToMain(() -> level.addParticle(options, x, y, z, dx, dy, dz));
+    }
+
+    @Nullable
+    public Particle makeParticle(ParticleOptions options, double x, double y, double z,
+                                 double dx, double dy, double dz) {
+        // makeParticle is widened via the access widener (createParticle = makeParticle + add).
+        return Minecraft.getInstance().particleEngine.makeParticle(options, x, y, z, dx, dy, dz);
+    }
+
+    /**
+     * A detached instance for the editor preview: custom types via {@link CustomParticleType#createPreviewInstance}
+     * (which skips the world collision / async / exclusion-radius handling), any other type via
+     * {@link #makeParticle}. Not added to the live engine.
+     */
+    @Nullable
+    public Particle createPreviewParticle(ParticleOptions options, ClientLevel level,
+                                          double x, double y, double z, double dx, double dy, double dz) {
+        ResourceLocation id = BuiltInRegistries.PARTICLE_TYPE.getKey(options.getType());
+        if (id != null && customParticleFactories.getValue(id) instanceof CustomParticleType ct
+                && ct.getSpriteSet() != null) {
+            CustomParticleInstance child = ct.createPreviewInstance(level, x, y, z, null);
+            child.xd = dx;
+            child.yd = dy;
+            child.zd = dz;
+            if (options instanceof ExtraDataParticleOptions ep) ep.apply(child);
+            return child;
+        }
+        return makeParticle(options, x, y, z, dx, dy, dz);
     }
 }

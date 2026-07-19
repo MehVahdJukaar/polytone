@@ -11,13 +11,17 @@ import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiTheme;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.common.expressions.preview.PreviewContext;
+import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
 import net.mehvahdjukaar.polytone.content.particle.custom.ICustomParticleFactory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,6 +33,8 @@ import javax.swing.JSlider;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Live preview for Polytone custom particles. It spawns a real {@link CustomParticleInstance} from
@@ -211,7 +217,7 @@ public final class ParticlePreview extends ExpressionPreview {
                 String ns = file.getName(i + 1).toString();
                 StringBuilder path = new StringBuilder();
                 for (int j = i + 4; j < n; j++) {
-                    if (path.length() > 0) path.append('/');
+                    if (!path.isEmpty()) path.append('/');
                     path.append(file.getName(j).toString());
                 }
                 String p = path.toString().replaceFirst("\\.json$", "");
@@ -245,7 +251,12 @@ public final class ParticlePreview extends ExpressionPreview {
      */
     private final class ParticleScene implements LiveViewport.Renderer {
 
+        private static final int MAX_CHILDREN = 400;
+
         private @Nullable CustomParticleInstance particle;
+        // Children emitted by particle_emitters, captured into the preview instead of the world (custom
+        // or vanilla). Touched only on the render thread (advance/render), so no synchronisation needed.
+        private final List<Particle> children = new ArrayList<>();
         private @Nullable Vec3 spawn;
         private volatile boolean respawn = true;
         private double accumulator;
@@ -298,13 +309,17 @@ public final class ParticlePreview extends ExpressionPreview {
             accumulator += speed;
             int ticks = (int) accumulator;
             accumulator -= ticks;
-            // Expressions read global.* through the sim proxies on THIS (render) thread.
+            // Expressions read global.* through the sim proxies on THIS (render) thread. Emitters route
+            // their children into our collection instead of the world for the duration of the tick.
             installSim();
+            ParticleParticleEmitter.setSink(this::captureChild);
             try {
                 for (int i = 0; i < ticks && p.isAlive(); i++) {
-                    p.tick();
+                    p.tickSync();
+                    tickChildren();
                 }
             } finally {
+                ParticleParticleEmitter.setSink(null);
                 clearSim();
             }
             diag = null;
@@ -312,11 +327,42 @@ public final class ParticlePreview extends ExpressionPreview {
             postReadout();
         }
 
+        // Preview sink: the manager builds a detached child (custom via createPreviewInstance, else via
+        // makeParticle), which we tick locally instead of letting it spawn into the world. Returns false
+        // when full so the emitter stops for this tick.
+        private boolean captureChild(ParticleParticleEmitter emitter, Level level, ParticleOptions po,
+                                     double x, double y, double z, double dx, double dy, double dz) {
+            if (children.size() >= MAX_CHILDREN) return false;
+            if (!(level instanceof ClientLevel clientLevel)) return true;
+            try {
+                Particle child = Polytone.CUSTOM_PARTICLES.createPreviewParticle(po, clientLevel, x, y, z, dx, dy, dz);
+                if (child != null) children.add(child);
+            } catch (Exception ignored) {
+            }
+            return true;
+        }
+
+        private void tickChildren() {
+            var it = children.iterator();
+            while (it.hasNext()) {
+                Particle c = it.next();
+                if (!c.isAlive()) {
+                    it.remove();
+                    continue;
+                }
+                // Custom children tick synchronously (bypassing the async batch); vanilla ones don't.
+                if (c instanceof CustomParticleInstance custom) custom.tickSync();
+                else c.tick();
+                if (!c.isAlive()) it.remove();
+            }
+        }
+
         private void postReadout() {
             javax.swing.SwingUtilities.invokeLater(ParticlePreview.this::updateReadout);
         }
 
         private void spawnParticle(CustomParticleType t, ClientLevel level, Minecraft mc) {
+            children.clear();
             if (spawn == null) {
                 spawn = mc.player != null ? mc.player.getEyePosition().add(mc.player.getLookAngle().scale(2.5))
                         : new Vec3(0, level.getMinBuildHeight() + 80, 0);
@@ -339,7 +385,7 @@ public final class ParticlePreview extends ExpressionPreview {
         public void render(SceneCamera camera, int width, int height) {
             CustomParticleInstance p = particle;
             if (p == null || spawn == null) return;
-            ParticleRenderPass.render(p, camera, spawn, width, height);
+            ParticleRenderPass.render(p, children, camera, spawn, width, height);
         }
 
         private void capture(CustomParticleInstance p) {
