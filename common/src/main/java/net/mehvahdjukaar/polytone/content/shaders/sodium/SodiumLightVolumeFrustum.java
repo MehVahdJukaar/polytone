@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.shaders;
+package net.mehvahdjukaar.polytone.content.shaders.sodium;
 
 import net.caffeinemc.mods.sodium.client.render.viewport.frustum.Frustum;
 import org.joml.FrustumIntersection;
@@ -10,7 +10,7 @@ import org.joml.Matrix4f;
 // Test coordinates arrive camera-relative (Sodium pre-subtracts the camera position), the same space the
 // ortho box lives in, so only the light basis is needed. Same separating-axis test as
 // ShadowMapManager.collectShadowSections; conservative (never a false "invisible"), as a caster set wants.
-final class LightVolumeFrustum implements Frustum {
+final class SodiumLightVolumeFrustum implements Frustum {
 
     // Rows of the light-view rotation = light-space axes expressed in (camera-relative) world coords.
     private final float xx, xy, xz; // lateral axis 1
@@ -20,7 +20,7 @@ final class LightVolumeFrustum implements Frustum {
     private final float halfZ;      // depth range (half-extent along the light axis)
     private final float sectionRadius;
 
-    LightVolumeFrustum(Matrix4f lightView, float coverage, float depthRange, float sectionRadius) {
+    SodiumLightVolumeFrustum(Matrix4f lightView, float coverage, float depthRange, float sectionRadius) {
         this.xx = lightView.m00(); this.xy = lightView.m10(); this.xz = lightView.m20();
         this.yx = lightView.m01(); this.yy = lightView.m11(); this.yz = lightView.m21();
         this.zx = lightView.m02(); this.zy = lightView.m12(); this.zz = lightView.m22();

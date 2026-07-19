@@ -153,14 +153,15 @@ public final class PostChainEffect {
             effect.setSampler(DEPTH_SAMPLER, frame.depthTexture());
         }
         if (useShadowMap) {
-            // Light view-projection + light direction + the shadow depth map rendered this frame (see ShadowMapManager).
-            effect.safeGetUniform(SHADOW_MAT).set(Polytone.SHADOWS.getShadowMatrix());
-            var dir = Polytone.SHADOWS.getLightDir();
+            // Light view-projection + light direction + the shadow depth map rendered this frame (see ShadowMapRenderer).
+            ShadowMapRenderer shadows = Polytone.SHADOWS.renderer();
+            effect.safeGetUniform(SHADOW_MAT).set(shadows.getShadowMatrix());
+            var dir = shadows.getLightDir();
             effect.safeGetUniform(SHADOW_LIGHT_DIR).set(dir.x, dir.y, dir.z);
             // Camera fract, letting the pass snap camera-relative positions to a world-aligned block grid.
-            var fract = Polytone.SHADOWS.getCamFract();
+            var fract = shadows.getCamFract();
             effect.safeGetUniform(SHADOW_CAM_FRACT).set(fract.x, fract.y, fract.z);
-            effect.setSampler(SHADOW_SAMPLER, Polytone.SHADOWS::getShadowTextureId);
+            effect.setSampler(SHADOW_SAMPLER, shadows::getShadowTextureId);
         }
         for (var e : samplers.entrySet()) {
             ResourceLocation texture = e.getValue();

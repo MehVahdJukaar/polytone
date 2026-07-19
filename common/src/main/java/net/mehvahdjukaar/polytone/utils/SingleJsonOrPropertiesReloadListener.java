@@ -3,28 +3,29 @@ package net.mehvahdjukaar.polytone.utils;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-// Aggregated single-file content (e.g. colors.json): O is unused (never editable in the pack editor).
+// Content that lives in a handful of fixed single files (e.g. shadow_map.json, colors.json) rather than a
+// folder of many. Instead of listing a whole folder, it grabs the two named files (a .json and its
+// .properties equivalent) wherever they appear in the given folders. Editable content type O is unused:
+// these files are never surfaced in the pack editor.
 public abstract class SingleJsonOrPropertiesReloadListener extends ContentManager<Object, Map<ResourceLocation, JsonElement>> {
+
     private static final Gson GSON = new Gson();
+
     private final String[] folders;
     private final String propertiesName;
     private final String jsonName;
 
-    //TODO: improve constructor. string mess
-    // Instead of getting all files in a folder, it gets all files at certain locations
     protected SingleJsonOrPropertiesReloadListener(String myName,
                                                    String propertiesName, String jsonName,
                                                    String... possibleFolderLocations) {
@@ -36,50 +37,52 @@ public abstract class SingleJsonOrPropertiesReloadListener extends ContentManage
 
     @Override
     protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
-        Map<ResourceLocation, JsonElement> jsonObjects = new HashMap<>();
-        for (String path : folders) {
+        Map<ResourceLocation, JsonElement> jsons = new HashMap<>();
+        for (String folder : folders) {
+            collect(resourceManager, folder, propertiesName, jsons, this::readProperties);
+            collect(resourceManager, folder, jsonName, jsons, this::readJson);
+        }
+        return ImmutableMap.copyOf(jsons);
+    }
 
-
-            // .properties files
-            var propertiesResources = resourceManager.listResourceStacks(path, id -> id.getPath().endsWith(propertiesName));
-
-            for (var entry : propertiesResources.entrySet()) {
-                var resourceStack = entry.getValue();
-
-                for (var resource : resourceStack) {
-                    try (Reader reader = resource.openAsReader()) {
-                        Properties properties = new Properties();
-                        properties.load(reader);
-                        JsonObject json = PropertiesUtils.propertiesToJson(properties);
-                        jsonObjects.put(entry.getKey(), json);
-                    } catch (IOException | IllegalArgumentException ex) {
-                        Polytone.LOGGER.error("Couldn't parse .properties file {}:", resource, ex);
+    // Grab every resource under `folder` whose path ends with `suffix`, parse it, and key it by id.
+    // Files are not merged: within a stack the highest-priority pack wins, and a same-named file from a
+    // different pack overwrites (with a warning, since these are meant to sit in the pack's own namespace).
+    private void collect(ResourceManager resourceManager, String folder, String suffix,
+                         Map<ResourceLocation, JsonElement> out, ResourceParser parser) {
+        var stacks = resourceManager.listResourceStacks(folder, id -> id.getPath().endsWith(suffix));
+        for (var entry : stacks.entrySet()) {
+            ResourceLocation id = entry.getKey();
+            for (Resource resource : entry.getValue()) {
+                try {
+                    if (out.containsKey(id)) {
+                        Polytone.LOGGER.warn("Found duplicate {}. The previous one will be overwritten. " +
+                                "Be sure to put this file in your own namespace, not the minecraft one!", id);
                     }
-                }
-            }
-
-            //json
-          var  resources = resourceManager.listResourceStacks(path,
-                  id -> id.getPath().endsWith(jsonName));
-
-            for (var entrySet : resources.entrySet()) {
-                var resourceStack = entrySet.getValue();
-                ResourceLocation id = entrySet.getKey();
-                //dont merge. too bad. jsons should have unique names here
-                for (var resource : resourceStack) {
-                    try (Reader reader = resource.openAsReader()) {
-                        JsonElement jsonElement = GsonHelper.fromJson(GSON, reader, JsonElement.class);
-                        if (jsonObjects.containsKey(id)) {
-                            Polytone.LOGGER.warn("Found duplicate color.json with path {}. Old one will be overwritten. Be sure to put this file in your own namespace, not minecraft one!", id);
-                        }
-                        jsonObjects.put(id, jsonElement);
-                    } catch (IllegalArgumentException | IOException | JsonParseException ex) {
-                        Polytone.LOGGER.error("Couldn't parse data file {}:", resource, ex);
-                    }
+                    out.put(id, parser.parse(resource));
+                } catch (Exception ex) {
+                    Polytone.LOGGER.error("Couldn't parse file {}:", resource, ex);
                 }
             }
         }
-        return ImmutableMap.copyOf(jsonObjects);
+    }
+
+    private JsonElement readProperties(Resource resource) throws Exception {
+        try (Reader reader = resource.openAsReader()) {
+            Properties properties = new Properties();
+            properties.load(reader);
+            return PropertiesUtils.propertiesToJson(properties);
+        }
+    }
+
+    private JsonElement readJson(Resource resource) throws Exception {
+        try (Reader reader = resource.openAsReader()) {
+            return GsonHelper.fromJson(GSON, reader, JsonElement.class);
+        }
+    }
+
+    @FunctionalInterface
+    private interface ResourceParser {
+        JsonElement parse(Resource resource) throws Exception;
     }
 }
-

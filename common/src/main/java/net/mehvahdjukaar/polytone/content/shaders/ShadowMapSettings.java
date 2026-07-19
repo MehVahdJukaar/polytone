@@ -4,6 +4,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 /**
+ * Resolved shadow-map parameters queried by {@link ShadowMapRenderer}. Packs author these in
+ * polytone/shadow_map.json; absent fields decode to their default, and {@link #merge(ShadowMapSettings)}
+ * layers one file over another treating any still-default field as unset, so a pack overrides just the
+ * params it actually changed.
+ *
  * @param coverage       half-width of the orthographic coverage box, in blocks (the shadowed radius
  *                       around the camera). Smaller = sharper shadows over a smaller area at the same
  *                       resolution.
@@ -24,4 +29,12 @@ public record ShadowMapSettings(float coverage, float depthRange, int resolution
             Codec.INT.optionalFieldOf("resolution", DEFAULT.resolution).forGetter(ShadowMapSettings::resolution),
             Codec.FLOAT.optionalFieldOf("update_interval", DEFAULT.updateInterval).forGetter(ShadowMapSettings::updateInterval)
     ).apply(i, ShadowMapSettings::new));
+
+    public ShadowMapSettings merge(ShadowMapSettings other) {
+        return new ShadowMapSettings(
+                other.coverage != DEFAULT.coverage ? other.coverage : coverage,
+                other.depthRange != DEFAULT.depthRange ? other.depthRange : depthRange,
+                other.resolution != DEFAULT.resolution ? other.resolution : resolution,
+                other.updateInterval != DEFAULT.updateInterval ? other.updateInterval : updateInterval);
+    }
 }
