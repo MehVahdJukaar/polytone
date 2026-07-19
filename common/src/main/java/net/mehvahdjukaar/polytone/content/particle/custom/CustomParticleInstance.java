@@ -161,12 +161,19 @@ public class CustomParticleInstance extends TextureSheetParticle {
         }
     }
 
+    // The editor preview renders into its own offscreen buffer off the normal particle loop; Sodium's
+    // fast path would hijack super.render and emit into Sodium's packed batch instead, so the preview
+    // never sees the quad. Forcing the full path routes the quad into the caller's buffer. Toggled on
+    // the render thread around one draw, so it never affects the live game's own particle rendering.
+    public static boolean PREVIEW_FORCE_FULL_PATH = false;
+
     // True only when our particle is exactly the quad Sodium's fast path builds, so we can safely let
     // super.render take over. Requirements: LOOK_AT_XYZ specifically (Sodium billboards with camera
     // left/up), no model, zero offset, and a render mode that neither redirects the consumer nor is
     // one Sodium mis-renders (TRANSLUCENT / ADDITIVE_TRANSLUCENT).
     private boolean canUseSodiumFastPath() {
-        return this.model == null
+        return !PREVIEW_FORCE_FULL_PATH
+                && this.model == null
                 && this.type.rotationProvider == RotationMode.LOOK_AT_XYZ
                 && this.type.offset.lengthSqr() == 0
                 && this.type.renderType != ParticleRenderMode.TRANSLUCENT

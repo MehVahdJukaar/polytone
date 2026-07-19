@@ -34,8 +34,8 @@ import java.awt.datatransfer.StringSelection;
  * thin, read-only remote control over the {@link GuiModifierPreview} bridge. Its primary action is
  * <b>Reload live screen</b> (push the edited modifier onto the open screen in memory, no resource
  * reload); the two helpers below just report what the game sees - the detected target, and slots
- * picked by clicking them in game - as copy-ready values you paste into the form. Nothing here writes
- * the form; the live overlay in the game window shows the rich per-element detail.
+ * picked by clicking them in game - each with a Copy button that yields the raw value to paste. The
+ * rich per-element detail lives on the in-game overlay, not here; nothing in this panel writes the form.
  */
 public final class GuiModifierPreviewPanel implements TabPreview {
 
@@ -43,10 +43,11 @@ public final class GuiModifierPreviewPanel implements TabPreview {
     private final PreviewStatus status = new PreviewStatus();
 
     private final JButton reloadButton = UiStyle.ctaButton("Reload live screen", UiICons.refresh());
-    private final JButton clearButton = UiStyle.buttonAsToolbar(new JButton("Clear", UiICons.trash()));
+    private final JButton undoButton = UiStyle.buttonAsToolbar(new JButton("Undo preview"));
 
     private final JButton detectButton = UiStyle.primaryButton("Detect open screen", UiICons.search());
-    private final JToggleButton pickToggle = new JToggleButton("Pick slots in game", UiICons.eye());
+    private final JToggleButton pickToggle = new JToggleButton("Pick in game", UiICons.eye());
+    private final JLabel pickActive = StyledLabels.accentSmall("● Overlay active in the game window");
 
     private final Readout detectReadout = new Readout("Open a screen in game, then detect it.");
     private final Readout pickReadout = new Readout("Toggle picking, then click a slot in game.");
@@ -61,10 +62,10 @@ public final class GuiModifierPreviewPanel implements TabPreview {
         reloadButton.addActionListener(e -> reloadLiveScreen());
         reloadButton.setEnabled(false);
 
-        clearButton.setToolTipText("Remove the live preview and restore the screen to its saved state.");
-        clearButton.addActionListener(e -> {
+        undoButton.setToolTipText("Remove the live preview and restore the screen to its saved/loaded state.");
+        undoButton.addActionListener(e -> {
             GuiModifierPreview.pushPreview(null);
-            status.info("Preview cleared.");
+            status.info("Live preview removed - screen restored to its saved state.");
         });
 
         detectButton.setToolTipText("Read the currently open screen's target_type / target.");
@@ -73,6 +74,7 @@ public final class GuiModifierPreviewPanel implements TabPreview {
         pickToggle.setToolTipText("Outline slots and widgets on the open screen; hover for details, click a slot to grab it.");
         pickToggle.setIconTextGap(UiScale.small());
         pickToggle.addActionListener(e -> setPicking(pickToggle.isSelected()));
+        pickActive.setVisible(false);
 
         status.info("Open the target screen in game, then use these controls.");
     }
@@ -120,17 +122,18 @@ public final class GuiModifierPreviewPanel implements TabPreview {
             detectReadout.clear();
             return;
         }
-        String type = t.type().getSerializedName();
-        detectReadout.set(type + " = " + t.target(),
-                "\"target_type\": \"" + type + "\",\n\"target\": \"" + t.target() + "\"");
-        status.info("Detected the open screen (copy into the form).");
+        // Show both bits; copy only the target string (the part that's a pain to type).
+        detectReadout.set(t.type().getSerializedName() + " = " + t.target(), t.target());
+        status.info("Detected the open screen.");
     }
 
     private void setPicking(boolean on) {
         GuiModifierPreview.setPickingEnabled(on);
+        pickActive.setVisible(on);
+        pickToggle.setText(on ? "Stop picking" : "Pick in game");
         if (on) {
             GuiModifierPreview.setPickListener(picked -> SwingUtilities.invokeLater(() -> showPicked(picked)));
-            status.info("Picking on: the game overlay marks modified elements; click a slot to grab it.");
+            status.info("Overlay active: modified elements are marked; click a slot to grab it.");
         } else {
             GuiModifierPreview.setPickListener(null);
             status.setText("");
@@ -140,11 +143,12 @@ public final class GuiModifierPreviewPanel implements TabPreview {
     private void showPicked(GuiModifierPreview.PickedElement picked) {
         String cls = simpleName(picked.className());
         if (picked.slotIndex() >= 0) {
+            // Copy just the index - it drops straight into a "slots" entry.
             pickReadout.set("slot #" + picked.slotIndex() + "  @ (" + picked.x() + ", " + picked.y() + ")  " + cls,
-                    "\"slots\": [" + picked.slotIndex() + "]");
+                    String.valueOf(picked.slotIndex()));
         } else {
             pickReadout.set("element  @ (" + picked.x() + ", " + picked.y() + ")  " + cls,
-                    "\"target_x\": " + picked.x() + ",\n\"target_y\": " + picked.y());
+                    picked.x() + ", " + picked.y());
         }
     }
 
@@ -161,20 +165,16 @@ public final class GuiModifierPreviewPanel implements TabPreview {
 
         Box content = Box.createVerticalBox();
 
-        JLabel help = StyledLabels.small("<html><body style='width:" + UiScale.px(232) + "px'>"
-                + "GUI modifiers decorate existing screens, so the preview is the real game window. "
-                + "Open the target screen in Minecraft, edit here, then <b>Reload</b> to see it instantly."
-                + "</body></html>");
-        addRow(content, help);
-        content.add(Box.createVerticalStrut(UiScale.med()));
+        addRow(content, ellipsizing(StyledLabels.small("Edits preview on the live game screen.")));
+        content.add(Box.createVerticalStrut(UiScale.small()));
 
-        // Primary action: the reload loop. Full-width CTA, with a subtle clear beneath it.
+        // Primary action: the reload loop. Full-width CTA, with a subtle undo beneath it.
         addRow(content, reloadButton);
-        Box clearRow = Box.createHorizontalBox();
-        clearRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        clearRow.add(Box.createHorizontalGlue());
-        clearRow.add(clearButton);
-        addRow(content, clearRow);
+        Box undoRow = Box.createHorizontalBox();
+        undoRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        undoRow.add(Box.createHorizontalGlue());
+        undoRow.add(undoButton);
+        addRow(content, undoRow);
         content.add(Box.createVerticalStrut(UiScale.med()));
 
         // Setup helpers, grouped and visually secondary to the CTA above.
@@ -186,6 +186,7 @@ public final class GuiModifierPreviewPanel implements TabPreview {
         addRow(group, detectReadout.component());
         group.add(Box.createVerticalStrut(UiScale.med()));
         addRow(group, pickToggle);
+        addRow(group, ellipsizing(pickActive));
         addRow(group, pickReadout.component());
         content.add(group);
 
@@ -198,6 +199,14 @@ public final class GuiModifierPreviewPanel implements TabPreview {
         comp.setMaximumSize(UiScale.maxHeightHugging(comp));
         box.add(comp);
         box.add(Box.createVerticalStrut(UiScale.small()));
+    }
+
+    // Let a label shrink below its text width so it ellipsizes (with the full text in its tooltip)
+    // instead of forcing the panel wider or clipping off the edge.
+    private static JLabel ellipsizing(JLabel label) {
+        label.setToolTipText(label.getText());
+        label.setMinimumSize(new Dimension(0, label.getPreferredSize().height));
+        return label;
     }
 
     private static String simpleName(String className) {
@@ -217,7 +226,9 @@ public final class GuiModifierPreviewPanel implements TabPreview {
         Readout(String placeholder) {
             this.placeholder = placeholder;
             this.value = StyledLabels.small(placeholder);
-            this.copy = UiStyle.toolbarButton(UiICons.copy(), "Copy JSON snippet to clipboard", e -> copyToClipboard());
+            this.value.setToolTipText(placeholder);
+            this.value.setMinimumSize(new Dimension(0, value.getPreferredSize().height)); // shrink -> ellipsis
+            this.copy = UiStyle.toolbarButton(UiICons.copy(), "Copy value to clipboard", e -> copyToClipboard());
             copy.setVisible(false);
 
             this.row = new JPanel();
@@ -236,17 +247,18 @@ public final class GuiModifierPreviewPanel implements TabPreview {
             return row;
         }
 
-        void set(String display, String clipboardSnippet) {
-            this.clipboard = clipboardSnippet;
+        void set(String display, String clipboardValue) {
+            this.clipboard = clipboardValue;
             value.setText(display);
-            value.setToolTipText(display);
+            value.setToolTipText(display + "   (copies: " + clipboardValue + ")");
+            copy.setToolTipText("Copy \"" + clipboardValue + "\" to clipboard");
             copy.setVisible(true);
         }
 
         void clear() {
             this.clipboard = null;
             value.setText(placeholder);
-            value.setToolTipText(null);
+            value.setToolTipText(placeholder);
             copy.setVisible(false);
         }
 

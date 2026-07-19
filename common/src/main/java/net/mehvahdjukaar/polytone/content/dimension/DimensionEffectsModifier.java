@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.content.dimension;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Decoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -35,7 +34,7 @@ public record DimensionEffectsModifier(Optional<Either<Float, BlockContextExpres
     public static final Codec<DimensionSpecialEffects.SkyType> SKY_TYPE_CODEC = Codec.STRING
             .xmap(DimensionSpecialEffects.SkyType::valueOf, DimensionSpecialEffects.SkyType::name);
 
-    public static final Decoder<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
+    public static final Codec<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     Codec.either(Codec.FLOAT, BlockContextExpression.CODEC).optionalFieldOf("cloud_level").forGetter(DimensionEffectsModifier::cloudLevel),
                     Codec.BOOL.optionalFieldOf("has_ground").forGetter(DimensionEffectsModifier::hasGround),

@@ -212,6 +212,17 @@ public class CustomParticleType implements ICustomParticleFactory {
         return model != null ? ParticleRenderType.CUSTOM : renderType.getParticle();
     }
 
+    public @Nullable SpriteSet getSpriteSet() {
+        return spritePicker.getSpriteSet();
+    }
+
+    // Preview only: build an instance (running the initializer, as the constructor does) without the
+    // world collision / async / exclusion-radius machinery createParticle adds. Sprites must be set.
+    public CustomParticleInstance createPreviewInstance(ClientLevel level, double x, double y, double z,
+                                                        @Nullable BlockState state) {
+        return new CustomParticleInstance(level, x, y, z, 0, 0, 0, state, this);
+    }
+
     @Override
     public void setSpriteSet(SpriteSet spriteSet) {
         try {

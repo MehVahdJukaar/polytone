@@ -60,8 +60,8 @@ public class DimensionEffectsManager extends JsonImgPartialReloader<DimensionEff
     private static final TexturePart<DimensionEffectsModifier> TERRAIN_FOG = TexturePart.suffix("_terrain_fog", DimensionEffectsModifier::getTerrainFogColormap);
 
     public DimensionEffectsManager() {
-        // 1.21.1 DimensionEffectsModifier.CODEC is only a Decoder, not a full Codec; not editable until ported.
         super(Spec.<DimensionEffectsModifier>of("Dimension modifier")
+                .codec(() -> DimensionEffectsModifier.CODEC)
                 .wikiPage("Dimension-Effects-Modifiers")
                 .textureParts(FOG, SKY, SUNSET, TERRAIN_FOG)
                 .folders("dimension_modifiers", "dimension_effects"));

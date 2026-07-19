@@ -23,8 +23,10 @@ import org.joml.Vector3d;
 // for next frame's main draw.
 public final class SodiumShadowRenderer {
 
-    // Replay the opaque terrain layers from the light's POV. Safe to call unconditionally: without Sodium
-    // it just drives vanilla's renderSectionLayer (a no-op when there are no compiled vanilla sections).
+    // Replay the opaque terrain layers from the light's POV. MUST only be called when Sodium is present:
+    // reCull() references Sodium types (SodiumLightVolumeFrustum -> Frustum), and the verifier eager-loads
+    // them when this class is linked, so a call without Sodium on the classpath throws ClassNotFoundException
+    // regardless of the CompatHandler.SODIUM runtime guard below. The gate lives at the call site.
     public static void replayTerrain(Minecraft mc, Camera cam, Vec3 camPos,
                                      Matrix4f lightView, Matrix4f lightProj,
                                      float coverage, float depthRange) {

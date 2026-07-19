@@ -11,12 +11,14 @@ import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.nautilus.NautilusStudioApi;
 import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
+import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
 import net.mehvahdjukaar.nautilus.swing.widget.ExpressionWidget;
 import net.mehvahdjukaar.nautilus.workbench.CodecEntry;
 import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ColormapPreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.GuiModifierPreviewPanel;
+import net.mehvahdjukaar.polytone.compat.nautilus.preview.NoisePreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ParticlePreview;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapColorModulatorExpression;
@@ -40,10 +42,18 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.SwingUtilities;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 public final class PolytoneNautilus {
 
     private static final String WIKI_BASE = "https://github.com/MehVahdJukaar/polytone/wiki/";
+
+    // Special preview panels keyed by content folder; attached to the matching CodecEntry as it's built.
+    private static final Map<String, TabPreview.Factory> PREVIEWS = Map.of(
+            "colormaps", ColormapPreview::new,
+            "gui_modifiers", GuiModifierPreviewPanel::new,
+            "custom_particles", ParticlePreview::new,
+            "noises", NoisePreview::new);
 
     public static void init() {
         // Widget bindings must exist before any schema resolves (companion registrations only).
@@ -72,12 +82,11 @@ public final class PolytoneNautilus {
             String page = manager.wikiPage();
             if (page != null) entry = entry.withWikiUrl(WIKI_BASE + page);
 
+            TabPreview.Factory preview = PREVIEWS.get(folder);
+            if (preview != null) entry = entry.withPreview(preview);
+
             NautilusStudioApi.register(entry);
         }
-
-        NautilusStudioApi.registerPreview(Polytone.MOD_ID + "/colormaps", ColormapPreview::new);
-        NautilusStudioApi.registerPreview(Polytone.MOD_ID + "/gui_modifiers", GuiModifierPreviewPanel::new);
-        NautilusStudioApi.registerPreview(Polytone.MOD_ID + "/custom_particles", ParticlePreview::new);
     }
 
     private static void registerWidgetBindings() {

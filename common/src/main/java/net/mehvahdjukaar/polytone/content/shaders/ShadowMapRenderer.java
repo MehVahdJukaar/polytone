@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.shaders.sodium.SodiumShadowRenderer;
 import net.mehvahdjukaar.polytone.mixins.accessor.LevelRendererShadowAccessor;
 import net.minecraft.Util;
@@ -179,10 +180,13 @@ public class ShadowMapRenderer {
                 drawLayer(mc, RenderType.solid(), camPos, lightView, lightProj);
                 drawLayer(mc, RenderType.cutoutMipped(), camPos, lightView, lightProj);
                 drawLayer(mc, RenderType.cutout(), camPos, lightView, lightProj);
-            } else {
+            } else if (CompatHandler.SODIUM) {
                 // No compiled vanilla sections -> Sodium has replaced the chunk pipeline. All of the
                 // Sodium-specific replay (re-cull against the light volume, redraw, restore) is isolated
-                // in SodiumShadowRenderer so this class stays free of Sodium types.
+                // in SodiumShadowRenderer. The CompatHandler.SODIUM guard MUST stay at this call site:
+                // touching SodiumShadowRenderer links it, and the verifier eager-loads its Sodium types
+                // (Frustum via SodiumLightVolumeFrustum) - so without this gate the branch crashes with a
+                // ClassNotFoundException whenever vanilla simply has no compiled sections (near spawn, sky).
                 SodiumShadowRenderer.replayTerrain(mc, cam, camPos, lightView, lightProj, coverage, depthRange);
             }
 
