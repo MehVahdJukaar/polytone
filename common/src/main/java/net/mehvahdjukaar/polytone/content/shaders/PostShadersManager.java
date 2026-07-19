@@ -29,39 +29,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.IntSupplier;
 
-/**
- * Manages Polytone-defined post-shader effects: loads them, evaluates their conditions each tick, and
- * opens/closes the underlying {@link PostChain}s. The per-frame GPU work (depth snapshot, matrices,
- * running the chains) lives in {@link PostShaderRenderer}, which this class drives.
- *
- * <p>Effects are defined via {@code assets/<ns>/polytone/post_chains/*.json} (or the legacy
- * {@code post_shaders} folder) and refer to chain JSONs at {@code assets/<ns>/post_effect/<name>.json},
- * the same location 1.21.11 uses, so packs can share files.</p>
- *
- * <p>Polytone post-chains are processed as additional passes after the vanilla
- * {@code gameRenderer.postEffect}, never replacing or modifying it - so other mods
- * that toggle the vanilla post effect (e.g. spectator-mode shaders) keep working.</p>
- */
 public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
 
-    /**
-     * Set on the render thread while we're constructing a {@link PostChain} for a polytone effect.
-     * Loader-side mixins (e.g. fabric {@code EffectInstanceMixin}) read this and only intervene when
-     * it's true, so vanilla and other mods' shader loading is left strictly untouched.
-     */
+    // Only alter our own shaders flag
     public static final ThreadLocal<Boolean> POLYTONE_LOADING = ThreadLocal.withInitial(() -> false);
-
-    /**
-     * Per-pass frame state for {@link net.mehvahdjukaar.polytone.mixins.PostPassMixin}. Set by
-     * {@link PostShaderRenderer} for the duration of each {@code PostChain.process()} call so uniforms
-     * are applied immediately before {@code EffectInstance.apply()} on every pass.
-     */
     public static final ThreadLocal<ActivePostPassFrame> ACTIVE_POST_PASS = new ThreadLocal<>();
 
     private final List<PostChainEffect> effects = new ArrayList<>();
-    // Currently loaded chains, in render order, keyed by effect instance.
     private final LinkedHashMap<PostChainEffect, PostChain> activeChains = new LinkedHashMap<>();
-    // Chain IDs we already failed to load; skipped silently on subsequent ticks.
     private final Set<ResourceLocation> failedChains = new HashSet<>();
 
     private final PostShaderRenderer renderer = new PostShaderRenderer();
@@ -111,7 +86,6 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
         }
     }
 
-    /** Evaluate conditions and create/close chains accordingly. Call once per client tick. */
     public void tick() {
         synchronized (effects) {
             // Build the desired set (in render order) honouring priority
@@ -209,7 +183,6 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
         return false;
     }
 
-    /** Resize all active chains, plus the renderer's depth snapshot, to the new framebuffer dimensions. */
     public void resize(int width, int height) {
         synchronized (effects) {
             for (PostChain c : activeChains.values()) {
@@ -224,7 +197,6 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
         renderer.captureLevelMatrices(projection, modelView);
     }
 
-    /** @see PostShaderRenderer#captureLevelDepthSnapshot */
     public void captureLevelDepthSnapshot() {
         synchronized (effects) {
             if (!anyActiveEffectUsesDepth()) return;
@@ -232,7 +204,6 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
         }
     }
 
-    /** @see PostShaderRenderer#render */
     public void renderAfterMainPostEffect(float partialTicks) {
         synchronized (effects) {
             if (activeChains.isEmpty()) return;
@@ -247,10 +218,6 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
         return false;
     }
 
-    /**
-     * Whether any active chain declares {@code use_shadow_map}. Read from the render thread
-     * ({@code LevelRenderer.renderLevel} TAIL) to decide whether to render the shadow depth map.
-     */
     public boolean anyActiveEffectUsesShadowMap() {
         synchronized (effects) {
             for (PostChainEffect e : activeChains.keySet()) {

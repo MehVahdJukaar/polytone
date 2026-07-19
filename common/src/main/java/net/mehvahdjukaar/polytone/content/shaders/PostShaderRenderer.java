@@ -227,7 +227,6 @@ public class PostShaderRenderer {
         PlatStuff.matchStencil(main, depthSnapshot);
     }
 
-    /** Free the depth snapshot and the depth-combine shader. Called when the manager tears down its chains. */
     public void close() {
         if (depthSnapshot != null) {
             depthSnapshot.destroyBuffers();

@@ -56,7 +56,6 @@ import javax.swing.JSlider;
 import javax.swing.Timer;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -73,12 +72,13 @@ import java.awt.image.BufferedImage;
  * <p>It reuses the standard Nautilus 2D-preview chrome: a {@link PreviewSurface} (scrolling dark canvas
  * under a themed toolbar) holds the visuals - a small square block view and a same-size result swatch
  * side by side, then a bigger square {@link PixelTextureView} of the source colormap texture with the
- * sampled texel marked and its coordinates captioned right under it. The toolbar carries only the
- * "Live at player" toggle and a status line; every simulated input (block/biome pickers, y slider,
- * env/light sliders) lives in one titled group below it that greys out when the toggle is on.
+ * sampled texel marked and its coordinates captioned right under it. The block picker sits on its own
+ * above a "Live at player" toggle; every simulated-only input (biome picker, y slider, env/light
+ * sliders) lives in one titled group under that toggle, which the toggle hides outright when on.
  *
  * <p>The block/biome pickers are the editor's own searchable, icon-bearing {@link RegistryPickerField},
- * so they look and behave exactly like the identifier fields in the schema form.
+ * so they look and behave exactly like the identifier fields in the schema form. The block is not a
+ * simulated input - it just chooses what the 3D view previews - so it stays pickable in live mode too.
  *
  * <p>The block view renders the picked block, tinted live by the colormap's current output through the
  * Nautilus {@link BlockTint} seam - so the picker drives both the sampled state and what you see in 3D.
@@ -198,8 +198,6 @@ public final class ColormapPreview implements TabPreview {
         Box toolbar = Box.createVerticalBox();
 
         Box topRow = Box.createHorizontalBox();
-        topRow.add(liveToggle);
-        topRow.add(Box.createHorizontalStrut(UiScale.med()));
         topRow.add(status);
         topRow.add(Box.createHorizontalGlue());
         addRow(toolbar, topRow);
@@ -208,9 +206,18 @@ public final class ColormapPreview implements TabPreview {
         // of clipping the visuals, and the panel can be dragged down to any size.
         Box content = Box.createVerticalBox();
 
-        // All simulated inputs sit in one titled group directly under the "Live at player" toggle, so
-        // the toggle plainly reads as the switch that overrides the whole group. Every field is laid
-        // out label-over-field at full width, so the pickers and sliders line up and nothing crops.
+        // The block choice isn't a simulated input - it only picks which block the 3D view shows and
+        // tints - so it lives outside the group and stays usable in every mode, live included.
+        addField(content, labeled("Block", blockPicker));
+
+        // The toggle sits right above the group it governs; flipping it on hides the whole group,
+        // since those simulated inputs are replaced by the live readings at the player.
+        liveToggle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        content.add(liveToggle);
+        content.add(Box.createVerticalStrut(UiScale.small()));
+
+        // The simulated-only inputs sit in one titled group under the toggle. Every field is laid out
+        // label-over-field at full width, so the pickers and sliders line up and nothing crops.
         inputsBox = GroupPanels.outlined();
         inputsBox.setLayout(new BoxLayout(inputsBox, BoxLayout.Y_AXIS));
         inputsBox.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -220,7 +227,6 @@ public final class ColormapPreview implements TabPreview {
         inputsBox.add(groupHeader);
         inputsBox.add(Box.createVerticalStrut(UiScale.small()));
 
-        addField(inputsBox, labeled("Block", blockPicker));
         addField(inputsBox, labeled("Biome", biomePicker));
         climateReadout.setAlignmentX(Component.LEFT_ALIGNMENT);
         inputsBox.add(climateReadout);
@@ -303,26 +309,13 @@ public final class ColormapPreview implements TabPreview {
 
     private void setLiveMode(boolean live) {
         this.liveMode = live;
-        // Grey out (rather than hide) the whole input group, so the toggle's effect on it is visible.
-        setEnabledDeep(inputsBox, !live);
-        if (live) {
-            hideEnv();
-            liveTimer.start();
-        } else {
-            liveTimer.stop();
-        }
+        // The simulated inputs are fully replaced by the live readings, so hide the whole group.
+        inputsBox.setVisible(!live);
+        if (live) liveTimer.start();
+        else liveTimer.stop();
         root.revalidate();
         root.repaint();
         recompute();
-    }
-
-    private static void setEnabledDeep(Component c, boolean enabled) {
-        c.setEnabled(enabled);
-        if (c instanceof Container cont) {
-            for (Component child : cont.getComponents()) {
-                setEnabledDeep(child, enabled);
-            }
-        }
     }
 
     private void recompute() {
@@ -400,7 +393,8 @@ public final class ColormapPreview implements TabPreview {
         }
         BlockPos pos = player.blockPosition();
         if (mc.level.getBlockState(pos).isAir()) pos = pos.below(); // feet are usually air; sample the ground
-        BlockState state = mc.level.getBlockState(pos);
+        // The block stays the user's pick even in live mode; only the position/biome/light come live.
+        BlockState state = resolveBlock(blockPicker.getSelected()).defaultBlockState();
         Biome biome = mc.level.getBiome(pos).value();
 
         updateClimate(biome);
