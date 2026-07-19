@@ -39,28 +39,38 @@ public final class PostChainActivator {
                     i.optional("expression_uniforms", ExpressionUniformBuffers.CODEC,
                             new ExpressionUniformBuffers(Map.of()), p -> p.buffers),
                     i.optional("samplers", Codec.unboundedMap(Codec.STRING, Identifier.CODEC),
-                            Map.of(), p -> p.samplers)
+                            Map.of(), p -> p.samplers),
+                    i.optional("use_shadow_map", Codec.BOOL, false, p -> p.useShadowMap)
             ).apply(i, PostChainActivator::new));
 
     private final Identifier postChain;
     private final ISimpleExp turnOnCondition;
     private final ExpressionUniformBuffers buffers;
     private final Map<String, Identifier> samplers;
+    private final boolean useShadowMap;
 
     private boolean cachedOn = false;
     private PostChain cachedPostChain = null;
     private final List<Identifier> registeredShaderIds = new ArrayList<>();
 
     public PostChainActivator(Identifier postChain, ISimpleExp turnOnCondition,
-                              ExpressionUniformBuffers buffers, Map<String, Identifier> samplers) {
+                              ExpressionUniformBuffers buffers, Map<String, Identifier> samplers,
+                              boolean useShadowMap) {
         this.postChain = postChain;
         this.turnOnCondition = turnOnCondition;
         this.buffers = buffers;
         this.samplers = samplers;
+        this.useShadowMap = useShadowMap;
     }
 
     public void refreshEnabled() {
         cachedOn = turnOnCondition.evaluate() > 0;
+    }
+
+    /** True when this chain is currently on and declared {@code use_shadow_map}, i.e. it wants the
+     * light-POV depth map rendered this frame (see {@code ShadowMapRenderer}). */
+    public boolean wantsShadowMap() {
+        return cachedOn && useShadowMap;
     }
 
     @Nullable

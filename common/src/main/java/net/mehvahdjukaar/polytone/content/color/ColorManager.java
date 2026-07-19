@@ -107,6 +107,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
     @Nullable
     private PaintingRenderType paintingRenderType = null;
 
+    private boolean entityShadowsDisabled = false;
+
     //don't use pls
     @Nullable
     private Integer swampDark = null;
@@ -409,6 +411,14 @@ public class ColorManager extends SingleFileContentManager<Void> {
                 } else Polytone.LOGGER.warn("Unknown painting render type {}. Must be one of: solid, cutout, translucent", v.getAsString());
             }
         });
+
+        if (obj.has("entity_shadows")) {
+            JsonElement v = obj.get("entity_shadows");
+            if (v.isJsonPrimitive()) {
+                // false disables the blob shadows rendered under entities. getAsBoolean also accepts the string "false" from .properties files
+                entityShadowsDisabled = !v.getAsBoolean();
+            }
+        }
     }
 
     private void refreshSplash(Style style) {
@@ -537,6 +547,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
         fishingLineOffset = null;
         fishingLineColor = null;
         paintingRenderType = null;
+        entityShadowsDisabled = false;
         skyFlashColor = null;
         voidDarknessOffset = null;
         horizonHeight = null;
@@ -644,5 +655,9 @@ public class ColorManager extends SingleFileContentManager<Void> {
     @Nullable
     public PaintingRenderType getPaintingRenderType() {
         return paintingRenderType;
+    }
+
+    public boolean areEntityShadowsDisabled() {
+        return entityShadowsDisabled;
     }
 }

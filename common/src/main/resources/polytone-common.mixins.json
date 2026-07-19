@@ -57,6 +57,7 @@
     "QuadParticleGroupMixin",
     "RenderSetupMixin",
     "ScreenMixin",
+    "ShadowFeatureRendererMixin",
     "SingleQuadParticleAccessor",
     "SmithingScreenMixin",
     "SodiumBlockRendererMixin",
@@ -71,6 +72,7 @@
     "accessor.DimensionTypeAccessor",
     "accessor.DustParticleOptionAccessor",
     "accessor.GlBufferAccessor",
+    "accessor.LevelRendererShadowAccessor",
     "accessor.ParticleAccessor",
     "accessor.PostPassAccessor"
   ],

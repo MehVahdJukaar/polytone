@@ -59,6 +59,10 @@ public class LevelRendererMixin {
         Polytone.POST_CHAINS.captureLevelRendererParams(project, modelView, deltaTracker.getGameTimeDeltaTicks());
         // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
         Polytone.SHADER_EFFECTS.updateAll();
+        // Render the directional shadow map here: no render pass is open (UBO writes need that), last
+        // frame's compiled section meshes are still current, and the frame graph that runs the post
+        // chains sampling it hasn't been built yet.
+        Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(gpuBufferSlice);
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addLateDebugPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/state/CameraRenderState;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Matrix4f;)V",

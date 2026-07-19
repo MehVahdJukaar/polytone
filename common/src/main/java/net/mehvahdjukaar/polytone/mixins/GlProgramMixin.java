@@ -16,6 +16,8 @@ public class GlProgramMixin {
     private static HashSet<String> method_67884(HashSet<String> original) {
         PolytoneBuiltInUniformsSet s = new PolytoneBuiltInUniformsSet(original);
         s.add(PostChainsManager.GLOBALS_NAME);
+        s.add(PostChainsManager.SHADOW_UBO_NAME);
+        s.add(PostChainsManager.SHADOW_SAMPLER_NAME);
         return s;
     }
 }

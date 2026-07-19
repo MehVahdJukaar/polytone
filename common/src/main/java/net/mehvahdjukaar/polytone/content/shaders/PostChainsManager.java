@@ -36,6 +36,8 @@ import java.util.Set;
 public class PostChainsManager extends ContentManager<PostChainActivator> {
 
     public static final String GLOBALS_NAME = "PolyGlobals";
+    public static final String SHADOW_UBO_NAME = "PolyShadow";
+    public static final String SHADOW_SAMPLER_NAME = "InShadow";
     private PolytoneGlobalUniforms globalUniforms = null;
 
     private final List<PostChainActivator> activators = new ArrayList<>();
@@ -85,6 +87,24 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         if (declaredUniforms.contains(GLOBALS_NAME)) {
             pass.setUniform(GLOBALS_NAME, getOrCreateUniforms().getSlice());
         }
+        // light view-projection + light dir + camera fract, written by ShadowMapRenderer each frame;
+        // null until the first shadow pass has run
+        if (declaredUniforms.contains(SHADOW_UBO_NAME)) {
+            GpuBufferSlice shadowSlice = Polytone.SHADOWS.renderer().getUniformsSlice();
+            if (shadowSlice != null) {
+                pass.setUniform(SHADOW_UBO_NAME, shadowSlice);
+            }
+        }
+    }
+
+    /** Whether the shadow map should be rendered this frame (some active chain declared use_shadow_map). */
+    public boolean anyActiveEffectUsesShadowMap() {
+        synchronized (activators) {
+            for (var a : activators) {
+                if (a.wantsShadowMap()) return true;
+            }
+        }
+        return false;
     }
 
     /** External callers (PostChainActivator) register their custom samplers under a pass shader id. */
@@ -107,6 +127,14 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
      * names) so we never bind a sampler the program doesn't declare — see {@code RenderPassMixin}.
      */
     public void bindExtraSamplers(RenderPass pass, RenderPipeline pipeline, Set<String> declaredUniforms) {
+        // the light-POV depth map rendered by ShadowMapRenderer; only bound once it exists
+        if (declaredUniforms.contains(SHADOW_SAMPLER_NAME)) {
+            GpuTextureView shadowMap = Polytone.SHADOWS.renderer().getShadowTexture();
+            if (shadowMap != null) {
+                pass.bindTexture(SHADOW_SAMPLER_NAME, shadowMap,
+                        RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+            }
+        }
         if (samplersByShader.isEmpty()) return;
         List<Map<String, Identifier>> list = samplersByShader.get(pipeline.getFragmentShader());
         if (list == null) return;
