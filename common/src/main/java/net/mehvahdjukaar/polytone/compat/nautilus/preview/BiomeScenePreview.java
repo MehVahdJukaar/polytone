@@ -64,8 +64,9 @@ public final class BiomeScenePreview implements TabPreview {
     private static final int DEF_WATER = 0x3F76E4;
 
     private static final List<Placement> BLOCKS = buildDiorama();
-    // Pool occupies the far corner (x/z 4..6), one block below the shore; surface sits just under it.
-    private static final WaterQuad WATER = new WaterQuad(4f, 4f, 7f, 7f, 1.85f);
+    // Pool occupies the far corner (x/z 4..6), one block below the shore; surface just under the shore
+    // top, floor on top of the dirt bed at y=1.
+    private static final WaterQuad WATER = new WaterQuad(4f, 4f, 7f, 7f, 1.85f, 1f);
 
     private final PreviewStatus status = new PreviewStatus();
     private final LiveViewport viewport = new LiveViewport();

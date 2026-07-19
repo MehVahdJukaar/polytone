@@ -49,13 +49,21 @@ final class BiomeSceneRenderPass {
 
     record Placement(BlockPos pos, BlockState state, Tint tint) {}
 
-    record WaterQuad(float minX, float minZ, float maxX, float maxZ, float y) {}
+    record WaterQuad(float minX, float minZ, float maxX, float maxZ, float y, float floorY) {}
 
     // sky/fog are RGB; grass/foliage/water are RGB used to tint their models (water also gets an alpha).
     // grassModifier is the biome's grass post-process (dark forest / swamp), applied per grass block.
     record Colors(int sky, int fog, int grass, int foliage, int water, GrassColorModifier grassModifier) {}
 
     private static final float WATER_ALPHA = 0.72f;
+    // The sky disk hovers this high above the eye; being flat, its points map to elevation atan(h/rho),
+    // so the height sets how much of the sky the fog band below can span (too low -> a sliver at the horizon).
+    private static final float SKY_DISK_HEIGHT = 16f;
+    private static final float SKY_DISK_RADIUS = 512f; // must exceed SKY_FOG_END so the rim is fully fogged
+    // Distances over which the disk fades to fog: with h=16 this is a gradient from ~30 deg elevation down
+    // to the horizon.
+    private static final float SKY_FOG_START = 32f;
+    private static final float SKY_FOG_END = 200f;
 
     static void render(SceneCamera camera, int width, int height, Colors colors,
                        List<Placement> blocks, WaterQuad water) {
@@ -102,9 +110,11 @@ final class BiomeSceneRenderPass {
         RenderSystem.enableDepthTest();
     }
 
-    // A sky dome centred on the eye: sky colour at the zenith fading to fog toward the horizon, so the
-    // colour spreads across the whole upper sky instead of piling into an overhead spot like a flat disk
-    // did. Not vanilla's actual sky, just the same silhouette.
+    // Vanilla-style sky: a flat disk hovering a couple blocks above the eye. Being a flat plane just
+    // overhead it fills the whole upper sky, and its far parts recede toward the horizon - which is where
+    // fog takes over. The core position_color shader doesn't sample fog, so instead of relying on the fog
+    // uniforms we bake vanilla's exact linear_fog blend into the vertex colours across a tessellated disk
+    // (colour by distance from the eye), giving the same sky->fog horizon the game's fog shader produces.
     private static void drawSky(Colors colors) {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
@@ -114,34 +124,39 @@ final class BiomeSceneRenderPass {
 
         float[] sky = rgb(colors.sky());
         float[] fog = rgb(colors.fog());
-        float radius = 200f;
-        int rings = 16;
+        float h = SKY_DISK_HEIGHT;
+        float rMax = SKY_DISK_RADIUS;
+        int rings = 40;
         int segments = 48;
-        float topDeg = 90f;
-        float bottomDeg = -8f; // dip below the horizon so the dome's edge hides under the fog fill
 
-        for (int i = 0; i < rings; i++) {
-            float e0 = (float) Math.toRadians(lerp(topDeg, bottomDeg, i / (float) rings));
-            float e1 = (float) Math.toRadians(lerp(topDeg, bottomDeg, (i + 1) / (float) rings));
-            float[] c0 = mix(sky, fog, colorT(e0));
-            float[] c1 = mix(sky, fog, colorT(e1));
-            float y0 = radius * (float) Math.sin(e0), r0 = radius * (float) Math.cos(e0);
-            float y1 = radius * (float) Math.sin(e1), r1 = radius * (float) Math.cos(e1);
-
+        float prevR = 0f;
+        float[] prevC = fogMix(sky, fog, (float) Math.sqrt(prevR * prevR + h * h));
+        for (int i = 1; i <= rings; i++) {
+            float rho = rMax * i / (float) rings;
+            float[] c = fogMix(sky, fog, (float) Math.sqrt(rho * rho + h * h));
             BufferBuilder bb = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
             for (int s = 0; s <= segments; s++) {
                 double a = s / (double) segments * Math.PI * 2;
                 float ca = (float) Math.cos(a), sa = (float) Math.sin(a);
-                bb.addVertex(r0 * ca, y0, r0 * sa).setColor(c0[0], c0[1], c0[2], 1f);
-                bb.addVertex(r1 * ca, y1, r1 * sa).setColor(c1[0], c1[1], c1[2], 1f);
+                bb.addVertex(prevR * ca, h, prevR * sa).setColor(prevC[0], prevC[1], prevC[2], 1f);
+                bb.addVertex(rho * ca, h, rho * sa).setColor(c[0], c[1], c[2], 1f);
             }
             draw(bb);
+            prevR = rho;
+            prevC = c;
         }
     }
 
-    // 0 at the zenith (sky), 1 at/under the horizon (fog); linear in elevation.
-    private static float colorT(float elevationRad) {
-        return clamp((90f - (float) Math.toDegrees(elevationRad)) / 90f, 0f, 1f);
+    // Vanilla linear_fog: fully sky within fogStart, fully fog past fogEnd, linear between.
+    private static float[] fogMix(float[] sky, float[] fog, float dist) {
+        float fade = dist <= SKY_FOG_START ? 1f
+                : dist >= SKY_FOG_END ? 0f
+                : (SKY_FOG_END - dist) / (SKY_FOG_END - SKY_FOG_START);
+        return mix(sky, fog, 1f - fade);
+    }
+
+    private static float[] mix(float[] a, float[] b, float t) {
+        return new float[]{a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t};
     }
 
     private static void drawBlocks(Minecraft mc, List<Placement> blocks, Colors colors, float ex, float ey, float ez) {
@@ -178,8 +193,9 @@ final class BiomeSceneRenderPass {
         lightTexture.turnOffLightLayer();
     }
 
-    // A single translucent quad at the pool surface, depth-tested against the terrain but not writing
-    // depth, so the shore reads through it like water.
+    // The pool surface plus the side faces on its exposed outer edges (the +x / +z diorama boundary),
+    // so the water reads as a body with depth, not a decal. Depth-tested against the terrain but not
+    // writing depth, so the dirt bed shows through it like water.
     private static void drawWater(Colors colors, WaterQuad w, float ex, float ey, float ez) {
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(false);
@@ -189,15 +205,29 @@ final class BiomeSceneRenderPass {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         float[] c = rgb(colors.water());
-        float y = w.y() - ey;
+        float top = w.y() - ey;
+        float floor = w.floorY() - ey;
         float x0 = w.minX() - ex, x1 = w.maxX() - ex;
         float z0 = w.minZ() - ez, z1 = w.maxZ() - ez;
+        float shade = 0.8f; // sides a touch darker so the edge reads as depth
+        float sr = c[0] * shade, sg = c[1] * shade, sb = c[2] * shade;
 
         BufferBuilder bb = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        bb.addVertex(x0, y, z0).setColor(c[0], c[1], c[2], WATER_ALPHA);
-        bb.addVertex(x0, y, z1).setColor(c[0], c[1], c[2], WATER_ALPHA);
-        bb.addVertex(x1, y, z1).setColor(c[0], c[1], c[2], WATER_ALPHA);
-        bb.addVertex(x1, y, z0).setColor(c[0], c[1], c[2], WATER_ALPHA);
+        // Top surface.
+        bb.addVertex(x0, top, z0).setColor(c[0], c[1], c[2], WATER_ALPHA);
+        bb.addVertex(x0, top, z1).setColor(c[0], c[1], c[2], WATER_ALPHA);
+        bb.addVertex(x1, top, z1).setColor(c[0], c[1], c[2], WATER_ALPHA);
+        bb.addVertex(x1, top, z0).setColor(c[0], c[1], c[2], WATER_ALPHA);
+        // +x edge face.
+        bb.addVertex(x1, floor, z0).setColor(sr, sg, sb, WATER_ALPHA);
+        bb.addVertex(x1, floor, z1).setColor(sr, sg, sb, WATER_ALPHA);
+        bb.addVertex(x1, top, z1).setColor(sr, sg, sb, WATER_ALPHA);
+        bb.addVertex(x1, top, z0).setColor(sr, sg, sb, WATER_ALPHA);
+        // +z edge face.
+        bb.addVertex(x0, floor, z1).setColor(sr, sg, sb, WATER_ALPHA);
+        bb.addVertex(x1, floor, z1).setColor(sr, sg, sb, WATER_ALPHA);
+        bb.addVertex(x1, top, z1).setColor(sr, sg, sb, WATER_ALPHA);
+        bb.addVertex(x0, top, z1).setColor(sr, sg, sb, WATER_ALPHA);
         draw(bb);
 
         RenderSystem.depthMask(true);
@@ -219,18 +249,6 @@ final class BiomeSceneRenderPass {
 
     private static float[] rgb(int color) {
         return new float[]{((color >> 16) & 0xFF) / 255f, ((color >> 8) & 0xFF) / 255f, (color & 0xFF) / 255f};
-    }
-
-    private static float lerp(float a, float b, float t) {
-        return a + (b - a) * t;
-    }
-
-    private static float clamp(float v, float lo, float hi) {
-        return v < lo ? lo : Math.min(v, hi);
-    }
-
-    private static float[] mix(float[] a, float[] b, float t) {
-        return new float[]{a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t};
     }
 
     private static void draw(BufferBuilder builder) {
