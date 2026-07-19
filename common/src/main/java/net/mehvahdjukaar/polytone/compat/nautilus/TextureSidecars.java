@@ -1,16 +1,16 @@
 package net.mehvahdjukaar.polytone.compat.nautilus;
 
 import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
+import net.mehvahdjukaar.nautilus.workbench.FileNamesUtil;
 import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
 import net.mehvahdjukaar.nautilus.workbench.SidecarAssets;
 import net.mehvahdjukaar.polytone.companion.ContentTextures;
 import net.mehvahdjukaar.polytone.companion.TextureSlot;
+import net.mehvahdjukaar.polytone.utils.PathsUtils;
 import net.minecraft.resources.ResourceLocation;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -43,16 +43,9 @@ final class TextureSidecars {
         Path dir = jsonFile.getParent();
         Path nameP = jsonFile.getFileName();
         if (dir == null || nameP == null) return List.of();
-        String fileName = nameP.toString();
-        String stem = fileName.toLowerCase(Locale.ROOT).endsWith(".json")
-                ? fileName.substring(0, fileName.length() - ".json".length()) : fileName;
+        String stem = FileNamesUtil.stem(nameP.toString());
 
-        List<Path> siblings = pack.children(dir);
-        Map<String, Path> byName = new HashMap<>();
-        for (Path p : siblings) {
-            Path n = p.getFileName();
-            if (n != null && Files.isRegularFile(p)) byName.put(n.toString().toLowerCase(Locale.ROOT), p);
-        }
+        Map<String, Path> byName = pack.childrenByName(dir); // regular files, lower-cased keys
 
         List<SidecarAssets.Slot> out = new ArrayList<>();
         Set<Path> claimed = new HashSet<>();
@@ -76,14 +69,13 @@ final class TextureSidecars {
             }
         }
 
-        // stray siblings the naming convention associates with this stem but no slot consumed
-        for (Path p : siblings) {
-            Path n = p.getFileName();
-            if (n == null || claimed.contains(p)) continue;
-            if (!byName.containsKey(n.toString().toLowerCase(Locale.ROOT))) continue; // not a regular file
-            String label = association.roleLabel(n.toString(), stem);
+        // stray files the naming convention associates with this stem but no slot consumed
+        for (Path p : byName.values()) {
+            if (claimed.contains(p)) continue;
+            String name = p.getFileName().toString();
+            String label = association.roleLabel(name, stem);
             if (label != null) {
-                out.add(new SidecarAssets.Slot(n.toString(), p, SidecarAssets.State.UNUSED, label));
+                out.add(new SidecarAssets.Slot(name, p, SidecarAssets.State.UNUSED, label));
             }
         }
         return out;
@@ -94,18 +86,9 @@ final class TextureSidecars {
     // name EXTERNAL (it resolves from vanilla or another pack, still previewable off the live stack).
     private static SidecarAssets.Slot remoteSlot(TextureSlot slot, PackWorkspace pack, Side side) {
         ResourceLocation location = slot.remoteLocation();
-        String base = side == Side.SERVER_DATA ? "data" : "assets";
-        String path = location.getPath();
-        int slash = path.lastIndexOf('/');
-        String dir = slash < 0 ? "" : path.substring(0, slash + 1);
-
-        SidecarAssets.Slot canonical = null;
-        for (String fileName : slot.acceptedNames()) {
-            SidecarAssets.Slot candidate = SidecarAssets.referenced(pack, base,
-                    location.withPath(dir + fileName), "", "", slot.label());
-            if (candidate.state() == SidecarAssets.State.PRESENT) return candidate;
-            if (canonical == null) canonical = candidate;
-        }
-        return canonical;
+        String dir = PathsUtils.directoryOf(location.getPath());
+        List<ResourceLocation> candidates = slot.acceptedNames().stream()
+                .map(name -> location.withPath(dir + name)).toList();
+        return SidecarAssets.referencedFirstPresent(pack, side, candidates, "", "", slot.label());
     }
 }

@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.companion;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
+import net.mehvahdjukaar.polytone.utils.PathsUtils;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -125,7 +126,7 @@ public final class ContentTextures<V> {
      * bound slot's texture is absent.
      */
     public void fill(TrackedTextures textures, ResourceLocation contentId, @Nullable V value, boolean strict) {
-        String stem = Naming.lastSegment(contentId.getPath());
+        String stem = PathsUtils.lastSegment(contentId.getPath());
         for (TextureSlot slot : expectedSlots(value, stem)) {
             Colormap colormap = slot.target();
             if (colormap == null || !colormap.needsToFillTexture()) continue;
@@ -171,7 +172,7 @@ public final class ContentTextures<V> {
      * The manager builds and merges the actual default content for each returned entry.
      */
     public Map<TexturePart<V>, Set<Integer>> adoptable(TrackedTextures textures, ResourceLocation contentId, V value) {
-        String stem = Naming.lastSegment(contentId.getPath());
+        String stem = PathsUtils.lastSegment(contentId.getPath());
         Map<TexturePart<V>, Set<Integer>> out = new LinkedHashMap<>();
         long declaredCount = parts.stream().filter(p -> p.declared(value) != null).count();
         for (TexturePart<V> part : parts) {
@@ -199,8 +200,8 @@ public final class ContentTextures<V> {
         Map<ResourceLocation, Map<TexturePart<V>, Set<Integer>>> groups = new LinkedHashMap<>();
         Set<ResourceLocation> owned = new HashSet<>();
         for (ResourceLocation id : textures.keySet()) {
-            String dir = Naming.directoryOf(id.getPath());
-            String base = Naming.lastSegment(id.getPath());
+            String dir = PathsUtils.directoryOf(id.getPath());
+            String base = PathsUtils.lastSegment(id.getPath());
 
             TexturePart<V> part = null;
             Naming.ParsedName name = null;
@@ -243,7 +244,7 @@ public final class ContentTextures<V> {
                 continue;
             ResourceLocation explicit = inner.getExplicitTargetTexture();
             IntFunction<String> name = explicit != null
-                    ? i -> Naming.tintedFileName(Naming.lastSegment(explicit.getPath()), i)
+                    ? i -> Naming.tintedFileName(PathsUtils.lastSegment(explicit.getPath()), i)
                     : i -> part.naming().fileName(stem, i);
             List<String> names = new ArrayList<>(2);
             names.add(name.apply(index));
@@ -261,7 +262,7 @@ public final class ContentTextures<V> {
         ResourceLocation explicit = c.getExplicitTargetTexture();
         if (explicit != null) {
             return List.of(TextureSlot.fillingRemote(c, explicit, "texture_path",
-                    Naming.lastSegment(explicit.getPath()) + ".png"));
+                    PathsUtils.lastSegment(explicit.getPath()) + ".png"));
         }
         return List.of(TextureSlot.filling(c, label, canonicalName));
     }

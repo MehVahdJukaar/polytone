@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.utils;
 import com.mojang.blaze3d.platform.NativeImage;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.companion.Naming;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -14,8 +15,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @SuppressWarnings("all")
 public record ArrayImage(int[][] pixels, int width, int height) {
@@ -80,29 +79,16 @@ public record ArrayImage(int[][] pixels, int width, int height) {
     public static Map<ResourceLocation, Group> groupTextures(Map<ResourceLocation, ArrayImage> texturesColormap) {
         Map<ResourceLocation, Group> groupedMap = new LinkedHashMap<>();
 
-        Pattern pattern = Pattern.compile("(\\D+)(_\\d+)?");
         for (var e : texturesColormap.entrySet()) {
             ResourceLocation id = e.getKey();
-            String str = id.getPath();
-            Matcher matcher = pattern.matcher(str);
-            if (matcher.matches()) {
-                String key = matcher.group(1); // Group 1: the word before underscore (if any)
-                String indexMatch = matcher.group(2); // Group 2: the underscore and digits (if any)
-
-                int index = -1; // Default index if there's no underscore and digits
-                if (indexMatch != null) {
-                    // Extracting the index from the matched group (removing the underscore)
-                    index = Integer.parseInt(indexMatch.substring(1));
-                }
-
-                groupedMap.computeIfAbsent(id.withPath(key), a -> new Group())
-                        .put(index, e.getValue());
-            }else{
-                //no match.
-                Group group = new Group();
-                group.put(-1, e.getValue());
-                groupedMap.put(id, group);
-            }
+            String path = id.getPath();
+            // Same stem/tint-index rule as the reload driver (Naming), so grouping and filling can't
+            // disagree. The old regex ran on the whole path and dropped any id with a digit before
+            // the trailing "_<n>" (it fell out of grouping entirely).
+            Naming.ParsedName parsed = Naming.parse(PathsUtils.lastSegment(path));
+            ResourceLocation stemId = id.withPath(PathsUtils.directoryOf(path) + parsed.stem());
+            groupedMap.computeIfAbsent(stemId, a -> new Group())
+                    .put(parsed.index(), e.getValue());
         }
         return groupedMap;
     }

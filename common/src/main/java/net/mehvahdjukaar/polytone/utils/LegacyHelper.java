@@ -224,8 +224,7 @@ public class LegacyHelper {
                 if (source.contains("./")) {
                     // resolve relative paths
                     String path = id.getPath();
-                    int index = path.lastIndexOf('/');
-                    String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
+                    String directoryPath = PathsUtils.directoryOf(path);
                     source = source.replace("./", id.getNamespace() + ":" + directoryPath);
                 }
                 colormap.setExplicitTargetTexture(ResourceLocation.parse(source));
@@ -287,8 +286,7 @@ public class LegacyHelper {
                 } else {
                     // resolve relative paths
                     String path = id.getPath();
-                    int index = path.lastIndexOf('/');
-                    String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
+                    String directoryPath = PathsUtils.directoryOf(path);
                     source = (id.getNamespace() + ":" + directoryPath) + source.replace("./", "");
                 }
                 colormap.setExplicitTargetTexture(ResourceLocation.parse(source));

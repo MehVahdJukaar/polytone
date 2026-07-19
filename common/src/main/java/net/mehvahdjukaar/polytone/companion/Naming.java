@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.companion;
 
+import net.mehvahdjukaar.polytone.utils.PathsUtils;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,7 +86,7 @@ public sealed interface Naming {
 
         @Override
         public Set<Integer> presentIndexes(TrackedTextures textures, ResourceLocation contentId) {
-            String stem = lastSegment(contentId.getPath());
+            String stem = PathsUtils.lastSegment(contentId.getPath());
             return textures.find(contentId, fileName(stem, DEFAULT_INDEX)) != null
                     ? Set.of(DEFAULT_INDEX) : Set.of();
         }
@@ -129,14 +130,14 @@ public sealed interface Naming {
 
         @Override
         public Set<Integer> presentIndexes(TrackedTextures textures, ResourceLocation contentId) {
-            String dir = directoryOf(contentId.getPath());
-            String stem = lastSegment(contentId.getPath());
+            String dir = PathsUtils.directoryOf(contentId.getPath());
+            String stem = PathsUtils.lastSegment(contentId.getPath());
             Set<Integer> out = new TreeSet<>();
             for (ResourceLocation id : textures.keySet()) {
                 if (!id.getNamespace().equals(contentId.getNamespace())) continue;
                 String path = id.getPath();
-                if (!directoryOf(path).equals(dir)) continue;
-                Integer index = tintIndexOf(lastSegment(path) + ".png", stem);
+                if (!PathsUtils.directoryOf(path).equals(dir)) continue;
+                Integer index = tintIndexOf(PathsUtils.lastSegment(path) + ".png", stem);
                 if (index != null) out.add(index);
             }
             return out;
@@ -185,19 +186,5 @@ public sealed interface Naming {
 
     static String label(int index) {
         return index == DEFAULT_INDEX ? "default" : "tint " + index;
-    }
-
-    // path segment helpers shared by the companion classes
-
-    /** {@code "a/b/c"} → {@code "a/b/"}; no slash → {@code ""}. */
-    static String directoryOf(String path) {
-        int slash = path.lastIndexOf('/');
-        return slash < 0 ? "" : path.substring(0, slash + 1);
-    }
-
-    /** {@code "a/b/c"} → {@code "c"}. */
-    static String lastSegment(String path) {
-        int slash = path.lastIndexOf('/');
-        return slash < 0 ? path : path.substring(slash + 1);
     }
 }

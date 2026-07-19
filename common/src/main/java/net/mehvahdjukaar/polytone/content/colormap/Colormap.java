@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.content.common.expressions.impl.IColormapExp;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
+import net.mehvahdjukaar.polytone.utils.PathsUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
@@ -159,7 +160,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     public void setExplicitTargetTexture(ResourceLocation imageTarget) {
-        this.explicitTargetTexture = imageTarget.withPath(imageTarget.getPath().replace(".png", ""));
+        this.explicitTargetTexture = imageTarget.withPath(PathsUtils.stripExtension(imageTarget.getPath()));
     }
 
     // Dont use tint index

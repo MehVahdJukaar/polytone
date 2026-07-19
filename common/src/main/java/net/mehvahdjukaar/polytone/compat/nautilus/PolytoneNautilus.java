@@ -17,6 +17,7 @@ import net.mehvahdjukaar.nautilus.swing.widget.ExpressionWidget;
 import net.mehvahdjukaar.nautilus.workbench.CodecEntry;
 import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.compat.nautilus.preview.BiomeScenePreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ColormapPreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.GuiModifierPreviewPanel;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.NoisePreview;
@@ -54,7 +55,8 @@ public final class PolytoneNautilus {
             "colormaps", ColormapPreview::new,
             "gui_modifiers", GuiModifierPreviewPanel::new,
             "custom_particles", ParticlePreview::new,
-            "noises", NoisePreview::new);
+            "noises", NoisePreview::new,
+            "biome_modifiers", BiomeScenePreview::new);
 
     // Bundled Nautilus icons reused by content folder - only the types with an obvious glyph;
     // the rest fall back to Nautilus' generic content icon.
