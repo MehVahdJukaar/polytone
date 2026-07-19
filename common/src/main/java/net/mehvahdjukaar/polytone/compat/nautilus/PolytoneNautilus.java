@@ -16,6 +16,8 @@ import net.mehvahdjukaar.nautilus.workbench.CodecEntry;
 import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ColormapPreview;
+import net.mehvahdjukaar.polytone.compat.nautilus.preview.GuiModifierPreviewPanel;
+import net.mehvahdjukaar.polytone.compat.nautilus.preview.ParticlePreview;
 import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapColorModulatorExpression;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
@@ -74,6 +76,8 @@ public final class PolytoneNautilus {
         }
 
         NautilusStudioApi.registerPreview(Polytone.MOD_ID + "/colormaps", ColormapPreview::new);
+        NautilusStudioApi.registerPreview(Polytone.MOD_ID + "/gui_modifiers", GuiModifierPreviewPanel::new);
+        NautilusStudioApi.registerPreview(Polytone.MOD_ID + "/custom_particles", ParticlePreview::new);
     }
 
     private static void registerWidgetBindings() {

@@ -1,16 +1,15 @@
 package net.mehvahdjukaar.polytone.platform;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
+import net.mehvahdjukaar.polytone.content.slotify.GuiModifierOverlay;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.resources.ResourceKey;
@@ -107,16 +106,9 @@ public class PolytoneForge {
     @SubscribeEvent
     public void renderScreen(ScreenEvent.Render.Post event) {
         Screen screen = event.getScreen();
-        SlotifyScreen ss = (SlotifyScreen) screen;
-        if (ss.polytone$hasSprites()) {
-
-            GuiGraphics graphics = event.getGuiGraphics();
-            PoseStack poseStack = graphics.pose();
-            poseStack.pushPose();
-            poseStack.translate(screen.width / 2F, screen.height / 2F, 500);
-            ss.polytone$renderExtraSprites(graphics, event.getMouseX(), event.getMouseY(), event.getPartialTick());
-            poseStack.popPose();
-        }
+        if (!(screen instanceof SlotifyScreen ss)) return;
+        GuiModifierOverlay.renderScreenExtras(event.getGuiGraphics(), ss, screen.width, screen.height,
+                event.getMouseX(), event.getMouseY(), event.getPartialTick());
     }
 
 

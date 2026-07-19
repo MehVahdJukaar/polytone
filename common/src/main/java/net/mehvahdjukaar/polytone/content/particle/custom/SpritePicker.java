@@ -31,6 +31,10 @@ public class SpritePicker {
         return set != null;
     }
 
+    public @Nullable SpriteSet getSpriteSet() {
+        return set;
+    }
+
     public TextureAtlasSprite getAny() {
         if (set == null) {
             throw new RuntimeException("Tried to create a particle with no sprites set!");

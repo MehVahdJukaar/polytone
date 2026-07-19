@@ -14,7 +14,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
-import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
+import net.mehvahdjukaar.polytone.content.slotify.GuiModifierOverlay;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.particle.ParticleRenderType;
@@ -52,19 +52,10 @@ public class PolytoneFabric implements ClientModInitializer {
 
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {
-                ScreenModifier guiModifier = Polytone.SLOTIFY.getGuiModifier(screen);
-                if (guiModifier != null && !guiModifier.extraRenderables().isEmpty()) {
-                    ScreenEvents.afterRender(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) -> {
-
-                        var matrices = graphics.pose();
-                        matrices.pushPose();
-                        matrices.setIdentity();
-                        matrices.translate(scaledWidth / 2F, scaledHeight / 2F, 500);
-
-                        ss.polytone$renderExtraSprites(graphics, mouseX, mouseY, tickDelta);
-                        matrices.popPose();
-                    });
-                }
+                // Register unconditionally: renderExtraSprites no-ops with no modifier, and a preview may
+                // be pushed later. The overlay + live-pushed sprites both need the callback present.
+                ScreenEvents.afterRender(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) ->
+                        GuiModifierOverlay.renderScreenExtras(graphics, ss, scaledWidth, scaledHeight, mouseX, mouseY, tickDelta));
             }
         });
 

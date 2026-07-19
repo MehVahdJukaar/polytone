@@ -46,6 +46,13 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     private Integer polytone$customLabelColor = null;
     @Unique
     private Integer polytone$customTitleColor = null;
+    // Size offsets already applied. imageWidth/imageHeight/width/height persist across rebuildWidgets
+    // (unlike the label/pos fields, which vanilla init recomputes), so we track and undo the delta to
+    // keep re-applies idempotent for the live editor preview.
+    @Unique
+    private int polytone$appliedWOff = 0;
+    @Unique
+    private int polytone$appliedHOff = 0;
 
     protected AbstractContainerScreenMixin(Component component) {
         super(component);
@@ -61,10 +68,23 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
                 Preconditions.checkNotNull(slot), graphics, x, y, blitOffset);
     }
 
+    // Undo the previously applied size delta before vanilla init recomputes leftPos/labels from the
+    // (now pristine) image size, so everything re-bakes from a clean base on every rebuildWidgets.
+    @Inject(method = "init", at = @At("HEAD"))
+    public void polytone$undoSizeOffsets(CallbackInfo ci) {
+        this.imageWidth -= polytone$appliedWOff;
+        this.imageHeight -= polytone$appliedHOff;
+        this.width -= polytone$appliedWOff;
+        this.height -= polytone$appliedHOff;
+        polytone$appliedWOff = 0;
+        polytone$appliedHOff = 0;
+    }
+
     @Inject(method = "init", at = @At("TAIL"))
     public void modifyLabels(CallbackInfo ci) {
         var m = Polytone.SLOTIFY.getGuiModifier((AbstractContainerScreen<?>) (Object) this);
         if (m != null) {
+            // label/pos fields are recomputed fresh by vanilla init, so += stays idempotent
             this.titleLabelX += m.titleX();
             this.titleLabelY += m.titleY();
             this.inventoryLabelX += m.labelX();
@@ -77,7 +97,11 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             this.imageWidth += m.wOff();
             this.height += m.hOff();
             this.imageHeight += m.hOff();
-
+            polytone$appliedWOff = m.wOff();
+            polytone$appliedHOff = m.hOff();
+        } else {
+            this.polytone$customTitleColor = null;
+            this.polytone$customLabelColor = null;
         }
     }
 

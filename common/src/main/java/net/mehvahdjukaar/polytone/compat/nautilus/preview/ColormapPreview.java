@@ -5,7 +5,6 @@ import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
 import net.mehvahdjukaar.nautilus.render.BlockScene;
 import net.mehvahdjukaar.nautilus.render.BlockTint;
 import net.mehvahdjukaar.nautilus.swing.preview.PixelTextureView;
-import net.mehvahdjukaar.nautilus.swing.preview.PreviewStatus;
 import net.mehvahdjukaar.nautilus.swing.preview.PreviewSurface;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
 import net.mehvahdjukaar.nautilus.swing.preview.scene.SceneViewport;
@@ -19,9 +18,6 @@ import net.mehvahdjukaar.nautilus.swing.toolkit.UiTheme;
 import net.mehvahdjukaar.nautilus.swing.widget.RegistryPickerField;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.common.expressions.preview.PreviewContext;
-import net.mehvahdjukaar.polytone.content.common.expressions.preview.SimProxies;
-import net.mehvahdjukaar.polytone.content.common.expressions.preview.SimValue;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.client.Minecraft;
@@ -48,21 +44,17 @@ import org.jetbrains.annotations.Nullable;
 import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.Timer;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 import java.awt.image.BufferedImage;
 
@@ -86,26 +78,18 @@ import java.awt.image.BufferedImage;
  * <p>All sampling goes through the decoded {@link Colormap}'s instrumented sampler
  * ({@code sampleColorForPreview} + a {@link CaptureSink}), so the swatch, the 2D marker and the 3D block
  * tint all come from one runtime-faithful evaluation. In simulated mode it is fed a minimal
- * {@link SimLevel} and the preview's own {@link SimProxies} (env sliders, shown only when the expression
+ * {@link SimLevel} and the {@link ExpressionPreview} env-slider harness (shown only when the expression
  * reads them). With "Live at player" on it samples the real level at the player's feet with the live
  * clock/proxies instead, and a timer keeps it refreshed.
  */
-public final class ColormapPreview implements TabPreview {
+public final class ColormapPreview extends ExpressionPreview {
 
     private final @Nullable Path file;
     private final @Nullable ResourceLocation contentId;
 
-    private PreviewSurface root;
-
     private final SceneViewport blockView = new SceneViewport();
     private final ColorSwatch swatch = new ColorSwatch();
     private final PixelTextureView imageView = new PixelTextureView();
-    private final PreviewStatus status = new PreviewStatus();
-
-    // "Live at player" bypasses all simulation: sample the real level at the player's feet on a timer.
-    private final JCheckBox liveToggle = new JCheckBox("Live at player");
-    private boolean liveMode;
-    private final Timer liveTimer = new Timer(500, e -> { if (liveMode) recompute(); });
 
     // The editor's searchable, icon-bearing registry pickers (same widget the schema form uses).
     private final RegistryPickerField blockPicker;
@@ -116,12 +100,6 @@ public final class ColormapPreview implements TabPreview {
 
     // Titled group holding every simulated input; greyed out (disabled) while in live mode.
     private JPanel inputsBox;
-
-    // Env sliders, one per SimProxies input, shown only when the sampled expression reads them.
-    private final SimProxies sim = new SimProxies();
-    private final Map<SimValue, EnvControl> envControls = new LinkedHashMap<>();
-    private final Box envSection = Box.createVerticalBox();
-    private final JLabel envHeader = StyledLabels.muted("Environment");
 
     // Light sliders feed SimLevel; shown only when the expression reads sky/block light.
     private final JSlider skySlider = new JSlider(0, 15, 15);
@@ -160,20 +138,8 @@ public final class ColormapPreview implements TabPreview {
         blockView.setPanEnabled(false); // small fixed thumbnail: orbit/zoom to inspect, but never pan off-view
         updateScene(Blocks.GRASS_BLOCK.defaultBlockState());
 
-        // One row per sim input, hidden until the sampled expression is seen reading it.
-        for (SimValue v : sim.values()) {
-            EnvControl c = new EnvControl(v, this::recompute);
-            c.row.setAlignmentX(Component.LEFT_ALIGNMENT);
-            c.row.setVisible(false);
-            envControls.put(v, c);
-            envSection.add(c.row);
-        }
-
         buildLayout();
 
-        liveToggle.setOpaque(false);
-        liveToggle.setToolTipText("Sample the real world at the player's feet with the live clock, instead of the simulated inputs.");
-        liveToggle.addActionListener(e -> setLiveMode(liveToggle.isSelected()));
         ySlider.addChangeListener(e -> recompute());
         skySlider.addChangeListener(e -> recompute());
         blockSlider.addChangeListener(e -> recompute());
@@ -182,13 +148,8 @@ public final class ColormapPreview implements TabPreview {
     }
 
     @Override
-    public JComponent component() {
-        return root;
-    }
-
-    @Override
     public void dispose() {
-        liveTimer.stop();
+        super.dispose();
         blockView.dispose();
     }
 
@@ -233,13 +194,10 @@ public final class ColormapPreview implements TabPreview {
         inputsBox.add(Box.createVerticalStrut(UiScale.med()));
         addField(inputsBox, labeled("Y level", withValue(ySlider, yLabel)));
 
-        // Env-global + light sliders (visibility driven by detection).
-        envHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
-        envSection.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // Env-global sliders (base harness) + this panel's own light sliders, all under one header.
         skyRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         blockRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        inputsBox.add(envHeader);
-        inputsBox.add(envSection);
+        inputsBox.add(envGroup());
         inputsBox.add(skyRow);
         inputsBox.add(blockRow);
 
@@ -263,62 +221,20 @@ public final class ColormapPreview implements TabPreview {
         root.setMinimumSize(new Dimension(UiScale.px(160), UiScale.px(120)));
     }
 
-    private static void addRow(Box toolbar, JComponent row) {
-        row.setAlignmentX(Component.LEFT_ALIGNMENT);
-        row.setMaximumSize(UiScale.maxHeightHugging(row));
-        toolbar.add(row);
-        toolbar.add(Box.createVerticalStrut(UiScale.small()));
-    }
-
-    // Adds a full-width field to a vertical group, capped to its own height so it doesn't stretch.
-    private static void addField(JComponent box, JComponent field) {
-        field.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setMaximumSize(UiScale.maxHeightHugging(field));
-        box.add(field);
-        box.add(Box.createVerticalStrut(UiScale.small()));
-    }
-
-    // Label over field, field stretches horizontally but keeps its own height.
-    private static JComponent labeled(String text, JComponent field) {
-        Box row = Box.createVerticalBox();
-        JLabel l = StyledLabels.small(text);
-        l.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, field.getPreferredSize().height));
-        row.add(l);
-        row.add(field);
-        row.setAlignmentX(Component.LEFT_ALIGNMENT);
-        return row;
-    }
-
-    private static JComponent withValue(JSlider slider, JLabel value) {
-        Box row = Box.createHorizontalBox();
-        slider.setAlignmentY(Component.CENTER_ALIGNMENT);
-        value.setAlignmentY(Component.CENTER_ALIGNMENT);
-        row.add(slider);
-        row.add(Box.createHorizontalStrut(6));
-        row.add(value);
-        return row;
-    }
-
     @Override
     public void onValueChanged(@Nullable JsonElement json, @Nullable Object value) {
         this.colormap = value instanceof Colormap cm ? cm : null;
         recompute();
     }
 
-    private void setLiveMode(boolean live) {
-        this.liveMode = live;
+    @Override
+    protected void onLiveModeChanged(boolean live) {
         // The simulated inputs are fully replaced by the live readings, so hide the whole group.
         inputsBox.setVisible(!live);
-        if (live) liveTimer.start();
-        else liveTimer.stop();
-        root.revalidate();
-        root.repaint();
-        recompute();
     }
 
-    private void recompute() {
+    @Override
+    protected void recompute() {
         Colormap cm = this.colormap;
         if (cm == null) {
             status.info("Waiting for a valid colormap...");
@@ -352,9 +268,6 @@ public final class ColormapPreview implements TabPreview {
         yLabel.setText("y = " + y);
         skyLabel.setText(String.valueOf(skySlider.getValue()));
         blockLabel.setText(String.valueOf(blockSlider.getValue()));
-        for (EnvControl c : envControls.values()) {
-            c.value.setText(c.format());
-        }
         updateClimate(biome);
         updateScene(state);
 
@@ -362,8 +275,7 @@ public final class ColormapPreview implements TabPreview {
         SimLevel level = new SimLevel(pos, state, biome, skySlider.getValue(), blockSlider.getValue());
         CaptureSink sink = new CaptureSink();
 
-        sim.clearReads();
-        PreviewContext.install(sim);
+        installSim();
         try {
             cm.sampleColorForPreview(state, pos, biome, null, level, sink);
         } catch (Exception ex) {
@@ -373,7 +285,7 @@ public final class ColormapPreview implements TabPreview {
             showEnv(level.usedSky, level.usedBlock);
             return;
         } finally {
-            PreviewContext.clear();
+            clearSim();
         }
 
         // Show only the sliders the expression actually read this pass.
@@ -476,21 +388,22 @@ public final class ColormapPreview implements TabPreview {
         imageView.setCaption(null);
     }
 
-    private void hideEnv() {
-        sim.clearReads();
-        showEnv(false, false);
+    @Override
+    protected void hideEnv() {
+        super.hideEnv();
+        skyRow.setVisible(false);
+        blockRow.setVisible(false);
+        inputsBox.revalidate();
+        inputsBox.repaint();
     }
 
+    // The base harness reveals the global sliders it read; this panel adds its own sky/block light
+    // rows under the same header, so the header shows if either the base or the light rows do.
     private void showEnv(boolean usedSky, boolean usedBlock) {
-        boolean any = false;
-        for (EnvControl c : envControls.values()) {
-            boolean show = c.input.wasRead();
-            c.row.setVisible(show);
-            any |= show;
-        }
+        boolean anyEnv = refreshEnvControls();
         skyRow.setVisible(usedSky);
         blockRow.setVisible(usedBlock);
-        envHeader.setVisible(any || usedSky || usedBlock);
+        setEnvHeaderVisible(anyEnv || usedSky || usedBlock);
         inputsBox.revalidate();
         inputsBox.repaint();
     }
@@ -619,32 +532,6 @@ public final class ColormapPreview implements TabPreview {
             }
         }
         return out;
-    }
-
-    // --- env slider row bound to one SimProxies input ------------------------------------------
-
-    private static final class EnvControl {
-        final SimValue input;
-        final JLabel value = new JLabel();
-        final JComponent row;
-        private final JSlider slider;
-
-        EnvControl(SimValue input, Runnable onChange) {
-            this.input = input;
-            int steps = Math.max(1, (int) Math.round((input.max() - input.min()) / input.step()));
-            int start = (int) Math.round((input.value() - input.min()) / input.step());
-            this.slider = new JSlider(0, steps, Math.clamp(start, 0, steps));
-            slider.addChangeListener(e -> {
-                input.set(input.min() + slider.getValue() * input.step());
-                onChange.run();
-            });
-            this.row = labeled(input.label(), withValue(slider, value));
-            value.setText(format());
-        }
-
-        String format() {
-            return input.step() >= 1 ? String.format("%.0f", input.value()) : String.format("%.2f", input.value());
-        }
     }
 
     // --- sink: captures the intermediates of one real sampling pass ----------------------------

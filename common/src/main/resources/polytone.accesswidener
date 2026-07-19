@@ -40,6 +40,11 @@ mutable field net/minecraft/world/entity/player/Player inventoryMenu Lnet/minecr
 #particle clear
 accessible field net/minecraft/client/particle/ParticleEngine particles Ljava/util/Map;
 
+# editor particle preview: position a throwaway Camera for the offscreen render
+accessible method net/minecraft/client/Camera <init> ()V
+accessible method net/minecraft/client/Camera setPosition (Lnet/minecraft/world/phys/Vec3;)V
+accessible method net/minecraft/client/Camera setRotation (FF)V
+
 accessible field net/minecraft/client/particle/Particle friction F
 accessible field net/minecraft/client/particle/Particle oRoll F
 accessible field net/minecraft/client/particle/Particle hasPhysics Z
