@@ -42,6 +42,6 @@ public record TexturePart<V>(Naming naming, String label,
 
     /** The open-ended {@code <stem>_<tint>.png} family, one file per tint index (block modifiers). */
     public static <V> TexturePart<V> tinted(Function<V, @Nullable Object> declared) {
-        return new TexturePart<>(Naming.tinted(), TintNaming.label(TintNaming.DEFAULT_INDEX), declared);
+        return new TexturePart<>(Naming.tinted(), Naming.label(Naming.DEFAULT_INDEX), declared);
     }
 }

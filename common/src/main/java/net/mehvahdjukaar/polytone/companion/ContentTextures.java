@@ -73,7 +73,7 @@ public final class ContentTextures<V> {
         boolean plainFallbackFree = true;
         for (TexturePart<V> part : parts) {
             Object declared = part.declared(value);
-            String canonical = part.naming().fileName(stem, TintNaming.DEFAULT_INDEX);
+            String canonical = part.naming().fileName(stem, Naming.DEFAULT_INDEX);
             if (declared == null) {
                 // nothing declared: an unbound slot (managers auto-attach defaults when the texture exists)
                 slots.add(TextureSlot.unbound(part.label(), canonical));
@@ -106,13 +106,13 @@ public final class ContentTextures<V> {
         List<TextureSlot> slots = new ArrayList<>();
         boolean plainCovered = false;
         for (TexturePart<V> part : parts) {
-            String canonical = part.naming().fileName(stem, TintNaming.DEFAULT_INDEX);
+            String canonical = part.naming().fileName(stem, Naming.DEFAULT_INDEX);
             slots.add(TextureSlot.unbound(part.label(), canonical));
             if (canonical.equalsIgnoreCase(stem + ".png")) plainCovered = true;
         }
         // plain <stem>.png is meaningful even when no part names it outright (fallback rules)
         if (!plainCovered) {
-            slots.add(TextureSlot.unbound(TintNaming.label(TintNaming.DEFAULT_INDEX), stem + ".png"));
+            slots.add(TextureSlot.unbound(Naming.label(Naming.DEFAULT_INDEX), stem + ".png"));
         }
         return slots;
     }
@@ -125,7 +125,7 @@ public final class ContentTextures<V> {
      * bound slot's texture is absent.
      */
     public void fill(TrackedTextures textures, ResourceLocation contentId, @Nullable V value, boolean strict) {
-        String stem = TintNaming.lastSegment(contentId.getPath());
+        String stem = Naming.lastSegment(contentId.getPath());
         for (TextureSlot slot : expectedSlots(value, stem)) {
             Colormap colormap = slot.target();
             if (colormap == null || !colormap.needsToFillTexture()) continue;
@@ -161,7 +161,7 @@ public final class ContentTextures<V> {
             if (index != null) return part.naming().slotLabel(part.label(), index);
         }
         // plain <stem>.png always reads as the default even when no part names it outright
-        return fileName.equalsIgnoreCase(stem + ".png") ? TintNaming.label(TintNaming.DEFAULT_INDEX) : null;
+        return fileName.equalsIgnoreCase(stem + ".png") ? Naming.label(Naming.DEFAULT_INDEX) : null;
     }
 
     /**
@@ -171,7 +171,7 @@ public final class ContentTextures<V> {
      * The manager builds and merges the actual default content for each returned entry.
      */
     public Map<TexturePart<V>, Set<Integer>> adoptable(TrackedTextures textures, ResourceLocation contentId, V value) {
-        String stem = TintNaming.lastSegment(contentId.getPath());
+        String stem = Naming.lastSegment(contentId.getPath());
         Map<TexturePart<V>, Set<Integer>> out = new LinkedHashMap<>();
         long declaredCount = parts.stream().filter(p -> p.declared(value) != null).count();
         for (TexturePart<V> part : parts) {
@@ -183,7 +183,7 @@ public final class ContentTextures<V> {
         // something IS declared, the plain name is that slot's fallback instead (see expectedSlots)
         if (declaredCount == 0 && !out.containsKey(mainPart())
                 && textures.find(contentId, stem + ".png") != null) {
-            out.put(mainPart(), Set.of(TintNaming.DEFAULT_INDEX));
+            out.put(mainPart(), Set.of(Naming.DEFAULT_INDEX));
         }
         return out;
     }
@@ -199,11 +199,11 @@ public final class ContentTextures<V> {
         Map<ResourceLocation, Map<TexturePart<V>, Set<Integer>>> groups = new LinkedHashMap<>();
         Set<ResourceLocation> owned = new HashSet<>();
         for (ResourceLocation id : textures.keySet()) {
-            String dir = TintNaming.directoryOf(id.getPath());
-            String base = TintNaming.lastSegment(id.getPath());
+            String dir = Naming.directoryOf(id.getPath());
+            String base = Naming.lastSegment(id.getPath());
 
             TexturePart<V> part = null;
-            TintNaming.TintedName name = null;
+            Naming.ParsedName name = null;
             for (TexturePart<V> candidate : byNameSpecificity) {
                 name = candidate.naming().parseName(base);
                 if (name != null) {
@@ -213,7 +213,7 @@ public final class ContentTextures<V> {
             }
             if (part == null) {
                 part = mainPart();
-                name = new TintNaming.TintedName(base, TintNaming.DEFAULT_INDEX);
+                name = new Naming.ParsedName(base, Naming.DEFAULT_INDEX);
             }
             ResourceLocation stemId = id.withPath(dir + name.stem());
 
@@ -243,13 +243,13 @@ public final class ContentTextures<V> {
                 continue;
             ResourceLocation explicit = inner.getExplicitTargetTexture();
             IntFunction<String> name = explicit != null
-                    ? i -> TintNaming.fileName(TintNaming.lastSegment(explicit.getPath()), i)
+                    ? i -> Naming.tintedFileName(Naming.lastSegment(explicit.getPath()), i)
                     : i -> part.naming().fileName(stem, i);
             List<String> names = new ArrayList<>(2);
             names.add(name.apply(index));
             // tint 0 / a lone entry falls back to the default texture
             if (getters.size() == 1 || index == 0) {
-                names.add(name.apply(TintNaming.DEFAULT_INDEX));
+                names.add(name.apply(Naming.DEFAULT_INDEX));
             }
             slots.add(new TextureSlot(names, part.naming().slotLabel(part.label(), index), inner, explicit));
         }
@@ -261,7 +261,7 @@ public final class ContentTextures<V> {
         ResourceLocation explicit = c.getExplicitTargetTexture();
         if (explicit != null) {
             return List.of(TextureSlot.fillingRemote(c, explicit, "texture_path",
-                    TintNaming.lastSegment(explicit.getPath()) + ".png"));
+                    Naming.lastSegment(explicit.getPath()) + ".png"));
         }
         return List.of(TextureSlot.filling(c, label, canonicalName));
     }

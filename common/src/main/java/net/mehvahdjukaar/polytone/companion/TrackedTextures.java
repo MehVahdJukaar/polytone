@@ -34,7 +34,7 @@ public final class TrackedTextures {
 
     public @Nullable ResourceLocation find(ResourceLocation baseId, String fileName) {
         ResourceLocation candidate = baseId.withPath(
-                TintNaming.directoryOf(baseId.getPath()) + stripPng(fileName));
+                Naming.directoryOf(baseId.getPath()) + stripPng(fileName));
         return textures.containsKey(candidate) ? candidate : null;
     }
 

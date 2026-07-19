@@ -3,19 +3,32 @@ package net.mehvahdjukaar.polytone.companion;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * How a {@link TexturePart}'s files are named relative to its content's stem. Two schemes:
- * a literal {@link Suffix} ({@code <stem><suffix>.png}) and the open-ended {@link Tinted}
- * family ({@code <stem>.png} plus {@code <stem>_<n>.png}, one file per tint index). Everything
- * scheme-dependent lives here - name math (via {@link TintNaming}), slot labeling, and which
- * indexes a scanned texture store has for a content - so the engine never branches on the type.
+ * How a {@link TexturePart}'s files are named relative to its content's stem, plus the shared
+ * name math. Two schemes: a literal {@link Suffix} ({@code <stem><suffix>.png}) and the
+ * open-ended {@link Tinted} family ({@code <stem>.png} is the default texture, index
+ * {@value #DEFAULT_INDEX}, and {@code <stem>_<n>.png} the texture for tint index {@code n}).
+ * Everything scheme-dependent is an instance method here, so the engine never branches on the
+ * type; the statics are THE single parser/printer for the convention - reload driver and editor
+ * both go through them, so they can never disagree (the old regex and hand-rolled copies did:
+ * stems containing digits failed the regex and fell out of grouping). All matching is pure and
+ * case-insensitive.
  */
 public sealed interface Naming {
 
-    /** Canonical file name for this part at {@code index} ({@link TintNaming#DEFAULT_INDEX} = the plain one). */
+    int DEFAULT_INDEX = -1;
+
+    /** A base file name split into the content stem and the tint index it encodes. */
+    record ParsedName(String stem, int index) {
+    }
+
+    // -------------------- per-scheme behavior --------------------
+
+    /** Canonical file name for this part at {@code index} ({@link #DEFAULT_INDEX} = the plain one). */
     String fileName(String stem, int index);
 
     /** The index {@code fileName} encodes for content {@code stem}, or null when the name isn't this part's. */
@@ -25,7 +38,7 @@ public sealed interface Naming {
      * Reverse parse with no stem known upfront (orphan routing): the (stem, index) this base
      * name (no extension) encodes, or null when the name can't belong to this part.
      */
-    TintNaming.@Nullable TintedName parseName(String baseName);
+    @Nullable ParsedName parseName(String baseName);
 
     /** Display label for this part's slot at {@code index}; {@code partLabel} is the part's own label. */
     String slotLabel(String partLabel, int index);
@@ -48,34 +61,33 @@ public sealed interface Naming {
 
         @Override
         public String fileName(String stem, int index) {
-            return TintNaming.fileName(stem + suffix, index);
+            return tintedFileName(stem + suffix, index);
         }
 
         @Override
         public @Nullable Integer indexOf(String fileName, String stem) {
-            return fileName.equalsIgnoreCase(stem + suffix + ".png") ? TintNaming.DEFAULT_INDEX : null;
+            return fileName.equalsIgnoreCase(stem + suffix + ".png") ? DEFAULT_INDEX : null;
         }
 
         @Override
-        public TintNaming.@Nullable TintedName parseName(String baseName) {
-            if (suffix.isEmpty()) return new TintNaming.TintedName(baseName, TintNaming.DEFAULT_INDEX);
+        public @Nullable ParsedName parseName(String baseName) {
+            if (suffix.isEmpty()) return new ParsedName(baseName, DEFAULT_INDEX);
             if (baseName.length() > suffix.length() && baseName.endsWith(suffix)) {
-                return new TintNaming.TintedName(baseName.substring(0, baseName.length() - suffix.length()),
-                        TintNaming.DEFAULT_INDEX);
+                return new ParsedName(baseName.substring(0, baseName.length() - suffix.length()), DEFAULT_INDEX);
             }
             return null;
         }
 
         @Override
         public String slotLabel(String partLabel, int index) {
-            return index == TintNaming.DEFAULT_INDEX ? partLabel : partLabel + " " + index;
+            return index == DEFAULT_INDEX ? partLabel : partLabel + " " + index;
         }
 
         @Override
         public Set<Integer> presentIndexes(TrackedTextures textures, ResourceLocation contentId) {
-            String stem = TintNaming.lastSegment(contentId.getPath());
-            return textures.find(contentId, fileName(stem, TintNaming.DEFAULT_INDEX)) != null
-                    ? Set.of(TintNaming.DEFAULT_INDEX) : Set.of();
+            String stem = lastSegment(contentId.getPath());
+            return textures.find(contentId, fileName(stem, DEFAULT_INDEX)) != null
+                    ? Set.of(DEFAULT_INDEX) : Set.of();
         }
 
         @Override
@@ -85,7 +97,7 @@ public sealed interface Naming {
 
         /** {@code ""} -> "default", {@code "_terrain_fog"} -> "terrain fog" */
         String derivedLabel() {
-            if (suffix.isEmpty()) return TintNaming.label(TintNaming.DEFAULT_INDEX);
+            if (suffix.isEmpty()) return label(DEFAULT_INDEX);
             String stripped = suffix.startsWith("_") ? suffix.substring(1) : suffix;
             return stripped.replace('_', ' ');
         }
@@ -97,34 +109,34 @@ public sealed interface Naming {
 
         @Override
         public String fileName(String stem, int index) {
-            return TintNaming.fileName(stem, index);
+            return tintedFileName(stem, index);
         }
 
         @Override
         public @Nullable Integer indexOf(String fileName, String stem) {
-            return TintNaming.tintIndexOf(fileName, stem);
+            return tintIndexOf(fileName, stem);
         }
 
         @Override
-        public TintNaming.TintedName parseName(String baseName) {
-            return TintNaming.parse(baseName);
+        public ParsedName parseName(String baseName) {
+            return parse(baseName);
         }
 
         @Override
         public String slotLabel(String partLabel, int index) {
-            return TintNaming.label(index);
+            return label(index);
         }
 
         @Override
         public Set<Integer> presentIndexes(TrackedTextures textures, ResourceLocation contentId) {
-            String dir = TintNaming.directoryOf(contentId.getPath());
-            String stem = TintNaming.lastSegment(contentId.getPath());
+            String dir = directoryOf(contentId.getPath());
+            String stem = lastSegment(contentId.getPath());
             Set<Integer> out = new TreeSet<>();
             for (ResourceLocation id : textures.keySet()) {
                 if (!id.getNamespace().equals(contentId.getNamespace())) continue;
                 String path = id.getPath();
-                if (!TintNaming.directoryOf(path).equals(dir)) continue;
-                Integer index = TintNaming.tintIndexOf(TintNaming.lastSegment(path) + ".png", stem);
+                if (!directoryOf(path).equals(dir)) continue;
+                Integer index = tintIndexOf(lastSegment(path) + ".png", stem);
                 if (index != null) out.add(index);
             }
             return out;
@@ -134,5 +146,58 @@ public sealed interface Naming {
         public int parseSpecificity() {
             return 0;
         }
+    }
+
+    // -------------------- shared name math --------------------
+
+    static ParsedName parse(String name) {
+        int us = name.lastIndexOf('_');
+        if (us > 0) { // us == 0 would leave an empty stem - not a suffix then
+            String digits = name.substring(us + 1);
+            if (!digits.isEmpty() && digits.length() <= 9 && digits.chars().allMatch(Character::isDigit)) {
+                return new ParsedName(name.substring(0, us), Integer.parseInt(digits));
+            }
+        }
+        return new ParsedName(name, DEFAULT_INDEX);
+    }
+
+    /**
+     * The tint index {@code fileName} (simple name, with extension) encodes for {@code stem},
+     * or null when it is not one of that stem's textures. Stem matching is exact and
+     * case-insensitive: {@code foobar_1.png} does not match stem {@code foo}. A file whose
+     * whole base equals the stem is always the default, even if the stem itself ends in a
+     * tint-like suffix ({@code foo_3.png} IS the default texture of a colormap named
+     * {@code foo_3}).
+     */
+    static @Nullable Integer tintIndexOf(String fileName, String stem) {
+        String lower = fileName.toLowerCase(Locale.ROOT);
+        if (!lower.endsWith(".png")) return null;
+        String base = lower.substring(0, lower.length() - ".png".length());
+        String lowerStem = stem.toLowerCase(Locale.ROOT);
+        if (base.equals(lowerStem)) return DEFAULT_INDEX;
+        ParsedName parsed = parse(base);
+        return parsed.stem().equals(lowerStem) ? parsed.index() : null;
+    }
+
+    static String tintedFileName(String stem, int index) {
+        return index == DEFAULT_INDEX ? stem + ".png" : stem + "_" + index + ".png";
+    }
+
+    static String label(int index) {
+        return index == DEFAULT_INDEX ? "default" : "tint " + index;
+    }
+
+    // path segment helpers shared by the companion classes
+
+    /** {@code "a/b/c"} → {@code "a/b/"}; no slash → {@code ""}. */
+    static String directoryOf(String path) {
+        int slash = path.lastIndexOf('/');
+        return slash < 0 ? "" : path.substring(0, slash + 1);
+    }
+
+    /** {@code "a/b/c"} → {@code "c"}. */
+    static String lastSegment(String path) {
+        int slash = path.lastIndexOf('/');
+        return slash < 0 ? path : path.substring(slash + 1);
     }
 }
