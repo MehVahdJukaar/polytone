@@ -74,6 +74,9 @@ public class ConfigScreen extends OptionsSubScreen {
     private SpriteIconButton heartButton;
     @Nullable
     private EditorIconButton editorButton;
+    // True once the footer is built with the editor mod installed; drives whether we nudge people
+    // toward downloading the editor.
+    private boolean editorAvailable;
     private boolean rebuildScheduled;
     private volatile boolean editorBooting;
 
@@ -116,6 +119,14 @@ public class ConfigScreen extends OptionsSubScreen {
                     () -> this.width,
                     Polytone.CONFIGS.bubbleManager::getHeartButtonMessage));
         }
+
+        // Only nudge people toward the editor when they don't already have it installed.
+        if (this.editorButton != null && !this.editorAvailable) {
+            this.addRenderableOnly(new PointingChatBubbleOverlay(
+                    this.editorButton,
+                    () -> this.width,
+                    Polytone.CONFIGS.bubbleManager::getEditorButtonMessage));
+        }
     }
 
     @Override
@@ -142,7 +153,7 @@ public class ConfigScreen extends OptionsSubScreen {
 
         // Nautilus Studio pack-editor button (left) - always shown. With the editor mod present it
         // opens the editor; without it, its tooltip explains and a click opens the download page.
-        boolean editorAvailable = PlatStuff.isModLoaded("nautilus_studio");
+        this.editorAvailable = PlatStuff.isModLoaded("nautilus_studio");
         EditorIconButton editor = new EditorIconButton(iconW, 20,
                 Component.translatable("screen.polytone.editor.open"),
                 editorAvailable, this,
@@ -180,6 +191,8 @@ public class ConfigScreen extends OptionsSubScreen {
             openEditor();
             return;
         }
+        // They followed the nudge; stop showing it.
+        Polytone.CONFIGS.bubbleManager.onEditorButtonClicked();
         this.minecraft.setScreen(new ConfirmLinkScreen(confirmed -> {
             if (confirmed) Util.getPlatform().openUri(NAUTILUS_URL);
             this.minecraft.setScreen(this);
