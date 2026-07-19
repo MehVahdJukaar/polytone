@@ -94,17 +94,20 @@ public class ShadowMapRenderer {
         Vec3 camPos = cam.getPosition();
         // fract(camPos) every frame: the resolve shader's world-grid snap must track the live camera
         // even on frames where we reuse the map.
-        camFract.set(
-                (float) (camPos.x - Math.floor(camPos.x)),
-                (float) (camPos.y - Math.floor(camPos.y)),
-                (float) (camPos.z - Math.floor(camPos.z)));
+        camFract.set((float) Mth.frac(camPos.x), (float) Mth.frac(camPos.y), (float) Mth.frac(camPos.z));
 
         long now = Util.getMillis();
         float updateInterval = settings.updateInterval();
         boolean due = !hasRendered || updateInterval <= 0f || (now - lastUpdateMs) >= updateInterval * 50f;
         if (due) {
             float partial = mc.getTimer().getGameTimeDeltaPartialTick(false);
-            render(mc, level, cam, camPos, partial);
+            try {
+                render(mc, level, cam, camPos, partial);
+            } catch (Exception e) {
+                // render() restores its own GL state in finally blocks; swallow here so a failed shadow
+                // pass can never propagate into renderLevel or leave the frame half-rendered.
+                Polytone.LOGGER.error("Polytone shadow-map render failed", e);
+            }
             renderedMatrix.set(shadowMatrix);
             renderedCamPos = camPos;
             lastUpdateMs = now;
@@ -157,31 +160,41 @@ public class ShadowMapRenderer {
 
         RenderTarget main = mc.getMainRenderTarget();
 
+        // Snapshot the global projection we're about to stomp. Restored in the finally no matter what
+        // throws (or what Sodium's terrain replay leaves behind), so the rest of the frame - and every
+        // later frame - keeps the camera's view instead of the light's.
+        Matrix4f savedProj = new Matrix4f(RenderSystem.getProjectionMatrix());
+        VertexSorting savedSorting = RenderSystem.getVertexSorting();
+
         // Always clear to far depth (1.0), even when there's nothing to draw - a stale map would
         // shadow the world with last frame's (differently-projected) depth.
         shadowTarget.clear(Minecraft.ON_OSX);
         shadowTarget.bindWrite(true);
+        try {
+            // Replay opaque geometry from the light's POV. Translucent is intentionally skipped (a shadow
+            // map stores opaque occluder depth).
+            if (!shadowSections.isEmpty()) {
+                // Vanilla pipeline: our own loop over the whole section grid, culled against the light
+                // volume - occluders behind/off-screen still cast shadows.
+                drawLayer(mc, RenderType.solid(), camPos, lightView, lightProj);
+                drawLayer(mc, RenderType.cutoutMipped(), camPos, lightView, lightProj);
+                drawLayer(mc, RenderType.cutout(), camPos, lightView, lightProj);
+            } else {
+                // No compiled vanilla sections -> Sodium has replaced the chunk pipeline. All of the
+                // Sodium-specific replay (re-cull against the light volume, redraw, restore) is isolated
+                // in SodiumShadowRenderer so this class stays free of Sodium types.
+                SodiumShadowRenderer.replayTerrain(mc, cam, camPos, lightView, lightProj, coverage, depthRange);
+            }
 
-        // Replay opaque geometry from the light's POV. Translucent is intentionally skipped (a shadow
-        // map stores opaque occluder depth).
-        if (!shadowSections.isEmpty()) {
-            // Vanilla pipeline: our own loop over the whole section grid, culled against the light
-            // volume - occluders behind/off-screen still cast shadows.
-            drawLayer(mc, RenderType.solid(), camPos, lightView, lightProj);
-            drawLayer(mc, RenderType.cutoutMipped(), camPos, lightView, lightProj);
-            drawLayer(mc, RenderType.cutout(), camPos, lightView, lightProj);
-        } else {
-            // No compiled vanilla sections -> Sodium has replaced the chunk pipeline. All of the
-            // Sodium-specific replay (re-cull against the light volume, redraw, restore) is isolated
-            // in SodiumShadowRenderer so this class stays free of Sodium types.
-            SodiumShadowRenderer.replayTerrain(mc, cam, camPos, lightView, lightProj, coverage, depthRange);
+            // Entities are not part of the chunk VBOs - re-dispatch them with the light matrices.
+            drawEntities(mc, level, camPos, lightView, lightProj);
+        } finally {
+            // Restore the main target (+ its full-window viewport) and the camera projection for the
+            // rest of the frame (hand, HUD) and every frame after.
+            main.bindWrite(true);
+            RenderSystem.setProjectionMatrix(savedProj, savedSorting);
+            RenderSystem.applyModelViewMatrix();
         }
-
-        // Entities are not part of the chunk VBOs - re-dispatch them with the light matrices.
-        drawEntities(mc, level, camPos, lightView, lightProj);
-
-        // Restore the main target AND its full-window viewport for the rest of the frame (hand, HUD).
-        main.bindWrite(true);
     }
 
     // Entities aren't in the chunk VBOs, so dispatch them separately with the light matrices swapped
@@ -195,54 +208,57 @@ public class ShadowMapRenderer {
         var dispatcher = mc.getEntityRenderDispatcher();
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
 
-        Matrix4f savedProj = new Matrix4f(RenderSystem.getProjectionMatrix());
-        VertexSorting savedSorting = RenderSystem.getVertexSorting();
+        // Swap the light matrices onto the RenderSystem globals. The pushMatrix()/popMatrix() pair MUST
+        // stay balanced across any throw - getModelViewStack() is a persistent global, so an unbalanced
+        // push leaks the light basis into later frames and renders the world from the sun's POV. render()
+        // restores the projection, so we only own the model-view stack here.
         Matrix4fStack mvStack = RenderSystem.getModelViewStack();
         mvStack.pushMatrix();
-        mvStack.mul(lightView);
-        RenderSystem.applyModelViewMatrix();
-        RenderSystem.setProjectionMatrix(lightProj, VertexSorting.ORTHOGRAPHIC_Z);
+        try {
+            mvStack.mul(lightView);
+            RenderSystem.applyModelViewMatrix();
+            RenderSystem.setProjectionMatrix(lightProj, VertexSorting.ORTHOGRAPHIC_Z);
 
-        // Light-volume cull, same separating-axis idea as the sections but with a scalar radius.
-        float r00 = lightView.m00(), r10 = lightView.m10(), r20 = lightView.m20();
-        float r01 = lightView.m01(), r11 = lightView.m11(), r21 = lightView.m21();
-        float r02 = lightView.m02(), r12 = lightView.m12(), r22 = lightView.m22();
+            // Light-volume cull, same separating-axis idea as the sections but with a scalar radius.
+            PoseStack poseStack = new PoseStack();
+            Vector3f center = new Vector3f();
+            for (Entity entity : level.entitiesForRendering()) {
+                if (entity.isSpectator()) continue;
 
-        PoseStack poseStack = new PoseStack();
-        for (Entity entity : level.entitiesForRendering()) {
-            if (entity.isSpectator()) continue;
+                AABB bb = entity.getBoundingBox();
+                float radius = (float) Math.max(bb.getXsize(), Math.max(bb.getYsize(), bb.getZsize()));
+                Vec3 c = bb.getCenter();
+                center.set((float) (c.x - camPos.x), (float) (c.y - camPos.y), (float) (c.z - camPos.z));
+                if (!insideLightBox(lightView, center, coverage, depthRange, radius, radius, radius)) continue;
 
-            AABB bb = entity.getBoundingBox();
-            float radius = (float) Math.max(bb.getXsize(), Math.max(bb.getYsize(), bb.getZsize()));
-            float cx = (float) ((bb.minX + bb.maxX) * 0.5 - camPos.x);
-            float cy = (float) ((bb.minY + bb.maxY) * 0.5 - camPos.y);
-            float cz = (float) ((bb.minZ + bb.maxZ) * 0.5 - camPos.z);
-            if (Math.abs(r00 * cx + r10 * cy + r20 * cz) > coverage + radius) continue;
-            if (Math.abs(r01 * cx + r11 * cy + r21 * cz) > coverage + radius) continue;
-            if (Math.abs(r02 * cx + r12 * cy + r22 * cz) > depthRange + radius) continue;
-
-            float partial = mc.getTimer().getGameTimeDeltaPartialTick(
-                    !level.tickRateManager().isEntityFrozen(entity));
-            double x = Mth.lerp(partial, entity.xOld, entity.getX());
-            double y = Mth.lerp(partial, entity.yOld, entity.getY());
-            double z = Mth.lerp(partial, entity.zOld, entity.getZ());
-            float yaw = Mth.lerp(partial, entity.yRotO, entity.getYRot());
-            try {
-                // Fullbright light: only depth matters here, skip the per-entity light lookup.
-                dispatcher.render(entity, x - camPos.x, y - camPos.y, z - camPos.z, yaw,
-                        partial, poseStack, bufferSource, LightTexture.FULL_BRIGHT);
-            } catch (Exception e) {
-                // Never let one broken entity renderer (called outside its usual pass) kill the frame.
+                float partial = mc.getTimer().getGameTimeDeltaPartialTick(
+                        !level.tickRateManager().isEntityFrozen(entity));
+                double x = Mth.lerp(partial, entity.xOld, entity.getX());
+                double y = Mth.lerp(partial, entity.yOld, entity.getY());
+                double z = Mth.lerp(partial, entity.zOld, entity.getZ());
+                float yaw = Mth.lerp(partial, entity.yRotO, entity.getYRot());
+                try {
+                    // Fullbright light: only depth matters here, skip the per-entity light lookup.
+                    dispatcher.render(entity, x - camPos.x, y - camPos.y, z - camPos.z, yaw,
+                            partial, poseStack, bufferSource, LightTexture.FULL_BRIGHT);
+                } catch (Exception e) {
+                    // Never let one broken entity renderer (called outside its usual pass) kill the frame.
+                }
             }
+
+            drawBlockEntities(mc, level, camPos, bufferSource, poseStack, lightView);
+
+            // A caught-but-partial entity render above can leave the shared buffer half-written; guard
+            // the flush so it can't escape and skip the matrix restore below.
+            try {
+                bufferSource.endBatch();
+            } catch (Exception e) {
+                Polytone.LOGGER.error("Error flushing polytone shadow entity batch", e);
+            }
+        } finally {
+            mvStack.popMatrix();
+            RenderSystem.applyModelViewMatrix();
         }
-
-        drawBlockEntities(mc, level, camPos, bufferSource, poseStack, lightView);
-
-        bufferSource.endBatch();
-
-        mvStack.popMatrix();
-        RenderSystem.applyModelViewMatrix();
-        RenderSystem.setProjectionMatrix(savedProj, savedSorting);
     }
 
     // Block entities (chests, banners, signs) are in neither the chunk VBOs nor the entity list, so
@@ -255,10 +271,6 @@ public class ShadowMapRenderer {
         float coverage = settings.coverage();
         float depthRange = settings.depthRange();
 
-        float r00 = lightView.m00(), r10 = lightView.m10(), r20 = lightView.m20();
-        float r01 = lightView.m01(), r11 = lightView.m11(), r21 = lightView.m21();
-        float r02 = lightView.m02(), r12 = lightView.m12(), r22 = lightView.m22();
-
         BlockEntityRenderDispatcher beDispatcher = mc.getBlockEntityRenderDispatcher();
         float partial = mc.getTimer().getGameTimeDeltaPartialTick(false);
 
@@ -266,18 +278,17 @@ public class ShadowMapRenderer {
         int camChunkZ = Mth.floor(camPos.z) >> 4;
         int chunkRadius = Mth.ceil(coverage / 16f) + 1;
         float radius = 1.5f; // most block entities fit in a block; slack for taller ones (beds, chests)
+        Vector3f center = new Vector3f();
 
         for (int cx = camChunkX - chunkRadius; cx <= camChunkX + chunkRadius; cx++) {
             for (int cz = camChunkZ - chunkRadius; cz <= camChunkZ + chunkRadius; cz++) {
                 LevelChunk chunk = level.getChunk(cx, cz);
                 for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
                     BlockPos pos = entry.getKey();
-                    float ex = (float) (pos.getX() + 0.5 - camPos.x);
-                    float ey = (float) (pos.getY() + 0.5 - camPos.y);
-                    float ez = (float) (pos.getZ() + 0.5 - camPos.z);
-                    if (Math.abs(r00 * ex + r10 * ey + r20 * ez) > coverage + radius) continue;
-                    if (Math.abs(r01 * ex + r11 * ey + r21 * ez) > coverage + radius) continue;
-                    if (Math.abs(r02 * ex + r12 * ey + r22 * ez) > depthRange + radius) continue;
+                    center.set((float) (pos.getX() + 0.5 - camPos.x),
+                            (float) (pos.getY() + 0.5 - camPos.y),
+                            (float) (pos.getZ() + 0.5 - camPos.z));
+                    if (!insideLightBox(lightView, center, coverage, depthRange, radius, radius, radius)) continue;
 
                     poseStack.pushPose();
                     poseStack.translate(pos.getX() - camPos.x, pos.getY() - camPos.y, pos.getZ() - camPos.z);
@@ -302,29 +313,37 @@ public class ShadowMapRenderer {
         float coverage = settings.coverage();
         float depthRange = settings.depthRange();
 
-        float r00 = lightView.m00(), r10 = lightView.m10(), r20 = lightView.m20(); // light X axis
-        float r01 = lightView.m01(), r11 = lightView.m11(), r21 = lightView.m21(); // light Y axis
-        float r02 = lightView.m02(), r12 = lightView.m12(), r22 = lightView.m22(); // light Z axis
-        // A 16^3 section's half-extent (8 per axis) projected onto each light axis.
-        float radX = 8f * (Math.abs(r00) + Math.abs(r10) + Math.abs(r20));
-        float radY = 8f * (Math.abs(r01) + Math.abs(r11) + Math.abs(r21));
-        float radZ = 8f * (Math.abs(r02) + Math.abs(r12) + Math.abs(r22));
+        // A 16^3 section's half-extent (8 per axis) projected onto each light axis (rows of lightView).
+        float radX = 8f * (Math.abs(lightView.m00()) + Math.abs(lightView.m10()) + Math.abs(lightView.m20()));
+        float radY = 8f * (Math.abs(lightView.m01()) + Math.abs(lightView.m11()) + Math.abs(lightView.m21()));
+        float radZ = 8f * (Math.abs(lightView.m02()) + Math.abs(lightView.m12()) + Math.abs(lightView.m22()));
 
+        Vector3f center = new Vector3f();
         for (SectionRenderDispatcher.RenderSection section : viewArea.sections) {
             SectionRenderDispatcher.CompiledSection compiled = section.getCompiled();
             if (compiled == SectionRenderDispatcher.CompiledSection.UNCOMPILED
                     || compiled.hasNoRenderableLayers()) continue;
 
             BlockPos origin = section.getOrigin();
-            float cx = (float) (origin.getX() + 8 - camPos.x);
-            float cy = (float) (origin.getY() + 8 - camPos.y);
-            float cz = (float) (origin.getZ() + 8 - camPos.z);
-
-            if (Math.abs(r00 * cx + r10 * cy + r20 * cz) > coverage + radX) continue;
-            if (Math.abs(r01 * cx + r11 * cy + r21 * cz) > coverage + radY) continue;
-            if (Math.abs(r02 * cx + r12 * cy + r22 * cz) > depthRange + radZ) continue;
-            shadowSections.add(section);
+            center.set((float) (origin.getX() + 8 - camPos.x),
+                    (float) (origin.getY() + 8 - camPos.y),
+                    (float) (origin.getZ() + 8 - camPos.z));
+            if (insideLightBox(lightView, center, coverage, depthRange, radX, radY, radZ)) {
+                shadowSections.add(section);
+            }
         }
+    }
+
+    // Box-test a camera-relative point against the light's ortho volume (half-extents coverage on the
+    // two lateral axes, depthRange along the light axis), with per-axis slack for the object's size.
+    // transformDirection rotates the point into light space in place - the multiply-adds are the three
+    // separating-axis dot products we used to spell out by hand. Conservative: never a false "outside".
+    private static boolean insideLightBox(Matrix4f lightView, Vector3f point, float coverage, float depthRange,
+                                          float slackX, float slackY, float slackZ) {
+        lightView.transformDirection(point);
+        return Math.abs(point.x) <= coverage + slackX
+                && Math.abs(point.y) <= coverage + slackY
+                && Math.abs(point.z) <= depthRange + slackZ;
     }
 
     // One terrain layer of the collected sections with the light matrices - the body of vanilla's
@@ -333,29 +352,36 @@ public class ShadowMapRenderer {
                            Matrix4f lightView, Matrix4f lightProj) {
         renderType.setupRenderState();
         ShaderInstance shader = RenderSystem.getShader();
-        shader.setDefaultUniforms(VertexFormat.Mode.QUADS, lightView, lightProj, mc.getWindow());
-        shader.apply();
-        Uniform chunkOffset = shader.CHUNK_OFFSET;
-
-        for (SectionRenderDispatcher.RenderSection section : shadowSections) {
-            if (section.getCompiled().isEmpty(renderType)) continue;
-            if (chunkOffset != null) {
-                BlockPos origin = section.getOrigin();
-                chunkOffset.set(
-                        (float) (origin.getX() - camPos.x),
-                        (float) (origin.getY() - camPos.y),
-                        (float) (origin.getZ() - camPos.z));
-                chunkOffset.upload();
-            }
-            VertexBuffer buffer = section.getBuffer(renderType);
-            buffer.bind();
-            buffer.draw();
+        if (shader == null) { // no bound program (another mod cleared it?) - nothing we can draw
+            renderType.clearRenderState();
+            return;
         }
+        try {
+            shader.setDefaultUniforms(VertexFormat.Mode.QUADS, lightView, lightProj, mc.getWindow());
+            shader.apply();
+            Uniform chunkOffset = shader.CHUNK_OFFSET;
 
-        if (chunkOffset != null) chunkOffset.set(0f, 0f, 0f);
-        shader.clear();
-        VertexBuffer.unbind();
-        renderType.clearRenderState();
+            for (SectionRenderDispatcher.RenderSection section : shadowSections) {
+                if (section.getCompiled().isEmpty(renderType)) continue;
+                if (chunkOffset != null) {
+                    BlockPos origin = section.getOrigin();
+                    chunkOffset.set(
+                            (float) (origin.getX() - camPos.x),
+                            (float) (origin.getY() - camPos.y),
+                            (float) (origin.getZ() - camPos.z));
+                    chunkOffset.upload();
+                }
+                VertexBuffer buffer = section.getBuffer(renderType);
+                buffer.bind();
+                buffer.draw();
+            }
+
+            if (chunkOffset != null) chunkOffset.set(0f, 0f, 0f);
+        } finally {
+            shader.clear();
+            VertexBuffer.unbind();
+            renderType.clearRenderState();
+        }
     }
 
     // Direction toward the light, matching vanilla's sun placement in renderSky: (-sin a, cos a, 0)
