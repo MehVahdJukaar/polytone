@@ -1,17 +1,22 @@
 package net.mehvahdjukaar.polytone.compat.nautilus.preview;
 
 import com.google.gson.JsonElement;
+import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
 import net.mehvahdjukaar.nautilus.render.BlockScene;
 import net.mehvahdjukaar.nautilus.render.BlockTint;
+import net.mehvahdjukaar.nautilus.swing.preview.PixelTextureView;
 import net.mehvahdjukaar.nautilus.swing.preview.PreviewStatus;
 import net.mehvahdjukaar.nautilus.swing.preview.PreviewSurface;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
 import net.mehvahdjukaar.nautilus.swing.preview.scene.SceneViewport;
 import net.mehvahdjukaar.nautilus.swing.toolkit.ColorSwatch;
+import net.mehvahdjukaar.nautilus.swing.toolkit.EditorOps;
+import net.mehvahdjukaar.nautilus.swing.toolkit.GroupPanels;
 import net.mehvahdjukaar.nautilus.swing.toolkit.SquareRow;
 import net.mehvahdjukaar.nautilus.swing.toolkit.StyledLabels;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiTheme;
+import net.mehvahdjukaar.nautilus.swing.widget.RegistryPickerField;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.common.expressions.preview.PreviewContext;
@@ -23,9 +28,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
@@ -41,38 +47,38 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
 import javax.swing.Box;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.Timer;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.awt.image.BufferedImage;
 
 /**
  * Live preview for Polytone colormaps.
  *
  * <p>It reuses the standard Nautilus 2D-preview chrome: a {@link PreviewSurface} (scrolling dark canvas
  * under a themed toolbar) holds the visuals - a small square block view and a same-size result swatch
- * side by side, then a bigger square of the source colormap texture with the sampled texel marked. The
- * toolbar carries the block/biome pickers, the y slider and the env/light sliders, plus the
- * "Live at player" toggle.
+ * side by side, then a bigger square {@link PixelTextureView} of the source colormap texture with the
+ * sampled texel marked and its coordinates captioned right under it. The toolbar carries only the
+ * "Live at player" toggle and a status line; every simulated input (block/biome pickers, y slider,
+ * env/light sliders) lives in one titled group below it that greys out when the toggle is on.
+ *
+ * <p>The block/biome pickers are the editor's own searchable, icon-bearing {@link RegistryPickerField},
+ * so they look and behave exactly like the identifier fields in the schema form.
  *
  * <p>The block view renders the picked block, tinted live by the colormap's current output through the
  * Nautilus {@link BlockTint} seam - so the picker drives both the sampled state and what you see in 3D.
@@ -86,8 +92,6 @@ import java.util.function.Supplier;
  */
 public final class ColormapPreview implements TabPreview {
 
-    private static final int TEXTURE_SIZE = 220;
-
     private final @Nullable Path file;
     private final @Nullable ResourceLocation contentId;
 
@@ -95,7 +99,7 @@ public final class ColormapPreview implements TabPreview {
 
     private final SceneViewport blockView = new SceneViewport();
     private final ColorSwatch swatch = new ColorSwatch();
-    private final ImageView imageView = new ImageView();
+    private final PixelTextureView imageView = new PixelTextureView();
     private final PreviewStatus status = new PreviewStatus();
 
     // "Live at player" bypasses all simulation: sample the real level at the player's feet on a timer.
@@ -103,20 +107,19 @@ public final class ColormapPreview implements TabPreview {
     private boolean liveMode;
     private final Timer liveTimer = new Timer(500, e -> { if (liveMode) recompute(); });
 
-    private final JComboBox<BlockEntry> blockPicker = new JComboBox<>();
-    private final JComboBox<BiomeEntry> biomePicker = new JComboBox<>();
+    // The editor's searchable, icon-bearing registry pickers (same widget the schema form uses).
+    private final RegistryPickerField blockPicker;
+    private final RegistryPickerField biomePicker;
     private final JSlider ySlider = new JSlider(-64, 320, 64);
     private final JLabel yLabel = StyledLabels.mutedSmall("");
     private final JLabel climateReadout = StyledLabels.mutedSmall(" ");
 
-    // Toolbar rows hidden while in live mode (their inputs come from the player instead).
-    private Box pickersRow;
-    private Box numericRow;
+    // Titled group holding every simulated input; greyed out (disabled) while in live mode.
+    private JPanel inputsBox;
 
     // Env sliders, one per SimProxies input, shown only when the sampled expression reads them.
     private final SimProxies sim = new SimProxies();
     private final Map<SimValue, EnvControl> envControls = new LinkedHashMap<>();
-    private final Box envContainer = Box.createVerticalBox();
     private final Box envSection = Box.createVerticalBox();
     private final JLabel envHeader = StyledLabels.muted("Environment");
 
@@ -146,6 +149,11 @@ public final class ColormapPreview implements TabPreview {
         this.file = ctx.file();
         this.contentId = ctx.contentId();
 
+        this.blockPicker = new RegistryPickerField(Registries.BLOCK, id -> recompute());
+        this.biomePicker = new RegistryPickerField(Registries.BIOME, id -> recompute());
+        blockPicker.setSelected(ResourceLocation.withDefaultNamespace("grass_block"));
+        biomePicker.setSelected(ResourceLocation.withDefaultNamespace("plains"));
+
         this.skyRow = labeled("Sky light", withValue(skySlider, skyLabel));
         this.blockRow = labeled("Block light", withValue(blockSlider, blockLabel));
 
@@ -162,20 +170,10 @@ public final class ColormapPreview implements TabPreview {
         }
 
         buildLayout();
-        populateBlocks();
-        populateBiomes();
 
         liveToggle.setOpaque(false);
         liveToggle.setToolTipText("Sample the real world at the player's feet with the live clock, instead of the simulated inputs.");
-        // A JComboBox's minimum size defaults to its (wide) preferred size, which would keep the
-        // pickers row from ever shrinking and crop the biome picker/climate readout when narrow.
-        // Give both a small minimum so they collapse and truncate their text gracefully instead.
-        blockPicker.setMinimumSize(new Dimension(UiScale.px(60), blockPicker.getPreferredSize().height));
-        biomePicker.setMinimumSize(new Dimension(UiScale.px(60), biomePicker.getPreferredSize().height));
-
         liveToggle.addActionListener(e -> setLiveMode(liveToggle.isSelected()));
-        blockPicker.addActionListener(e -> recompute());
-        biomePicker.addActionListener(e -> recompute());
         ySlider.addChangeListener(e -> recompute());
         skySlider.addChangeListener(e -> recompute());
         blockSlider.addChangeListener(e -> recompute());
@@ -210,31 +208,36 @@ public final class ColormapPreview implements TabPreview {
         // of clipping the visuals, and the panel can be dragged down to any size.
         Box content = Box.createVerticalBox();
 
-        pickersRow = Box.createHorizontalBox();
-        pickersRow.add(inline("Block", blockPicker));
-        pickersRow.add(Box.createHorizontalStrut(UiScale.med()));
-        pickersRow.add(inline("Biome", biomePicker));
-        pickersRow.add(Box.createHorizontalStrut(UiScale.med()));
-        pickersRow.add(climateReadout);
-        pickersRow.add(Box.createHorizontalGlue());
-        addRow(content, pickersRow);
+        // All simulated inputs sit in one titled group directly under the "Live at player" toggle, so
+        // the toggle plainly reads as the switch that overrides the whole group. Every field is laid
+        // out label-over-field at full width, so the pickers and sliders line up and nothing crops.
+        inputsBox = GroupPanels.outlined();
+        inputsBox.setLayout(new BoxLayout(inputsBox, BoxLayout.Y_AXIS));
+        inputsBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        numericRow = Box.createHorizontalBox();
-        numericRow.add(inline("Y level", withValue(ySlider, yLabel)));
-        addRow(content, numericRow);
+        JLabel groupHeader = StyledLabels.muted("Simulated inputs");
+        groupHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
+        inputsBox.add(groupHeader);
+        inputsBox.add(Box.createVerticalStrut(UiScale.small()));
 
-        // Env-global + light sliders (visibility driven by detection). Added raw (not via addRow) so
-        // it isn't height-capped: its preferred height changes as sliders are shown/hidden.
+        addField(inputsBox, labeled("Block", blockPicker));
+        addField(inputsBox, labeled("Biome", biomePicker));
+        climateReadout.setAlignmentX(Component.LEFT_ALIGNMENT);
+        inputsBox.add(climateReadout);
+        inputsBox.add(Box.createVerticalStrut(UiScale.med()));
+        addField(inputsBox, labeled("Y level", withValue(ySlider, yLabel)));
+
+        // Env-global + light sliders (visibility driven by detection).
         envHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
         envSection.setAlignmentX(Component.LEFT_ALIGNMENT);
         skyRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         blockRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        envContainer.add(envHeader);
-        envContainer.add(envSection);
-        envContainer.add(skyRow);
-        envContainer.add(blockRow);
-        envContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
-        content.add(envContainer);
+        inputsBox.add(envHeader);
+        inputsBox.add(envSection);
+        inputsBox.add(skyRow);
+        inputsBox.add(blockRow);
+
+        content.add(inputsBox);
         content.add(Box.createVerticalStrut(UiScale.med()));
 
         // Canvas content: block view + result swatch, then the source texture with the sample marker.
@@ -261,7 +264,15 @@ public final class ColormapPreview implements TabPreview {
         toolbar.add(Box.createVerticalStrut(UiScale.small()));
     }
 
-    // Label over field (used for the sliders), field stretches horizontally but keeps its own height.
+    // Adds a full-width field to a vertical group, capped to its own height so it doesn't stretch.
+    private static void addField(JComponent box, JComponent field) {
+        field.setAlignmentX(Component.LEFT_ALIGNMENT);
+        field.setMaximumSize(UiScale.maxHeightHugging(field));
+        box.add(field);
+        box.add(Box.createVerticalStrut(UiScale.small()));
+    }
+
+    // Label over field, field stretches horizontally but keeps its own height.
     private static JComponent labeled(String text, JComponent field) {
         Box row = Box.createVerticalBox();
         JLabel l = StyledLabels.small(text);
@@ -271,17 +282,6 @@ public final class ColormapPreview implements TabPreview {
         row.add(l);
         row.add(field);
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
-        return row;
-    }
-
-    // Label beside field (used for the pickers), field capped so it never grows to swallow the row.
-    private static JComponent inline(String text, JComponent field) {
-        Box row = Box.createHorizontalBox();
-        JLabel l = StyledLabels.small(text);
-        field.setMaximumSize(new Dimension(260, field.getPreferredSize().height));
-        row.add(l);
-        row.add(Box.createHorizontalStrut(6));
-        row.add(field);
         return row;
     }
 
@@ -303,14 +303,26 @@ public final class ColormapPreview implements TabPreview {
 
     private void setLiveMode(boolean live) {
         this.liveMode = live;
-        pickersRow.setVisible(!live);
-        numericRow.setVisible(!live);
-        envContainer.setVisible(!live);
-        if (live) liveTimer.start();
-        else liveTimer.stop();
+        // Grey out (rather than hide) the whole input group, so the toggle's effect on it is visible.
+        setEnabledDeep(inputsBox, !live);
+        if (live) {
+            hideEnv();
+            liveTimer.start();
+        } else {
+            liveTimer.stop();
+        }
         root.revalidate();
         root.repaint();
         recompute();
+    }
+
+    private static void setEnabledDeep(Component c, boolean enabled) {
+        c.setEnabled(enabled);
+        if (c instanceof Container cont) {
+            for (Component child : cont.getComponents()) {
+                setEnabledDeep(child, enabled);
+            }
+        }
     }
 
     private void recompute() {
@@ -318,7 +330,7 @@ public final class ColormapPreview implements TabPreview {
         if (cm == null) {
             status.info("Waiting for a valid colormap...");
             clearResult();
-            imageView.set(null, -1, -1);
+            clearImage();
             hideEnv();
             return;
         }
@@ -329,7 +341,7 @@ public final class ColormapPreview implements TabPreview {
             if (img == null) {
                 status.error("No source .png found for this colormap.");
                 clearResult();
-                imageView.set(null, -1, -1);
+                clearImage();
                 hideEnv();
                 return;
             }
@@ -341,10 +353,8 @@ public final class ColormapPreview implements TabPreview {
     }
 
     private void sampleSimulated(Colormap cm) {
-        BlockEntry be = (BlockEntry) blockPicker.getSelectedItem();
-        BiomeEntry bio = (BiomeEntry) biomePicker.getSelectedItem();
-        BlockState state = be != null ? be.block.defaultBlockState() : Blocks.AIR.defaultBlockState();
-        Biome biome = bio != null ? bio.biome : null;
+        BlockState state = resolveBlock(blockPicker.getSelected()).defaultBlockState();
+        Biome biome = resolveBiome(biomePicker.getSelected());
         int y = ySlider.getValue();
         yLabel.setText("y = " + y);
         skyLabel.setText(String.valueOf(skySlider.getValue()));
@@ -366,7 +376,7 @@ public final class ColormapPreview implements TabPreview {
         } catch (Exception ex) {
             status.error("Sampling failed: " + ex.getMessage());
             clearResult();
-            imageView.set(cachedDisplayImage, -1, -1);
+            showSourceNoMarker();
             showEnv(level.usedSky, level.usedBlock);
             return;
         } finally {
@@ -385,7 +395,7 @@ public final class ColormapPreview implements TabPreview {
         if (player == null || mc.level == null) {
             status.error("No world loaded - can't sample at the player.");
             clearResult();
-            imageView.set(cachedDisplayImage, -1, -1);
+            showSourceNoMarker();
             return;
         }
         BlockPos pos = player.blockPosition();
@@ -402,7 +412,7 @@ public final class ColormapPreview implements TabPreview {
         } catch (Exception ex) {
             status.error("Sampling failed: " + ex.getMessage());
             clearResult();
-            imageView.set(cachedDisplayImage, -1, -1);
+            showSourceNoMarker();
             return;
         }
         applyResult(sink);
@@ -412,14 +422,16 @@ public final class ColormapPreview implements TabPreview {
         if (!sink.captured) {
             status.info("Colormap produced no sample.");
             clearResult();
-            imageView.set(cachedDisplayImage, -1, -1);
+            showSourceNoMarker();
             return;
         }
-        setResult(sink.argb, sink.col, sink.row);
+        setResult(sink.argb);
         float u = markerFrac(sink.col, imageWidth());
         float v = markerFrac(sink.row, imageHeight());
-        imageView.set(cachedDisplayImage, u, v);
-        status.info(String.format("x_axis %.3f   y_axis %.3f", sink.x, sink.y));
+        imageView.setImage(cachedDisplayImage);
+        imageView.setMarker(u, v);
+        imageView.setCaption(String.format("x %.3f   y %.3f   @ %d, %d", sink.x, sink.y, sink.col, sink.row));
+        status.setText("");
     }
 
     private void updateClimate(@Nullable Biome biome) {
@@ -441,10 +453,11 @@ public final class ColormapPreview implements TabPreview {
         blockView.setScene(scene, first); // keep the camera after the first build
     }
 
-    // Updates the swatch (fill + overlaid coordinates) and the 3D block tint, then re-renders the scene.
-    private void setResult(int argb, int col, int row) {
+    // Updates the swatch (fill + hex) and the 3D block tint, then re-renders the scene. The sampled
+    // texel coordinates live under the source texture instead, so the swatch stays uncluttered.
+    private void setResult(int argb) {
         int rgb = argb & 0xFFFFFF;
-        swatch.set(new Color(rgb), String.format("#%06X", rgb), String.format("@ %d, %d", col, row));
+        swatch.set(new Color(rgb), String.format("#%06X", rgb));
         currentTint = 0xFF000000 | rgb;
         blockView.refresh();
     }
@@ -453,6 +466,20 @@ public final class ColormapPreview implements TabPreview {
         swatch.set(null);
         currentTint = -1;
         blockView.refresh();
+    }
+
+    // No source image at all: blank the texture view.
+    private void clearImage() {
+        imageView.setImage(null);
+        imageView.clearMarker();
+        imageView.setCaption(null);
+    }
+
+    // Keep the source texture visible but drop the marker/caption (used on sampling failures).
+    private void showSourceNoMarker() {
+        imageView.setImage(cachedDisplayImage);
+        imageView.clearMarker();
+        imageView.setCaption(null);
     }
 
     private void hideEnv() {
@@ -470,8 +497,8 @@ public final class ColormapPreview implements TabPreview {
         skyRow.setVisible(usedSky);
         blockRow.setVisible(usedBlock);
         envHeader.setVisible(any || usedSky || usedBlock);
-        envContainer.revalidate();
-        envContainer.repaint();
+        inputsBox.revalidate();
+        inputsBox.repaint();
     }
 
     private int imageWidth() {
@@ -484,6 +511,28 @@ public final class ColormapPreview implements TabPreview {
 
     private static float markerFrac(int index, int size) {
         return size <= 1 ? 0f : index / (float) (size - 1);
+    }
+
+    // --- picker resolution ----------------------------------------------------------------------
+
+    private static Block resolveBlock(@Nullable ResourceLocation id) {
+        if (id == null) return Blocks.AIR;
+        return BuiltInRegistries.BLOCK.getOptional(id).orElse(Blocks.AIR);
+    }
+
+    // Resolve against the same registry view the picker listed from (world registries when loaded, else
+    // the cached vanilla ones), so any id the biome picker offered resolves back to a Biome here.
+    private @Nullable Biome resolveBiome(@Nullable ResourceLocation id) {
+        if (id == null) return null;
+        try {
+            Side side = EditorOps.resolveSide(biomePicker);
+            return EditorOps.registries(side).lookup(Registries.BIOME)
+                    .flatMap(lookup -> lookup.get(ResourceKey.create(Registries.BIOME, id)))
+                    .map(Holder::value)
+                    .orElse(null);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     // --- source image resolution ---------------------------------------------------------------
@@ -578,74 +627,6 @@ public final class ColormapPreview implements TabPreview {
         return out;
     }
 
-    // --- pickers -------------------------------------------------------------------------------
-
-    private void populateBlocks() {
-        List<BlockEntry> entries = new ArrayList<>();
-        for (Block b : BuiltInRegistries.BLOCK) {
-            ResourceLocation id = BuiltInRegistries.BLOCK.getKey(b);
-            entries.add(new BlockEntry(b, id.toString()));
-        }
-        entries.sort(Comparator.comparing(e -> e.label));
-        blockPicker.setModel(new DefaultComboBoxModel<>(entries.toArray(new BlockEntry[0])));
-        for (BlockEntry e : entries) {
-            if (e.label.equals("minecraft:grass_block")) {
-                blockPicker.setSelectedItem(e);
-                break;
-            }
-        }
-    }
-
-    private void populateBiomes() {
-        List<BiomeEntry> entries = new ArrayList<>();
-        Registry<Biome> reg = biomeRegistry();
-        if (reg != null) {
-            for (Biome b : reg) {
-                ResourceLocation id = reg.getKey(b);
-                entries.add(new BiomeEntry(b, id == null ? "?" : id.toString()));
-            }
-            entries.sort(Comparator.comparing(e -> e.label));
-        }
-        if (entries.isEmpty()) {
-            entries.add(new BiomeEntry(null, "(load a world for biomes)"));
-        }
-        biomePicker.setModel(new DefaultComboBoxModel<>(entries.toArray(new BiomeEntry[0])));
-        for (BiomeEntry e : entries) {
-            if (e.label.equals("minecraft:plains")) {
-                biomePicker.setSelectedItem(e);
-                break;
-            }
-        }
-    }
-
-    private static @Nullable Registry<Biome> biomeRegistry() {
-        Minecraft mc = Minecraft.getInstance();
-        try {
-            if (mc.level != null) {
-                return mc.level.registryAccess().registryOrThrow(Registries.BIOME);
-            }
-            if (mc.getConnection() != null) {
-                return mc.getConnection().registryAccess().registryOrThrow(Registries.BIOME);
-            }
-        } catch (Exception ignored) {
-        }
-        return null;
-    }
-
-    private record BlockEntry(Block block, String label) {
-        @Override
-        public String toString() {
-            return label;
-        }
-    }
-
-    private record BiomeEntry(@Nullable Biome biome, String label) {
-        @Override
-        public String toString() {
-            return label;
-        }
-    }
-
     // --- env slider row bound to one SimProxies input ------------------------------------------
 
     private static final class EnvControl {
@@ -687,69 +668,6 @@ public final class ColormapPreview implements TabPreview {
             this.col = col;
             this.row = row;
             this.argb = argb;
-        }
-    }
-
-    // --- 2D image view -------------------------------------------------------------------------
-
-    private static final class ImageView extends JComponent {
-        private @Nullable BufferedImage image;
-        private float u = -1, v = -1;
-
-        ImageView() {
-            setPreferredSize(new Dimension(TEXTURE_SIZE, TEXTURE_SIZE));
-        }
-
-        void set(@Nullable BufferedImage image, float u, float v) {
-            this.image = image;
-            this.u = u;
-            this.v = v;
-            repaint();
-        }
-
-        @Override
-        protected void paintComponent(Graphics g0) {
-            Graphics2D g = (Graphics2D) g0.create();
-            int cw = getWidth();
-            int ch = getHeight();
-            g.setColor(PreviewSurface.canvasColor());
-            g.fillRect(0, 0, cw, ch);
-
-            BufferedImage img = image;
-            if (img == null) {
-                g.setColor(PreviewSurface.canvasTextColor());
-                g.drawString("No colormap image", 10, 20);
-                g.dispose();
-                return;
-            }
-
-            // Fit the image into the component, preserving aspect ratio, nearest-neighbor.
-            int iw = img.getWidth();
-            int ih = img.getHeight();
-            double scale = Math.min((double) cw / iw, (double) ch / ih);
-            int dw = Math.max(1, (int) Math.round(iw * scale));
-            int dh = Math.max(1, (int) Math.round(ih * scale));
-            int dx = (cw - dw) / 2;
-            int dy = (ch - dh) / 2;
-
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-            g.drawImage(img, dx, dy, dw, dh, null);
-            g.setColor(UiTheme.dividerColor());
-            g.drawRect(dx, dy, dw - 1, dh - 1);
-
-            if (u >= 0 && v >= 0) {
-                int mx = dx + Math.round(u * (dw - 1));
-                int my = dy + Math.round(v * (dh - 1));
-                g.setColor(Color.WHITE);
-                g.drawLine(mx - 8, my, mx + 8, my);
-                g.drawLine(mx, my - 8, mx, my + 8);
-                g.setColor(Color.BLACK);
-                g.drawOval(mx - 4, my - 4, 8, 8);
-                g.setColor(Color.WHITE);
-                g.drawOval(mx - 5, my - 5, 10, 10);
-            }
-            g.dispose();
         }
     }
 
