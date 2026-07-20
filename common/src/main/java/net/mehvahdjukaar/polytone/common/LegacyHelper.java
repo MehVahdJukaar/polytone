@@ -223,9 +223,7 @@ public class LegacyHelper {
                 String source = sourceTexture.get().replace("~/colormap/", id.getNamespace() + ":");
                 if (source.contains("./")) {
                     // resolve relative paths
-                    String path = id.getPath();
-                    int index = path.lastIndexOf('/');
-                    String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
+                    String directoryPath = PathsUtils.directoryOf(id.getPath());
                     source = source.replace("./", id.getNamespace() + ":" + directoryPath);
                 }
                 colormap.setExplicitTargetTexture(Identifier.parse(source));
@@ -286,9 +284,7 @@ public class LegacyHelper {
                     source = source.replace("~/colormap/", id.getNamespace() + ":");
                 } else {
                     // resolve relative paths
-                    String path = id.getPath();
-                    int index = path.lastIndexOf('/');
-                    String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
+                    String directoryPath = PathsUtils.directoryOf(id.getPath());
                     source = (id.getNamespace() + ":" + directoryPath) + source.replace("./", "");
                 }
                 colormap.setExplicitTargetTexture(Identifier.parse(source));
