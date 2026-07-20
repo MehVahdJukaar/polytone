@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.common.expressions;
 
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.expressions.preview.PreviewContext;
+import net.mehvahdjukaar.polytone.common.expressions.preview.SimProxies;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -24,14 +26,6 @@ import java.util.Random;
 
 public class ExpUtils {
 
-    private static final Map<String, String> RENAMES = Map.of(
-            "POS_X", "o.x",
-            "POS_Y", "o.y",
-            "POS_Z", "o.z",
-            "TIME", "g.time",
-            "RAND", "r.next()"
-    );
-
     @SuppressWarnings("CollectionAddAllCanBeReplacedWithConstructor")
     private static final Map<String, Object> STATIC_GLOBALS = Util.make(() -> {
         Map<String, Object> m = new HashMap<>();
@@ -46,11 +40,6 @@ public class ExpUtils {
     });
 
     public static String upgrade(String expr) {
-        //Keeping backward compat for now
-        /*
-        for (var e : RENAMES.entrySet()) {
-            expr = expr.replace(e.getKey(), e.getValue());
-        }*/
         return coerceLogicalOperands(expr);
     }
 
@@ -67,7 +56,7 @@ public class ExpUtils {
      * condition (MVEL hard-casts it to Boolean too) with the value branches recursing on their
      * own. Purely numeric expressions are left untouched.
      */
-    public static String coerceLogicalOperands(String expr) {
+    private static String coerceLogicalOperands(String expr) {
         return coerceExpression(coerceInsideParens(expr));
     }
 
@@ -278,13 +267,27 @@ public class ExpUtils {
     }
 
     public static void addCommonVars(Map<String, Object> vars) {
-        vars.putAll(STATIC_GLOBALS);
+        putGlobals(vars);
         Polytone.GLOBAL_EXPRESSION.addValues(vars);
     }
 
     /** Just the truly static globals (math constants + singleton proxies), no per-tick values. */
     public static void addStaticVars(Map<String, Object> vars) {
+        putGlobals(vars);
+    }
+
+    // The editor preview swaps its sim proxies in for the live ones; in-game this is one thread-local check.
+    private static void putGlobals(Map<String, Object> vars) {
         vars.putAll(STATIC_GLOBALS);
+        SimProxies sim = PreviewContext.active();
+        if (sim != null) {
+            vars.put("global", sim.global);
+            vars.put("g", sim.global);
+            vars.put("camera", sim.camera);
+            vars.put("c", sim.camera);
+            vars.put("player", sim.player);
+            vars.put("p", sim.player);
+        }
     }
 
 

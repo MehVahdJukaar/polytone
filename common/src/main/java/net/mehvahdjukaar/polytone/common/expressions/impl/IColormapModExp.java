@@ -15,15 +15,20 @@ import org.jetbrains.annotations.Nullable;
 
 public interface IColormapModExp {
 
-    Codec<IColormapModExp> CONSTANT_CODEC = CodecUtils.LENIENT_FLOAT.xmap(
-            aDouble -> (a, b, c, d, e, f, g, h, i) -> aDouble,
-            iBlockExp -> 0.0f);
-
-    // Wire codec + editor picker labels declared once each.
-    Codec<IColormapModExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.alternatives(
-            "constant", CONSTANT_CODEC,
-            "legacy expression", ColormapModContextExpression.CODEC,
-            "expression", ColormapModExp.TYPE.codec()));
+    Codec<IColormapModExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.alternatives(
+                    CodecUtils.LENIENT_FLOAT.xmap(
+                            aDouble -> (IColormapModExp) (a, b, c, d, e, f, g, h, i) -> aDouble,
+                            i -> 0.0f
+                    ),
+                    ColormapModContextExpression.CODEC,
+                    ColormapModExp.TYPE.codec()),
+            // constant: plain number (LENIENT_FLOAT would splice its float-or-string union into
+            // stray "number"/"text" options). expression before legacy: both encode as bare strings,
+            // so fit-scoring on load should land on the modern branch, not the deprecated one.
+            SchemaCodecs.alt("constant", Codec.FLOAT),
+            SchemaCodecs.alt("expression", ColormapModExp.TYPE.codec()),
+            SchemaCodecs.alt("legacy expression", ColormapModContextExpression.CODEC)));
 
     float evaluate(float r, float g, float b, @Nullable BlockAndTintGetter level,
                    @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,

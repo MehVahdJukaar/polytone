@@ -7,6 +7,7 @@ import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -35,10 +36,10 @@ public final class PolyExpType<T extends PolyExp> {
         return codec;
     }
 
-    /** Names of the declared MVEL inputs — used by the editor as insertable hint chips. */
-    public java.util.List<String> inputNames() {
+    /** Names of the declared MVEL inputs - used by the editor as insertable hint chips. */
+    public List<String> inputNames() {
         var inputs = context.getInputs();
-        return inputs == null ? java.util.List.of()
+        return inputs == null ? List.of()
                 : inputs.keySet().stream().sorted().toList();
     }
 

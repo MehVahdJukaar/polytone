@@ -8,14 +8,20 @@ import net.minecraft.world.entity.Entity;
 
 public interface IEntityExp {
 
-    Codec<IEntityExp> CONSTANT_CODEC = CodecUtils.LENIENT_DOUBLE.xmap(
-            aDouble -> (e) -> aDouble,
-            iBlockExp -> 0.0);
-
-    Codec<IEntityExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.alternatives(
-            "constant", CONSTANT_CODEC,
-            "legacy expression", EntityContextExpression.CODEC,
-            "expression", EntityExp.TYPE.codec()));
+    Codec<IEntityExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.alternatives(
+                    CodecUtils.LENIENT_DOUBLE.xmap(
+                            aDouble -> (IEntityExp) (e) -> aDouble,
+                            i -> 0.0
+                    ),
+                    EntityContextExpression.CODEC,
+                    EntityExp.TYPE.codec()),
+            // constant: plain number (LENIENT_DOUBLE would splice its double-or-string union into
+            // stray "number"/"text" options). expression before legacy: both encode as bare strings,
+            // so fit-scoring on load should land on the modern branch, not the deprecated one.
+            SchemaCodecs.alt("constant", Codec.DOUBLE),
+            SchemaCodecs.alt("expression", EntityExp.TYPE.codec()),
+            SchemaCodecs.alt("legacy expression", EntityContextExpression.CODEC)));
 
     double evaluate(Entity entity);
 

@@ -5,13 +5,16 @@ import net.mehvahdjukaar.codecui.SchemaCodecs;
 
 public interface IPackMetadataExp {
 
-    Codec<IPackMetadataExp> CONSTANT_CODEC = Codec.BOOL.xmap(
-            b -> () -> b,
-            iBlockExp -> false);
-
-    Codec<IPackMetadataExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.alternatives(
-            "constant", CONSTANT_CODEC,
-            "expression", PackMetadataExp.TYPE.codec()));
+    Codec<IPackMetadataExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.alternatives(
+                    Codec.BOOL.xmap(
+                            b -> (IPackMetadataExp) () -> b,
+                            i -> false
+                    ),
+                    PackMetadataExp.TYPE.codec()
+            ),
+            SchemaCodecs.alt("constant", Codec.BOOL),
+            SchemaCodecs.alt("expression", PackMetadataExp.TYPE.codec())));
 
     boolean evaluate();
 

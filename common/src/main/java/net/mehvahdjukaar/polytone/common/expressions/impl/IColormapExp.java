@@ -5,6 +5,8 @@ import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.common.expressions.preview.PreviewContext;
+import net.mehvahdjukaar.polytone.common.expressions.preview.SimProxies;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
@@ -30,15 +32,21 @@ public interface IColormapExp {
             aDouble -> (a, b, c, d, e, f) -> aDouble,
             iBlockExp -> 0.0f);
 
-    // Same wire codec as always; the labels only name the editor's picker options
-    // (otherwise they auto-label as "choice/number/custom/text").
+    // Same wire codec as always; the labels only name the editor's picker options.
+    // The "constant" branch is displayed as a plain number, NOT via CONSTANT_CODEC: that one wraps
+    // LENIENT_FLOAT (a float-or-string union), whose schema is an AnyOf that anyOf() splices flat -
+    // leaking two unlabeled "number"/"text" options and, worse, a "text" branch that EXACT-matches
+    // expression strings on load so expressions would open under "text". Codec.FLOAT keeps it one option.
     Codec<IColormapExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
             SchemaCodecs.referenceOrDirect(BUILTIN_EXP,
                     SchemaCodecs.alternatives(CONSTANT_CODEC, ColormapExpressionProvider.CODEC, ColormapExp.TYPE.codec()), true),
             SchemaCodecs.alt("preset", BUILTIN_EXP),
-            SchemaCodecs.alt("constant", CONSTANT_CODEC),
-            SchemaCodecs.alt("legacy expression", ColormapExpressionProvider.CODEC),
-            SchemaCodecs.alt("expression", ColormapExp.TYPE.codec())));
+            SchemaCodecs.alt("constant", Codec.FLOAT),
+            // "expression" (MVEL) before "legacy expression" (exp4j): both are bare strings and
+            // indistinguishable on load, so fit-scoring picks the first that matches - which should be
+            // the modern branch. Legacy is the deprecated fallback.
+            SchemaCodecs.alt("expression", ColormapExp.TYPE.codec()),
+            SchemaCodecs.alt("legacy expression", ColormapExpressionProvider.CODEC)));
 
     float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,
                    @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack);
@@ -87,8 +95,12 @@ public interface IColormapExp {
     IColormapExp ONE = BUILTIN_EXP.register("one", new Const(1));
 
     //why inverted. for sunset colormaps
-    IColormapExp DAY_TIME = BUILTIN_EXP.register("day_time", (level, state, pos, biome, mapper, stack) ->
-            (float) (1f - (ClientFrameTicker.getDayTime() % 24000 / 24000f)));
+    IColormapExp DAY_TIME = BUILTIN_EXP.register("day_time", (level, state, pos, biome, mapper, stack) -> {
+        // editor preview override; null in normal gameplay
+        SimProxies sim = PreviewContext.active();
+        double dayTime = sim != null ? sim.global.dayTime() : ClientFrameTicker.getDayTime();
+        return (float) (1f - (dayTime % 24000 / 24000f));
+    });
 
 
     IColormapExp TEMPERATURE = BUILTIN_EXP.register("temperature", new IColormapExp() {
@@ -199,7 +211,9 @@ public interface IColormapExp {
     IColormapExp SEASON = BUILTIN_EXP.register("season", new IColormapExp() {
         @Override
         public float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
-            return 1 - ExpTicker.getSeasonNumber();
+            // editor preview override; null in normal gameplay
+            SimProxies sim = PreviewContext.active();
+            return (float) (1 - (sim != null ? sim.global.seasonNumber() : ExpTicker.getSeasonNumber()));
         }
 
         @Override

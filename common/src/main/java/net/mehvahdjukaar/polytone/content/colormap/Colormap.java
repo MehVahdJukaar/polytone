@@ -189,6 +189,17 @@ public final class Colormap implements IColorGetter, ColorResolver {
     @Override
     public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
                            @Nullable Biome biome, @Nullable ItemStack item) {
+        return sampleColor(level, state, pos, biome, item, null);
+    }
+
+    /**
+     * The real sampler, optionally instrumented. When {@code sink} is non-null the intermediates
+     * (axis outputs, sampled source pixel, final ARGB) are reported right where they are computed, so
+     * tooling never needs a second, drift-prone copy of the sampling math. {@code sink == null} is the
+     * runtime path and costs nothing beyond a null check.
+     */
+    public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
+                           @Nullable Biome biome, @Nullable ItemStack item, @Nullable SampleSink sink) {
         float temperature = Mth.clamp(xGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
         float humidity = Mth.clamp(yGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
         int sampled = sample(humidity, temperature);
@@ -196,7 +207,17 @@ public final class Colormap implements IColorGetter, ColorResolver {
         if (colorMult != null) {
             sampled = colorMult.evaluate(sampled, level, state, pos, biome, biomeMapper, item);
         }
+        if (sink != null) {
+            long pixel = pixelIndex(humidity, temperature);
+            sink.report(temperature, humidity, (int) (pixel >>> 32), (int) (pixel & 0xFFFFFFFFL), sampled);
+        }
         return sampled;
+    }
+
+    /** Receives the intermediates of a single {@link #sampleColor} pass; used by the editor preview. */
+    public interface SampleSink {
+        // x/y are the clamped axis outputs (0..1); col/row is the sampled source-image pixel; argb is the final tint.
+        void report(float x, float y, int col, int row, int argb);
     }
 
     // gets color for blend
@@ -239,21 +260,23 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private int sample(float textY, float textX) {
         // dont ask questions here
         //if (Polytone.sodiumOn) return defValue;
-        if (triangular) textY *= textX;
-        int width = image.width();
-        int height = image.height();
+        long pixel = pixelIndex(textY, textX);
+        return image.pixels()[(int) (pixel & 0xFFFFFFFFL)][(int) (pixel >>> 32)];
+    }
 
-        int wm = width - 1;
-        int hm = height - 1;
+    // Maps the two axis outputs to a source-image pixel. High 32 bits = column (x/temperature axis),
+    // low 32 bits = row (y/humidity axis). Single source of truth shared by sample() and the sink path.
+    private long pixelIndex(float textY, float textX) {
+        if (triangular) textY *= textX;
+        int wm = image.width() - 1;
+        int hm = image.height() - 1;
 
         //gets rid of floating point errors for biome id map stuff
         int scaledW = rounds ? Math.round(textX * wm) : Mth.floor(textX * wm);
         int scaledH = rounds ? Math.round(textY * hm) : Mth.floor(textY * hm);
         int w = Math.max(wm - scaledW, 0);
         int h = Math.max(hm - scaledH, 0);
-
-
-        return image.pixels()[h][w];
+        return ((long) w << 32) | (h & 0xFFFFFFFFL);
     }
 
 

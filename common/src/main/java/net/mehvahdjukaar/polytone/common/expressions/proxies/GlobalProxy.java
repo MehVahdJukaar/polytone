@@ -40,7 +40,8 @@ public class GlobalProxy {
     }
 
     public String season() {
-        return ISeason.get(delegate()).lowercaseName();
+        Level level = delegate();
+        return level == null ? ISeason.SUMMER.lowercaseName() : ISeason.get(level).lowercaseName();
     }
 
     public String dimensionType() {
@@ -62,6 +63,11 @@ public class GlobalProxy {
             case OVERWORLD -> 1;
             case END -> 2;
         };
+    }
+
+    public double seaLevel() {
+        Level level = delegate();
+        return level == null ? 63 : level.getSeaLevel();
     }
 
     public double seasonNumber() {

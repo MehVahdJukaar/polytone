@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.lightmap;
 
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.common.expressions.impl.LightmapExp;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -10,8 +11,15 @@ public interface ILightmapNumberProvider {
 
     MapRegistry<ILightmapNumberProvider> BUILTIN_PROVIDERS = new MapRegistry<>("Lightmap Number Providers");
 
-    Codec<ILightmapNumberProvider> CODEC = SchemaCodecs.referenceOrDirect(BUILTIN_PROVIDERS,
-            LightmapContextExpression.CODEC, true);
+    // Same wire codec as always; the labels only name the editor's picker options.
+    Codec<ILightmapNumberProvider> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.referenceOrDirect(BUILTIN_PROVIDERS,
+                    SchemaCodecs.alternatives(LightmapContextExpression.CODEC, LightmapExp.TYPE.codec()), true),
+            SchemaCodecs.alt("preset", BUILTIN_PROVIDERS),
+            // expression before legacy: both encode as bare strings, so fit-scoring on load should
+            // land on the modern branch, not the deprecated one.
+            SchemaCodecs.alt("expression", LightmapExp.TYPE.codec()),
+            SchemaCodecs.alt("legacy expression", LightmapContextExpression.CODEC)));
 
 
     double getValue(float time, float rain, float thunder);

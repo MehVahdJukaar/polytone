@@ -111,7 +111,13 @@ public record Targets(List<Entry> entries) {
             "tag", TagLocation.TAG_CODEC,
             "regex", RegexLocation.REGEX_CODEC);
 
-    private static final Codec<Entry> ENTRY_CODEC = Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC);
+    // The wire codec is a plain withAlternative fold; labeled() only adds the editor schema
+    // (the labeled alternatives of the first branch splice flat, so the selector
+    // shows [id, tag, regex, optional id]) without touching the format.
+    private static final Codec<Entry> ENTRY_CODEC = SchemaCodecs.labeled(
+            Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC),
+            SchemaCodecs.alt("entry", SIMPLE_TAG_OR_REGEX_ENTRY_CODEC),
+            SchemaCodecs.alt("optional id", OptionalEntry.OPTIONAL_CODEC));
 
     public static final Codec<Targets> CODEC = SchemaCodecs.singleOrList(ENTRY_CODEC)
             .xmap(Targets::new, t -> t.entries);

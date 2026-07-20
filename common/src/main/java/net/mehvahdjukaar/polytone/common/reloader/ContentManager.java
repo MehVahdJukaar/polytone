@@ -29,11 +29,20 @@ import java.io.Reader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 public abstract class ContentManager<O> {
 
     public static final Gson GSON = new Gson();
+
+    /**
+     * Editor bridge, set by the pack-editor compat when the Nautilus Studio mod is present. Resolves
+     * {@code (content folder, id)} to the raw json of that content file inside the pack currently
+     * open in the editor, so by-name references to content the running game hasn't loaded still
+     * decode there. Null (or a null result) everywhere else - reference decode then fails normally.
+     */
+    public static @Nullable BiFunction<String, Identifier, @Nullable JsonElement> editorWorkspaceJsonLookup;
 
     private final String[] folderNames;
     private final Supplier<@Nullable ? extends SchemaCodec<O>> contentCodec;
@@ -62,6 +71,10 @@ public abstract class ContentManager<O> {
 
     public Iterable<String> folderNames() {
         return Arrays.stream(folderNames).toList();
+    }
+
+    public @Nullable String primaryFolder() {
+        return folderNames.length == 0 ? null : folderNames[0];
     }
     /**
      * Batch-decode jsons, yielding only entries whose conditions are met.

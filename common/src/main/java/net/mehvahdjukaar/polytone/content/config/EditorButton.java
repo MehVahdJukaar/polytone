@@ -6,10 +6,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 
 /**
  * The "open codec editor" button on the {@link ConfigScreen} footer. It boots the Swing
@@ -24,6 +27,8 @@ final class EditorButton extends Button {
     private static final Identifier ICON_ACTIVE = Polytone.res("codec_editor_on");
     private static final Identifier ICON_LOADING = Polytone.res("codec_editor_loading");
     private static final int DOT_SIZE = 6;
+    // Where the button sends users when Nautilus Studio isn't present.
+    private static final String NAUTILUS_URL = "https://github.com/MehVahdJukaar/pack_editor";
 
     private final int spriteWidth;
     private final int spriteHeight;
@@ -42,12 +47,27 @@ final class EditorButton extends Button {
 
     @Override
     public void onPress(InputWithModifiers input) {
+        if (!available) {
+            openDownloadPage();
+            return;
+        }
         open();
+    }
+
+    // Without the editor mod, a click offers the download page instead (and stops the nudge bubble).
+    private void openDownloadPage() {
+        Polytone.CONFIGS.bubbleManager.onEditorButtonClicked();
+        Minecraft mc = Minecraft.getInstance();
+        Screen parent = mc.screen;
+        mc.setScreen(new ConfirmLinkScreen(confirmed -> {
+            if (confirmed) Util.getPlatform().openUri(NAUTILUS_URL);
+            mc.setScreen(parent);
+        }, NAUTILUS_URL, true));
     }
 
     /** Boot the editor off-thread so the spinner keeps animating; re-enabled when it returns. */
     private void open() {
-        if (!available || loading || Minecraft.getInstance().level == null) return;
+        if (loading || Minecraft.getInstance().level == null) return;
         // Already open: just focus it — no spinner, no rebuild (single instance).
         if (PackEditor.isOpen()) {
             PackEditor.open();

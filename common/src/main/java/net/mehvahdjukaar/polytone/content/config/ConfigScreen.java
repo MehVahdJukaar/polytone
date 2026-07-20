@@ -63,6 +63,8 @@ public class ConfigScreen extends OptionsSubScreen {
     private @Nullable SpriteIconButton heartButton;
     private @Nullable EditorButton editorButton;
     private @Nullable ChatBubbleWidget supportBubble;
+    private @Nullable ChatBubbleWidget editorBubble;
+    private boolean editorAvailable;
 
     public ConfigScreen(Screen lastScreen, Collection<OptionHolder<?>> options, Runnable saveFunc) {
         super(lastScreen, Minecraft.getInstance().options, TITLE);
@@ -117,7 +119,9 @@ public class ConfigScreen extends OptionsSubScreen {
                 : Component.translatable(inGame ? "screen.polytone.configs.codec_editor"
                         : "screen.polytone.configs.codec_editor.disabled");
         EditorButton editorButton = new EditorButton(20, 12, 12, packEditor, editorTooltip);
-        editorButton.active = inGame && packEditor;
+        // Without the mod the button stays clickable: it offers the download page instead.
+        editorButton.active = packEditor ? inGame : true;
+        this.editorAvailable = packEditor;
         this.editorButton = editorButton;
 
         footer.addChild(Button.builder(Component.translatable("screen.polytone.configs.reset"),
@@ -174,6 +178,22 @@ public class ConfigScreen extends OptionsSubScreen {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         renderCustomTooltip(guiGraphics, mouseX, mouseY);
         renderSupportBubble(guiGraphics, mouseX, mouseY, partialTick);
+        renderEditorBubble(guiGraphics, mouseX, mouseY, partialTick);
+    }
+
+    // Nudges people toward the editor, but only when they don't already have it installed.
+    private void renderEditorBubble(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        if (this.editorAvailable || this.editorButton == null || !this.editorButton.visible) return;
+
+        Component message = Polytone.CONFIGS.bubbleManager.getEditorButtonMessage();
+        if (message == null) return;
+
+        if (this.editorBubble == null) {
+            this.editorBubble = new ChatBubbleWidget(0, 0, message).setAnimated(true);
+        } else if (!message.equals(this.editorBubble.getMessage())) {
+            this.editorBubble.setText(message);
+        }
+        this.editorBubble.renderPointingAt(guiGraphics, this.editorButton, this.width, mouseX, mouseY, partialTick);
     }
 
     private void renderSupportBubble(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {

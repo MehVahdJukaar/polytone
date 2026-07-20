@@ -27,6 +27,7 @@ public class ConfigBubbleManager {
     private static final String KEY_OPEN_COUNT = "open_count";
     private static final String KEY_SUPPORT_SHOWN = "support_bubble_shown";
     private static final String KEY_SUPPORT_DISMISSED = "support_dismissed";
+    private static final String KEY_EDITOR_CLICKED = "editor_button_clicked";
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -36,6 +37,7 @@ public class ConfigBubbleManager {
     private int openCount = 0;
     private boolean supportShown = false;
     private boolean supportDismissed = false;
+    private boolean editorClicked = false;
 
     public ConfigBubbleManager() {
     }
@@ -57,6 +59,7 @@ public class ConfigBubbleManager {
             this.openCount = GsonHelper.getAsInt(jo, KEY_OPEN_COUNT, 0);
             this.supportShown = GsonHelper.getAsBoolean(jo, KEY_SUPPORT_SHOWN, false);
             this.supportDismissed = GsonHelper.getAsBoolean(jo, KEY_SUPPORT_DISMISSED, false);
+            this.editorClicked = GsonHelper.getAsBoolean(jo, KEY_EDITOR_CLICKED, false);
         } catch (Exception e) {
             Polytone.LOGGER.error("Error loading polytone popup state", e);
         }
@@ -69,6 +72,7 @@ public class ConfigBubbleManager {
             jo.addProperty(KEY_OPEN_COUNT, openCount);
             jo.addProperty(KEY_SUPPORT_SHOWN, supportShown);
             jo.addProperty(KEY_SUPPORT_DISMISSED, supportDismissed);
+            jo.addProperty(KEY_EDITOR_CLICKED, editorClicked);
             FilesUtil.writeTextAtomically(stateFile().toPath(), writer ->
                     GsonHelper.writeValue(gson.newJsonWriter(writer), jo, null));
         } catch (Exception e) {
@@ -88,6 +92,14 @@ public class ConfigBubbleManager {
         stateFile();
         if (hasPackConfigs) {
             openCount++;
+            save();
+        }
+    }
+
+    public void onEditorButtonClicked() {
+        stateFile();
+        if (!editorClicked) {
+            editorClicked = true;
             save();
         }
     }
@@ -114,6 +126,14 @@ public class ConfigBubbleManager {
     public Component getHeartButtonMessage() {
         stateFile();
         return shouldShowSupport() ? supportMessage() : null;
+    }
+
+    @Nullable
+    public Component getEditorButtonMessage() {
+        stateFile();
+        // Nudge the editor until the user tries it. Support bubble wins to avoid two bubbles at once.
+        if (editorClicked || shouldShowSupport()) return null;
+        return Component.translatable("screen.polytone.editor.bubble");
     }
 
     private boolean shouldShowSupport() {
