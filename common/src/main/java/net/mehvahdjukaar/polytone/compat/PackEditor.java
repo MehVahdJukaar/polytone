@@ -24,6 +24,7 @@ import net.mehvahdjukaar.polytone.compat.nautilus.preview.BiomeScenePreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ColormapPreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.GuiModifierPreviewPanel;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.NoisePreview;
+import net.mehvahdjukaar.polytone.compat.nautilus.preview.ParticlePreview;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.common.exp.impl.ColormapModContextExpression;
@@ -72,7 +73,8 @@ public final class PackEditor {
             "colormaps", ColormapPreview::new,
             "noises", NoisePreview::new,
             "gui_modifiers", GuiModifierPreviewPanel::new,
-            "biome_modifiers", BiomeScenePreview::new);
+            "biome_modifiers", BiomeScenePreview::new,
+            "custom_particles", ParticlePreview::new);
 
     // Base of the in-repo wiki; a manager's wikiPage() is appended for its editor entry's help link.
     private static final String WIKI_BASE = "https://github.com/MehVahdJukaar/polytone/wiki/";

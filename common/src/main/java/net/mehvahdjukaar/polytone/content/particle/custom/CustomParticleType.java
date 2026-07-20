@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
+import net.mehvahdjukaar.polytone.content.particle.ParticlePreviewMode;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleLimit;
@@ -57,6 +58,7 @@ public class CustomParticleType implements ICustomParticleFactory {
     protected final boolean sticky;
 
     protected final SpritePicker spritePicker;
+    private @Nullable SpriteSet spriteSet; // last set of baked sprites, kept for the editor preview
 
     private boolean isValid = true;
     protected Identifier debugId = null;
@@ -166,7 +168,9 @@ public class CustomParticleType implements ICustomParticleFactory {
 
         //tick once
         //todo replace   initializer with ticker
-        if (Polytone.CONFIGS.particlesOffThread.get()) {
+        // The editor preview spawns on the render thread and can't drive the async batch, so it runs
+        // the spawn pass synchronously (ParticlePreviewMode.active() is only ever true there).
+        if (Polytone.CONFIGS.particlesOffThread.get() && !ParticlePreviewMode.active()) {
             // run the spawn-time ticker pass in this tick's parallel batch instead of on the main
             // thread; the batch joins before render extract, so the first frame is identical
             PolytoneAsyncParticles.enqueueInit(newParticle);
@@ -217,9 +221,16 @@ public class CustomParticleType implements ICustomParticleFactory {
     public void setSpriteSet(SpriteSet spriteSet) {
         try {
             this.spritePicker.acceptSprites(spriteSet);
+            this.spriteSet = spriteSet;
         } catch (SpriteSetErrorException e) {
             throw new RuntimeException("Failed to set sprite set for custom particle type: " + this + ".\nDid you remember to add particle sprites?", e);
         }
+    }
+
+    /** The baked sprites last handed to {@link #setSpriteSet}, or null if none yet. The editor
+     *  preview borrows these from the pack's already-registered particle of the same id. */
+    public @Nullable SpriteSet getSpriteSet() {
+        return this.spriteSet;
     }
 
     @Override

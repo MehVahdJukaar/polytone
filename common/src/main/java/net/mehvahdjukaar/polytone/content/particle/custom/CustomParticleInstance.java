@@ -227,6 +227,21 @@ public class CustomParticleInstance extends SingleQuadParticle {
     }
 
     /**
+     * Preview-only synchronous tick: runs the physics/expression pass on the caller's thread,
+     * bypassing the async batch. Never called in normal gameplay (which always routes through
+     * {@link #tick()}); only the editor particle preview drives its sandbox particles this way,
+     * since it cannot join the game's async batch.
+     */
+    public void tickSync() {
+        if (this.removed) return;
+        if (this.age >= this.lifetime) {
+            this.remove();
+            return;
+        }
+        tickInternal();
+    }
+
+    /**
      * Spawn-time ticker pass for a newborn; deferred to the parallel batch when async is on.
      */
     void initTick() {

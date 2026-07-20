@@ -104,7 +104,14 @@ public record ParticleParticleEmitter(
                 double sdx = dx.evaluate(particle, level);
                 double sdy = dy.evaluate(particle, level);
                 double sdz = dz.evaluate(particle, level);
-                PolytoneAsyncParticles.deferToMain(() -> level.addParticle(po, sx, sy, sz, sdx, sdy, sdz));
+                // Editor preview (render thread only): route the child into the preview's sandbox
+                // instead of the live world; null sink everywhere else = normal spawn, unchanged.
+                ParticlePreviewMode.EmitSink sink = ParticlePreviewMode.sink();
+                if (sink != null) {
+                    sink.emit(level, po, sx, sy, sz, sdx, sdy, sdz);
+                } else {
+                    PolytoneAsyncParticles.deferToMain(() -> level.addParticle(po, sx, sy, sz, sdx, sdy, sdz));
+                }
             }
         }
     }
