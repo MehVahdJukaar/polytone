@@ -9,6 +9,7 @@ import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.mehvahdjukaar.polytone.common.companion.ContentTextures;
 import net.mehvahdjukaar.polytone.common.companion.TexturePart;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
@@ -22,7 +23,6 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -44,6 +44,7 @@ public abstract class ContentManager<O> {
      * open in the editor, so by-name references to content the running game hasn't loaded still
      * decode there. Null (or a null result) everywhere else - reference decode then fails normally.
      */
+    //TODO: this is sus.
     public static @Nullable BiFunction<String, Identifier, @Nullable JsonElement> editorWorkspaceJsonLookup;
 
     private final String[] folderNames;
@@ -68,7 +69,6 @@ public abstract class ContentManager<O> {
         this.folderNames = spec.folderNames;
     }
 
-    /** Fluent, order-independent replacement for a telescoping constructor. */
     public static final class Spec<O> {
         private final String name;
         private String[] folderNames = new String[0];
@@ -80,12 +80,10 @@ public abstract class ContentManager<O> {
             this.name = name;
         }
 
-        /** For codec-less (non-editable) managers - O can't be inferred here, so give it explicitly: {@code Spec.<Foo>of(name)}. */
         public static <O> Spec<O> of(String name) {
             return new Spec<>(name);
         }
 
-        /** O is inferred from the codec supplier, so callers never need a type witness. */
         public static <O> Spec<O> of(String name, Supplier<? extends SchemaCodec<O>> codec) {
             return new Spec<O>(name).codec(codec);
         }
@@ -134,7 +132,6 @@ public abstract class ContentManager<O> {
         return folderNames.length == 0 ? null : folderNames[0];
     }
 
-    /** Wiki page slug shown as a help link in the pack editor. Managers without one just get no button. */
     public @Nullable String wikiPage() {
         return wikiPage;
     }
@@ -180,7 +177,7 @@ public abstract class ContentManager<O> {
 
     @Override
     public String toString() {
-        return StringUtils.capitalize(name.replace("_", " ")) + " Reloader";
+        return StrUtils.readableName(name) + " Reloader";
     }
 
     protected Map<Identifier, JsonElement> getJsonsInDirectories(ResourceManager resourceManager) {

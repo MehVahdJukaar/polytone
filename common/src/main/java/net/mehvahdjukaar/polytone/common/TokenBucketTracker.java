@@ -30,7 +30,6 @@ public class TokenBucketTracker {
         }
     }
 
-    //TODO: change . default logic
     public static boolean canEmitParticle(Object obj) {
         if (!Polytone.CONFIGS.autoParticleRateLimit.get()) return true;
         return OBJECTS_TOKENS.computeIfAbsent(obj, o ->

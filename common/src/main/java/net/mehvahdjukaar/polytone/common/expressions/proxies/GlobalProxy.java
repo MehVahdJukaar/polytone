@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.common.expressions.proxies;
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.common.InteractionTracker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.compat.ISeason;
@@ -101,19 +100,13 @@ public class GlobalProxy {
         return delegate.environmentAttributes().getDimensionValue(a);
     }
 
-    /**
-     * The last entity the player right-clicked, wrapped as an {@link EntityProxy}, or null if none
-     * (or it despawned). Lets expressions branch on "what opened this menu", e.g. a gui_modifier
-     * condition {@code g.hasInteracted() && g.lastInteractedEntity.profession() == 'cleric'}.
-     * Guard access with {@link #hasInteracted()} since dereferencing a null proxy fails the expression.
-     */
     @Nullable
     public EntityProxy lastInteractedEntity() {
-        Entity e = InteractionTracker.getLastEntity();
+        Entity e = ClientFrameTicker.getLastEntity();
         return e == null ? null : new EntityProxy(e);
     }
 
     public boolean hasInteracted() {
-        return InteractionTracker.getLastEntity() != null;
+        return ClientFrameTicker.getLastEntity() != null;
     }
 }

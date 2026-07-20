@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.mehvahdjukaar.polytone.common.gui.ChatBubbleWidget;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -32,7 +33,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
@@ -41,7 +41,6 @@ import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
-import java.util.stream.Collectors;
 
 import static net.minecraft.client.Options.genericValueLabel;
 
@@ -105,24 +104,19 @@ public class ConfigScreen extends OptionsSubScreen {
         this.layout.addTitleHeader(TITLE, this.font);
         this.layout.addToContents(this.list);
 
-        // Footer: centered Reset / Undo / Done row. The editor and heart icon buttons are NOT part of
-        // this row; they are free widgets pinned to the screen corners in repositionElements().
         LinearLayout footer = layout.addToFooter(LinearLayout.horizontal().spacing(8));
         int btnWidth = Mth.positiveCeilDiv(150 * 2 - 8, 3);
-        // Codec editor opener, pinned to the left screen edge. Disabled (greyed) unless a world is loaded,
-        // and shows an animated spinner while the editor window boots (see EditorButton).
         boolean inGame = Minecraft.getInstance().level != null;
-        // The editor lives in the separate PackEditor mod; grey out (with an install hint) when absent.
         boolean packEditor = net.mehvahdjukaar.polytone.PlatStuff.isModLoaded("nautilus_studio");
         Component editorTooltip = !packEditor
                 ? Component.translatable("screen.polytone.configs.codec_editor.no_mod")
                 : Component.translatable(inGame ? "screen.polytone.configs.codec_editor"
                         : "screen.polytone.configs.codec_editor.disabled");
         EditorButton editorButton = new EditorButton(20, 12, 12, packEditor, editorTooltip);
-        // Without the mod the button stays clickable: it offers the download page instead.
         editorButton.active = packEditor ? inGame : true;
         this.editorAvailable = packEditor;
         this.editorButton = editorButton;
+        footer.addChild(editorButton);
 
         footer.addChild(Button.builder(Component.translatable("screen.polytone.configs.reset"),
                         b -> resetAndRebuild())
@@ -134,7 +128,7 @@ public class ConfigScreen extends OptionsSubScreen {
                         b -> this.minecraft.setScreen(this.lastScreen))
                 .width(btnWidth).build());
 
-        // Support/heart button, pinned to the right screen edge.
+        // Support/heart button (right of the row).
         SpriteIconButton heart = SpriteIconButton.builder(
                         Component.translatable("screen.polytone.support.title"),
                         b -> this.minecraft.setScreen(new SupportScreen(this)),
@@ -144,11 +138,9 @@ public class ConfigScreen extends OptionsSubScreen {
                 .build();
         heart.setTooltip(Tooltip.create(Component.translatable("screen.polytone.support.tooltip")));
         this.heartButton = heart;
+        footer.addChild(heart);
 
         layout.visitWidgets(this::addRenderableWidget);
-        // Corner icon buttons: free widgets (added outside the layout) positioned in repositionElements().
-        this.addRenderableWidget(editorButton);
-        this.addRenderableWidget(heart);
         repositionElements();
     }
 
@@ -157,16 +149,6 @@ public class ConfigScreen extends OptionsSubScreen {
         this.layout.arrangeElements();
         if (this.list != null) {
             this.list.updateSize(this.width, this.layout);
-        }
-        // Pin the two icon buttons to opposite corners of the footer row so they track screen resizes.
-        int margin = 8;
-        int footerH = this.layout.getFooterHeight();
-        int y = this.height - footerH + (footerH - 20) / 2;
-        if (this.editorButton != null) {
-            this.editorButton.setPosition(margin, y);
-        }
-        if (this.heartButton != null) {
-            this.heartButton.setPosition(this.width - margin - this.heartButton.getWidth(), y);
         }
     }
 
@@ -462,21 +444,13 @@ public class ConfigScreen extends OptionsSubScreen {
     // --- header title resolution ---
 
     private Component namespaceTitle(String modId) {
-        String key = "config." + modId + ".header";
-        Component c = Component.translatable(key);
-        if (c.getString().equals(key)) {
-            c = Component.literal(getReadableName(modId));
-        }
-        return c;
+        return Component.translatableWithFallback("config." + modId + ".header",
+                StrUtils.readableName(modId));
     }
 
     private Component sectionTitle(String modId, String section) {
-        String key = "config." + modId + ".section." + section;
-        Component c = Component.translatable(key);
-        if (c.getString().equals(key)) {
-            c = Component.literal(getReadableName(section));
-        }
-        return c;
+        return Component.translatableWithFallback("config." + modId + ".section." + section,
+                StrUtils.readableName(section));
     }
 
     // --- preset slider ---
@@ -622,14 +596,13 @@ public class ConfigScreen extends OptionsSubScreen {
             Component c = translatedOrNull(modId + ".presets.section." + section + "." + name);
             if (c != null) return c;
         }
-        Component c = translatedOrNull(modId + ".presets." + name);
-        return c != null ? c : Component.literal(getReadableName(name));
+        return Component.translatableWithFallback(modId + ".presets." + name,
+                StrUtils.readableName(name));
     }
 
     @Nullable
     private static Component translatedOrNull(String key) {
-        Component c = Component.translatable(key);
-        return c.getString().equals(key) ? null : c;
+        return I18n.exists(key) ? Component.translatable(key) : null;
     }
 
     /** Per-stop tooltip: per-section override -> per-preset -> the general slider tooltip. */
@@ -811,8 +784,4 @@ public class ConfigScreen extends OptionsSubScreen {
         }
     }
 
-    public static String getReadableName(String name) {
-        return Arrays.stream((name).replace(":", "_").split("_"))
-                .map(StringUtils::capitalize).collect(Collectors.joining(" "));
-    }
 }

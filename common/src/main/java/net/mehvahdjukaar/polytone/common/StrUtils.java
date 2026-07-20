@@ -1,6 +1,18 @@
 package net.mehvahdjukaar.polytone.common;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public final class StrUtils {
+
+    /** snake_case / namespaced id -> Title Case; {@code "foo:bar_baz"} -> {@code "Foo Bar Baz"}. */
+    public static String readableName(String name) {
+        return Arrays.stream(name.replace(':', '_').split("_"))
+                .map(StringUtils::capitalize)
+                .collect(Collectors.joining(" "));
+    }
 
     /** {@code "a/b/c"} -> {@code "a/b/"}; no slash -> {@code ""}. */
     public static String directoryOf(String path) {

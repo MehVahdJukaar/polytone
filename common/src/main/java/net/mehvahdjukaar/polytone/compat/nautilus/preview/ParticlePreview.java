@@ -40,7 +40,6 @@ import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.state.ParticlesRenderState;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -428,7 +427,7 @@ public final class ParticlePreview extends ExpressionPreview {
                     .rotateX((float) Math.toRadians(-camera.pitchDeg()));
             Vector3f eyeOffset = orbit.transformPosition(new Vector3f(0f, 0f, camera.distance()));
             double ex = target.x + eyeOffset.x, ey = target.y + eyeOffset.y, ez = target.z + eyeOffset.z;
-            previewCamera.place(new Vec3(ex, ey, ez), target.x, target.y, target.z);
+            previewCamera.place(new Vec3(ex, ey, ez), camera.yawDeg(), camera.pitchDeg());
 
             if (projectionBuffer == null)
                 projectionBuffer = new PerspectiveProjectionMatrixBuffer("polytone particle scene");
@@ -583,12 +582,16 @@ public final class ParticlePreview extends ExpressionPreview {
      * exposes them (no access widener, matching the biome scene pass's no-AW approach).
      */
     private static final class PreviewCamera extends Camera {
-        void place(Vec3 eye, double tx, double ty, double tz) {
-            double dx = tx - eye.x, dy = ty - eye.y, dz = tz - eye.z;
-            double horiz = Math.sqrt(dx * dx + dz * dz);
-            float yaw = (float) (Mth.atan2(dz, dx) * (180.0 / Math.PI)) - 90f;
-            float pitch = (float) (-(Mth.atan2(dy, horiz) * (180.0 / Math.PI)));
-            this.setRotation(yaw, pitch);
+        // Orient straight from the orbit's yaw/pitch instead of round-tripping through the look vector.
+        // SceneCamera.view()'s rotation is Rx(pitch)Ry(yaw); the render pass sets the model-view to the
+        // conjugate of this camera's rotation, so for the billboard (which copies camera.rotation()) to
+        // cancel to screen-facing AND for positions to line up with the reference grid, this camera's
+        // rotation must be exactly Ry(-yaw)Rx(-pitch) = conjugate of that view rotation. Vanilla
+        // setRotation(yRot, xRot) builds Ry(pi - yRot)Rx(-xRot), so yRot = 180 + yaw and xRot = pitch
+        // give precisely Ry(-yaw)Rx(-pitch). The old atan2 reconstruction only matched by luck of
+        // convention, which left the quad tilted edge-on (visible only as the whole atlas when zoomed far out).
+        void place(Vec3 eye, float yawDeg, float pitchDeg) {
+            this.setRotation(180f + yawDeg, pitchDeg);
             this.setPosition(eye);
         }
     }
