@@ -33,6 +33,10 @@ public record FluidPropertyModifier(Optional<? extends BlockColor> colormap, Opt
         return new FluidPropertyModifier(Optional.of(colormap), Optional.empty(), Targets.EMPTY);
     }
 
+    public static FluidPropertyModifier ofFogColor(IColorGetter colormap) {
+        return new FluidPropertyModifier(Optional.empty(), Optional.of(colormap), Targets.EMPTY);
+    }
+
     @Nullable
     public BlockColor getColormap() {
         return colormap.orElse(null);

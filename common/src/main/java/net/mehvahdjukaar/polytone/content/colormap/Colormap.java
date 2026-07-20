@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.polytone.common.PathsUtils;
 import net.mehvahdjukaar.codecui.Schema;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
@@ -43,7 +44,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private final boolean usesState;
 
     public boolean inlined = true;
-    Identifier debugID = null;
+    public Identifier debugID = null;
 
     private Integer defaultColor;
     private ArrayImage image = null;
@@ -144,7 +145,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return image == null;
     }
 
-    Identifier getExplicitTargetTexture() {
+    public Identifier getExplicitTargetTexture() {
         return explicitTargetTexture;
     }
 
@@ -153,7 +154,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     public void setExplicitTargetTexture(Identifier imageTarget) {
-        this.explicitTargetTexture = imageTarget.withPath(imageTarget.getPath().replace(".png", ""));
+        this.explicitTargetTexture = imageTarget.withPath(PathsUtils.stripExtension(imageTarget.getPath()));
     }
 
     // Dont use tint index

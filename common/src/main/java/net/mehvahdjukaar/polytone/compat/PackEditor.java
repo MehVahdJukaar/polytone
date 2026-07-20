@@ -14,8 +14,8 @@ import net.mehvahdjukaar.nautilus.workbench.FileNamesUtil;
 import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
 import net.mehvahdjukaar.nautilus.workbench.SidecarAssets;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.companion.CompanionSlot;
-import net.mehvahdjukaar.polytone.common.companion.CompanionSpec;
+import net.mehvahdjukaar.polytone.common.companion.ContentTextures;
+import net.mehvahdjukaar.polytone.common.companion.TextureSlot;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.common.exp.impl.ColormapModContextExpression;
@@ -91,7 +91,7 @@ public final class PackEditor {
         for (ContentManager<?> manager : Polytone.MANAGERS) {
             if (manager.contentCodec() == null) continue;
             for (String folder : manager.folderNames()) {
-                CompanionSpec<?> companions = manager.companions;
+                ContentTextures<?> companions = manager.contentTexture;
                 CodecEntry entry = new CodecEntry(manager.name, "Polytone",
                         manager.contentCodec(), Side.CLIENT_RESOURCES,
                         Polytone.MOD_ID + "/" + folder);
@@ -174,13 +174,13 @@ public final class PackEditor {
     // -------------------- Companion (sidecar) assets --------------------
 
     /**
-     * Projects a content type's {@link CompanionSpec} (the runtime companion-asset convention,
+     * Projects a content type's {@link ContentTextures} (the runtime companion-asset convention,
      * shared with the reloaders) onto the json's sibling directory as the generic
      * {@link SidecarAssets} the editor renders: expected slots are matched (case-insensitively)
-     * against the files actually there, in spec order; leftover siblings the spec still classifies
-     * as associated come last as {@link SidecarAssets.State#UNUSED}.
+     * against the files actually there, in declaration order; leftover siblings the naming
+     * convention still associates with the stem come last as {@link SidecarAssets.State#UNUSED}.
      */
-    private static SidecarAssets sidecarsFromSpec(CompanionSpec<?> spec) {
+    private static SidecarAssets sidecarsFromSpec(ContentTextures<?> spec) {
         return (jsonFile, pack, parsedValue) -> {
             Path dir = jsonFile.getParent();
             if (dir == null || !Files.isDirectory(dir)) return List.of();
@@ -196,10 +196,10 @@ public final class PackEditor {
 
             List<SidecarAssets.Slot> out = new ArrayList<>();
             Set<Path> consumed = new HashSet<>();
-            for (CompanionSlot slot : expectedSlotsUnchecked(spec, parsedValue, stem)) {
+            for (TextureSlot slot : expectedSlotsUnchecked(spec, parsedValue, stem)) {
                 // texture_path slot: lives at an absolute resource location, not next to the json
                 if (slot.remoteLocation() != null) {
-                    Path remote = resolvePackAsset(pack, slot.remoteLocation());
+                    Path remote = resolvePackAsset(pack, slot.remoteLocation().toString());
                     String display = slot.remoteLocation() + ".png";
                     out.add(remote != null
                             ? new SidecarAssets.Slot(display, remote, SidecarAssets.State.PRESENT, slot.label())
@@ -224,7 +224,7 @@ public final class PackEditor {
             for (Path p : siblings.values()) {
                 if (consumed.contains(p)) continue;
                 String name = String.valueOf(p.getFileName());
-                String label = spec.classify(name, stem);
+                String label = spec.roleLabel(name, stem);
                 if (label != null) out.add(new SidecarAssets.Slot(name, p, SidecarAssets.State.UNUSED, label));
             }
             return List.copyOf(out);
@@ -232,14 +232,14 @@ public final class PackEditor {
     }
 
     /**
-     * The editor holds specs heterogeneously ({@code CompanionSpec<?>}) and decodes each json
-     * to an untyped {@code Object}, so it can't know the spec's value type statically — this is
-     * the one boundary where that erasure is unavoidable. Runtime callers pass a typed value.
+     * The editor holds textures heterogeneously ({@code ContentTextures<?>}) and decodes each json
+     * to an untyped {@code Object}, so it can't know the value type statically — this is the one
+     * boundary where that erasure is unavoidable. Runtime callers pass a typed value.
      */
     @SuppressWarnings("unchecked")
-    private static List<CompanionSlot> expectedSlotsUnchecked(CompanionSpec<?> spec, @Nullable Object parsedValue,
-                                                              String stem) {
-        return ((CompanionSpec<Object>) spec).expectedSlots(parsedValue, stem);
+    private static List<TextureSlot> expectedSlotsUnchecked(ContentTextures<?> spec, @Nullable Object parsedValue,
+                                                            String stem) {
+        return ((ContentTextures<Object>) spec).expectedSlots(parsedValue, stem);
     }
 
     /**

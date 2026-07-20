@@ -10,7 +10,8 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.codecui.EnumerableCodec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
-import net.mehvahdjukaar.polytone.common.struc.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.client.renderer.BiomeColors;
@@ -96,10 +97,13 @@ public class ColormapsManager extends ContentManager<Colormap> {
         return concurrentColormaps.computeIfAbsent(colormap, IColorGetter::makeConcurrent);
     }
 
+    private static final TexturePart<Colormap> TEXTURE = TexturePart.plain(c -> c);
+
     public ColormapsManager() {
-        super("Colormap", () -> Colormap.DIRECT_CODEC,
-                ColormapTextures.singleTexture((Colormap c) -> c, "", "default"),
-                "colormaps");
+        super(Spec.of("Colormap", () -> Colormap.DIRECT_CODEC)
+                .wikiPage("Colormaps")
+                .textureParts(TEXTURE)
+                .folders("colormaps"));
     }
 
     @Override
@@ -125,8 +129,9 @@ public class ColormapsManager extends ContentManager<Colormap> {
 
             Colormap colormap = decodeStrict(json, id, ops);
             colormap.inlined = false;
-            ColormapTextures.fill(companions, textures, id, colormap, true);
-
+            // the contract declared on the Spec enumerates the bound slot,
+            // and fill() resolves it against the scanned textures.
+            contentTexture.fill(textures, id, colormap, true);
 
             // we need to fill these before we parse the properties as they will be referenced below
             add(id, colormap);
@@ -147,13 +152,12 @@ public class ColormapsManager extends ContentManager<Colormap> {
 
 
         // creates orphaned texture colormaps
-        for (var t : textures.unused().entrySet()) {
-            Identifier id = t.getKey();
+        for (var orphan : contentTexture.orphans(textures, jsons.keySet())) {
             Colormap defaultColormap = Colormap.createDefTriangle();
             defaultColormap.inlined = false;
-            ColormapTextures.fillDirect(textures, id, t.getValue(), defaultColormap);
+            contentTexture.fill(textures, orphan.stemId(), defaultColormap, true);
             // we need to fill these before we parse the properties as they will be referenced below
-            add(id, defaultColormap);
+            add(orphan.stemId(), defaultColormap);
         }
     }
 

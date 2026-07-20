@@ -5,9 +5,9 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
-import net.mehvahdjukaar.polytone.common.struc.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapTextures;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.client.particle.Particle;
@@ -31,11 +31,14 @@ public class ParticleModifiersManager extends ContentManager<ParticleModifier> {
     @Nullable
     private ParticleOptions xpOrbReplaceParticle = null;
 
+    private static final TexturePart<ParticleModifier> COLORMAP =
+            TexturePart.plain(ParticleModifier::getColormap);
+
     public ParticleModifiersManager() {
-        super("Particle modifier", () -> ParticleModifier.CODEC,
-                ColormapTextures.singleTexture(
-                        (ParticleModifier m) -> m.getColormap(), "", "default"),
-                "particle_modifiers");
+        super(Spec.of("Particle modifier", () -> ParticleModifier.CODEC)
+                .wikiPage("Particle-Modifiers")
+                .textureParts(COLORMAP)
+                .folders("particle_modifiers"));
     }
 
     public void maybeModify(ParticleOptions options, Level level, @NotNull Particle particle) {
@@ -62,25 +65,21 @@ public class ParticleModifiersManager extends ContentManager<ParticleModifier> {
             Parsed<ParticleModifier> parsed = entry.getValue();
             ParticleModifier modifier = parsed.getResultOrPartial();
 
-            if (!modifier.hasColormap()
-                    && ColormapTextures.hasUsableTexture(companions, textures, id)) {
-                //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
+            // auto-attach a default colormap when a texture exists but none is declared,
+            // then fill inline colormaps from the scanned textures
+            if (!contentTexture.adoptable(textures, id, modifier).isEmpty()) {
                 modifier.setColormap(Colormap.createDefTriangle());
             }
-
-            //fill inline colormaps colormapTextures
-            ColormapTextures.fill(companions, textures, id, modifier, true);
+            contentTexture.fill(textures, id, modifier, true);
 
             if (parsed.isEnabled()) this.addModifier(id, modifier);
         }
 
         // creates orphaned texture colormaps & properties
-        for (var t : textures.unused().entrySet()) {
-            Identifier id = t.getKey();
-            Colormap defaultColormap = Colormap.createDefTriangle();
-            ColormapTextures.fillDirect(textures, id, t.getValue(), defaultColormap);
-
-            addModifier(id, ParticleModifier.ofColormap(defaultColormap));
+        for (var orphan : contentTexture.orphans(textures, parsedModifiers.keySet())) {
+            ParticleModifier modifier = ParticleModifier.ofColormap(Colormap.createDefTriangle());
+            contentTexture.fill(textures, orphan.stemId(), modifier, true);
+            addModifier(orphan.stemId(), modifier);
         }
 
         if (this.xpOrbReplaceJson != null) {

@@ -3,9 +3,9 @@ package net.mehvahdjukaar.polytone.content.item;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
-import net.mehvahdjukaar.polytone.common.struc.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapTextures;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.core.HolderLookup;
@@ -23,11 +23,16 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
     private final Map<Item, ItemModifier> vanillaProperties = new HashMap<>();
 
 
+    // The item tint part (ItemModifier::getTint) from 1.21.1 isn't ported: that item-tint colormap
+    // feature doesn't exist on 1.21.11 yet, so only the bar-color texture is associated here.
+    private static final TexturePart<ItemModifier> BAR =
+            TexturePart.suffix("_bar", ItemModifier::getBarColor);
+
     public ItemModifiersManager() {
-        super("Item modifier", () -> ItemModifier.CODEC,
-                ColormapTextures.singleTexture(
-                        (ItemModifier m) -> m.getBarColor(), "_bar", "bar color"),
-                "item_modifiers", "item_properties");
+        super(Spec.of("Item modifier", () -> ItemModifier.CODEC)
+                .wikiPage("Item-Modifiers")
+                .textureParts(BAR)
+                .folders("item_modifiers", "item_properties"));
     }
 
     /*
@@ -60,24 +65,21 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
             Parsed<ItemModifier> result = entry.getValue();
             ItemModifier modifier = result.getResultOrPartial();
 
-            if (!modifier.hasBarColor()
-                    && ColormapTextures.hasUsableTexture(companions, textures, tintId)) {
-                //if this map doesn't have a bar colormap defined, we set it to the default impl IF there's a texture it can use
+            // auto-attach a default bar colormap when a texture exists but none is declared,
+            // then fill inline colormaps from the scanned textures
+            if (!contentTexture.adoptable(textures, tintId, modifier).isEmpty()) {
                 modifier = modifier.merge(ItemModifier.ofBarColor(Colormap.createDamage()));
             }
-
-            //fill inline colormaps colormapTextures
-            ColormapTextures.fill(companions, textures, tintId, modifier, true);
+            contentTexture.fill(textures, tintId, modifier, true);
 
             if (result.isEnabled()) addModifier(tintId, modifier);
         }
 
         // creates orphaned texture colormaps & properties
-        for (var t : textures.unused().entrySet()) {
-            Identifier id = t.getKey();
-            Colormap defaultColormap = Colormap.createDamage();
-            ColormapTextures.fillDirect(textures, id, t.getValue(), defaultColormap);
-            addModifier(id, ItemModifier.ofBarColor(defaultColormap));
+        for (var orphan : contentTexture.orphans(textures, parsedModifiers.keySet())) {
+            ItemModifier modifier = ItemModifier.ofBarColor(Colormap.createDamage());
+            contentTexture.fill(textures, orphan.stemId(), modifier, true);
+            addModifier(orphan.stemId(), modifier);
         }
     }
 
