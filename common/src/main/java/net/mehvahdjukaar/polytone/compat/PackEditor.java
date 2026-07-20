@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.compat;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -8,6 +10,7 @@ import net.mehvahdjukaar.codecui.Schema;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.nautilus.NautilusStudioApi;
 import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
+import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
 import net.mehvahdjukaar.nautilus.swing.widget.ExpressionWidget;
 import net.mehvahdjukaar.nautilus.workbench.CodecEntry;
 import net.mehvahdjukaar.nautilus.workbench.FileNamesUtil;
@@ -16,6 +19,7 @@ import net.mehvahdjukaar.nautilus.workbench.SidecarAssets;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.companion.ContentTextures;
 import net.mehvahdjukaar.polytone.common.companion.TextureSlot;
+import net.mehvahdjukaar.polytone.compat.nautilus.preview.ColormapPreview;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.common.exp.impl.ColormapModContextExpression;
@@ -29,6 +33,7 @@ import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.SwingUtilities;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,9 +63,15 @@ public final class PackEditor {
      * Register Polytone's widget bindings and content codecs with PackEditor. Called once from
      * {@code Polytone.init} when the {@code nautilus_studio} mod is present.
      */
+    // Live preview panels keyed by content folder; attached to the matching CodecEntry as it's built.
+    private static final Map<String, TabPreview.Factory> PREVIEWS = Map.of(
+            "colormaps", ColormapPreview::new);
+
     public static void init() {
         // Widget bindings must exist before any schema resolves (companion registrations only).
         registerWidgetBindings();
+        // Lets by-name references resolve against the pack open in the editor (EDT-gated in the setter).
+        ContentManager.editorWorkspaceJsonLookup = PackEditor::workspaceContentJson;
         registerContentEntries();
     }
 
@@ -77,6 +88,25 @@ public final class PackEditor {
     /** Close the editor window if open — it is tied to the world and goes with it. Any thread. */
     public static void close() {
         NautilusStudioApi.close();
+    }
+
+    /**
+     * The raw json of {@code assets/<ns>/polytone/<folder>/<path>.json} inside the pack currently
+     * open in the editor, or null. Only answers on the editor's own (AWT) thread so an in-game
+     * reload can never accidentally resolve a reference against the edited pack.
+     */
+    private static @Nullable JsonElement workspaceContentJson(String folder, Identifier id) {
+        if (!SwingUtilities.isEventDispatchThread()) return null;
+        PackWorkspace workspace = NautilusStudioApi.currentWorkspace();
+        if (workspace == null) return null;
+        Path file = workspace.fileFor(Side.CLIENT_RESOURCES, id.getNamespace(),
+                Polytone.MOD_ID + "/" + folder, id.getPath());
+        if (!Files.isRegularFile(file)) return null;
+        try {
+            return JsonParser.parseString(Files.readString(file));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // -------------------- Content entries --------------------
@@ -96,6 +126,8 @@ public final class PackEditor {
                         manager.contentCodec(), Side.CLIENT_RESOURCES,
                         Polytone.MOD_ID + "/" + folder);
                 if (companions != null) entry = entry.withSidecars(sidecarsFromSpec(companions));
+                TabPreview.Factory preview = PREVIEWS.get(folder);
+                if (preview != null) entry = entry.withPreview(preview);
                 NautilusStudioApi.register(entry);
             }
         }
