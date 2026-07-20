@@ -38,17 +38,23 @@ public record WidgetModifier(int xOffset, int yOffset,
         return DataResult.success(o);
     }, Function.identity());
 
-    public void maybeModify(AbstractWidget widget) {
-        if (targetX.isPresent() && !targetX.get().has(widget.getX())) return;
-        if (targetY.isPresent() && !targetY.get().has(widget.getY())) return;
-        if (targetH.isPresent() && !targetH.get().has(widget.getHeight())) return;
-        if (targetW.isPresent() && !targetW.get().has(widget.getWidth())) return;
-        if (targetMessage.isPresent() && !widget.getMessage().getString().equals(targetMessage.get())) return;
+    /** True when this modifier's target filters all match the widget (no mutation). Used by the editor overlay. */
+    public boolean matches(AbstractWidget widget) {
+        if (targetX.isPresent() && !targetX.get().has(widget.getX())) return false;
+        if (targetY.isPresent() && !targetY.get().has(widget.getY())) return false;
+        if (targetH.isPresent() && !targetH.get().has(widget.getHeight())) return false;
+        if (targetW.isPresent() && !targetW.get().has(widget.getWidth())) return false;
+        if (targetMessage.isPresent() && !widget.getMessage().getString().equals(targetMessage.get())) return false;
         if (targetClass.isPresent()) {
             String name = targetClass.get();
             if (!widget.getClass().getSimpleName().equals(name) &&
-                    !widget.getClass().getName().equals(name)) return;
+                    !widget.getClass().getName().equals(name)) return false;
         }
+        return true;
+    }
+
+    public void maybeModify(AbstractWidget widget) {
+        if (!matches(widget)) return;
         widget.setX(widget.getX() + this.xOffset);
         widget.setY(widget.getY() + this.yOffset);
         widget.setWidth(widget.getWidth() + this.width);

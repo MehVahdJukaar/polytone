@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
+import net.mehvahdjukaar.polytone.content.slotify.GuiModifierOverlay;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
@@ -40,7 +41,6 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3x2fStack;
 
 import java.util.Collection;
 import java.util.List;
@@ -157,17 +157,13 @@ public class PolytoneForge {
     @SubscribeEvent
     public void renderScreen(ScreenEvent.Render.Post event) {
         Screen screen = event.getScreen();
-        SlotifyScreen ss = (SlotifyScreen) screen;
-        if (ss.polytone$hasSprites()) {
-
-            GuiGraphics graphics = event.getGuiGraphics();
-            graphics.nextStratum();
-            Matrix3x2fStack poseStack = graphics.pose();
-            poseStack.pushMatrix();
-            poseStack.translate(screen.width / 2F, screen.height / 2F);
-            ss.polytone$renderExtraSprites(graphics, event.getMouseX(), event.getMouseY(), event.getPartialTick());
-            poseStack.popMatrix();
-        }
+        if (!(screen instanceof SlotifyScreen ss)) return;
+        // Unconditional: renderScreenExtras no-ops with no modifier, and the editor's live preview /
+        // picker overlay may target a screen that had none at init time.
+        GuiGraphics graphics = event.getGuiGraphics();
+        graphics.nextStratum();
+        GuiModifierOverlay.renderScreenExtras(graphics, ss, screen.width, screen.height,
+                event.getMouseX(), event.getMouseY(), event.getPartialTick());
     }
 
     @SubscribeEvent

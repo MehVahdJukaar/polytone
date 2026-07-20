@@ -160,6 +160,11 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
 
     @Nullable
     public ScreenModifier getGuiModifier(Screen screen) {
+        // Live editor preview wins for the screen it targets, applied unconditionally.
+        if (GuiModifierPreview.isPreviewing(screen)) {
+            GuiModifier o = GuiModifierPreview.override();
+            if (o != null) return ScreenModifier.fromGuiMod(o);
+        }
         ScreenModifier m = resolve(byClass.get(screen.getClass()));
         if (m == null && screen instanceof AbstractContainerScreen<?> as) {
             m = getScreenModifier(as);
@@ -181,6 +186,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
 
     //TODO: add back?? why is this commented out
     public Collection<SlotModifier> getSlotModifiers(AbstractContainerScreen<?> screen, Slot slot) {
+        if (GuiModifierPreview.isPreviewing(screen)) return previewSlotModifiers(slot);
         Set<SlotModifier> modifies;
         var c = screen.getTitle();
         modifies = slotsByTitle.get(c.getString());
@@ -208,6 +214,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
     }
 
     public Collection<SlotModifier> getSlotModifiers(AbstractContainerMenu menu, Slot slot) {
+        if (GuiModifierPreview.isPreviewing(menu)) return previewSlotModifiers(slot);
         var modifiers = slotsByClass.get(menu.getClass());
         if (modifiers == null) {
             MenuType<?> type;
@@ -225,13 +232,26 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
     }
 
 
+    // Idempotent: snapshots the slot's pristine position on first call, resets to it before each apply,
+    // so it can be re-run on an already-built menu (live editor preview) without drifting.
     public void maybeModifySlot(AbstractContainerMenu menu, Slot slot) {
+        if (slot instanceof SlotifySlot ss) {
+            ss.polytone$captureBase();
+            ss.polytone$resetToBase();
+        }
         var mods = getSlotModifiers(menu, slot);
         for (SlotModifier mod : mods) {
             if (mod.matches(slot)) {
                 mod.modify(slot);
             }
         }
+    }
+
+    /** Preview override slot modifiers matching this slot, or empty when no override is active. */
+    private static Collection<SlotModifier> previewSlotModifiers(Slot slot) {
+        GuiModifier o = GuiModifierPreview.override();
+        if (o == null) return Set.of();
+        return o.slotModifiers().stream().filter(m -> m.matches(slot)).toList();
     }
 
 }

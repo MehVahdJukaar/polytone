@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,6 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Screen.class)
 public abstract class ScreenMixin implements SlotifyScreen {
+
+    @Shadow
+    protected abstract void rebuildWidgets();
 
     @Unique
     private ScreenModifier polytone$modifier = null;
@@ -43,6 +47,16 @@ public abstract class ScreenMixin implements SlotifyScreen {
     @Override
     public ScreenModifier polytone$getModifier() {
         return polytone$modifier;
+    }
+
+    @Override
+    public void polytone$refreshModifier() {
+        polytone$modifier = Polytone.SLOTIFY.getGuiModifier((Screen) (Object) this);
+    }
+
+    @Override
+    public void polytone$rebuild() {
+        this.rebuildWidgets();
     }
 
     @Inject(method = "addWidget", at = @At("HEAD"))

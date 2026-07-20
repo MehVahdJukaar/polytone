@@ -11,6 +11,7 @@ import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.nautilus.NautilusStudioApi;
 import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
+import net.mehvahdjukaar.nautilus.swing.toolkit.UiICons;
 import net.mehvahdjukaar.nautilus.swing.widget.ExpressionWidget;
 import net.mehvahdjukaar.nautilus.workbench.CodecEntry;
 import net.mehvahdjukaar.nautilus.workbench.FileNamesUtil;
@@ -19,7 +20,9 @@ import net.mehvahdjukaar.nautilus.workbench.SidecarAssets;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.companion.ContentTextures;
 import net.mehvahdjukaar.polytone.common.companion.TextureSlot;
+import net.mehvahdjukaar.polytone.compat.nautilus.preview.BiomeScenePreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ColormapPreview;
+import net.mehvahdjukaar.polytone.compat.nautilus.preview.GuiModifierPreviewPanel;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.NoisePreview;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
@@ -67,7 +70,29 @@ public final class PackEditor {
     // Live preview panels keyed by content folder; attached to the matching CodecEntry as it's built.
     private static final Map<String, TabPreview.Factory> PREVIEWS = Map.of(
             "colormaps", ColormapPreview::new,
-            "noises", NoisePreview::new);
+            "noises", NoisePreview::new,
+            "gui_modifiers", GuiModifierPreviewPanel::new,
+            "biome_modifiers", BiomeScenePreview::new);
+
+    // Base of the in-repo wiki; a manager's wikiPage() is appended for its editor entry's help link.
+    private static final String WIKI_BASE = "https://github.com/MehVahdJukaar/polytone/wiki/";
+
+    // Editor sidebar icon (nautilus svg name) per content folder.
+    private static final Map<String, String> ICONS = Map.ofEntries(
+            Map.entry("colormaps", "palette"),
+            Map.entry("biome_modifiers", "trees"),
+            Map.entry("block_modifiers", "blocks"),
+            Map.entry("custom_block_sets", "boxes"),
+            Map.entry("fluid_modifiers", "droplet"),
+            Map.entry("lightmaps", "sun"),
+            Map.entry("noises", "audio-waveform"),
+            Map.entry("global_expressions", "square-function"),
+            Map.entry("variant_textures", "image"),
+            Map.entry("custom_sound_types", "volume-2"),
+            Map.entry("custom_particles", "sparkles"),
+            Map.entry("custom_models", "box"),
+            Map.entry("custom_item_models", "box"),
+            Map.entry("dimension_modifiers", "globe"));
 
     public static void init() {
         // Widget bindings must exist before any schema resolves (companion registrations only).
@@ -130,6 +155,10 @@ public final class PackEditor {
                 if (companions != null) entry = entry.withSidecars(sidecarsFromSpec(companions));
                 TabPreview.Factory preview = PREVIEWS.get(folder);
                 if (preview != null) entry = entry.withPreview(preview);
+                String wikiPage = manager.wikiPage();
+                if (wikiPage != null) entry = entry.withWikiUrl(WIKI_BASE + wikiPage);
+                String icon = ICONS.get(folder);
+                if (icon != null) entry = entry.withIcon(UiICons.content(icon));
                 NautilusStudioApi.register(entry);
             }
         }
