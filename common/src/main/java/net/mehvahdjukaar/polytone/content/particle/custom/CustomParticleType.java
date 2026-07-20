@@ -13,7 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.mehvahdjukaar.polytone.content.particle.ParticlePreviewMode;
+import net.mehvahdjukaar.polytone.content.particle.ParticlePreviewState;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleLimit;
@@ -170,7 +170,7 @@ public class CustomParticleType implements ICustomParticleFactory {
         //todo replace   initializer with ticker
         // The editor preview spawns on the render thread and can't drive the async batch, so it runs
         // the spawn pass synchronously (ParticlePreviewMode.active() is only ever true there).
-        if (Polytone.CONFIGS.particlesOffThread.get() && !ParticlePreviewMode.active()) {
+        if (Polytone.CONFIGS.particlesOffThread.get() && !ParticlePreviewState.active()) {
             // run the spawn-time ticker pass in this tick's parallel batch instead of on the main
             // thread; the batch joins before render extract, so the first frame is identical
             PolytoneAsyncParticles.enqueueInit(newParticle);

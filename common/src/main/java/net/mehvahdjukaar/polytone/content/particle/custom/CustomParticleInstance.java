@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
+import net.mehvahdjukaar.polytone.content.particle.ParticlePreviewState;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderState;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -187,6 +188,9 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     protected int getLightColor(float partialTick) {
+        // Editor preview: light it at full brightness so it looks the same regardless of the world's
+        // time of day (it ticks in the real level, which would otherwise darken it at night).
+        if (ParticlePreviewState.active()) return LightTexture.FULL_BRIGHT;
         int total = lightCache.get(this.x, this.y, this.z, partialTick);
         if (this.type.lightLevel > 0) {
             int sky = LightTexture.sky(total);

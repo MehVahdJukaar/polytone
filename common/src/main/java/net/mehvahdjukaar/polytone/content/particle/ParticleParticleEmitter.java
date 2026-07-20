@@ -106,7 +106,7 @@ public record ParticleParticleEmitter(
                 double sdz = dz.evaluate(particle, level);
                 // Editor preview (render thread only): route the child into the preview's sandbox
                 // instead of the live world; null sink everywhere else = normal spawn, unchanged.
-                ParticlePreviewMode.EmitSink sink = ParticlePreviewMode.sink();
+                ParticlePreviewState.EmitSink sink = ParticlePreviewState.sink();
                 if (sink != null) {
                     sink.emit(level, po, sx, sy, sz, sdx, sdy, sdz);
                 } else {

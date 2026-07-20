@@ -16,7 +16,7 @@ import net.mehvahdjukaar.nautilus.swing.toolkit.StyledLabels;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiTheme;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.particle.ParticlePreviewMode;
+import net.mehvahdjukaar.polytone.content.particle.ParticlePreviewState;
 import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
@@ -69,7 +69,7 @@ import java.util.List;
  *
  * <p>Because Polytone's particle system is async and its emitters spawn into the live world, the
  * preview ticks via {@link CustomParticleInstance#tickSync()} (bypassing the async batch the sandbox
- * can't drive) and runs inside {@link ParticlePreviewMode} (which makes creation synchronous and
+ * can't drive) and runs inside {@link ParticlePreviewState} (which makes creation synchronous and
  * routes emitter children into the sandbox instead of the world). All of that is gated to the render
  * thread, so normal gameplay is unaffected.
  *
@@ -340,14 +340,14 @@ public final class ParticlePreview extends ExpressionPreview {
             // Preview mode (render thread only): expressions read global.* through the sim proxies,
             // creation runs synchronously, and emitter children land in captureChild, not the world.
             installSim();
-            ParticlePreviewMode.begin(this::captureChild);
+            ParticlePreviewState.begin(this::captureChild);
             try {
                 for (int i = 0; i < ticks && p.isAlive(); i++) {
                     p.tickSync();
                     tickChildren();
                 }
             } finally {
-                ParticlePreviewMode.end();
+                ParticlePreviewState.end();
                 clearSim();
             }
             diag = null;
@@ -399,7 +399,7 @@ public final class ParticlePreview extends ExpressionPreview {
                 sandbox = new ParticleEngine(level, mc.particleEngine.resourceManager);
             }
             installSim();
-            ParticlePreviewMode.begin(this::captureChild);
+            ParticlePreviewState.begin(this::captureChild);
             try {
                 // null options: the type builds a plain instance (no BlockState / extra data needed here).
                 Particle p = t.createParticle(null, level, spawn.x, spawn.y, spawn.z, 0, 0, 0, random);
@@ -410,7 +410,7 @@ public final class ParticlePreview extends ExpressionPreview {
                 diag = "spawn failed: " + ex;
                 Polytone.LOGGER.warn("Particle preview spawn failed", ex);
             } finally {
-                ParticlePreviewMode.end();
+                ParticlePreviewState.end();
                 clearSim();
             }
             accumulator = 0;
@@ -449,11 +449,27 @@ public final class ParticlePreview extends ExpressionPreview {
             addToGroup(engine, p);
             for (Particle c : children) if (c.isAlive()) addToGroup(engine, c);
 
-            Frustum frustum = new Frustum(camera.view(), camera.projection((float) width / height));
+            // Frustum expects the camera-RELATIVE (rotation-only) view matrix: calculateFrustum bakes
+            // projection*frustum, and cubeInFrustum then subtracts the prepare() camera position from
+            // every AABB. Passing the full camera.view() (which already carries the -distance/-target
+            // translation) on top of prepare(ex,ey,ez) double-counts the camera offset, so the cull
+            // volume lands in the wrong place and the particle popped out after a few degrees of orbit.
+            // Rx(pitch)Ry(yaw) is exactly SceneCamera.view() minus its translations.
+            Matrix4f frustumRotation = new Matrix4f()
+                    .rotateX((float) Math.toRadians(camera.pitchDeg()))
+                    .rotateY((float) Math.toRadians(camera.yawDeg()));
+            Frustum frustum = new Frustum(frustumRotation, camera.projection((float) width / height));
             frustum.prepare(ex, ey, ez);
 
+            // Extract under preview mode so the custom particle lights itself full-bright (see
+            // CustomParticleInstance#getLightColor) instead of sampling the real world's time-of-day light.
             particlesRenderState.reset();
-            engine.extract(particlesRenderState, frustum, previewCamera, 1f);
+            ParticlePreviewState.begin(this::captureChild);
+            try {
+                engine.extract(particlesRenderState, frustum, previewCamera, 1f);
+            } finally {
+                ParticlePreviewState.end();
+            }
 
             FeatureRenderDispatcher featureDispatcher = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
             CameraRenderState camState = new CameraRenderState();
@@ -499,12 +515,12 @@ public final class ParticlePreview extends ExpressionPreview {
             PoseStack.Pose ps = pose.last();
 
             float cx = (float) spawn.x, cy = (float) spawn.y, cz = (float) spawn.z;
-            float ext = 2f, step = 0.5f, half = 0.02f, gy = cy - 0.5f; // grid a touch below the particle
+            float ext = 2f, step = 1f, half = 0.02f, gy = cy; // one cell per block; grid/axes origin at the spawn point (0,0,0)
             for (float o = -ext; o <= ext + 1e-4f; o += step) {
                 flatQuad(c, ps, cx - ext, cx + ext, cz + o - half, cz + o + half, gy, 0.5f, 0.5f, 0.55f, 0.55f);
                 flatQuad(c, ps, cx + o - half, cx + o + half, cz - ext, cz + ext, gy, 0.5f, 0.5f, 0.55f, 0.55f);
             }
-            float len = 1f, ah = 0.03f, ay = gy + 0.002f; // axes just above the grid to avoid z-fighting
+            float len = 0.25f, ah = 0.012f, ay = gy + 0.002f; // short axes just above the grid to avoid z-fighting
             flatQuad(c, ps, cx, cx + len, cz - ah, cz + ah, ay, 1f, 0.25f, 0.25f, 1f);          // X red
             flatQuad(c, ps, cx - ah, cx + ah, cz, cz + len, ay, 0.35f, 0.5f, 1f, 1f);           // Z blue
             vertQuad(c, ps, cx - ah, cx + ah, gy, gy + len, cz, 0.3f, 1f, 0.3f, 1f);            // Y green

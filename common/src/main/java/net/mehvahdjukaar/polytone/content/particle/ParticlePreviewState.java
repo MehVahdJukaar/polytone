@@ -14,9 +14,8 @@ import org.jetbrains.annotations.Nullable;
  * into the preview's {@link EmitSink} (instead of {@code level.addParticle}, which would leak them
  * into the live world and never reach the preview). See {@code ParticlePreview}.
  */
-public final class ParticlePreviewMode {
+public final class ParticlePreviewState {
 
-    /** Receives a child an emitter tried to spawn, so the preview can build it in its sandbox instead. */
     public interface EmitSink {
         void emit(Level level, ParticleOptions options, double x, double y, double z,
                   double dx, double dy, double dz);
@@ -24,19 +23,14 @@ public final class ParticlePreviewMode {
 
     private static final ThreadLocal<EmitSink> SINK = new ThreadLocal<>();
 
-    private ParticlePreviewMode() {}
-
-    /** Enter preview mode on the current (render) thread, routing emitter children into {@code sink}. */
     public static void begin(EmitSink sink) {
         SINK.set(sink);
     }
 
-    /** Leave preview mode on the current thread; call in a finally so gameplay is never left gated. */
     public static void end() {
         SINK.remove();
     }
 
-    /** True when the current thread is inside a preview spawn/tick (drives synchronous creation). */
     public static boolean active() {
         return SINK.get() != null;
     }
