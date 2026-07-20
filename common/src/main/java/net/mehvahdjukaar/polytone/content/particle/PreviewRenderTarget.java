@@ -22,8 +22,6 @@ public final class PreviewRenderTarget {
 
     private static @Nullable RenderTarget current;
 
-    private PreviewRenderTarget() {}
-
     public static void begin(RenderTarget target) {
         current = target;
     }

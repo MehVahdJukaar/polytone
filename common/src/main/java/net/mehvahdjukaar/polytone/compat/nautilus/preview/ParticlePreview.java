@@ -106,7 +106,10 @@ public final class ParticlePreview extends ExpressionPreview {
         viewport.setPanEnabled(true); // orbit, zoom and pan to inspect against the grid
 
         playButton.addActionListener(e -> setPlaying(!viewport.isPlaying()));
-        stepButton.addActionListener(e -> { renderer.requestRespawnIfDead(); viewport.step(); });
+        stepButton.addActionListener(e -> {
+            renderer.requestRespawnIfDead();
+            viewport.step();
+        });
         speedSlider.addChangeListener(e -> {
             renderer.speed = speedSlider.getValue() / 100.0;
             speedLabel.setText(String.format("%.1fx", renderer.speed));
@@ -427,7 +430,8 @@ public final class ParticlePreview extends ExpressionPreview {
             double ex = target.x + eyeOffset.x, ey = target.y + eyeOffset.y, ez = target.z + eyeOffset.z;
             previewCamera.place(new Vec3(ex, ey, ez), target.x, target.y, target.z);
 
-            if (projectionBuffer == null) projectionBuffer = new PerspectiveProjectionMatrixBuffer("polytone particle scene");
+            if (projectionBuffer == null)
+                projectionBuffer = new PerspectiveProjectionMatrixBuffer("polytone particle scene");
             RenderSystem.setProjectionMatrix(projectionBuffer.getBuffer(camera.projection((float) width / height)),
                     ProjectionType.PERSPECTIVE);
 
@@ -511,7 +515,11 @@ public final class ParticlePreview extends ExpressionPreview {
                                  float x1, float y1, float z1, float r, float g, float b) {
             float nx = x1 - x0, ny = y1 - y0, nz = z1 - z0;
             float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
-            if (len > 1e-5f) { nx /= len; ny /= len; nz /= len; }
+            if (len > 1e-5f) {
+                nx /= len;
+                ny /= len;
+                nz /= len;
+            }
             c.addVertex(p, x0, y0, z0).setColor(r, g, b, 1f).setNormal(p, nx, ny, nz);
             c.addVertex(p, x1, y1, z1).setColor(r, g, b, 1f).setNormal(p, nx, ny, nz);
         }
