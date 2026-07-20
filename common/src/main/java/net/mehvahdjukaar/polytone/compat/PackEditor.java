@@ -20,6 +20,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.companion.ContentTextures;
 import net.mehvahdjukaar.polytone.common.companion.TextureSlot;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ColormapPreview;
+import net.mehvahdjukaar.polytone.compat.nautilus.preview.NoisePreview;
 import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.common.exp.impl.ColormapModContextExpression;
@@ -65,7 +66,8 @@ public final class PackEditor {
      */
     // Live preview panels keyed by content folder; attached to the matching CodecEntry as it's built.
     private static final Map<String, TabPreview.Factory> PREVIEWS = Map.of(
-            "colormaps", ColormapPreview::new);
+            "colormaps", ColormapPreview::new,
+            "noises", NoisePreview::new);
 
     public static void init() {
         // Widget bindings must exist before any schema resolves (companion registrations only).
