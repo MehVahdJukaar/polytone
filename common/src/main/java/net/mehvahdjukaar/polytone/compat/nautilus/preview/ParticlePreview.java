@@ -485,43 +485,49 @@ public final class ParticlePreview extends ExpressionPreview {
             }
         }
 
-        // A ground grid on the spawn plane plus short red/green/blue X/Y/Z axes at the spawn point, as
-        // constant-width GL lines (so they stay crisp at any zoom, unlike world-space quad slivers).
-        // Camera view baked into the pose (world space), like the biome scene pass; drawn with the
-        // model-view stack at identity, before the particle pass pushes its rotation onto it.
+        // A ground grid on the spawn plane plus short red/green/blue X/Y/Z axes at the spawn point.
+        // Drawn as flat/edge quads through debugQuads (POSITION_COLOR): the lines render type needs a
+        // per-vertex LineWidth element the buffer source can't supply here (it corrupts the shared
+        // buffer and crashes the next frame's ShadowFeatureRenderer). Camera view baked into the pose
+        // (world space), like the biome scene pass; the model-view stack is at identity here, before
+        // the particle pass pushes its rotation onto it. Lines are ~4cm thick so they read at any zoom.
         private void drawReference(SceneCamera camera) {
             if (spawn == null) return;
             MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
-            VertexConsumer c = buffers.getBuffer(RenderTypes.lines());
+            VertexConsumer c = buffers.getBuffer(RenderTypes.debugQuads());
             PoseStack pose = new PoseStack();
             pose.mulPose(camera.view());
             PoseStack.Pose ps = pose.last();
 
             float cx = (float) spawn.x, cy = (float) spawn.y, cz = (float) spawn.z;
-            float ext = 2f, step = 0.5f, gy = cy - 0.5f, g = 0.45f; // grid a touch below the particle
+            float ext = 2f, step = 0.5f, half = 0.02f, gy = cy - 0.5f; // grid a touch below the particle
             for (float o = -ext; o <= ext + 1e-4f; o += step) {
-                line(c, ps, cx - ext, gy, cz + o, cx + ext, gy, cz + o, g, g, g);
-                line(c, ps, cx + o, gy, cz - ext, cx + o, gy, cz + ext, g, g, g);
+                flatQuad(c, ps, cx - ext, cx + ext, cz + o - half, cz + o + half, gy, 0.5f, 0.5f, 0.55f, 0.55f);
+                flatQuad(c, ps, cx + o - half, cx + o + half, cz - ext, cz + ext, gy, 0.5f, 0.5f, 0.55f, 0.55f);
             }
-            float len = 1f;
-            line(c, ps, cx, cy, cz, cx + len, cy, cz, 1f, 0.25f, 0.25f);  // X red
-            line(c, ps, cx, cy, cz, cx, cy + len, cz, 0.3f, 1f, 0.3f);    // Y green
-            line(c, ps, cx, cy, cz, cx, cy, cz + len, 0.35f, 0.5f, 1f);   // Z blue
+            float len = 1f, ah = 0.03f, ay = gy + 0.002f; // axes just above the grid to avoid z-fighting
+            flatQuad(c, ps, cx, cx + len, cz - ah, cz + ah, ay, 1f, 0.25f, 0.25f, 1f);          // X red
+            flatQuad(c, ps, cx - ah, cx + ah, cz, cz + len, ay, 0.35f, 0.5f, 1f, 1f);           // Z blue
+            vertQuad(c, ps, cx - ah, cx + ah, gy, gy + len, cz, 0.3f, 1f, 0.3f, 1f);            // Y green
             buffers.endBatch();
         }
 
-        // One GL line segment; the lines render type needs the segment direction as the vertex normal.
-        private static void line(VertexConsumer c, PoseStack.Pose p, float x0, float y0, float z0,
-                                 float x1, float y1, float z1, float r, float g, float b) {
-            float nx = x1 - x0, ny = y1 - y0, nz = z1 - z0;
-            float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
-            if (len > 1e-5f) {
-                nx /= len;
-                ny /= len;
-                nz /= len;
-            }
-            c.addVertex(p, x0, y0, z0).setColor(r, g, b, 1f).setNormal(p, nx, ny, nz);
-            c.addVertex(p, x1, y1, z1).setColor(r, g, b, 1f).setNormal(p, nx, ny, nz);
+        // Horizontal quad on the y plane; debugQuads is unculled so winding doesn't matter.
+        private static void flatQuad(VertexConsumer c, PoseStack.Pose p, float x0, float x1, float z0, float z1,
+                                     float y, float r, float g, float b, float a) {
+            c.addVertex(p, x0, y, z0).setColor(r, g, b, a);
+            c.addVertex(p, x0, y, z1).setColor(r, g, b, a);
+            c.addVertex(p, x1, y, z1).setColor(r, g, b, a);
+            c.addVertex(p, x1, y, z0).setColor(r, g, b, a);
+        }
+
+        // Vertical quad in the xy plane at fixed z (for the upward Y axis).
+        private static void vertQuad(VertexConsumer c, PoseStack.Pose p, float x0, float x1, float y0, float y1,
+                                     float z, float r, float g, float b, float a) {
+            c.addVertex(p, x0, y0, z).setColor(r, g, b, a);
+            c.addVertex(p, x1, y0, z).setColor(r, g, b, a);
+            c.addVertex(p, x1, y1, z).setColor(r, g, b, a);
+            c.addVertex(p, x0, y1, z).setColor(r, g, b, a);
         }
 
         @SuppressWarnings({"unchecked", "rawtypes"})
