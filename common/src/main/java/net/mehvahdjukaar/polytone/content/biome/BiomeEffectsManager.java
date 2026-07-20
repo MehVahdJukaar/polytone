@@ -37,8 +37,9 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier> {
     public BiomeEffectsManager() {
         // wrap(CODEC), not DIRECT_CODEC: files parse through the postProcess wrapper, and the
         // editor must validate through the same one.
-        super("Biome modifier", () -> SchemaCodec.wrap(BiomeEffectModifier.CODEC),
-                "biome_modifiers", "biome_effects");
+        super(Spec.of("Biome modifier", () -> SchemaCodec.wrap(BiomeEffectModifier.CODEC))
+                .wikiPage("Biome-Effect-Modifiers")
+                .folders("biome_modifiers", "biome_effects"));
     }
 
     @Override

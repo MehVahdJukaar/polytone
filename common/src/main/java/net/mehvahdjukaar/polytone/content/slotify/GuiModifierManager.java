@@ -38,7 +38,9 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
     private static final Identifier INVENTORY = Identifier.parse("inventory");
 
     public GuiModifierManager() {
-        super("GUI modifier", () -> SchemaCodec.wrap(GuiModifier.CODEC), "gui_modifiers");
+        super(Spec.of("GUI modifier", () -> SchemaCodec.wrap(GuiModifier.CODEC))
+                .wikiPage("Gui-Modifiers")
+                .folders("gui_modifiers"));
     }
 
     @Override

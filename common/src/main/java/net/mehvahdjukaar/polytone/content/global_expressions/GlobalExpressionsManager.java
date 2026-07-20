@@ -19,7 +19,9 @@ public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
     private final Map<String, Double> values = new HashMap<>();
 
     public GlobalExpressionsManager() {
-        super("Global expression", () -> GlobalExpression.CODEC, "global_expressions");
+        super(Spec.of("Global expression", () -> GlobalExpression.CODEC)
+                .wikiPage("Scripting-Expressions")
+                .folders("global_expressions"));
     }
 
     @Override

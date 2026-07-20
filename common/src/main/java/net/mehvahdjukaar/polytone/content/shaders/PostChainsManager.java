@@ -45,7 +45,9 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     private final Map<Identifier, List<Map<String, Identifier>>> samplersByShader = new HashMap<>();
 
     public PostChainsManager() {
-        super("Post chain", () -> PostChainActivator.CODEC, "post_chains", "post_shaders");
+        super(Spec.of("Post chain", () -> PostChainActivator.CODEC)
+                .wikiPage("Shaders")
+                .folders("post_chains", "post_shaders"));
     }
 
     @Override

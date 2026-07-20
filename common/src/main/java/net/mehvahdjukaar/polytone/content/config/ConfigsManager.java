@@ -65,7 +65,9 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     private final AtomicBoolean needsPackReload = new AtomicBoolean(false); //mega ugly
 
     public ConfigsManager() {
-        super("Config entry", () -> SchemaCodec.wrap(PolyConfig.CODEC), "config_entries");
+        super(Spec.of("Config entry", () -> SchemaCodec.wrap(PolyConfig.CODEC))
+                .wikiPage("Polytone-Configs")
+                .folders("config_entries"));
         this.optionsFile = PlatStuff.getGamePath().resolve("config/polytone_options.json").toFile();
         this.gson = new GsonBuilder()
                 .setPrettyPrinting()

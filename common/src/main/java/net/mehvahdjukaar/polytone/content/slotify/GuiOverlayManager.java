@@ -24,7 +24,9 @@ public class GuiOverlayManager extends ContentManager<BlitModifier> {
     private final Map<Identifier, BlitModifier> blitModifiersCache = new HashMap<>();
 
     public GuiOverlayManager() {
-        super("Overlay modifier", () -> BlitModifier.CODEC, "overlay_modifiers");
+        super(Spec.of("Overlay modifier", () -> BlitModifier.CODEC)
+                .wikiPage("Screen-Sprite-Modifiers")
+                .folders("overlay_modifiers"));
     }
 
     @Override

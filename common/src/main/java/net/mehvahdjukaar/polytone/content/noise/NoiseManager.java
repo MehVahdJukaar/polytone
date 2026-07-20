@@ -29,7 +29,9 @@ public class NoiseManager extends ContentManager<PerlinSimplexNoise> {
 
 
     public NoiseManager() {
-        super("Noise", () -> NOISE_CODEC, "noises");
+        super(Spec.of("Noise", () -> NOISE_CODEC)
+                .wikiPage("Math-Expressions")
+                .folders("noises"));
     }
 
     private final MapRegistry<PerlinSimplexNoise> noises = new MapRegistry<>("Polytone Simplex Noises");

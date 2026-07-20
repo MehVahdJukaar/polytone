@@ -35,8 +35,9 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
     private final Map<ResourceKey<DimensionType>, EnvironmentAttributeMap> postProcessEffects = new HashMap<>();
 
     public DimensionEffectsManager() {
-        super("Dimension modifier", () -> DimensionEffectsModifier.CODEC,
-                "dimension_modifiers", "dimension_effects");
+        super(Spec.of("Dimension modifier", () -> DimensionEffectsModifier.CODEC)
+                .wikiPage("Dimension-Effects-Modifiers")
+                .folders("dimension_modifiers", "dimension_effects"));
     }
 
     @Override

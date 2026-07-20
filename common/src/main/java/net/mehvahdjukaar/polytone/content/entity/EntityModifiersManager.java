@@ -32,7 +32,9 @@ public class EntityModifiersManager extends ContentManager<EntityModifier> {
     private final Int2ObjectOpenHashMap<List<ParticleSpawnRecord>> spawnRecords = new Int2ObjectOpenHashMap<>();
 
     public EntityModifiersManager() {
-        super("Entity modifier", () -> EntityModifier.CODEC, "entity_modifiers");
+        super(Spec.of("Entity modifier", () -> EntityModifier.CODEC)
+                .wikiPage("Entity-Modifiers")
+                .folders("entity_modifiers"));
     }
 
     @Override

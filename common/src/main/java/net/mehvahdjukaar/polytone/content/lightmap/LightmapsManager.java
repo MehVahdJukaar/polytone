@@ -46,7 +46,9 @@ public class LightmapsManager extends ContentManager<Lightmap> {
     public LightmapsManager() {
         // wrap(CODEC), not DIRECT_CODEC: pack files may also be a reference to another
         // lightmap (referenceOrDirect), and the editor must accept exactly what files can be.
-        super("Lightmap", () -> SchemaCodec.wrap(Lightmap.CODEC), "lightmaps");
+        super(Spec.of("Lightmap", () -> SchemaCodec.wrap(Lightmap.CODEC))
+                .wikiPage("Lightmaps")
+                .folders("lightmaps"));
     }
 
     @Override

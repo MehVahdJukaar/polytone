@@ -102,13 +102,6 @@ public class Polytone {
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
     public static final ConfigsManager CONFIGS = new ConfigsManager();
 
-    /**
-     * Every content manager in reload order — THE discovery list for anything that
-     * enumerates polytone content (the compound reloader, the pack editor via each manager's
-     * {@link ContentManager#name}/codec/companions). Available without {@link #init}
-     * so the editor's bare-JVM preview can discover too. Lightmaps are listed (they ARE
-     * editable content) but reload through their own path, not the compound.
-     */
     public static final List<ContentManager<?>> MANAGERS = List.of(
             CONFIGS, GLOBAL_EXPRESSION,
             NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
@@ -125,12 +118,6 @@ public class Polytone {
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
 
-    /**
-     * The running (integrated or dedicated) server, set by the platform entry points on server
-     * start and cleared on stop. Null outside a world. This is THE datapack-side registry
-     * source ({@code currentServer.registryAccess()}) — the client-synced view lives on
-     * {@code Minecraft.getInstance().level} instead.
-     */
     @Nullable
     public static MinecraftServer currentServer;
 

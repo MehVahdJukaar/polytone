@@ -44,7 +44,9 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
     private final Map<Identifier, RenderTarget> targets = new HashMap<>();
 
     public PostTargetsManager() {
-        super("Post target", () -> TargetSpec.CODEC, "post_targets");
+        super(Spec.of("Post target", () -> TargetSpec.CODEC)
+                .wikiPage("Shaders")
+                .folders("post_targets"));
     }
 
     @Override

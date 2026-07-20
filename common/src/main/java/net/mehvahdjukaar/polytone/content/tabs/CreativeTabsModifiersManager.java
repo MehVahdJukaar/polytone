@@ -37,8 +37,9 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
     private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> vanillaTabs = new HashMap<>();
 
     public CreativeTabsModifiersManager() {
-        super("Creative tab modifier", () -> SchemaCodec.wrap(CreativeTabModifier.CODEC),
-                "creative_tab_modifiers");
+        super(Spec.of("Creative tab modifier", () -> SchemaCodec.wrap(CreativeTabModifier.CODEC))
+                .wikiPage("Creative-Tab-Modifiers")
+                .folders("creative_tab_modifiers"));
     }
 
 
