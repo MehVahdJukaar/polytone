@@ -36,8 +36,13 @@ public enum ParticleRenderMode implements StringRepresentable {
 
     public SingleQuadParticle.Layer getLayer(boolean hasModel) {
         if (hasModel) return CUSTOM_LAYER;
+
+        // A quad particle's sprite is always baked into the particle atlas (see SpritePicker), so every
+        // mode here must bind LOCATION_PARTICLES. The block-atlas variants (terrain/solid/cutout) only
+        // apply to the model path via getBlock(); routing a quad through Layer.TERRAIN would sample the
+        // whole block atlas with particle-atlas UVs (the "particle shows the block atlas" bug).
         return switch (this) {
-            case TERRAIN, SOLID, CUTOUT -> SingleQuadParticle.Layer.TERRAIN;
+            case TERRAIN -> SingleQuadParticle.Layer.TERRAIN;
             case TRANSLUCENT, INVISIBLE -> SingleQuadParticle.Layer.TRANSLUCENT;
             case ADDITIVE_TRANSLUCENT -> ADDITIVE_TRANSLUCENT_LAYER;
             default -> SingleQuadParticle.Layer.OPAQUE;
