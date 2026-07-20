@@ -5,6 +5,7 @@ import com.mojang.math.Quadrant;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.polytone.common.PolytoneModelCodecs;
 import net.mehvahdjukaar.polytone.common.SimpleModelStateExtension;
 import net.mehvahdjukaar.polytone.common.TransformationModelState;
 import net.minecraft.client.renderer.block.model.Variant;
@@ -22,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Mixin(Variant.SimpleModelState.class)
@@ -69,7 +71,7 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
                         })
         );
 
-        return new MapCodec<>() {
+        MapCodec<Variant.SimpleModelState> wrapper = new MapCodec<>() {
             @Override
             public <T> Stream<T> keys(DynamicOps<T> ops) {
                 List<T> l = new ArrayList<>();
@@ -104,9 +106,23 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
 
             @Override
             public <T> RecordBuilder<T> encode(Variant.SimpleModelState input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-                return original.encode(input, ops, prefix);
+                RecordBuilder<T> builder = original.encode(input, ops, prefix);
+                SimpleModelStateExtension ext = (SimpleModelStateExtension) (Object) input;
+                // Re-emit the extra keys so an edit / re-save round-trip (e.g. the pack editor) doesn't
+                // silently drop them. ExtraData keeps only genuinely custom (non-90) rotations; vanilla
+                // quadrant rotations are already written by original.encode above, so no key collides.
+                ExtraData extra = new ExtraData(
+                        Optional.of(ext.polytone$getXRot()),
+                        Optional.of(ext.polytone$getYRot()),
+                        Optional.of(ext.polytone$getZRot()),
+                        ext.polytone$getXOffset() != 0 ? Optional.of(ext.polytone$getXOffset()) : Optional.<Float>empty(),
+                        ext.polytone$getYOffset() != 0 ? Optional.of(ext.polytone$getYOffset()) : Optional.<Float>empty(),
+                        ext.polytone$getZOffset() != 0 ? Optional.of(ext.polytone$getZOffset()) : Optional.<Float>empty());
+                return extra.isEmpty() ? builder : ExtraData.CODEC.encode(extra, ops, builder);
             }
         };
+        PolytoneModelCodecs.WRAPPED = wrapper;
+        return wrapper;
     }
 
     @Inject(method = "asModelState", at = @At(value = "HEAD"), cancellable = true)

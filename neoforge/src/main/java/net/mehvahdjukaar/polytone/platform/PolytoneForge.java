@@ -15,8 +15,6 @@ import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEv
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.debug.DebugEntryNoop;
-import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
-import net.minecraft.client.gui.components.debug.DebugScreenProfile;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceKey;
@@ -82,11 +80,10 @@ public class PolytoneForge {
     }
 
     public void onRegisterDebugEntries(RegisterDebugEntriesEvent event) {
+        // Register only, like vanilla's own gizmo entries (entity_hitboxes, chunk_borders, ...): no
+        // profile inclusion, so it defaults to NEVER and the user opts in from the F3 debug config
+        // screen. Adding it to a profile as IN_OVERLAY would draw the hitboxes for everyone on F3.
         event.register(ParticleHitboxDebugRenderer.ID, new DebugEntryNoop());
-        event.includeInProfile(ParticleHitboxDebugRenderer.ID, DebugScreenProfile.DEFAULT,
-                DebugScreenEntryStatus.IN_OVERLAY);
-        event.includeInProfile(ParticleHitboxDebugRenderer.ID, DebugScreenProfile.PERFORMANCE,
-                DebugScreenEntryStatus.IN_OVERLAY);
     }
 
     @SubscribeEvent

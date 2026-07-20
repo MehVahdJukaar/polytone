@@ -3,8 +3,11 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
@@ -21,6 +24,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LevelRenderer.class)
 public class LevelRendererMixin {
@@ -36,6 +40,14 @@ public class LevelRendererMixin {
     @Shadow
     @Final
     public LevelRenderState levelRenderState;
+
+    // During the particle editor preview the main target is redirected to the offscreen buffer; force
+    // the separate translucent-particles target to null too, so opaque AND translucent particles render
+    // in the single main-target pass (into the offscreen buffer) instead of a screen-bound target.
+    @Inject(method = "getParticlesTarget", at = @At("HEAD"), cancellable = true)
+    private void poly$redirectParticlesTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {
+        if (CompatHandler.PACK_EDITOR && PreviewRenderTarget.current() != null) cir.setReturnValue(null);
+    }
 
     // Every section rebuild (block or light change) funnels through setSectionDirty; bump that
     // section's light-cache version so particles there re-sample. Section coords come in directly.

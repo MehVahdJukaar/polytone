@@ -23,13 +23,10 @@ import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
 import net.minecraft.client.gui.components.debug.DebugEntryNoop;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
-import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
-import net.minecraft.client.gui.components.debug.DebugScreenProfile;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class PolytoneFabric implements ClientModInitializer {
@@ -52,8 +49,10 @@ public class PolytoneFabric implements ClientModInitializer {
         WorldRenderEvents.BEFORE_DEBUG_RENDER.register(
                 context -> ParticleHitboxDebugRenderer.emitGizmos()
         );
+        // Register only, like vanilla's own gizmo entries (entity_hitboxes, chunk_borders, ...): no
+        // profile inclusion, so it defaults to NEVER and the user opts in from the F3 debug config
+        // screen. Adding it to a profile as IN_OVERLAY would draw the hitboxes for everyone on F3.
         DebugScreenEntries.register(ParticleHitboxDebugRenderer.ID, new DebugEntryNoop());
-        addToProfiles();
 
         WorldRenderEvents.START_MAIN.register((context) ->
                 ClientFrameTicker.onRenderTick(context.gameRenderer().getMinecraft()));
@@ -99,20 +98,6 @@ public class PolytoneFabric implements ClientModInitializer {
                 Polytone.currentServer = server);
         ServerLifecycleEvents.SERVER_STOPPED.register(server ->
                 Polytone.currentServer = null);
-    }
-
-    private static void addToProfiles() {
-        var old = DebugScreenEntries.PROFILES;
-        var def = old.get(DebugScreenProfile.DEFAULT);
-        var newDef = new HashMap<>(def);
-        newDef.put(ParticleHitboxDebugRenderer.ID, DebugScreenEntryStatus.IN_OVERLAY);
-        var perf = old.get(DebugScreenProfile.PERFORMANCE);
-        var newPerf = new HashMap<>(perf);
-        newPerf.put(ParticleHitboxDebugRenderer.ID, DebugScreenEntryStatus.IN_OVERLAY);
-        var newProfiles = new HashMap<>(old);
-        newProfiles.put(DebugScreenProfile.DEFAULT, newDef);
-        newProfiles.put(DebugScreenProfile.PERFORMANCE, newPerf);
-        DebugScreenEntries.PROFILES = newProfiles;
     }
 
     public static void addRenderParticlesType() {

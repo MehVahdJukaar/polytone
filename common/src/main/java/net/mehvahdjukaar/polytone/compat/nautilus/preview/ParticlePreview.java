@@ -2,7 +2,11 @@ package net.mehvahdjukaar.polytone.compat.nautilus.preview;
 
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.mehvahdjukaar.nautilus.render.OffscreenTargetContext;
 import net.mehvahdjukaar.nautilus.render.SceneCamera;
 import net.mehvahdjukaar.nautilus.swing.preview.PreviewSurface;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
@@ -13,6 +17,7 @@ import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiTheme;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.particle.ParticlePreviewMode;
+import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
 import net.mehvahdjukaar.polytone.content.particle.custom.ICustomParticleFactory;
@@ -26,8 +31,10 @@ import net.minecraft.client.particle.ParticleGroup;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.QuadParticleGroup;
 import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.state.ParticlesRenderState;
@@ -40,6 +47,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import javax.swing.Box;
@@ -408,9 +416,7 @@ public final class ParticlePreview extends ExpressionPreview {
 
         @Override
         public void render(SceneCamera camera, int width, int height) {
-            CustomParticleInstance p = particle;
-            ParticleEngine engine = sandbox;
-            if (p == null || spawn == null || engine == null || height <= 0) return;
+            if (spawn == null || height <= 0) return;
 
             // Orbit eye in world space (same derivation as the biome scene pass).
             Vector3f target = camera.target();
@@ -421,11 +427,18 @@ public final class ParticlePreview extends ExpressionPreview {
             double ex = target.x + eyeOffset.x, ey = target.y + eyeOffset.y, ez = target.z + eyeOffset.z;
             previewCamera.place(new Vec3(ex, ey, ez), target.x, target.y, target.z);
 
-            // Project + view: perspective to the UBO, camera rotation onto the model-view stack so the
-            // camera-relative particle quads (built by extract) land in front of the viewer.
             if (projectionBuffer == null) projectionBuffer = new PerspectiveProjectionMatrixBuffer("polytone particle scene");
             RenderSystem.setProjectionMatrix(projectionBuffer.getBuffer(camera.projection((float) width / height)),
                     ProjectionType.PERSPECTIVE);
+
+            // Ground grid + RGB axes at the spawn point, for spatial reference (and so the viewport is
+            // never blank while the particle is between lives). Drawn through the RenderType pipeline,
+            // which honours the editor's offscreen redirect, before the particle model-view is pushed.
+            drawReference(camera);
+
+            CustomParticleInstance p = particle;
+            ParticleEngine engine = sandbox;
+            if (p == null || engine == null) return;
 
             // Collect the live particles into fresh groups (no engine.tick(), which would re-enqueue
             // custom particles into the async batch), then run the native extract.
@@ -445,16 +458,62 @@ public final class ParticlePreview extends ExpressionPreview {
             camState.orientation = previewCamera.rotation();
             camState.initialized = true;
 
+            // Particle quads are stored camera-relative (worldPos - eye) with a world-space billboard
+            // (LOOK_AT_* copies previewCamera.rotation()); prepare() bakes the model-view matrix into
+            // their transform. Using the conjugate of the very rotation the billboard used guarantees
+            // the two cancel to screen-facing, whatever yaw/pitch convention place() picked - deriving
+            // it independently (Rx(pitch)Ry(yaw)) only lines up when place() happens to be exact.
             Matrix4fStack mv = RenderSystem.getModelViewStack();
             mv.pushMatrix();
-            mv.mul(new Matrix4f().rotation(previewCamera.rotation()));
+            mv.mul(new Matrix4f().rotation(new Quaternionf(previewCamera.rotation()).conjugate()));
+            // The vanilla particle feature renderer draws into Minecraft#getMainRenderTarget, not the
+            // override; point that at the editor's offscreen buffer for this one draw so the quads land
+            // in the preview instead of the game screen behind it.
+            RenderTarget offscreen = OffscreenTargetContext.current();
+            if (offscreen != null) PreviewRenderTarget.begin(offscreen);
             try {
                 particlesRenderState.submit(featureDispatcher.getSubmitNodeStorage(), camState);
                 featureDispatcher.renderAllFeatures();
             } finally {
+                if (offscreen != null) PreviewRenderTarget.end();
                 mv.popMatrix();
                 particlesRenderState.reset();
             }
+        }
+
+        // A ground grid on the spawn plane plus short red/green/blue X/Y/Z axes at the spawn point, as
+        // constant-width GL lines (so they stay crisp at any zoom, unlike world-space quad slivers).
+        // Camera view baked into the pose (world space), like the biome scene pass; drawn with the
+        // model-view stack at identity, before the particle pass pushes its rotation onto it.
+        private void drawReference(SceneCamera camera) {
+            if (spawn == null) return;
+            MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
+            VertexConsumer c = buffers.getBuffer(RenderTypes.lines());
+            PoseStack pose = new PoseStack();
+            pose.mulPose(camera.view());
+            PoseStack.Pose ps = pose.last();
+
+            float cx = (float) spawn.x, cy = (float) spawn.y, cz = (float) spawn.z;
+            float ext = 2f, step = 0.5f, gy = cy - 0.5f, g = 0.45f; // grid a touch below the particle
+            for (float o = -ext; o <= ext + 1e-4f; o += step) {
+                line(c, ps, cx - ext, gy, cz + o, cx + ext, gy, cz + o, g, g, g);
+                line(c, ps, cx + o, gy, cz - ext, cx + o, gy, cz + ext, g, g, g);
+            }
+            float len = 1f;
+            line(c, ps, cx, cy, cz, cx + len, cy, cz, 1f, 0.25f, 0.25f);  // X red
+            line(c, ps, cx, cy, cz, cx, cy + len, cz, 0.3f, 1f, 0.3f);    // Y green
+            line(c, ps, cx, cy, cz, cx, cy, cz + len, 0.35f, 0.5f, 1f);   // Z blue
+            buffers.endBatch();
+        }
+
+        // One GL line segment; the lines render type needs the segment direction as the vertex normal.
+        private static void line(VertexConsumer c, PoseStack.Pose p, float x0, float y0, float z0,
+                                 float x1, float y1, float z1, float r, float g, float b) {
+            float nx = x1 - x0, ny = y1 - y0, nz = z1 - z0;
+            float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+            if (len > 1e-5f) { nx /= len; ny /= len; nz /= len; }
+            c.addVertex(p, x0, y0, z0).setColor(r, g, b, 1f).setNormal(p, nx, ny, nz);
+            c.addVertex(p, x1, y1, z1).setColor(r, g, b, 1f).setNormal(p, nx, ny, nz);
         }
 
         @SuppressWarnings({"unchecked", "rawtypes"})

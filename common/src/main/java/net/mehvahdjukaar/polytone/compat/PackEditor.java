@@ -6,8 +6,10 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.codecui.Schema;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.codecui.SchemaHandler;
 import net.mehvahdjukaar.nautilus.NautilusStudioApi;
 import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
@@ -18,6 +20,7 @@ import net.mehvahdjukaar.nautilus.workbench.FileNamesUtil;
 import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
 import net.mehvahdjukaar.nautilus.workbench.SidecarAssets;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.PolytoneModelCodecs;
 import net.mehvahdjukaar.polytone.common.companion.ContentTextures;
 import net.mehvahdjukaar.polytone.common.companion.TextureSlot;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.BiomeScenePreview;
@@ -204,6 +207,24 @@ public final class PackEditor {
         SchemaCodecs.registerCompanion(ColormapModContextExpression.CODEC,
                 new Schema.Custom<>(exp4jEditor(ColormapModContextExpression.CODEC, "state_prop",
                         "BIOME_VALUE", "DAMAGE", "RED", "GREEN", "BLUE", "ALPHA")));
+
+        // The variant model-state codec is wrapped opaquely by VariantDeserializerMixin (it merges
+        // Polytone's offset/float-rotation keys onto the vanilla one), so codecui can't introspect it
+        // and blockstates fall back to raw JSON. Match that exact wrapped instance and hand codecui a
+        // flat shape (EDITOR_SHAPE) so it renders a proper form. Lazy: WRAPPED is set by the time a
+        // blockstate resolves, and if it isn't we just pass and keep the raw-JSON fallback.
+        SchemaCodecs.registerHandler(new SchemaHandler() {
+            @Override
+            public @Nullable Schema<?> tryResolve(Codec<?> codec, Resolver resolver) {
+                return null;
+            }
+
+            @Override
+            public @Nullable Schema<?> tryResolveMap(MapCodec<?> codec, Resolver resolver) {
+                MapCodec<?> wrapped = PolytoneModelCodecs.WRAPPED;
+                return wrapped != null && codec == wrapped ? resolver.resolveMap(PolytoneModelCodecs.EDITOR_SHAPE) : null;
+            }
+        });
     }
 
     /** Expression editor for an MVEL {@link PolyExpType}: input chips + real compile check. */
