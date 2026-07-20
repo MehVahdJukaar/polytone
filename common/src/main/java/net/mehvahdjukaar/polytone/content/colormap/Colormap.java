@@ -4,8 +4,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
-import net.mehvahdjukaar.polytone.common.PathsUtils;
-import net.mehvahdjukaar.codecui.Schema;
+import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.codecui.SchemaRecord;
@@ -29,7 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 public final class Colormap implements IColorGetter, ColorResolver {
 
@@ -154,7 +152,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     public void setExplicitTargetTexture(Identifier imageTarget) {
-        this.explicitTargetTexture = imageTarget.withPath(PathsUtils.stripExtension(imageTarget.getPath()));
+        this.explicitTargetTexture = imageTarget.withPath(StrUtils.stripExtension(imageTarget.getPath()));
     }
 
     // Dont use tint index

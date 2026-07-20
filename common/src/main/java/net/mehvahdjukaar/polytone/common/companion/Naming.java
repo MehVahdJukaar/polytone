@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.common.companion;
 
-import net.mehvahdjukaar.polytone.common.PathsUtils;
+import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,7 +86,7 @@ public sealed interface Naming {
 
         @Override
         public Set<Integer> presentIndexes(TrackedTextures textures, Identifier contentId) {
-            String stem = PathsUtils.lastSegment(contentId.getPath());
+            String stem = StrUtils.lastSegment(contentId.getPath());
             return textures.find(contentId, fileName(stem, DEFAULT_INDEX)) != null
                     ? Set.of(DEFAULT_INDEX) : Set.of();
         }
@@ -130,14 +130,14 @@ public sealed interface Naming {
 
         @Override
         public Set<Integer> presentIndexes(TrackedTextures textures, Identifier contentId) {
-            String dir = PathsUtils.directoryOf(contentId.getPath());
-            String stem = PathsUtils.lastSegment(contentId.getPath());
+            String dir = StrUtils.directoryOf(contentId.getPath());
+            String stem = StrUtils.lastSegment(contentId.getPath());
             Set<Integer> out = new TreeSet<>();
             for (Identifier id : textures.keySet()) {
                 if (!id.getNamespace().equals(contentId.getNamespace())) continue;
                 String path = id.getPath();
-                if (!PathsUtils.directoryOf(path).equals(dir)) continue;
-                Integer index = tintIndexOf(PathsUtils.lastSegment(path) + ".png", stem);
+                if (!StrUtils.directoryOf(path).equals(dir)) continue;
+                Integer index = tintIndexOf(StrUtils.lastSegment(path) + ".png", stem);
                 if (index != null) out.add(index);
             }
             return out;

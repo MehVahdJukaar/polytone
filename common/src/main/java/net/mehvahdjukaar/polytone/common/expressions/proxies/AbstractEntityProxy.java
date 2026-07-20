@@ -23,11 +23,6 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
 
     @Override
     protected BlockPos getPosInternal() {
-        // The block the entity occupies, matching the docs ("at the current position") and the legacy
-        // EntityContextExpression. getOnPos() returns the solid block the entity stands ON, so light
-        // sampled there reads 0 (sky light doesn't enter solids) and only flips to the open-air value
-        // while moving - when the ground-support pos momentarily clears - which is the reported
-        // "sky_light chance only spawns particles when moving" bug.
         return entity().blockPosition();
     }
 

@@ -16,7 +16,6 @@ import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.fluid.FluidPropertyModifier;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -223,7 +222,7 @@ public class LegacyHelper {
                 String source = sourceTexture.get().replace("~/colormap/", id.getNamespace() + ":");
                 if (source.contains("./")) {
                     // resolve relative paths
-                    String directoryPath = PathsUtils.directoryOf(id.getPath());
+                    String directoryPath = StrUtils.directoryOf(id.getPath());
                     source = source.replace("./", id.getNamespace() + ":" + directoryPath);
                 }
                 colormap.setExplicitTargetTexture(Identifier.parse(source));
@@ -284,7 +283,7 @@ public class LegacyHelper {
                     source = source.replace("~/colormap/", id.getNamespace() + ":");
                 } else {
                     // resolve relative paths
-                    String directoryPath = PathsUtils.directoryOf(id.getPath());
+                    String directoryPath = StrUtils.directoryOf(id.getPath());
                     source = (id.getNamespace() + ":" + directoryPath) + source.replace("./", "");
                 }
                 colormap.setExplicitTargetTexture(Identifier.parse(source));

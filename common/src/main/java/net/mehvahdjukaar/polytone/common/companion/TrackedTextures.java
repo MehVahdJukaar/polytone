@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.common.companion;
 
-import net.mehvahdjukaar.polytone.common.PathsUtils;
+import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.minecraft.resources.Identifier;
@@ -35,7 +35,7 @@ public final class TrackedTextures {
 
     public @Nullable Identifier find(Identifier baseId, String fileName) {
         Identifier candidate = baseId.withPath(
-                PathsUtils.directoryOf(baseId.getPath()) + PathsUtils.stripExtension(fileName));
+                StrUtils.directoryOf(baseId.getPath()) + StrUtils.stripExtension(fileName));
         return textures.containsKey(candidate) ? candidate : null;
     }
 
