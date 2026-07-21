@@ -266,12 +266,9 @@ public final class ParticlePreview extends ExpressionPreview {
         colorReadout.setText(String.format("<html>color #%06X&nbsp;&nbsp;alpha %.2f</html>", rgb & 0xFFFFFF, s.a));
     }
 
-    /**
-     * Render-thread half: owns the ticked instance + its emitter children in a sandbox engine and
-     * draws them. {@link LiveViewport} calls {@link #advance()} then {@link #render} on the render
-     * thread, so instance mutation and read never race the EDT; the HUD reads only the volatile
-     * {@link #snapshot}.
-     */
+    // Render-thread half: owns the ticked instance + its emitter children in a sandbox engine and
+    // draws them. LiveViewport calls advance() then render() on the render thread, so instance
+    // mutation and read never race the EDT; the HUD reads only the volatile snapshot.
     private final class ParticleScene implements LiveViewport.Renderer {
 
         private static final int MAX_CHILDREN = 400;

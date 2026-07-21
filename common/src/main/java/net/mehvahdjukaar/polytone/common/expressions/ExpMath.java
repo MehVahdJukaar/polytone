@@ -243,7 +243,7 @@ public class ExpMath {
 
     public static double dateMinute() {
         LocalDateTime now = LocalDateTime.now();
-        return now.getMinute(); // 0–59
+        return now.getMinute(); // 0-59
     }
 
     public static long dateTime() {
