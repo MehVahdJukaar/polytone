@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.common.exp.impl;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
@@ -41,7 +42,14 @@ public class ParticleContextExpression extends PolytoneExpression implements IPa
 
     public static final Codec<ParticleContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {
-            return DataResult.success(new ParticleContextExpression(s));
+            // Custom particles tick across a worker pool when async is on, and every particle of a
+            // type shares this one expression instance. The plain (ExpressionDelegate) backing keeps
+            // its variables on a single shared exp4j Expression, so concurrent evaluation stomps them
+            // and yields garbage (visible as particles randomly rotating/jittering). Build the
+            // per-thread ConcurrentExpression instead. Only pay that when async is actually enabled;
+            // toggling the config triggers a resource reload, so this is re-evaluated on each load.
+            boolean concurrent = Polytone.CONFIGS.particlesOffThread.get();
+            return DataResult.success(new ParticleContextExpression(s, concurrent));
         } catch (Exception e) {
             return DataResult.error(() -> "Failed to parse expression:" + e.getMessage());
         }
