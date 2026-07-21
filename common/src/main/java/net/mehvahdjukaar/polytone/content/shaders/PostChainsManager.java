@@ -38,6 +38,10 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     public static final String GLOBALS_NAME = "PolyGlobals";
     public static final String SHADOW_UBO_NAME = "PolyShadow";
     public static final String SHADOW_SAMPLER_NAME = "InShadow";
+    // Samplers Polytone binds at runtime (not declared in the pipeline). GlProgram only allocates a
+    // texture unit for samplers it knows about, so GlProgramMixin registers these on any program that
+    // actually declares them - otherwise the sampler defaults to unit 0 and reads the scene texture.
+    public static final List<String> DYNAMIC_SAMPLERS = List.of(SHADOW_SAMPLER_NAME);
     private PolytoneGlobalUniforms globalUniforms = null;
 
     private final List<PostChainActivator> activators = new ArrayList<>();

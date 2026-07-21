@@ -39,7 +39,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", "loading", true);
     public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", "particles", 1);
     public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", "particles", false);
-    public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", "particles", true);
+    public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", "particles", false);
     public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", null, true);
 
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
@@ -75,6 +75,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
         // Only time we read disk automatically
         loadConfigFromDisk();
+        registerBuiltins(configs);
     }
 
     private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
@@ -216,6 +217,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         var jsons = this.getJsonsInDirectories(resourceManager);
 
         MapRegistry<OptionHolder<?>> activePackReg = new MapRegistry<>("Active Pack Configs");
+        registerBuiltins(activePackReg);
         activeLoadConfigs.set(activePackReg);
         for (var j : parseEnabledJsons(jsons, JsonOps.INSTANCE)) {
             if (j != null) {
@@ -235,11 +237,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         Map<Identifier, JsonElement> obj = resources.jsons();
         activeLoadConfigs.remove();
         configs.clear();
-        configs.register(lenientLoading.fileId, lenientLoading);
-        configs.register(legacyParsing.fileId, legacyParsing);
-        configs.register(particlesThrottle.fileId, particlesThrottle);
-        configs.register(particlesOffThread.fileId, particlesOffThread);
-        configs.register(autoParticleRateLimit.fileId, autoParticleRateLimit);
+        registerBuiltins(configs);
 
         Map<Identifier, PolyConfig<?>> parsed = new HashMap<>();
         //ignoring conditions here purposefully

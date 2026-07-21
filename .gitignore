@@ -42,3 +42,8 @@ classes/
 /resourcepacks/config_test/assets/config_test/polytone/config_entries/d_scale.json
 /resourcepacks/config_test/assets/config_test/lang/en_us.json
 /resourcepacks/config_test/pack.mcmeta
+/resourcepacks/shadowmap_debug/pack.mcmeta
+/resourcepacks/shadowmap_debug/assets/shadowdbg/polytone/shadow_map.json
+/resourcepacks/shadowmap_debug/assets/shadowdbg/shaders/post/shadows.fsh
+/resourcepacks/shadowmap_debug/assets/shadowdbg/polytone/post_shaders/shadows.json
+/resourcepacks/shadowmap_debug/assets/shadowdbg/post_effect/shadows.json
