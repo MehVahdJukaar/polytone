@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.utils.InteractionTracker;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -19,12 +19,12 @@ public abstract class MultiPlayerGameModeMixin {
     @Inject(method = "interactAt", at = @At("HEAD"))
     private void polytone$trackInteractAt(Player player, Entity target, EntityHitResult ray, InteractionHand hand,
                                           CallbackInfoReturnable<InteractionResult> cir) {
-        InteractionTracker.setLastEntity(target);
+        ClientFrameTicker.setLastEntity(target);
     }
 
     @Inject(method = "interact", at = @At("HEAD"))
     private void polytone$trackInteract(Player player, Entity target, InteractionHand hand,
                                         CallbackInfoReturnable<InteractionResult> cir) {
-        InteractionTracker.setLastEntity(target);
+        ClientFrameTicker.setLastEntity(target);
     }
 }

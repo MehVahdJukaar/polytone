@@ -5,7 +5,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.utils.InteractionTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -80,11 +79,11 @@ public class GlobalProxy {
 
     @Nullable
     public EntityProxy lastInteractedEntity() {
-        Entity e = InteractionTracker.getLastEntity();
+        Entity e = ClientFrameTicker.getLastEntity();
         return e == null ? null : new EntityProxy(e);
     }
 
     public boolean hasInteracted() {
-        return InteractionTracker.getLastEntity() != null;
+        return ClientFrameTicker.getLastEntity() != null;
     }
 }

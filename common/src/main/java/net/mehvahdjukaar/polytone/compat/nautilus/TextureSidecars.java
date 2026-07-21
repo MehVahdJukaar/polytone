@@ -6,7 +6,7 @@ import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
 import net.mehvahdjukaar.nautilus.workbench.SidecarAssets;
 import net.mehvahdjukaar.polytone.companion.ContentTextures;
 import net.mehvahdjukaar.polytone.companion.TextureSlot;
-import net.mehvahdjukaar.polytone.utils.PathsUtils;
+import net.mehvahdjukaar.polytone.utils.StrUtils;
 import net.minecraft.resources.ResourceLocation;
 
 import java.nio.file.Path;
@@ -86,7 +86,7 @@ final class TextureSidecars {
     // name EXTERNAL (it resolves from vanilla or another pack, still previewable off the live stack).
     private static SidecarAssets.Slot remoteSlot(TextureSlot slot, PackWorkspace pack, Side side) {
         ResourceLocation location = slot.remoteLocation();
-        String dir = PathsUtils.directoryOf(location.getPath());
+        String dir = StrUtils.directoryOf(location.getPath());
         List<ResourceLocation> candidates = slot.acceptedNames().stream()
                 .map(name -> location.withPath(dir + name)).toList();
         return SidecarAssets.referencedFirstPresent(pack, side, candidates, "", "", slot.label());

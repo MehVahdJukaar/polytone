@@ -11,6 +11,7 @@ import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiStyle;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifier;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview;
+import net.mehvahdjukaar.polytone.utils.StrUtils;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
 
@@ -141,7 +142,7 @@ public final class GuiModifierPreviewPanel implements TabPreview {
     }
 
     private void showPicked(GuiModifierPreview.PickedElement picked) {
-        String cls = simpleName(picked.className());
+        String cls = StrUtils.simpleName(picked.className());
         if (picked.slotIndex() >= 0) {
             // Copy just the index - it drops straight into a "slots" entry.
             pickReadout.set("slot #" + picked.slotIndex() + "  @ (" + picked.x() + ", " + picked.y() + ")  " + cls,
@@ -207,11 +208,6 @@ public final class GuiModifierPreviewPanel implements TabPreview {
         label.setToolTipText(label.getText());
         label.setMinimumSize(new Dimension(0, label.getPreferredSize().height));
         return label;
-    }
-
-    private static String simpleName(String className) {
-        int dot = className.lastIndexOf('.');
-        return dot >= 0 ? className.substring(dot + 1) : className;
     }
 
     // --- a labelled value with a copy button, used for the detect/pick read-outs -----------------

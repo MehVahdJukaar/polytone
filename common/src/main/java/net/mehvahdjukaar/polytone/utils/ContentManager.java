@@ -148,6 +148,6 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
 
     @Override
     public String toString() {
-        return org.apache.commons.lang3.StringUtils.capitalize(name.replace("_", " ")) + " Reloader";
+        return StrUtils.readableName(name) + " Reloader";
     }
 }

@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.companion;
 
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.utils.ArrayImage;
-import net.mehvahdjukaar.polytone.utils.PathsUtils;
+import net.mehvahdjukaar.polytone.utils.StrUtils;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +35,7 @@ public final class TrackedTextures {
 
     public @Nullable ResourceLocation find(ResourceLocation baseId, String fileName) {
         ResourceLocation candidate = baseId.withPath(
-                PathsUtils.directoryOf(baseId.getPath()) + PathsUtils.stripExtension(fileName));
+                StrUtils.directoryOf(baseId.getPath()) + StrUtils.stripExtension(fileName));
         return textures.containsKey(candidate) ? candidate : null;
     }
 

@@ -85,8 +85,8 @@ public record ArrayImage(int[][] pixels, int width, int height) {
             // Same stem/tint-index rule as the reload driver (Naming), so grouping and filling can't
             // disagree. The old regex ran on the whole path and dropped any id with a digit before
             // the trailing "_<n>" (it fell out of grouping entirely).
-            Naming.ParsedName parsed = Naming.parse(PathsUtils.lastSegment(path));
-            ResourceLocation stemId = id.withPath(PathsUtils.directoryOf(path) + parsed.stem());
+            Naming.ParsedName parsed = Naming.parse(StrUtils.lastSegment(path));
+            ResourceLocation stemId = id.withPath(StrUtils.directoryOf(path) + parsed.stem());
             groupedMap.computeIfAbsent(stemId, a -> new Group())
                     .put(parsed.index(), e.getValue());
         }

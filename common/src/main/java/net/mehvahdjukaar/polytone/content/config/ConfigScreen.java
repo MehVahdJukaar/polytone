@@ -33,13 +33,12 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.mehvahdjukaar.polytone.utils.StrUtils;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -55,7 +54,6 @@ import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
-import java.util.stream.Collectors;
 
 import static net.minecraft.client.Options.genericValueLabel;
 
@@ -381,15 +379,13 @@ public class ConfigScreen extends OptionsSubScreen {
     // --- header title resolution ---
 
     private static Component getCategoryHeader(String modId) {
-        String key = "config." + modId + ".header";
-        if (I18n.exists(key)) return Component.translatable(key);
-        return Component.literal(getReadableName(modId));
+        return Component.translatableWithFallback("config." + modId + ".header",
+                StrUtils.readableName(modId));
     }
 
     private static Component sectionTitle(String modId, String section) {
-        String key = "config." + modId + ".section." + section;
-        if (I18n.exists(key)) return Component.translatable(key);
-        return Component.literal(getReadableName(section));
+        return Component.translatableWithFallback("config." + modId + ".section." + section,
+                StrUtils.readableName(section));
     }
 
     // --- rich tooltip (preview image + performance impact) ---
@@ -555,8 +551,8 @@ public class ConfigScreen extends OptionsSubScreen {
             Component c = translatedOrNull(modId + ".presets.section." + section + "." + name);
             if (c != null) return c;
         }
-        Component c = translatedOrNull(modId + ".presets." + name);
-        return c != null ? c : Component.literal(getReadableName(name));
+        return Component.translatableWithFallback(modId + ".presets." + name,
+                StrUtils.readableName(name));
     }
 
     @Nullable
@@ -710,11 +706,6 @@ public class ConfigScreen extends OptionsSubScreen {
             }
             return super.keyPressed(keyCode, scanCode, modifiers);
         }
-    }
-
-    public static String getReadableName(String name) {
-        return Arrays.stream(name.replace(":", "_").split("_"))
-                .map(StringUtils::capitalize).collect(Collectors.joining(" "));
     }
 
     /**

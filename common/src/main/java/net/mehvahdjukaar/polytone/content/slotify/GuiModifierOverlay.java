@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview.PickedElement;
+import net.mehvahdjukaar.polytone.utils.StrUtils;
 import net.mehvahdjukaar.polytone.mixins.accessor.AbstractContainerScreenAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -100,7 +101,7 @@ public final class GuiModifierOverlay {
         if (targeted) {
             String touch = modSlots == 0 && modWidgets == 0
                     ? "no elements matched"
-                    : "modifying " + plural(modSlots, "slot") + (modWidgets > 0 ? ", " + plural(modWidgets, "widget") : "");
+                    : "modifying " + StrUtils.plural(modSlots, "slot") + (modWidgets > 0 ? ", " + StrUtils.plural(modWidgets, "widget") : "");
             detail = touch + (GuiModifierPreview.isPreviewing(screen) ? "   (live preview)" : "");
         } else {
             detail = "no modifier matches this screen yet";
@@ -120,25 +121,24 @@ public final class GuiModifierOverlay {
     private static void drawLabel(GuiGraphics graphics, String text, int anchorX, int anchorY) {
         Font font = Minecraft.getInstance().font;
         int w = font.width(text);
-        int lx = anchorX;
         int ly = anchorY - font.lineHeight - 3;
         if (ly < 2) ly = anchorY + SLOT + 3; // flip below when there's no room above
-        graphics.fill(lx - 2, ly - 2, lx + w + 2, ly + font.lineHeight, LABEL_BG);
-        graphics.drawString(font, text, lx, ly, LABEL_TEXT, false);
+        graphics.fill(anchorX - 2, ly - 2, anchorX + w + 2, ly + font.lineHeight, LABEL_BG);
+        graphics.drawString(font, text, anchorX, ly, LABEL_TEXT, false);
     }
 
     private static String slotLabel(Screen screen, Slot slot, int leftPos, int topPos) {
         int cx = leftPos + slot.x - screen.width / 2;
         int cy = topPos + slot.y - screen.height / 2;
-        return "slot #" + slot.index + "  (" + cx + ", " + cy + ")  " + simpleName(slot.getClass().getName());
+        return "slot #" + slot.index + "  (" + cx + ", " + cy + ")  " + StrUtils.simpleName(slot.getClass().getName());
     }
 
     private static String widgetLabel(Screen screen, AbstractWidget w) {
         int cx = w.getX() - screen.width / 2;
         int cy = w.getY() - screen.height / 2;
-        String msg = w.getMessage() == null ? "" : w.getMessage().getString();
+        String msg = w.getMessage().getString();
         String named = msg.isBlank() ? "" : "\"" + msg + "\"  ";
-        return "widget  " + named + simpleName(w.getClass().getName()) + "  (" + cx + ", " + cy + ")  "
+        return "widget  " + named + StrUtils.simpleName(w.getClass().getName()) + "  (" + cx + ", " + cy + ")  "
                 + w.getWidth() + "x" + w.getHeight();
     }
 
@@ -200,16 +200,5 @@ public final class GuiModifierOverlay {
 
     private static boolean inside(int mx, int my, int x, int y, int w, int h) {
         return mx >= x && mx < x + w && my >= y && my < y + h;
-    }
-
-    private static String plural(int n, String noun) {
-        return n + " " + noun + (n == 1 ? "" : "s");
-    }
-
-    private static String simpleName(String className) {
-        int dot = className.lastIndexOf('.');
-        String s = dot >= 0 ? className.substring(dot + 1) : className;
-        int inner = s.lastIndexOf('$');
-        return inner >= 0 ? s.substring(inner + 1) : s;
     }
 }
