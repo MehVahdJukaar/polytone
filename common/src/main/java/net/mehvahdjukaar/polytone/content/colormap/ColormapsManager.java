@@ -1,12 +1,9 @@
 package net.mehvahdjukaar.polytone.content.colormap;
 
 import com.google.gson.JsonElement;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.companion.TexturePart;
 import net.mehvahdjukaar.polytone.companion.TrackedTextures;
@@ -48,36 +45,7 @@ public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
 
 
     public Codec<IColorGetter> byNameCodec() {
-        Codec<IColorGetter> registryCodec = colormaps.xmap(Supplier::get, s -> () -> s);
-        return new Codec<>() {
-            @Override
-            public <T> DataResult<Pair<IColorGetter, T>> decode(DynamicOps<T> ops, T input) {
-                var result = registryCodec.decode(ops, input);
-                if (result.isSuccess()) return result;
-                // Editor bridge: a reference the game hasn't loaded may still point at a colormap
-                // file inside the pack currently open in the Nautilus editor - parse that instead
-                // so editing a self-contained pack doesn't flag its own references as errors.
-                var lookup = ContentManager.editorWorkspaceJsonLookup;
-                if (lookup != null) {
-                    var id = ResourceLocation.CODEC.parse(ops, input).result().orElse(null);
-                    JsonElement json = id == null ? null : lookup.apply(primaryFolder(), id);
-                    if (json != null) {
-                        var direct = Colormap.DIRECT_CODEC.decode(ops, JsonOps.INSTANCE.convertTo(ops, json));
-                        if (direct.isSuccess()) {
-                            Colormap colormap = direct.result().orElseThrow().getFirst();
-                            colormap.inlined = false;
-                            return DataResult.success(Pair.of(colormap, ops.empty()));
-                        }
-                    }
-                }
-                return result;
-            }
-
-            @Override
-            public <T> DataResult<T> encode(IColorGetter input, DynamicOps<T> ops, T prefix) {
-                return registryCodec.encode(input, ops, prefix);
-            }
-        };
+        return colormaps.xmap(Supplier::get, s -> () -> s);
     }
 
     @Nullable

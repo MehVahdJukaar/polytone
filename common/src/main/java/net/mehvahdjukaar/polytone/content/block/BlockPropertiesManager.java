@@ -45,7 +45,7 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
     private ColorResolver vanillaGrassColorResolver = null;
     private ColorResolver vanillaFoliageColorResolver = null;
 
-    /** Optifine/Colormatic legacy .properties, scanned in prepare() and consumed in parseWithLevel(). */
+    // Optifine/Colormatic legacy .properties, scanned in prepare() and consumed in parseWithLevel().
     private Map<ResourceLocation, Properties> ofProperties = Map.of();
 
     private static final TexturePart<BlockPropertyModifier> TINTS =

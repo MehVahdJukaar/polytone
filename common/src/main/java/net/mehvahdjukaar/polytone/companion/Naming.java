@@ -96,7 +96,7 @@ public sealed interface Naming {
             return suffix.isEmpty() ? -1 : suffix.length();
         }
 
-        /** {@code ""} -> "default", {@code "_terrain_fog"} -> "terrain fog" */
+        // "" -> "default", "_terrain_fog" -> "terrain fog"
         String derivedLabel() {
             if (suffix.isEmpty()) return label(DEFAULT_INDEX);
             String stripped = suffix.startsWith("_") ? suffix.substring(1) : suffix;

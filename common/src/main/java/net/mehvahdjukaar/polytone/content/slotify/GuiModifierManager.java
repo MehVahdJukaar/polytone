@@ -126,7 +126,7 @@ public class GuiModifierManager extends JsonPartialReloader<GuiModifier> {
         }
     }
 
-    /** Keeps only the candidates whose condition currently passes, then merges them (file order). */
+    // Keeps only the candidates whose condition currently passes, then merges them (file order).
     @Nullable
     private static ScreenModifier resolve(@Nullable List<ScreenModifier> candidates) {
         if (candidates == null || candidates.isEmpty()) return null;
@@ -236,7 +236,7 @@ public class GuiModifierManager extends JsonPartialReloader<GuiModifier> {
     }
 
 
-    /** Preview override slot modifiers matching this slot, or null when no override is active. */
+    // Preview override slot modifiers matching this slot, or null when no override is active.
     @Nullable
     private static Collection<SlotModifier> previewSlotModifiers(Slot slot) {
         GuiModifier o = GuiModifierPreview.override();

@@ -113,7 +113,7 @@ public class ExpUtils {
         return -1;
     }
 
-    // Position of the first top-level assignment '=' — plain or compound (+=, *=, ...) — or -1.
+    // Position of the first top-level assignment '=' (plain or compound: +=, *=, ...), or -1.
     // Comparison '=' (==, !=, <=, >=) never counts. Compound assignments split like plain ones:
     // assignment binds loosest, so only the right side is a logical expression to coerce.
     private static int topLevelAssignment(String e) {

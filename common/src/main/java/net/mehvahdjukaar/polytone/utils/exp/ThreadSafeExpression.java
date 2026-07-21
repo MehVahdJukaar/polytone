@@ -18,11 +18,7 @@ public class ThreadSafeExpression implements IExpression {
     private final Map<String, Double> defaultVariables;
     private final Set<String> userFunctionNames;
 
-    /**
-     * Creates a new expression that is a copy of the existing one.
-     *
-     * @param existing the expression to copy
-     */
+    // Copies exp4j's internal token/variable state out of an existing Expression via reflection.
     public ThreadSafeExpression(final Expression existing) {
         try {
             this.tokens = (Token[]) TOKENS_FIELD.get(existing);
