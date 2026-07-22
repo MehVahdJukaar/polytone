@@ -6,6 +6,7 @@ import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
+import net.caffeinemc.mods.sodium.client.SodiumClientMod;
 import net.caffeinemc.mods.sodium.client.gl.device.RenderDevice;
 import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
@@ -16,10 +17,13 @@ import net.mehvahdjukaar.polytone.mixins.accessor.SodiumWorldRendererShadowAcces
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.lwjgl.opengl.GL30;
+
+import java.util.List;
 
 // All Sodium-specific handling for the shadow pass, kept out of ShadowMapRenderer so the Sodium types
 // load only when Sodium is present (the replay entry is called behind CompatHandler.SODIUM, and the
@@ -63,18 +67,39 @@ public final class SodiumShadowRenderer {
         GlStateManager._viewport(0, 0, shadowColor.getWidth(0), shadowColor.getHeight(0));
     }
 
-    // Replay Sodium's opaque terrain (SOLID + CUTOUT) from the light's POV into the shadow attachments.
+    // Replay Sodium's opaque terrain (SOLID + CUTOUT) from the light's POV into the shadow attachments,
+    // and collect the block entities of the same light-culled section set into blockEntitiesOut (Sodium
+    // owns those too - the vanilla section meshes ShadowMapRenderer scans are empty here).
     // MUST only be called with Sodium present: it references Sodium types the verifier eager-loads when
     // this class is linked, so the CompatHandler.SODIUM gate has to live at the call site (ShadowMapRenderer).
     public static void replayTerrain(Minecraft mc, Camera cam, Vec3 camPos,
                                      Matrix4f lightView, Matrix4f lightProj,
                                      float coverage, float depthRange,
-                                     GpuTexture color, GpuTexture depth) {
+                                     GpuTexture color, GpuTexture depth,
+                                     List<BlockEntity> blockEntitiesOut) {
         SodiumWorldRenderer swr = SodiumWorldRenderer.instanceNullable();
-        GpuSampler sampler = terrainSampler;
-        if (swr == null || sampler == null) return; // renderer not up, or no sampler captured yet
+        if (swr == null) return; // renderer not up
 
         boolean reCulled = reCull(mc, cam, lightView, camPos, coverage, depthRange);
+
+        // The render lists now hold the light-volume section set, so this yields exactly the block
+        // entities that can cast into the map (plus the global ones, which are never culled).
+        swr.iterateVisibleBlockEntities(blockEntitiesOut::add);
+
+        GpuSampler sampler = terrainSampler;
+        if (sampler == null) { // no atlas sampler captured yet: terrain draws from next frame on
+            if (reCulled) restoreCameraList();
+            return;
+        }
+
+        // Sodium culls each section's faces to those facing the CAMERA (getVisibleFaces keys off the
+        // CameraTransform we pass = the real camera). From the light's POV that drops the faces that
+        // actually occlude, so the depth map gets holes (light-leak bands that shift as the camera moves)
+        // and often records the wrong face as nearest (a ~1 block shadow offset). Draw every face for the
+        // shadow pass. Restored right after, before the main terrain draw later this frame.
+        var performance = SodiumClientMod.options().performance;
+        boolean prevFaceCulling = performance.useBlockFaceCulling;
+        performance.useBlockFaceCulling = false;
         active = true;
         shadowColor = color;
         shadowDepth = depth;
@@ -90,6 +115,7 @@ public final class SodiumShadowRenderer {
                 RenderDevice.exitManagedCode();
             }
         } finally {
+            performance.useBlockFaceCulling = prevFaceCulling;
             active = false;
             shadowColor = null;
             shadowDepth = null;

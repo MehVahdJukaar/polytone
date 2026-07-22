@@ -93,6 +93,8 @@ public class ShadowMapRenderer {
     private final Vector3f lightDir = new Vector3f(0, 1, 0);  // toward the light -> PolyShadowLightDir
     private final Vector3f camFract = new Vector3f();  // fract(camPos) -> PolyShadowCamFract (grid anchor)
     private final List<SectionRenderDispatcher.RenderSection> shadowSections = new ArrayList<>();
+    // Block entities to draw this pass, gathered alongside the sections (or from Sodium's re-culled lists).
+    private final List<BlockEntity> shadowBlockEntities = new ArrayList<>();
 
     // Swap in freshly reloaded settings; force a fresh render (and lazy target rebuild) on the next frame.
     public void setSettings(ShadowMapSettings settings) {
@@ -209,10 +211,11 @@ public class ShadowMapRenderer {
         RenderSystem.setShaderFog(shaderFog);
 
         if (CompatHandler.SODIUM) {
-            // Under Sodium the vanilla ViewArea sections are uncompiled, so drawTerrain draws nothing;
-            // replay Sodium's own terrain from the light POV into the shadow attachments instead.
+            // Under Sodium the vanilla ViewArea sections are uncompiled, so drawTerrain draws nothing
+            // and collectShadowSections found no block entities either; replay Sodium's own terrain from
+            // the light POV into the shadow attachments and take its block entities from the same pass.
             SodiumShadowRenderer.replayTerrain(mc, cam, camPos, lightView, lightProj,
-                    coverage, depthRange, colorTexture, depthTexture);
+                    coverage, depthRange, colorTexture, depthTexture, shadowBlockEntities);
         } else {
             drawTerrain(mc, camPos, lightView);
         }
@@ -355,27 +358,26 @@ public class ShadowMapRenderer {
         }
     }
 
-    // Block entities (chests, banners, signs) hang off the section meshes we already collected, so the
-    // caster set matches the terrain cull. Extracted and submitted like vanilla's submitBlockEntities.
+    // Block entities (chests, banners, signs) aren't part of the terrain geometry; they were gathered
+    // with the sections (or from Sodium) so the caster set matches the terrain cull. Extracted and
+    // submitted like vanilla's submitBlockEntities.
     private void submitBlockEntities(Minecraft mc, BlockEntityRenderDispatcher beDispatcher,
                                      FeatureRenderDispatcher featureDispatcher, CameraRenderState camState,
                                      Vec3 camPos, PoseStack poseStack) {
         float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
-        for (SectionRenderDispatcher.RenderSection section : shadowSections) {
-            for (BlockEntity be : section.getSectionMesh().getRenderableBlockEntities()) {
-                BlockPos pos = be.getBlockPos();
-                poseStack.pushPose();
-                poseStack.translate(pos.getX() - camPos.x, pos.getY() - camPos.y, pos.getZ() - camPos.z);
-                try {
-                    var state = beDispatcher.tryExtractRenderState(be, partial, null);
-                    if (state != null) {
-                        beDispatcher.submit(state, poseStack, featureDispatcher.getSubmitNodeStorage(), camState);
-                    }
-                } catch (Exception e) {
-                    // Never let one broken block-entity renderer kill the frame.
+        for (BlockEntity be : shadowBlockEntities) {
+            BlockPos pos = be.getBlockPos();
+            poseStack.pushPose();
+            poseStack.translate(pos.getX() - camPos.x, pos.getY() - camPos.y, pos.getZ() - camPos.z);
+            try {
+                var state = beDispatcher.tryExtractRenderState(be, partial, null);
+                if (state != null) {
+                    beDispatcher.submit(state, poseStack, featureDispatcher.getSubmitNodeStorage(), camState);
                 }
-                poseStack.popPose();
+            } catch (Exception e) {
+                // Never let one broken block-entity renderer kill the frame.
             }
+            poseStack.popPose();
         }
     }
 
@@ -395,6 +397,7 @@ public class ShadowMapRenderer {
     // off-screen occluders still cast). Separating-axis test on the three light-space axes.
     private void collectShadowSections(Minecraft mc, Matrix4f lightView, Vec3 camPos) {
         shadowSections.clear();
+        shadowBlockEntities.clear();
         ViewArea viewArea = ((LevelRendererShadowAccessor) mc.levelRenderer).polytone$getViewArea();
         if (viewArea == null) return;
 
@@ -416,6 +419,7 @@ public class ShadowMapRenderer {
                     (float) (origin.getZ() + 8 - camPos.z));
             if (insideLightBox(lightView, center, coverage, depthRange, radX, radY, radZ)) {
                 shadowSections.add(section);
+                shadowBlockEntities.addAll(section.getSectionMesh().getRenderableBlockEntities());
             }
         }
     }
@@ -488,6 +492,7 @@ public class ShadowMapRenderer {
             uniforms = null;
         }
         shadowSections.clear();
+        shadowBlockEntities.clear();
         hasRendered = false;
     }
 }
