@@ -194,6 +194,10 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
         }
     }
 
+    public void clearCurrentPackConfigs() {
+        activeLoadConfigs.remove();
+    }
+
     // Overlay directories that apply for this pack version. Config definitions almost always live in
     // plain format/version overlays, so this is enough to make them visible before the real reload.
     private static List<String> collectFormatOverlays(PackResources primary, int version) {
