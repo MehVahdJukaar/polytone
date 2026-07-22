@@ -164,7 +164,6 @@ public class ShadowMapRenderer {
 
         float coverage = settings.coverage();
         float depthRange = settings.depthRange();
-        int shadowRes = settings.resolution();
 
         // Light direction: unit vector pointing FROM the scene TOWARD the sun (or moon at night).
         lightDir.set(computeLightDir(cam, partial));
@@ -177,16 +176,28 @@ public class ShadowMapRenderer {
         Matrix4f lightProj = new Matrix4f().ortho(
                 -coverage, coverage, -coverage, coverage, -depthRange, depthRange);
 
-        // Texel snap keeps world geometry on the same shadow texels frame to frame (stops edge shimmer).
-        // Anchored to the camera's CHUNK corner, not the world origin: the snap offset's sensitivity to a
-        // rotating sun scales with distance to the anchor, so a world-origin anchor shimmered badly far
-        // from spawn while a chunk-local one (<=16 blocks) does not. Doubles keep the mod exact.
+        // Texel snap keeps world geometry on the same shadow texels frame to frame, so the map doesn't
+        // slide with the camera. Anchored to the camera's CHUNK corner, not the world origin: the snap
+        // offset's sensitivity to a rotating sun scales with distance to the anchor, so a world-origin
+        // anchor shimmered badly far from spawn while a chunk-local one (<=16 blocks) does not.
+        // Doubles keep the mod exact.
+        //
+        // KNOWN, DELIBERATELY ACCEPTED ARTIFACT - do not "fix" by deleting this again. The offset is
+        // `anchor-in-light-space mod texel`, a sawtooth in the sun angle: as the sun turns it ramps
+        // across a full texel and wraps, roughly once a second (anchor <=16 blocks * 0.0052 rad/s sun
+        // rate / a 0.047 block texel at coverage 48 / res 2048). One lateral texel is 1/sin(elevation)
+        // blocks of GROUND - ~0.27 at a 10 degree sun, several PixelGridRes cells - so a rising sun's
+        // shadow edge creeps outward a few cells and snaps back instead of shrinking monotonically.
+        // That is NOT fixable by picking a better anchor: the light-space grid rotates about the
+        // camera, so any fixed world reference drifts by |offset from camera| * dTheta, and a smaller
+        // anchor only trades drift rate for a wrap at every block crossing. Removing the snap trades
+        // it for the whole shadow sliding while you walk, which the user judged clearly worse.
         double ax = camPos.x - Math.floor(camPos.x / 16.0) * 16.0;
         double ay = camPos.y - Math.floor(camPos.y / 16.0) * 16.0;
         double az = camPos.z - Math.floor(camPos.z / 16.0) * 16.0;
         double sx = lightView.m00() * ax + lightView.m10() * ay + lightView.m20() * az;
         double sy = lightView.m01() * ax + lightView.m11() * ay + lightView.m21() * az;
-        double texel = 2.0 * coverage / shadowRes; // world-space size of one shadow texel
+        double texel = 2.0 * coverage / settings.resolution(); // world-space size of one shadow texel
         lightProj.m30(lightProj.m30() + (float) ((sx - Math.round(sx / texel) * texel) / coverage));
         lightProj.m31(lightProj.m31() + (float) ((sy - Math.round(sy / texel) * texel) / coverage));
 
