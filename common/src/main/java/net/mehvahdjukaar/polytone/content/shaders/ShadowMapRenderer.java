@@ -16,6 +16,8 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.content.shaders.sodium.SodiumShadowRenderer;
 import net.mehvahdjukaar.polytone.mixins.accessor.LevelRendererShadowAccessor;
 import net.minecraft.util.Util;
 import net.minecraft.client.Camera;
@@ -206,7 +208,14 @@ public class ShadowMapRenderer {
         // (the main pass sets the same one at its own start).
         RenderSystem.setShaderFog(shaderFog);
 
-        drawTerrain(mc, camPos, lightView);
+        if (CompatHandler.SODIUM) {
+            // Under Sodium the vanilla ViewArea sections are uncompiled, so drawTerrain draws nothing;
+            // replay Sodium's own terrain from the light POV into the shadow attachments instead.
+            SodiumShadowRenderer.replayTerrain(mc, cam, camPos, lightView, lightProj,
+                    coverage, depthRange, colorTexture, depthTexture);
+        } else {
+            drawTerrain(mc, camPos, lightView);
+        }
         drawEntitiesAndBlockEntities(mc, level, camPos, lightView);
     }
 

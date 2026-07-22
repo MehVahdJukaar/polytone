@@ -35,11 +35,12 @@ dependencies {
     // modCompileOnly("curse.maven:farmers-delight-398521:5772720")
     //
 
-    modCompileOnly("curse.maven:sodium-394468:7366772")
+    // Sodium (NeoForge distribution) as a local mojmap jar, matching common. No neoforge source touches
+    // Sodium today (the shadow code lives in common), so this is just to keep it available/consistent.
+    compileOnly(files("mods/sodium-neoforge-mod-0.8.12.jar"))
     modCompileOnly("curse.maven:entity-model-features-844662:7400754")
     modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")
     modCompileOnly("curse.maven:serene-seasons-291874:6182596")
     modCompileOnly("curse.maven:irisshaders-455508:6369436")
-    modCompileOnly("curse.maven:sodium-394468:7366772")
 }
 

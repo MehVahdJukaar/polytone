@@ -25,7 +25,13 @@ dependencies {
 
     modCompileOnly ("curse.maven:serene-seasons-291874:6182596")
     modCompileOnly("curse.maven:irisshaders-455508:6369436")
-    modCompileOnly("curse.maven:sodium-394468:7366772")
+    // Sodium: compile against the NeoForge distribution's internal (mojmap-mapped) jar dropped in mods/,
+    // so common's Sodium shadow code resolves Minecraft types (ChunkSectionLayerGroup / GpuSampler /
+    // Camera) by their mojmap names. Plain compileOnly (NOT modCompileOnly): the jar is already mojmap,
+    // so it must not be run through loom remapping. The curse.maven Sodium (intermediary MC refs) is gone
+    // on purpose - having both on the classpath makes the same class read under two mappings.
+    compileOnly(files("mods/net.caffeinemc.sodium-neoforge-0.8.13+mc1.21.11-mod.jar"))
+
     modCompileOnly("curse.maven:entity-model-features-844662:7400754")
     modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")
 }

@@ -1,7 +1,11 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.mojang.blaze3d.textures.GpuSampler;
 import net.caffeinemc.mods.sodium.client.render.chunk.ShaderChunkRenderer;
+import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
+import net.caffeinemc.mods.sodium.client.util.FogParameters;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.shaders.sodium.SodiumShadowRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,6 +24,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * non-matching programs are untouched). Requires "Sodium Core Shader Support" for the override
  * shader to declare the blocks in the first place.
  *
+ * <p>We also drive the shadow-map terrain replay from here: {@code begin} has just bound the MAIN
+ * framebuffer from {@code TerrainRenderPass.getTarget()}, so during a shadow pass we repoint it at
+ * the shadow attachments (see {@link SodiumShadowRenderer}), and we capture the terrain atlas
+ * {@code GpuSampler} to feed back into the replay's {@code drawChunkLayer}.
+ *
  * <p>{@code require = 0}: this targets a Sodium internal that may change across versions; if the
  * method isn't found we silently no-op rather than crash.
  */
@@ -28,7 +37,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class SodiumChunkRendererMixin {
 
     @Inject(method = "begin", at = @At("TAIL"), remap = false, require = 0)
-    private void polytone$bindExtraUniforms(CallbackInfo ci) {
+    private void polytone$bindExtraUniforms(TerrainRenderPass pass, FogParameters parameters,
+                                            GpuSampler terrainSampler, CallbackInfo ci) {
+        SodiumShadowRenderer.captureTerrainSampler(terrainSampler);
+        SodiumShadowRenderer.rebindShadowFramebufferIfActive();
         Polytone.SHADER_EFFECTS.bindToCurrentGlProgram();
     }
 }

@@ -77,7 +77,8 @@
     "accessor.GlBufferAccessor",
     "accessor.LevelRendererShadowAccessor",
     "accessor.ParticleAccessor",
-    "accessor.PostPassAccessor"
+    "accessor.PostPassAccessor",
+    "accessor.SodiumWorldRendererShadowAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
