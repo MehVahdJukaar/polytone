@@ -199,32 +199,10 @@ public final class ParticlePreview extends ExpressionPreview {
     // Sprites come from the pack's already-registered particle of this id (baked into the atlas). The
     // edited form has none of its own, and building the atlas from the editor isn't worth it here.
     private @Nullable SpriteSet borrowSprites() {
-        // When editing a file the editor gives us `file`, not `contentId`; derive the id from the path.
-        ResourceLocation id = contentId != null ? contentId : idFromFile(file);
+        ResourceLocation id = PreviewIds.of(contentId, file, "custom_particles");
         if (id == null) return null;
         ICustomParticleFactory live = Polytone.CUSTOM_PARTICLES.customParticleFactories.getValue(id);
         return live instanceof CustomParticleType ct ? ct.getSpriteSet() : null;
-    }
-
-    // <pack>/assets/<namespace>/polytone/custom_particles/<path...>.json -> <namespace>:<path...>
-    private static @Nullable ResourceLocation idFromFile(@Nullable Path file) {
-        if (file == null) return null;
-        int n = file.getNameCount();
-        for (int i = 0; i + 3 < n; i++) {
-            if (file.getName(i).toString().equals("assets")
-                    && file.getName(i + 2).toString().equals(Polytone.MOD_ID)
-                    && file.getName(i + 3).toString().equals("custom_particles")) {
-                String ns = file.getName(i + 1).toString();
-                StringBuilder path = new StringBuilder();
-                for (int j = i + 4; j < n; j++) {
-                    if (!path.isEmpty()) path.append('/');
-                    path.append(file.getName(j).toString());
-                }
-                String p = path.toString().replaceFirst("\\.json$", "");
-                return p.isEmpty() ? null : ResourceLocation.fromNamespaceAndPath(ns, p);
-            }
-        }
-        return null;
     }
 
     // Pushes the latest frame's particle state into the HUD labels (called on the EDT after a frame).

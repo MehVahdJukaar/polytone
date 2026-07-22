@@ -16,6 +16,7 @@ import net.mehvahdjukaar.nautilus.workbench.CodecEntry;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.BiomeScenePreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ColormapPreview;
+import net.mehvahdjukaar.polytone.compat.nautilus.preview.CreativeTabPreviewPanel;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.GuiModifierPreviewPanel;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.NoisePreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ParticlePreview;
@@ -49,7 +50,8 @@ public final class PolytoneNautilus {
             "gui_modifiers", GuiModifierPreviewPanel::new,
             "custom_particles", ParticlePreview::new,
             "noises", NoisePreview::new,
-            "biome_modifiers", BiomeScenePreview::new);
+            "biome_modifiers", BiomeScenePreview::new,
+            "creative_tab_modifiers", CreativeTabPreviewPanel::new);
 
     // Bundled Nautilus icons reused by content folder - only the types with an obvious glyph;
     // the rest fall back to Nautilus' generic content icon.
@@ -65,6 +67,7 @@ public final class PolytoneNautilus {
             Map.entry("variant_textures", "image"),
             Map.entry("custom_sound_types", "volume-2"),
             Map.entry("custom_particles", "sparkles"),
+            Map.entry("creative_tab_modifiers", "grid-2x2"),
             Map.entry("custom_models", "box"),
             Map.entry("custom_item_models", "box"),
             Map.entry("dimension_modifiers", "globe"));

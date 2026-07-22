@@ -17,6 +17,7 @@
     "ClientLevelMixin",
     "ContainerScreenPickMixin",
     "ColorResolverMixin",
+    "CreativeScreenPickMixin",
     "DimensionSpecialEffectsMixin",
     "EntityModelSetMixin",
     "EntityRenderDispatcherMixin",
