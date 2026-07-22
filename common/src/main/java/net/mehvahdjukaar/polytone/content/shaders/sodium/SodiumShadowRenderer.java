@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import java.util.List;
@@ -46,6 +47,14 @@ public final class SodiumShadowRenderer {
     private static GpuTexture shadowColor = null;
     private static GpuTexture shadowDepth = null;
 
+    // GL framebuffer + viewport as they were before the first rebind of a replay, so the replay can put
+    // them back. Both vanilla (RenderPass) and Sodium (begin) bind their own target before drawing, so
+    // this is belt-and-braces - but we mutate raw GL state behind their backs, and anything that draws
+    // in between assuming the main target would otherwise land in the shadow map at shadow resolution.
+    private static boolean savedBinding = false;
+    private static int prevFbo = 0;
+    private static final int[] prevViewport = new int[4];
+
     // The block-atlas GpuSampler vanilla hands to the terrain draw. Captured from the main pass and fed
     // back into drawChunkLayer for the replay. Effectively constant, so last frame's is fine; null until
     // the first main terrain draw of the session (shadow terrain then appears one frame later).
@@ -61,10 +70,23 @@ public final class SodiumShadowRenderer {
     // (no Sodium types), so it's safe to call unconditionally from the mixin.
     public static void rebindShadowFramebufferIfActive() {
         if (!active || shadowColor == null || shadowDepth == null) return;
+        if (!savedBinding) {
+            prevFbo = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
+            GL11.glGetIntegerv(GL11.GL_VIEWPORT, prevViewport);
+            savedBinding = true;
+        }
         int fbo = ((GlTexture) shadowColor).getFbo(
                 ((GlDevice) RenderSystem.getDevice()).directStateAccess(), shadowDepth);
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);
         GlStateManager._viewport(0, 0, shadowColor.getWidth(0), shadowColor.getHeight(0));
+    }
+
+    // Undo whatever rebindShadowFramebufferIfActive did during the replay. No-op if it never fired.
+    private static void restoreFramebufferBinding() {
+        if (!savedBinding) return;
+        savedBinding = false;
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, prevFbo);
+        GlStateManager._viewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
     }
 
     // Replay Sodium's opaque terrain (SOLID + CUTOUT) from the light's POV into the shadow attachments,
@@ -80,56 +102,59 @@ public final class SodiumShadowRenderer {
         SodiumWorldRenderer swr = SodiumWorldRenderer.instanceNullable();
         if (swr == null) return; // renderer not up
 
-        boolean reCulled = reCull(mc, cam, lightView, camPos, coverage, depthRange);
-
-        // The render lists now hold the light-volume section set, so this yields exactly the block
-        // entities that can cast into the map (plus the global ones, which are never culled).
-        swr.iterateVisibleBlockEntities(blockEntitiesOut::add);
-
-        GpuSampler sampler = terrainSampler;
-        if (sampler == null) { // no atlas sampler captured yet: terrain draws from next frame on
-            if (reCulled) restoreCameraList();
-            return;
-        }
-
-        // Sodium culls each section's faces to those facing the CAMERA (getVisibleFaces keys off the
-        // CameraTransform we pass = the real camera). From the light's POV that drops the faces that
-        // actually occlude, so the depth map gets holes (light-leak bands that shift as the camera moves)
-        // and often records the wrong face as nearest (a ~1 block shadow offset). Draw every face for the
-        // shadow pass. Restored right after, before the main terrain draw later this frame.
-        var performance = SodiumClientMod.options().performance;
-        boolean prevFaceCulling = performance.useBlockFaceCulling;
-        performance.useBlockFaceCulling = false;
-        active = true;
-        shadowColor = color;
-        shadowDepth = depth;
+        // Claim the restore BEFORE touching the render lists: reCull mutates Sodium's shared state, so if
+        // anything from here on throws, the light-culled list must still be thrown away. Leaving it in
+        // place would make this frame's MAIN terrain draw use the sun's culling - chunks missing behind
+        // the camera, the classic "the world is being culled from the sun" symptom.
+        RenderSectionManager rsm = renderSectionManager();
+        boolean mutatedLists = rsm != null;
         try {
-            ChunkRenderMatrices matrices = new ChunkRenderMatrices(lightProj, lightView);
-            // Sodium's own renderGroup hook wraps drawChunkLayer in managed code (its GL-state tracking
-            // asserts on it); we drive drawChunkLayer directly, so we mirror that here.
-            RenderDevice.enterManagedCode();
+            if (mutatedLists) reCull(mc, rsm, cam, lightView, camPos, coverage, depthRange);
+
+            // The render lists now hold the light-volume section set, so this yields exactly the block
+            // entities that can cast into the map (plus the global ones, which are never culled).
+            swr.iterateVisibleBlockEntities(blockEntitiesOut::add);
+
+            GpuSampler sampler = terrainSampler;
+            if (sampler == null) return; // no atlas sampler captured yet: terrain draws from next frame on
+
+            // Sodium culls each section's faces to those facing the CAMERA (getVisibleFaces keys off the
+            // CameraTransform we pass = the real camera). From the light's POV that drops the faces that
+            // actually occlude, so the depth map gets holes (light-leak bands that shift as the camera moves)
+            // and often records the wrong face as nearest (a ~1 block shadow offset). Draw every face for the
+            // shadow pass. Restored right after, before the main terrain draw later this frame.
+            var performance = SodiumClientMod.options().performance;
+            boolean prevFaceCulling = performance.useBlockFaceCulling;
+            performance.useBlockFaceCulling = false;
+            active = true;
+            shadowColor = color;
+            shadowDepth = depth;
             try {
-                swr.drawChunkLayer(ChunkSectionLayerGroup.OPAQUE, matrices,
-                        camPos.x, camPos.y, camPos.z, sampler);
+                ChunkRenderMatrices matrices = new ChunkRenderMatrices(lightProj, lightView);
+                // Sodium's own renderGroup hook wraps drawChunkLayer in managed code (its GL-state tracking
+                // asserts on it); we drive drawChunkLayer directly, so we mirror that here.
+                RenderDevice.enterManagedCode();
+                try {
+                    swr.drawChunkLayer(ChunkSectionLayerGroup.OPAQUE, matrices,
+                            camPos.x, camPos.y, camPos.z, sampler);
+                } finally {
+                    RenderDevice.exitManagedCode();
+                }
             } finally {
-                RenderDevice.exitManagedCode();
+                performance.useBlockFaceCulling = prevFaceCulling;
+                active = false;
+                shadowColor = null;
+                shadowDepth = null;
+                restoreFramebufferBinding();
             }
         } finally {
-            performance.useBlockFaceCulling = prevFaceCulling;
-            active = false;
-            shadowColor = null;
-            shadowDepth = null;
-            if (reCulled) restoreCameraList();
+            if (mutatedLists) restoreCameraList();
         }
     }
 
-    // Re-cull Sodium's terrain list against the light volume. Returns false (nothing done) if Sodium's
-    // renderer isn't up yet, in which case there's no camera list to restore.
-    private static boolean reCull(Minecraft mc, Camera camera, Matrix4f lightView, Vec3 camPos,
-                                  float coverage, float depthRange) {
-        RenderSectionManager rsm = renderSectionManager();
-        if (rsm == null) return false;
-
+    // Re-cull Sodium's terrain list against the light volume.
+    private static void reCull(Minecraft mc, RenderSectionManager rsm, Camera camera, Matrix4f lightView,
+                               Vec3 camPos, float coverage, float depthRange) {
         SodiumLightVolumeFrustum frustum = new SodiumLightVolumeFrustum(
                 lightView, coverage, depthRange, Viewport.CHUNK_SECTION_PADDED_RADIUS);
         Viewport viewport = new Viewport(frustum, new Vector3d(camPos.x, camPos.y, camPos.z));
@@ -145,10 +170,11 @@ public final class SodiumShadowRenderer {
         } finally {
             mc.smartCull = smartCull;
         }
-        return true;
     }
 
-    // Force Sodium to rebuild the camera render list next frame (before the main terrain draw).
+    // Throw away the light-culled list so Sodium rebuilds it for the camera. markGraphDirty makes
+    // needsUpdate() true, and Sodium's own setupTerrain runs later in this same renderLevel (we hook its
+    // HEAD), so the rebuild lands before the main terrain draw rather than a frame late.
     private static void restoreCameraList() {
         RenderSectionManager rsm = renderSectionManager();
         if (rsm != null) rsm.markGraphDirty();

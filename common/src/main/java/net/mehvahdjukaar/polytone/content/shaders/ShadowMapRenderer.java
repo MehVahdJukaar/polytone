@@ -25,6 +25,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DynamicUniforms;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.ViewArea;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
@@ -349,8 +350,12 @@ public class ShadowMapRenderer {
 
             submitBlockEntities(mc, beDispatcher, featureDispatcher, camState, camPos, poseStack);
 
-            featureRenderSafely(featureDispatcher, bufferSource);
+            featureRenderSafely(mc, featureDispatcher, bufferSource);
         } finally {
+            // Don't hold the casters past the pass - the list survives until the next render, which may
+            // never come (post chain disabled, level unloaded) and would pin block entities from a level
+            // that's already gone.
+            shadowBlockEntities.clear();
             RenderSystem.outputColorTextureOverride = null;
             RenderSystem.outputDepthTextureOverride = null;
             mvStack.popMatrix();
@@ -381,13 +386,35 @@ public class ShadowMapRenderer {
         }
     }
 
-    // A caught-but-partial submit above can leave a broken node behind; guard the flush so a throw
-    // can't escape and skip the global-state restore in the caller's finally.
-    private static void featureRenderSafely(FeatureRenderDispatcher featureDispatcher,
+    // Flush everything this pass submitted, and make sure NOTHING it produced survives into the main
+    // pass. Both halves matter:
+    //  - renderAllFeatures clears the submit-node storage on its last line, so a throw partway through
+    //    would leave our light-POV nodes queued in the storage the main pass then renders - the same
+    //    entity drawn a second time with the sun's matrices. Clear it ourselves on failure.
+    //  - the feature renderers also write into the outline and crumbling buffer sources, which
+    //    endBatch() on the main source does not touch. Anything left there is flushed later by the main
+    //    pass, i.e. drawn with the camera matrices from light-POV vertices. Drain all three here.
+    // Nothing may escape either: the caller's finally still has to restore the global matrices.
+    private static void featureRenderSafely(Minecraft mc, FeatureRenderDispatcher featureDispatcher,
                                             MultiBufferSource.BufferSource bufferSource) {
         try {
             featureDispatcher.renderAllFeatures();
-            bufferSource.endBatch();
+        } catch (Exception e) {
+            Polytone.LOGGER.error("Error rendering polytone shadow features", e);
+            try {
+                featureDispatcher.getSubmitNodeStorage().clear();
+            } catch (Exception ignored) {
+            }
+        }
+        RenderBuffers buffers = mc.renderBuffers();
+        drainSafely(bufferSource::endBatch);
+        drainSafely(buffers.outlineBufferSource()::endOutlineBatch);
+        drainSafely(buffers.crumblingBufferSource()::endBatch);
+    }
+
+    private static void drainSafely(Runnable endBatch) {
+        try {
+            endBatch.run();
         } catch (Exception e) {
             Polytone.LOGGER.error("Error flushing polytone shadow entity batch", e);
         }
