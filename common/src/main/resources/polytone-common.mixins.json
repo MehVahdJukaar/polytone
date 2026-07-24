@@ -24,6 +24,7 @@
     "ContainerScreenPickMixin",
     "ColorResolverMixin",
     "ContextualBarRendererMixin",
+    "CreativeScreenPickMixin",
     "EntityModelSetMixin",
     "EntityRendererDispatcherMixin",
     "EntityRendererMixin",

@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import net.mehvahdjukaar.nautilus.swing.preview.PreviewStatus;
 import net.mehvahdjukaar.nautilus.swing.preview.PreviewSurface;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
-import net.mehvahdjukaar.nautilus.swing.toolkit.GroupPanels;
 import net.mehvahdjukaar.nautilus.swing.toolkit.StyledLabels;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiICons;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
@@ -25,7 +24,6 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 
@@ -156,58 +154,25 @@ public final class GuiModifierPreviewPanel implements TabPreview {
     // --- layout ---------------------------------------------------------------------------------
 
     private void buildLayout() {
-        // Sticky header: title on one row, status underneath.
-        Box toolbar = Box.createVerticalBox();
-        JLabel title = StyledLabels.of("Live GUI Preview", l -> l.setFont(l.getFont().deriveFont(Font.BOLD)));
-        title.setIcon(UiICons.viewPanel());
-        title.setIconTextGap(UiScale.small());
-        addRow(toolbar, title);
-        addRow(toolbar, status);
+        Box toolbar = PreviewPanels.header("Live GUI Preview", status);
 
         Box content = Box.createVerticalBox();
-
-        addRow(content, ellipsizing(StyledLabels.small("Edits preview on the live game screen.")));
+        PreviewPanels.addRow(content, PreviewPanels.ellipsizing(
+                StyledLabels.small("Edits preview on the live game screen.")));
         content.add(Box.createVerticalStrut(UiScale.small()));
+        PreviewPanels.addCtaWithUndo(content, reloadButton, undoButton);
 
-        // Primary action: the reload loop. Full-width CTA, with a subtle undo beneath it.
-        addRow(content, reloadButton);
-        Box undoRow = Box.createHorizontalBox();
-        undoRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        undoRow.add(Box.createHorizontalGlue());
-        undoRow.add(undoButton);
-        addRow(content, undoRow);
-        content.add(Box.createVerticalStrut(UiScale.med()));
-
-        // Setup helpers, grouped and visually secondary to the CTA above.
-        JPanel group = GroupPanels.outlined();
-        group.setLayout(new BoxLayout(group, BoxLayout.Y_AXIS));
-        group.setAlignmentX(Component.LEFT_ALIGNMENT);
-        addRow(group, StyledLabels.muted("Inspect & target"));
-        addRow(group, detectButton);
-        addRow(group, detectReadout.component());
+        JPanel group = PreviewPanels.outlinedGroup("Inspect & target");
+        PreviewPanels.addRow(group, detectButton);
+        PreviewPanels.addRow(group, detectReadout.component());
         group.add(Box.createVerticalStrut(UiScale.med()));
-        addRow(group, pickToggle);
-        addRow(group, ellipsizing(pickActive));
-        addRow(group, pickReadout.component());
+        PreviewPanels.addRow(group, pickToggle);
+        PreviewPanels.addRow(group, PreviewPanels.ellipsizing(pickActive));
+        PreviewPanels.addRow(group, pickReadout.component());
         content.add(group);
 
         root = new PreviewSurface(toolbar, content);
         root.setMinimumSize(new Dimension(UiScale.px(180), UiScale.px(140)));
-    }
-
-    private static void addRow(JComponent box, JComponent comp) {
-        comp.setAlignmentX(Component.LEFT_ALIGNMENT);
-        comp.setMaximumSize(UiScale.maxHeightHugging(comp));
-        box.add(comp);
-        box.add(Box.createVerticalStrut(UiScale.small()));
-    }
-
-    // Let a label shrink below its text width so it ellipsizes (with the full text in its tooltip)
-    // instead of forcing the panel wider or clipping off the edge.
-    private static JLabel ellipsizing(JLabel label) {
-        label.setToolTipText(label.getText());
-        label.setMinimumSize(new Dimension(0, label.getPreferredSize().height));
-        return label;
     }
 
     // --- a labelled value with a copy button, used for the detect/pick read-outs -----------------

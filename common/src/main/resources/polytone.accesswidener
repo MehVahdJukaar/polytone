@@ -105,6 +105,8 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockState
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase spawnTerrainParticles Z
 
 accessible field net/minecraft/world/item/CreativeModeTabs CACHED_PARAMETERS Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;
+# editor creative tab picker: which tab the open creative screen is showing
+accessible field net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen selectedTab Lnet/minecraft/world/item/CreativeModeTab;
 
 accessible class net/minecraft/client/gui/Gui$HeartType
 

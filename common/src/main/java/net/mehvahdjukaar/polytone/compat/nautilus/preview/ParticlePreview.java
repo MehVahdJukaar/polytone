@@ -223,33 +223,13 @@ public final class ParticlePreview extends ExpressionPreview {
 
     // Sprites come from the pack's already-registered particle of this id (baked into the atlas).
     private @Nullable SpriteSet borrowSprites() {
-        Identifier id = contentId != null ? contentId : idFromFile(file);
+        Identifier id = PreviewIds.of(contentId, file, "custom_particles");
         if (id == null) return null;
         ICustomParticleFactory live = Polytone.CUSTOM_PARTICLES.customParticleFactories.getValue(id);
         return live instanceof CustomParticleType ct ? ct.getSpriteSet() : null;
     }
 
-    // <pack>/assets/<namespace>/polytone/custom_particles/<path...>.json -> <namespace>:<path...>
-    private static @Nullable Identifier idFromFile(@Nullable Path file) {
-        if (file == null) return null;
-        int n = file.getNameCount();
-        for (int i = 0; i + 3 < n; i++) {
-            if (file.getName(i).toString().equals("assets")
-                    && file.getName(i + 2).toString().equals(Polytone.MOD_ID)
-                    && file.getName(i + 3).toString().equals("custom_particles")) {
-                String ns = file.getName(i + 1).toString();
-                StringBuilder path = new StringBuilder();
-                for (int j = i + 4; j < n; j++) {
-                    if (!path.isEmpty()) path.append('/');
-                    path.append(file.getName(j).toString());
-                }
-                String p = path.toString().replaceFirst("\\.json$", "");
-                return p.isEmpty() ? null : Identifier.fromNamespaceAndPath(ns, p);
-            }
-        }
-        return null;
-    }
-
+    // Pushes the latest frame's particle state into the HUD labels (called on the EDT after a frame).
     private void updateReadout() {
         ParticleScene.Snapshot s = renderer.snapshot;
         if (s == null) {
