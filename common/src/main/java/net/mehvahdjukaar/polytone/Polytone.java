@@ -123,6 +123,8 @@ public class Polytone {
 
 
     public static void init(boolean devEnv, boolean forge) {
+        // CONFIGS goes first (see MANAGERS ordering): config values feed require_config conditions and
+        // config() expressions used by everything else, so they must be up to date before any other reloader parses.
         COMPOUND_RELOADER = new PolytoneReloadManager(MANAGERS.stream()
                 .filter(m -> m != LIGHTMAPS) // lightmaps reload through their own path
                 .toArray(ContentManager[]::new));

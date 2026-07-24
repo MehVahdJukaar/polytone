@@ -92,17 +92,16 @@ public class PolytoneReloadManager implements PreparableReloadListener {
 
         RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
 
+        // A single broken reloader must not skip the ones after it: keep going and rethrow at the end,
+        // otherwise e.g. a shader failure leaves configs unparsed and every config() expression reads 0.
+        RuntimeException failure = null;
+
         for (int i = 0; i < childrenResourcesCache.size(); i++) {
             ContentManager<?> c = children.get(i);
             try {
                 c.parseWithLevel(childrenResourcesCache.get(i), ops, registryAccess);
-            } catch (Throwable e) {
-                String message = c + " failed to parse some resources";
-                Polytone.logException(e, message);
-                Polytone.iMessedUp = true;
-
-                Polytone.LOGGER.error(message);
-                throw e;
+            } catch (Exception e) {
+                failure = recordFailure(c, e, "parse", failure);
             }
         }
 
@@ -110,14 +109,11 @@ public class PolytoneReloadManager implements PreparableReloadListener {
             try {
                 c.applyWithLevel(registryAccess, firstLogin);
             } catch (Exception e) {
-                String message = c + " failed to apply some resources";
-                Polytone.logException(e, message);
-                Polytone.iMessedUp = true;
-
-                Polytone.LOGGER.error(message);
-                throw e;
+                failure = recordFailure(c, e, "apply", failure);
             }
         }
+
+        if (failure != null) throw failure;
 
         Polytone.LOGGER.info("Reloaded Polytone AssetsFiles in {} ms", stopwatch.elapsed().toMillis());
 
@@ -140,6 +136,19 @@ public class PolytoneReloadManager implements PreparableReloadListener {
 
         EnvironmentAttributesHandler.refresh();
 
+    }
+
+    private static RuntimeException recordFailure(ContentManager<?> reloader, Exception e, String stage,
+                                                  RuntimeException previous) {
+        String message = reloader + " failed to " + stage + " some resources";
+        Polytone.logException(e, message);
+        Polytone.iMessedUp = true;
+        Polytone.LOGGER.error(message);
+        if (previous != null) {
+            previous.addSuppressed(e);
+            return previous;
+        }
+        return e instanceof RuntimeException re ? re : new RuntimeException(message, e);
     }
 
     public void resetWithLevel(boolean isLogOff) {

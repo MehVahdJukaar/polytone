@@ -42,6 +42,7 @@ classes/
 /resourcepacks/config_test/assets/config_test/polytone/config_entries/d_scale.json
 /resourcepacks/config_test/assets/config_test/lang/en_us.json
 /resourcepacks/config_test/pack.mcmeta
+/common/mods/net.caffeinemc.sodium-neoforge-0.8.13+mc1.21.11-mod.jar
 /resourcepacks/shadowmap_debug/pack.mcmeta
 /resourcepacks/shadowmap_debug/assets/shadowdbg/polytone/shadow_map.json
 /resourcepacks/shadowmap_debug/assets/shadowdbg/shaders/post/shadows.fsh

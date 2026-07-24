@@ -228,6 +228,10 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         }
     }
 
+    public void clearCurrentPackConfigs() {
+        activeLoadConfigs.remove();
+    }
+
     public boolean isLenientLoading() {
         return lenientLoading.get();
     }
