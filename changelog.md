@@ -1,1 +1,1 @@
-- added shadowmap in 1.21.11
+- added pack info button
