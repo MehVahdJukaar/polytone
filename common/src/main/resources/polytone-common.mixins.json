@@ -41,6 +41,7 @@
     "ModelBlockRendererMixin",
     "OptionsMixin",
     "OverlayMetadataSectionMixin",
+    "PackEntryMixin",
     "PackSelectScreenMixin",
     "PaintingRendererMixin",
     "ParticleEngineMixin",

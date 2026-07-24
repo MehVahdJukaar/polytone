@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.packinfo.PackInfos;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.repository.Pack;
@@ -23,6 +24,7 @@ public class PackMixin {
                                                     CallbackInfoReturnable<Pack.Metadata> cir,
                                                     @Local PackResources packResources) {
         Polytone.CONFIGS.loadCurrentPackConfigs(packResources, resources, location, version);
+        PackInfos.readFrom(packResources, packType);
     }
 
     // The per-pack registry is only meant to be visible while this pack's own overlay conditions are being
