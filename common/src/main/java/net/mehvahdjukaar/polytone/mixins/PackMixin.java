@@ -24,7 +24,7 @@ public class PackMixin {
                                                     CallbackInfoReturnable<Pack.Metadata> cir,
                                                     @Local PackResources packResources) {
         Polytone.CONFIGS.loadCurrentPackConfigs(packResources, resources, location, version);
-        PackInfos.readFrom(packResources, packType);
+        PackInfos.readFrom(packResources);
     }
 
     // The per-pack registry is only meant to be visible while this pack's own overlay conditions are being

@@ -2,8 +2,7 @@ package net.mehvahdjukaar.polytone.content.packinfo;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.PackType;
-import org.jspecify.annotations.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,9 +11,8 @@ public class PackInfos {
 
     private static final Map<String, PackInfo> BY_PACK_ID = new ConcurrentHashMap<>();
 
-    public static void readFrom(PackResources packResources, PackType packType) {
-        if (packType != PackType.CLIENT_RESOURCES) return;
-        String id = packResources.location().id();
+    public static void readFrom(PackResources packResources) {
+        String id = packResources.packId();
         try {
             PackInfo info = packResources.getMetadataSection(PackInfo.TYPE);
             if (info != null && !info.isEmpty()) {

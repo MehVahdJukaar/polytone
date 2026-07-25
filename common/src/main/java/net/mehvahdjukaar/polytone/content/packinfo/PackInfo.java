@@ -15,7 +15,7 @@ public record PackInfo(Optional<Component> title, Optional<Component> content) {
             ComponentSerialization.CODEC.optionalFieldOf("content").forGetter(PackInfo::content)
     ).apply(i, PackInfo::new));
 
-    public static final MetadataSectionType<PackInfo> TYPE = new MetadataSectionType<>("polytone", CODEC);
+    public static final MetadataSectionType<PackInfo> TYPE = MetadataSectionType.fromCodec("polytone", CODEC);
 
     public boolean isEmpty() {
         return title.isEmpty() && content.isEmpty();

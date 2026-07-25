@@ -1,2 +1,2 @@
- - added nautilus studio previews for colormaps, biome modifiers and particles
- - big internal restructures
+fixed a memory leak in codecui 
+added pack info button
