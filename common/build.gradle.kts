@@ -25,7 +25,10 @@ dependencies {
 
     // No 26.1 builds yet
     // modCompileOnly ("curse.maven:serene-seasons-291874:6182596")
-    // modCompileOnly("curse.maven:irisshaders-455508:6369436")
+
+    // Iris — NeoForge distribution for the same reason as Sodium below: it's already mojmap, so
+    // nothing on common's classpath reads Minecraft under a second set of mappings.
+    modCompileOnly("maven.modrinth:iris:1.11.2+26.1-neoforge")
     // Sodium: compile against the NeoForge distribution's internal (mojmap-mapped) jar dropped in mods/,
     // so common's Sodium shadow code resolves Minecraft types (ChunkSectionLayerGroup / GpuSampler /
     // Camera) by their mojmap names. Plain compileOnly (NOT modCompileOnly): the jar is already mojmap,

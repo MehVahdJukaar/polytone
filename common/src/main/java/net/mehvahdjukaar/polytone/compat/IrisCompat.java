@@ -1,17 +1,30 @@
 package net.mehvahdjukaar.polytone.compat;
 
-// Stub - no Iris 26.1 build available yet
+import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.api.v0.IrisApi;
+import net.irisshaders.iris.api.v0.IrisProgram;
+import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
+import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
+import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
+
 public class IrisCompat {
 
     public static void init() {
-        // When an Iris 26.1 build lands, restore the pipeline assignments:
-        // LEASH_PIPELINE -> IrisProgram.BLOCK (PARTICLES gives a red/green overlay, TEXTURED/BASIC glow),
-        // ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE -> PARTICLES_TRANSLUCENT,
-        // ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE -> BLOCK_TRANSLUCENT.
+        //TEXTURED -> glowing
+        //Particles -> red green overlay
+        //BASIC -> glowing
+        //BLOCK works??
+        IrisApi.getInstance().assignPipeline(PolytoneRenderTypes.LEASH_PIPELINE, IrisProgram.BLOCK);
+        IrisApi.getInstance().assignPipeline(PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE, IrisProgram.PARTICLES_TRANSLUCENT);
+        IrisApi.getInstance().assignPipeline(PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE, IrisProgram.BLOCK_TRANSLUCENT);
     }
 
 
     public static boolean isIrisRenderOn() {
+        WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
+        if (pipeline instanceof ShaderRenderingPipeline s) {
+            return s.shouldOverrideShaders();
+        }
         return false;
     }
 }
