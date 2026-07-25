@@ -22,7 +22,6 @@ import net.mehvahdjukaar.polytone.common.PolytoneModelCodecs;
 import net.mehvahdjukaar.polytone.common.companion.ContentTextures;
 import net.mehvahdjukaar.polytone.common.companion.TextureSlot;
 import net.mehvahdjukaar.polytone.compat.nautilus.BedrockImports;
-import net.mehvahdjukaar.polytone.compat.nautilus.preview.BiomeScenePreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ColormapPreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.CreativeTabPreviewPanel;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.GuiModifierPreviewPanel;
@@ -75,7 +74,7 @@ public final class PackEditor {
             "colormaps", ColormapPreview::new,
             "noises", NoisePreview::new,
             "gui_modifiers", GuiModifierPreviewPanel::new,
-            "biome_modifiers", BiomeScenePreview::new,
+            // biome_modifiers: the diorama can't draw its blocks on 26.1 yet, see BiomeSceneRenderPass#drawBlocks
             "custom_particles", ParticlePreview::new,
             "creative_tab_modifiers", CreativeTabPreviewPanel::new);
 
