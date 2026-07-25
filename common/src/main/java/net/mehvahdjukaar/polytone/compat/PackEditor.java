@@ -21,6 +21,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.PolytoneModelCodecs;
 import net.mehvahdjukaar.polytone.common.companion.ContentTextures;
 import net.mehvahdjukaar.polytone.common.companion.TextureSlot;
+import net.mehvahdjukaar.polytone.compat.nautilus.BedrockImports;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.BiomeScenePreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ColormapPreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.CreativeTabPreviewPanel;
@@ -103,6 +104,7 @@ public final class PackEditor {
         // Widget bindings must exist before any schema resolves (companion registrations only).
         registerWidgetBindings();
         registerContentEntries();
+        BedrockImports.register();
     }
 
     /** Open (or focus) the editor window. Any thread. */
