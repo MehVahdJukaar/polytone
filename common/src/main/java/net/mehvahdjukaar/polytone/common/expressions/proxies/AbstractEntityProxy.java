@@ -24,7 +24,7 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
 
     @Override
     protected BlockPos getPosInternal() {
-        return entity().getOnPos();
+        return entity().blockPosition();
     }
 
     public String name() {

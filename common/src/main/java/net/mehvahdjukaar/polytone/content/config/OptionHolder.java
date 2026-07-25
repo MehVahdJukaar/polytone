@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
@@ -61,19 +62,39 @@ public class OptionHolder<T> {
         AtomicReference<T> lastKnownValue = new AtomicReference<>(config.getDefaultValue());
 
         OptionInstance.CaptionBasedToString<T> toStr = (name, value) -> {
-            Optional<String> valueTranslationKey = config.getValueTranslationKey();
-
-            MutableComponent valueName = valueTranslationKey.map(s -> Component.translatable(s, value))
-                    .orElseGet(() -> Component.literal(value + ""));
+            MutableComponent valueName;
+            // Per-value label by convention on the config's own key, no JSON field needed:
+            // "config.recrafted.recrafted_gui.true": "Recrafted" / ".false": "Vanilla".
+            String perValueKey = id.toLanguageKey("config") + "." + value;
+            if (I18n.exists(perValueKey)) {
+                valueName = Component.translatable(perValueKey);
+            } else if (config.getValueTranslationKey().isPresent()) {
+                // Pre-existing value_translation: key used as a format string with the raw value.
+                valueName = Component.translatable(config.getValueTranslationKey().get(), value);
+            } else {
+                // Default: ON/OFF for booleans, numeric/string label otherwise.
+                valueName = config.formatValue(value);
+            }
             if (!lastKnownValue.get().equals(value)) valueName.withStyle(ChatFormatting.AQUA);
             return Options.genericValueLabel(name, valueName);
         };
 
+        MutableComponent tooltip = Component.translatable(id.toLanguageKey("config", "tooltip"));
+
+        // Entries with a preview image or impact line get their full tooltip rendered by
+        // ConfigScreen; suppress the built-in text tooltip for those so the two don't stack.
+        boolean customRendered = !config.getTooltipImages().isEmpty()
+                || config.getPerformanceImpact().isPresent();
+        OptionInstance.TooltipSupplier<T> tooltipSupplier = customRendered
+                ? OptionInstance.noTooltip()
+                : OptionInstance.cachedConstantTooltip(tooltip);
+
         var opt = new OptionInstance<>(id.toLanguageKey("config"),
-                OptionInstance.cachedConstantTooltip(Component.translatable(id.toLanguageKey("config", "tooltip"))),
+                tooltipSupplier,
                 toStr, config,
-                config.codec(), config.getDefaultValue(), (v) -> {
-        }
+                config.codec(), config.getDefaultValue(),
+                // lets the config screen re-derive its preset sliders when values change
+                (v) -> ConfigScreen.onOptionValueChanged()
         );
         return new OptionHolder<>(opt, id, lastKnownValue);
     }

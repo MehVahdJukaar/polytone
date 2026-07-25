@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -16,8 +16,10 @@ import org.joml.Vector3f;
 //Extended facing camera mode
 public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
 
-    Codec<IRotationProvider> CODEC = CodecUtils.alternatives(
-            CustomRotation.CODEC, CustomFacingRotation.CODEC, RotationMode.CODEC);
+    Codec<IRotationProvider> CODEC = SchemaCodecs.alternatives(
+            "rotation", CustomRotation.CODEC,
+            "facing", CustomFacingRotation.CODEC,
+            "mode", RotationMode.CODEC);
 
     //if false we store old rot and interpolate
     default boolean updatesEveryRenderTick() {

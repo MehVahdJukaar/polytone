@@ -4,11 +4,12 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
-import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.core.HolderLookup;
@@ -22,11 +23,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
-public class ParticleModifiersManager extends JsonImgPartialReloader {
+public class ParticleModifiersManager extends ContentManager<ParticleModifier> {
 
     private final Multimap<ParticleType<?>, ParticleModifier> particleModifiers = HashMultimap.create();
     @Nullable
@@ -34,8 +31,14 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
     @Nullable
     private ParticleOptions xpOrbReplaceParticle = null;
 
+    private static final TexturePart<ParticleModifier> COLORMAP =
+            TexturePart.plain(ParticleModifier::getColormap);
+
     public ParticleModifiersManager() {
-        super("particle_modifiers");
+        super(Spec.of("Particle modifier", () -> ParticleModifier.CODEC)
+                .wikiPage("Particle-Modifiers")
+                .textureParts(COLORMAP)
+                .folders("particle_modifiers"));
     }
 
     public void maybeModify(ParticleOptions options, ClientLevel level, @NotNull Particle particle) {
@@ -48,16 +51,12 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var jsons = resources.jsons();
-        var textures = new HashMap<>(resources.textures());
+        var textures = new TrackedTextures(resources.textures());
 
-        Set<Identifier> usedTextures = new HashSet<>();
-
-        Parsed.SortedMap<ParticleModifier> parsedModifiers = Parsed.batchParseOrPartial(jsons,
-                ParticleModifier.CODEC,
-                ParticleModifier.PARTIAL_CODEC,
-                ops, "particle modifier");
+        Parsed.SortedMap<ParticleModifier> parsedModifiers =
+                parseJsonsOrPartial(jsons, ParticleModifier.PARTIAL_CODEC, ops);
 
 
         // add all modifiers (with or without texture)
@@ -66,27 +65,21 @@ public class ParticleModifiersManager extends JsonImgPartialReloader {
             Parsed<ParticleModifier> parsed = entry.getValue();
             ParticleModifier modifier = parsed.getResultOrPartial();
 
-            if (!modifier.hasColormap() && textures.containsKey(id)) {
-                //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
+            // auto-attach a default colormap when a texture exists but none is declared,
+            // then fill inline colormaps from the scanned textures
+            if (!contentTexture.adoptable(textures, id, modifier).isEmpty()) {
                 modifier.setColormap(Colormap.createDefTriangle());
             }
-
-            //fill inline colormaps colormapTextures
-            IColorGetter tint = modifier.getColormap();
-            ColormapsManager.tryAcceptingTexture(textures, id, tint, usedTextures, true);
+            contentTexture.fill(textures, id, modifier, true);
 
             if (parsed.isEnabled()) this.addModifier(id, modifier);
         }
 
         // creates orphaned texture colormaps & properties
-        textures.keySet().removeAll(usedTextures);
-
-        for (var t : textures.entrySet()) {
-            Identifier id = t.getKey();
-            Colormap defaultColormap = Colormap.createDefTriangle();
-            ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
-
-            addModifier(id, ParticleModifier.ofColormap(defaultColormap));
+        for (var orphan : contentTexture.orphans(textures, parsedModifiers.keySet())) {
+            ParticleModifier modifier = ParticleModifier.ofColormap(Colormap.createDefTriangle());
+            contentTexture.fill(textures, orphan.stemId(), modifier, true);
+            addModifier(orphan.stemId(), modifier);
         }
 
         if (this.xpOrbReplaceJson != null) {

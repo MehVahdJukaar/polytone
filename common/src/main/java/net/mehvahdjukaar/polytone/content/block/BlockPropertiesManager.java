@@ -7,10 +7,12 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.LegacyHelper;
 import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.reloader.PartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.struc.PropertiesUtils;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -35,7 +37,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManager.Resources> {
+public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier> {
+
+    // legacy OptiFine/Colormatic .properties — scanned from other mods' dirs, not our folder
+    private Map<Identifier, Properties> ofProperties = Map.of();
 
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();
 
@@ -49,8 +54,14 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
     private ColorResolver vanillaGrassColorResolver = null;
     private ColorResolver vanillaFoliageColorResolver = null;
 
+    private static final TexturePart<BlockPropertyModifier> TINTS =
+            TexturePart.tinted(BlockPropertyModifier::getColormap);
+
     public BlockPropertiesManager() {
-        super("block_modifiers", "block_properties");
+        super(Spec.of("Block modifier", () -> BlockPropertyModifier.CODEC)
+                .wikiPage("Block-Properties-Modifiers")
+                .textureParts(TINTS)
+                .folders("block_modifiers", "block_properties"));
     }
 
 
@@ -76,14 +87,8 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         return terrainParticleTintOverrides.get(block);
     }
 
-    public record Resources(Map<Identifier, JsonElement> jsons,
-                            Map<Identifier, ArrayImage> textures,
-                            Map<Identifier, Properties> ofProperties) {
-
-    }
-
     @Override
-    protected Resources prepare(PreparableReloadListener.SharedState sharedState) {
+    protected AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
         var resourceManager = sharedState.resourceManager();
         var jsons = this.getJsonsInDirectories(resourceManager);
 
@@ -109,31 +114,27 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
         Map<Identifier, ArrayImage> myTextures = this.getImagesInDirectories(resourceManager);
         textures.putAll(myTextures);
 
-        return new Resources(
-                ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures),
-                ImmutableMap.copyOf(LegacyHelper.convertPaths(ofProperties)));
+        this.ofProperties = ImmutableMap.copyOf(LegacyHelper.convertPaths(ofProperties));
+        return new AssetsFiles(jsons, textures);
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
 
         var jsons = resources.jsons();
-        var textures = ArrayImage.groupTextures(resources.textures());
-        var textureCopy = new HashMap<>(resources.textures);
-        Set<Identifier> usedTextures = new HashSet<>();
+        var textures = new TrackedTextures(resources.textures());
+        var rawTextures = resources.textures();
 
         LinkedListMultimap<Identifier, Parsed<BlockPropertyModifier>> parsedModifiers = LinkedListMultimap.create();
-        LegacyHelper.convertBlockProperties(resources.ofProperties, textureCopy).forEach(parsedModifiers::put);
+        LegacyHelper.convertBlockProperties(this.ofProperties, rawTextures).forEach(parsedModifiers::put);
         LegacyHelper.convertInlinedPalettes(optifineColormapsToBlocks).forEach(parsedModifiers::put);
 
-        LegacyHelper.convertOfBlockToFluidProp(parsedModifiers, textureCopy);
-        LegacyHelper.convertOfBlockToDimensionProperties(parsedModifiers, textureCopy);
+        LegacyHelper.convertOfBlockToFluidProp(parsedModifiers, rawTextures);
+        LegacyHelper.convertOfBlockToDimensionProperties(parsedModifiers, rawTextures);
 
 
         // parse jsons
-        var parsedJsons = Parsed.batchParseOrPartial(jsons,
-                BlockPropertyModifier.CODEC, BlockPropertyModifier.PARTIAL_CODEC,
-                ops, "block modifier");
+        var parsedJsons = parseJsonsOrPartial(jsons, BlockPropertyModifier.PARTIAL_CODEC, ops);
         for (var entry : parsedJsons.entrySet()) {
             parsedModifiers.put(entry.getKey(), entry.getValue());
         }
@@ -145,34 +146,24 @@ public class BlockPropertiesManager extends PartialReloader<BlockPropertiesManag
             Parsed<BlockPropertyModifier> result = entry.getValue();
             BlockPropertyModifier modifier = result.getResultOrPartial();
 
-            if (!modifier.hasColormap() && textures.containsKey(id)) {
-                //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
-                var text = textures.get(id);
-                IndexCompoundColorGetter defaultSampler = IndexCompoundColorGetter.createDefault(text.keySet(), true);
-                modifier = modifier.merge(BlockPropertyModifier.ofBlockColor(defaultSampler));
+            // auto-attach a default tint sampler when tint textures exist but no colormap is declared,
+            // then fill inline colormaps from the scanned textures
+            Set<Integer> indices = contentTexture.adoptable(textures, id, modifier).get(TINTS);
+            if (indices != null) {
+                modifier = modifier.merge(BlockPropertyModifier.ofBlockColor(
+                        IndexCompoundColorGetter.createDefault(indices, true)));
             }
-
-            //fill inline colormaps colormapTextures
-            IColorGetter tint = modifier.getColormap();
-            ColormapsManager.tryAcceptingTextureGroup(textures, id, tint, usedTextures, true);
+            contentTexture.fill(textures, id, modifier, true);
 
             if (result.isEnabled()) addModifier(id, modifier);
         }
 
-        textures.keySet().removeAll(usedTextures);
-
         // creates default modifiers for orphaned textures without one
-        for (var entry : textures.entrySet()) {
-            Identifier id = entry.getKey();
-
-            ArrayImage.Group image = entry.getValue();
-
-            IndexCompoundColorGetter tintMap = IndexCompoundColorGetter.createDefault(image.keySet(), true);
-            ColormapsManager.tryAcceptingTextureGroup(textures, id, tintMap, usedTextures, true);
-
-            BlockPropertyModifier modifier = BlockPropertyModifier.ofBlockColor(tintMap);
-
-            addModifier(id, modifier);
+        for (var orphan : contentTexture.orphans(textures, parsedModifiers.keySet())) {
+            BlockPropertyModifier modifier = BlockPropertyModifier.ofBlockColor(
+                    IndexCompoundColorGetter.createDefault(orphan.parts().get(TINTS), true));
+            contentTexture.fill(textures, orphan.stemId(), modifier, true);
+            addModifier(orphan.stemId(), modifier);
         }
     }
 

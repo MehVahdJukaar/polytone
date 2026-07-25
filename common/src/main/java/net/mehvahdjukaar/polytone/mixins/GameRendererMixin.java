@@ -40,6 +40,7 @@ public abstract class GameRendererMixin {
     private void polytone$closeShaderStuff(CallbackInfo ci) {
         Polytone.POST_CHAINS.onClose();
         Polytone.SHADER_EFFECTS.onClose();
+        Polytone.SHADOWS.renderer().close();
     }
 
     // Depth-aware post chains (post_chains_after_hand): save the finished world depth right before

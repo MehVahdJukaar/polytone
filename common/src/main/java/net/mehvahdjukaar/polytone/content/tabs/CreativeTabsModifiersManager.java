@@ -4,11 +4,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.Targets;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.CsvUtils;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
-import net.mehvahdjukaar.polytone.common.reloader.PartialReloader;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,10 +20,14 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsModifiersManager.Resources> {
+public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModifier> {
+
+    // creative_tabs.csv sidecar — new creative-tab ids to register, keyed by pack namespace
+    private Map<Identifier, List<String>> extraTabs = Map.of();
 
     private final MapRegistry<CreativeModeTab> customTabs = new MapRegistry<>("Custom Creative Tabs");
 
@@ -31,23 +36,27 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
 
     private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> vanillaTabs = new HashMap<>();
 
+    @Nullable
+    private ModifierOverride override;
+
     public CreativeTabsModifiersManager() {
-        super("creative_tab_modifiers");
+        super(Spec.of("Creative tab modifier", () -> SchemaCodec.wrap(CreativeTabModifier.CODEC))
+                .wikiPage("Creative-Tab-Modifiers")
+                .folders("creative_tab_modifiers"));
     }
 
 
     @Override
-    public Resources prepare(PreparableReloadListener.SharedState sharedState) {
+    public AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
         var resourceManager = sharedState.resourceManager();
-        var jsons = getJsonsInDirectories(resourceManager);
-
-        var types = CsvUtils.parseCsv(resourceManager, "creative_tabs");
-
-        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(types));
+        this.extraTabs = ImmutableMap.copyOf(CsvUtils.parseCsv(resourceManager, "creative_tabs"));
+        return super.prepare(sharedState);
     }
 
     @Override
     protected void resetWithLevel(boolean logOff) {
+        // A reload rebuilds every tab from the packs, so no override can survive it.
+        override = null;
         for (var id : customTabs.keySet()) {
             PlatStuff.unregisterDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id);
             if (logOff) {
@@ -64,15 +73,14 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        for (var e : resources.extraTabs.entrySet()) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        for (var e : this.extraTabs.entrySet()) {
             for (var str : e.getValue()) {
                 Identifier id = e.getKey().withPath(str);
                 registerNewTab(id);
             }
         }
-        for (var e : Parsed.batchParseOnlyEnabled(resources.tabsModifiers, CreativeTabModifier.CODEC,
-                ops, "creative tab modifier")) {
+        for (var e : parseEnabledJsons(resources.jsons(), ops)) {
             Identifier id = e.getKey();
             CreativeTabModifier mod = e.getValue();
             if (mod.registerTab()) {
@@ -125,21 +133,37 @@ public class CreativeTabsModifiersManager extends PartialReloader<CreativeTabsMo
     // runs after every other mod's tab event on both NeoForge and Fabric. See that mixin.
     public void modifyTab(ItemToTabEvent event, HolderLookup.Provider access) {
         var tab = event.getTab();
-        var mod = modifiers.get(tab);
+        CreativeTabModifier overriding = override == null ? null : override.modifierFor(tab);
+        var mod = overriding != null ? overriding : modifiers.get(tab);
         if (mod != null && access != null) {
             CreativeTabModifier v = mod.applyItemsAndAttributes(event, access);
-            //don't add custom tabs here!
-            if (!customTabs.containsKey(tab.identifier())) vanillaTabs.put(tab, v);
+            if (overriding != null) override.onApplied(tab, v);//don't add custom tabs here!
+            else if (!customTabs.containsKey(tab.identifier())) vanillaTabs.put(tab, v);
         }
+    }
+
+    /**
+     * Supplies a modifier that stands in for the loaded one on the tabs it covers - what the editor's
+     * live preview installs so an unsaved file can be tried out without a reload. It <i>replaces</i>
+     * rather than stacks: the file being edited is part of the loaded merge already, so applying both
+     * would double up its item additions. The previous state is handed back through
+     * {@link #onApplied} so whoever installed the override can put the tab back.
+     */
+    public interface ModifierOverride {
+
+        @Nullable
+        CreativeTabModifier modifierFor(ResourceKey<CreativeModeTab> tab);
+
+        void onApplied(ResourceKey<CreativeModeTab> tab, CreativeTabModifier previous);
+    }
+
+    public void setOverride(@Nullable ModifierOverride override) {
+        this.override = override;
     }
 
     public boolean isDynamicTab(Identifier entryId) {
         return customTabs.containsKey(entryId);
     }
 
-
-    public record Resources(Map<Identifier, JsonElement> tabsModifiers,
-                            Map<Identifier, List<String>> extraTabs) {
-    }
 
 }

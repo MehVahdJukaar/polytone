@@ -6,11 +6,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.FilesUtil;
-import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.minecraft.client.Minecraft;
@@ -23,6 +24,7 @@ import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.util.GsonHelper;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,29 +33,32 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConfigsManager extends JsonPartialReloader {
+public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
-    public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);
-    public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", true);
-    public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", 1);
-    public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", false);
-    public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false);
-    public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", true);
+    public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", "loading", false);
+    public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", "loading", true);
+    public final OptionHolder<Float> particlesThrottle = builtinConfig("particles_throttle", "particles", 1);
+    public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", "particles", false);
+    public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", "particles", false);
+    public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", null, true);
     // When true (default) depth-reading post chains run after the first-person hand so held items
     // (e.g. a shield) occlude effects like godrays. Turn off to run them in the standard spot,
     // inside the level FrameGraph before the hand is drawn (the previous behaviour).
-    public final OptionHolder<Boolean> postChainsAfterHand = builtinConfig("post_chains_after_hand", true);
-
-    private static @NonNull OptionHolder<Boolean> builtinConfig(String id, boolean def) {
-        return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), 1, def), Polytone.res(id));
-    }
-
-    private static @NonNull OptionHolder<Float> builtinConfig(String id, float def) {
-        return OptionHolder.create(new NumberConfig(Optional.empty(), Map.of(), 1,
-                def, 0, 1, 0.01f), Polytone.res(id));
-    }
+    public final OptionHolder<Boolean> postChainsAfterHand = builtinConfig("post_chains_after_hand", null, true);
 
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
+
+    // a null section lists the entry ungrouped, without a header
+    private static @NonNull OptionHolder<Boolean> builtinConfig(String id, @Nullable String section, boolean def) {
+        return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), Map.of(), 1,
+                Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def), Polytone.res(id));
+    }
+
+    private static @NonNull OptionHolder<Float> builtinConfig(String id, @Nullable String section, float def) {
+        return OptionHolder.create(new NumberConfig(Optional.empty(), Map.of(), Map.of(), 1,
+                Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def, 0, 1, 0.01f), Polytone.res(id));
+    }
+
 
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
     private final ThreadLocal<MapRegistry<OptionHolder<?>>> activeLoadConfigs = new ThreadLocal<>(); // from active packs
@@ -65,7 +70,9 @@ public class ConfigsManager extends JsonPartialReloader {
     private final AtomicBoolean needsPackReload = new AtomicBoolean(false); //mega ugly
 
     public ConfigsManager() {
-        super("config_entries");
+        super(Spec.of("Config entry", () -> SchemaCodec.wrap(PolyConfig.CODEC))
+                .wikiPage("Polytone-Configs")
+                .folders("config_entries"));
         this.optionsFile = PlatStuff.getGamePath().resolve("config/polytone_options.json").toFile();
         this.gson = new GsonBuilder()
                 .setPrettyPrinting()
@@ -73,6 +80,7 @@ public class ConfigsManager extends JsonPartialReloader {
 
         // Only time we read disk automatically
         loadConfigFromDisk();
+        registerBuiltins(configs);
     }
 
     private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
@@ -215,15 +223,19 @@ public class ConfigsManager extends JsonPartialReloader {
         var jsons = this.getJsonsInDirectories(resourceManager);
 
         MapRegistry<OptionHolder<?>> activePackReg = new MapRegistry<>("Active Pack Configs");
+        registerBuiltins(activePackReg);
         activeLoadConfigs.set(activePackReg);
-        for (var j : Parsed.batchParseOnlyEnabled(jsons, PolyConfig.CODEC,
-                JsonOps.INSTANCE, "Configs")) {
+        for (var j : parseEnabledJsons(jsons, JsonOps.INSTANCE)) {
             if (j != null) {
                 Identifier id = j.getKey();
-                PolyConfig<?> config = j.getValue();
+                PolyConfig<?> config = (PolyConfig<?>) j.getValue();
                 addConfig(id, config, activePackReg, configFileSnapshot);
             }
         }
+    }
+
+    public void clearCurrentPackConfigs() {
+        activeLoadConfigs.remove();
     }
 
     public boolean isLenientLoading() {
@@ -231,21 +243,16 @@ public class ConfigsManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void applyNormal(Map<Identifier, JsonElement> obj) {
-        ConfigScreen.clearPresetCache();
-
+    protected void applyNormal(AssetsFiles resources) {
+        Map<Identifier, JsonElement> obj = resources.jsons();
         activeLoadConfigs.remove();
         configs.clear();
-        for (OptionHolder<?> builtin : List.of(lenientLoading, legacyParsing, particlesThrottle, particlesOffThread,
-                autoParticleRateLimit, showConfigButton, postChainsAfterHand)) {
-            builtin.loadFromJson(configFileSnapshot);
-            configs.register(builtin.fileId, builtin);
-        }
+        registerBuiltins(configs);
 
         Map<Identifier, PolyConfig<?>> parsed = new HashMap<>();
         //ignoring conditions here purposefully
-        for (var j : Parsed.batchParseOnlyEnabled(obj, PolyConfig.CODEC,
-                JsonOps.INSTANCE, "Configs")) {
+        Iterable<Map.Entry<Identifier, PolyConfig<?>>> parsedConfigs = parseEnabledJsons(obj, JsonOps.INSTANCE);
+        for (var j : parsedConfigs) {
             PolyConfig<?> p = j.getValue();
             parsed.put(j.getKey(), p);
         }
@@ -253,7 +260,53 @@ public class ConfigsManager extends JsonPartialReloader {
         for (var entry : parsed.entrySet()) {
             addConfig(entry.getKey(), entry.getValue(), configs, configFileSnapshot);
         }
+        registerDevTestConfigs();
         Polytone.LOGGER.info("Loaded {} Polytone config entries", configs.size());
+    }
+
+    /**
+     * Synthetic entries registered only in dev to exercise namespace grouping, sections, presets,
+     * wide rows, and performance-impact tooltips on the config screen.
+     */
+    private void registerDevTestConfigs() {
+        if (!Polytone.isDevEnv) return;
+
+        Map<String, Boolean> boolPresets = Map.of("enabled", true, "disabled", false);
+        Map<String, Float> floatPresets = Map.of("low", 0.25f, "high", 0.75f);
+
+        // Second namespace with two sections and a pack-wide preset slider.
+        addConfig(Identifier.fromNamespaceAndPath("test_pack_alpha", "dev_alpha_toggle"),
+                new BoolConfig(Optional.empty(), boolPresets, Map.of(), 0,
+                        Optional.of("alpha_group_a"), Optional.of(0), Optional.empty(), false, Map.of(), true),
+                configs, configFileSnapshot);
+        addConfig(Identifier.fromNamespaceAndPath("test_pack_alpha", "dev_alpha_throttle"),
+                new NumberConfig(Optional.empty(), floatPresets, Map.of("section_low", 0.1f), 1,
+                        Optional.of("alpha_group_a"), Optional.of(0), Optional.of(PolyConfig.PerformanceImpact.MEDIUM),
+                        false, Map.of(), 0.5f, 0, 1, 0.05f),
+                configs, configFileSnapshot);
+        addConfig(Identifier.fromNamespaceAndPath("test_pack_alpha", "dev_wide_note"),
+                new StringConfig(Optional.empty(), Map.of(), Map.of(), 0,
+                        Optional.of("alpha_group_b"), Optional.of(1), Optional.empty(), true, Map.of(),
+                        "balanced", List.of("balanced", "fast", "fancy")),
+                configs, configFileSnapshot);
+
+        // Third namespace: sectionless entry plus one named section.
+        addConfig(Identifier.fromNamespaceAndPath("test_pack_beta", "dev_sectionless"),
+                new BoolConfig(Optional.empty(), Map.of(), Map.of(), 0,
+                        Optional.empty(), Optional.empty(), Optional.of(PolyConfig.PerformanceImpact.LOW),
+                        false, Map.of(), false),
+                configs, configFileSnapshot);
+        addConfig(Identifier.fromNamespaceAndPath("test_pack_beta", "dev_grouped_flag"),
+                new BoolConfig(Optional.empty(), boolPresets, Map.of("off", false), 0,
+                        Optional.of("beta_misc"), Optional.of(0), Optional.of(PolyConfig.PerformanceImpact.HIGH),
+                        false, Map.of(), true),
+                configs, configFileSnapshot);
+
+        // Extra polytone-namespace row to show multiple namespaces from the same mod id still group once.
+        addConfig(Polytone.res("dev_polytone_extra"),
+                new BoolConfig(Optional.empty(), Map.of(), Map.of(), 99,
+                        Optional.of("particles"), Optional.empty(), Optional.empty(), false, Map.of(), false),
+                configs, configFileSnapshot);
     }
 
     public void beforeRepositoryRefresh() {

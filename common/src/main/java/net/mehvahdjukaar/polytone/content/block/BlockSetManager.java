@@ -3,23 +3,26 @@ package net.mehvahdjukaar.polytone.content.block;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 
 import java.util.Map;
 
-public class BlockSetManager extends JsonPartialReloader {
+public class BlockSetManager extends ContentManager<BlockSetTypeProvider> {
 
     // we keep our own registry
     private final MapRegistry<BlockSetTypeProvider> blockSetTypes = new MapRegistry<>("Custom Block Set Types");
     private int counter = 0;
 
     public BlockSetManager() {
-        super("custom_block_sets", "block_sets");
+        super("Block set", () -> SchemaCodec.wrap(BlockSetTypeProvider.CODEC),
+                "custom_block_sets", "block_sets");
     }
 
     public String getNextName() {
@@ -34,8 +37,9 @@ public class BlockSetManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
+        Map<Identifier, JsonElement> jsons = resources.jsons();
         //copy vanilla
         BlockSetType.values().forEach(type ->
                 blockSetTypes.register(Identifier.parse(type.name()),
@@ -43,9 +47,7 @@ public class BlockSetManager extends JsonPartialReloader {
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();
-            BlockSetTypeProvider type = BlockSetTypeProvider.CODEC.decode(ops, json)
-                    .getOrThrow(errorMsg -> new IllegalStateException("Could not decode Custom Block Set Type with json id " + id + " - error: " + errorMsg
-                    )).getFirst();
+            BlockSetTypeProvider type = decodeStrict(json, id, ops);
             blockSetTypes.register(id, type);
         }
 

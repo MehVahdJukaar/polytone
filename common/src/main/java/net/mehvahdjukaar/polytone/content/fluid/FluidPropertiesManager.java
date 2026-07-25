@@ -1,18 +1,18 @@
 package net.mehvahdjukaar.polytone.content.fluid;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.common.LegacyHelper;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
-import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
-import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -25,12 +25,25 @@ import net.minecraft.world.level.material.Fluids;
 
 import java.util.*;
 
-public class FluidPropertiesManager extends JsonImgPartialReloader {
+public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier> {
 
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
 
+    private static final TexturePart<FluidPropertyModifier> TINT =
+            TexturePart.plain("tint", FluidPropertyModifier::getColormap);
+    private static final TexturePart<FluidPropertyModifier> FOG =
+            TexturePart.suffix("_fog", FluidPropertyModifier::getFogColormap);
+
     public FluidPropertiesManager() {
-        super("fluid_modifiers", "fluid_properties");
+        super(Spec.of("Fluid modifier", () -> FluidPropertyModifier.CODEC)
+                .wikiPage("Fluid-Properties-Modifiers")
+                .textureParts(TINT, FOG)
+                .folders("fluid_modifiers", "fluid_properties"));
+    }
+
+    private static FluidPropertyModifier defaultFor(TexturePart<FluidPropertyModifier> part) {
+        return part == FOG ? FluidPropertyModifier.ofFogColor(Colormap.createDefTriangle())
+                : FluidPropertyModifier.ofBlockColor(Colormap.createDefTriangle());
     }
 
     private Map<Identifier, Parsed<FluidPropertyModifier>> extraModifiers;
@@ -46,7 +59,7 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected Resources prepare(PreparableReloadListener.SharedState sharedState) {
+    protected AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
         var resourceManager = sharedState.resourceManager();
         var jsons = this.getJsonsInDirectories(resourceManager);
 
@@ -61,24 +74,22 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
 
         textures.putAll(this.getImagesInDirectories(resourceManager));
 
-        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures));
+        return new AssetsFiles(jsons, textures);
     }
 
     //TODO: this is a mess. Improve
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var jsons = resources.jsons();
-        var textures = new HashMap<>(resources.textures());
-
-        Set<Identifier> usedTextures = new HashSet<>();
+        var textures = new TrackedTextures(resources.textures());
 
         LinkedListMultimap<Identifier, Parsed<FluidPropertyModifier>> parsedModifiers =   LinkedListMultimap.create();
         extraModifiers.forEach(parsedModifiers::put);
         textures.putAll(extraImages);
 
 
-        for (var j : Parsed.batchParseAlways(jsons, FluidPropertyModifier.CODEC, ops, "fluid modifier")) {
+        for (var j : parseAllJsons(jsons, ops)) {
             Identifier id = j.getKey();
             parsedModifiers.put(id, j.getValue());
         }
@@ -89,28 +100,24 @@ public class FluidPropertiesManager extends JsonImgPartialReloader {
             Parsed<FluidPropertyModifier> parsed = entry.getValue();
             FluidPropertyModifier modifier = parsed.getResultOrPartial();
 
-            if (!modifier.hasColormap() && textures.containsKey(id)) {
-                //if this map doesn't have a colormap defined, we set it to the default impl IF there's a texture it can use
-                modifier = modifier.merge(FluidPropertyModifier.ofBlockColor(Colormap.createDefTriangle()));
+            // auto-attach defaults for lone textures, then fill inline colormaps from the scanned ones
+            for (var part : contentTexture.adoptable(textures, id, modifier).keySet()) {
+                modifier = modifier.merge(defaultFor(part));
             }
-
-            //fill inline colormaps colormapTextures
-            IColorGetter tint = modifier.getColormap();
-            ColormapsManager.tryAcceptingTexture(textures, id, tint, usedTextures, true);
+            contentTexture.fill(textures, id, modifier, true);
 
             if (parsed.isEnabled()) this.addModifier(id, modifier);
         }
 
         // creates orphaned texture colormaps & properties
-        textures.keySet().removeAll(usedTextures);
-
-        for (var t : textures.entrySet()) {
-            Identifier id = t.getKey();
-            Colormap defaultColormap = Colormap.createDefTriangle();
-            ColormapsManager.tryAcceptingTexture(textures, id, defaultColormap, usedTextures, true);
-
-            addModifier(id, new FluidPropertyModifier(Optional.of(defaultColormap),
-                    Optional.empty(), Targets.EMPTY));
+        for (var orphan : contentTexture.orphans(textures, parsedModifiers.keySet())) {
+            FluidPropertyModifier modifier = null;
+            for (var part : orphan.parts().keySet()) {
+                FluidPropertyModifier d = defaultFor(part);
+                modifier = modifier == null ? d : modifier.merge(d);
+            }
+            contentTexture.fill(textures, orphan.stemId(), modifier, true);
+            addModifier(orphan.stemId(), modifier);
         }
     }
 

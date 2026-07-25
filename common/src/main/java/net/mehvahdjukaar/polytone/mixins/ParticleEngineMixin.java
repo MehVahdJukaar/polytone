@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -43,6 +44,35 @@ public abstract class ParticleEngineMixin {
                                                                                   @Local(argsOnly = true) T particleData) {
         if (original != null) Polytone.PARTICLE_MODIFIERS.maybeModify(particleData, this.level, original);
         return original;
+    }
+
+    // Batch dispatched at tick() TAIL overlaps the rest of the game tick and early frame render,
+    // joined before anything reads (extract) or mutates (next tick, level change) particle state.
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void polytone$joinBeforeTick(CallbackInfo ci) {
+        PolytoneAsyncParticles.awaitTicks();
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void polytone$dispatchAsyncParticleTicks(CallbackInfo ci) {
+        if (Polytone.CONFIGS.particlesOffThread.get()) {
+            PolytoneAsyncParticles.dispatch();
+        }
+    }
+
+    @Inject(method = "extract", at = @At("HEAD"))
+    private void polytone$joinBeforeExtract(CallbackInfo ci) {
+        PolytoneAsyncParticles.awaitTicks();
+    }
+
+    @Inject(method = "setLevel", at = @At("HEAD"))
+    private void polytone$joinBeforeLevelChange(CallbackInfo ci) {
+        PolytoneAsyncParticles.awaitTicks();
+    }
+
+    @Inject(method = "clearParticles", at = @At("HEAD"))
+    private void polytone$joinBeforeClear(CallbackInfo ci) {
+        PolytoneAsyncParticles.awaitTicks();
     }
 
 }

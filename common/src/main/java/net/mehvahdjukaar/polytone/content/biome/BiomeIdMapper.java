@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.biome;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.LegacyHelper;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
@@ -14,7 +14,7 @@ import java.util.Map;
 public interface BiomeIdMapper {
 
 
-    Codec<BiomeIdMapper> CODEC = CodecUtils.referenceOrDirect(
+    Codec<BiomeIdMapper> CODEC = SchemaCodecs.referenceOrDirect(
             Polytone.BIOME_ID_MAPPERS.byNameCodec(), Custom.CUSTOM_CODEC, false);
 
     BiomeIdMapper LEGACY = (biome) -> {

@@ -1,10 +1,11 @@
 package net.mehvahdjukaar.polytone.content.particle;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
-import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.block.BlockClientTickable;
@@ -58,27 +59,27 @@ public record BlockParticleEmitter(
         TickSource spawnSource
 ) implements BlockClientTickable {
 
-    public static final Codec<BlockParticleEmitter> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
-            CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("particle").forGetter(BlockParticleEmitter::particleType),
-            IBlockExp.CODEC.optionalFieldOf("chance", IBlockExp.ONE).forGetter(BlockParticleEmitter::chance),
-            IBlockExp.CODEC.optionalFieldOf("count", IBlockExp.ONE).forGetter(BlockParticleEmitter::count),
-            IBlockExp.CODEC.optionalFieldOf("x", IBlockExp.PARTICLE_RAND).forGetter(BlockParticleEmitter::x),
-            IBlockExp.CODEC.optionalFieldOf("y", IBlockExp.PARTICLE_RAND).forGetter(BlockParticleEmitter::y),
-            IBlockExp.CODEC.optionalFieldOf("z", IBlockExp.PARTICLE_RAND).forGetter(BlockParticleEmitter::z),
-            IBlockExp.CODEC.optionalFieldOf("dx", IBlockExp.ZERO).forGetter(BlockParticleEmitter::dx),
-            IBlockExp.CODEC.optionalFieldOf("dy", IBlockExp.ZERO).forGetter(BlockParticleEmitter::dy),
-            IBlockExp.CODEC.optionalFieldOf("dz", IBlockExp.ZERO).forGetter(BlockParticleEmitter::dz),
-            IBlockExp.CODEC.optionalFieldOf("red").forGetter(BlockParticleEmitter::r),
-            IBlockExp.CODEC.optionalFieldOf("green").forGetter(BlockParticleEmitter::g),
-            IBlockExp.CODEC.optionalFieldOf("blue").forGetter(BlockParticleEmitter::b),
-            IBlockExp.CODEC.optionalFieldOf("alpha").forGetter(BlockParticleEmitter::a),
-            IBlockExp.CODEC.optionalFieldOf("roll").forGetter(BlockParticleEmitter::roll),
-            IBlockExp.CODEC.optionalFieldOf("size").forGetter(BlockParticleEmitter::size),
-            IBlockExp.CODEC.optionalFieldOf("custom").forGetter(BlockParticleEmitter::custom),
-            CodecUtils.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(BlockParticleEmitter::predicate),
-            CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(BlockParticleEmitter::biomes),
-            SpawnLocation.CODEC.optionalFieldOf("spawn_location", SpawnLocation.CENTER).forGetter(BlockParticleEmitter::spawnLocation),
-            TickSource.CODEC.optionalFieldOf("tick_source", TickSource.ANIMATE_TICK).forGetter(BlockParticleEmitter::spawnSource)
+    public static final SchemaCodec<BlockParticleEmitter> CODEC = SchemaRecord.create(BlockParticleEmitter.class, i -> i.group(
+            i.field("particle", CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE), BlockParticleEmitter::particleType),
+            i.optional("chance", IBlockExp.CODEC, IBlockExp.ONE, BlockParticleEmitter::chance),
+            i.optional("count", IBlockExp.CODEC, IBlockExp.ONE, BlockParticleEmitter::count),
+            i.optional("x", IBlockExp.CODEC, IBlockExp.PARTICLE_RAND, BlockParticleEmitter::x),
+            i.optional("y", IBlockExp.CODEC, IBlockExp.PARTICLE_RAND, BlockParticleEmitter::y),
+            i.optional("z", IBlockExp.CODEC, IBlockExp.PARTICLE_RAND, BlockParticleEmitter::z),
+            i.optional("dx", IBlockExp.CODEC, IBlockExp.ZERO, BlockParticleEmitter::dx),
+            i.optional("dy", IBlockExp.CODEC, IBlockExp.ZERO, BlockParticleEmitter::dy),
+            i.optional("dz", IBlockExp.CODEC, IBlockExp.ZERO, BlockParticleEmitter::dz),
+            i.optional("red", IBlockExp.CODEC, BlockParticleEmitter::r),
+            i.optional("green", IBlockExp.CODEC, BlockParticleEmitter::g),
+            i.optional("blue", IBlockExp.CODEC, BlockParticleEmitter::b),
+            i.optional("alpha", IBlockExp.CODEC, BlockParticleEmitter::a),
+            i.optional("roll", IBlockExp.CODEC, BlockParticleEmitter::roll),
+            i.optional("size", IBlockExp.CODEC, BlockParticleEmitter::size),
+            i.optional("custom", IBlockExp.CODEC, BlockParticleEmitter::custom),
+            i.field("state_predicate", SchemaCodecs.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE), RuleTest.CODEC, BlockParticleEmitter::predicate),
+            i.optional("biomes", CodecUtils.forwardAwareHomogeneousList(Registries.BIOME), BlockParticleEmitter::biomes),
+            i.optional("spawn_location", SpawnLocation.CODEC, SpawnLocation.CENTER, BlockParticleEmitter::spawnLocation),
+            i.optional("tick_source", TickSource.CODEC, TickSource.ANIMATE_TICK, BlockParticleEmitter::spawnSource)
     ).apply(i, BlockParticleEmitter::new));
 
     @Override

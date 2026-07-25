@@ -33,4 +33,12 @@ issueTrackerURL = "${mod_github}/issues"
     ordering = "NONE"
     side = "CLIENT"
 
+# Recommended companion: the standalone in-game pack/codec editor UI. Optional — Polytone
+# works without it, but installing it unlocks the visual editor for Polytone's content.
+[[dependencies.${mod_id}]]
+    modId = "nautilus_studio"
+    type = "optional"
+    ordering = "NONE"
+    side = "CLIENT"
+
 

@@ -1,16 +1,17 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.google.gson.JsonElement;
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
-import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
 import net.minecraft.client.Minecraft;
@@ -30,19 +31,24 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
-public class CustomParticlesManager extends JsonPartialReloader {
+public class CustomParticlesManager extends ContentManager<ICustomParticleFactory> {
 
     public final MapRegistry<ICustomParticleFactory> customParticleFactories = new MapRegistry<>("Custom Particles");
     private final Map<ParticleType<?>, ParticleProvider<?>> overwrittenVanillaProviders = new HashMap<>();
 
-    public static final Codec<ICustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = Codec.either(SemiCustomParticleType.CODEC, CustomParticleType.CODEC)
-            .xmap(e -> e.map(Function.identity(), Function.identity()),
-                    p -> p instanceof CustomParticleType c ? Either.right(c) : Either.left((SemiCustomParticleType) p));
+    // The wire codec is the copy_from-dispatching one (NOT a try-both fold: a broken
+    // semi-custom json must fail as semi-custom, not silently decode as custom, which
+    // ignores unknown keys); labeled() splices editor labels on without touching the wire.
+    public static final SchemaCodec<ICustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = SchemaCodecs.labeled(
+            CustomOrSemiCustomParticleCodec.INSTANCE,
+            SchemaCodecs.alt("semi custom", SemiCustomParticleType.CODEC),
+            SchemaCodecs.alt("custom", CustomParticleType.CODEC));
 
     public CustomParticlesManager() {
-        super("custom_particles");
+        super(Spec.of("Custom particle", () -> CUSTOM_OR_SEMI_CUSTOM_CODEC)
+                .wikiPage("Custom-Particle-Types")
+                .folders("custom_particles"));
     }
 
 
@@ -109,16 +115,15 @@ public class CustomParticlesManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
+        Map<Identifier, JsonElement> jsons = resources.jsons();
         ParticleResources particleResources = Minecraft.getInstance().particleEngine.resourceManager;
 
         Set<CustomParticleType> customTypes = new HashSet<>();
 
 
-        var allFactories = Parsed.batchParseOnlyEnabled(jsons, CustomOrSemiCustomParticleCodec.INSTANCE,
-                ops, "custom particle");
-        for (var j : allFactories) {
+        for (var j : parseEnabledJsons(jsons, ops)) {
             var factory = j.getValue();
             Identifier id = j.getKey();
 

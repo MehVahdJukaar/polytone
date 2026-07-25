@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.CsvUtils;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
-import net.mehvahdjukaar.polytone.common.reloader.PartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,7 +21,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resources> {
+public class SoundTypesManager extends ContentManager<PolytoneSoundType> {
+
+    // sound_events.csv sidecar — new sound-event ids to register, keyed by pack namespace
+    private Map<Identifier, List<String>> soundEvents = Map.of();
 
     private final MapRegistry<SoundEvent> customSoundEvents = new MapRegistry<>("Custom Sound Events");
 
@@ -29,7 +32,9 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     private final MapRegistry<SoundType> customSoundTypes = new MapRegistry<>("Custom Sound Types");
 
     public SoundTypesManager() {
-        super("custom_sound_types", "sound_types");
+        super(Spec.of("Sound type", () -> PolytoneSoundType.DIRECT_CODEC)
+                .wikiPage("Custom-Sound-Events")
+                .folders("custom_sound_types", "sound_types"));
     }
 
     @Nullable
@@ -38,20 +43,17 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
     }
 
     @Override
-    protected Resources prepare(PreparableReloadListener.SharedState sharedState) {
+    protected AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
         var resourceManager = sharedState.resourceManager();
-        var jsons = getJsonsInDirectories(resourceManager);
-
-        var types = CsvUtils.parseCsv(resourceManager, "sound_events");
-
-        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(types));
+        this.soundEvents = ImmutableMap.copyOf(CsvUtils.parseCsv(resourceManager, "sound_events"));
+        return super.prepare(sharedState);
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
 
         //custom sound events
-        for (var e : resources.soundEvents.entrySet()) {
+        for (var e : this.soundEvents.entrySet()) {
             for (var s : e.getValue()) {
                 Identifier id = e.getKey().withPath(s);
                 if (!customSoundEvents.containsKey(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
@@ -70,8 +72,7 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         }
         // sound types
 
-        for (var j : Parsed.batchParseOnlyEnabled(resources.soundTypes, PolytoneSoundType.DIRECT_CODEC,
-                ops, "sound type")) {
+        for (var j : parseEnabledJsons(resources.jsons(), ops)) {
             var soundType = j.getValue();
             var id = j.getKey();
             customSoundTypes.register(id, soundType);
@@ -102,8 +103,5 @@ public class SoundTypesManager extends PartialReloader<SoundTypesManager.Resourc
         return customSoundEvents.containsKey(entryId);
     }
 
-    public record Resources(Map<Identifier, JsonElement> soundTypes,
-                            Map<Identifier, List<String>> soundEvents) {
-    }
 
 }

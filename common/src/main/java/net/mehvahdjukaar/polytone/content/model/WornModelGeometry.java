@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.model;
 
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
@@ -27,7 +27,7 @@ public final class WornModelGeometry {
         this.inline = inline;
     }
 
-    public static final Codec<WornModelGeometry> CODEC = CodecUtils.referenceOrDirect(
+    public static final Codec<WornModelGeometry> CODEC = SchemaCodecs.referenceOrDirect(
             Identifier.CODEC.xmap(id -> new WornModelGeometry(id, null), g -> g.reference),
             ModelDefinition.CODEC.xmap(d -> new WornModelGeometry(null, d), g -> g.inline)
     );

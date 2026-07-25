@@ -1,7 +1,8 @@
 package net.mehvahdjukaar.polytone.content.dimension;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.dimension.DimensionType;
 
@@ -15,21 +16,21 @@ public record DimensionTemplate(Optional<Long> fixedTime, Optional<Boolean> hasS
                                 Optional<Integer> height, Optional<Integer> logicalHeight,
                                 Optional<Float> ambientLight) {
 
-    public static final Codec<DimensionTemplate> CODEC = RecordCodecBuilder.create(
-            instance -> instance.group(
-                    Codec.LONG.optionalFieldOf("fixed_time").forGetter(DimensionTemplate::fixedTime),
-                    Codec.BOOL.optionalFieldOf("has_sky_light").forGetter(DimensionTemplate::hasSkyLight),
-                    Codec.BOOL.optionalFieldOf("has_ceiling").forGetter(DimensionTemplate::hasCeiling),
-                    Codec.BOOL.optionalFieldOf("ultra_warm").forGetter(DimensionTemplate::ultraWarm),
-                    Codec.BOOL.optionalFieldOf("natural").forGetter(DimensionTemplate::natural),
-                    Codec.DOUBLE.optionalFieldOf("coordinate_scale").forGetter(DimensionTemplate::coordinateScale),
-                    Codec.BOOL.optionalFieldOf("bed_works").forGetter(DimensionTemplate::bedWorks),
-                    Codec.BOOL.optionalFieldOf("respawn_anchor_works").forGetter(DimensionTemplate::respawnAnchorWorks),
-                    Codec.INT.optionalFieldOf("min_y").forGetter(DimensionTemplate::minY),
-                    Codec.INT.optionalFieldOf("height").forGetter(DimensionTemplate::height),
-                    Codec.INT.optionalFieldOf("logical_height").forGetter(DimensionTemplate::logicalHeight),
-                    Codec.FLOAT.optionalFieldOf("ambient_light").forGetter(DimensionTemplate::ambientLight)
-            ).apply(instance, DimensionTemplate::new)
+    public static final SchemaCodec<DimensionTemplate> CODEC = SchemaRecord.create(
+            DimensionTemplate.class, i -> i.group(
+                    i.optional("fixed_time", Codec.LONG, DimensionTemplate::fixedTime),
+                    i.optional("has_sky_light", Codec.BOOL, DimensionTemplate::hasSkyLight),
+                    i.optional("has_ceiling", Codec.BOOL, DimensionTemplate::hasCeiling),
+                    i.optional("ultra_warm", Codec.BOOL, DimensionTemplate::ultraWarm),
+                    i.optional("natural", Codec.BOOL, DimensionTemplate::natural),
+                    i.optional("coordinate_scale", Codec.DOUBLE, DimensionTemplate::coordinateScale),
+                    i.optional("bed_works", Codec.BOOL, DimensionTemplate::bedWorks),
+                    i.optional("respawn_anchor_works", Codec.BOOL, DimensionTemplate::respawnAnchorWorks),
+                    i.optional("min_y", Codec.INT, DimensionTemplate::minY),
+                    i.optional("height", Codec.INT, DimensionTemplate::height),
+                    i.optional("logical_height", Codec.INT, DimensionTemplate::logicalHeight),
+                    i.optional("ambient_light", Codec.FLOAT, DimensionTemplate::ambientLight)
+            ).apply(i, DimensionTemplate::new)
     );
 
     public boolean matches(DimensionType dimensionType){

@@ -4,8 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
-import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
@@ -33,20 +34,20 @@ import java.util.Set;
  * <p>Example: {@code assets/minecraft/polytone/shader_effects/core/rendertype_solid.json}
  * targets shader {@code minecraft:core/rendertype_solid}.
  */
-public class ShaderUniformsManager extends JsonPartialReloader {
+public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffers> {
 
     private final List<ExpressionUniformBuffers> owned = new ArrayList<>();
     private final Map<Identifier, List<ExpressionUniformBuffers>> byShader = new HashMap<>();
 
     public ShaderUniformsManager() {
-        super("shader_modifiers");
+        super("Shader uniforms", () -> SchemaCodec.wrap(ExpressionUniformBuffers.CODEC), "shader_modifiers");
     }
 
     @Override
-    protected Map<Identifier, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
-        Map<Identifier, JsonElement> jsons = super.prepare(sharedState);
-        registerUniformNames(jsons);
-        return jsons;
+    protected AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
+        AssetsFiles resources = super.prepare(sharedState);
+        registerUniformNames(resources.jsons());
+        return resources;
     }
 
     /** Collects UBO-block names from {@code expression_uniforms} JSON objects (for activator files). */
@@ -74,10 +75,9 @@ public class ShaderUniformsManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         synchronized (owned) {
-            for (var j : Parsed.batchParseOnlyEnabled(jsons, ExpressionUniformBuffers.CODEC,
-                    ops, "Shader Uniform Effects")) {
+            for (var j : parseEnabledJsons(resources.jsons(), ops)) {
                 if (j == null) continue;
                 Identifier targetShader = j.getKey();
                 ExpressionUniformBuffers buffers = j.getValue();

@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.modifiers;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
@@ -30,25 +30,24 @@ public class ParticleModifier {
 
 
     //TODO: make single expression
-    public static final Codec<ParticleModifier> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-            Filter.CODEC.optionalFieldOf("filter").forGetter(p -> Optional.ofNullable(p.filter)),
-            Colormap.CODEC.optionalFieldOf("colormap").forGetter(p -> Optional.ofNullable(p.colormap)),
-            ParticleContextExpression.CODEC.optionalFieldOf("color").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("life").forGetter(p -> Optional.ofNullable(p.lifeGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("size").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("red").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("green").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
-            ParticleContextExpression.CODEC.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
-            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(p -> p.targets)
+    public static final SchemaCodec<ParticleModifier> CODEC = SchemaRecord.create(ParticleModifier.class, i -> i.group(
+            i.optional("filter", Filter.CODEC, p -> Optional.ofNullable(p.filter)),
+            i.optional("colormap", Colormap.CODEC, p -> Optional.ofNullable(p.colormap)),
+            i.optional("color", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
+            i.optional("life", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.lifeGetter)),
+            i.optional("size", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
+            i.optional("red", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
+            i.optional("green", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
+            i.optional("blue", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
+            i.optional("alpha", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.colorGetter)),
+            i.optional("speed", ParticleContextExpression.CODEC, p -> Optional.ofNullable(p.speedGetter)),
+            i.optional("targets", Targets.CODEC, Targets.EMPTY, p -> p.targets)
+    ).apply(i, ParticleModifier::new));
 
-    ).apply(instance, ParticleModifier::new));
-
-    public static final Codec<ParticleModifier> PARTIAL_CODEC = RecordCodecBuilder.create((instance) ->
-            instance.group(
-                    Colormap.CODEC.optionalFieldOf( "colormap").forGetter(p -> Optional.ofNullable(p.colormap))
-            ).apply(instance, c -> ParticleModifier.ofColormap(c.orElse(null))));
+    public static final SchemaCodec<ParticleModifier> PARTIAL_CODEC = SchemaRecord.create(ParticleModifier.class, i ->
+            i.group(
+                    i.optional("colormap", Colormap.CODEC, p -> Optional.ofNullable(p.colormap))
+            ).apply(i, c -> ParticleModifier.ofColormap(c.orElse(null))));
 
 
     @Nullable
@@ -185,10 +184,10 @@ public class ParticleModifier {
             this(state.flatMap(x -> x).orElse(null), item.flatMap(x -> x).orElse(null));
         }
 
-        public static final Codec<Filter> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-                CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.BLOCK).optionalFieldOf("block").forGetter(p -> Optional.of(Optional.ofNullable(p.forBlock))),
-                CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.ITEM).optionalFieldOf("item").forGetter(p -> Optional.of(Optional.ofNullable(p.forItem)))
-        ).apply(instance, Filter::new));
+        public static final SchemaCodec<Filter> CODEC = SchemaRecord.create(Filter.class, i -> i.group(
+                i.optional("block", CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.BLOCK), p -> Optional.of(Optional.ofNullable(p.forBlock))),
+                i.optional("item", CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.ITEM), p -> Optional.of(Optional.ofNullable(p.forItem)))
+        ).apply(i, Filter::new));
 
         @Override
         public boolean test(ParticleOptions particleOptions) {

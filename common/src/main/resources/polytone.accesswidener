@@ -76,6 +76,8 @@ mutable field net/minecraft/world/entity/player/Player inventoryMenu Lnet/minecr
 
 #particle clear
 accessible field net/minecraft/client/particle/ParticleEngine particles Ljava/util/Map;
+# editor particle preview: build a child from ParticleOptions without queuing it into a live engine
+accessible method net/minecraft/client/particle/ParticleEngine makeParticle (Lnet/minecraft/core/particles/ParticleOptions;DDDDDD)Lnet/minecraft/client/particle/Particle;
 
 
 accessible field net/minecraft/client/particle/Particle friction F
@@ -101,6 +103,8 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockState
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase spawnTerrainParticles Z
 
 accessible field net/minecraft/world/item/CreativeModeTabs CACHED_PARAMETERS Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;
+# editor creative tab picker: which tab the open creative screen is showing
+accessible field net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen selectedTab Lnet/minecraft/world/item/CreativeModeTab;
 
 accessible class net/minecraft/client/gui/Gui$HeartType
 

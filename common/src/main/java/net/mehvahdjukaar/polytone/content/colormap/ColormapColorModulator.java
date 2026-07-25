@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.colormap;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapModExp;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
@@ -17,11 +17,11 @@ import java.util.Optional;
 
 public class ColormapColorModulator {
 
-    public static Codec<ColormapColorModulator> CODEC = RecordCodecBuilder.create(i ->
+    public static SchemaCodec<ColormapColorModulator> CODEC = SchemaRecord.create(ColormapColorModulator.class, i ->
             i.group(
-                    IColormapModExp.CODEC.optionalFieldOf("red").forGetter(c -> c.red),
-                    IColormapModExp.CODEC.optionalFieldOf("green").forGetter(c -> c.green),
-                    IColormapModExp.CODEC.optionalFieldOf("blue").forGetter(c -> c.blue)
+                    i.optional("red", IColormapModExp.CODEC, c -> c.red),
+                    i.optional("green", IColormapModExp.CODEC, c -> c.green),
+                    i.optional("blue", IColormapModExp.CODEC, c -> c.blue)
             ).apply(i, ColormapColorModulator::new));
 
     private final Optional<IColormapModExp> red;

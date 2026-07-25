@@ -40,11 +40,12 @@ public abstract class ColorResolverMixin extends Level {
      * Hack so we don't have to register these on every reload. They are instead added on request.
      * <p>
      * We handle ANY missing resolver, not just our {@link Colormap}s: because we swap the static
-     * {@code BiomeColors.WATER/GRASS/FOLIAGE_COLOR_RESOLVER} fields, a ClientLevel built while a
-     * colormap was active keys its fixed {@code tintCaches} slot on that colormap. Once the colormap
-     * is removed (and the vanilla resolver restored) on reload, that slot would be left with no entry,
-     * causing a null cache - which on Fabric becomes a hard crash from its strict {@code modifyNullCache}.
-     * Lazily re-creating the vanilla cache here keeps the map complete regardless of swap timing.
+     * {@code BiomeColors.WATER/GRASS/FOLIAGE/DRY_FOLIAGE_COLOR_RESOLVER} fields, a ClientLevel built
+     * while a colormap was active keys its fixed {@code tintCaches} slot on that colormap. Once the
+     * colormap is removed (and the vanilla resolver restored) on reload, that slot would be left with
+     * no entry, causing a null cache - which on Fabric becomes a hard crash from its strict
+     * {@code modifyNullCache}. Lazily re-creating the vanilla cache here keeps the map complete
+     * regardless of swap timing.
      */
     @Inject(method = "getBlockTint", at = @At("HEAD"))
     private void polytone$makeCachesForColormaps(BlockPos pos, ColorResolver resolver, CallbackInfoReturnable<Integer> info) {
@@ -54,6 +55,7 @@ public abstract class ColorResolverMixin extends Level {
             cache = new BlockTintCache(p -> c.calculateBlendedColor((ClientLevel) (Object) this, p.getCenter()));
         } else if (resolver == BiomeColors.GRASS_COLOR_RESOLVER
                 || resolver == BiomeColors.FOLIAGE_COLOR_RESOLVER
+                || resolver == BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER
                 || resolver == BiomeColors.WATER_COLOR_RESOLVER) {
             cache = new BlockTintCache(p -> this.calculateBlockTint(p, resolver));
         } else {

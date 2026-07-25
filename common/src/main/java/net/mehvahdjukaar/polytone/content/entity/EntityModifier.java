@@ -1,10 +1,10 @@
 package net.mehvahdjukaar.polytone.content.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.Targets;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -22,9 +22,9 @@ public record EntityModifier(List<EntityParticleEmitter> emitters,
                              Targets targets) {
 
 
-    public static final Codec<EntityModifier> CODEC = RecordCodecBuilder.create(i -> i.group(
-            CodecUtils.singleOrList(EntityParticleEmitter.CODEC).fieldOf("emitters").forGetter(em -> em.emitters),
-            Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(em -> em.targets)
+    public static final SchemaCodec<EntityModifier> CODEC = SchemaRecord.create(EntityModifier.class, i -> i.group(
+            i.field("emitters", SchemaCodecs.singleOrList(EntityParticleEmitter.CODEC), em -> em.emitters),
+            i.optional("targets", Targets.CODEC, Targets.EMPTY, em -> em.targets)
     ).apply(i, EntityModifier::new));
 
 

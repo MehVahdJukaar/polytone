@@ -3,11 +3,12 @@ package net.mehvahdjukaar.polytone.content.lightmap;
 import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionTarget;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -26,25 +27,24 @@ public class Lightmap {
     protected static final float DEFAULT_BASE_LIGHT = 0.04f;
 
 
-    public static final Codec<Lightmap> DIRECT_CODEC = RecordCodecBuilder.create(instance ->
-            instance.group(
-                    DimensionTarget.CODEC
-                            .optionalFieldOf("targets", DimensionTarget.EMPTY)
-                            .forGetter(l -> l.targets),
-                    ILightmapNumberProvider.CODEC.optionalFieldOf("sky_getter", ILightmapNumberProvider.DEFAULT)
-                            .forGetter(l -> l.skyGetter),
-                    ILightmapNumberProvider.CODEC.optionalFieldOf("torch_getter", ILightmapNumberProvider.DEFAULT)
-                            .forGetter(l -> l.torchGetter),
-                    Codec.BOOL.optionalFieldOf("lightning_strike_columns", true)
-                            .forGetter(l -> l.hasLightningColumn),
-                    Codec.doubleRange(0, 1).optionalFieldOf("sky_lerp_factor", DEFAULT_SKY_LERP)
-                            .forGetter(l -> l.skyLerp),
-                    Codec.doubleRange(0, 1).optionalFieldOf("torch_lerp_factor", DEFAULT_TORCH_LERP)
-                            .forGetter(l -> l.torchLerp),
-                    Codec.FLOAT.optionalFieldOf("base_light", DEFAULT_BASE_LIGHT).forGetter(l -> l.baseLight)
-            ).apply(instance, Lightmap::new));
+    public static final SchemaCodec<Lightmap> DIRECT_CODEC = SchemaRecord.create(Lightmap.class, i ->
+            i.group(
+                    i.optional("targets", DimensionTarget.CODEC, DimensionTarget.EMPTY,
+                            l -> l.targets),
+                    i.optional("sky_getter", ILightmapNumberProvider.CODEC, ILightmapNumberProvider.DEFAULT,
+                            l -> l.skyGetter),
+                    i.optional("torch_getter", ILightmapNumberProvider.CODEC, ILightmapNumberProvider.DEFAULT,
+                            l -> l.torchGetter),
+                    i.optional("lightning_strike_columns", Codec.BOOL, true,
+                            l -> l.hasLightningColumn),
+                    i.optional("sky_lerp_factor", Codec.doubleRange(0, 1), DEFAULT_SKY_LERP,
+                            l -> l.skyLerp),
+                    i.optional("torch_lerp_factor", Codec.doubleRange(0, 1), DEFAULT_TORCH_LERP,
+                            l -> l.torchLerp),
+                    i.optional("base_light", Codec.FLOAT, DEFAULT_BASE_LIGHT, l -> l.baseLight)
+            ).apply(i, Lightmap::new));
 
-    public static final Codec<Lightmap> CODEC = CodecUtils.referenceOrDirect(Polytone.LIGHTMAPS.byNameCodec(), DIRECT_CODEC);
+    public static final Codec<Lightmap> CODEC = SchemaCodecs.referenceOrDirect(Polytone.LIGHTMAPS.byNameCodec(), DIRECT_CODEC);
 
 
     private final DimensionTarget targets;

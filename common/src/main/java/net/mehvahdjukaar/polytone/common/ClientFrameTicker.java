@@ -5,9 +5,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+
+import java.lang.ref.WeakReference;
 
 public class ClientFrameTicker {
 
@@ -18,6 +22,19 @@ public class ClientFrameTicker {
     private static float temperature;
     private static float downfall;
     private static double playerSpeed = 0;
+
+    private static WeakReference<Entity> lastEntity = new WeakReference<>(null);
+
+    public static void setLastEntity(Entity entity) {
+        lastEntity = new WeakReference<>(entity);
+    }
+
+    @Nullable
+    public static Entity getLastEntity() {
+        Entity e = lastEntity.get();
+        if (e == null || e.isRemoved()) return null;
+        return e;
+    }
 
     public static void onRenderTick(Minecraft mc) {
         Level level = mc.level;

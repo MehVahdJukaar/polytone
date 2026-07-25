@@ -1,7 +1,8 @@
 package net.mehvahdjukaar.polytone.common.struc;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 
 public record Vec3f (float x, float y, float z){
 
@@ -16,9 +17,9 @@ public record Vec3f (float x, float y, float z){
             }, f -> Float.toString(f))
     );
 
-    public static final Codec<Vec3f> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            FLOAT_OR_STRING.fieldOf("x").forGetter(Vec3f::x),
-            FLOAT_OR_STRING.fieldOf("y").forGetter(Vec3f::y),
-            FLOAT_OR_STRING.fieldOf("z").forGetter(Vec3f::z)
-    ).apply(instance, Vec3f::new));
+    public static final SchemaCodec<Vec3f> CODEC = SchemaRecord.create(Vec3f.class, i -> i.group(
+            i.field("x", FLOAT_OR_STRING, Vec3f::x),
+            i.field("y", FLOAT_OR_STRING, Vec3f::y),
+            i.field("z", FLOAT_OR_STRING, Vec3f::z)
+    ).apply(i, Vec3f::new));
 }

@@ -28,5 +28,8 @@
     "fabricloader": ">=0.18",
     "fabric-api": "*",
     "minecraft": ">=26.1 <26.1.3"
+  },
+  "recommends": {
+    "nautilus_studio": "*"
   }
 }

@@ -1,8 +1,9 @@
 package net.mehvahdjukaar.polytone.content.block;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Decoder;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.Schema;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.color.MapColorHelper;
@@ -86,7 +87,7 @@ public record BlockPropertyModifier(
     }
 
     public static BlockPropertyModifier coloringBlocks(IColorGetter colormap, Set<Identifier> blocks) {
-        Targets t = net.mehvahdjukaar.polytone.common.Targets.ofIds(blocks);
+        Targets t = Targets.ofIds(blocks);
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
@@ -209,35 +210,37 @@ public record BlockPropertyModifier(
         return List.of(src);
     }
 
-    public static final Codec<ChunkSectionLayer> SECTION_LAYER_CODEC = Codec.STRING.xmap(s -> ChunkSectionLayer.valueOf(s.toUpperCase(Locale.ROOT)), ChunkSectionLayer::label);
+    // Declaration-site schema: enum dropdown over the layer labels, inference only sees
+    // STRING.xmap and would render plain text.
+    public static final Codec<ChunkSectionLayer> SECTION_LAYER_CODEC = SchemaCodec.of(
+            Codec.STRING.xmap(s -> ChunkSectionLayer.valueOf(s.toUpperCase(Locale.ROOT)), ChunkSectionLayer::label),
+            new Schema.Enum<>(List.of(ChunkSectionLayer.values()), ChunkSectionLayer::label));
 
-    public static final Decoder<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
-            instance.group(
-                    IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
+    public static final SchemaCodec<BlockPropertyModifier> CODEC = SchemaRecord.create(BlockPropertyModifier.class, i ->
+            i.group(
+                    i.optional("colormap", IndexCompoundColorGetter.SINGLE_OR_MULTIPLE, b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
                     //normal opt so it can fail when using modded sounds
-                    PolytoneSoundType.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
-                    MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE).optionalFieldOf(
-                            "map_color").forGetter(BlockPropertyModifier::mapColor),
-                    Codec.BOOL.optionalFieldOf("can_occlude").forGetter(BlockPropertyModifier::canOcclude),
-                    Codec.BOOL.optionalFieldOf("spawn_particles_on_break").forGetter(BlockPropertyModifier::spawnParticlesOnBreak),
-                    Codec.BOOL.optionalFieldOf("tinted_breaking_particles").forGetter(BlockPropertyModifier::breakingParticlesTinted),
-                    SECTION_LAYER_CODEC.optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
-                    Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
-                            .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
-                    BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(BlockPropertyModifier::particleEmitters),
-                    BlockSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(BlockPropertyModifier::soundEmitters),
-                    BlockOffsets.CODEC.optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
-                    BlockSetTypeProvider.CODEC.optionalFieldOf("block_set_type").forGetter(BlockPropertyModifier::blockSetType),
-                    Codec.BOOL.optionalFieldOf("disable_particles", false).forGetter(BlockPropertyModifier::disableParticles),
-                    Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(BlockPropertyModifier::targets),
+                    i.optional("sound_type", PolytoneSoundType.CODEC, BlockPropertyModifier::soundType),
+                    i.optional("map_color", MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE), BlockPropertyModifier::mapColor),
+                    i.optional("can_occlude", Codec.BOOL, BlockPropertyModifier::canOcclude),
+                    i.optional("spawn_particles_on_break", Codec.BOOL, BlockPropertyModifier::spawnParticlesOnBreak),
+                    i.optional("tinted_breaking_particles", Codec.BOOL, BlockPropertyModifier::breakingParticlesTinted),
+                    i.optional("render_type", SECTION_LAYER_CODEC, BlockPropertyModifier::renderType),
+                    i.optional("client_light", Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0), BlockPropertyModifier::clientLight),
+                    i.optional("particle_emitters", BlockParticleEmitter.CODEC.listOf(), List.of(), BlockPropertyModifier::particleEmitters),
+                    i.optional("sound_emitters", BlockSoundEmitter.CODEC.listOf(), List.of(), BlockPropertyModifier::soundEmitters),
+                    i.optional("offset_type", BlockOffsets.CODEC, BlockPropertyModifier::offsetType),
+                    i.optional("block_set_type", BlockSetTypeProvider.CODEC, BlockPropertyModifier::blockSetType),
+                    i.optional("disable_particles", Codec.BOOL, false, BlockPropertyModifier::disableParticles),
+                    i.optional("targets", Targets.CODEC, Targets.EMPTY, BlockPropertyModifier::targets),
                     //dont use
-                    Codec.BOOL.optionalFieldOf("force_tint_hack", false).forGetter(BlockPropertyModifier::tintHack)
-            ).apply(instance, BlockPropertyModifier::new));
+                    i.optional("force_tint_hack", Codec.BOOL, false, BlockPropertyModifier::tintHack)
+            ).apply(i, BlockPropertyModifier::new));
 
-    public static final Decoder<BlockPropertyModifier> PARTIAL_CODEC = RecordCodecBuilder.create(instance ->
-            instance.group(
-                    IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null)))
-            ).apply(instance, c -> ofBlockColor(c.orElse(null))));
+    public static final SchemaCodec<BlockPropertyModifier> PARTIAL_CODEC = SchemaRecord.create(BlockPropertyModifier.class, i ->
+            i.group(
+                    i.optional("colormap", IndexCompoundColorGetter.SINGLE_OR_MULTIPLE, b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null)))
+            ).apply(i, c -> ofBlockColor(c.orElse(null))));
 
     public boolean hasColormap() {
         return this.tintGetter.isPresent();

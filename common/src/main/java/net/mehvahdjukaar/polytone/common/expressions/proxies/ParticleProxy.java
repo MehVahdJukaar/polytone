@@ -120,8 +120,6 @@ public class ParticleProxy extends PositionalProxy {
     }
 
 
-    //setters
-
     public void xd(double xd) {
         particle.xd = xd;
     }

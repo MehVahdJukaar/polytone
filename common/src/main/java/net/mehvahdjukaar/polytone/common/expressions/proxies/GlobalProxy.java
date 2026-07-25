@@ -1,14 +1,15 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @BeanAliases
@@ -38,7 +39,8 @@ public class GlobalProxy {
     }
 
     public String season() {
-        return ISeason.get(delegate()).lowercaseName();
+        Level level = delegate();
+        return level == null ? ISeason.SUMMER.lowercaseName() : ISeason.get(level).lowercaseName();
     }
 
     public String dimensionType() {
@@ -62,6 +64,11 @@ public class GlobalProxy {
         };
     }
 
+    public double seaLevel() {
+        Level level = delegate();
+        return level == null ? 63 : level.getSeaLevel();
+    }
+
     public double seasonNumber() {
         return ExpTicker.getSeasonNumber();
     }
@@ -74,6 +81,16 @@ public class GlobalProxy {
         return ExpTicker.getRainAndThunder();
     }
 
+    /**
+     * Runtime lookup of a global expression's current value by its variable name, e.g.
+     * {@code global.value('minecraft_leaf_drift')}. Unlike referencing the global as a bare
+     * variable (which must exist when the calling expression COMPILES — not guaranteed, since
+     * managers parse in parallel during reload), this resolves at evaluation time. Missing -> 0.
+     */
+    public double value(String key) {
+        return Polytone.GLOBAL_EXPRESSION.getValue(key);
+    }
+
     public Object environmentAttribute(String value) {
         Level delegate = delegate();
         if (delegate == null) {
@@ -81,5 +98,15 @@ public class GlobalProxy {
         }
         var a = ExpUtils.parseEnvAttr(value);
         return delegate.environmentAttributes().getDimensionValue(a);
+    }
+
+    @Nullable
+    public EntityProxy lastInteractedEntity() {
+        Entity e = ClientFrameTicker.getLastEntity();
+        return e == null ? null : new EntityProxy(e);
+    }
+
+    public boolean hasInteracted() {
+        return ClientFrameTicker.getLastEntity() != null;
     }
 }

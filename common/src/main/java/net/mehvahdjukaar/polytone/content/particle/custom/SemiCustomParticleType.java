@@ -1,7 +1,8 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
@@ -47,11 +48,11 @@ public class SemiCustomParticleType implements ICustomParticleFactory {
         this.initializer = initializer.orElse(null);
     }
 
-    public static final Codec<SemiCustomParticleType> CODEC = RecordCodecBuilder.create(i -> i.group(
-            CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("copy_from").forGetter(c -> c.copyType),
-            CustomParticleInitializer.CODEC.optionalFieldOf("initializer").forGetter(c -> Optional.ofNullable(c.initializer)),
-            Codec.BOOL.optionalFieldOf("has_physics", true).forGetter(c -> c.hasPhysics),
-            Colormap.CODEC.optionalFieldOf("colormap").forGetter(c -> Optional.ofNullable(c.colormap))
+    public static final SchemaCodec<SemiCustomParticleType> CODEC = SchemaRecord.create(SemiCustomParticleType.class, i -> i.group(
+            i.field("copy_from", CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.PARTICLE_TYPE), c -> c.copyType),
+            i.optional("initializer", CustomParticleInitializer.CODEC, c -> Optional.ofNullable(c.initializer)),
+            i.optional("has_physics", Codec.BOOL, true, c -> c.hasPhysics),
+            i.optional("colormap", Colormap.CODEC, c -> Optional.ofNullable(c.colormap))
     ).apply(i, SemiCustomParticleType::new));
 
     @Override
