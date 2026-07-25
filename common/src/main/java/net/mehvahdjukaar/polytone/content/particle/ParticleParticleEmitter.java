@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.particle;
 
+import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -48,6 +49,7 @@ public record ParticleParticleEmitter(
         Optional<IParticleExp> roll,
         Optional<IParticleExp> size,
         Optional<IParticleExp> custom,
+        Map<String, IParticleExp> customs,
         RuleTest predicate,
         Optional<HolderSet<Biome>> biomes
 ) implements IParticleTickable {
@@ -69,6 +71,8 @@ public record ParticleParticleEmitter(
             i.optional("roll", IParticleExp.CODEC, ParticleParticleEmitter::roll),
             i.optional("size", IParticleExp.CODEC, ParticleParticleEmitter::size),
             i.optional("custom", IParticleExp.CODEC, ParticleParticleEmitter::custom),
+            i.optional("customs", Codec.unboundedMap(Codec.STRING, IParticleExp.CODEC), Map.of(),
+                    ParticleParticleEmitter::customs),
             i.field("state_predicate", SchemaCodecs.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE), RuleTest.CODEC, ParticleParticleEmitter::predicate),
             i.optional("biomes", CodecUtils.forwardAwareHomogeneousList(Registries.BIOME), ParticleParticleEmitter::biomes)
     ).apply(i, ParticleParticleEmitter::new));
@@ -131,6 +135,8 @@ public record ParticleParticleEmitter(
             roll.ifPresent(exp -> map.put("roll", (float) exp.evaluate(particle, level)));
             size.ifPresent(exp -> map.put("size", (float) exp.evaluate(particle, level)));
             custom.ifPresent(exp -> map.put("custom", (float) exp.evaluate(particle, level)));
+            customs.forEach((name, exp) -> map.put(ExtraDataParticleOptions.NAMED_CUSTOM_PREFIX + name,
+                    (float) exp.evaluate(particle, level)));
             return new ExtraDataParticleOptions(map, particleTypeValue);
         }
 

@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
 
+import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.expressions.ParticleExpEnv;
@@ -8,6 +9,7 @@ import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Optional;
 
 //TODO: merge this and particle modifier
@@ -22,6 +24,7 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
                                             @Nullable IParticleExp blue, @Nullable IParticleExp alpha,
                                             @Nullable IParticleExp roll,
                                             @Nullable IParticleExp custom,
+                                            Map<String, IParticleExp> customs,
                                             @Nullable IParticleExp removeIf) implements ICustomParticleTicker {
 
     public static final SchemaCodec<MultiExpressionParticleTicker> CODEC = SchemaRecord.create(MultiExpressionParticleTicker.class, i -> i.group(
@@ -38,6 +41,7 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
             i.optional("alpha", IParticleExp.CODEC, p -> Optional.ofNullable(p.alpha)),
             i.optional("roll", IParticleExp.CODEC, p -> Optional.ofNullable(p.roll)),
             i.optional("custom", IParticleExp.CODEC, p -> Optional.ofNullable(p.custom)),
+            i.optional("customs", Codec.unboundedMap(Codec.STRING, IParticleExp.CODEC), Map.of(), p -> p.customs),
             i.optional("remove_condition", IParticleExp.CODEC, p -> Optional.ofNullable(p.removeIf))
     ).apply(i, MultiExpressionParticleTicker::new));
 
@@ -47,7 +51,7 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
                                           Optional<IParticleExp> size, Optional<IParticleExp> red,
                                           Optional<IParticleExp> green, Optional<IParticleExp> blue,
                                           Optional<IParticleExp> alpha, Optional<IParticleExp> roll,
-                                          Optional<IParticleExp> custom,
+                                          Optional<IParticleExp> custom, Map<String, IParticleExp> customs,
                                           Optional<IParticleExp> removeIf) {
         this(x.orElse(null), y.orElse(null),
                 z.orElse(null), dx.orElse(null),
@@ -55,7 +59,7 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
                 size.orElse(null), red.orElse(null),
                 green.orElse(null), blue.orElse(null),
                 alpha.orElse(null), roll.orElse(null),
-                custom.orElse(null), removeIf.orElse(null)
+                custom.orElse(null), customs, removeIf.orElse(null)
         );
     }
 
@@ -100,6 +104,9 @@ public record MultiExpressionParticleTicker(@Nullable IParticleExp x,
         }
         if (this.custom != null) {
             particle.custom = this.custom.evaluateAsync(particle, level, env);
+        }
+        for (var entry : this.customs.entrySet()) {
+            particle.setCustom(entry.getKey(), entry.getValue().evaluateAsync(particle, level, env));
         }
         if (this.removeIf != null) {
             if (this.removeIf.evaluateAsync(particle, level, env) > 0) {

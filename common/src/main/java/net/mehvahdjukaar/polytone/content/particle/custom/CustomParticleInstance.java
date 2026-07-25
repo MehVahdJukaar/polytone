@@ -27,7 +27,9 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 
 public class CustomParticleInstance extends SingleQuadParticle {
 
@@ -36,6 +38,9 @@ public class CustomParticleInstance extends SingleQuadParticle {
     protected final List<IParticleTickable> tickables;
     protected float oQuadSize;
     protected double custom;
+    // named counterpart of `custom`. Lazy because most particles never declare one, and
+    // case-insensitive so "customs": {"Speed": ..}, o.custom("speed") and CUSTOM_SPEED all agree
+    private @Nullable Map<String, Double> namedCustoms;
 
     private boolean inFrustumLastTick = true;
 
@@ -116,6 +121,20 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     public void setCustom(double custom) {
         this.custom = custom;
+    }
+
+    public double getCustom(String name) {
+        Map<String, Double> customs = this.namedCustoms;
+        if (customs == null) return 0;
+        Double value = customs.get(name);
+        return value == null ? 0 : value;
+    }
+
+    public void setCustom(String name, double value) {
+        if (this.namedCustoms == null) {
+            this.namedCustoms = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        }
+        this.namedCustoms.put(name, value);
     }
 
     @Override

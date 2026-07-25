@@ -17,6 +17,12 @@ import java.util.function.Supplier;
 
 public record ExtraDataParticleOptions(Map<String, Float> extraData,
                                        ParticleType<?> type) implements ParticleOptions {
+
+    /**
+     * Keys carrying a named custom variable rather than a built-in property. Prefixed so a variable
+     * called "red" can never be mistaken for the colour.
+     */
+    public static final String NAMED_CUSTOM_PREFIX = "custom.";
     public static MapCodec<ExtraDataParticleOptions> codec(Supplier<ParticleType<ExtraDataParticleOptions>> typeGetter) {
         return Codec.unboundedMap(Codec.STRING, Codec.FLOAT)
                 .optionalFieldOf("extra_data", Map.of())
@@ -71,6 +77,13 @@ public record ExtraDataParticleOptions(Map<String, Float> extraData,
         Float custom = extraData.get("custom");
         if (custom != null && particle instanceof CustomParticleInstance inst) {
             inst.custom = custom;
+        }
+        if (particle instanceof CustomParticleInstance inst) {
+            for (var entry : extraData.entrySet()) {
+                if (entry.getKey().startsWith(NAMED_CUSTOM_PREFIX)) {
+                    inst.setCustom(entry.getKey().substring(NAMED_CUSTOM_PREFIX.length()), entry.getValue());
+                }
+            }
         }
     }
 
