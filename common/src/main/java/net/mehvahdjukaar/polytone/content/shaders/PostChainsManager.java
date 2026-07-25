@@ -49,6 +49,16 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     // texture unit for samplers it knows about, so GlProgramMixin registers these on any program that
     // actually declares them - otherwise the sampler defaults to unit 0 and reads the scene texture.
     public static final List<String> DYNAMIC_SAMPLERS = List.of(SHADOW_SAMPLER_NAME);
+
+    // Latched when a linked program actually declares one of our blocks/samplers (GlProgramMixin,
+    // at program link time, so before anything can draw with it). With no pack using them these
+    // stay false and we skip the per-frame PolyGlobals upload and the per-draw bind work entirely.
+    // Never un-latched: a pack toggle would otherwise have to re-link every program to re-arm this,
+    // and feeding a live shader a stale UBO is far worse than uploading one nobody reads.
+    private static volatile boolean globalsDeclared = false;
+    private static volatile boolean shadowUboDeclared = false;
+    private static volatile boolean shadowSamplerDeclared = false;
+
     private PolytoneGlobalUniforms globalUniforms = null;
 
     private final List<PostChainActivator> activators = new ArrayList<>();
@@ -95,9 +105,29 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         return globalUniforms;
     }
 
+    /** Called for every linked program with the uniform blocks it declares (see {@code GlProgramMixin}). */
+    public static void onProgramLinked(Set<String> declaredUniforms) {
+        if (declaredUniforms.contains(GLOBALS_NAME)) globalsDeclared = true;
+        if (declaredUniforms.contains(SHADOW_UBO_NAME)) shadowUboDeclared = true;
+    }
+
+    /** Called when a program turned out to declare one of {@link #DYNAMIC_SAMPLERS}. */
+    public static void onDynamicSamplerDeclared(String name) {
+        if (SHADOW_SAMPLER_NAME.equals(name)) shadowSamplerDeclared = true;
+    }
+
+    /**
+     * Cheap gate for the per-draw hook: true only once some shader has asked for anything of ours.
+     * Keeps a vanilla setup out of {@code setPipeline} entirely.
+     */
+    public boolean hasAnyPassBindings() {
+        return globalsDeclared || shadowUboDeclared || shadowSamplerDeclared || !samplersByShader.isEmpty();
+    }
+
     public void setupExtraUniforms(RenderPass pass, Set<String> declaredUniforms) {
         // only bind PolyGlobals to passes whose shader actually declares the block (see GlRenderPassMixin)
         if (declaredUniforms.contains(GLOBALS_NAME)) {
+            globalsDeclared = true; // safety net in case the link-time latch was missed
             pass.setUniform(GLOBALS_NAME, getOrCreateUniforms().getSlice());
         }
         // light view-projection + light dir + camera fract, written by ShadowMapRenderer each frame;
@@ -179,6 +209,8 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     }
 
     public void captureLevelRendererParams(Matrix4fc projectionMatrix, Matrix4fc viewMatrix, float deltaTime) {
+        // no loaded shader declares PolyGlobals -> don't allocate the UBO, don't upload it every frame
+        if (!globalsDeclared && !Polytone.isDevEnv) return;
         Minecraft mc = Minecraft.getInstance();
         float angle = mc.levelRenderer.levelRenderState.skyRenderState.sunAngle;
         float dayTime = (float) ClientFrameTicker.getDayTime();

@@ -41,6 +41,9 @@ public class GlProgramMixin {
                                               List<String> samplers, CallbackInfo ci) {
         GlProgram self = (GlProgram) (Object) this;
         Map<String, Uniform> byName = self.getUniforms();
+        // record which of our uniform blocks this program wants, so nothing gets uploaded or bound
+        // for a setup where no shader asks for them
+        PostChainsManager.onProgramLinked(byName.keySet());
         for (String name : PostChainsManager.DYNAMIC_SAMPLERS) {
             if (byName.containsKey(name)) continue;
             int location = GL20C.glGetUniformLocation(self.getProgramId(), name);
@@ -50,6 +53,7 @@ public class GlProgramMixin {
                 if (u instanceof Uniform.Sampler || u instanceof Uniform.Utb) nextUnit++;
             }
             byName.put(name, new Uniform.Sampler(location, nextUnit));
+            PostChainsManager.onDynamicSamplerDeclared(name);
         }
     }
 }

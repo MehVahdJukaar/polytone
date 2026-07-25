@@ -151,6 +151,11 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         }
     }
 
+    /** Whether any pack (or post chain) registered expression uniforms at all. */
+    public boolean hasAnyRegistered() {
+        return !byShader.isEmpty();
+    }
+
     public void tryApply(RenderPass pass, RenderPipeline pipeline, Set<String> declaredUniforms) {
         if (byShader.isEmpty()) return;
         List<ExpressionUniformBuffers> list = byShader.get(pipeline.getFragmentShader());

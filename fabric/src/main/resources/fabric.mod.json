@@ -31,5 +31,8 @@
   },
   "recommends": {
     "nautilus_studio": "*"
+  },
+  "breaks": {
+    "sodium": "<0.9"
   }
 }
