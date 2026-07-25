@@ -35,3 +35,11 @@ CLAUDE.md
 /common/mods/sodium-neoforge-mod-0.8.12.jar
 /neoforge/mods/sodium-neoforge-mod-0.8.12.jar
 /resourcepacks/builds/sunbathing-v1.5.zip
+/common/mods/net.caffeinemc.sodium-neoforge-0.8.13+mc1.21.11-mod.jar
+/resourcepacks/shadowmap_debug/pack.mcmeta
+/resourcepacks/shadowmap_debug/assets/shadowdbg/polytone/shadow_map.json
+/resourcepacks/shadowmap_debug/assets/shadowdbg/shaders/post/shadows.fsh
+/resourcepacks/shadowmap_debug/assets/shadowdbg/polytone/post_shaders/shadows.json
+/resourcepacks/shadowmap_debug/assets/shadowdbg/post_effect/shadows.json
+/resourcepacks/builds/sunbathing-v1.8.zip
+/resourcepacks/builds/sunbathing-v1.9.zip
