@@ -19,10 +19,8 @@ dependencies {
     modImplementation("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
     include("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
 
-    // The editor UI is a SEPARATE mod, NOT bundled (users install it themselves). Only `common`
-    // compiles against it, and the published jar is still the 1.21.11 one, whose access widener
-    // loom refuses to remap. Re-add as modImplementation once a 26.1 nautilus_studio is published.
-    // modImplementation("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
+    // The editor UI is a SEPARATE mod — mod dep for dev, NOT bundled (users install it themselves).
+    modImplementation("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     apiInclude("org.mvel:mvel2:${mvel_version}")

@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.content.tabs;
 
-import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.client.Minecraft;
@@ -90,10 +89,8 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         previewed = mod;
         previewedTargets = mod == null ? Set.of() : resolveTargets(fileId, mod);
         Polytone.CREATIVE_TABS_MODIFIERS.setOverride(mod == null ? null : this);
-        for (var key : previewedTargets) {
-            // A tab nothing modified yet has no event listener; the preview needs one to reach it.
-            PlatStuff.addTabEventForTab(key);
-        }
+        // No per-tab listener registration needed: CreativeModeTabMixin hooks buildContents itself,
+        // so every tab (modified or not) already runs through us.
         CreativeModeTabs.CACHED_PARAMETERS = null; // makes the open screen rebuild its contents next tick
     }
 

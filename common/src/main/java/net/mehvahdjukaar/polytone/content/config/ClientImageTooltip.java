@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.config;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -37,7 +37,7 @@ public class ClientImageTooltip implements ClientTooltipComponent {
     }
 
     @Override
-    public void renderImage(Font font, int x, int y, int tooltipWidth, int tooltipHeight, GuiGraphics guiGraphics) {
+    public void extractImage(Font font, int x, int y, int tooltipWidth, int tooltipHeight, GuiGraphicsExtractor guiGraphics) {
         // center within the tooltip's content width, as ClientBundleTooltip does with its grid
         int imageX = x + (tooltipWidth - width) / 2;
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, imageX, y + TOP_MARGIN,

@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.packinfo;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.screens.Screen;
@@ -87,10 +87,10 @@ public class PackInfoScreen extends Screen {
         return this.height - FOOTER_HEIGHT;
     }
 
-    // drawn here rather than in render() so the text widgets end up on top of the panel
+    // drawn here rather than in extractRenderState() so the text widgets end up on top of the panel
     @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.renderBackground(graphics, mouseX, mouseY, partialTick);
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(graphics, mouseX, mouseY, partialTick);
 
         boolean inWorld = this.minecraft.level != null;
         Identifier listBg = inWorld ? INWORLD_MENU_BACKGROUND : Screen.MENU_BACKGROUND;

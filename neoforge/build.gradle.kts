@@ -17,9 +17,8 @@ dependencies {
     implementation("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
     jarJar("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
 
-    // The editor UI is a SEPARATE mod, NOT jarJar'd (not bundled). Only `common` compiles against
-    // it, and the published jar is still the 1.21.11 one. Restore once a 26.1 build exists.
-    // implementation("net.mehvahdjukaar:nautilus_studio-neoforge:${nautilus_studio_version}")
+    // The editor UI is a SEPARATE mod — runtime/compile dep, NOT jarJar'd (not bundled).
+    implementation("net.mehvahdjukaar:nautilus_studio-neoforge:${nautilus_studio_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     //forgeRuntimeLibrary ( "net.objecthunter:exp4j:${exp4j_version}")

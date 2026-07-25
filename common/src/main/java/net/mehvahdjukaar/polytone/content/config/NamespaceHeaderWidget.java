@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.config;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -36,7 +36,7 @@ class NamespaceHeaderWidget extends Button {
     }
 
     @Override
-    protected void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         boolean highlighted = this.active && this.isHoveredOrFocused();
         // Faint full-row highlight so the header reads as a clickable strip, vanilla list-row style.
         if (highlighted) {
@@ -57,6 +57,6 @@ class NamespaceHeaderWidget extends Button {
 
         Font font = Minecraft.getInstance().font;
         int textX = chevronX + CHEVRON_SIZE + TEXT_GAP;
-        guiGraphics.drawString(font, this.boldTitle, textX, contentTop, 0xFF000000 | color);
+        guiGraphics.text(font, this.boldTitle, textX, contentTop, 0xFF000000 | color);
     }
 }

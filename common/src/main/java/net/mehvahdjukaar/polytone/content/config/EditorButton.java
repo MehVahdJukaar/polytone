@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.config;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.PackEditor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -89,9 +89,9 @@ final class EditorButton extends Button {
     }
 
     @Override
-    protected void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         // Vanilla button background (greys to the disabled sprite when inactive) + centred icon.
-        renderDefaultSprite(guiGraphics);
+        extractDefaultSprite(guiGraphics);
         boolean active = available && !loading && PackEditor.isOpen();
         Identifier sprite = loading ? ICON_LOADING : (active ? ICON_ACTIVE : ICON);
         int x = getX() + (getWidth() - spriteWidth) / 2;

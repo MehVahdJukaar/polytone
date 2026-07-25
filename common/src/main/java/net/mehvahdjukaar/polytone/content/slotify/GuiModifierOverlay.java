@@ -6,7 +6,7 @@ import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview.PickedEleme
 import net.mehvahdjukaar.polytone.mixins.accessor.AbstractContainerScreenAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
@@ -44,7 +44,7 @@ public final class GuiModifierOverlay {
     private static final int UNTARGETED = 0xFF_FFAA33; // amber
     private static final int MUTED = 0xFF_B0B0B0;
 
-    public static void render(GuiGraphics graphics, Screen screen, int mouseX, int mouseY) {
+    public static void render(GuiGraphicsExtractor graphics, Screen screen, int mouseX, int mouseY) {
         ScreenModifier mod = Polytone.SLOTIFY.getGuiModifier(screen);
         List<WidgetModifier> widgetMods = mod != null ? mod.widgetModifiers() : List.of();
 
@@ -92,7 +92,7 @@ public final class GuiModifierOverlay {
 
     // --- banner ---------------------------------------------------------------------------------
 
-    private static void drawBanner(GuiGraphics graphics, Screen screen, boolean targeted, int modSlots, int modWidgets) {
+    private static void drawBanner(GuiGraphicsExtractor graphics, Screen screen, boolean targeted, int modSlots, int modWidgets) {
         GuiModifierPreview.DetectedTarget t = GuiModifierPreview.targetOf(screen);
         String target = t == null ? "?" : t.type().getSerializedName() + " = " + t.target();
 
@@ -112,19 +112,19 @@ public final class GuiModifierOverlay {
         int x = 4, y = 4;
         int h = font.lineHeight * 2 + 6;
         graphics.fill(x, y, x + w + 8, y + h, LABEL_BG);
-        graphics.drawString(font, head, x + 4, y + 3, targeted ? TARGETED : UNTARGETED, false);
-        graphics.drawString(font, detail, x + 4, y + 3 + font.lineHeight + 1, MUTED, false);
+        graphics.text(font, head, x + 4, y + 3, targeted ? TARGETED : UNTARGETED, false);
+        graphics.text(font, detail, x + 4, y + 3 + font.lineHeight + 1, MUTED, false);
     }
 
     // --- element labels -------------------------------------------------------------------------
 
-    private static void drawLabel(GuiGraphics graphics, String text, int anchorX, int anchorY) {
+    private static void drawLabel(GuiGraphicsExtractor graphics, String text, int anchorX, int anchorY) {
         Font font = Minecraft.getInstance().font;
         int w = font.width(text);
         int ly = anchorY - font.lineHeight - 3;
         if (ly < 2) ly = anchorY + SLOT + 3; // flip below when there's no room above
         graphics.fill(anchorX - 2, ly - 2, anchorX + w + 2, ly + font.lineHeight, LABEL_BG);
-        graphics.drawString(font, text, anchorX, ly, LABEL_TEXT, false);
+        graphics.text(font, text, anchorX, ly, LABEL_TEXT, false);
     }
 
     private static String slotLabel(Screen screen, Slot slot, int leftPos, int topPos) {
@@ -169,7 +169,7 @@ public final class GuiModifierOverlay {
      * the modifier's extra sprites/texts anchored to the screen center. {@code renderExtraSprites}
      * no-ops when the screen has no modifier, so this is safe to call unconditionally every frame.
      */
-    public static void renderScreenExtras(GuiGraphics graphics, SlotifyScreen ss,
+    public static void renderScreenExtras(GuiGraphicsExtractor graphics, SlotifyScreen ss,
                                           int screenWidth, int screenHeight,
                                           int mouseX, int mouseY, float partialTick) {
         if (GuiModifierPreview.isPickingEnabled() && ss instanceof Screen screen) {
@@ -194,9 +194,9 @@ public final class GuiModifierOverlay {
     }
 
     // Fill (when fillColor != 0) + a 1px outline just outside the element bounds.
-    private static void box(GuiGraphics graphics, int x, int y, int w, int h, int fillColor, int outlineColor) {
+    private static void box(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int fillColor, int outlineColor) {
         if (fillColor != 0) graphics.fill(x, y, x + w, y + h, fillColor);
-        graphics.renderOutline(x - 1, y - 1, w + 2, h + 2, outlineColor);
+        graphics.outline(x - 1, y - 1, w + 2, h + 2, outlineColor);
     }
 
     private static boolean inside(int mx, int my, int x, int y, int w, int h) {

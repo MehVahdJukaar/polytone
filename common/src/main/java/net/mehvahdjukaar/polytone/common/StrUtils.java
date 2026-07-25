@@ -42,4 +42,12 @@ public final class StrUtils {
     public static String plural(int n, String noun) {
         return n + " " + noun + (n == 1 ? "" : "s");
     }
+
+    /** {@code 3.0} -> {@code "3"}, {@code 3.5} -> {@code "3.5"}; keeps generated json and expressions readable. */
+    public static String compactNumber(double value) {
+        if (value == Math.rint(value) && !Double.isInfinite(value) && Math.abs(value) < 1e15) {
+            return String.valueOf((long) value);
+        }
+        return String.valueOf(value);
+    }
 }

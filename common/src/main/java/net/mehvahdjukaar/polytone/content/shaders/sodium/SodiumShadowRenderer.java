@@ -75,8 +75,9 @@ public final class SodiumShadowRenderer {
             GL11.glGetIntegerv(GL11.GL_VIEWPORT, prevViewport);
             savedBinding = true;
         }
-        int fbo = ((GlTexture) shadowColor).getFbo(
-                ((GlDevice) RenderSystem.getDevice()).directStateAccess(), shadowDepth);
+        // 26.1 wraps the GL device: RenderSystem.getDevice() is the frontend, the GlDevice is its backend.
+        GlDevice glDevice = (GlDevice) RenderSystem.getDevice().backend;
+        int fbo = ((GlTexture) shadowColor).getFbo(glDevice.directStateAccess(), shadowDepth);
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);
         GlStateManager._viewport(0, 0, shadowColor.getWidth(0), shadowColor.getHeight(0));
     }

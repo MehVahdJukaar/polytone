@@ -4,7 +4,7 @@ import net.mehvahdjukaar.polytone.mixins.accessor.AbstractContainerScreenAccesso
 import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -41,7 +41,7 @@ public final class CreativeTabOverlay {
     private static final int UNTARGETED = 0xFF_FFAA33;
     private static final int MUTED = 0xFF_B0B0B0;
 
-    public static void render(GuiGraphics graphics, AbstractContainerScreen<?> screen, int mouseX, int mouseY) {
+    public static void render(GuiGraphicsExtractor graphics, AbstractContainerScreen<?> screen, int mouseX, int mouseY) {
         CreativeTabModifier mod = CreativeTabPreview.edited();
         Identifier tabId = CreativeTabPreview.openTab();
         boolean targeted = CreativeTabPreview.targets(tabId);
@@ -131,7 +131,7 @@ public final class CreativeTabOverlay {
 
     // --- drawing --------------------------------------------------------------------------------
 
-    private static void drawBanner(GuiGraphics graphics, @Nullable Identifier tabId, boolean targeted) {
+    private static void drawBanner(GuiGraphicsExtractor graphics, @Nullable Identifier tabId, boolean targeted) {
         String head = (targeted ? "● Targeted" : "○ Not targeted") + "   ·   " + (tabId == null ? "?" : tabId);
         int selected = CreativeTabPreview.pendingCount();
         String detail;
@@ -147,13 +147,13 @@ public final class CreativeTabOverlay {
         int w = Math.max(font.width(head), font.width(detail));
         int x = 4, y = 4;
         graphics.fill(x, y, x + w + 8, y + font.lineHeight * 2 + 6, LABEL_BG);
-        graphics.drawString(font, head, x + 4, y + 3, targeted ? TARGETED : UNTARGETED, false);
-        graphics.drawString(font, detail, x + 4, y + 3 + font.lineHeight + 1, MUTED, false);
+        graphics.text(font, head, x + 4, y + 3, targeted ? TARGETED : UNTARGETED, false);
+        graphics.text(font, detail, x + 4, y + 3 + font.lineHeight + 1, MUTED, false);
     }
 
-    private static void box(GuiGraphics graphics, int x, int y, int fillColor, int outlineColor) {
+    private static void box(GuiGraphicsExtractor graphics, int x, int y, int fillColor, int outlineColor) {
         if (fillColor != 0) graphics.fill(x, y, x + SLOT, y + SLOT, fillColor);
-        graphics.renderOutline(x - 1, y - 1, SLOT + 2, SLOT + 2, outlineColor);
+        graphics.outline(x - 1, y - 1, SLOT + 2, SLOT + 2, outlineColor);
     }
 
     private static boolean inside(int mx, int my, int x, int y) {

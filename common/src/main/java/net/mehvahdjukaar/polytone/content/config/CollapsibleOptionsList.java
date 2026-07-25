@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.config;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.OptionsList;
 import net.minecraft.client.gui.components.StringWidget;
@@ -60,12 +60,12 @@ public class CollapsibleOptionsList extends OptionsList {
         }
 
         @Override
-        public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY,
-                                  boolean isHovering, float partialTick) {
+        public void extractContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
+                                   boolean isHovering, float partialTick) {
             int x = this.screen.width / 2 - 155;
             // Push the widget below the top gap; the bottom gap is just empty row space under it.
             this.widget.setPosition(x, this.getContentY() + this.paddingTop);
-            this.widget.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.widget.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
         }
 
         @Override
@@ -89,10 +89,10 @@ public class CollapsibleOptionsList extends OptionsList {
         }
 
         @Override
-        public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY,
-                                  boolean isHovering, float partialTick) {
+        public void extractContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
+                                   boolean isHovering, float partialTick) {
             this.widget.setPosition(this.screen.width / 2 - 155, this.getContentY() + SECTION_PADDING_TOP);
-            this.widget.render(guiGraphics, mouseX, mouseY, partialTick);
+            this.widget.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
         }
 
         @Override

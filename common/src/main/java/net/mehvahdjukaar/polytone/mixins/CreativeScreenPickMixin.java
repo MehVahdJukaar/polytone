@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabOverlay;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabPreview;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -20,8 +20,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeScreenPickMixin {
 
-    @Inject(method = "render", at = @At("TAIL"))
-    private void polytone$renderPickOverlay(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+    @Inject(method = "extractRenderState", at = @At("TAIL"))
+    private void polytone$renderPickOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         if (CreativeTabPreview.isPickingEnabled()) {
             CreativeTabOverlay.render(graphics, self(), mouseX, mouseY);
         }

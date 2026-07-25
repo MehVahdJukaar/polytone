@@ -234,7 +234,7 @@ public class ConfigScreen extends OptionsSubScreen {
             }
 
             if (!components.isEmpty()) {
-                guiGraphics.renderTooltip(this.font, components, mouseX, mouseY,
+                guiGraphics.tooltip(this.font, components, mouseX, mouseY,
                         DefaultTooltipPositioner.INSTANCE, null);
             }
             return; // at most one option is hovered at a time

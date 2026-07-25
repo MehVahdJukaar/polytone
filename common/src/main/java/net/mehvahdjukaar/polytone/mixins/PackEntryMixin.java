@@ -5,7 +5,7 @@ import net.mehvahdjukaar.polytone.content.packinfo.PackInfo;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfoScreen;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfos;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.packs.PackSelectionModel;
 import net.minecraft.client.gui.screens.packs.TransferableSelectionList;
@@ -69,15 +69,15 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
 
     // long pack names would otherwise run straight under the heart. only the title widget is a
     // StringWidget, the description below is a MultiLineTextWidget, so this only hits the title
-    @ModifyArg(method = "renderContent", index = 0, at = @At(value = "INVOKE",
+    @ModifyArg(method = "extractContent", index = 0, at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/components/StringWidget;setMaxWidth(I)Lnet/minecraft/client/gui/components/StringWidget;"))
     private int polytone$narrowTitleForBadge(int maxWidth) {
         if (polytone$info() == null) return maxWidth;
         return maxWidth - POLYTONE$BADGE_SIZE - POLYTONE$BADGE_MARGIN * 2;
     }
 
-    @Inject(method = "renderContent", at = @At("TAIL"))
-    private void polytone$renderBadge(GuiGraphics graphics, int mouseX, int mouseY, boolean hovering,
+    @Inject(method = "extractContent", at = @At("TAIL"))
+    private void polytone$renderBadge(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovering,
                                       float partialTick, CallbackInfo ci) {
         if (polytone$info() == null) return;
 

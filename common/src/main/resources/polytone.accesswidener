@@ -225,3 +225,8 @@ accessible field net/minecraft/client/renderer/culling/Frustum camZ D
 
 #fabric dumb
 mutable field net/minecraft/client/gui/components/debug/DebugScreenEntries PROFILES Ljava/util/Map;
+
+# Sodium shadow replay needs the GL backend's DirectStateAccess to build an FBO for the shadow
+# attachments. 26.1 hides GlDevice behind the public GpuDevice frontend.
+accessible class com/mojang/blaze3d/opengl/GlDevice
+accessible field com/mojang/blaze3d/systems/GpuDevice backend Lcom/mojang/blaze3d/systems/GpuDeviceBackend;

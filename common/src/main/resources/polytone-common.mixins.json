@@ -42,7 +42,6 @@
     "GlProgramMixin",
     "RenderPassMixin",
     "GuiGraphicsExtractorMixin",
-    "GlRenderPassMixin",
     "GuiGraphicsMixin",
     "GuiMixin",
     "GuiRenderStateMixin",
