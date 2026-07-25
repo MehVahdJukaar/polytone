@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.mixins.accessor;
 
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.ViewArea;
+import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -18,4 +19,9 @@ public interface LevelRendererShadowAccessor {
     @Accessor("viewArea")
     @Nullable
     ViewArea polytone$getViewArea();
+
+    /** The compiled-geometry owner: the shadow pass reads its buffer slices to replay sections. */
+    @Accessor("sectionRenderDispatcher")
+    @Nullable
+    SectionRenderDispatcher polytone$getSectionRenderDispatcher();
 }

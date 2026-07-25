@@ -32,12 +32,12 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.QuadParticleGroup;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
-import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.client.renderer.state.ParticlesRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.state.level.ParticlesRenderState;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
@@ -258,7 +258,7 @@ public final class ParticlePreview extends ExpressionPreview {
         private @Nullable ParticleEngine sandbox;
         private final ParticlesRenderState particlesRenderState = new ParticlesRenderState();
         private final PreviewCamera previewCamera = new PreviewCamera();
-        private @Nullable PerspectiveProjectionMatrixBuffer projectionBuffer;
+        private @Nullable ProjectionMatrixBuffer projectionBuffer;
         private final RandomSource random = RandomSource.create();
 
         private @Nullable CustomParticleInstance particle;
@@ -407,7 +407,7 @@ public final class ParticlePreview extends ExpressionPreview {
             previewCamera.place(new Vec3(ex, ey, ez), camera.yawDeg(), camera.pitchDeg());
 
             if (projectionBuffer == null)
-                projectionBuffer = new PerspectiveProjectionMatrixBuffer("polytone particle scene");
+                projectionBuffer = new ProjectionMatrixBuffer("polytone particle scene");
             RenderSystem.setProjectionMatrix(projectionBuffer.getBuffer(camera.projection((float) width / height)),
                     ProjectionType.PERSPECTIVE);
 

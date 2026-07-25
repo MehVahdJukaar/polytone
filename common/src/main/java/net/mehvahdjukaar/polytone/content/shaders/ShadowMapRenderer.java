@@ -18,6 +18,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.shaders.sodium.SodiumShadowRenderer;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.mixins.accessor.LevelRendererShadowAccessor;
 import net.minecraft.util.Util;
 import net.minecraft.client.Camera;
@@ -29,13 +30,12 @@ import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.ViewArea;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
-import net.minecraft.client.renderer.chunk.SectionBuffers;
 import net.minecraft.client.renderer.chunk.SectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -240,46 +240,77 @@ public class ShadowMapRenderer {
     private void drawTerrain(Minecraft mc, Vec3 camPos, Matrix4f lightView) {
         if (shadowSections.isEmpty()) return;
 
+        SectionRenderDispatcher dispatcher =
+                ((LevelRendererShadowAccessor) mc.levelRenderer).polytone$getSectionRenderDispatcher();
+        if (dispatcher == null) return;
+
         GpuTextureView atlasView = mc.getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTextureView();
         int atlasW = atlasView.getWidth(0);
         int atlasH = atlasView.getHeight(0);
 
-        EnumMap<ChunkSectionLayer, List<RenderPass.Draw<GpuBufferSlice[]>>> drawsPerLayer = new EnumMap<>(ChunkSectionLayer.class);
+        // Draws are grouped by source buffer (vanilla's combinedHash) so each drawMultipleIndexed call
+        // sees one vertex/index buffer; TRANSLUCENT is never in SHADOW_LAYERS so ordering doesn't matter.
+        EnumMap<ChunkSectionLayer, Int2ObjectOpenHashMap<List<RenderPass.Draw<GpuBufferSlice[]>>>> drawsPerLayer =
+                new EnumMap<>(ChunkSectionLayer.class);
         for (ChunkSectionLayer layer : SHADOW_LAYERS) {
-            drawsPerLayer.put(layer, new ArrayList<>());
+            drawsPerLayer.put(layer, new Int2ObjectOpenHashMap<>());
         }
         List<DynamicUniforms.ChunkSectionInfo> infos = new ArrayList<>();
         int maxIndices = 0;
         long now = Util.getMillis();
 
-        for (SectionRenderDispatcher.RenderSection section : shadowSections) {
-            SectionMesh mesh = section.getSectionMesh();
-            BlockPos origin = section.getRenderOrigin();
-            int infoIndex = -1;
-            for (ChunkSectionLayer layer : SHADOW_LAYERS) {
-                SectionBuffers buffers = mesh.getBuffers(layer);
-                if (buffers == null) continue;
-                if (infoIndex == -1) {
-                    infoIndex = infos.size();
-                    infos.add(new DynamicUniforms.ChunkSectionInfo(new Matrix4f(lightView),
-                            origin.getX(), origin.getY(), origin.getZ(),
-                            section.getVisibility(now), atlasW, atlasH));
+        // The uber buffers the slices point into are shared with the main pass, so take the same lock
+        // it does. READ ONLY from here: never call uploadGlobalGeomBuffersToGPU. extractLevel already
+        // ran prepareChunkRenders and froze the main pass's draws (buffer, baseVertex, firstIndex);
+        // an upload here would free and move the allocations under them - moved sections then draw
+        // from clobbered memory, which shows up as whole chunks flickering as they stream in.
+        // Sections still pending upload just have no slice yet and cast no shadow this frame.
+        dispatcher.lock();
+        try {
+            for (SectionRenderDispatcher.RenderSection section : shadowSections) {
+                SectionMesh mesh = section.getSectionMesh();
+                BlockPos origin = section.getRenderOrigin();
+                int infoIndex = -1;
+                for (ChunkSectionLayer layer : SHADOW_LAYERS) {
+                    SectionMesh.SectionDraw draw = mesh.getSectionDraw(layer);
+                    SectionRenderDispatcher.RenderSectionBufferSlice slice =
+                            dispatcher.getRenderSectionSlice(mesh, layer);
+                    if (draw == null || slice == null) continue;
+                    if (draw.hasCustomIndexBuffer() && slice.indexBuffer() == null) continue;
+                    if (infoIndex == -1) {
+                        infoIndex = infos.size();
+                        infos.add(new DynamicUniforms.ChunkSectionInfo(new Matrix4f(lightView),
+                                origin.getX(), origin.getY(), origin.getZ(),
+                                section.getVisibility(now), atlasW, atlasH));
+                    }
+                    VertexFormat vertexFormat = layer.pipeline().getVertexFormat();
+                    GpuBuffer vertexBuffer = slice.vertexBuffer();
+                    int bufferGroup = 31 * 173 + vertexBuffer.hashCode();
+
+                    int firstIndex = 0;
+                    GpuBuffer indexBuffer;
+                    VertexFormat.IndexType indexType;
+                    if (!draw.hasCustomIndexBuffer()) {
+                        maxIndices = Math.max(maxIndices, draw.indexCount());
+                        indexBuffer = null;
+                        indexType = null;
+                    } else {
+                        indexBuffer = slice.indexBuffer();
+                        indexType = draw.indexType();
+                        bufferGroup = 31 * bufferGroup + indexBuffer.hashCode();
+                        bufferGroup = 31 * bufferGroup + indexType.hashCode();
+                        firstIndex = (int) (slice.indexBufferOffset() / indexType.bytes);
+                    }
+                    int baseVertex = (int) (slice.vertexBufferOffset() / vertexFormat.getVertexSize());
+                    int idx = infoIndex;
+                    drawsPerLayer.get(layer).computeIfAbsent(bufferGroup, k -> new ArrayList<>())
+                            .add(new RenderPass.Draw<>(0, vertexBuffer, indexBuffer, indexType,
+                                    firstIndex, draw.indexCount(), baseVertex,
+                                    (slices, uploader) -> uploader.upload("ChunkSection", slices[idx])));
                 }
-                GpuBuffer indexBuffer;
-                VertexFormat.IndexType indexType;
-                if (buffers.getIndexBuffer() == null) {
-                    maxIndices = Math.max(maxIndices, buffers.getIndexCount());
-                    indexBuffer = null;
-                    indexType = null;
-                } else {
-                    indexBuffer = buffers.getIndexBuffer();
-                    indexType = buffers.getIndexType();
-                }
-                int idx = infoIndex;
-                drawsPerLayer.get(layer).add(new RenderPass.Draw<>(0, buffers.getVertexBuffer(), indexBuffer,
-                        indexType, 0, buffers.getIndexCount(),
-                        (slices, uploader) -> uploader.upload("ChunkSection", slices[idx])));
             }
+        } finally {
+            dispatcher.unlock();
         }
         if (infos.isEmpty()) return;
 
@@ -296,14 +327,15 @@ public class ShadowMapRenderer {
                 depthTextureView, OptionalDouble.empty())) {
             RenderSystem.bindDefaultUniforms(pass);
             pass.setUniform("Projection", projectionBuffer.slice()); // after the defaults: last bind wins
-            pass.bindTexture("Sampler2", mc.gameRenderer.lightTexture().getTextureView(),
+            pass.bindTexture("Sampler2", mc.gameRenderer.lightmap(),
                     RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             for (ChunkSectionLayer layer : SHADOW_LAYERS) {
-                List<RenderPass.Draw<GpuBufferSlice[]>> draws = drawsPerLayer.get(layer);
-                if (draws.isEmpty()) continue;
                 pass.setPipeline(layer.pipeline());
                 pass.bindTexture("Sampler0", atlasView, sampler);
-                pass.drawMultipleIndexed(draws, sharedIndexBuffer, sharedIndexType, List.of("ChunkSection"), slices);
+                for (var draws : drawsPerLayer.get(layer).values()) {
+                    if (draws.isEmpty()) continue;
+                    pass.drawMultipleIndexed(draws, sharedIndexBuffer, sharedIndexType, List.of("ChunkSection"), slices);
+                }
             }
         }
     }
@@ -496,11 +528,13 @@ public class ShadowMapRenderer {
         if (depthTexture == null || depthTexture.getWidth(0) != shadowRes) {
             closeTextures();
             depthTexture = device.createTexture(() -> "Polytone shadow map depth",
-                    GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_TEXTURE_BINDING,
+                    GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_TEXTURE_BINDING
+                            | GpuTexture.USAGE_COPY_DST,
                     TextureFormat.DEPTH32, shadowRes, shadowRes, 1, 1);
             depthTextureView = device.createTextureView(depthTexture);
+            // COPY_DST as well: 26.1's CommandEncoder rejects a clear on a texture without it.
             colorTexture = device.createTexture(() -> "Polytone shadow map color",
-                    GpuTexture.USAGE_RENDER_ATTACHMENT,
+                    GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_COPY_DST,
                     TextureFormat.RGBA8, shadowRes, shadowRes, 1, 1);
             colorTextureView = device.createTextureView(colorTexture);
         }

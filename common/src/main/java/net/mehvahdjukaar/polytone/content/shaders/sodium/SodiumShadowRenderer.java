@@ -12,7 +12,9 @@ import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
 import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
+import net.caffeinemc.mods.sodium.client.render.viewport.ViewportProvider;
 import net.caffeinemc.mods.sodium.client.util.FogParameters;
+import net.caffeinemc.mods.sodium.client.util.FogStorage;
 import net.mehvahdjukaar.polytone.mixins.accessor.SodiumWorldRendererShadowAccessor;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -37,7 +39,8 @@ import java.util.List;
 // repoint its framebuffer at the shadow attachments (rebindShadowFramebufferIfActive, from the begin
 // mixin). Sodium also builds one terrain list per frame culled to the camera frustum, which would drop
 // any occluder off screen; we first re-cull that list against the light volume (occlusion off, every lit
-// section kept), then dirty the graph so the camera list is rebuilt for next frame's main draw.
+// section kept), then rebuild the camera list before returning - the main draw happens later in this same
+// frame and reads that list live (see restoreCameraList).
 public final class SodiumShadowRenderer {
 
     // Set for the duration of a shadow terrain replay. Sodium's ShaderChunkRenderer.begin binds the MAIN
@@ -149,7 +152,7 @@ public final class SodiumShadowRenderer {
                 restoreFramebufferBinding();
             }
         } finally {
-            if (mutatedLists) restoreCameraList();
+            if (mutatedLists) restoreCameraList(mc, cam);
         }
     }
 
@@ -173,12 +176,22 @@ public final class SodiumShadowRenderer {
         }
     }
 
-    // Throw away the light-culled list so Sodium rebuilds it for the camera. markGraphDirty makes
-    // needsUpdate() true, and Sodium's own setupTerrain runs later in this same renderLevel (we hook its
-    // HEAD), so the rebuild lands before the main terrain draw rather than a frame late.
-    private static void restoreCameraList() {
+    // Put the CAMERA's render list back, right now. Deferring this to Sodium (markGraphDirty and let its
+    // own setupTerrain redo it) worked on 1.21.11, where terrain culling ran inside renderLevel after our
+    // HEAD hook. On 26.1 culling moved to LevelRenderer.update, which runs BEFORE renderLevel, so a dirty
+    // flag only rebuilds NEXT frame - and the main terrain draw reads rsm.renderLists live when the frame
+    // graph executes, so it would draw our light-culled list: every section outside the light volume
+    // missing, sky where the far terrain should be, blinking at the shadow update interval.
+    // Same inputs Sodium's own cullTerrain uses, so the rebuilt list matches what it would have produced.
+    private static void restoreCameraList(Minecraft mc, Camera camera) {
         RenderSectionManager rsm = renderSectionManager();
-        if (rsm != null) rsm.markGraphDirty();
+        if (rsm == null) return;
+        // First, so that even if the rebuild below throws, Sodium redoes the cull next frame.
+        rsm.markGraphDirty();
+        Viewport viewport = ((ViewportProvider) camera.getCullFrustum()).sodium$createViewport();
+        FogParameters fog = ((FogStorage) mc.gameRenderer).sodium$getFogParameters();
+        rsm.update(camera, viewport, fog, mc.player != null && mc.player.isSpectator());
+        rsm.finalizeRenderLists(viewport);
     }
 
     private static RenderSectionManager renderSectionManager() {

@@ -1,1 +1,2 @@
-- added pack info button
+- ported recent changes
+- added nautilus compat, the ability to import bedrock particles

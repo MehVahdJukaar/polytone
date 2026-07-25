@@ -7,15 +7,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.nautilus.render.SceneCamera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.biome.BiomeSpecialEffects.GrassColorModifier;
 import net.minecraft.world.level.block.state.BlockState;
@@ -61,7 +56,7 @@ final class BiomeSceneRenderPass {
     private static final float BACKDROP_RADIUS = 480f;
 
     // Lazily created; the projection matrix must be uploaded to a UBO on the new stack.
-    private static PerspectiveProjectionMatrixBuffer projectionBuffer;
+    private static ProjectionMatrixBuffer projectionBuffer;
 
     static void render(SceneCamera camera, int width, int height, Colors colors,
                        List<Placement> blocks, WaterQuad water) {
@@ -77,7 +72,7 @@ final class BiomeSceneRenderPass {
         float ey = target.y + eyeOffset.y;
         float ez = target.z + eyeOffset.z;
 
-        if (projectionBuffer == null) projectionBuffer = new PerspectiveProjectionMatrixBuffer("polytone biome scene");
+        if (projectionBuffer == null) projectionBuffer = new ProjectionMatrixBuffer("polytone biome scene");
         RenderSystem.setProjectionMatrix(projectionBuffer.getBuffer(camera.projection((float) width / height)),
                 ProjectionType.PERSPECTIVE);
 
@@ -145,27 +140,16 @@ final class BiomeSceneRenderPass {
         }
     }
 
+    // TODO: 26.1 port. This drew the tree/grass blocks through the immediate-mode block path, which
+    // no longer exists: BlockRenderDispatcher and ItemBlockRenderTypes are gone, and ModelBlockRenderer
+    // lost its static renderModel - blocks now go through SubmitNodeCollector#submitMovingBlock with a
+    // MovingBlockRenderState. The mechanical half of that is easy; the hard part is the tint override
+    // (drawing a model with an explicit rgb so the diorama shows the modifier's colours), because
+    // MovingBlockRenderState resolves tint from its biome instead of taking a colour. Doing it right
+    // means either feeding that path a stand-in BlockAndTintGetter, or walking the model's
+    // BlockStateModelPart quads by hand and pushing them with VertexConsumer#putBakedQuad + QuadInstance.
+    // Until then the biome_modifiers preview stays unregistered in PackEditor.
     private static void drawBlocks(Minecraft mc, PoseStack pose, Colors colors, List<Placement> blocks) {
-        mc.gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
-        BlockRenderDispatcher dispatcher = mc.getBlockRenderer();
-        MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-
-        for (Placement pl : blocks) {
-            pose.pushPose();
-            pose.translate(pl.pos().getX(), pl.pos().getY(), pl.pos().getZ());
-            int color = tintColor(colors, pl.tint(), pl.pos());
-            if (color < 0) {
-                dispatcher.renderSingleBlock(pl.state(), pose, buffers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
-            } else {
-                BlockStateModel model = dispatcher.getBlockModel(pl.state());
-                float[] cc = rgb(color);
-                RenderType type = net.minecraft.client.renderer.ItemBlockRenderTypes.getRenderType(pl.state());
-                ModelBlockRenderer.renderModel(pose.last(), buffers.getBuffer(type), model,
-                        cc[0], cc[1], cc[2], LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
-            }
-            pose.popPose();
-        }
-        buffers.endBatch();
     }
 
     // Pool surface + the exposed outer edge faces, translucent so the dirt bed reads through it.

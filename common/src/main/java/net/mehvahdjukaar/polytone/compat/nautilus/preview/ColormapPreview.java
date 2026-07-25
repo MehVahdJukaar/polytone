@@ -29,7 +29,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
@@ -576,8 +577,9 @@ public final class ColormapPreview extends ExpressionPreview {
         }
 
         @Override
-        public float getShade(Direction direction, boolean shade) {
-            return 1f;
+        public CardinalLighting cardinalLighting() {
+            // flat: the preview samples colors, it never shades faces
+            return new CardinalLighting(1f, 1f, 1f, 1f, 1f, 1f);
         }
 
         @Override

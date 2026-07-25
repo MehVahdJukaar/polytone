@@ -31,7 +31,6 @@
     "CreativeModeTabMixin",
     "EntityModelSetMixin",
     "CreativeScreenPickMixin",
-    "EntityModelSetMixin",
     "EntityRendererDispatcherMixin",
     "EntityRendererMixin",
     "EntityRenderStateMixin",
@@ -42,7 +41,6 @@
     "GlProgramMixin",
     "RenderPassMixin",
     "GuiGraphicsExtractorMixin",
-    "GuiGraphicsMixin",
     "GuiMixin",
     "GuiRenderStateMixin",
     "HackThatPreventsMissingSpritesToCrashMixin",
@@ -85,11 +83,8 @@
     "accessor.LevelRendererShadowAccessor",
     "accessor.ParticleAccessor",
     "accessor.PostPassAccessor",
-    "accessor.SodiumWorldRendererShadowAccessor"
-    "accessor.GlBufferAccessor",
     "accessor.GlRenderPassAccessor",
-    "accessor.ParticleAccessor",
-    "accessor.PostPassAccessor"
+    "accessor.SodiumWorldRendererShadowAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

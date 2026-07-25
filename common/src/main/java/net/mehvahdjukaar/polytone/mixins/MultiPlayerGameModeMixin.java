@@ -16,14 +16,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(MultiPlayerGameMode.class)
 public abstract class MultiPlayerGameModeMixin {
 
-    @Inject(method = "interactAt", at = @At("HEAD"))
-    private void polytone$trackInteractAt(Player player, Entity target, EntityHitResult ray, InteractionHand hand,
-                                          CallbackInfoReturnable<InteractionResult> cir) {
-        ClientFrameTicker.setLastEntity(target);
-    }
-
+    // 26.1 folded the old interact/interactAt pair into a single interact() that carries the hit result
     @Inject(method = "interact", at = @At("HEAD"))
-    private void polytone$trackInteract(Player player, Entity target, InteractionHand hand,
+    private void polytone$trackInteract(Player player, Entity target, EntityHitResult hitResult, InteractionHand hand,
                                         CallbackInfoReturnable<InteractionResult> cir) {
         ClientFrameTicker.setLastEntity(target);
     }
