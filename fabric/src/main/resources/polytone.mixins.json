@@ -10,13 +10,12 @@
     "ColorResolverRegistryAccessor",
     "CreativeTabAccessor",
     "EquipmentLayerRendererMixin",
-    "FabricBlockRenderContextMixin",
     "EquipmentLayerRendererMixin",
     "FabricItemGroupEntriesAccessor",
     "FaceBakeryMixin",
     "ParticleEngineAccessor",
     "ParticleResourcesAccessor",
-    "RegistrySyncManagerMixin",
+    "RegistrySyncManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

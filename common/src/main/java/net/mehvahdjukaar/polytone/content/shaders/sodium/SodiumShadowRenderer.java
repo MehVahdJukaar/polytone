@@ -11,10 +11,12 @@ import net.caffeinemc.mods.sodium.client.gl.device.RenderDevice;
 import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
+import net.caffeinemc.mods.sodium.client.render.chunk.UniformBufferManager;
 import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
 import net.caffeinemc.mods.sodium.client.render.viewport.ViewportProvider;
 import net.caffeinemc.mods.sodium.client.util.FogParameters;
 import net.caffeinemc.mods.sodium.client.util.FogStorage;
+import net.mehvahdjukaar.polytone.mixins.accessor.SodiumRenderSectionManagerAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SodiumWorldRendererShadowAccessor;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -113,7 +115,7 @@ public final class SodiumShadowRenderer {
         RenderSectionManager rsm = renderSectionManager();
         boolean mutatedLists = rsm != null;
         try {
-            if (mutatedLists) reCull(mc, rsm, cam, lightView, camPos, coverage, depthRange);
+            if (mutatedLists) reCull(rsm, cam, lightView, camPos, coverage, depthRange);
 
             // The render lists now hold the light-volume section set, so this yields exactly the block
             // entities that can cast into the map (plus the global ones, which are never culled).
@@ -133,6 +135,15 @@ public final class SodiumShadowRenderer {
             active = true;
             shadowColor = color;
             shadowDepth = depth;
+            // Since 0.9 the terrain shader reads its matrices from a UBO that UniformBufferManager writes
+            // ONCE PER FRAME - update() no-ops after the first call until prepareFrame() clears the flag.
+            // Our replay runs at renderLevel HEAD, i.e. BEFORE the main terrain draw, so without this the
+            // light matrices would be the frame's one write and the MAIN pass would silently reuse them:
+            // the whole world drawn from the sun's POV on every shadow frame. Clear it on the way in (so
+            // our light matrices are really what gets written) and again on the way out (so the main pass
+            // writes its own camera matrices back).
+            UniformBufferManager uniforms = ((SodiumWorldRendererShadowAccessor) swr).polytone$getUniformBufferManager();
+            if (uniforms != null) uniforms.prepareFrame();
             try {
                 ChunkRenderMatrices matrices = new ChunkRenderMatrices(lightProj, lightView);
                 // Sodium's own renderGroup hook wraps drawChunkLayer in managed code (its GL-state tracking
@@ -145,6 +156,7 @@ public final class SodiumShadowRenderer {
                     RenderDevice.exitManagedCode();
                 }
             } finally {
+                if (uniforms != null) uniforms.prepareFrame();
                 performance.useBlockFaceCulling = prevFaceCulling;
                 active = false;
                 shadowColor = null;
@@ -157,23 +169,25 @@ public final class SodiumShadowRenderer {
     }
 
     // Re-cull Sodium's terrain list against the light volume.
-    private static void reCull(Minecraft mc, RenderSectionManager rsm, Camera camera, Matrix4f lightView,
+    private static void reCull(RenderSectionManager rsm, Camera camera, Matrix4f lightView,
                                Vec3 camPos, float coverage, float depthRange) {
         SodiumLightVolumeFrustum frustum = new SodiumLightVolumeFrustum(
                 lightView, coverage, depthRange, Viewport.CHUNK_SECTION_PADDED_RADIUS);
         Viewport viewport = new Viewport(frustum, new Vector3d(camPos.x, camPos.y, camPos.z));
 
-        // Force occlusion culling off for this pass: a shadow caster need not be visible to the camera,
-        // only inside the light volume. shouldUseOcclusionCulling() keys off smartCull. FogParameters.NONE
+        // A region's ChunkRenderList is only cleared when the collector meets it at a NEW frame number
+        // (getLastVisibleFrame() != frame), so a second traversal within one frame APPENDS to the camera's
+        // list instead of replacing it - mixed lists, then "Render list is full" once a region passes 256.
+        // prepareRender() is the frame++ Sodium itself calls before each of its own traversals.
+        rsm.prepareRender();
+
+        // updateChunksImmediately = true picks finalizeRenderLists' synchronous fallback traversal: every
+        // renderable section inside the viewport, culled by the frustum alone. That's what a shadow pass
+        // wants (a caster need not be visible from the camera, only inside the light volume) and it is the
+        // only path that doesn't route through Sodium's occlusion trees, which since 0.9 are built
+        // off-thread for the CAMERA viewport and can't be rebuilt for ours mid-frame. FogParameters.NONE
         // so fog distance never trims occluders inside the coverage box.
-        boolean smartCull = mc.smartCull;
-        mc.smartCull = false;
-        try {
-            rsm.update(camera, viewport, FogParameters.NONE, false);
-            rsm.finalizeRenderLists(viewport);
-        } finally {
-            mc.smartCull = smartCull;
-        }
+        rsm.finalizeRenderLists(camera, viewport, FogParameters.NONE, true);
     }
 
     // Put the CAMERA's render list back, right now. Deferring this to Sodium (markGraphDirty and let its
@@ -190,8 +204,16 @@ public final class SodiumShadowRenderer {
         rsm.markGraphDirty();
         Viewport viewport = ((ViewportProvider) camera.getCullFrustum()).sodium$createViewport();
         FogParameters fog = ((FogStorage) mc.gameRenderer).sodium$getFogParameters();
-        rsm.update(camera, viewport, fog, mc.player != null && mc.player.isSpectator());
-        rsm.finalizeRenderLists(viewport);
+        // New frame number again, for the same reason as in reCull: this traversal has to CLEAR the lists
+        // the shadow cull just filled, not append to them.
+        rsm.prepareRender();
+
+        // Straight into the tree read, skipping the public entry points: the occlusion trees the async
+        // culler produced for THIS camera earlier in the frame are still there and still valid, so this
+        // reproduces the list Sodium would have drawn. finalizeRenderLists would instead see the flags our
+        // shadow cull just cleared and fall back to a frustum-only list (every section in view, no
+        // occlusion culling) for the rest of the frame.
+        ((SodiumRenderSectionManagerAccessor) rsm).polytone$readRenderListFromTree(viewport, fog);
     }
 
     private static RenderSectionManager renderSectionManager() {

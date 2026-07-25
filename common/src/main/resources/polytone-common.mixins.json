@@ -84,6 +84,7 @@
     "accessor.ParticleAccessor",
     "accessor.PostPassAccessor",
     "accessor.GlRenderPassAccessor",
+    "accessor.SodiumRenderSectionManagerAccessor",
     "accessor.SodiumWorldRendererShadowAccessor"
   ],
   "injectors": {

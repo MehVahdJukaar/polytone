@@ -1,2 +1,1 @@
-- ported recent changes
-- added nautilus compat, the ability to import bedrock particles
+- updated to work with sodium 0.9. this means that it wont work with 0.8 anymore.

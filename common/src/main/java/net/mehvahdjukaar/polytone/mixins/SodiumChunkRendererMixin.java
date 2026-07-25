@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.textures.GpuSampler;
+import net.caffeinemc.mods.sodium.client.gl.buffer.GlTexelBuffer;
 import net.caffeinemc.mods.sodium.client.render.chunk.ShaderChunkRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import net.caffeinemc.mods.sodium.client.util.FogParameters;
@@ -36,9 +38,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ShaderChunkRenderer.class)
 public abstract class SodiumChunkRendererMixin {
 
-    @Inject(method = "begin", at = @At("TAIL"), remap = false, require = 0)
+    @Inject(method = "begin", at = @At("TAIL"), require = 0)
     private void polytone$bindExtraUniforms(TerrainRenderPass pass, FogParameters parameters,
-                                            GpuSampler terrainSampler, CallbackInfo ci) {
+                                            GpuSampler terrainSampler, GpuBufferSlice dynamicTransforms,
+                                            GlTexelBuffer texelBuffer, CallbackInfo ci) {
         SodiumShadowRenderer.captureTerrainSampler(terrainSampler);
         SodiumShadowRenderer.rebindShadowFramebufferIfActive();
         Polytone.SHADER_EFFECTS.bindToCurrentGlProgram();
