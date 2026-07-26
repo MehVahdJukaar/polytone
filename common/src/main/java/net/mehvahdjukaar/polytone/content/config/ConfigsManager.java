@@ -35,6 +35,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -116,20 +117,34 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
 
     public Screen createScreen(PackSelectionScreen parent) {
         bubbleManager.onConfigOpened(hasPackConfigs());
-        return new ConfigScreen(parent, configs.getValues(), () -> {
-            boolean anyChanged = configs.getValues().stream().anyMatch(OptionHolder::hasUnsavedChanges);
-            if (anyChanged) {
-                needsPackReload.set(true);
-                saveConfigsToDisk();
-                parent.reload();
-            }
+        List<OptionHolder<?>> shown = shownOptions();
+        return new ConfigScreen(parent, shown, () -> {
+            if (shown.stream().noneMatch(OptionHolder::hasUnsavedChanges)) return;
+            needsPackReload.set(true);
+            saveConfigsToDisk(shown);
+            parent.reload();
         });
     }
 
-    private void saveConfigsToDisk() {
+    /**
+     * The holders a config screen edits, detached from the live registry: a resource reload while
+     * the screen is open clears {@link #configs} and rebuilds every pack entry as a fresh holder,
+     * while the screen's widgets keep writing into these. Iterating the registry at save time would
+     * then look at holders nobody touched and silently drop the user's edits.
+     */
+    private List<OptionHolder<?>> shownOptions() {
+        return List.copyOf(configs.getValues());
+    }
+
+    private void saveConfigsToDisk(Collection<OptionHolder<?>> edited) {
         try {
-            JsonObject jsonObject = new JsonObject();
+            // Start from what's already on disk: entries whose pack isn't currently loaded (disabled,
+            // temporarily removed, or failed to parse) have no holder here, and writing a fresh object
+            // would wipe their saved values for good.
+            JsonObject jsonObject = configFileSnapshot.deepCopy();
             for (var option : configs.getValues()) option.saveToJson(jsonObject);
+            // last, so edits made on holders the registry has since replaced win
+            for (var option : edited) option.saveToJson(jsonObject);
             Path target = this.optionsFile.toPath();
             FilesUtil.writeTextAtomically(target, writer -> GsonHelper.writeValue(gson.newJsonWriter(writer), jsonObject, null));
             this.configFileSnapshot = jsonObject;
