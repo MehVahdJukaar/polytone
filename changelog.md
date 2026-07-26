@@ -1,2 +1,1 @@
-- added more compat with nautilus, adding a button to convert bedrock particles to polytone ones
-- fixed a memory leak in codecui
+- fixed an issue with configs
