@@ -66,17 +66,23 @@ public class PolytoneFabric implements ClientModInitializer {
             }
         });
 
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            currentServer = server;
-            addRenderParticlesType();
-        });
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> currentServer = server);
+
+        // vanilla renders only the render types in RENDER_ORDER, so ours has to be spliced in.
+        // On JOIN, not SERVER_STARTED: that one never fires when connecting to a dedicated server,
+        // leaving every additive_translucent particle invisible there.
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> addRenderParticlesType());
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             Polytone.onLoggedOut();
         });
     }
 
+    private static boolean addedRenderParticleType = false;
+
     public static void addRenderParticlesType() {
+        if (addedRenderParticleType) return; // appending twice would draw those particles twice
+        addedRenderParticleType = true;
         List<ParticleRenderType> renderOrder = new ArrayList<>(ParticleEngineAccessor.getRENDER_ORDER());
         renderOrder.add(Preconditions.checkNotNull(PolytoneRenderTypes.PARTICLE_ADDITIVE_TRANSLUCENCY_RENDER_TYPE));
         ParticleEngineAccessor.setRENDER_ORDER(renderOrder);
