@@ -29,6 +29,7 @@
   "screen.polytone.support.discord.desc": "Sumate a la comunidad para recibir ayuda y novedades",
   "screen.polytone.support.wiki": "Wiki",
   "screen.polytone.support.wiki.desc": "Documentación, guías y referencia de formatos",
+  "screen.polytone.pack_info.tooltip": "Información del Pack",
   "config.polytone.lenient_loading.tooltip": "Intenta cargar paquetes con errores. No se garantiza que funcione. NO actives esto si sos creador de paquetes.",
   "config.polytone.lenient_loading": "Carga Permisiva de Paquetes",
   "config.polytone.legacy_parsing.tooltip": "Intenta traducir formatos de otros mods para procesarlos como archivos de Polytone. Relevante para colores personalizados y mapas de color.",
