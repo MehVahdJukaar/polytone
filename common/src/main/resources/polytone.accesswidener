@@ -257,3 +257,6 @@ accessible field net/minecraft/client/renderer/PostChain lastStamp F
 accessible field net/minecraft/client/renderer/PostChain customRenderTargets Ljava/util/Map;
 accessible field net/minecraft/client/renderer/PostChain fullSizedTargets Ljava/util/List;
 accessible field net/minecraft/client/renderer/PostChain passes Ljava/util/List;
+
+accessible field net/minecraft/client/renderer/LevelRenderer viewArea Lnet/minecraft/client/renderer/ViewArea;
+accessible method net/minecraft/client/renderer/LevelRenderer renderSectionLayer (Lnet/minecraft/client/renderer/RenderType;DDDLorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V

@@ -110,6 +110,68 @@ only wants terrain shadows can now turn off the largest remaining per-frame cost
 
 ---
 
+## Secondary level renders (Vista, portal mods)
+
+`LevelRenderer.renderLevel` is not once per frame. Vista renders every mirror and TV feed by calling it
+directly (`VistaLevelRenderer.renderLevel`), from a top-level frame hook *after* `GameRenderer.render`
+has finished; portal-style mods nest theirs inside the main pass instead. Our TAIL hook fired for all
+of them, so a room with four mirrors did five shadow passes per frame - five caster scans, and on
+Sodium five extra `rsm.update` + `finalizeRenderLists` + `markGraphDirty`.
+
+All of it was wasted: the post chains run once per frame from `GameRenderer.render`, and `InShadow` is
+a post-chain sampler, so nothing a feed draws ever reads the map. It also did damage. The reuse cache
+(`renderedCamPos`, `lastUpdateMs`) ended up holding whichever camera rendered last, so with
+`update_interval > 0` the next main pass translated a mirror camera's map by the distance between the
+two cameras. And `captureLevelDepthSnapshot`, on the same hook, reallocated the depth snapshot between
+the window size and the canvas size twice per frame per differently-sized feed.
+
+`LevelRenderPass` gates the hook: a secondary render is one that never went through
+`GameRenderer.renderLevel`, and a depth counter picks the outermost pass for mods that nest inside the
+main one. Feeds show no polytone post effects to begin with, so nothing visible is given up.
+
+Alongside it, three bits of hardening for renderers that render a level from inside our own pass:
+
+- `insidePass` re-entrancy latch. Without it a nested `renderLevel` reached `collectShadowSections`,
+  which clears `shadowSections` while `drawBlockEntities` iterates it (CME), and left the main target
+  bound for the rest of our pass.
+- The shadow target is re-bound immediately before `bufferSource.endBatch()`, since that flush is
+  where the entity batch actually reaches the GPU and any mod code called in between can steal the
+  binding.
+- Reuse is refused when the level changed or the camera moved more than a quarter of `coverage` since
+  the cached render, and a pass that threw is no longer cached as if it had succeeded.
+- The pass takes `renderLevel`'s own `Camera` parameter instead of reading
+  `gameRenderer.getMainCamera()`. That field is a global Vista swaps for the duration of a feed, and it
+  has to agree with the frustum matrices, which have always come from the parameters. Should a
+  secondary pass ever get past the gate, all three inputs now describe the same eye, so the worst case
+  is a correct map built for the wrong camera rather than a volume culled against a mismatched frustum.
+- The reuse cache is dropped in `setSettings` (which `resetWithLevel` calls on disconnect) and in
+  `close`, so it can't pin a dead `ClientLevel`.
+
+---
+
+## Sodium: per-section face culling had to go off
+
+`DefaultChunkRenderer.fillCommandBuffer` drops the faces of each section that point away from the
+camera (`getVisibleFaces(camera.intX/Y/Z, chunkX/Y/Z)`), keyed on the `CameraTransform` built from the
+position handed to `renderSectionLayer` - which has to stay the camera's, because that is what
+`ChunkOffset` is relative to. From the light's side those discarded faces are precisely the ones that
+occlude, so the map ended up holding the far side of every block: shadows detached by about a block and
+walls leaked light in bands that moved as the camera turned. The 1.21.11 line hit this in game and fixed
+it the same way; Iris does it with a `@Redirect` on the same field read.
+
+`replayTerrain` now clears `SodiumClientMod.options().performance.useBlockFaceCulling` around the three
+`renderSectionLayer` calls and restores it in the `finally`. The flag is read once per command-buffer
+fill, and the fill happens for us because the re-cull changes the section set, which is what clears the
+region's cached batch (`ChunkRenderList` -> `clearAllCachedBatches`). Next frame's camera-list rebuild
+changes it back and refills with culling on, so the main pass is unaffected. Costs roughly double the
+submitted quads in the shadow pass.
+
+While there: the `@Invoker`/`@Accessor` pair for `renderSectionLayer` and `viewArea` is gone, replaced
+by two entries in `polytone.accesswidener` (`LevelRendererShadowAccessor` deleted). Sodium's
+`renderSectionManager` stays a mixin accessor - a widener only reaches Minecraft's own classes.
+
+---
+
 ## What is missing
 
 ### 1. Sodium still clobbers the camera render lists (biggest remaining item)

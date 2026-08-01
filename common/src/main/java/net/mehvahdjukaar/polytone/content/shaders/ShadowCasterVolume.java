@@ -2,11 +2,11 @@ package net.mehvahdjukaar.polytone.content.shaders;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 /**
  * The set of positions that can cast a shadow into what the camera can actually see, used to cull the
- * shadow pass. Everything is camera-relative (camera at the origin), matching the space the shadow
- * matrices and Sodium's culling coordinates already live in.
+ * shadow pass. Everything is camera-relative (camera at the origin).
  *
  * <p>Two nested tests, cheap first:
  * <ol>
@@ -30,6 +30,9 @@ public final class ShadowCasterVolume {
     private static final float EDGE_MARGIN = 4f;
 
     private static final int MAX_PLANES = 24;
+    // JOML plane order: NX, PX, NY, PY, NZ, PZ - opposing faces sit at adjacent indices, which the
+    // silhouette loop below relies on.
+    private static final int FRUSTUM_FACES = 6;
 
     // Light basis (rows of the light view matrix) = light-space axes in camera-relative world coords.
     private final float xx, xy, xz;
@@ -58,101 +61,68 @@ public final class ShadowCasterVolume {
     void buildCasterPlanes(Matrix4f cameraViewProjection, Vector3f towardLight) {
         planeCount = 0;
 
-        // Camera frustum half-spaces, inward normals (Gribb-Hartmann: row3 +/- row_i of the clip matrix).
-        float[][] frustum = new float[6][];
-        frustum[0] = normalized(cameraViewProjection.m03() + cameraViewProjection.m00(),
-                cameraViewProjection.m13() + cameraViewProjection.m10(),
-                cameraViewProjection.m23() + cameraViewProjection.m20(),
-                cameraViewProjection.m33() + cameraViewProjection.m30()); // left
-        frustum[1] = normalized(cameraViewProjection.m03() - cameraViewProjection.m00(),
-                cameraViewProjection.m13() - cameraViewProjection.m10(),
-                cameraViewProjection.m23() - cameraViewProjection.m20(),
-                cameraViewProjection.m33() - cameraViewProjection.m30()); // right
-        frustum[2] = normalized(cameraViewProjection.m03() + cameraViewProjection.m01(),
-                cameraViewProjection.m13() + cameraViewProjection.m11(),
-                cameraViewProjection.m23() + cameraViewProjection.m21(),
-                cameraViewProjection.m33() + cameraViewProjection.m31()); // bottom
-        frustum[3] = normalized(cameraViewProjection.m03() - cameraViewProjection.m01(),
-                cameraViewProjection.m13() - cameraViewProjection.m11(),
-                cameraViewProjection.m23() - cameraViewProjection.m21(),
-                cameraViewProjection.m33() - cameraViewProjection.m31()); // top
-        frustum[4] = normalized(cameraViewProjection.m03() + cameraViewProjection.m02(),
-                cameraViewProjection.m13() + cameraViewProjection.m12(),
-                cameraViewProjection.m23() + cameraViewProjection.m22(),
-                cameraViewProjection.m33() + cameraViewProjection.m32()); // near
-        frustum[5] = normalized(cameraViewProjection.m03() - cameraViewProjection.m02(),
-                cameraViewProjection.m13() - cameraViewProjection.m12(),
-                cameraViewProjection.m23() - cameraViewProjection.m22(),
-                cameraViewProjection.m33() - cameraViewProjection.m32()); // far
-
-        for (float[] plane : frustum) {
-            if (plane == null) return; // degenerate matrix - fall back to the light box alone
+        // Camera frustum half-spaces, normalized with inward normals.
+        Vector4f[] faces = new Vector4f[FRUSTUM_FACES];
+        for (int i = 0; i < FRUSTUM_FACES; i++) {
+            Vector4f face = cameraViewProjection.frustumPlane(i, new Vector4f());
+            if (!face.isFinite()) return; // degenerate matrix - fall back to the light box alone
+            faces[i] = face;
         }
 
         // A point inside the frustum, used to orient the edge planes. NDC origin maps to the middle of
         // the frustum, which is strictly interior for any non-degenerate projection.
-        Vector3f interior = new Vector3f();
-        try {
-            new Matrix4f(cameraViewProjection).invert().transformProject(interior);
-        } catch (RuntimeException e) {
-            return; // non-invertible - light box only
-        }
-        if (!interior.isFinite()) return;
+        Vector3f interior = cameraViewProjection.invert(new Matrix4f()).transformProject(new Vector3f());
+        if (!interior.isFinite()) return; // non-invertible - light box only
 
         // An occluder p shadows the frustum F when p - s*L lands in F for some s >= 0 (L points toward
         // the light, so the light travels along -L). For half-space n.p + d >= 0 that needs
         // n.p + d >= s * (n.L) to hold for some s >= 0: when n.L < 0 the right side falls away without
         // bound and the plane never constrains anything, so only planes with n.L >= 0 survive.
-        boolean[] kept = new boolean[6];
-        for (int i = 0; i < 6; i++) {
-            float[] p = frustum[i];
-            kept[i] = p[0] * towardLight.x + p[1] * towardLight.y + p[2] * towardLight.z >= 0f;
-            if (kept[i]) addPlane(p[0], p[1], p[2], p[3] + EDGE_MARGIN);
+        boolean[] facesLight = new boolean[FRUSTUM_FACES];
+        for (int i = 0; i < FRUSTUM_FACES; i++) {
+            Vector4f face = faces[i];
+            facesLight[i] = dotNormal(face, towardLight) >= 0f;
+            if (facesLight[i]) addPlane(face.x, face.y, face.z, face.w + EDGE_MARGIN);
         }
 
         // Keeping only those planes leaves the volume open sideways. Close it along the frustum's
         // silhouette: every edge between a kept and a dropped face, swept into a plane parallel to the
         // light. Frustum faces are adjacent unless they are the opposing pair on the same axis.
-        for (int a = 0; a < 6; a++) {
-            if (!kept[a]) continue;
-            for (int b = 0; b < 6; b++) {
-                if (kept[b] || (a ^ 1) == b) continue;
-                addEdgePlane(frustum[a], frustum[b], towardLight, interior);
+        for (int a = 0; a < FRUSTUM_FACES; a++) {
+            if (!facesLight[a]) continue;
+            for (int b = 0; b < FRUSTUM_FACES; b++) {
+                if (facesLight[b] || (a ^ 1) == b) continue;
+                addEdgePlane(faces[a], faces[b], towardLight, interior);
             }
         }
     }
 
     // Plane through the intersection line of two faces, parallel to the light direction.
-    private void addEdgePlane(float[] a, float[] b, Vector3f towardLight, Vector3f interior) {
-        // Direction of the shared edge.
-        float ex = a[1] * b[2] - a[2] * b[1];
-        float ey = a[2] * b[0] - a[0] * b[2];
-        float ez = a[0] * b[1] - a[1] * b[0];
-        float lenSq = ex * ex + ey * ey + ez * ez;
-        if (lenSq < 1.0E-9f) return; // parallel faces, no edge
+    private void addEdgePlane(Vector4f a, Vector4f b, Vector3f towardLight, Vector3f interior) {
+        Vector3f na = new Vector3f(a.x, a.y, a.z);
+        Vector3f nb = new Vector3f(b.x, b.y, b.z);
+        Vector3f edge = na.cross(nb, new Vector3f());
+        float edgeLenSq = edge.lengthSquared();
+        if (edgeLenSq < 1.0E-9f) return; // parallel faces, no edge
 
         // Point on that line closest to the origin: (h_a (n_b x e) + h_b (e x n_a)) / |e|^2, with
         // h = -d for the n.p + d = 0 form used here.
-        float ha = -a[3];
-        float hb = -b[3];
-        float px = (ha * (b[1] * ez - b[2] * ey) + hb * (ey * a[2] - ez * a[1])) / lenSq;
-        float py = (ha * (b[2] * ex - b[0] * ez) + hb * (ez * a[0] - ex * a[2])) / lenSq;
-        float pz = (ha * (b[0] * ey - b[1] * ex) + hb * (ex * a[1] - ey * a[0])) / lenSq;
+        Vector3f point = nb.cross(edge, new Vector3f()).mul(-a.w)
+                .fma(-b.w, edge.cross(na, new Vector3f()))
+                .div(edgeLenSq);
 
         // Normal is perpendicular to both the edge and the light, so the plane contains the whole sweep.
-        float nx = ey * towardLight.z - ez * towardLight.y;
-        float ny = ez * towardLight.x - ex * towardLight.z;
-        float nz = ex * towardLight.y - ey * towardLight.x;
-        float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
-        if (len < 1.0E-5f) return; // edge runs along the light; it casts no silhouette
-        nx /= len; ny /= len; nz /= len;
+        Vector3f normal = edge.cross(towardLight, new Vector3f());
+        if (normal.lengthSquared() < 1.0E-10f) return; // edge runs along the light; it casts no silhouette
+        normal.normalize();
 
-        float d = -(nx * px + ny * py + nz * pz);
+        float d = -normal.dot(point);
         // Orient so the frustum (and therefore the whole swept volume) is on the positive side.
-        if (nx * interior.x + ny * interior.y + nz * interior.z + d < 0f) {
-            nx = -nx; ny = -ny; nz = -nz; d = -d;
+        if (normal.dot(interior) + d < 0f) {
+            normal.negate();
+            d = -d;
         }
-        addPlane(nx, ny, nz, d + EDGE_MARGIN);
+        addPlane(normal.x, normal.y, normal.z, d + EDGE_MARGIN);
     }
 
     private void addPlane(float nx, float ny, float nz, float d) {
@@ -165,10 +135,8 @@ public final class ShadowCasterVolume {
         planeCount++;
     }
 
-    private static float[] normalized(float nx, float ny, float nz, float d) {
-        float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
-        if (len < 1.0E-8f) return null;
-        return new float[]{nx / len, ny / len, nz / len, d / len};
+    private static float dotNormal(Vector4f plane, Vector3f v) {
+        return plane.x * v.x + plane.y * v.y + plane.z * v.z;
     }
 
     /**
@@ -176,10 +144,10 @@ public final class ShadowCasterVolume {
      * reports a false "outside", which is what a caster set needs.
      */
     public boolean intersects(float cx, float cy, float cz, float ex, float ey, float ez) {
-        // Light box first: three dot products, and it rejects the overwhelming majority.
-        if (Math.abs(xx * cx + xy * cy + xz * cz) > halfLateral + (Math.abs(xx) * ex + Math.abs(xy) * ey + Math.abs(xz) * ez)) return false;
-        if (Math.abs(yx * cx + yy * cy + yz * cz) > halfLateral + (Math.abs(yx) * ex + Math.abs(yy) * ey + Math.abs(yz) * ez)) return false;
-        if (Math.abs(zx * cx + zy * cy + zz * cz) > halfDepth + (Math.abs(zx) * ex + Math.abs(zy) * ey + Math.abs(zz) * ez)) return false;
+        // Light box first: three slab tests, and they reject the overwhelming majority.
+        if (outsideSlab(xx, xy, xz, halfLateral, cx, cy, cz, ex, ey, ez)) return false;
+        if (outsideSlab(yx, yy, yz, halfLateral, cx, cy, cz, ex, ey, ez)) return false;
+        if (outsideSlab(zx, zy, zz, halfDepth, cx, cy, cz, ex, ey, ez)) return false;
 
         for (int i = 0, n = planeCount * 4; i < n; i += 4) {
             float nx = planes[i], ny = planes[i + 1], nz = planes[i + 2];
@@ -187,5 +155,13 @@ public final class ShadowCasterVolume {
             if (nx * cx + ny * cy + nz * cz + planes[i + 3] + radius < 0f) return false;
         }
         return true;
+    }
+
+    // Box against the slab of half-width `half` around the light axis (ax, ay, az): the box spans its
+    // centre distance along that axis plus its half-extents projected onto it.
+    private static boolean outsideSlab(float ax, float ay, float az, float half,
+                                       float cx, float cy, float cz, float ex, float ey, float ez) {
+        float radius = Math.abs(ax) * ex + Math.abs(ay) * ey + Math.abs(az) * ez;
+        return Math.abs(ax * cx + ay * cy + az * cz) > half + radius;
     }
 }

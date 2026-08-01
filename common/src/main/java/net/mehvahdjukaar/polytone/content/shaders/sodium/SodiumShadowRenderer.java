@@ -1,14 +1,16 @@
 package net.mehvahdjukaar.polytone.content.shaders.sodium;
 
+import net.caffeinemc.mods.sodium.client.SodiumClientMod;
+import net.caffeinemc.mods.sodium.client.gui.SodiumOptions;
 import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
 import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.shaders.ShadowCasterVolume;
-import net.mehvahdjukaar.polytone.mixins.accessor.LevelRendererShadowAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SodiumWorldRendererShadowAccessor;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -33,13 +35,29 @@ public final class SodiumShadowRenderer {
                                      ShadowCasterVolume volume) {
         boolean reCulled = CompatHandler.SODIUM && reCull(mc, cam, camPos, volume);
 
-        LevelRendererShadowAccessor lr = (LevelRendererShadowAccessor) mc.levelRenderer;
-        //TODO: use access wideners instead of the @Invoker
-        lr.polytone$renderSectionLayer(RenderType.solid(), camPos.x, camPos.y, camPos.z, lightView, lightProj);
-        lr.polytone$renderSectionLayer(RenderType.cutoutMipped(), camPos.x, camPos.y, camPos.z, lightView, lightProj);
-        lr.polytone$renderSectionLayer(RenderType.cutout(), camPos.x, camPos.y, camPos.z, lightView, lightProj);
-
-        if (reCulled) restoreCameraList();
+        // Sodium drops the faces of every section that point away from the CAMERA
+        // (DefaultChunkRenderer.fillCommandBuffer -> getVisibleFaces, off the CameraTransform built from
+        // the position we pass, which has to stay the camera's for ChunkOffset to line up). From the
+        // light's side those are exactly the faces that occlude, so leaving it on writes the far side of
+        // every block into the map: shadows detach by about a block and walls leak light in bands that
+        // shift as you look around. Iris disables the same flag for its shadow pass.
+        //
+        // The flag is read per fill, and the fill happens because our re-cull above changed the section
+        // set, which is what clears the region's cached draw batch (ChunkRenderList -> clearAllCachedBatches).
+        // The camera list rebuild next frame changes it back and refills with culling on, so the main pass
+        // is unaffected. Costs roughly double the submitted quads here - the same trade Iris makes.
+        SodiumOptions.PerformanceSettings performance = SodiumClientMod.options().performance;
+        boolean blockFaceCulling = performance.useBlockFaceCulling;
+        performance.useBlockFaceCulling = false;
+        try {
+            LevelRenderer lr = mc.levelRenderer;
+            lr.renderSectionLayer(RenderType.solid(), camPos.x, camPos.y, camPos.z, lightView, lightProj);
+            lr.renderSectionLayer(RenderType.cutoutMipped(), camPos.x, camPos.y, camPos.z, lightView, lightProj);
+            lr.renderSectionLayer(RenderType.cutout(), camPos.x, camPos.y, camPos.z, lightView, lightProj);
+        } finally {
+            performance.useBlockFaceCulling = blockFaceCulling;
+            if (reCulled) restoreCameraList();
+        }
     }
 
     // Re-cull Sodium's terrain list against the light volume. Returns false (nothing done) if Sodium's
@@ -66,6 +84,13 @@ public final class SodiumShadowRenderer {
     }
 
     // Force Sodium to rebuild the camera render list next frame (before the main terrain draw).
+    //
+    // Deferring the rebuild is only safe because the shadow pass runs at renderLevel TAIL, i.e. after
+    // Sodium's own setupTerrain AND after the main terrain draw, so nothing else reads the list we just
+    // overwrote this frame. If the hook ever moves earlier, or the version in use moves culling out of
+    // renderLevel, this has to rebuild the camera list synchronously instead - on the 26.1 line, where
+    // culling moved to LevelRenderer.update, exactly that left the main pass drawing the light-culled
+    // set and far terrain blinked out.
     private static void restoreCameraList() {
         RenderSectionManager rsm = renderSectionManager();
         if (rsm != null) rsm.markGraphDirty();

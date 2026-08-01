@@ -57,7 +57,6 @@
     "accessor.AbstractContainerScreenAccessor",
     "accessor.BiomeAccessor",
     "accessor.DustParticleOptionAccessor",
-    "accessor.LevelRendererShadowAccessor",
     "accessor.ParticleAccessor",
     "accessor.SheepAccessor",
     "accessor.SodiumWorldRendererShadowAccessor"

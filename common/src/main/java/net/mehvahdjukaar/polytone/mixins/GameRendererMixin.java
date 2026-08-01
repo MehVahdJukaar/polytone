@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPass;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
@@ -33,6 +34,10 @@ public abstract class GameRendererMixin {
         Polytone.LIGHTMAPS.setupForGUI(false);
         lightTexture.turnOnLightLayer();
         Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
+        // Belt and braces: renderLevel's RETURN hook doesn't run if the level render threw, and the
+        // off-screen world renders (mirrors, TV feeds) are dispatched from a frame-end hook that runs
+        // after this point - they must never find the flag still set.
+        LevelRenderPass.endVanillaFrame();
     }
 
     // Run Polytone post-shader chains on top of vanilla's post effect, once the main target is bound
@@ -44,6 +49,19 @@ public abstract class GameRendererMixin {
                      shift = At.Shift.AFTER))
     private void polytone$renderPolytonePostEffects(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.POST_SHADERS.renderAfterMainPostEffect(deltaTracker.getGameTimeDeltaTicks());
+    }
+
+    // Mark vanilla's own level render. Mods that render the world into an off-screen target (Vista's
+    // mirrors and TV feeds, portal mods) call LevelRenderer.renderLevel directly and never come
+    // through here, which is how the hooks on that method tell the frame apart from a secondary view.
+    @Inject(method = "renderLevel", at = @At("HEAD"))
+    private void polytone$startVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
+        LevelRenderPass.startVanillaFrame();
+    }
+
+    @Inject(method = "renderLevel", at = @At("RETURN"))
+    private void polytone$endVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
+        LevelRenderPass.endVanillaFrame();
     }
 
     // Capture the level projection / camera matrices so polytone post shaders can expose them as the
