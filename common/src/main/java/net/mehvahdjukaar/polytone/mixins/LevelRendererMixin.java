@@ -9,6 +9,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -67,11 +68,13 @@ public class LevelRendererMixin {
                                boolean shouldRenderSky,
                                ChunkSectionsToRender chunkSectionsToRender,
                                CallbackInfo ci) {
+        // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
+        Polytone.SHADER_EFFECTS.updateAll();
+        //a second camera from some other mod. shadows and post chains only care about the main one
+        if (!LevelRenderPassTrack.pushAndIsMain()) return;
         // deltaTime from this call's own tracker parameter, fresh every render call
         Polytone.POST_CHAINS.captureLevelRendererParams(cameraState.projectionMatrix, modelViewMatrix,
                 deltaTracker.getGameTimeDeltaTicks());
-        // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
-        Polytone.SHADER_EFFECTS.updateAll();
         // Render the directional shadow map here: no render pass is open (UBO writes need that), last
         // frame's compiled section meshes are still current, and the frame graph that runs the post
         // chains sampling it hasn't been built yet. The matrices are this call's own rather than the
@@ -79,6 +82,11 @@ public class LevelRendererMixin {
         // caster volume to what the camera can see.
         Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(terrainFog, minecraft.gameRenderer.getMainCamera(),
                 modelViewMatrix, cameraState.projectionMatrix);
+    }
+
+    @Inject(method = "renderLevel", at = @At("RETURN"))
+    public void poly$popLevelRenderPass(CallbackInfo ci) {
+        LevelRenderPassTrack.pop();
     }
 
     // Own pass right after the main one, on the particles target, so gpu particles land in the

@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.mojang.blaze3d.resource.CrossFrameResourcePool;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -28,6 +29,17 @@ public abstract class GameRendererMixin {
     @Inject(method = "render", at = @At(value = "TAIL"))
     private void polytone$resetGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(false);
+        LevelRenderPassTrack.onEndRenderLevel();
+    }
+
+    @Inject(method = "renderLevel", at = @At("HEAD"))
+    private void polytone$startVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
+        LevelRenderPassTrack.onStartRenderLevel();
+    }
+
+    @Inject(method = "renderLevel", at = @At("RETURN"))
+    private void polytone$endVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
+        LevelRenderPassTrack.onEndRenderLevel();
     }
 
     @Inject(method = "close", at = @At(value = "TAIL"))
