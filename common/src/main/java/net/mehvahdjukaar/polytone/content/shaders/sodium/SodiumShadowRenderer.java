@@ -4,6 +4,7 @@ import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
 import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.content.shaders.ShadowCasterVolume;
 import net.mehvahdjukaar.polytone.mixins.accessor.LevelRendererShadowAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SodiumWorldRendererShadowAccessor;
 import net.minecraft.client.Camera;
@@ -29,8 +30,8 @@ public final class SodiumShadowRenderer {
     // regardless of the CompatHandler.SODIUM runtime guard below. The gate lives at the call site.
     public static void replayTerrain(Minecraft mc, Camera cam, Vec3 camPos,
                                      Matrix4f lightView, Matrix4f lightProj,
-                                     float coverage, float depthRange) {
-        boolean reCulled = CompatHandler.SODIUM && reCull(mc, cam, lightView, camPos, coverage, depthRange);
+                                     ShadowCasterVolume volume) {
+        boolean reCulled = CompatHandler.SODIUM && reCull(mc, cam, camPos, volume);
 
         LevelRendererShadowAccessor lr = (LevelRendererShadowAccessor) mc.levelRenderer;
         //TODO: use access wideners instead of the @Invoker
@@ -43,13 +44,12 @@ public final class SodiumShadowRenderer {
 
     // Re-cull Sodium's terrain list against the light volume. Returns false (nothing done) if Sodium's
     // renderer isn't up yet, in which case there's no camera list to restore.
-    private static boolean reCull(Minecraft mc, Camera camera, Matrix4f lightView, Vec3 camPos,
-                                  float coverage, float depthRange) {
+    private static boolean reCull(Minecraft mc, Camera camera, Vec3 camPos, ShadowCasterVolume volume) {
         RenderSectionManager rsm = renderSectionManager();
         if (rsm == null) return false;
 
         SodiumLightVolumeFrustum frustum = new SodiumLightVolumeFrustum(
-                lightView, coverage, depthRange, Viewport.CHUNK_SECTION_PADDED_RADIUS);
+                volume, Viewport.CHUNK_SECTION_PADDED_RADIUS);
         Viewport viewport = new Viewport(frustum, new Vector3d(camPos.x, camPos.y, camPos.z));
 
         // Force occlusion culling off for this pass: a shadow caster need not be visible to the
