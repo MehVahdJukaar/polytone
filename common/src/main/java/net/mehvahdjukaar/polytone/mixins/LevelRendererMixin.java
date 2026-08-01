@@ -8,6 +8,7 @@ import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -51,12 +52,19 @@ public class LevelRendererMixin {
                                boolean shouldRenderSky,
                                CallbackInfo ci) {
         // no render pass is open here, which the UBO writes below need
+        Polytone.SHADER_EFFECTS.updateAll();
+        //a second camera from some other mod. shadows and post chains only care about the main one
+        if (!LevelRenderPassTrack.pushAndIsMain()) return;
         Polytone.POST_CHAINS.updateGlobalUniforms(cameraState.projectionMatrix, modelViewMatrix,
                 deltaTracker.getGameTimeDeltaTicks());
-        Polytone.SHADER_EFFECTS.updateAll();
         // shadow map goes first so the post chains built into this frame's graph sample this frame's map
         Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(terrainFog, Minecraft.getInstance().gameRenderer.mainCamera(),
                 modelViewMatrix, cameraState.projectionMatrix);
+    }
+
+    @Inject(method = "render", at = @At("RETURN"))
+    public void poly$popLevelRenderPass(CallbackInfo ci) {
+        LevelRenderPassTrack.pop();
     }
 
     // after weather, the last world pass that depth tests
