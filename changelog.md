@@ -1,1 +1,1 @@
-- fixed a config and particle issue
+- shadowmap calculations is faster
