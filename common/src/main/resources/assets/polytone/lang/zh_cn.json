@@ -1,0 +1,5 @@
+{
+  "toast.polytone.load_fail": "资源包存在错误。请查看 logs/polytone.log",
+  "toast.polytone.lazy_load_fail": "Polytone 懒加载资源失败",
+  "toast.polytone.early_load_fail": "Polytone 预加载资源失败"
+}

@@ -49,3 +49,6 @@ classes/
 /resourcepacks/shadowmap_debug/assets/shadowdbg/polytone/post_shaders/shadows.json
 /resourcepacks/shadowmap_debug/assets/shadowdbg/post_effect/shadows.json
 /resourcepacks/builds/
+/resourcepacks/shadowmap/
+/resourcepacks/shadowmap_debug/
+/resourcepacks/smooth_shadows/

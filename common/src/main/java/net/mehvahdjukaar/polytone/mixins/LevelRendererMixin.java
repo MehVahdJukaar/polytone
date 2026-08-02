@@ -63,7 +63,7 @@ public class LevelRendererMixin {
                           Camera camera,
                           Matrix4f modelView,
                           Matrix4f project,
-                          Matrix4f matrix4f3,
+                          Matrix4f cullingProjection,
                           GpuBufferSlice gpuBufferSlice,
                           Vector4f vector4f,
                           boolean bl2, CallbackInfo ci) {
@@ -73,8 +73,11 @@ public class LevelRendererMixin {
         Polytone.SHADER_EFFECTS.updateAll();
         // Render the directional shadow map here: no render pass is open (UBO writes need that), last
         // frame's compiled section meshes are still current, and the frame graph that runs the post
-        // chains sampling it hasn't been built yet.
-        Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(gpuBufferSlice);
+        // chains sampling it hasn't been built yet. The camera and matrices are this call's own rather
+        // than the GameRenderer globals, so they still agree when a mod renders a second view.
+        // cullingProjection is vanilla's own culling projection (the one prepareCullFrustum uses), which
+        // is the conservative choice for narrowing the caster volume.
+        Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(gpuBufferSlice, camera, modelView, cullingProjection);
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addLateDebugPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/state/CameraRenderState;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Matrix4f;)V",
