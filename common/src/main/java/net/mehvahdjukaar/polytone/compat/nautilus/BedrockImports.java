@@ -210,7 +210,7 @@ public final class BedrockImports {
         }
 
         private static int clamp(int value, int min, int max) {
-            return Math.max(min, Math.min(max, value));
+            return Math.clamp(value, min, max);
         }
 
         /** {@code ns:path} to {@code <root>/assets/<ns>/textures/particle/<path>.png}. */

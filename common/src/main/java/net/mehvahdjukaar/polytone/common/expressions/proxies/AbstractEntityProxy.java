@@ -62,6 +62,9 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
         return entity().isInWater();
     }
 
+    public boolean fireTicks() {
+        return entity().isOnFire();
+    }
 
     public double hurtTime() {
         LivingEntity le = livingEntity();
