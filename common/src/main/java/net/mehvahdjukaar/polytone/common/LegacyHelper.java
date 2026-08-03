@@ -16,7 +16,6 @@ import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertyModifier;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.fluid.FluidPropertyModifier;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -223,9 +222,7 @@ public class LegacyHelper {
                 String source = sourceTexture.get().replace("~/colormap/", id.getNamespace() + ":");
                 if (source.contains("./")) {
                     // resolve relative paths
-                    String path = id.getPath();
-                    int index = path.lastIndexOf('/');
-                    String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
+                    String directoryPath = StrUtils.directoryOf(id.getPath());
                     source = source.replace("./", id.getNamespace() + ":" + directoryPath);
                 }
                 colormap.setExplicitTargetTexture(Identifier.parse(source));
@@ -286,9 +283,7 @@ public class LegacyHelper {
                     source = source.replace("~/colormap/", id.getNamespace() + ":");
                 } else {
                     // resolve relative paths
-                    String path = id.getPath();
-                    int index = path.lastIndexOf('/');
-                    String directoryPath = index == -1 ? "" : path.substring(0, index + 1);
+                    String directoryPath = StrUtils.directoryOf(id.getPath());
                     source = (id.getNamespace() + ":" + directoryPath) + source.replace("./", "");
                 }
                 colormap.setExplicitTargetTexture(Identifier.parse(source));
@@ -461,7 +456,6 @@ public class LegacyHelper {
             }
         }
 
-        textures.keySet().removeAll(filteredTextures.keySet());
         parsedModifiers.keySet().removeAll(fluid.keySet());
 
         Map<Identifier, Parsed<FluidPropertyModifier>> converted = new HashMap<>();
@@ -511,7 +505,6 @@ public class LegacyHelper {
                 filteredTextures.put(id, modifier);
             }
         }
-        textures.keySet().removeAll(filteredTextures.keySet());
         parsedModifiers.keySet().removeAll(filtered.keySet());
 
         addConvertedBlockProperties(filtered, filteredTextures);

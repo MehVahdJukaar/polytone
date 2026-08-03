@@ -2,5 +2,44 @@
   "pack": {
     "pack_format": 24,
     "description": "Polytone sample pack"
+  },
+  "polytone": {
+    "title": {
+      "text": "",
+      "extra": [
+        { "text": "Polytone Sample Pack", "bold": true },
+        { "text": "\nby MehVahdJukaar", "color": "gray" }
+      ]
+    },
+    "content": {
+      "text": "",
+      "extra": [
+        { "text": "Both fields here are plain text components, so line breaks, colors and links all work the way they do anywhere else in the game.\n\n", "color": "white" },
+        { "text": "Anything with a click_event becomes clickable:\n\n" },
+        {
+          "text": "Wiki",
+          "color": "#7FE3A0",
+          "underlined": true,
+          "click_event": { "action": "open_url", "url": "https://github.com/MehVahdJukaar/polytone/wiki" },
+          "hover_event": { "action": "show_text", "value": "How to make a pack like this one" }
+        },
+        { "text": "   " },
+        {
+          "text": "Ko-fi",
+          "color": "#FF5E5B",
+          "underlined": true,
+          "click_event": { "action": "open_url", "url": "https://ko-fi.com/mehvahdjukaar" },
+          "hover_event": { "action": "show_text", "value": "Buy me a coffee" }
+        },
+        { "text": "   " },
+        {
+          "text": "Discord",
+          "color": "#5865F2",
+          "underlined": true,
+          "click_event": { "action": "open_url", "url": "https://discord.com/invite/qdKRTDf8Cv" },
+          "hover_event": { "action": "show_text", "value": "Get help and show off your pack" }
+        }
+      ]
+    }
   }
 }

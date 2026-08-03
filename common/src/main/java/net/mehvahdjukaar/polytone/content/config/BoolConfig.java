@@ -2,12 +2,15 @@ package net.mehvahdjukaar.polytone.content.config;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.List;
 import java.util.Map;
@@ -19,16 +22,20 @@ import java.util.function.Supplier;
 
 public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.CycleableValueSet<Boolean> {
 
-    public static final Codec<BoolConfig> CODEC = RecordCodecBuilder.<BoolConfig>create(instance ->
-                    commonFields(instance, Codec.BOOL)
-                            .apply(instance, BoolConfig::new))
-            .validate(PolyConfig::validatePresets);
+    public static final SchemaCodec<BoolConfig> CODEC = PolyConfig.validated(
+            SchemaRecord.create(BoolConfig.class, i -> PolyConfig.commonFields(i, Codec.BOOL)
+                    .apply(i, BoolConfig::new)));
 
     private static final List<Boolean> VALUES = ImmutableList.of(Boolean.TRUE, Boolean.FALSE);
 
 
-    protected BoolConfig(Optional<String> valueTranslation, Map<String, Boolean> presets, int priority, boolean defaultValue) {
-        super(valueTranslation, presets, priority, defaultValue);
+    protected BoolConfig(Optional<String> valueTranslation, Map<String, Boolean> presets,
+                         Map<String, Boolean> sectionPresets, int priority,
+                         Optional<String> section, Optional<Integer> sectionOrder,
+                         Optional<PerformanceImpact> performanceImpact,
+                         boolean wide, Map<String, TooltipImage> tooltipImages, boolean defaultValue) {
+        super(valueTranslation, presets, sectionPresets, priority, section, sectionOrder,
+                performanceImpact, wide, tooltipImages, defaultValue);
     }
 
     @Override
@@ -39,6 +46,12 @@ public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.Cy
     @Override
     public Codec<Boolean> codec() {
         return Codec.BOOL;
+    }
+
+    @Override
+    public MutableComponent formatValue(Boolean value) {
+        // Same constants vanilla uses everywhere else for boolean toggles (Music: ON / Music: OFF).
+        return (value ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF).copy();
     }
 
     public CycleButton.ValueListSupplier<Boolean> valueListSupplier() {

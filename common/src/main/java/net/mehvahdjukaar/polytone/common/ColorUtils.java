@@ -3,6 +3,8 @@ package net.mehvahdjukaar.polytone.common;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.codecui.Schema;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.mixins.accessor.BiomeAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -14,28 +16,32 @@ import java.util.Locale;
 public class ColorUtils {
 
     //utility codecs that serializes either a string or an integer
+    //declared as SchemaCodec so the editor shows a color picker (encodes as "#AARRGGBB" hex)
 
     //RGBA
-    public static final Codec<Integer> RGBA_COLOR = Codec.either(Codec.INT,
-            Codec.STRING.flatXmap(
-                    s -> parseHex(s, false),
-                    s -> parseHex(s, false)
-            )).xmap(
-            either -> either.map(integer -> integer, s -> Integer.parseUnsignedInt(s, 16)),
-            integer -> Either.right("#" + String.format("%08X", integer))
-    );
+    public static final SchemaCodec<Integer> RGBA_COLOR = SchemaCodec.of(
+            Codec.either(Codec.INT,
+                    Codec.STRING.flatXmap(
+                            s -> parseHex(s, false),
+                            s -> parseHex(s, false)
+                    )).xmap(
+                    either -> either.map(integer -> integer, s -> Integer.parseUnsignedInt(s, 16)),
+                    integer -> Either.right("#" + String.format("%08X", integer))
+            ),
+            new Schema.Color(true, true));
 
     //Known uses: Gui text (ARGB), VertexConsumer (ABGR), BiomeColors (ARGB)
     //automatically fills in alpha if not provided
     //ARGB or ABGR
-    public static final Codec<Integer> COLOR =
+    public static final SchemaCodec<Integer> COLOR = SchemaCodec.of(
             Codec.either(Codec.INT, Codec.STRING.flatXmap(
                     s -> parseHex(s, true),
                     s -> parseHex(s, true)
             )).xmap(
                     e -> e.map(i -> i, s -> Integer.parseUnsignedInt(s, 16)),
                     i -> Either.right("#" + String.format("%08X", i))
-            );
+            ),
+            new Schema.Color(true, true));
 
     /* -------------------- HEX PARSING -------------------- */
 

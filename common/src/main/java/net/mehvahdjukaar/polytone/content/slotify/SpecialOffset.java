@@ -1,15 +1,16 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 
 public record SpecialOffset(int x, int y, int z, float scale) {
 
-    public static final Codec<SpecialOffset> CODEC =
-            RecordCodecBuilder.create(i -> i.group(
-                    Codec.INT.optionalFieldOf("x_offset", 0).forGetter(SpecialOffset::x),
-                    Codec.INT.optionalFieldOf("y_offset", 0).forGetter(SpecialOffset::y),
-                    Codec.INT.optionalFieldOf("z_offset", 0).forGetter(SpecialOffset::z),
-                    Codec.FLOAT.optionalFieldOf("scale", 0f).forGetter(SpecialOffset::scale)
+    public static final SchemaCodec<SpecialOffset> CODEC =
+            SchemaRecord.create(SpecialOffset.class, i -> i.group(
+                    i.optional("x_offset", Codec.INT, 0, SpecialOffset::x),
+                    i.optional("y_offset", Codec.INT, 0, SpecialOffset::y),
+                    i.optional("z_offset", Codec.INT, 0, SpecialOffset::z),
+                    i.optional("scale", Codec.FLOAT, 0f, SpecialOffset::scale)
             ).apply(i, SpecialOffset::new));
 }

@@ -79,6 +79,8 @@ mutable field net/minecraft/world/entity/player/Player inventoryMenu Lnet/minecr
 accessible field net/minecraft/client/particle/ParticleEngine particles Ljava/util/Map;
 # 26.2: ParticleGroup.getAll() removed; expose backing queue instead
 accessible field net/minecraft/client/particle/ParticleGroup particles Ljava/util/Queue;
+# editor particle preview: build a child from ParticleOptions without queuing it into a live engine
+accessible method net/minecraft/client/particle/ParticleEngine makeParticle (Lnet/minecraft/core/particles/ParticleOptions;DDDDDD)Lnet/minecraft/client/particle/Particle;
 
 
 accessible field net/minecraft/client/particle/Particle friction F
@@ -104,6 +106,8 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour$BlockState
 mutable field net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase spawnTerrainParticles Z
 
 accessible field net/minecraft/world/item/CreativeModeTabs CACHED_PARAMETERS Lnet/minecraft/world/item/CreativeModeTab$ItemDisplayParameters;
+# editor creative tab picker: which tab the open creative screen is showing
+accessible field net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen selectedTab Lnet/minecraft/world/item/CreativeModeTab;
 
 # 26.2: Gui.HeartType moved to Hud.HeartType (private enum)
 accessible class net/minecraft/client/gui/Hud$HeartType
@@ -227,3 +231,12 @@ accessible field net/minecraft/client/renderer/culling/Frustum camZ D
 
 #fabric dumb
 mutable field net/minecraft/client/gui/components/debug/DebugScreenEntries PROFILES Ljava/util/Map;
+
+# Sodium shadow replay needs the GL backend's DirectStateAccess to build an FBO for the shadow
+# attachments. 26.1 hides GlDevice behind the public GpuDevice frontend.
+accessible class com/mojang/blaze3d/opengl/GlDevice
+accessible field com/mojang/blaze3d/systems/GpuDevice backend Lcom/mojang/blaze3d/systems/GpuDeviceBackend;
+
+# Shadow pass walks every loaded section itself (same set the main cull starts from). 26.2 made the
+# storage private.
+accessible field net/minecraft/client/renderer/ViewArea sections Lnet/minecraft/client/RotatingSectionStorage;

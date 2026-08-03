@@ -37,6 +37,7 @@ public class ConfigBubbleManager {
     private static final String KEY_OPEN_COUNT = "open_count";
     private static final String KEY_SUPPORT_SHOWN = "support_bubble_shown";
     private static final String KEY_SUPPORT_DISMISSED = "support_dismissed";
+    private static final String KEY_EDITOR_CLICKED = "editor_button_clicked";
 
     private final File stateFile;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -45,6 +46,7 @@ public class ConfigBubbleManager {
     private int openCount = 0;
     private boolean supportShown = false;
     private boolean supportDismissed = false;
+    private boolean editorClicked = false;
 
     public ConfigBubbleManager() {
         this.stateFile = PlatStuff.getGamePath().resolve("polytone_popup.json").toFile();
@@ -61,6 +63,7 @@ public class ConfigBubbleManager {
             this.openCount = GsonHelper.getAsInt(jo, KEY_OPEN_COUNT, 0);
             this.supportShown = GsonHelper.getAsBoolean(jo, KEY_SUPPORT_SHOWN, false);
             this.supportDismissed = GsonHelper.getAsBoolean(jo, KEY_SUPPORT_DISMISSED, false);
+            this.editorClicked = GsonHelper.getAsBoolean(jo, KEY_EDITOR_CLICKED, false);
         } catch (Exception e) {
             Polytone.LOGGER.error("Error loading polytone popup state", e);
         }
@@ -73,6 +76,7 @@ public class ConfigBubbleManager {
             jo.addProperty(KEY_OPEN_COUNT, openCount);
             jo.addProperty(KEY_SUPPORT_SHOWN, supportShown);
             jo.addProperty(KEY_SUPPORT_DISMISSED, supportDismissed);
+            jo.addProperty(KEY_EDITOR_CLICKED, editorClicked);
             FilesUtil.writeTextAtomically(stateFile.toPath(), writer ->
                     GsonHelper.writeValue(gson.newJsonWriter(writer), jo, null));
         } catch (Exception e) {
@@ -101,6 +105,14 @@ public class ConfigBubbleManager {
         }
     }
 
+    /** The player tried the pack editor: silence the "try the editor" nudge forever. */
+    public void onEditorButtonClicked() {
+        if (!editorClicked) {
+            editorClicked = true;
+            save();
+        }
+    }
+
     /** The support page was opened: retire the support nag, but only if it was actually shown first. */
     public void onSupportPageOpened() {
         if (supportShown && !supportDismissed) {
@@ -125,6 +137,14 @@ public class ConfigBubbleManager {
     @Nullable
     public Component getHeartButtonMessage() {
         return shouldShowSupport() ? supportMessage() : null;
+    }
+
+    /** Message for the bubble on the pack-editor button, or null. */
+    @Nullable
+    public Component getEditorButtonMessage() {
+        // Nudge the editor until the user tries it. Support bubble wins to avoid two bubbles at once.
+        if (editorClicked || shouldShowSupport()) return null;
+        return Component.translatable("screen.polytone.editor.bubble");
     }
 
     private boolean shouldShowSupport() {

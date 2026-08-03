@@ -1,14 +1,17 @@
 package net.mehvahdjukaar.polytone;
 
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.PolytoneInit;
 import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
-import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
-import net.mehvahdjukaar.polytone.common.reloader.CompoundReloader;
+
+import net.mehvahdjukaar.polytone.common.reloader.PolytoneReloadManager;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapperManager;
+import net.mehvahdjukaar.polytone.compat.PackEditor;
 import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.content.block.BlockSetManager;
@@ -27,7 +30,9 @@ import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostChainsManager;
+import net.mehvahdjukaar.polytone.content.shaders.PostTargetsManager;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
+import net.mehvahdjukaar.polytone.content.shaders.ShadowMapManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.content.sound.SoundTypesManager;
@@ -41,6 +46,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
@@ -49,6 +55,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -67,7 +74,8 @@ public class Polytone {
 
     public static final Logger LOGGER = LogManager.getLogger("Polytone");
 
-    private static CompoundReloader COMPOUND_RELOADER;
+    private static PolytoneReloadManager COMPOUND_RELOADER;
+    public static final GlobalExpressionsManager GLOBAL_EXPRESSION = new GlobalExpressionsManager();
     public static final BlockPropertiesManager BLOCK_MODIFIERS = new BlockPropertiesManager();
     public static final FluidPropertiesManager FLUID_MODIFIERS = new FluidPropertiesManager();
     public static final CustomModelsManager CUSTOM_MODELS = new CustomModelsManager();
@@ -86,12 +94,22 @@ public class Polytone {
     public static final ColorManager COLORS = new ColorManager();
     public static final GuiModifierManager SLOTIFY = new GuiModifierManager();
     public static final GuiOverlayManager OVERLAY_MODIFIERS = new GuiOverlayManager();
+    public static final PostTargetsManager POST_TARGETS = new PostTargetsManager();
     public static final PostChainsManager POST_CHAINS = new PostChainsManager();
+    public static final ShadowMapManager SHADOWS = new ShadowMapManager();
     public static final ShaderUniformsManager SHADER_EFFECTS = new ShaderUniformsManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
-    public static final GlobalExpressionsManager GLOBAL_EXPRESSION = new GlobalExpressionsManager();
     public static final ConfigsManager CONFIGS = new ConfigsManager();
+
+    public static final List<ContentManager<?>> MANAGERS = List.of(
+            CONFIGS, GLOBAL_EXPRESSION,
+            NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
+            BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
+            BIOME_MODIFIERS, LIGHTMAPS,
+            DIMENSION_MODIFIERS, POST_TARGETS, POST_CHAINS, SHADOWS, SHADER_EFFECTS,
+            PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
+            CREATIVE_TABS_MODIFIERS);
 
     private static final Future<Set<Identifier>> FUTURE_IDS = CompletableFuture.supplyAsync(Polytone::loadFutureIds);
 
@@ -100,26 +118,28 @@ public class Polytone {
     public static boolean isDevEnv = false;
     public static boolean isForge = false;
 
+    @Nullable
+    public static MinecraftServer currentServer;
+
 
     public static void init(boolean devEnv, boolean forge) {
-        COMPOUND_RELOADER = new CompoundReloader(
-                CONFIGS, GLOBAL_EXPRESSION,
-                NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
-                BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
-                BIOME_MODIFIERS,//LIGHTMAPS,
-                DIMENSION_MODIFIERS, POST_CHAINS, SHADER_EFFECTS,
-                PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
-                CREATIVE_TABS_MODIFIERS);
+        // CONFIGS goes first (see MANAGERS ordering): config values feed require_config conditions and
+        // config() expressions used by everything else, so they must be up to date before any other reloader parses.
+        COMPOUND_RELOADER = new PolytoneReloadManager(MANAGERS.stream()
+                .filter(m -> m != LIGHTMAPS) // lightmaps reload through their own path
+                .toArray(ContentManager[]::new));
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
         isDevEnv = devEnv;
         isForge = forge;
-
+        // Marks Polytone as up so bootstrap-early mixins can safely start consulting it (see PolytoneInit).
+        PolytoneInit.INITIALIZED = true;
         //ItemModelOverrideList.testTrie();
         //GenericDirectorySpriteSource.init();
 
         PolytoneRenderTypes.init();
         if (CompatHandler.IRIS) IrisCompat.init();
+        if (CompatHandler.PACK_EDITOR) PackEditor.init();
 
         //weather darken and other fog custom
         //independent fog env fog and sky fog stuff. also independent from render distnace
@@ -171,6 +191,8 @@ public class Polytone {
     public static void onLogOut() {
         COMPOUND_RELOADER.resetWithLevel(true);
         BiomeKeysCache.clear();
+        // The codec editor closes itself on logout (its own client-disconnect hook lives in the
+        // PackEditor mod), so there is nothing to do here.
     }
 
     public static void onEarlyPackLoad(ResourceManager manager) {

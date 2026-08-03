@@ -1,8 +1,8 @@
 package net.mehvahdjukaar.polytone.content.global_expressions;
 
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
@@ -13,19 +13,21 @@ import org.mvel2.ParserContext;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GlobalExpressionsManager extends JsonPartialReloader {
+public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
 
     private final MapRegistry<GlobalExpression> expressions = new MapRegistry<>("Global Expressions");
     private final Map<String, Double> values = new HashMap<>();
 
     public GlobalExpressionsManager() {
-        super("global_expressions");
+        super(Spec.of("Global expression", () -> GlobalExpression.CODEC)
+                .wikiPage("Scripting-Expressions")
+                .folders("global_expressions"));
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        for (var j : Parsed.batchParseOnlyEnabled(jsons, GlobalExpression.CODEC,
-                ops, "Global Expression")) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        Map<Identifier, JsonElement> jsons = resources.jsons();
+        for (var j : parseEnabledJsons(jsons, ops)) {
             if (j != null) {
                 expressions.register(j.getKey().toString(), j.getValue());
                 values.put(j.getKey().toDebugFileName(), j.getValue().defaultValue());
@@ -57,6 +59,15 @@ public class GlobalExpressionsManager extends JsonPartialReloader {
 
     public void addValues(Map<String, Object> map) {
         map.putAll(values);
+    }
+
+    /**
+     * Runtime lookup for {@code global.value('name')}: resolves at evaluation time, so usable from
+     * expressions compiled before globals register (custom particles parse in the async prepare phase).
+     */
+    public double getValue(String key) {
+        Object d = values.get(key);
+        return d instanceof Number n ? n.doubleValue() : 0;
     }
 
     public void addTypes(ParserContext ctx) {

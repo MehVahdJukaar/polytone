@@ -4,8 +4,10 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
+import org.jspecify.annotations.Nullable;
 
 //move to global?
 public class ExpTicker {
@@ -21,6 +23,7 @@ public class ExpTicker {
     public static void onTick(Level level) {
         screenTime++;
         Minecraft mc = Minecraft.getInstance();
+        refreshPlayerSnapshot(); // before the level check: clears to null when leaving a world
         if (level == null) return;
         if (level.dimensionType() != lastDimType) {
             lastDimType = level.dimensionType();
@@ -37,6 +40,39 @@ public class ExpTicker {
         }
     }
 
+
+    // --- per-tick player stats cache ---
+    // Like the other values here: refreshed once per tick and read as plain fields. Also
+    // re-refreshed by PolytoneAsyncParticles right before it dispatches its parallel batch —
+    // onTick runs at tick START (pre entity movement) and a stale position would make
+    // player-following particles trail a fast player by a whole tick. Workers only ever read
+    // this cache, never the live entity; the volatile reference publishes it to them.
+    // Between ticks the player doesn't move, so cached reads match live ones.
+    private static volatile @Nullable PlayerSnapshot playerSnapshot = null;
+
+    public record PlayerSnapshot(double x, double y, double z,
+                                 double xd, double yd, double zd,
+                                 double speed, double width, double height,
+                                 boolean crouching) {
+    }
+
+    /** Re-caches the player's stats (main thread). No player -> null, proxies fall back to live reads. */
+    public static void refreshPlayerSnapshot() {
+        Player p = Minecraft.getInstance().player;
+        if (p == null) {
+            playerSnapshot = null;
+            return;
+        }
+        var dm = p.getDeltaMovement();
+        playerSnapshot = new PlayerSnapshot(p.getX(), p.getY(), p.getZ(),
+                dm.x, dm.y, dm.z,
+                dm.length(), p.getBbWidth(), p.getBbHeight(),
+                p.isCrouching());
+    }
+
+    public static @Nullable PlayerSnapshot playerSnapshot() {
+        return playerSnapshot;
+    }
 
     public static int getGuiTime() {
         return screenTime;

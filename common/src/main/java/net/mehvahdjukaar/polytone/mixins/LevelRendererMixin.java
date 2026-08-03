@@ -3,8 +3,12 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
+import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -19,6 +23,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LevelRenderer.class)
 public class LevelRendererMixin {
@@ -31,6 +36,25 @@ public class LevelRendererMixin {
     @Final
     private LevelRenderState levelRenderState;
 
+    @Shadow
+    @Final
+    private Minecraft minecraft;
+
+    // During the particle editor preview the main target is redirected to the offscreen buffer; force
+    // the separate translucent-particles target to null too, so opaque AND translucent particles render
+    // in the single main-target pass (into the offscreen buffer) instead of a screen-bound target.
+    @Inject(method = "getParticlesTarget", at = @At("HEAD"), cancellable = true)
+    private void poly$redirectParticlesTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {
+        if (CompatHandler.PACK_EDITOR && PreviewRenderTarget.current() != null) cir.setReturnValue(null);
+    }
+
+    // Every section rebuild (block or light change) funnels through setSectionDirty; bump that
+    // section's light-cache version so particles there re-sample. Section coords come in directly.
+    @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"))
+    private void poly$invalidateParticleLight(int x, int y, int z, boolean important, CallbackInfo ci) {
+        ParticleLightCache.markSectionDirty(x, y, z);
+    }
+
     // 26.2: LevelRenderer.renderLevel(...) -> render(...) (dropped the ChunkSectionsToRender param; it's a local now)
     @Inject(method = "render", at = @At("HEAD"))
     public void poly$preRender(GraphicsResourceAllocator resourceAllocator,
@@ -42,9 +66,18 @@ public class LevelRendererMixin {
                                Vector4f fogColor,
                                boolean shouldRenderSky,
                                CallbackInfo ci) {
-        Polytone.POST_CHAINS.captureLevelRendererParams(cameraState.projectionMatrix, modelViewMatrix);
+        // deltaTime from this call's own tracker parameter, fresh every render call
+        Polytone.POST_CHAINS.captureLevelRendererParams(cameraState.projectionMatrix, modelViewMatrix,
+                deltaTracker.getGameTimeDeltaTicks());
         // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
         Polytone.SHADER_EFFECTS.updateAll();
+        // Render the directional shadow map here: no render pass is open (UBO writes need that), last
+        // frame's compiled section meshes are still current, and the frame graph that runs the post
+        // chains sampling it hasn't been built yet. The matrices are this call's own rather than the
+        // GameRenderer globals, so they still agree when a mod renders a second view; they narrow the
+        // caster volume to what the camera can see.
+        Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(terrainFog, minecraft.gameRenderer.mainCamera(),
+                modelViewMatrix, cameraState.projectionMatrix);
     }
 
     // 26.2: addLateDebugPass(...) was removed; inject our post passes into the frame graph right before it executes.
@@ -61,8 +94,11 @@ public class LevelRendererMixin {
                                     boolean shouldRenderSky,
                                     CallbackInfo ci,
                                     @Local FrameGraphBuilder frameGraphBuilder) {
-        int i = Minecraft.getInstance().gameRenderer.mainRenderTarget().width;
-        int j = Minecraft.getInstance().gameRenderer.mainRenderTarget().height;
+        // Standard placement only. When post_chains_after_hand is on (default), chains run later,
+        // after the first-person hand, from GameRendererMixin so held items occlude depth effects.
+        if (Polytone.CONFIGS.postChainsAfterHand.get()) return;
+        int i = this.minecraft.gameRenderer.mainRenderTarget().width;
+        int j = this.minecraft.gameRenderer.mainRenderTarget().height;
         Polytone.POST_CHAINS.addPostPass(i, j, this.targets, frameGraphBuilder, terrainFog, this.levelRenderState.cameraRenderState);
     }
 }

@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.ItemEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -18,18 +19,15 @@ import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
-import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
+import net.mehvahdjukaar.polytone.content.slotify.GuiModifierOverlay;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.minecraft.client.gui.components.debug.DebugEntryNoop;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
-import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
-import net.minecraft.client.gui.components.debug.DebugScreenProfile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionResult;
 
-import java.util.HashMap;
 
 public class PolytoneFabric implements ClientModInitializer {
 
@@ -51,8 +49,10 @@ public class PolytoneFabric implements ClientModInitializer {
         LevelRenderEvents.BEFORE_GIZMOS.register(
                 context -> ParticleHitboxDebugRenderer.emitGizmos()
         );
+        // Register only, like vanilla's own gizmo entries (entity_hitboxes, chunk_borders, ...): no
+        // profile inclusion, so it defaults to NEVER and the user opts in from the F3 debug config
+        // screen. Adding it to a profile as IN_OVERLAY would draw the hitboxes for everyone on F3.
         DebugScreenEntries.register(ParticleHitboxDebugRenderer.ID, new DebugEntryNoop());
-        addToProfiles();
 
         LevelRenderEvents.START_MAIN.register((context) ->
                 ClientFrameTicker.onRenderTick(Minecraft.getInstance()));
@@ -67,19 +67,10 @@ public class PolytoneFabric implements ClientModInitializer {
 
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {
-                ScreenModifier guiModifier = Polytone.SLOTIFY.getGuiModifier(screen);
-                if (guiModifier != null && !guiModifier.extraRenderables().isEmpty()) {
-                    ScreenEvents.afterExtract(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) -> {
-
-                        var matrices = graphics.pose();
-                        matrices.pushMatrix();
-                        matrices.identity();
-                        matrices.translate(scaledWidth / 2F, scaledHeight / 2F);
-
-                        ss.polytone$renderExtraSprites(graphics, mouseX, mouseY, tickDelta);
-                        matrices.popMatrix();
-                    });
-                }
+                // Register unconditionally: renderScreenExtras no-ops with no modifier, and the editor's
+                // live preview / picker overlay may target a screen that had none at init time.
+                ScreenEvents.afterExtract(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) ->
+                        GuiModifierOverlay.renderScreenExtras(graphics, ss, scaledWidth, scaledHeight, mouseX, mouseY, tickDelta));
             }
         });
 
@@ -92,20 +83,11 @@ public class PolytoneFabric implements ClientModInitializer {
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
                 Polytone.onLogOut());
-    }
 
-    private static void addToProfiles() {
-        var old = DebugScreenEntries.PROFILES;
-        var def = old.get(DebugScreenProfile.DEFAULT);
-        var newDef = new HashMap<>(def);
-        newDef.put(ParticleHitboxDebugRenderer.ID, DebugScreenEntryStatus.IN_OVERLAY);
-        var perf = old.get(DebugScreenProfile.PERFORMANCE);
-        var newPerf = new HashMap<>(perf);
-        newPerf.put(ParticleHitboxDebugRenderer.ID, DebugScreenEntryStatus.IN_OVERLAY);
-        var newProfiles = new HashMap<>(old);
-        newProfiles.put(DebugScreenProfile.DEFAULT, newDef);
-        newProfiles.put(DebugScreenProfile.PERFORMANCE, newPerf);
-        DebugScreenEntries.PROFILES = newProfiles;
+        ServerLifecycleEvents.SERVER_STARTING.register(server ->
+                Polytone.currentServer = server);
+        ServerLifecycleEvents.SERVER_STOPPED.register(server ->
+                Polytone.currentServer = null);
     }
 
     public static MinecraftServer currentServer;

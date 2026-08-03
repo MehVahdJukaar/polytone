@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
-import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.polytone.content.particle.ParticlePreviewState;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderState;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -27,24 +27,32 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.TreeMap;
 
 public class CustomParticleInstance extends SingleQuadParticle {
-
-    private static final ExecutorService PARTICLE_THREAD = Executors.newWorkStealingPool();
 
     public final CustomParticleType type;
     protected final @Nullable QuadCollection model;
     protected final List<IParticleTickable> tickables;
     protected float oQuadSize;
     protected double custom;
+    // named counterpart of `custom`. Lazy because most particles never declare one, and
+    // case-insensitive so "customs": {"Speed": ..}, o.custom("speed") and CUSTOM_SPEED all agree
+    private @Nullable Map<String, Double> namedCustoms;
 
     private boolean inFrustumLastTick = true;
 
     private Quaternionf customRotation = null;
     private Quaternionf customRotationO = null;
+
+    // newborn awaiting its spawn-time ticker pass in the parallel batch (see PolytoneAsyncParticles)
+    boolean pendingInitTick = false;
+
+    // light cache: re-samples only when the particle crosses a block, or its section changed
+    private final ParticleLightCache.Entry lightCache;
+    private final @Nullable ParticleColor.Cache colormapCache;
 
     protected CustomParticleInstance(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed,
                                      @Nullable BlockState state, CustomParticleType customType) {
@@ -86,11 +94,16 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
         this.oQuadSize = quadSize;
 
-        if (this.type.colormap != null) {
-            float[] unpack = ColorUtils.unpack(this.type.colormap.colorInWorld(state, level, pos));
-            this.setColor(unpack[0], unpack[1], unpack[2]);
-        }
+        // seed the spawn color; the cache also records the block so PER_POSITION only re-samples
+        // once the particle moves off it. null when this type has no colormap (the common case)
+        this.colormapCache = this.type.colormap == null ? null
+                : new ParticleColor.Cache(this, this.type.colormap, state, pos);
+        this.lightCache = new ParticleLightCache.Entry(super::getLightCoords);
 
+    }
+
+    public ClientLevel getLevel() {
+        return level;
     }
 
 
@@ -108,6 +121,20 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     public void setCustom(double custom) {
         this.custom = custom;
+    }
+
+    public double getCustom(String name) {
+        Map<String, Double> customs = this.namedCustoms;
+        if (customs == null) return 0;
+        Double value = customs.get(name);
+        return value == null ? 0 : value;
+    }
+
+    public void setCustom(String name, double value) {
+        if (this.namedCustoms == null) {
+            this.namedCustoms = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        }
+        this.namedCustoms.put(name, value);
     }
 
     @Override
@@ -179,7 +206,10 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     protected int getLightCoords(float partialTick) {
-        int total = super.getLightCoords(partialTick);
+        // Editor preview: light it at full brightness so it looks the same regardless of the world's
+        // time of day (it ticks in the real level, which would otherwise darken it at night).
+        if (ParticlePreviewState.active()) return LightCoordsUtil.pack(15, 15);
+        int total = lightCache.get(this.x, this.y, this.z, partialTick);
         if (this.type.lightLevel > 0) {
             int sky = LightCoordsUtil.sky(total);
             int block = LightCoordsUtil.block(total);
@@ -206,12 +236,42 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
     @Override
     public void tick() {
+        // Lifetime expires synchronously: the engine culls right after tick(), a deferred check
+        // makes every particle live one tick longer. super.tick()'s own check then never fires.
+        if (this.removed) return; // removed off-thread last tick, culled right after this call
+        if (this.age >= this.lifetime) {
+            this.remove();
+            return;
+        }
         if (Polytone.CONFIGS.particlesOffThread.get()) {
-            PARTICLE_THREAD.submit(this::tickInternal);
+            PolytoneAsyncParticles.enqueue(this); // physics + expression work runs in the parallel batch
         } else tickInternal();
     }
 
-    private void tickInternal() {
+    /**
+     * Preview-only synchronous tick: runs the physics/expression pass on the caller's thread,
+     * bypassing the async batch. Never called in normal gameplay (which always routes through
+     * {@link #tick()}); only the editor particle preview drives its sandbox particles this way,
+     * since it cannot join the game's async batch.
+     */
+    public void tickSync() {
+        if (this.removed) return;
+        if (this.age >= this.lifetime) {
+            this.remove();
+            return;
+        }
+        tickInternal();
+    }
+
+    /**
+     * Spawn-time ticker pass for a newborn; deferred to the parallel batch when async is on.
+     */
+    void initTick() {
+        this.type.ticker.tick(this, level);
+        this.setAge(0); // reset so the spawn-time pass doesn't age the particle
+    }
+
+    void tickInternal() {
         if (!this.type.isValid()) {
             this.remove();
             return;
@@ -235,7 +295,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
             //handle initialized state where both are null
             Quaternionf instantRot = new Quaternionf();
             this.type.rotationProvider.setRotation(this, instantRot,
-                    Minecraft.getInstance().gameRenderer.mainCamera(), 0);
+                    PolytoneAsyncParticles.camera(), 0);
             if (this.customRotation == null || this.customRotationO == null) {
                 this.customRotation = new Quaternionf(instantRot);
                 this.customRotationO = new Quaternionf(instantRot);
@@ -251,20 +311,22 @@ public class CustomParticleInstance extends SingleQuadParticle {
             type.ticker.tick(this, level);
         }
 
-        if (this.type.colormap != null) {
-            BlockPos pos = BlockPos.containing(x, y, z);
-            float[] unpack = ColorUtils.unpack(this.type.colormap.sampleColor(level, null, Vec3.atCenterOf(pos), null, null));
-            this.setColor(unpack[0], unpack[1], unpack[2]);
-        }
+        // colormap: sampled once at spawn (see constructor); the cache policy decides whether to
+        // re-evaluate here (ON_SPAWN freezes, PER_POSITION on block change, NONE every tick)
+        if (colormapCache != null) colormapCache.tick();
 
         if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo) {
             this.remove();
         }
 
         if (type.liquidAffinity != LiquidAffinity.ANY) {
-            BlockState state = level.getBlockState(BlockPos.containing(x, y, z));
-            if (type.liquidAffinity == LiquidAffinity.LIQUIDS ^ !state.getFluidState().isEmpty()) {
-                this.remove();
+            BlockPos pos = BlockPos.containing(x, y, z);
+            // off-thread: skip unloaded chunks, otherwise the air fallback would wrongly kill the particle
+            if (level.hasChunkAt(pos)) {
+                BlockState state = level.getBlockState(pos);
+                if (type.liquidAffinity == LiquidAffinity.LIQUIDS ^ !state.getFluidState().isEmpty()) {
+                    this.remove();
+                }
             }
         }
         if (!this.removed && isTickTime) {
@@ -323,7 +385,7 @@ public class CustomParticleInstance extends SingleQuadParticle {
 
 
     private boolean isBehindCamera() {
-        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
+        Camera camera = PolytoneAsyncParticles.camera();
         if (camera.entity() == Minecraft.getInstance().player) {
             //check distance
             Vector3f cameraPos = camera.position().toVector3f();

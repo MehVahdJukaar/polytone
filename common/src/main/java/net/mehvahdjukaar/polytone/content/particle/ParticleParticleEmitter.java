@@ -1,15 +1,19 @@
 package net.mehvahdjukaar.polytone.content.particle;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
-import net.mehvahdjukaar.polytone.common.codec.BiggerCodecs;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
+import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.particle.custom.IParticleTickable;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.util.RandomSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -45,60 +49,73 @@ public record ParticleParticleEmitter(
         Optional<IParticleExp> roll,
         Optional<IParticleExp> size,
         Optional<IParticleExp> custom,
+        Map<String, IParticleExp> customs,
         RuleTest predicate,
         Optional<HolderSet<Biome>> biomes
 ) implements IParticleTickable {
 
-    public static final Codec<ParticleParticleEmitter> CODEC = RecordCodecBuilder.create(i -> BiggerCodecs.group(i,
-            CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("particle").forGetter(ParticleParticleEmitter::particleType),
-            IParticleExp.CODEC.optionalFieldOf("chance", IParticleExp.ONE).forGetter(ParticleParticleEmitter::chance),
-            IParticleExp.CODEC.optionalFieldOf("count", IParticleExp.ONE).forGetter(ParticleParticleEmitter::count),
-            IParticleExp.CODEC.optionalFieldOf("x", IParticleExp.PARTICLE_RAND).forGetter(ParticleParticleEmitter::x),
-            IParticleExp.CODEC.optionalFieldOf("y", IParticleExp.PARTICLE_RAND).forGetter(ParticleParticleEmitter::y),
-            IParticleExp.CODEC.optionalFieldOf("z", IParticleExp.PARTICLE_RAND).forGetter(ParticleParticleEmitter::z),
-            IParticleExp.CODEC.optionalFieldOf("dx", IParticleExp.ZERO).forGetter(ParticleParticleEmitter::dx),
-            IParticleExp.CODEC.optionalFieldOf("dy", IParticleExp.ZERO).forGetter(ParticleParticleEmitter::dy),
-            IParticleExp.CODEC.optionalFieldOf("dz", IParticleExp.ZERO).forGetter(ParticleParticleEmitter::dz),
-            IParticleExp.CODEC.optionalFieldOf("red").forGetter(ParticleParticleEmitter::r),
-            IParticleExp.CODEC.optionalFieldOf("green").forGetter(ParticleParticleEmitter::g),
-            IParticleExp.CODEC.optionalFieldOf("blue").forGetter(ParticleParticleEmitter::b),
-            IParticleExp.CODEC.optionalFieldOf("alpha").forGetter(ParticleParticleEmitter::a),
-            IParticleExp.CODEC.optionalFieldOf("roll").forGetter(ParticleParticleEmitter::roll),
-            IParticleExp.CODEC.optionalFieldOf("size").forGetter(ParticleParticleEmitter::size),
-            IParticleExp.CODEC.optionalFieldOf("custom").forGetter(ParticleParticleEmitter::custom),
-            CodecUtils.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(ParticleParticleEmitter::predicate),
-            CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleParticleEmitter::biomes)
+    public static final SchemaCodec<ParticleParticleEmitter> CODEC = SchemaRecord.create(ParticleParticleEmitter.class, i -> i.group(
+            i.field("particle", CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE), ParticleParticleEmitter::particleType),
+            i.optional("chance", IParticleExp.CODEC, IParticleExp.ONE, ParticleParticleEmitter::chance),
+            i.optional("count", IParticleExp.CODEC, IParticleExp.ONE, ParticleParticleEmitter::count),
+            i.optional("x", IParticleExp.CODEC, IParticleExp.PARTICLE_RAND, ParticleParticleEmitter::x),
+            i.optional("y", IParticleExp.CODEC, IParticleExp.PARTICLE_RAND, ParticleParticleEmitter::y),
+            i.optional("z", IParticleExp.CODEC, IParticleExp.PARTICLE_RAND, ParticleParticleEmitter::z),
+            i.optional("dx", IParticleExp.CODEC, IParticleExp.ZERO, ParticleParticleEmitter::dx),
+            i.optional("dy", IParticleExp.CODEC, IParticleExp.ZERO, ParticleParticleEmitter::dy),
+            i.optional("dz", IParticleExp.CODEC, IParticleExp.ZERO, ParticleParticleEmitter::dz),
+            i.optional("red", IParticleExp.CODEC, ParticleParticleEmitter::r),
+            i.optional("green", IParticleExp.CODEC, ParticleParticleEmitter::g),
+            i.optional("blue", IParticleExp.CODEC, ParticleParticleEmitter::b),
+            i.optional("alpha", IParticleExp.CODEC, ParticleParticleEmitter::a),
+            i.optional("roll", IParticleExp.CODEC, ParticleParticleEmitter::roll),
+            i.optional("size", IParticleExp.CODEC, ParticleParticleEmitter::size),
+            i.optional("custom", IParticleExp.CODEC, ParticleParticleEmitter::custom),
+            i.optional("customs", Codec.unboundedMap(Codec.STRING, IParticleExp.CODEC), Map.of(),
+                    ParticleParticleEmitter::customs),
+            i.field("state_predicate", SchemaCodecs.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE), RuleTest.CODEC, ParticleParticleEmitter::predicate),
+            i.optional("biomes", CodecUtils.forwardAwareHomogeneousList(Registries.BIOME), ParticleParticleEmitter::biomes)
     ).apply(i, ParticleParticleEmitter::new));
 
 
     @Override
     public void tick(Particle particle, ClientLevel level) {
         if (particleType.isEmpty()) return;
+        // Per-particle random, never the shared level.random: emitters tick on worker threads when
+        // async particles are on and concurrent LegacyRandomSource access crashes.
+        RandomSource rand = particle instanceof CustomParticleInstance cpi ? cpi.getRandom() : level.getRandom();
         float throttle = Polytone.CONFIGS.particlesThrottle.get();
-        if (throttle < 1 && level.getRandom().nextFloat() > throttle) return;
+        if (throttle < 1 && rand.nextFloat() > throttle) return;
 
         double spawnChance = chance.evaluate(particle, level);
-        if (level.getRandom().nextFloat() < spawnChance) {
-            if (biomes.isPresent()) {
-                var biome = level.getBiome(BlockPos.containing(particle.x, particle.y, particle.z));
-                if (!biomes.get().contains(biome)) return;
-            }
-            if (predicate != AlwaysTrueTest.INSTANCE) {
-                var blockAt = level.getBlockState(BlockPos.containing(particle.x, particle.y, particle.z));
-                if (!predicate.test(blockAt, level.getRandom())) return;
+        if (rand.nextFloat() < spawnChance) {
+            if (biomes.isPresent() || predicate != AlwaysTrueTest.INSTANCE) {
+                BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
+                // off-thread (async particles): skip unloaded chunks, else the biome/air fallback misfires
+                if (!level.hasChunkAt(pos)) return;
+                if (biomes.isPresent() && !biomes.get().contains(level.getBiome(pos))) return;
+                if (predicate != AlwaysTrueTest.INSTANCE && !predicate.test(level.getBlockState(pos), rand)) return;
             }
             for (int i = 0; i < count.evaluate(particle, level); i++) {
                 ParticleOptions po = getParticleOptions(particle, level);
                 if (po == null) return;
                 if (!TokenBucketTracker.canEmitParticle(this)) return;
-                level.addParticle(po,
-                        particle.x + x.evaluate(particle, level),
-                        particle.y + y.evaluate(particle, level),
-                        particle.z + z.evaluate(particle, level),
-                        dx.evaluate(particle, level),
-                        dy.evaluate(particle, level),
-                        dz.evaluate(particle, level)
-                );
+                // Evaluate position/velocity now (on the ticking thread), but defer the actual spawn:
+                // ParticleEngine#particlesToAdd is not thread-safe, so it must be mutated on the main thread.
+                double sx = particle.x + x.evaluate(particle, level);
+                double sy = particle.y + y.evaluate(particle, level);
+                double sz = particle.z + z.evaluate(particle, level);
+                double sdx = dx.evaluate(particle, level);
+                double sdy = dy.evaluate(particle, level);
+                double sdz = dz.evaluate(particle, level);
+                // Editor preview (render thread only): route the child into the preview's sandbox
+                // instead of the live world; null sink everywhere else = normal spawn, unchanged.
+                ParticlePreviewState.EmitSink sink = ParticlePreviewState.sink();
+                if (sink != null) {
+                    sink.emit(level, po, sx, sy, sz, sdx, sdy, sdz);
+                } else {
+                    PolytoneAsyncParticles.deferToMain(() -> level.addParticle(po, sx, sy, sz, sdx, sdy, sdz));
+                }
             }
         }
     }
@@ -118,6 +135,8 @@ public record ParticleParticleEmitter(
             roll.ifPresent(exp -> map.put("roll", (float) exp.evaluate(particle, level)));
             size.ifPresent(exp -> map.put("size", (float) exp.evaluate(particle, level)));
             custom.ifPresent(exp -> map.put("custom", (float) exp.evaluate(particle, level)));
+            customs.forEach((name, exp) -> map.put(ExtraDataParticleOptions.NAMED_CUSTOM_PREFIX + name,
+                    (float) exp.evaluate(particle, level)));
             return new ExtraDataParticleOptions(map, particleTypeValue);
         }
 

@@ -5,7 +5,8 @@ import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributesHandler;
-import net.mehvahdjukaar.polytone.common.reloader.JsonImgPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -21,7 +22,7 @@ import net.minecraft.world.level.dimension.DimensionType;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DimensionEffectsManager extends JsonImgPartialReloader {
+public class DimensionEffectsManager extends ContentManager<DimensionEffectsModifier> {
 
     //mod id to modifier
     private final Map<Identifier, DimensionEffectsModifier> effectsToApply = new HashMap<>();
@@ -34,7 +35,9 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     private final Map<ResourceKey<DimensionType>, EnvironmentAttributeMap> postProcessEffects = new HashMap<>();
 
     public DimensionEffectsManager() {
-        super("dimension_modifiers", "dimension_effects");
+        super(Spec.of("Dimension modifier", () -> DimensionEffectsModifier.CODEC)
+                .wikiPage("Dimension-Effects-Modifiers")
+                .folders("dimension_modifiers", "dimension_effects"));
     }
 
     @Override
@@ -47,11 +50,10 @@ public class DimensionEffectsManager extends JsonImgPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var jsons = resources.jsons();
 
-        Parsed.SortedMap<DimensionEffectsModifier> parsedModifiers =
-                Parsed.batchParseAlways(jsons, DimensionEffectsModifier.CODEC, ops, "dimension modifier");
+        Parsed.SortedMap<DimensionEffectsModifier> parsedModifiers = parseAllJsons(jsons, ops);
         parsedModifiers.putAll(extraMods);
 
         // add all modifiers (with or without texture)

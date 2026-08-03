@@ -12,7 +12,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
-import net.mehvahdjukaar.polytone.common.reloader.SingleJsonOrPropertiesReloadListener;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.SingleFileContentManager;
 import net.mehvahdjukaar.polytone.common.struc.Vec3f;
 import net.mehvahdjukaar.polytone.content.color.fog_env.FogEnvironmentMod;
 import net.mehvahdjukaar.polytone.content.entity.IRenderStateWithId;
@@ -51,7 +52,7 @@ import java.util.function.Function;
 
 import static net.minecraft.world.effect.MobEffect.AMBIENT_ALPHA;
 
-public class ColorManager extends SingleJsonOrPropertiesReloadListener {
+public class ColorManager extends SingleFileContentManager<Void> {
 
     private static final int DEFAULT_COLOR = ARGB.colorFromFloat(1.0f, 1, 0, 0);
     private final Object2IntMap<MapColor> vanillaMapColors = new Object2IntOpenHashMap<>();
@@ -103,6 +104,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     private PaintingRenderType paintingRenderType = null;
 
+    private boolean entityShadowsDisabled = false;
+
     //don't use pls
     @Nullable
     private Integer swampDark = null;
@@ -113,7 +116,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
-        super("colo_manager",
+        super("Color Manager",
                 "color.properties", "colors.json",
                 Polytone.MOD_ID, "colormatic", "vanadium", "optifine");
     }
@@ -151,7 +154,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        Map<Identifier, JsonElement> jsons = resources.jsons();
         var keySet = new ArrayList<>(jsons.keySet());
 
         for (var k : Lists.reverse(keySet)) {
@@ -396,6 +400,14 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 } else Polytone.LOGGER.warn("Unknown painting render type {}. Must be one of: solid, cutout, translucent", v.getAsString());
             }
         });
+
+        if (obj.has("entity_shadows")) {
+            JsonElement v = obj.get("entity_shadows");
+            if (v.isJsonPrimitive()) {
+                // false disables the blob shadows rendered under entities. getAsBoolean also accepts the string "false" from .properties files
+                entityShadowsDisabled = !v.getAsBoolean();
+            }
+        }
     }
 
     private void refreshSplash(Style style) {
@@ -516,6 +528,7 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         fishingLineOffset = null;
         fishingLineColor = null;
         paintingRenderType = null;
+        entityShadowsDisabled = false;
         skyFlashColor = null;
         voidDarknessOffset = null;
         horizonHeight = null;
@@ -614,5 +627,9 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     @Nullable
     public PaintingRenderType getPaintingRenderType() {
         return paintingRenderType;
+    }
+
+    public boolean areEntityShadowsDisabled() {
+        return entityShadowsDisabled;
     }
 }

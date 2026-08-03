@@ -33,4 +33,22 @@ issueTrackerURL = "${mod_github}/issues"
     ordering = "NONE"
     side = "CLIENT"
 
+# Sodium 0.9 rewrote the internals the shadow-map terrain replay drives (ShaderChunkRenderer.begin's
+# signature, RenderSectionManager's cull API, the once-per-frame terrain uniform buffer), so anything
+# older mixes crashes and terrain drawn from the light's POV.
+[[dependencies.${mod_id}]]
+    modId = "sodium"
+    type = "incompatible"
+    versionRange = "[0,0.9)"
+    ordering = "NONE"
+    side = "CLIENT"
+
+# Recommended companion: the standalone in-game pack/codec editor UI. Optional — Polytone
+# works without it, but installing it unlocks the visual editor for Polytone's content.
+[[dependencies.${mod_id}]]
+    modId = "nautilus_studio"
+    type = "optional"
+    ordering = "NONE"
+    side = "CLIENT"
+
 

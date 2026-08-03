@@ -1,11 +1,13 @@
 package net.mehvahdjukaar.polytone.content.colormap;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.StrUtils;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapExp;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
@@ -28,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 public final class Colormap implements IColorGetter, ColorResolver {
 
@@ -43,7 +44,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private final boolean usesState;
 
     public boolean inlined = true;
-    Identifier debugID = null;
+    public Identifier debugID = null;
 
     private Integer defaultColor;
     private ArrayImage image = null;
@@ -54,27 +55,37 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
     private final ThreadLocal<BlockAndTintGetter> levelHack = new ThreadLocal<>();
 
-    static final Codec<Colormap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
-            ColorUtils.COLOR.optionalFieldOf("default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
-            IColormapExp.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
-            IColormapExp.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
-            Codec.BOOL.optionalFieldOf("triangular", false).forGetter(c -> c.triangular),
-            Codec.BOOL.optionalFieldOf("rounds", true).forGetter(c -> c.rounds),
-            Codec.BOOL.optionalFieldOf("biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
-            BiomeIdMapper.CODEC.optionalFieldOf("biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
-            Identifier.CODEC.optionalFieldOf("texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture)),
-            ColormapColorModulator.CODEC.optionalFieldOf("color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult))
+    // Declared via the SchemaRecord DSL: same wire format as the old RecordCodecBuilder,
+    // plus a Schema so the editor renders real widgets (schema is built lazily at editor open).
+    public static final SchemaCodec<Colormap> DIRECT_CODEC = SchemaRecord.create(Colormap.class, i -> i.group(
+            i.optional("default_color", ColorUtils.COLOR, c -> Optional.ofNullable(c.defaultColor)),
+            i.field("x_axis", IColormapExp.CODEC, c -> c.xGetter),
+            i.field("y_axis", IColormapExp.CODEC, c -> c.yGetter),
+            i.optional("triangular", Codec.BOOL, false, c -> c.triangular),
+            i.optional("rounds", Codec.BOOL, true, c -> c.rounds),
+            i.optional("biome_blend", Codec.BOOL, c -> Optional.of(c.hasBiomeBlend)),
+            i.optional("biome_id_mapper", BiomeIdMapper.CODEC, c -> Optional.of(c.biomeMapper)),
+            i.optional("texture_path", Identifier.CODEC, c -> Optional.ofNullable(c.explicitTargetTexture)),
+            i.optional("color_modifier", ColormapColorModulator.CODEC, c -> Optional.ofNullable(c.colorMult))
     ).apply(i, Colormap::new));
 
-    public static final Codec<IColorGetter> REFERENCE_OR_EXPRESSION = Codec.withAlternative(
-            Polytone.COLORMAPS.byNameCodec(), SINGLE_COLOR_OR_EXPRESSION);
+    public static final SchemaCodec<IColorGetter> REFERENCE_OR_EXPRESSION = SchemaCodecs.withAlternative(
+            SchemaCodecs.alt("reference", Polytone.COLORMAPS.byNameCodec()),
+            SchemaCodecs.alt("inline", SINGLE_COLOR_OR_EXPRESSION));
 
 
-    //direct reference or expression
-    public static final Codec<IColorGetter> CODEC = CodecUtils.alternatives(
-            CodecUtils.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
-            SINGLE_COLOR_OR_EXPRESSION,
-            BiomeCompoundColorGetter.CODEC);
+    // Direct reference, inline definition, color/expression or biome compound. The wire codec
+    // is unchanged; the labeled parts splice into ONE flat picker
+    // (reference / inline colormap / color / expression / biome compound).
+    public static final SchemaCodec<IColorGetter> CODEC = SchemaCodecs.labeled(
+            SchemaCodecs.alternatives(
+                    SchemaCodecs.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
+                    SINGLE_COLOR_OR_EXPRESSION,
+                    BiomeCompoundColorGetter.CODEC),
+            SchemaCodecs.alt("reference", Polytone.COLORMAPS.byNameCodec()),
+            SchemaCodecs.alt("inline colormap", DIRECT_CODEC),
+            SchemaCodecs.alt("value", SINGLE_COLOR_OR_EXPRESSION),
+            SchemaCodecs.alt("biome compound", BiomeCompoundColorGetter.CODEC));
 
     private Colormap(Optional<Integer> defaultColor, IColormapExp xGetter, IColormapExp yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
@@ -101,6 +112,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     // block tint, fluid tint need to have a concurrent expression.expression variable list needs to be thread safe
+    @Override
     public Colormap makeConcurrent() {
         Colormap concurrentColormap = new Colormap(Optional.ofNullable(this.defaultColor), this.xGetter.createConcurrent(),
                 this.yGetter.createConcurrent(), this.triangular,
@@ -133,7 +145,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return image == null;
     }
 
-    Identifier getExplicitTargetTexture() {
+    public Identifier getExplicitTargetTexture() {
         return explicitTargetTexture;
     }
 
@@ -142,7 +154,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     public void setExplicitTargetTexture(Identifier imageTarget) {
-        this.explicitTargetTexture = imageTarget.withPath(imageTarget.getPath().replace(".png", ""));
+        this.explicitTargetTexture = imageTarget.withPath(StrUtils.stripExtension(imageTarget.getPath()));
     }
 
     @Override
@@ -177,6 +189,17 @@ public final class Colormap implements IColorGetter, ColorResolver {
     @Override
     public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
                            @Nullable Biome biome, @Nullable ItemStack item) {
+        return sampleColor(level, state, pos, biome, item, null);
+    }
+
+    /**
+     * The real sampler, optionally instrumented. When {@code sink} is non-null the intermediates
+     * (axis outputs, sampled source pixel, final ARGB) are reported right where they are computed, so
+     * tooling never needs a second, drift-prone copy of the sampling math. {@code sink == null} is the
+     * runtime path and costs nothing beyond a null check.
+     */
+    public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
+                           @Nullable Biome biome, @Nullable ItemStack item, @Nullable SampleSink sink) {
         float temperature = Mth.clamp(xGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
         float humidity = Mth.clamp(yGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
         int sampled = sample(humidity, temperature);
@@ -187,7 +210,19 @@ public final class Colormap implements IColorGetter, ColorResolver {
         // 26.2 now respects the ALPHA of block tint colors (water=translucent -> alpha 0 = invisible,
         // grass side overlay -> alpha 0 = untinted). Vanilla always produces opaque tints (ARGB.color),
         // so force opaque here to match.
-        return ARGB.opaque(sampled);
+        int color = ARGB.opaque(sampled);
+
+        if (sink != null) {
+            long pixel = pixelIndex(humidity, temperature);
+            sink.report(temperature, humidity, (int) (pixel >>> 32), (int) (pixel & 0xFFFFFFFFL), color);
+        }
+        return color;
+    }
+
+    /** Receives the intermediates of a single {@link #sampleColor} pass; used by the editor preview. */
+    public interface SampleSink {
+        // x/y are the clamped axis outputs (0..1); col/row is the sampled source-image pixel; argb is the final tint.
+        void report(float x, float y, int col, int row, int argb);
     }
 
     // gets color for blend
@@ -231,21 +266,23 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private int sample(float textY, float textX) {
         // dont ask questions here
         //if (Polytone.sodiumOn) return defValue;
-        if (triangular) textY *= textX;
-        int width = image.width();
-        int height = image.height();
+        long pixel = pixelIndex(textY, textX);
+        return image.pixels()[(int) (pixel & 0xFFFFFFFFL)][(int) (pixel >>> 32)];
+    }
 
-        int wm = width - 1;
-        int hm = height - 1;
+    // Maps the two axis outputs to a source-image pixel. High 32 bits = column (x/temperature axis),
+    // low 32 bits = row (y/humidity axis). Single source of truth shared by sample() and the sink path.
+    private long pixelIndex(float textY, float textX) {
+        if (triangular) textY *= textX;
+        int wm = image.width() - 1;
+        int hm = image.height() - 1;
 
         //gets rid of floating point errors for biome id map stuff
         int scaledW = rounds ? Math.round(textX * wm) : Mth.floor(textX * wm);
         int scaledH = rounds ? Math.round(textY * hm) : Mth.floor(textY * hm);
         int w = Math.max(wm - scaledW, 0);
         int h = Math.max(hm - scaledH, 0);
-
-
-        return image.pixels()[h][w];
+        return ((long) w << 32) | (h & 0xFFFFFFFFL);
     }
 
 

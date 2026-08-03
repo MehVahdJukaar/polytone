@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MapRegistry<T> implements Codec<T> {
+public class MapRegistry<T> implements Codec<T>, net.mehvahdjukaar.codecui.EnumerableCodec {
     private final BiMap<Identifier, T> map = HashBiMap.create();
     private final List<Identifier> orderedKeys = new ArrayList<>();
     private final String name;
@@ -101,6 +101,16 @@ public class MapRegistry<T> implements Codec<T> {
         Identifier id = this.getKey(object);
         return id == null ? DataResult.error(() -> "Could not find element '" + object + "' in registry [" + name + "]") :
                 ops.mergeToPrimitive(prefix, ops.createString(id.toString()));
+    }
+
+    @Override
+    public Map<String, ?> codecUiValues() {
+        Map<String, Object> out = new java.util.LinkedHashMap<>();
+        for (Identifier id : orderedKeys) {
+            T value = map.get(id);
+            if (value != null) out.put(id.toString(), value);
+        }
+        return out;
     }
 
     public void clear() {

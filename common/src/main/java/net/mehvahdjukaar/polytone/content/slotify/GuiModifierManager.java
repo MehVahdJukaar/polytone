@@ -2,8 +2,9 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -20,23 +21,26 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class GuiModifierManager extends JsonPartialReloader {
+public class GuiModifierManager extends ContentManager<GuiModifier> {
 
     //value modifiers
     private final Map<MenuType<?>, Set<SlotModifier>> slotsByMenuId = new IdentityHashMap<>();
     private final Map<Class<?>, Set<SlotModifier>> slotsByClass = new IdentityHashMap<>();
     private final Map<String, Set<SlotModifier>> slotsByTitle = new HashMap<>();
 
-    //screen modifiers
-    public final Map<MenuType<?>, ScreenModifier> byMenuId = new IdentityHashMap<>();
-    public final Map<Class<?>, ScreenModifier> byClass = new IdentityHashMap<>();
-    public final Map<String, ScreenModifier> byTitle = new HashMap<>();
+    //screen modifiers. Lists (not merged at parse) so per-variant conditions survive; they are
+    //filtered by condition and merged together at lookup time in resolve(...)
+    public final Map<MenuType<?>, List<ScreenModifier>> byMenuId = new IdentityHashMap<>();
+    public final Map<Class<?>, List<ScreenModifier>> byClass = new IdentityHashMap<>();
+    public final Map<String, List<ScreenModifier>> byTitle = new HashMap<>();
 
 
     private static final Identifier INVENTORY = Identifier.parse("inventory");
 
     public GuiModifierManager() {
-        super("gui_modifiers");
+        super(Spec.of("GUI modifier", () -> SchemaCodec.wrap(GuiModifier.CODEC))
+                .wikiPage("Gui-Modifiers")
+                .folders("gui_modifiers"));
     }
 
     @Override
@@ -50,10 +54,11 @@ public class GuiModifierManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        Map<Identifier, JsonElement> jsons = resources.jsons();
         List<GuiModifier> allModifiers = new ArrayList<>();
 
-        for (var entry : Parsed.batchParseOnlyEnabled(jsons, GuiModifier.CODEC, ops, "gui modifier")) {
+        for (var entry : parseEnabledJsons(jsons, ops)) {
             allModifiers.add(entry.getValue());
         }
 
@@ -68,7 +73,7 @@ public class GuiModifierManager extends JsonPartialReloader {
                     } else if (target.equals("ItemPickerMenu")) {
                         cl = CreativeModeInventoryScreen.ItemPickerMenu.class;
                     } else cl = Class.forName(target);
-                    byClass.merge(cl, ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
+                    byClass.computeIfAbsent(cl, k -> new ArrayList<>()).add(ScreenModifier.fromGuiMod(mod));
 
                     if (!mod.slotModifiers().isEmpty()) {
                         Set<SlotModifier> map = slotsByClass.computeIfAbsent(cl,
@@ -87,7 +92,7 @@ public class GuiModifierManager extends JsonPartialReloader {
                 Optional<MenuType<?>> menu = BuiltInRegistries.MENU.getOptional(menuId);
 
                 if (menu.isPresent() || isInventory) {
-                    byMenuId.merge(menu.orElse(null), ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
+                    byMenuId.computeIfAbsent(menu.orElse(null), k -> new ArrayList<>()).add(ScreenModifier.fromGuiMod(mod));
 
                     if (!mod.slotModifiers().isEmpty()) {
                         Set<SlotModifier> map = slotsByMenuId.computeIfAbsent(menu.orElse(null),
@@ -98,7 +103,7 @@ public class GuiModifierManager extends JsonPartialReloader {
             } else {
                 //title target
                 String title = mod.target();
-                byTitle.merge(title, ScreenModifier.fromGuiMod(mod), ScreenModifier::merge);
+                byTitle.computeIfAbsent(title, k -> new ArrayList<>()).add(ScreenModifier.fromGuiMod(mod));
 
                 if (!mod.slotModifiers().isEmpty()) {
                     Set<SlotModifier> map = slotsByTitle.computeIfAbsent(title,
@@ -118,16 +123,29 @@ public class GuiModifierManager extends JsonPartialReloader {
         }
     }
 
+    /** Keeps only the candidates whose condition currently passes, then merges them (file order). */
+    @Nullable
+    private static ScreenModifier resolve(@Nullable List<ScreenModifier> candidates) {
+        if (candidates == null) return null;
+        ScreenModifier acc = null;
+        for (ScreenModifier m : candidates) {
+            if (m.passesCondition()) {
+                acc = acc == null ? m : acc.merge(m);
+            }
+        }
+        return acc;
+    }
+
     private ScreenModifier getScreenModifier(AbstractContainerScreen<?> screen) {
         ScreenModifier m = null;
         AbstractContainerMenu menu = screen.getMenu();
         if (screen.getClass() == InventoryScreen.class) {
-            m = byClass.get(InventoryMenu.class);
+            m = resolve(byClass.get(InventoryMenu.class));
         } else if (screen.getClass() == CreativeModeInventoryScreen.class) {
-            m = byClass.get(CreativeModeInventoryScreen.ItemPickerMenu.class);
+            m = resolve(byClass.get(CreativeModeInventoryScreen.ItemPickerMenu.class));
         }
         if (menu != null) {
-            m = byClass.get(menu.getClass());
+            m = resolve(byClass.get(menu.getClass()));
         }
         if (m == null) {
             MenuType<?> type;
@@ -137,14 +155,19 @@ public class GuiModifierManager extends JsonPartialReloader {
                 //null for inventory?
                 type = null;
             }
-            m = byMenuId.get(type);
+            m = resolve(byMenuId.get(type));
         }
         return m;
     }
 
     @Nullable
     public ScreenModifier getGuiModifier(Screen screen) {
-        ScreenModifier m = byClass.get(screen.getClass());
+        // Live editor preview wins for the screen it targets, applied unconditionally.
+        if (GuiModifierPreview.isPreviewing(screen)) {
+            GuiModifier o = GuiModifierPreview.override();
+            if (o != null) return ScreenModifier.fromGuiMod(o);
+        }
+        ScreenModifier m = resolve(byClass.get(screen.getClass()));
         if (m == null && screen instanceof AbstractContainerScreen<?> as) {
             m = getScreenModifier(as);
         }
@@ -155,16 +178,17 @@ public class GuiModifierManager extends JsonPartialReloader {
             return null;
         }
         if (m == null) {
-            m = byTitle.get(c.getString());
+            m = resolve(byTitle.get(c.getString()));
         }
         if (m == null && c instanceof MutableComponent mc && mc.getContents() instanceof TranslatableContents tc) {
-            m = byTitle.get(tc.getKey());
+            m = resolve(byTitle.get(tc.getKey()));
         }
         return m;
     }
 
     //TODO: add back?? why is this commented out
     public Collection<SlotModifier> getSlotModifiers(AbstractContainerScreen<?> screen, Slot slot) {
+        if (GuiModifierPreview.isPreviewing(screen)) return previewSlotModifiers(slot);
         Set<SlotModifier> modifies;
         var c = screen.getTitle();
         modifies = slotsByTitle.get(c.getString());
@@ -192,6 +216,7 @@ public class GuiModifierManager extends JsonPartialReloader {
     }
 
     public Collection<SlotModifier> getSlotModifiers(AbstractContainerMenu menu, Slot slot) {
+        if (GuiModifierPreview.isPreviewing(menu)) return previewSlotModifiers(slot);
         var modifiers = slotsByClass.get(menu.getClass());
         if (modifiers == null) {
             MenuType<?> type;
@@ -209,13 +234,26 @@ public class GuiModifierManager extends JsonPartialReloader {
     }
 
 
+    // Idempotent: snapshots the slot's pristine position on first call, resets to it before each apply,
+    // so it can be re-run on an already-built menu (live editor preview) without drifting.
     public void maybeModifySlot(AbstractContainerMenu menu, Slot slot) {
+        if (slot instanceof SlotifySlot ss) {
+            ss.polytone$captureBase();
+            ss.polytone$resetToBase();
+        }
         var mods = getSlotModifiers(menu, slot);
         for (SlotModifier mod : mods) {
             if (mod.matches(slot)) {
                 mod.modify(slot);
             }
         }
+    }
+
+    /** Preview override slot modifiers matching this slot, or empty when no override is active. */
+    private static Collection<SlotModifier> previewSlotModifiers(Slot slot) {
+        GuiModifier o = GuiModifierPreview.override();
+        if (o == null) return Set.of();
+        return o.slotModifiers().stream().filter(m -> m.matches(slot)).toList();
     }
 
 }

@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.content.particle.custom.render;
 
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -24,6 +26,18 @@ public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleInstan
 
     @Override
     public ParticleGroupRenderState extractRenderState(Frustum frustum, Camera camera, float f) {
+        if (Polytone.CONFIGS.particlesOffThread.get() && !this.particles.isEmpty()) {
+            // build the render state on a worker thread; joined lazily in ModelParticleRenderState#submit/clear,
+            // so it overlaps the rest of the level render
+            this.particleTypeRenderState.setExtractionFuture(
+                    PolytoneAsyncParticles.submitRender(() -> extractAll(frustum, camera, f)));
+        } else {
+            extractAll(frustum, camera, f);
+        }
+        return this.particleTypeRenderState;
+    }
+
+    private void extractAll(Frustum frustum, Camera camera, float f) {
         for (CustomParticleInstance particle : this.particles) {
             if (particleInFrustum(frustum, particle, camera)) {
                 try {
@@ -36,8 +50,6 @@ public class ModelParticleRenderGroup extends ParticleGroup<CustomParticleInstan
                 }
             }
         }
-
-        return this.particleTypeRenderState;
     }
 
 

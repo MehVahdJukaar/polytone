@@ -3,9 +3,8 @@ package net.mehvahdjukaar.polytone.content.slotify;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.Targets;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -18,14 +17,16 @@ import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.*;
 
-public class GuiOverlayManager extends JsonPartialReloader {
+public class GuiOverlayManager extends ContentManager<BlitModifier> {
 
     private final Map<Hud.HeartType, HeartSprites> heartSprites = new EnumMap<>(Hud.HeartType.class);
     private final List<BlitModifier> blitModifiers = new ArrayList<>();
     private final Map<Identifier, BlitModifier> blitModifiersCache = new HashMap<>();
 
     public GuiOverlayManager() {
-        super("overlay_modifiers");
+        super(Spec.of("Overlay modifier", () -> BlitModifier.CODEC)
+                .wikiPage("Screen-Sprite-Modifiers")
+                .folders("overlay_modifiers"));
     }
 
     @Override
@@ -35,10 +36,9 @@ public class GuiOverlayManager extends JsonPartialReloader {
     }
 
     @Override
-    protected void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops,
                                   HolderLookup.Provider access) {
-        for (var j : Parsed.batchParseOnlyEnabled(jsons, BlitModifier.CODEC,
-                ops, "overlay modifier")) {
+        for (var j : parseEnabledJsons(resources.jsons(), ops)) {
             blitModifiers.add(j.getValue());
         }
     }
@@ -49,7 +49,7 @@ public class GuiOverlayManager extends JsonPartialReloader {
     }
 
     @Override
-    protected Map<Identifier, JsonElement> prepare(PreparableReloadListener.SharedState sharedState) {
+    protected AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
         var resourceManager = sharedState.resourceManager();
         reloadHearths(resourceManager);
         return super.prepare(sharedState);

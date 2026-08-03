@@ -2,7 +2,9 @@ package net.mehvahdjukaar.polytone.common;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
@@ -104,18 +106,26 @@ public record Targets(List<Entry> entries) {
         <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg);
     }
 
-    private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = CodecUtils.alternatives(
-            SimpleLocation.SIMPLE_CODEC, TagLocation.TAG_CODEC, RegexLocation.REGEX_CODEC);
+    private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = SchemaCodecs.alternatives(
+            "id", SimpleLocation.SIMPLE_CODEC,
+            "tag", TagLocation.TAG_CODEC,
+            "regex", RegexLocation.REGEX_CODEC);
 
-    private static final Codec<Entry> ENTRY_CODEC = Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC);
+    // The wire codec is a plain withAlternative fold; labeled() only adds the editor schema
+    // (the labeled alternatives of the first branch splice flat, so the selector
+    // shows [id, tag, regex, optional id]) without touching the format.
+    private static final Codec<Entry> ENTRY_CODEC = SchemaCodecs.labeled(
+            Codec.withAlternative(SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry.OPTIONAL_CODEC),
+            SchemaCodecs.alt("entry", SIMPLE_TAG_OR_REGEX_ENTRY_CODEC),
+            SchemaCodecs.alt("optional id", OptionalEntry.OPTIONAL_CODEC));
 
-    public static final Codec<Targets> CODEC = CodecUtils.singleOrList(ENTRY_CODEC)
+    public static final Codec<Targets> CODEC = SchemaCodecs.singleOrList(ENTRY_CODEC)
             .xmap(Targets::new, t -> t.entries);
 
     private record OptionalEntry(Entry entry, boolean required) implements Entry {
-        public static final Codec<OptionalEntry> OPTIONAL_CODEC = RecordCodecBuilder.create(i -> i.group(
-                SIMPLE_TAG_OR_REGEX_ENTRY_CODEC.fieldOf("id").forGetter(OptionalEntry::entry),
-                com.mojang.serialization.Codec.BOOL.optionalFieldOf("required", true).forGetter(OptionalEntry::required)
+        public static final SchemaCodec<OptionalEntry> OPTIONAL_CODEC = SchemaRecord.create(OptionalEntry.class, i -> i.group(
+                i.field("id", SIMPLE_TAG_OR_REGEX_ENTRY_CODEC, OptionalEntry::entry),
+                i.optional("required", Codec.BOOL, true, OptionalEntry::required)
         ).apply(i, OptionalEntry::new));
 
         @Override

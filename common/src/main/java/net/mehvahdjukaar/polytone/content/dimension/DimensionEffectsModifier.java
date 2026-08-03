@@ -2,10 +2,11 @@ package net.mehvahdjukaar.polytone.content.dimension;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
@@ -27,18 +28,18 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                                        //TODO: ad timelines
                                        DimensionTarget targets) {
 
-    public static final Decoder<DimensionEffectsModifier> CODEC = RecordCodecBuilder.create(instance ->
-            instance.group(
-                    DimensionEnvAttributeModifications.CODEC.optionalFieldOf("attributes_modifiers",
-                            DimensionEnvAttributeModifications.EMPTY).forGetter(DimensionEffectsModifier::attributeModifications),
-                    DimensionType.Skybox.CODEC.optionalFieldOf("skybox").forGetter(DimensionEffectsModifier::skybox),
-                    CardinalLighting.Type.CODEC.optionalFieldOf("cardinal_light").forGetter(DimensionEffectsModifier::cardinalLightType),
-                    Codec.FLOAT.optionalFieldOf("ambient_light").forGetter(DimensionEffectsModifier::ambientLight),
-                    Codec.BOOL.optionalFieldOf("has_skylight").forGetter(DimensionEffectsModifier::hasSkylight),
+    public static final SchemaCodec<DimensionEffectsModifier> CODEC = SchemaRecord.create(DimensionEffectsModifier.class, i ->
+            i.group(
+                    i.optional("attributes_modifiers", DimensionEnvAttributeModifications.CODEC,
+                            DimensionEnvAttributeModifications.EMPTY, DimensionEffectsModifier::attributeModifications),
+                    i.optional("skybox", DimensionType.Skybox.CODEC, DimensionEffectsModifier::skybox),
+                    i.optional("cardinal_light", CardinalLighting.Type.CODEC, DimensionEffectsModifier::cardinalLightType),
+                    i.optional("ambient_light", Codec.FLOAT, DimensionEffectsModifier::ambientLight),
+                    i.optional("has_skylight", Codec.BOOL, DimensionEffectsModifier::hasSkylight),
 
-                    Polytone.LIGHTMAPS.byNameCodec().optionalFieldOf("lightmap").forGetter(DimensionEffectsModifier::lightmap),
-                    DimensionTarget.CODEC.optionalFieldOf("targets", DimensionTarget.EMPTY).forGetter(DimensionEffectsModifier::targets)
-            ).apply(instance, DimensionEffectsModifier::new));
+                    i.optional("lightmap", Polytone.LIGHTMAPS.byNameCodec(), DimensionEffectsModifier::lightmap),
+                    i.optional("targets", DimensionTarget.CODEC, DimensionTarget.EMPTY, DimensionEffectsModifier::targets)
+            ).apply(i, DimensionEffectsModifier::new));
 
 
     public DimensionEffectsModifier merge(DimensionEffectsModifier newMod) {
@@ -103,20 +104,20 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                                                      EnvironmentAttributeMapMod thunderMod,
                                                      EnvironmentAttributeMapMod postProcess) { //here we dont use removals
 
-        public static final Codec<DimensionEnvAttributeModifications> DIRECT_CODEC = RecordCodecBuilder.create(
-                instance -> instance.group(
-                        EnvironmentAttributeMapMod.CODEC.optionalFieldOf("base",
-                                EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.baseMod),
-                        EnvironmentAttributeMapMod.CODEC.optionalFieldOf("rain",
-                                EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.rainMod),
-                        EnvironmentAttributeMapMod.CODEC.optionalFieldOf("thunder",
-                                EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.thunderMod),
-                        EnvironmentAttributeMapMod.CODEC.optionalFieldOf("post_process",
-                                EnvironmentAttributeMapMod.EMPTY).forGetter(m -> m.postProcess)
-                ).apply(instance, DimensionEnvAttributeModifications::new)
+        public static final SchemaCodec<DimensionEnvAttributeModifications> DIRECT_CODEC = SchemaRecord.create(
+                DimensionEnvAttributeModifications.class, i -> i.group(
+                        i.optional("base", EnvironmentAttributeMapMod.CODEC,
+                                EnvironmentAttributeMapMod.EMPTY, m -> m.baseMod),
+                        i.optional("rain", EnvironmentAttributeMapMod.CODEC,
+                                EnvironmentAttributeMapMod.EMPTY, m -> m.rainMod),
+                        i.optional("thunder", EnvironmentAttributeMapMod.CODEC,
+                                EnvironmentAttributeMapMod.EMPTY, m -> m.thunderMod),
+                        i.optional("post_process", EnvironmentAttributeMapMod.CODEC,
+                                EnvironmentAttributeMapMod.EMPTY, m -> m.postProcess)
+                ).apply(i, DimensionEnvAttributeModifications::new)
         );
 
-        public static final Codec<DimensionEnvAttributeModifications> CODEC = CodecUtils.bestAlternative(
+        public static final Codec<DimensionEnvAttributeModifications> CODEC = SchemaCodecs.bestAlternative(
                 EnvironmentAttributeMapMod.CODEC.xmap(DimensionEnvAttributeModifications::baseOnly,
                         m -> m.baseMod
                 ), DIRECT_CODEC, (f, s) -> !f.isEmpty()

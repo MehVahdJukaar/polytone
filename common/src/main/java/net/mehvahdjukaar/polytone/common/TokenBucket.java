@@ -35,14 +35,15 @@ public class TokenBucket {
         return new TokenBucket(maxEveryFiveSeconds, (int) refillPerTick);
     }
 
-    // Called once per game tick
-    public void onTick() {
+    // Called once per game tick (main thread) while tryAcquire may run on particle-worker threads,
+    // so both accessors are synchronized to keep the token count consistent.
+    public synchronized void onTick() {
         if (tokens >= capacity) return;
         tokens = Math.min(capacity, tokens + refillPerTick);
     }
 
     // Try to consume 1 token
-    public boolean tryAcquire() {
+    public synchronized boolean tryAcquire() {
         if (tokens > 0) {
             tokens--;
             return true;

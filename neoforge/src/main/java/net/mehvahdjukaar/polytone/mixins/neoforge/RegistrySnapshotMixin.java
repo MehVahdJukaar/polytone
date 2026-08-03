@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import it.unimi.dsi.fastutil.ints.Int2ObjectSortedMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.PolytoneInit;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
@@ -24,8 +25,9 @@ public class RegistrySnapshotMixin {
             target = "Lnet/minecraft/core/MappedRegistry;register(ILnet/minecraft/resources/ResourceKey;Ljava/lang/Object;Lnet/minecraft/core/RegistrationInfo;)Lnet/minecraft/core/Holder$Reference;"))
     private Holder.Reference polytone$skipDynamic(MappedRegistry instance, int i, ResourceKey resourceKey, Object object, RegistrationInfo registrationInfo,
                                                   Operation<Holder.Reference> original, @Local(argsOnly = true) Registry<?> registry) {
-        //removes dynamic stuff
-        if (!Polytone.isEntryDynamic(registry, resourceKey.identifier())) {
+        //removes dynamic stuff. short-circuit so we don't force Polytone's static init during the
+        //vanilla bootstrap snapshot (no dynamic entries exist until Polytone has started anyway)
+        if (!PolytoneInit.INITIALIZED || !Polytone.isEntryDynamic(registry, resourceKey.identifier())) {
             return original.call(instance, i, resourceKey, object, registrationInfo);
         } else {
             return null;
@@ -37,8 +39,9 @@ public class RegistrySnapshotMixin {
             target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectSortedMap;put(ILjava/lang/Object;)Ljava/lang/Object;"))
     private Object polytone$skipDynamicId(Int2ObjectSortedMap instance, int i, Object object, Operation<Object> original, @Local(argsOnly = true) Registry<?> registry,
                                           @Local(argsOnly = true) Identifier resourceKey) {
-        //removes dynamic stuff
-        if (!Polytone.isEntryDynamic(registry, resourceKey)) {
+        //removes dynamic stuff. short-circuit so we don't force Polytone's static init during the
+        //vanilla bootstrap snapshot (no dynamic entries exist until Polytone has started anyway)
+        if (!PolytoneInit.INITIALIZED || !Polytone.isEntryDynamic(registry, resourceKey)) {
             return original.call(instance, i, object);
         } else {
             return null;

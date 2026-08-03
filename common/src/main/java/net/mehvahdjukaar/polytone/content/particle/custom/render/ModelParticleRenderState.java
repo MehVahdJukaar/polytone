@@ -17,10 +17,31 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ForkJoinTask;
 
 public class ModelParticleRenderState implements ParticleGroupRenderState {
 
     private final Map<ParticleRenderMode, List<ParticleRenderInstance>> particles = new HashMap<>();
+
+    private ForkJoinTask<?> extractionFuture;
+
+    /** Set by ModelParticleRenderGroup when extraction is dispatched off-thread. */
+    public void setExtractionFuture(ForkJoinTask<?> future) {
+        // Join any still-in-flight extraction before overwriting it. submit()/clear() normally join
+        // it first (so this is a no-op in the frame loop), but if a frame skips both, this stops the
+        // previous worker from racing the new one on this state's particle map.
+        awaitExtraction();
+        this.extractionFuture = future;
+    }
+
+    /** Block until off-thread extraction (if any) has finished writing this state. */
+    private void awaitExtraction() {
+        ForkJoinTask<?> f = this.extractionFuture;
+        if (f != null) {
+            this.extractionFuture = null;
+            f.join(); // also surfaces any worker exception on the main thread
+        }
+    }
 
     public void add(
             ParticleRenderMode layer, float x, float y, float z,
@@ -34,11 +55,13 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
 
     @Override
     public void clear() {
+        awaitExtraction();
         this.particles.clear();
     }
 
     @Override
     public void submit(SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
+        awaitExtraction();
         for (var v : particles.entrySet()) {
             for (var p : v.getValue()) {
 
@@ -58,8 +81,6 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
                 poseStack.translate(-0.5, -0.5, -0.5);
 
                 submitNodeCollector.submitCustomGeometry(poseStack, v.getKey().getBlock(), (pose1, vertexConsumer) -> {
-                 //   vertexConsumer = v.getKey().modifyBlockConsumer(vertexConsumer);
-
                     putModelBulkData(p.modelData, p.light, OverlayTexture.NO_OVERLAY, pose1, vertexConsumer, p.r, p.g, p.b, p.a);
                 });
             }

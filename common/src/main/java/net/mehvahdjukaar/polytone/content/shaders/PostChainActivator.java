@@ -1,11 +1,11 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.mehvahdjukaar.polytone.mixins.accessor.PostPassAccessor;
-import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.PostPass;
 import net.minecraft.client.renderer.ShaderManager;
@@ -32,36 +32,50 @@ import java.util.Map;
  */
 public final class PostChainActivator {
 
-    public static final Codec<PostChainActivator> CODEC = RecordCodecBuilder.create(
+    public static final SchemaCodec<PostChainActivator> CODEC = SchemaRecord.create(PostChainActivator.class,
             i -> i.group(
-                    Identifier.CODEC.fieldOf("post_chain").forGetter(p -> p.postChain),
-                    ISimpleExp.CODEC.optionalFieldOf("activation_condition", ISimpleExp.ONE).forGetter(p -> p.turnOnCondition),
-                    ExpressionUniformBuffers.CODEC
-                            .optionalFieldOf("expression_uniforms", new ExpressionUniformBuffers(Map.of()))
-                            .forGetter(p -> p.buffers),
-                    Codec.unboundedMap(Codec.STRING, Identifier.CODEC)
-                            .optionalFieldOf("samplers", Map.of()).forGetter(p -> p.samplers)
+                    i.field("post_chain", Identifier.CODEC, p -> p.postChain),
+                    i.optional("activation_condition", ISimpleExp.CODEC, ISimpleExp.ONE, p -> p.turnOnCondition),
+                    i.optional("expression_uniforms", ExpressionUniformBuffers.CODEC,
+                            new ExpressionUniformBuffers(Map.of()), p -> p.buffers),
+                    i.optional("samplers", Codec.unboundedMap(Codec.STRING, Identifier.CODEC),
+                            Map.of(), p -> p.samplers),
+                    i.optional("use_shadow_map", Codec.BOOL, false, p -> p.useShadowMap)
             ).apply(i, PostChainActivator::new));
 
     private final Identifier postChain;
     private final ISimpleExp turnOnCondition;
     private final ExpressionUniformBuffers buffers;
     private final Map<String, Identifier> samplers;
+    private final boolean useShadowMap;
 
     private boolean cachedOn = false;
     private PostChain cachedPostChain = null;
     private final List<Identifier> registeredShaderIds = new ArrayList<>();
 
     public PostChainActivator(Identifier postChain, ISimpleExp turnOnCondition,
-                              ExpressionUniformBuffers buffers, Map<String, Identifier> samplers) {
+                              ExpressionUniformBuffers buffers, Map<String, Identifier> samplers,
+                              boolean useShadowMap) {
         this.postChain = postChain;
         this.turnOnCondition = turnOnCondition;
         this.buffers = buffers;
         this.samplers = samplers;
+        this.useShadowMap = useShadowMap;
     }
 
     public void refreshEnabled() {
         cachedOn = turnOnCondition.evaluate() > 0;
+    }
+
+    /** Whether this chain's activation condition currently passes (as of the last {@link #refreshEnabled}). */
+    public boolean isOn() {
+        return cachedOn;
+    }
+
+    /** True when this chain is currently on and declared {@code use_shadow_map}, i.e. it wants the
+     * light-POV depth map rendered this frame (see {@code ShadowMapRenderer}). */
+    public boolean wantsShadowMap() {
+        return cachedOn && useShadowMap;
     }
 
     @Nullable
@@ -69,7 +83,10 @@ public final class PostChainActivator {
         if (!cachedOn) return null;
         if (cachedPostChain == null) {
             try {
-                cachedPostChain = manager.getPostChain(postChain, LevelTargetBundle.MAIN_TARGETS);
+                // Sorting targets plus the pack's custom persistent targets. Validation only;
+                // the real handles come from the bundle at addToFrame.
+                cachedPostChain = manager.getPostChain(postChain, Polytone.POST_TARGETS.allowedTargets());
+                if (cachedPostChain == null) return null; // not resolvable yet (mid-reload), retry quietly
                 buffers.ensureInitialized("Polytone post expr uniform");
                 registerByPassShaders(cachedPostChain);
             } catch (Throwable ex) {

@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(targets = "net/minecraft/world/level/biome/BiomeSpecialEffects$GrassColorModifier$3")
 public class SwampColorMixin {
 
+    @SuppressWarnings("all")
     @Inject(method = "modifyColor", at = @At("HEAD"), cancellable = true)
     public void poly$modifyColor(double d, double e, int i, CallbackInfoReturnable<Integer> cir) {
         Integer a = Polytone.COLORS.getSpecialSwampLight();

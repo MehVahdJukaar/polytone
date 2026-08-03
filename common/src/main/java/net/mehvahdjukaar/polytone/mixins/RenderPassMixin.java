@@ -26,6 +26,9 @@ public class RenderPassMixin {
 
     @Inject(method = "setPipeline", at = @At("TAIL"))
     private void poly$onSetPipeline(RenderPipeline renderPipeline, CallbackInfo ci) {
+        // This runs for every draw setup in the game, so bail before touching anything when no
+        // loaded shader declared one of our blocks/samplers and no pack registered any uniforms.
+        if (!Polytone.POST_CHAINS.hasAnyPassBindings() && !Polytone.SHADER_EFFECTS.hasAnyRegistered()) return;
         // the GL backend holds the compiled program; non-GL backends expose no declared uniforms to gate on
         if (!(this.backend instanceof GlRenderPassAccessor acc)) return;
         GlRenderPipeline glPipeline = acc.polytone$getPipeline();

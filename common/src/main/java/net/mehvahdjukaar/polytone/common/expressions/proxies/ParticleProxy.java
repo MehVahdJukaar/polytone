@@ -114,13 +114,19 @@ public class ParticleProxy extends PositionalProxy {
         return 0;
     }
 
+    /** Named custom variable, declared under the particle's {@code customs}. Names are case-insensitive. */
+    public double custom(String name) {
+        if (particle instanceof CustomParticleInstance cp) {
+            return cp.getCustom(name);
+        }
+        return 0;
+    }
+
     @Override
     public boolean hasEntitiesWithin() {
         return !level.getEntities(null, particle.getBoundingBox().inflate(1.25)).isEmpty();
     }
 
-
-    //setters
 
     public void xd(double xd) {
         particle.xd = xd;
@@ -162,6 +168,12 @@ public class ParticleProxy extends PositionalProxy {
     public void custom(double custom) {
         if (particle instanceof CustomParticleInstance cp) {
             cp.setCustom(custom);
+        }
+    }
+
+    public void custom(String name, double value) {
+        if (particle instanceof CustomParticleInstance cp) {
+            cp.setCustom(name, value);
         }
     }
 

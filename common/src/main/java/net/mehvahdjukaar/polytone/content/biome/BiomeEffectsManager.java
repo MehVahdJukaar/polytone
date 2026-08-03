@@ -1,10 +1,11 @@
 package net.mehvahdjukaar.polytone.content.biome;
 
 import com.google.gson.JsonElement;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.attributes.IExtendedInterpolator;
-import net.mehvahdjukaar.polytone.common.reloader.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -25,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class BiomeEffectsManager extends JsonPartialReloader {
+public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier> {
 
     private final Map<Biome, BiomeEffectModifier> vanillaEffects = new HashMap<>();
     private final Map<Biome, BiomeEffectModifier> effectsToApply = new HashMap<>();
@@ -34,12 +35,17 @@ public class BiomeEffectsManager extends JsonPartialReloader {
     private boolean hasPostAttributes = false;
 
     public BiomeEffectsManager() {
-        super("biome_modifiers", "biome_effects");
+        // wrap(CODEC), not DIRECT_CODEC: files parse through the postProcess wrapper, and the
+        // editor must validate through the same one.
+        super(Spec.of("Biome modifier", () -> SchemaCodec.wrap(BiomeEffectModifier.CODEC))
+                .wikiPage("Biome-Effect-Modifiers")
+                .folders("biome_modifiers", "biome_effects"));
     }
 
     @Override
-    public void parseWithLevel(Map<Identifier, JsonElement> jsons, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
-        for (var v : Parsed.batchParseOnlyEnabled(jsons, BiomeEffectModifier.CODEC, ops, "biome modifier")) {
+    public void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
+        Map<Identifier, JsonElement> jsons = resources.jsons();
+        for (var v : parseEnabledJsons(jsons, ops)) {
             addEffect(v.getKey(), v.getValue(), access);
         }
     }

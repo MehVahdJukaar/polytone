@@ -7,6 +7,7 @@ import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.BlendFactor;
 import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderGroup;
@@ -20,6 +21,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4fc;
+
+import java.util.Optional;
 
 import static net.minecraft.client.renderer.RenderPipelines.register;
 
@@ -90,6 +93,24 @@ public class PolytoneRenderTypes {
                     .withPrimitiveTopology(PrimitiveTopology.TRIANGLE_STRIP)
                     .withCull(false)
                     .withLocation("polytone/pipeline/leash")
+                    .build());
+
+    // Depth-only fullscreen pass: samples a saved world-depth texture (InSampler) and writes it
+    // back into the bound depth attachment. The depth test keeps whichever of the two samples is
+    // nearer the camera; color writes are masked off so the scene color is untouched. Used to fold
+    // the first-person hand's depth back together with the world depth before running post chains.
+    public static final RenderPipeline DEPTH_COMBINE_PIPELINE = register(
+            RenderPipeline.builder()
+                    .withBindGroupLayout(BindGroupLayouts.GLOBALS)
+                    .withLocation(Polytone.res("pipeline/depth_combine"))
+                    .withVertexShader("core/screenquad")
+                    .withFragmentShader(Polytone.res("core/depth_combine"))
+                    .withBindGroupLayout(BindGroupLayouts.IN_SAMPLER)
+                    // 26.2 is reversed-Z (near = 1.0), so "keep the nearest" is a >= test, not the <= this used pre-26.2
+                    .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
+                    .withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM,
+                            ColorTargetState.WRITE_NONE))
+                    .withPrimitiveTopology(PrimitiveTopology.TRIANGLES)
                     .build());
 
     private static final Identifier LEASH_TEXTURE = Identifier.withDefaultNamespace("textures/entity/lead.png");

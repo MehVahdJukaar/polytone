@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.texture;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.impl.ISimpleExp;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
@@ -16,7 +16,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 
 public interface IDeltaProvider {
-    Codec<IDeltaProvider> CODEC = CodecUtils.alternatives(PresetProvider.CODEC, ExpProvider.CODEC);
+    Codec<IDeltaProvider> CODEC = SchemaCodecs.alternatives(
+            "preset", PresetProvider.CODEC,
+            "expression", ExpProvider.CODEC);
 
     @Nullable Float getDelta(float timeCycleDuration);
 
