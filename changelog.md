@@ -1,3 +1,1 @@
-- updated to work with sodium 0.9. this means that it wont work with 0.8 anymore.
-- fixed an issue with configs
-- shadowmap calculations is faster
+- ported changes from 1.21.11
