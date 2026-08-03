@@ -1,2 +1,2 @@
-- fixed an issue with configs
-- shadowmap calculations is faster
+- ported 1.21.1 shadowmap changes
+- added onFire function
