@@ -62,7 +62,7 @@ public abstract class AbstractEntityProxy extends PositionalProxy {
         return entity().isInWater();
     }
 
-    public boolean fireTicks() {
+    public boolean onFire() {
         return entity().isOnFire();
     }
 
