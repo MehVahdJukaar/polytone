@@ -16,6 +16,7 @@ import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
 import net.caffeinemc.mods.sodium.client.render.viewport.ViewportProvider;
 import net.caffeinemc.mods.sodium.client.util.FogParameters;
 import net.caffeinemc.mods.sodium.client.util.FogStorage;
+import net.mehvahdjukaar.polytone.content.shaders.ShadowCasterVolume;
 import net.mehvahdjukaar.polytone.mixins.accessor.SodiumRenderSectionManagerAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SodiumWorldRendererShadowAccessor;
 import net.minecraft.client.Camera;
@@ -102,7 +103,7 @@ public final class SodiumShadowRenderer {
     // this class is linked, so the CompatHandler.SODIUM gate has to live at the call site (ShadowMapRenderer).
     public static void replayTerrain(Minecraft mc, Camera cam, Vec3 camPos,
                                      Matrix4f lightView, Matrix4f lightProj,
-                                     float coverage, float depthRange,
+                                     ShadowCasterVolume volume,
                                      GpuTexture color, GpuTexture depth,
                                      List<BlockEntity> blockEntitiesOut) {
         SodiumWorldRenderer swr = SodiumWorldRenderer.instanceNullable();
@@ -115,7 +116,7 @@ public final class SodiumShadowRenderer {
         RenderSectionManager rsm = renderSectionManager();
         boolean mutatedLists = rsm != null;
         try {
-            if (mutatedLists) reCull(rsm, cam, lightView, camPos, coverage, depthRange);
+            if (mutatedLists) reCull(rsm, cam, volume, camPos);
 
             // The render lists now hold the light-volume section set, so this yields exactly the block
             // entities that can cast into the map (plus the global ones, which are never culled).
@@ -168,11 +169,11 @@ public final class SodiumShadowRenderer {
         }
     }
 
-    // Re-cull Sodium's terrain list against the light volume.
-    private static void reCull(RenderSectionManager rsm, Camera camera, Matrix4f lightView,
-                               Vec3 camPos, float coverage, float depthRange) {
+    // Re-cull Sodium's terrain list against the caster volume.
+    private static void reCull(RenderSectionManager rsm, Camera camera,
+                               ShadowCasterVolume volume, Vec3 camPos) {
         SodiumLightVolumeFrustum frustum = new SodiumLightVolumeFrustum(
-                lightView, coverage, depthRange, Viewport.CHUNK_SECTION_PADDED_RADIUS);
+                volume, Viewport.CHUNK_SECTION_PADDED_RADIUS);
         Viewport viewport = new Viewport(frustum, new Vector3d(camPos.x, camPos.y, camPos.z));
 
         // A region's ChunkRenderList is only cleared when the collector meets it at a NEW frame number

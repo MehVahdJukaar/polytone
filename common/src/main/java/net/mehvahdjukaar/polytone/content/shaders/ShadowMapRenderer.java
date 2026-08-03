@@ -46,6 +46,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
@@ -74,8 +75,14 @@ public class ShadowMapRenderer {
     // Reuse state: when we skip a re-render, the last map is kept and only re-aligned for camera motion.
     private final Matrix4f renderedMatrix = new Matrix4f();  // shadowMatrix at the last real render
     private Vec3 renderedCamPos = Vec3.ZERO;                 // camera position at the last real render
+    private ClientLevel renderedLevel = null;                // level of the last real render
     private long lastUpdateMs = 0L;
     private boolean hasRendered = false;
+
+    // Set for the duration of a pass. The pass dispatches entity and block-entity renderers, and mods
+    // render entire levels from those - a nested LevelRenderer.renderLevel landing back here would
+    // clear shadowSections while we iterate it and hand our output overrides to the nested pass.
+    private boolean insidePass = false;
 
     private GpuTexture depthTexture = null;
     private GpuTextureView depthTextureView = null;
@@ -101,6 +108,8 @@ public class ShadowMapRenderer {
     public void setSettings(ShadowMapSettings settings) {
         this.settings = settings;
         this.hasRendered = false;
+        // Also the disconnect path (resetWithLevel), so the cache can't pin a dead ClientLevel.
+        this.renderedLevel = null;
     }
 
     public GpuTextureView getShadowTexture() {
@@ -116,12 +125,16 @@ public class ShadowMapRenderer {
     // Called from LevelRenderer.renderLevel HEAD (before the frame graph is built and executed, so the
     // post chains that sample us this frame see this frame's map); no render pass is open here, which
     // the UBO writes require. Skips all work unless some active post chain declares use_shadow_map.
-    public void renderShadowPassIfNeeded(GpuBufferSlice shaderFog) {
+    public void renderShadowPassIfNeeded(GpuBufferSlice shaderFog, Camera cam,
+                                         Matrix4fc cameraFrustumMatrix, Matrix4f cameraProjectionMatrix) {
+        if (insidePass) return;
         if (!Polytone.POST_CHAINS.anyActiveEffectUsesShadowMap()) return;
 
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        Camera cam = mc.gameRenderer.getMainCamera();
+        // The camera comes from renderLevel's own parameter rather than gameRenderer.getMainCamera():
+        // that field is a global other mods swap while they render a second view, and it has to agree
+        // with the frustum matrices above - they are all camera-relative to the same eye.
         if (level == null || !cam.isInitialized()) return;
 
         Vec3 camPos = cam.position();
@@ -131,20 +144,38 @@ public class ShadowMapRenderer {
 
         long now = Util.getMillis();
         float updateInterval = settings.updateInterval();
-        boolean due = !hasRendered || updateInterval <= 0f || (now - lastUpdateMs) >= updateInterval * 50f;
+        // The re-align below is a translation of a box centered on the camera at render time, so it only
+        // holds while the camera is still well inside that box. A teleport, a dimension change or a
+        // second view rendered from somewhere else entirely would otherwise slide the whole map away.
+        float maxReuseDrift = settings.coverage() * 0.25f;
+        boolean reusable = hasRendered && level == renderedLevel
+                && camPos.distanceToSqr(renderedCamPos) <= maxReuseDrift * maxReuseDrift;
+        boolean due = !reusable || updateInterval <= 0f || (now - lastUpdateMs) >= updateInterval * 50f;
         if (due) {
             float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+            boolean ok = true;
+            insidePass = true;
             try {
-                render(mc, level, cam, camPos, partial, shaderFog);
+                render(mc, level, cam, camPos, partial, shaderFog, cameraFrustumMatrix, cameraProjectionMatrix);
             } catch (Exception e) {
                 // render() restores its own global state in finally blocks; swallow here so a failed
                 // shadow pass can never propagate into renderLevel or leave the frame half-rendered.
+                ok = false;
                 Polytone.LOGGER.error("Polytone shadow-map render failed", e);
+            } finally {
+                insidePass = false;
             }
-            renderedMatrix.set(shadowMatrix);
-            renderedCamPos = camPos;
-            lastUpdateMs = now;
-            hasRendered = true;
+            // Only a completed pass may be reused: caching a half-drawn map would keep it on screen for
+            // the whole update interval.
+            if (ok) {
+                renderedMatrix.set(shadowMatrix);
+                renderedCamPos = camPos;
+                renderedLevel = level;
+                lastUpdateMs = now;
+                hasRendered = true;
+            } else {
+                hasRendered = false;
+            }
         } else {
             // Reuse the last depth map; only re-align it for how far the camera has moved since. The
             // projection is orthographic and the light basis is fixed between updates, so a plain
@@ -159,7 +190,8 @@ public class ShadowMapRenderer {
         uniforms.update(shadowMatrix, lightDir, camFract);
     }
 
-    private void render(Minecraft mc, ClientLevel level, Camera cam, Vec3 camPos, float partial, GpuBufferSlice shaderFog) {
+    private void render(Minecraft mc, ClientLevel level, Camera cam, Vec3 camPos, float partial,
+                        GpuBufferSlice shaderFog, Matrix4fc cameraFrustumMatrix, Matrix4f cameraProjectionMatrix) {
         ensureTarget();
 
         float coverage = settings.coverage();
@@ -203,7 +235,16 @@ public class ShadowMapRenderer {
 
         shadowMatrix.set(lightProj).mul(lightView);
 
-        collectShadowSections(mc, lightView, camPos);
+        // The caster set: the light box, narrowed to what can actually shadow the view frustum. The
+        // narrowing is only sound while the map is rendered every frame - with reuse enabled the camera
+        // turns between renders and would look into parts of the map we never filled, so we drop back to
+        // the plain box there.
+        ShadowCasterVolume volume = new ShadowCasterVolume(lightView, coverage, depthRange);
+        if (settings.updateInterval() <= 0f && cameraFrustumMatrix != null && cameraProjectionMatrix != null) {
+            volume.buildCasterPlanes(cameraProjectionMatrix.mul(cameraFrustumMatrix, new Matrix4f()), lightDir);
+        }
+
+        collectShadowSections(mc, volume, camPos);
 
         GpuDevice device = RenderSystem.getDevice();
 
@@ -227,11 +268,15 @@ public class ShadowMapRenderer {
             // and collectShadowSections found no block entities either; replay Sodium's own terrain from
             // the light POV into the shadow attachments and take its block entities from the same pass.
             SodiumShadowRenderer.replayTerrain(mc, cam, camPos, lightView, lightProj,
-                    coverage, depthRange, colorTexture, depthTexture, shadowBlockEntities);
+                    volume, colorTexture, depthTexture, shadowBlockEntities);
         } else {
             drawTerrain(mc, camPos, lightView);
         }
-        drawEntitiesAndBlockEntities(mc, level, camPos, lightView);
+        if (settings.renderEntities() || settings.renderBlockEntities()) {
+            drawEntitiesAndBlockEntities(mc, level, camPos, lightView, volume);
+        } else {
+            shadowBlockEntities.clear();
+        }
     }
 
     // Every compiled section mesh intersecting the light volume drawn with the light matrices - the
@@ -344,10 +389,8 @@ public class ShadowMapRenderer {
     // pass does, then flush the feature dispatcher with the light matrices swapped onto the RenderSystem
     // globals and the shadow target as output override. Light-volume culled; unlike vanilla we include
     // the camera entity so the player casts a shadow in first person.
-    private void drawEntitiesAndBlockEntities(Minecraft mc, ClientLevel level, Vec3 camPos, Matrix4f lightView) {
-        float coverage = settings.coverage();
-        float depthRange = settings.depthRange();
-
+    private void drawEntitiesAndBlockEntities(Minecraft mc, ClientLevel level, Vec3 camPos, Matrix4f lightView,
+                                              ShadowCasterVolume volume) {
         EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
         BlockEntityRenderDispatcher beDispatcher = mc.getBlockEntityRenderDispatcher();
         FeatureRenderDispatcher featureDispatcher = mc.gameRenderer.getFeatureRenderDispatcher();
@@ -368,30 +411,32 @@ public class ShadowMapRenderer {
         mc.gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
         try {
             PoseStack poseStack = new PoseStack();
-            Vector3f center = new Vector3f();
 
-            // Light-volume cull, same separating-axis idea as the sections but with a scalar radius.
-            for (Entity entity : level.entitiesForRendering()) {
-                if (entity.isSpectator()) continue;
+            // Caster-volume cull, same conservative test as the sections but with a scalar radius.
+            if (settings.renderEntities()) {
+                for (Entity entity : level.entitiesForRendering()) {
+                    if (entity.isSpectator()) continue;
 
-                AABB bb = entity.getBoundingBox();
-                float radius = (float) Math.max(bb.getXsize(), Math.max(bb.getYsize(), bb.getZsize()));
-                Vec3 c = bb.getCenter();
-                center.set((float) (c.x - camPos.x), (float) (c.y - camPos.y), (float) (c.z - camPos.z));
-                if (!insideLightBox(lightView, center, coverage, depthRange, radius, radius, radius)) continue;
+                    AABB bb = entity.getBoundingBox();
+                    float radius = (float) Math.max(bb.getXsize(), Math.max(bb.getYsize(), bb.getZsize()));
+                    Vec3 c = bb.getCenter();
+                    if (!castsIntoView(volume, camPos, c.x, c.y, c.z, radius)) continue;
 
-                float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(
-                        !level.tickRateManager().isEntityFrozen(entity));
-                try {
-                    EntityRenderState state = dispatcher.extractEntity(entity, partial);
-                    dispatcher.submit(state, camState, state.x - camPos.x, state.y - camPos.y,
-                            state.z - camPos.z, poseStack, featureDispatcher.getSubmitNodeStorage());
-                } catch (Exception e) {
-                    // Never let one broken entity renderer (called outside its usual pass) kill the frame.
+                    float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(
+                            !level.tickRateManager().isEntityFrozen(entity));
+                    try {
+                        EntityRenderState state = dispatcher.extractEntity(entity, partial);
+                        dispatcher.submit(state, camState, state.x - camPos.x, state.y - camPos.y,
+                                state.z - camPos.z, poseStack, featureDispatcher.getSubmitNodeStorage());
+                    } catch (Exception e) {
+                        // Never let one broken entity renderer (called outside its usual pass) kill the frame.
+                    }
                 }
             }
 
-            submitBlockEntities(mc, beDispatcher, featureDispatcher, camState, camPos, poseStack);
+            if (settings.renderBlockEntities()) {
+                submitBlockEntities(mc, beDispatcher, featureDispatcher, camState, camPos, poseStack);
+            }
 
             featureRenderSafely(mc, featureDispatcher, bufferSource);
         } finally {
@@ -463,47 +508,32 @@ public class ShadowMapRenderer {
         }
     }
 
-    // Every compiled section intersecting the light volume, regardless of camera visibility (so
-    // off-screen occluders still cast). Separating-axis test on the three light-space axes.
-    private void collectShadowSections(Minecraft mc, Matrix4f lightView, Vec3 camPos) {
+    // Every compiled section that can cast into the view, regardless of camera visibility (so off-screen
+    // occluders still cast). A 16^3 section is a box of half-extent 8 on each world axis, which the
+    // volume folds onto its own axes itself.
+    private void collectShadowSections(Minecraft mc, ShadowCasterVolume volume, Vec3 camPos) {
         shadowSections.clear();
         shadowBlockEntities.clear();
         ViewArea viewArea = ((LevelRendererShadowAccessor) mc.levelRenderer).polytone$getViewArea();
         if (viewArea == null) return;
 
-        float coverage = settings.coverage();
-        float depthRange = settings.depthRange();
-
-        // A 16^3 section's half-extent (8 per axis) projected onto each light axis (rows of lightView).
-        float radX = 8f * (Math.abs(lightView.m00()) + Math.abs(lightView.m10()) + Math.abs(lightView.m20()));
-        float radY = 8f * (Math.abs(lightView.m01()) + Math.abs(lightView.m11()) + Math.abs(lightView.m21()));
-        float radZ = 8f * (Math.abs(lightView.m02()) + Math.abs(lightView.m12()) + Math.abs(lightView.m22()));
-
-        Vector3f center = new Vector3f();
         for (SectionRenderDispatcher.RenderSection section : viewArea.sections) {
             if (!section.getSectionMesh().hasRenderableLayers()) continue;
 
             BlockPos origin = section.getRenderOrigin();
-            center.set((float) (origin.getX() + 8 - camPos.x),
-                    (float) (origin.getY() + 8 - camPos.y),
-                    (float) (origin.getZ() + 8 - camPos.z));
-            if (insideLightBox(lightView, center, coverage, depthRange, radX, radY, radZ)) {
+            if (castsIntoView(volume, camPos, origin.getX() + 8, origin.getY() + 8, origin.getZ() + 8, 8f)) {
                 shadowSections.add(section);
                 shadowBlockEntities.addAll(section.getSectionMesh().getRenderableBlockEntities());
             }
         }
     }
 
-    // Box-test a camera-relative point against the light's ortho volume (half-extents coverage on the
-    // two lateral axes, depthRange along the light axis), with per-axis slack for the object's size.
-    // transformDirection rotates the point into light space in place - the multiply-adds are the three
-    // separating-axis dot products. Conservative: never a false "outside".
-    private static boolean insideLightBox(Matrix4f lightView, Vector3f point, float coverage, float depthRange,
-                                          float slackX, float slackY, float slackZ) {
-        lightView.transformDirection(point);
-        return Math.abs(point.x) <= coverage + slackX
-                && Math.abs(point.y) <= coverage + slackY
-                && Math.abs(point.z) <= depthRange + slackZ;
+    // Cube test in the volume's camera-relative space; every caller here has a world-space centre and a
+    // single conservative half-extent.
+    private static boolean castsIntoView(ShadowCasterVolume volume, Vec3 camPos,
+                                         double x, double y, double z, float halfExtent) {
+        return volume.intersects((float) (x - camPos.x), (float) (y - camPos.y), (float) (z - camPos.z),
+                halfExtent, halfExtent, halfExtent);
     }
 
     // Direction toward the light, matching vanilla's sun placement in the sky pass: (-sin a, cos a, 0)
@@ -566,5 +596,6 @@ public class ShadowMapRenderer {
         shadowSections.clear();
         shadowBlockEntities.clear();
         hasRendered = false;
+        renderedLevel = null;
     }
 }

@@ -18,16 +18,24 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
  * @param updateInterval minimum ticks between shadow-map re-renders; the map is reused (and re-aligned
  *                       to camera movement) in between. 0 = every frame. Higher trades update latency
  *                       for performance (e.g. 2 ~= 10 updates/s, since a tick is 50 ms).
+ * @param renderEntities whether entities cast shadows. Entity models are rebuilt on the CPU for every
+ *                       shadow render, so turning this off is the single biggest saving available to a
+ *                       pack that only wants terrain shadows.
+ * @param renderBlockEntities whether block entities (chests, banners, signs) cast shadows. Same cost
+ *                       shape as entities, and usually far less noticeable.
  */
-public record ShadowMapSettings(float coverage, float depthRange, int resolution, float updateInterval) {
+public record ShadowMapSettings(float coverage, float depthRange, int resolution, float updateInterval,
+                                boolean renderEntities, boolean renderBlockEntities) {
 
-    public static final ShadowMapSettings DEFAULT = new ShadowMapSettings(64f, 256f, 2048, 0f);
+    public static final ShadowMapSettings DEFAULT = new ShadowMapSettings(64f, 256f, 2048, 0f, true, true);
 
     public static final Codec<ShadowMapSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.FLOAT.optionalFieldOf("coverage", DEFAULT.coverage).forGetter(ShadowMapSettings::coverage),
             Codec.FLOAT.optionalFieldOf("depth_range", DEFAULT.depthRange).forGetter(ShadowMapSettings::depthRange),
             Codec.INT.optionalFieldOf("resolution", DEFAULT.resolution).forGetter(ShadowMapSettings::resolution),
-            Codec.FLOAT.optionalFieldOf("update_interval", DEFAULT.updateInterval).forGetter(ShadowMapSettings::updateInterval)
+            Codec.FLOAT.optionalFieldOf("update_interval", DEFAULT.updateInterval).forGetter(ShadowMapSettings::updateInterval),
+            Codec.BOOL.optionalFieldOf("render_entities", DEFAULT.renderEntities).forGetter(ShadowMapSettings::renderEntities),
+            Codec.BOOL.optionalFieldOf("render_block_entities", DEFAULT.renderBlockEntities).forGetter(ShadowMapSettings::renderBlockEntities)
     ).apply(i, ShadowMapSettings::new));
 
     public ShadowMapSettings merge(ShadowMapSettings other) {
@@ -35,6 +43,8 @@ public record ShadowMapSettings(float coverage, float depthRange, int resolution
                 other.coverage != DEFAULT.coverage ? other.coverage : coverage,
                 other.depthRange != DEFAULT.depthRange ? other.depthRange : depthRange,
                 other.resolution != DEFAULT.resolution ? other.resolution : resolution,
-                other.updateInterval != DEFAULT.updateInterval ? other.updateInterval : updateInterval);
+                other.updateInterval != DEFAULT.updateInterval ? other.updateInterval : updateInterval,
+                other.renderEntities != DEFAULT.renderEntities ? other.renderEntities : renderEntities,
+                other.renderBlockEntities != DEFAULT.renderBlockEntities ? other.renderBlockEntities : renderBlockEntities);
     }
 }

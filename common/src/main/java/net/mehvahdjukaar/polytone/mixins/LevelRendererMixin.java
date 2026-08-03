@@ -74,8 +74,11 @@ public class LevelRendererMixin {
         Polytone.SHADER_EFFECTS.updateAll();
         // Render the directional shadow map here: no render pass is open (UBO writes need that), last
         // frame's compiled section meshes are still current, and the frame graph that runs the post
-        // chains sampling it hasn't been built yet.
-        Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(terrainFog);
+        // chains sampling it hasn't been built yet. The matrices are this call's own rather than the
+        // GameRenderer globals, so they still agree when a mod renders a second view; they narrow the
+        // caster volume to what the camera can see.
+        Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(terrainFog, minecraft.gameRenderer.getMainCamera(),
+                modelViewMatrix, cameraState.projectionMatrix);
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addLateDebugPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Matrix4fc;)V",

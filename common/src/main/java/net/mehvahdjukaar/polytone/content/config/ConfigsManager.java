@@ -117,45 +117,54 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     public Screen createScreenForMainMenu(Screen parent) {
         bubbleManager.onConfigOpened(hasPackConfigs());
-        return new ConfigScreen(parent, configs.getValues(), () -> {
-            boolean anyChanged = false;
+        List<OptionHolder<?>> shown = shownOptions();
+        return new ConfigScreen(parent, shown, () -> {
+            if (!hasUnsavedChanges(shown)) return;
 
-            for (var option : configs.getValues()) {
-                anyChanged |= option.hasUnsavedChanges();
-            }
-            if (anyChanged) {
-                saveConfigsToDisk();
-                //reload packs now
-                Minecraft.getInstance().reloadResourcePacks();
-            }
+            saveConfigsToDisk(shown);
+            //reload packs now
+            Minecraft.getInstance().reloadResourcePacks();
         });
     }
 
     public Screen createScreenForPack(PackSelectionScreen parent) {
         bubbleManager.onConfigOpened(hasPackConfigs());
-        Set<OptionHolder<?>> configs = this.configs.getValues();
+        List<OptionHolder<?>> shown = shownOptions();
 
-        return new ConfigScreen(parent, configs, () -> {
-            boolean anyChanged = false;
+        return new ConfigScreen(parent, shown, () -> {
+            if (!hasUnsavedChanges(shown)) return;
 
-            for (var option : configs) {
-                anyChanged |= option.hasUnsavedChanges();
-            }
-            if (anyChanged) {
-                needsPackReload.set(true);
-                saveConfigsToDisk();
-                //save values we just set so we can read them again right here
-                parent.reload();
-                //we cant just reload packs here as this would cause a double reload.
-            }
+            needsPackReload.set(true);
+            saveConfigsToDisk(shown);
+            //save values we just set so we can read them again right here
+            parent.reload();
+            //we cant just reload packs here as this would cause a double reload.
         });
     }
 
-    private void saveConfigsToDisk() {
+    private List<OptionHolder<?>> shownOptions() {
+        return List.copyOf(configs.getValues());
+    }
+
+    private static boolean hasUnsavedChanges(Collection<OptionHolder<?>> options) {
+        for (var option : options) {
+            if (option.hasUnsavedChanges()) return true;
+        }
+        return false;
+    }
+
+    private void saveConfigsToDisk(Collection<OptionHolder<?>> edited) {
         try {
-            JsonObject jsonObject = new JsonObject();
+            // Start from what's already on disk: entries whose pack isn't currently loaded (disabled,
+            // temporarily removed, or failed to parse) have no holder here, and writing a fresh object
+            // would wipe their saved values for good.
+            JsonObject jsonObject = configFileSnapshot.deepCopy();
 
             for (var option : configs.getValues()) {
+                option.saveToJson(jsonObject);
+            }
+            // last, so edits made on holders the registry has since replaced win
+            for (var option : edited) {
                 option.saveToJson(jsonObject);
             }
 
