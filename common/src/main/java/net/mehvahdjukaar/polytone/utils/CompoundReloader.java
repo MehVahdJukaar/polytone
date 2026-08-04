@@ -63,8 +63,30 @@ public class CompoundReloader implements PreparableReloadListener {
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
+                    } else {
+                        parseWithoutLevel();
                     }
                 }, gameExecutor);
+    }
+
+    // Registry-free reloaders still parse in the main menu. Configs especially: the pack screen, the
+    // config screen it opens and every pack overlay condition read them long before any world exists.
+    private void parseWithoutLevel() {
+        RuntimeException failure = null;
+        for (int i = 0; i < childrenResourcesCache.size(); i++) {
+            PartialReloader<?> c = children.get(i);
+            try {
+                processTypedNoLevel(c, childrenResourcesCache.get(i));
+            } catch (Exception e) {
+                failure = recordFailure(c, e, "parse", failure);
+            }
+        }
+        if (failure != null) throw failure;
+    }
+
+    @SuppressWarnings("all")
+    private <T> void processTypedNoLevel(PartialReloader<T> reloader, Object object) {
+        reloader.parseWithoutLevel((T) object);
     }
 
     public void applyWithLevel(RegistryAccess registryAccess, boolean firstLogin) {

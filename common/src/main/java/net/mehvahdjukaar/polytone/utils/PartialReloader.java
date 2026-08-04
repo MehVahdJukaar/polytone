@@ -71,6 +71,14 @@ public abstract class PartialReloader<T> {
 
     protected abstract void parseWithLevel(T obj, RegistryOps<JsonElement> ops, RegistryAccess access);
 
+    /**
+     * Parse pass for reloads that happen with no world loaded, where there's no {@link RegistryAccess}
+     * to decode against. Only reloaders whose content decodes with plain {@code JsonOps} can do anything
+     * here; everyone else stays deferred until login.
+     */
+    protected void parseWithoutLevel(T obj) {
+    }
+
     protected abstract void applyWithLevel(RegistryAccess access, boolean isLogIn);
 
     protected abstract void resetWithLevel(boolean logOff);

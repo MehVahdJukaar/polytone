@@ -46,7 +46,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Parses pack-defined configs at {@code polytone/config_entries/*.json}, persists user-set values to
  * {@code polytone_options.json}, and exposes them to pack overlay conditions and {@code config("ns:id")}
  * expressions. Configs are loaded eagerly per-pack at pack-discovery time (see PackMixin) so overlay
- * conditions can be evaluated before the resource reload.
+ * conditions can be evaluated before the resource reload, and unlike the other reloaders they also
+ * parse on a reload with no world open, since that's where the pack screen reads them from.
  */
 public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
 
@@ -183,29 +184,38 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
 
     // Called per-pack during pack discovery, before the resource reload happens, so overlay
     // conditions referencing this pack's configs can be evaluated.
-    // The pack is re-opened with its format overlays applied so that config entries defined inside
-    // overlay directories (e.g. a version overlay) are visible here. Without this, an overlay whose
-    // condition references such a config would only pick it up on a second reload, once the persistent
-    // config registry (populated by the real resource reload) had caught up.
+    // Two passes, and the order matters: reading the overlay metadata below already decodes the pack's
+    // overlay entries, which evaluates their polytone_condition and so looks configs up. Seeding the
+    // registry from the pack's base directory first is what makes those lookups resolve. Only then can
+    // we re-open the pack with its applicable overlays, to also pick up config entries declared inside
+    // one (e.g. a version overlay), which are invisible to the first pass.
     public void loadCurrentPackConfigs(PackResources primary, Pack.ResourcesSupplier resources, PackLocationInfo location, int version) {
         if (primary.location().source() != PackSource.DEFAULT) return;
 
+        MapRegistry<OptionHolder<?>> activePackReg = new MapRegistry<>("Active Pack Configs");
+        registerBuiltins(activePackReg);
+        activeLoadConfigs.set(activePackReg);
+        parsePackConfigsInto(primary, activePackReg);
+
         List<String> overlays = collectFormatOverlays(primary, version);
-        PackResources fullPack = overlays.isEmpty() ? primary
-                : resources.openFull(location, new Pack.Metadata(Component.empty(),
+        if (overlays.isEmpty()) return;
+
+        PackResources fullPack = resources.openFull(location, new Pack.Metadata(Component.empty(),
                 PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), overlays));
         try {
-            MultiPackResourceManager resourceManager = new MultiPackResourceManager(PackType.CLIENT_RESOURCES, List.of(fullPack));
-            var jsons = this.getJsonsInDirectories(resourceManager);
-
-            MapRegistry<OptionHolder<?>> activePackReg = new MapRegistry<>("Active Pack Configs");
-            registerBuiltins(activePackReg);
-            activeLoadConfigs.set(activePackReg);
-            for (var j : Parsed.batchParseOnlyEnabled(jsons, PolyConfig.CODEC, JsonOps.INSTANCE, "Configs")) {
-                if (j != null) addConfig(j.getKey(), j.getValue(), activePackReg, configFileSnapshot);
-            }
+            parsePackConfigsInto(fullPack, activePackReg);
         } finally {
-            if (fullPack != primary) fullPack.close();
+            fullPack.close();
+        }
+    }
+
+    // The resource manager is deliberately not closed: closing it would close the pack we were handed,
+    // which the caller still owns and goes on using.
+    private void parsePackConfigsInto(PackResources pack, MapRegistry<OptionHolder<?>> reg) {
+        MultiPackResourceManager resourceManager = new MultiPackResourceManager(PackType.CLIENT_RESOURCES, List.of(pack));
+        var jsons = this.getJsonsInDirectories(resourceManager);
+        for (var j : Parsed.batchParseOnlyEnabled(jsons, PolyConfig.CODEC, JsonOps.INSTANCE, "Configs")) {
+            if (j != null) addConfig(j.getKey(), j.getValue(), reg, configFileSnapshot);
         }
     }
 
@@ -228,6 +238,18 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
 
     @Override
     protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        parseConfigs(jsons);
+    }
+
+    // Config entries decode with plain JsonOps and never touch registries, so unlike every other
+    // reloader they can load with no world open - which they must, since the pack screen and pack
+    // overlay conditions both read them from the main menu.
+    @Override
+    protected void parseWithoutLevel(Map<ResourceLocation, JsonElement> jsons) {
+        parseConfigs(jsons);
+    }
+
+    private void parseConfigs(Map<ResourceLocation, JsonElement> jsons) {
         configs.clear();
         registerBuiltins(configs);
         for (var j : Parsed.batchParseOnlyEnabled(jsons, PolyConfig.CODEC, JsonOps.INSTANCE, "Configs")) {

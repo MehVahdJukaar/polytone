@@ -63,9 +63,10 @@ public class StringConfig extends PolyConfig<String> implements OptionInstance.C
     public Function<OptionInstance<String>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<String> tooltipSupplier, Options options, int i, int j, int k, Consumer<String> consumer) {
         return (optionInstance) -> {
             Objects.requireNonNull(optionInstance);
+            // withValues before withInitialValue - see BoolConfig#createButton
             return CycleButton.builder(optionInstance.toString)
-                    .withInitialValue(optionInstance.get())
                     .withValues(this.valueListSupplier())
+                    .withInitialValue(optionInstance.get())
                     .withTooltip(tooltipSupplier)
                     .displayOnlyValue()
                     .create(i, j, k, 20, Component.empty(), (cycleButton, object) -> {

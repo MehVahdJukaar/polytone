@@ -1,1 +1,1 @@
-- shadowmap calculations is faster
+- fixed config issues

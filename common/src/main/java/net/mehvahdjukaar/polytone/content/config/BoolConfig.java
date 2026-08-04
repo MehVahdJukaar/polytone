@@ -66,9 +66,12 @@ public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.Cy
     public Function<OptionInstance<Boolean>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<Boolean> tooltipSupplier, Options options, int i, int j, int k, Consumer<Boolean> consumer) {
         return (optionInstance) -> {
             Objects.requireNonNull(optionInstance);
+            // withValues first: withInitialValue resolves the starting index against the values
+            // already set on the builder, so calling it first leaves the button on index 0 while
+            // showing the real value - the first click then "cycles" back onto that same value.
             return CycleButton.builder(optionInstance.toString)
-                    .withInitialValue(optionInstance.get())
                     .withValues(this.valueListSupplier())
+                    .withInitialValue(optionInstance.get())
                     .withTooltip(tooltipSupplier)
                     .displayOnlyValue()
                     .create(i, j, k, 20, Component.empty(), (cycleButton, object) -> {
