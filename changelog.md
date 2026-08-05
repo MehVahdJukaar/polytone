@@ -1,1 +1,1 @@
-- ported changes from 1.21.11
+- attribute mods addition can adopt biome blend

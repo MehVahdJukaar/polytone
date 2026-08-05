@@ -31,6 +31,9 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier> {
     private final Map<Biome, BiomeEffectModifier> vanillaEffects = new HashMap<>();
     private final Map<Biome, BiomeEffectModifier> effectsToApply = new HashMap<>();
     private final Set<EnvironmentAttribute<?>> alteredAttributes = new HashSet<>();
+    // built once per reload. these are queried for every sample of the interpolation kernel, and their
+    // identity is what the interpolator dedupes weights by, so they must not be rebuilt on the fly
+    private final Map<Biome, EnvironmentAttributeMap> postAttributes = new HashMap<>();
 
     private boolean hasPostAttributes = false;
 
@@ -47,6 +50,13 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier> {
         Map<Identifier, JsonElement> jsons = resources.jsons();
         for (var v : parseEnabledJsons(jsons, ops)) {
             addEffect(v.getKey(), v.getValue(), access);
+        }
+
+        //built here and not on apply: the attribute system can be rebuilt before we get to apply
+        postAttributes.clear();
+        for (var v : effectsToApply.entrySet()) {
+            if (v.getValue().attributeModifications().postProcess().isEmpty()) continue;
+            postAttributes.put(v.getKey(), v.getValue().getPostProcessAttributes(v.getKey()));
         }
     }
 
@@ -79,9 +89,7 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier> {
             this.alteredAttributes.addAll(m.attributeModifications().getAllModifiedAttributes());
         }
 
-        this.hasPostAttributes = effectsToApply.values().stream().anyMatch(
-                m -> !m.attributeModifications().postProcess().isEmpty()
-        );
+        this.hasPostAttributes = !postAttributes.isEmpty();
     }
 
     @Override
@@ -103,6 +111,7 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier> {
         effectsToApply.clear();
 
         hasPostAttributes = false;
+        postAttributes.clear();
         alteredAttributes.clear();
     }
 
@@ -124,8 +133,8 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier> {
     //same as base biome layer
     private void addBiomeLayer(EnvironmentAttributeSystem.Builder builder, HolderLookup<Biome> holderLookup,
                                BiomeManager biomeManager) {
-        Stream<EnvironmentAttribute<?>> allAttributesInPost = effectsToApply.entrySet().stream().flatMap(
-                e -> e.getValue().getPostProcessAttributes().keySet().stream()
+        Stream<EnvironmentAttribute<?>> allAttributesInPost = postAttributes.values().stream().flatMap(
+                m -> m.keySet().stream()
         ).distinct();
 
         allAttributesInPost.forEach((environmentAttribute) -> addBiomeLayerForAttribute(builder,
@@ -151,20 +160,13 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier> {
                 return spatialAttributeInterpolator.applyAttributeLayer(environmentAttribute, object);
             } else {
                 Holder<Biome> holder = biomeManager.getNoiseBiomeAtPosition(vec3.x, vec3.y, vec3.z);
-                BiomeEffectModifier biomeEffectModifier = effectsToApply.get(holder.value());
-                if (biomeEffectModifier == null) return object;
-                EnvironmentAttributeMap posMap = biomeEffectModifier.getPostProcessAttributes();
-                return posMap.applyModifier(environmentAttribute, object);
+                return getPostAttributes(holder.value()).applyModifier(environmentAttribute, object);
             }
         });
     }
 
     public EnvironmentAttributeMap getPostAttributes(Biome value) {
-        BiomeEffectModifier modifier = effectsToApply.get(value);
-        if (modifier != null) {
-            return modifier.getPostProcessAttributes();
-        }
-        return EnvironmentAttributeMap.EMPTY;
+        return postAttributes.getOrDefault(value, EnvironmentAttributeMap.EMPTY);
     }
 
 }

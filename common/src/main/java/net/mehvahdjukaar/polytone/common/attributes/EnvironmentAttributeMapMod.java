@@ -11,7 +11,9 @@ import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.attribute.modifier.AttributeModifier;
+import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -62,7 +64,7 @@ public class EnvironmentAttributeMapMod {
 
         Codec<Argument> valueCodec = (Codec) environmentAttribute.valueCodec();
         Codec<Either<Argument, Supplier<Argument>>> supplierCodec =
-                ExtendedAttributeMod.addDynamicValueCodec(valueCodec, type);
+                DynamicAttributes.addDynamicValueCodec(valueCodec, type);
 
         return Codec.either(supplierCodec, (Codec<EnvironmentAttributeMap.Entry<Value, Argument>>) (Codec) ec)
                 .xmap(
@@ -75,7 +77,8 @@ public class EnvironmentAttributeMapMod {
     private static <Value, Argument> @NotNull Either<Either<Argument, Supplier<Argument>>, EnvironmentAttributeMap.Entry<Value, Argument>> entryToValueOrMod(
             EnvironmentAttributeMap.Entry<Value, Argument> entry) {
 
-        if (entry.modifier() == AttributeModifier.override()) {
+        //an entry that opted out of blending has to keep the object form, that's where the flag lives
+        if (entry.modifier() == AttributeModifier.override() && blendFromEntry(entry)) {
             Either<Argument, Supplier<Argument>> valOrSup = supplierFromEntry(entry);
             return Either.left(valOrSup);
         }
@@ -101,13 +104,18 @@ public class EnvironmentAttributeMapMod {
 
         return either.map(
                 a -> EnvironmentAttributeMapMod.entryFromSupplier(a,
-                        (AttributeModifier<Value, Argument>) AttributeModifier.override()),
+                        (AttributeModifier<Value, Argument>) AttributeModifier.override(), true),
                 entry -> entry
         );
     }
 
+    private static boolean blendFromEntry(EnvironmentAttributeMap.Entry<?, ?> entry) {
+        return ((IExtendedEntry<?>) (Object) entry).polytone$shouldBlend();
+    }
+
     private static <Value, Argument> EnvironmentAttributeMap.Entry<Value, Argument> entryFromSupplier(
-            Either<Argument, Supplier<Argument>> valueOrSupplier, AttributeModifier<Value, Argument> modifier) {
+            Either<Argument, Supplier<Argument>> valueOrSupplier, AttributeModifier<Value, Argument> modifier,
+            boolean blend) {
         return valueOrSupplier.map(
                 //gets default value from supplier. might be a bad idea
                 value ->
@@ -118,9 +126,26 @@ public class EnvironmentAttributeMapMod {
                 supplier -> {
                     EnvironmentAttributeMap.Entry<Value, Argument> entry = new EnvironmentAttributeMap.Entry<>(supplier.get(), modifier);
                     ((IExtendedEntry) (Object) entry).polytone$setArgumentSupplier(supplier);
+                    ((IExtendedEntry) (Object) entry).polytone$setShouldBlend(blend);
                     return entry;
                 }
         );
+    }
+
+    /**
+     * Copy of a dynamic entry pinned to one biome. Each biome an entry is installed into gets its own, so
+     * vanilla's spatial interpolator sees a different value per biome and blends them like any other biome
+     * attribute. Entries that opted out of blending are shared as they were and keep sampling at the camera.
+     */
+    private static EnvironmentAttributeMap.Entry<?, ?> bindToBiome(EnvironmentAttributeMap.Entry<?, ?> entry,
+                                                                  Biome owner) {
+        IExtendedEntry ext = (IExtendedEntry) (Object) entry;
+        Supplier<?> supplier = ext.polytone$getArgumentSupplier();
+        if (supplier == null || !ext.polytone$shouldBlend()) return entry;
+
+        EnvironmentAttributeMap.Entry bound = new EnvironmentAttributeMap.Entry(entry.argument(), entry.modifier());
+        ((IExtendedEntry) (Object) bound).polytone$setArgumentSupplier(DynamicAttributes.boundTo(owner, supplier));
+        return bound;
     }
 
 
@@ -130,11 +155,14 @@ public class EnvironmentAttributeMapMod {
         return RecordCodecBuilder.mapCodec((instance) ->
         {
             Codec<Argument> argumentCodec = attributeModifier.argumentCodec(environmentAttribute);
-            Codec<Either<Argument, Supplier<Argument>>> argOrSupplier = ExtendedAttributeMod.addDynamicValueCodec(argumentCodec, environmentAttribute.type());
-            return instance.group(argOrSupplier.fieldOf("argument")
-                            .forGetter(EnvironmentAttributeMapMod::supplierFromEntry))
-                    .apply(instance, (object) ->
-                            entryFromSupplier(object, attributeModifier));
+            Codec<Either<Argument, Supplier<Argument>>> argOrSupplier = DynamicAttributes.addDynamicValueCodec(argumentCodec, environmentAttribute.type());
+            return instance.group(
+                            argOrSupplier.fieldOf("argument")
+                                    .forGetter(EnvironmentAttributeMapMod::supplierFromEntry),
+                            Codec.BOOL.optionalFieldOf("blend", true)
+                                    .forGetter(EnvironmentAttributeMapMod::blendFromEntry))
+                    .apply(instance, (object, blend) ->
+                            entryFromSupplier(object, attributeModifier, blend));
         });
     }
 
@@ -206,9 +234,24 @@ public class EnvironmentAttributeMapMod {
     }
 
     public EnvironmentAttributeMap toVanilla() {
+        return toVanilla(null);
+    }
+
+    /** {@code owner} is the biome this map is being built for, if any. See {@link #bindToBiome} */
+    public EnvironmentAttributeMap toVanilla(@Nullable Biome owner) {
         EnvironmentAttributeMap.Builder builder = EnvironmentAttributeMap.builder();
-        builder.entries.putAll(entriesToReplace);
+        putEntries(builder, owner);
         return builder.build();
+    }
+
+    private void putEntries(EnvironmentAttributeMap.Builder builder, @Nullable Biome owner) {
+        if (owner == null) {
+            builder.entries.putAll(entriesToReplace);
+            return;
+        }
+        for (var e : entriesToReplace.entrySet()) {
+            builder.entries.put(e.getKey(), bindToBiome(e.getValue(), owner));
+        }
     }
 
     public Collection<EnvironmentAttribute<?>> getAlteredEntries() {
@@ -235,6 +278,11 @@ public class EnvironmentAttributeMapMod {
     }
 
     public EnvironmentAttributeMap modify(EnvironmentAttributeMap original) {
+        return modify(original, null);
+    }
+
+    /** {@code owner} is the biome this map is being built for, if any. See {@link #bindToBiome} */
+    public EnvironmentAttributeMap modify(EnvironmentAttributeMap original, @Nullable Biome owner) {
         if (isEmpty()) return original;
         EnvironmentAttributeMap.Builder builder = EnvironmentAttributeMap.builder();
         //add original entries except removed ones
@@ -244,7 +292,7 @@ public class EnvironmentAttributeMapMod {
             }
         }
         //add new entries
-        builder.entries.putAll(entriesToReplace);
+        putEntries(builder, owner);
         return builder.build();
     }
 
