@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import net.mehvahdjukaar.polytone.common.attributes.DynamicAttributes;
 import net.mehvahdjukaar.polytone.common.attributes.IExtendedEntry;
 import net.minecraft.world.attribute.*;
 import net.minecraft.world.phys.Vec3;
@@ -21,11 +22,16 @@ public abstract class EnvironmentAttributeSystemBuilderMixin {
                                                              EnvironmentAttributeMap attributeMap,
                                                              CallbackInfoReturnable<EnvironmentAttributeSystem.Builder> cir) {
         EnvironmentAttributeMap.Entry<Value, ?> entry = attributeMap.get(attribute);
-        if ((Object) entry instanceof IExtendedEntry pe && pe.polytone$getArgumentSupplier() != null) {
+        if ((Object) entry instanceof IExtendedEntry<?> pe && pe.polytone$getArgumentSupplier() != null) {
+            //lets the probe know it has to record biome weights for us
+            DynamicAttributes.hasDynamicLayers = true;
+
+            boolean blend = pe.polytone$shouldBlend();
             var builder = this.addPositionalLayer(attribute, new EnvironmentAttributeLayer.Positional<Value>() {
                 @Override
-                public Value applyPositional(Value oldValue, Vec3 vec3, @Nullable SpatialAttributeInterpolator spatialAttributeInterpolator) {
-                    return entry.applyModifier(oldValue);
+                public Value applyPositional(Value oldValue, Vec3 vec3, @Nullable SpatialAttributeInterpolator interpolator) {
+                    if (!blend) return entry.applyModifier(oldValue);
+                    return DynamicAttributes.applyBlended(attribute, entry, oldValue, interpolator);
                 }
             });
             cir.setReturnValue(builder);

@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.attributes.DynamicAttributes;
 import net.mehvahdjukaar.polytone.common.attributes.IExtendedInterpolator;
 import net.minecraft.core.Holder;
 import net.minecraft.world.attribute.EnvironmentAttributeProbe;
@@ -28,6 +29,10 @@ public class AttributeProbeMixin {
             if (postInterpolator != null) {
                 postInterpolator.accumulate(weight, Polytone.BIOME_MODIFIERS.getPostAttributes(holder.value()));
             }
+        }
+        //only paid for when a pack actually installed a colormap or expression backed attribute
+        if (DynamicAttributes.hasDynamicLayers) {
+            ((IExtendedInterpolator) this.biomeInterpolator).polytone$accumulateBiome(weight, holder);
         }
     }
 }

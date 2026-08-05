@@ -7,4 +7,8 @@ public interface IExtendedEntry<Value> {
     void polytone$setArgumentSupplier( Supplier<Value> supplier) ;
 
     Supplier<Value> polytone$getArgumentSupplier( );
+
+    boolean polytone$shouldBlend();
+
+    void polytone$setShouldBlend(boolean shouldBlend);
 }
