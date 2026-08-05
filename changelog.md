@@ -1,2 +1,1 @@
-- ported 1.21.1 shadowmap changes
-- added onFire function
+- attribute mods addition can adopt biome blend
