@@ -1,3 +1,1 @@
-added ability to bind new textures in shaders
-fied fluids
-ported changes from 26.1
+- ported lots of changes from 26.1.2

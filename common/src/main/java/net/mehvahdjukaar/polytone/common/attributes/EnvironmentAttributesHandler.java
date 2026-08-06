@@ -29,6 +29,8 @@ public class EnvironmentAttributesHandler {
             if (!vanillaSystem.containsKey(level)) {
                 vanillaSystem.put(level, old);
             }
+            //the builder re latches this if any dynamic layer makes it into the new system
+            DynamicAttributes.hasDynamicLayers = false;
             //same as vanilla does. if other mods add stuff here this might break them...
             level.environmentAttributes = level.addEnvironmentAttributeLayers(EnvironmentAttributeSystem.builder()).build();
         }
@@ -40,5 +42,6 @@ public class EnvironmentAttributesHandler {
             level.environmentAttributes = entry.getValue();
         }
         vanillaSystem.clear();
+        DynamicAttributes.hasDynamicLayers = false;
     }
 }

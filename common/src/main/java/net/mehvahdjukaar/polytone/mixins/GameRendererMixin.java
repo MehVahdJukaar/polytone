@@ -1,7 +1,10 @@
 package net.mehvahdjukaar.polytone.mixins;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.CrossFrameResourcePool;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -12,6 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = GameRenderer.class, priority = 500)
 public abstract class GameRendererMixin {
@@ -34,6 +38,17 @@ public abstract class GameRendererMixin {
     private void polytone$resetGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(false);
         Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
+    }
+
+    // While the particle editor preview draws offscreen, the vanilla particle feature renderer builds
+    // its render pass from this target directly - send it to the preview's offscreen buffer instead of
+    // the screen. Set only on the render thread for the duration of that one draw, so gameplay is untouched.
+    // 26.2: this used to be Minecraft.getMainRenderTarget(); the target now lives on GameRenderer.
+    @Inject(method = "mainRenderTarget", at = @At("HEAD"), cancellable = true)
+    private void polytone$redirectMainTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {
+        if (!CompatHandler.PACK_EDITOR) return; // the preview that sets this only exists with the editor
+        RenderTarget preview = PreviewRenderTarget.current();
+        if (preview != null) cir.setReturnValue(preview);
     }
 
     @Inject(method = "close", at = @At(value = "TAIL"))

@@ -16,6 +16,9 @@ public class EnvironmentAttributeEntryMixin<Value, Argument> implements IExtende
     @Unique
     private Supplier<Value> polytone$argumentSupplier;
 
+    @Unique
+    private boolean polytone$shouldBlend = true;
+
     @Override
     public void polytone$setArgumentSupplier(Supplier<Value> supplier) {
         this.polytone$argumentSupplier = supplier;
@@ -24,6 +27,16 @@ public class EnvironmentAttributeEntryMixin<Value, Argument> implements IExtende
     @Override
     public Supplier<Value> polytone$getArgumentSupplier() {
         return this.polytone$argumentSupplier;
+    }
+
+    @Override
+    public boolean polytone$shouldBlend() {
+        return this.polytone$shouldBlend;
+    }
+
+    @Override
+    public void polytone$setShouldBlend(boolean shouldBlend) {
+        this.polytone$shouldBlend = shouldBlend;
     }
 
     @ModifyReturnValue(method = "argument", at = @At("RETURN"))

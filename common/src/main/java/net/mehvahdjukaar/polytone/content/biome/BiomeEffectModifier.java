@@ -214,8 +214,9 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
     }*/
 
 
-    public EnvironmentAttributeMap getPostProcessAttributes() {
-        return attributeModifications.postProcess.toVanilla();
+    //owner is the biome this map will be installed into, so its dynamic values sample that biome and blend
+    public EnvironmentAttributeMap getPostProcessAttributes(Biome owner) {
+        return attributeModifications.postProcess.toVanilla(owner);
     }
 
     public record BiomeEnvAttributeModifications(EnvironmentAttributeMapMod baseMod,
@@ -266,7 +267,7 @@ public record BiomeEffectModifier(Optional<Integer> waterColor,
         public EnvironmentAttributeMap applyAllModifications(Biome biome) {
             EnvironmentAttributeMap oldBase = biome.getAttributes();
             if (!baseMod.isEmpty()) {
-                biome.attributes = baseMod.modify(oldBase);
+                biome.attributes = baseMod.modify(oldBase, biome);
             }
 
             return oldBase;

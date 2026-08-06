@@ -12,11 +12,8 @@
     "IClientFluidTypeExtensionsMixin",
     "IClientItemExtensionsMixin",
     "IClientItemExtensionsMixin",
-    "InventoryScreenMixin",
-    "ItemBlockRenderTypesMixin",
-    "ModelBlockRendererMixin",
     "ModifiableBiomeAccessor",
-    "ModifiableBiomeInfoBiomeInfoAccessor",
+    "ModifiableBiomeInfoBiomeInfoAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
