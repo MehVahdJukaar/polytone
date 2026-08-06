@@ -270,7 +270,7 @@ public class ShadowMapRenderer {
             // and collectShadowSections found no block entities either; replay Sodium's own terrain from
             // the light POV into the shadow attachments and take its block entities from the same pass.
             SodiumShadowRenderer.replayTerrain(mc, cam, camPos, lightView, lightProj,
-                    volume, colorTexture, depthTexture, shadowBlockEntities);
+                    volume, colorTextureView, depthTextureView, shadowBlockEntities);
         } else {
             drawTerrain(mc, camPos, lightView);
         }

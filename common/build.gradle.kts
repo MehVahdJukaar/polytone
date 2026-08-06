@@ -34,7 +34,7 @@ dependencies {
     // Camera) by their mojmap names. Plain compileOnly (NOT modCompileOnly): the jar is already mojmap,
     // so it must not be run through loom remapping. The curse.maven Sodium (intermediary MC refs) is gone
     // on purpose - having both on the classpath makes the same class read under two mappings.
-    compileOnly(files("mods/net.caffeinemc.sodium-neoforge-0.9.1+mc26.1.2-mod.jar"))
+    compileOnly(files("mods/net.caffeinemc.sodium-neoforge-0.9.2-alpha.3+mc26.2-mod.jar"))
 
     // modCompileOnly("curse.maven:entity-model-features-844662:7400754")
     // modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")

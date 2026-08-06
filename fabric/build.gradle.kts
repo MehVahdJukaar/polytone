@@ -35,8 +35,9 @@ dependencies {
     // modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
 //modImplementation "curse.maven:continuity-531351:5425853"
     // modImplementation ("curse.maven:continuity-531351:5425853")
-    modCompileOnly("curse.maven:sodium-394468:8396480") // 0.9.1+mc26.1.2
-    // re-enables vanilla core-shader replacement under Sodium (terrain/block shaders); version-locked to Sodium above
+    modImplementation("maven.modrinth:sodium:mc26.2-0.9.2-alpha.3-fabric")
+    // re-enables vanilla core-shader replacement under Sodium (terrain/block shaders); no 26.2 build yet,
+    // newest is still built against Sodium 0.9.0-beta.1 on 26.1.2 - we only need its own API classes to compile
     modCompileOnly("curse.maven:sodium-core-shader-support-956376:8267839") // 1.5.0-mc26.1.2-sodium0.9.0beta.1
      //modImplementation ("curse.maven:distant-horizons-508933:6387715")
     // Compile-only: pulling Iris into the dev runtime changes how the whole render path behaves.

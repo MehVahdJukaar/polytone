@@ -1,13 +1,8 @@
 package net.mehvahdjukaar.polytone.content.shaders.sodium;
 
-import com.mojang.blaze3d.opengl.GlDevice;
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.opengl.GlTexture;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import net.caffeinemc.mods.sodium.client.SodiumClientMod;
-import net.caffeinemc.mods.sodium.client.gl.device.RenderDevice;
 import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
@@ -26,8 +21,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
 
 import java.util.List;
 
@@ -35,31 +28,22 @@ import java.util.List;
 // load only when Sodium is present (the replay entry is called behind CompatHandler.SODIUM, and the
 // capture/rebind entries only from the @Pseudo SodiumChunkRendererMixin, which never applies without it).
 //
-// On 1.21.11 Sodium renders terrain through its own GL path, not vanilla's ChunkSectionsToRender: it
-// cancels renderGroup and draws in RenderSectionManager.renderLayer, binding the framebuffer itself from
+// Sodium renders terrain through its own path, not vanilla's ChunkSectionsToRender: it cancels
+// renderGroup and draws in RenderSectionManager.renderLayer, over the target it picks itself from
 // TerrainRenderPass.getTarget() (always the MAIN target for opaque). So we can't just hand it the light
 // matrices like on 1.21.1 - we drive SodiumWorldRenderer.drawChunkLayer with the light matrices AND
-// repoint its framebuffer at the shadow attachments (rebindShadowFramebufferIfActive, from the begin
-// mixin). Sodium also builds one terrain list per frame culled to the camera frustum, which would drop
-// any occluder off screen; we first re-cull that list against the light volume (occlusion off, every lit
-// section kept), then rebuild the camera list before returning - the main draw happens later in this same
-// frame and reads that list live (see restoreCameraList).
+// swap the attachments it draws to for the shadow map (activeShadowColorView/activeShadowDepthView, read
+// by SodiumDefaultChunkRendererMixin). Sodium also builds one terrain list per frame culled to the camera
+// frustum, which would drop any occluder off screen; we first re-cull that list against the light volume
+// (occlusion off, every lit section kept), then rebuild the camera list before returning - the main draw
+// happens later in this same frame and reads that list live (see restoreCameraList).
 public final class SodiumShadowRenderer {
 
-    // Set for the duration of a shadow terrain replay. Sodium's ShaderChunkRenderer.begin binds the MAIN
-    // framebuffer + viewport; while this is active our begin mixin rebinds them to the shadow map so the
-    // terrain draws land there. Render-thread only, so a plain static is fine.
-    private static boolean active = false;
-    private static GpuTexture shadowColor = null;
-    private static GpuTexture shadowDepth = null;
-
-    // GL framebuffer + viewport as they were before the first rebind of a replay, so the replay can put
-    // them back. Both vanilla (RenderPass) and Sodium (begin) bind their own target before drawing, so
-    // this is belt-and-braces - but we mutate raw GL state behind their backs, and anything that draws
-    // in between assuming the main target would otherwise land in the shadow map at shadow resolution.
-    private static boolean savedBinding = false;
-    private static int prevFbo = 0;
-    private static final int[] prevViewport = new int[4];
+    // Set for the duration of a shadow terrain replay. Sodium opens its terrain RenderPass over
+    // TerrainRenderPass.getTarget()'s views; while these are non-null our DefaultChunkRenderer mixin
+    // hands it the shadow attachments instead. Render-thread only, so plain statics are fine.
+    private static GpuTextureView shadowColor = null;
+    private static GpuTextureView shadowDepth = null;
 
     // The block-atlas GpuSampler vanilla hands to the terrain draw. Captured from the main pass and fed
     // back into drawChunkLayer for the replay. Effectively constant, so last frame's is fine; null until
@@ -71,31 +55,15 @@ public final class SodiumShadowRenderer {
         terrainSampler = sampler;
     }
 
-    // Called from the begin mixin (TAIL). Sodium has just bound the MAIN framebuffer + viewport; when a
-    // shadow replay is in flight, repoint both at the shadow map. Touches only always-present GL classes
-    // (no Sodium types), so it's safe to call unconditionally from the mixin.
-    public static void rebindShadowFramebufferIfActive() {
-        if (!active || shadowColor == null || shadowDepth == null) return;
-        if (!savedBinding) {
-            prevFbo = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
-            GL11.glGetIntegerv(GL11.GL_VIEWPORT, prevViewport);
-            savedBinding = true;
-        }
-        // The GL device is behind the public GpuDevice frontend: RenderSystem.getDevice() is the
-        // frontend, the GlDevice is its backend. 26.2 moved the FBO cache off GlTexture onto the device.
-        GlDevice glDevice = (GlDevice) RenderSystem.getDevice().backend;
-        int fbo = glDevice.frameBufferCache().getFbo(glDevice.directStateAccess(),
-                List.of((GlTexture) shadowColor), (GlTexture) shadowDepth);
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);
-        GlStateManager._viewport(0, 0, shadowColor.getWidth(0), shadowColor.getHeight(0));
+    // Read by SodiumDefaultChunkRendererMixin when Sodium opens its terrain render pass. Null outside a
+    // replay, which is what tells the mixin to leave the real target alone. Touches no Sodium types, so
+    // the mixin can call them unconditionally.
+    public static GpuTextureView activeShadowColorView() {
+        return shadowColor;
     }
 
-    // Undo whatever rebindShadowFramebufferIfActive did during the replay. No-op if it never fired.
-    private static void restoreFramebufferBinding() {
-        if (!savedBinding) return;
-        savedBinding = false;
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, prevFbo);
-        GlStateManager._viewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
+    public static GpuTextureView activeShadowDepthView() {
+        return shadowDepth;
     }
 
     // Replay Sodium's opaque terrain (SOLID + CUTOUT) from the light's POV into the shadow attachments,
@@ -106,7 +74,7 @@ public final class SodiumShadowRenderer {
     public static void replayTerrain(Minecraft mc, Camera cam, Vec3 camPos,
                                      Matrix4f lightView, Matrix4f lightProj,
                                      ShadowCasterVolume volume,
-                                     GpuTexture color, GpuTexture depth,
+                                     GpuTextureView color, GpuTextureView depth,
                                      List<BlockEntity> blockEntitiesOut) {
         SodiumWorldRenderer swr = SodiumWorldRenderer.instanceNullable();
         if (swr == null) return; // renderer not up
@@ -135,7 +103,6 @@ public final class SodiumShadowRenderer {
             var performance = SodiumClientMod.options().performance;
             boolean prevFaceCulling = performance.useBlockFaceCulling;
             performance.useBlockFaceCulling = false;
-            active = true;
             shadowColor = color;
             shadowDepth = depth;
             // Since 0.9 the terrain shader reads its matrices from a UBO that UniformBufferManager writes
@@ -149,22 +116,13 @@ public final class SodiumShadowRenderer {
             if (uniforms != null) uniforms.prepareFrame();
             try {
                 ChunkRenderMatrices matrices = new ChunkRenderMatrices(lightProj, lightView);
-                // Sodium's own renderGroup hook wraps drawChunkLayer in managed code (its GL-state tracking
-                // asserts on it); we drive drawChunkLayer directly, so we mirror that here.
-                RenderDevice.enterManagedCode();
-                try {
-                    swr.drawChunkLayer(ChunkSectionLayerGroup.OPAQUE, matrices,
-                            camPos.x, camPos.y, camPos.z, sampler);
-                } finally {
-                    RenderDevice.exitManagedCode();
-                }
+                swr.drawChunkLayer(ChunkSectionLayerGroup.OPAQUE, matrices,
+                        camPos.x, camPos.y, camPos.z, sampler);
             } finally {
                 if (uniforms != null) uniforms.prepareFrame();
                 performance.useBlockFaceCulling = prevFaceCulling;
-                active = false;
                 shadowColor = null;
                 shadowDepth = null;
-                restoreFramebufferBinding();
             }
         } finally {
             if (mutatedLists) restoreCameraList(mc, cam);
