@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.content.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -44,8 +45,8 @@ public class GlobalProxy {
     }
 
     public int skyType() {
-        // Stub - DimensionType.Skybox doesn't exist on 1.21.1
-        return 1;
+        // ordinals match the documented values: none = 0, overworld = 1, end = 2
+        return delegate() instanceof ClientLevel level ? level.effects().skyType.ordinal() : 0;
     }
 
     public double seasonNumber() {
