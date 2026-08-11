@@ -22,6 +22,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,8 @@ public class SeparateTransformsModel extends BlockModel {
 
     public SeparateTransformsModel(BlockModel baseModel, ImmutableMap<ItemDisplayContext, BlockModel> perspectives,
                                    BlockModel original) {
-        super(null, List.of(), Map.of(), original.hasAmbientOcclusion(),
+        // mutable on purpose: other mods happily call clear()/put() on a model's elements and textures
+        super(null, new ArrayList<>(), new HashMap<>(), original.hasAmbientOcclusion(),
                 original.getGuiLight(), original.getTransforms(), original.getOverrides());
         this.baseModel = baseModel;
         this.perspectives = perspectives;
