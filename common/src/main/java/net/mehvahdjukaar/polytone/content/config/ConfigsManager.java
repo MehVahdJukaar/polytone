@@ -190,7 +190,10 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
     // we re-open the pack with its applicable overlays, to also pick up config entries declared inside
     // one (e.g. a version overlay), which are invisible to the first pass.
     public void loadCurrentPackConfigs(PackResources primary, Pack.ResourcesSupplier resources, PackLocationInfo location, int version) {
-        if (primary.location().source() != PackSource.DEFAULT) return;
+        // Server packs and world packs need this just as much as local ones (#372); only the
+        // vanilla/mod-provided packs are worth skipping, they can't carry config entries.
+        PackSource source = primary.location().source();
+        if (source == PackSource.BUILT_IN || source == PackSource.FEATURE) return;
 
         MapRegistry<OptionHolder<?>> activePackReg = new MapRegistry<>("Active Pack Configs");
         registerBuiltins(activePackReg);
