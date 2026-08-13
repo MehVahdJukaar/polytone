@@ -63,3 +63,10 @@ CLAUDE.md
 /common/mods/net.caffeinemc.sodium-neoforge-0.9.1+mc26.1.2-mod.jar
 /resourcepacks/smooth_shadows/
 /resourcepacks/builds/sunbathing-v1.9.zip
+
+# internal notes & research - never published
+/research/
+/wiki/
+/resourcepacks/NOTES.md
+/PORT_*.md
+/BACKPORT_*.md
