@@ -79,3 +79,10 @@ CLAUDE.md
 /resourcepacks/smooth_shadows/
 /common/mods/net.caffeinemc.sodium-neoforge-0.9.1+mc26.1.2-mod.jar
 /PORT_26.2_TODO.md
+
+# internal notes & research - never published
+/research/
+/wiki/
+/resourcepacks/NOTES.md
+/PORT_*.md
+/BACKPORT_*.md
