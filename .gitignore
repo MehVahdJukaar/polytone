@@ -20,15 +20,6 @@ classes/
 .settings
 *.launch
 /unique_lines.txt
-/.junie/
-/.codex
-/.aiassistant/
-/.ai/
-/.claude/
-/.cursor/
-/CLAUDE.md
-/GEMINI.md
-/AGENTS.md
 /neoforge/mods/fabric-api-base-0.4.42.jar
 /neoforge/mods/fabric-block-view-api-v2-1.0.10.jar
 /neoforge/mods/fabric-renderer-api-v1-3.4.1.jar
@@ -36,24 +27,14 @@ classes/
 /common/mods/sodium-neoforge-mod-0.8.12.jar
 /neoforge/mods/sodium-neoforge-mod-0.8.12.jar
 /resourcepacks/builds/sunbathing-v1.5.zip
-/resourcepacks/config_test/assets/config_test/polytone/config_entries/a_enabled.json
-/resourcepacks/config_test/assets/config_test/polytone/config_entries/b_quality.json
-/resourcepacks/config_test/assets/config_test/polytone/config_entries/c_mode.json
-/resourcepacks/config_test/assets/config_test/polytone/config_entries/d_scale.json
-/resourcepacks/config_test/assets/config_test/lang/en_us.json
-/resourcepacks/config_test/pack.mcmeta
+/resourcepacks/config_test/
 /common/mods/net.caffeinemc.sodium-neoforge-0.8.13+mc1.21.11-mod.jar
 /resourcepacks/shadowmap_debug/pack.mcmeta
-/resourcepacks/shadowmap_debug/assets/shadowdbg/polytone/shadow_map.json
-/resourcepacks/shadowmap_debug/assets/shadowdbg/shaders/post/shadows.fsh
-/resourcepacks/shadowmap_debug/assets/shadowdbg/polytone/post_shaders/shadows.json
-/resourcepacks/shadowmap_debug/assets/shadowdbg/post_effect/shadows.json
+/resourcepacks/shadowmap_debug/
 /resourcepacks/builds/
 /resourcepacks/shadowmap/
-/resourcepacks/shadowmap_debug/
 /resourcepacks/smooth_shadows/
 
-# internal notes & research - never published
 /research/
 /wiki/
 /resourcepacks/NOTES.md
