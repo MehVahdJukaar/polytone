@@ -138,8 +138,6 @@ public class ConfigScreen extends OptionsSubScreen {
         renderCustomTooltip(guiGraphics, mouseX, mouseY);
     }
 
-    // --- footer ---
-
     @Override
     protected void addFooter() {
         int iconW = 20;
@@ -216,8 +214,6 @@ public class ConfigScreen extends OptionsSubScreen {
         t.start();
     }
 
-    // --- reset / undo ---
-
     private void resetValues() {
         for (OptionHolder<?> holder : opt.values()) {
             holder.resetToDefault();
@@ -232,11 +228,8 @@ public class ConfigScreen extends OptionsSubScreen {
         rebuildPreservingScroll();
     }
 
-    /**
-     * Option buttons are value snapshots, so a programmatic change (reset/undo/preset) needs a
-     * rebuild to refresh their labels. Rebuild is cheap and duplicate-free (fresh layout each init);
-     * we only restore the scroll position so the list doesn't jump.
-     */
+    // option buttons are value snapshots, so a programmatic change (reset/undo/preset) needs a rebuild
+    // to refresh their labels. Only the scroll position is restored, so the list doesn't jump.
     private void rebuildPreservingScroll() {
         double scroll = this.list != null ? this.list.getScrollAmount() : 0;
         this.rebuildWidgets();
@@ -245,10 +238,7 @@ public class ConfigScreen extends OptionsSubScreen {
         }
     }
 
-    /**
-     * Defers a rebuild to the end of the frame. Used by the preset slider: rebuilding synchronously
-     * inside a widget's own mouse-release handler would free the widget mid-dispatch.
-     */
+    // rebuilding synchronously inside a widget's own mouse-release handler would free it mid-dispatch
     private void scheduleRebuild() {
         if (rebuildScheduled) return;
         rebuildScheduled = true;
@@ -257,8 +247,6 @@ public class ConfigScreen extends OptionsSubScreen {
             if (this.minecraft.screen == this) rebuildPreservingScroll();
         });
     }
-
-    // --- list population ---
 
     @Override
     protected void addOptions() {
@@ -376,8 +364,6 @@ public class ConfigScreen extends OptionsSubScreen {
         return min;
     }
 
-    // --- header title resolution ---
-
     private static Component getCategoryHeader(String modId) {
         return Component.translatableWithFallback("config." + modId + ".header",
                 StrUtils.readableName(modId));
@@ -387,8 +373,6 @@ public class ConfigScreen extends OptionsSubScreen {
         return Component.translatableWithFallback("config." + modId + ".section." + section,
                 StrUtils.readableName(section));
     }
-
-    // --- rich tooltip (preview image + performance impact) ---
 
     private void renderCustomTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         if (this.list == null) return;
@@ -445,8 +429,6 @@ public class ConfigScreen extends OptionsSubScreen {
             return height;
         }
     }
-
-    // --- preset sliders ---
 
     private void addPresetSlider(String modId, @Nullable Map<String, List<PresetAction<?>>> presets,
                                  @Nullable String section) {
@@ -708,12 +690,7 @@ public class ConfigScreen extends OptionsSubScreen {
         }
     }
 
-    /**
-     * Icon-only footer button that swaps its icon with the editor state: the animated "loading"
-     * sprite while the editor window boots off-thread, an "on" sprite once it is open, and the plain
-     * sprite otherwise (also the fixed icon when the editor mod isn't installed). Subclasses Button
-     * directly rather than SpriteIconButton because the latter's sprite field is final.
-     */
+    // subclasses Button rather than SpriteIconButton because the latter's sprite field is final
     private static final class EditorIconButton extends Button {
         private static final ResourceLocation SPRITE = Polytone.res("codec_editor");
         private static final ResourceLocation SPRITE_ON = Polytone.res("codec_editor_on");

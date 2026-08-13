@@ -51,9 +51,7 @@ public class LevelRendererMixin {
         LevelRenderPass.push();
     }
 
-    /**
-     * Copy level depth before {@code GameRenderer} clears it for first-person hand rendering.
-     */
+    // before GameRenderer clears depth for first-person hand rendering
     @Inject(method = "renderLevel", at = @At("TAIL"))
     private void polytone$captureLevelDepth(DeltaTracker deltaTracker, boolean renderBlockOutline,
                                             Camera camera, GameRenderer gameRenderer,

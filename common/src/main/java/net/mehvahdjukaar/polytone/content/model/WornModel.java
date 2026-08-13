@@ -12,15 +12,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-/**
- * Worn (equipped) model override for an item. Holds the geometry source plus an optional equipment slot it applies to.
- * The baked model is a {@link HumanoidModel} so it can be posed by the vanilla armor layer / NeoForge's
- * {@code getGenericArmorModel}; this requires the geometry to declare the standard humanoid bones
- * (head/hat, body, right_arm, left_arm, right_leg, left_leg).
- * <p>
- * 1.21.1 has no {@code EquipmentClientInfo.LayerType}, so the worn layer is keyed by {@link EquipmentSlot}
- * (an absent {@code slot} means it applies to every armor slot the item renders in).
- */
+// The baked model is a HumanoidModel so the vanilla armor layer (or neoforge's getGenericArmorModel)
+// can pose it, which requires the geometry to declare the standard humanoid bones. 1.21.1 has no
+// EquipmentClientInfo.LayerType, so the worn layer is keyed by EquipmentSlot instead; an absent slot
+// means every armor slot the item renders in.
 public final class WornModel {
 
     public static final Codec<WornModel> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -47,7 +42,6 @@ public final class WornModel {
         return this.slot.isEmpty() || this.slot.get() == slot;
     }
 
-    /** Returns the baked model for this worn override, or {@code null} if it could not be built. */
     @Nullable
     public HumanoidModel<?> getOrBake(EntityModelSet modelSet) {
         if (cachedFrom != modelSet) {

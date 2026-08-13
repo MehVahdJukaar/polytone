@@ -21,11 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-/**
- * A pack's info page: a heading and a body, both straight from its pack.mcmeta. Both are
- * {@link MultiLineTextWidget}s, which is what buys us the wrapping and layout for free; clickable
- * links and hover tooltips are hit-tested against the same split the widget renders with.
- */
+// Heading and body straight from pack.mcmeta. MultiLineTextWidget buys the wrapping and layout;
+// link hit tests run against the same split it renders with.
 public class PackInfoScreen extends Screen {
 
     private static final ResourceLocation INWORLD_MENU_BACKGROUND =
@@ -129,11 +126,9 @@ public class PackInfoScreen extends Screen {
         this.minecraft.setScreen(this.lastScreen);
     }
 
-    /**
-     * Text widgets ship inactive, which makes {@link #mouseClicked} bail before it ever reaches the
-     * link hit test. Activating one also makes it click back at every stray click on plain text, so
-     * the sound moves to the click handler, where we know a link was actually hit.
-     */
+    // Text widgets ship inactive, which makes mouseClicked bail before the link hit test. Activating one
+    // also makes it click back at every stray click on plain text, so the sound moved to the click
+    // handler, where we know a link was hit.
     private static class TextBlock extends MultiLineTextWidget {
 
         private final Font font;
@@ -153,7 +148,6 @@ public class PackInfoScreen extends Screen {
             return super.setMaxWidth(maxWidth);
         }
 
-        /** Style under the cursor, mirroring the centered layout the widget renders with. */
         @Nullable
         Style styleAt(double mouseX, double mouseY) {
             if (!this.isMouseOver(mouseX, mouseY)) return null;

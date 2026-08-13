@@ -8,17 +8,10 @@ import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/**
- * Backports NeoForge's vanilla patch that lets {@link EffectInstance} resolve namespaced shader
- * program names (e.g. {@code "sunbathing:godrays"}) to the correct namespaced
- * {@code <ns>:shaders/program/<path>.json} resource. Vanilla 1.21.1 concatenates the raw name
- * into a {@code minecraft:}-namespaced path, which throws on the embedded colon.
- *
- * <p>Safety: gated on {@link PostShadersManager#POLYTONE_LOADING} so it only acts while polytone
- * is constructing one of its own chains - vanilla and other mods' shader loading is left strictly
- * untouched. Within that gate it only intervenes when the embedded name actually contains a colon,
- * and falls back to the original call on any parse failure.
- */
+// Backports neoforge's vanilla patch letting EffectInstance resolve namespaced shader program names
+// ("sunbathing:godrays"); vanilla 1.21.1 concatenates the raw name into a minecraft: path and throws
+// on the embedded colon. Gated on POLYTONE_LOADING so vanilla and other mods' shader loading is left
+// alone, and it only intervenes when the name actually has a colon, falling back on any parse failure.
 @Mixin(EffectInstance.class)
 public abstract class EffectInstanceMixin {
 

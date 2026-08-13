@@ -207,11 +207,7 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
         return Minecraft.getInstance().particleEngine.makeParticle(options, x, y, z, dx, dy, dz);
     }
 
-    /**
-     * A detached instance for the editor preview: custom types via {@link CustomParticleType#createPreviewInstance}
-     * (which skips the world collision / async / exclusion-radius handling), any other type via
-     * {@link #makeParticle}. Not added to the live engine.
-     */
+    // detached from the live engine; custom types skip collision, async and exclusion radius handling
     @Nullable
     public Particle createPreviewParticle(ParticleOptions options, ClientLevel level,
                                           double x, double y, double z, double dx, double dy, double dz) {

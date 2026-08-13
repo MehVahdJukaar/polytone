@@ -7,11 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Drives {@link net.mehvahdjukaar.polytone.content.entity.EntityModifiersManager#onEntityTick} once
- * per client-side entity tick. Done as a common mixin (rather than a loader tick event) so both
- * NeoForge and Fabric go through the same path.
- */
+// a common mixin rather than a loader tick event, so neoforge and fabric go through the same path
 @Mixin(Entity.class)
 public abstract class EntityMixin {
 

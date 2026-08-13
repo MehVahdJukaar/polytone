@@ -58,30 +58,12 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.awt.image.BufferedImage;
 
-/**
- * Live preview for Polytone colormaps.
- *
- * <p>It reuses the standard Nautilus 2D-preview chrome: a {@link PreviewSurface} (scrolling dark canvas
- * under a themed toolbar) holds the visuals - a small square block view and a same-size result swatch
- * side by side, then a bigger square {@link PixelTextureView} of the source colormap texture with the
- * sampled texel marked and its coordinates captioned right under it. The block picker sits on its own
- * above a "Live at player" toggle; every simulated-only input (biome picker, y slider, env/light
- * sliders) lives in one titled group under that toggle, which the toggle hides outright when on.
- *
- * <p>The block/biome pickers are the editor's own searchable, icon-bearing {@link RegistryPickerField},
- * so they look and behave exactly like the identifier fields in the schema form. The block is not a
- * simulated input - it just chooses what the 3D view previews - so it stays pickable in live mode too.
- *
- * <p>The block view renders the picked block, tinted live by the colormap's current output through the
- * Nautilus {@link BlockTint} seam - so the picker drives both the sampled state and what you see in 3D.
- *
- * <p>All sampling goes through the decoded {@link Colormap}'s instrumented sampler
- * ({@code sampleColorForPreview} + a {@link CaptureSink}), so the swatch, the 2D marker and the 3D block
- * tint all come from one runtime-faithful evaluation. In simulated mode it is fed a minimal
- * {@link SimLevel} and the {@link ExpressionPreview} env-slider harness (shown only when the expression
- * reads them). With "Live at player" on it samples the real level at the player's feet with the live
- * clock/proxies instead, and a timer keeps it refreshed.
- */
+// Live preview for Polytone colormaps: a small block view and a result swatch, then a bigger
+// PixelTextureView of the source texture with the sampled texel marked.
+// All sampling goes through the decoded Colormap's instrumented sampler (sampleColorForPreview plus
+// a CaptureSink), so swatch, 2D marker and 3D block tint all come from one runtime-faithful pass.
+// Simulated mode feeds a minimal SimLevel and the ExpressionPreview env sliders; "Live at player"
+// samples the real level at the player's feet instead, refreshed on a timer.
 public final class ColormapPreview extends ExpressionPreview {
 
     private final @Nullable Path file;
@@ -420,8 +402,6 @@ public final class ColormapPreview extends ExpressionPreview {
         return size <= 1 ? 0f : index / (float) (size - 1);
     }
 
-    // --- picker resolution ----------------------------------------------------------------------
-
     private static Block resolveBlock(@Nullable ResourceLocation id) {
         if (id == null) return Blocks.AIR;
         return BuiltInRegistries.BLOCK.getOptional(id).orElse(Blocks.AIR);
@@ -441,8 +421,6 @@ public final class ColormapPreview extends ExpressionPreview {
             return null;
         }
     }
-
-    // --- source image resolution ---------------------------------------------------------------
 
     private @Nullable ArrayImage resolveSourceImage(Colormap cm) {
         String key;
@@ -534,7 +512,7 @@ public final class ColormapPreview extends ExpressionPreview {
         return out;
     }
 
-    // --- sink: captures the intermediates of one real sampling pass ----------------------------
+    // captures the intermediates of one real sampling pass
 
     private static final class CaptureSink implements Colormap.SampleSink {
         boolean captured;
@@ -552,7 +530,7 @@ public final class ColormapPreview extends ExpressionPreview {
         }
     }
 
-    // --- minimal BlockAndTintGetter for axis evaluation ----------------------------------------
+    // minimal BlockAndTintGetter for axis evaluation
 
     // A one-block world: the picked state at the origin, air elsewhere, the picked biome for tint, and
     // slider-driven light. Records whether sky/block light was queried so the preview can show those

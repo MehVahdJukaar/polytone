@@ -20,12 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Spawns particles from an entity's position each tick. This is the position-based subset of the
- * newer-MC entity emitter: MC 1.21.1 has no entity render-state, so model-bone spawning (and the
- * EMF/ETF/texture targeting that depends on it) is intentionally omitted - particles spawn at the
- * entity origin plus the x/y/z expression offsets.
- */
+// Position based subset of the newer-MC entity emitter: 1.21.1 has no entity render state, so
+// model-bone spawning (and the EMF/ETF texture targeting on top of it) is left out.
 public record EntityParticleEmitter(
         Optional<Holder<ParticleType<?>>> particleType,
         IEntityExp chance,

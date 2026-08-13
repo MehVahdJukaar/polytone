@@ -90,11 +90,8 @@ public class OptionHolder<T> {
         return new OptionHolder<>(opt, id, lastSaved);
     }
 
-    /**
-     * Value label shown on the option button, in precedence order:
-     * per-value lang key ({@code config.<ns>.<path>.<value>}) → the {@code value_translation} key used
-     * as a format string → the config type's own default formatting (ON/OFF for booleans, etc).
-     */
+    // precedence: per-value lang key (config.<ns>.<path>.<value>), then value_translation used as a
+    // format string, then the config type's own formatting
     private static <T> MutableComponent formatValue(ResourceLocation id, PolyConfig<T> config,
                                                     @Nullable String valueTranslationKey, T value) {
         String perValueKey = id.toLanguageKey("config") + "." + value;

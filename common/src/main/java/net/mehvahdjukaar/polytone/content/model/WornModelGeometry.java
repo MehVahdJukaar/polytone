@@ -8,11 +8,8 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * A worn model source: either a reference to a registered {@link CustomModelsManager} layer (baked through the
- * game's {@code EntityModelSet}, so model replacing mods like EMF can hook it) or an inlined {@link ModelDefinition}
- * (baked directly). Used inside item modifiers via the usual reference-or-direct pattern.
- */
+// Either a reference to a registered CustomModelsManager layer (baked through the game's
+// EntityModelSet, so model replacing mods like EMF can hook it) or an inlined ModelDefinition.
 public final class WornModelGeometry {
 
     @Nullable

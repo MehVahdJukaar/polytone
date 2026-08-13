@@ -15,11 +15,8 @@ import org.joml.Vector3f;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Data driven, codec backed representation of a vanilla entity model (a {@link MeshDefinition} plus its texture size).
- * Mirrors what a hardcoded {@code create*Layer()} method would build, so it can be turned into a real
- * {@link LayerDefinition} and registered as a model layer. Rotations are authored in degrees for convenience.
- */
+// Codec backed entity model: mirrors what a hardcoded create*Layer() method would build, so it can
+// become a real LayerDefinition. Rotations are authored in degrees.
 public record ModelDefinition(int[] textureSize, Map<String, Bone> bones) {
 
     static final Codec<Vector3f> VEC3 = ExtraCodecs.VECTOR3F.xmap(Vector3f::new, v -> v);
@@ -41,7 +38,6 @@ public record ModelDefinition(int[] textureSize, Map<String, Bone> bones) {
         return LayerDefinition.create(mesh, textureSize[0], textureSize[1]);
     }
 
-    /** A single part of the model. Holds its pose, its cubes and any child bones (recursive). */
     public record Bone(Pose pose, List<Cube> cubes, Map<String, Bone> children) {
 
         public static final Codec<Bone> CODEC = Codec.recursive("PolytoneBone", self ->
@@ -65,7 +61,7 @@ public record ModelDefinition(int[] textureSize, Map<String, Bone> bones) {
         }
     }
 
-    /** A single box. {@code origin} is the corner (vanilla {@code addBox} origin), {@code uv} is the texture offset. */
+    // origin is the corner (vanilla addBox origin), uv the texture offset
     public record Cube(Vector3f origin, Vector3f size, int[] uv, float inflate, boolean mirror) {
 
         public static final Codec<Cube> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -77,7 +73,7 @@ public record ModelDefinition(int[] textureSize, Map<String, Bone> bones) {
         ).apply(i, Cube::new));
     }
 
-    /** Offset (in model space) and rotation (authored in degrees, converted to radians for the bake). */
+    // rotation is authored in degrees, converted to radians at bake
     public record Pose(Vector3f offset, Vector3f rotation) {
 
         public static final Pose ZERO = new Pose(new Vector3f(), new Vector3f());

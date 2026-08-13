@@ -42,13 +42,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Parses pack-defined configs at {@code polytone/config_entries/*.json}, persists user-set values to
- * {@code polytone_options.json}, and exposes them to pack overlay conditions and {@code config("ns:id")}
- * expressions. Configs are loaded eagerly per-pack at pack-discovery time (see PackMixin) so overlay
- * conditions can be evaluated before the resource reload, and unlike the other reloaders they also
- * parse on a reload with no world open, since that's where the pack screen reads them from.
- */
+// Pack defined configs at polytone/config_entries/*.json, persisted to polytone_options.json and
+// readable from overlay conditions and config("ns:id") expressions. Loaded eagerly per pack at
+// discovery time (see PackMixin) so overlay conditions can be evaluated before the reload, and
+// unlike the other reloaders they also parse with no world open, since the pack screen reads them.
 public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
 
     public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);
@@ -127,12 +124,9 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
         });
     }
 
-    /**
-     * The holders a config screen edits, detached from the live registry: a resource reload while
-     * the screen is open clears {@link #configs} and rebuilds every pack entry as a fresh holder,
-     * while the screen's widgets keep writing into these. Iterating the registry at save time would
-     * then look at holders nobody touched and silently drop the user's edits.
-     */
+    // Detached from the live registry on purpose: a reload while the screen is open clears configs and
+    // rebuilds every holder, while the screen's widgets keep writing into these. Iterating the registry
+    // at save time would then look at holders nobody touched and drop the user's edits.
     private List<OptionHolder<?>> shownOptions() {
         return List.copyOf(configs.getValues());
     }

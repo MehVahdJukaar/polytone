@@ -197,12 +197,9 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return sampleColor(state, pos, biome, item, null);
     }
 
-    /**
-     * The real sampler, optionally instrumented. When {@code sink} is non-null the intermediates
-     * (axis outputs, sampled source pixel, final ARGB) are reported right where they are computed, so
-     * tooling never needs a second, drift-prone copy of the sampling math. {@code sink == null} is the
-     * runtime path and costs nothing beyond a null check.
-     */
+    // A non-null sink reports the intermediates (axis outputs, sampled pixel, final argb) right where
+    // they are computed, so tooling never needs a second copy of the sampling math. Null is the runtime
+    // path and costs a null check.
     public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
                            @Nullable ItemStack item, @Nullable SampleSink sink) {
         BlockAndTintGetter level = levelHack.get();
@@ -221,7 +218,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return sampled;
     }
 
-    /** Receives the intermediates of a single {@link #sampleColor} pass; used by the editor preview. */
     public interface SampleSink {
         // x/y are the clamped axis outputs (0..1); col/row is the sampled source-image pixel; argb is the final tint.
         void report(float x, float y, int col, int row, int argb);

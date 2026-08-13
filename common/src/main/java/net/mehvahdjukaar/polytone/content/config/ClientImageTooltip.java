@@ -5,15 +5,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.resources.ResourceLocation;
 
-/**
- * A {@link ClientTooltipComponent} drawing a texture at 1:1 pixel size inside a tooltip, the way the
- * bundle tooltip draws its item grid. Not config-specific, works in any component list.
- *
- * <p>1.21.1 port of the 1.21.11 component: {@code Identifier}→{@code ResourceLocation} and the plain
- * {@code blit(loc, x, y, u, v, w, h, texW, texH)} overload (no {@code RenderPipelines}). 1.21.1's
- * {@code renderImage} has no tooltip-width parameter, so the image is left-aligned within the margin
- * rather than centered.</p>
- */
+// Draws a texture at 1:1 pixel size inside a tooltip, the way the bundle tooltip draws its item grid.
+// 1.21.1's renderImage has no tooltip width parameter, so the image is left aligned, not centered.
 public class ClientImageTooltip implements ClientTooltipComponent {
     // uniform 4px breathing room on all sides, matching vanilla's bundle element spacing
     private static final int SIDE_MARGIN = 4;

@@ -43,17 +43,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-/**
- * Live preview for biome effect modifiers. Renders a tiny stylised diorama - a grass shore with a small
- * oak and tufts of grass dropping into a water pool, under a sky/fog dome - through the game's own block
- * models offscreen (see {@link BiomeSceneRenderPass}).
- *
- * <p>A biome modifier only overrides an existing biome's effects, so the preview resolves a chosen
- * biome's real colours ({@link Biome} public getters) and layers the modifier's overrides on top;
- * absent channels show the biome's own colour. A biome picker chooses that base biome, and a toggle
- * swaps to sampling the biome at the player's position instead. Without a world loaded, biomes can't
- * resolve and the scene falls back to plains-ish defaults.
- */
+// Live preview for biome effect modifiers: a small stylised diorama drawn through the game's own
+// block models (see BiomeSceneRenderPass). A modifier only overrides an existing biome's effects,
+// so the chosen biome's real colours are resolved first and the overrides layered on top.
+// Without a world loaded biomes can't resolve and the scene falls back to plains-ish defaults.
 public final class BiomeScenePreview implements TabPreview {
 
     // Plains-ish fallbacks for when no biome resolves (no world loaded).
@@ -233,8 +226,6 @@ public final class BiomeScenePreview implements TabPreview {
 
         return List.copyOf(b);
     }
-
-    // --- small layout helpers ------------------------------------------------------------------
 
     private static void addField(JComponent box, JComponent field) {
         field.setAlignmentX(Component.LEFT_ALIGNMENT);

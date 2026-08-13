@@ -8,46 +8,29 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-/**
- * How a {@link TexturePart}'s files are named relative to its content's stem, plus the shared
- * name math. Two schemes: a literal {@link Suffix} ({@code <stem><suffix>.png}) and the
- * open-ended {@link Tinted} family ({@code <stem>.png} is the default texture, index
- * {@value #DEFAULT_INDEX}, and {@code <stem>_<n>.png} the texture for tint index {@code n}).
- * Everything scheme-dependent is an instance method here, so the engine never branches on the
- * type; the statics are THE single parser/printer for the convention - reload driver and editor
- * both go through them, so they can never disagree (the old regex and hand-rolled copies did:
- * stems containing digits failed the regex and fell out of grouping). All matching is pure and
- * case-insensitive.
- */
+// How a TexturePart's files are named relative to its content stem: a literal suffix
+// (<stem><suffix>.png) or the tinted family (<stem>.png is the default, <stem>_<n>.png is tint n).
+// The statics are the only parser/printer for the convention, shared by reload and editor, so the
+// two can't disagree (the old regex did: stems containing digits fell out of grouping).
 public sealed interface Naming {
 
     int DEFAULT_INDEX = -1;
 
-    /** A base file name split into the content stem and the tint index it encodes. */
     record ParsedName(String stem, int index) {
     }
 
-    // -------------------- per-scheme behavior --------------------
-
-    /** Canonical file name for this part at {@code index} ({@link #DEFAULT_INDEX} = the plain one). */
     String fileName(String stem, int index);
 
-    /** The index {@code fileName} encodes for content {@code stem}, or null when the name isn't this part's. */
     @Nullable Integer indexOf(String fileName, String stem);
 
-    /**
-     * Reverse parse with no stem known upfront (orphan routing): the (stem, index) this base
-     * name (no extension) encodes, or null when the name can't belong to this part.
-     */
+    // reverse parse with no stem known upfront, for orphan routing
     @Nullable ParsedName parseName(String baseName);
 
-    /** Display label for this part's slot at {@code index}; {@code partLabel} is the part's own label. */
     String slotLabel(String partLabel, int index);
 
-    /** The indexes for which {@code textures} has a file of this part under {@code contentId}. */
     Set<Integer> presentIndexes(TrackedTextures textures, ResourceLocation contentId);
 
-    /** Orphan-routing order: higher parses first (long literal suffixes beat the open tinted family beats ""). */
+    // orphan routing order: higher parses first (long literal suffixes beat the tinted family beats "")
     int parseSpecificity();
 
     static Naming suffix(String suffix) {
@@ -149,8 +132,6 @@ public sealed interface Naming {
         }
     }
 
-    // -------------------- shared name math --------------------
-
     static ParsedName parse(String name) {
         int us = name.lastIndexOf('_');
         if (us > 0) { // us == 0 would leave an empty stem - not a suffix then
@@ -162,14 +143,9 @@ public sealed interface Naming {
         return new ParsedName(name, DEFAULT_INDEX);
     }
 
-    /**
-     * The tint index {@code fileName} (simple name, with extension) encodes for {@code stem},
-     * or null when it is not one of that stem's textures. Stem matching is exact and
-     * case-insensitive: {@code foobar_1.png} does not match stem {@code foo}. A file whose
-     * whole base equals the stem is always the default, even if the stem itself ends in a
-     * tint-like suffix ({@code foo_3.png} IS the default texture of a colormap named
-     * {@code foo_3}).
-     */
+    // Stem matching is exact and case insensitive: foobar_1.png does not match stem foo. A file whose
+    // whole base equals the stem is always the default, even if the stem itself ends in a tint suffix
+    // (foo_3.png IS the default texture of a colormap named foo_3).
     static @Nullable Integer tintIndexOf(String fileName, String stem) {
         String lower = fileName.toLowerCase(Locale.ROOT);
         if (!lower.endsWith(".png")) return null;

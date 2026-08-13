@@ -23,16 +23,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-/**
- * Client-side bridge for the editor's creative tab tooling.
- *
- * <p>Two independent halves. <b>Preview</b> installs the modifier being edited as a
- * {@link CreativeTabsModifiersManager.ModifierOverride}, so it stands in for the saved file on the tabs it
- * targets with no resource reload - attribute changes land at once, item contents on the next tab
- * rebuild (the open creative screen re-checks every tick). <b>Picking</b> turns the creative screen
- * into an item picker: the overlay marks what the edited modifier removes and adds, and clicks report
- * the item back to the editor instead of grabbing it.
- */
+// Client side bridge for the editor's creative tab tooling. Preview installs the edited modifier as
+// a ModifierOverride so it stands in for the saved file with no reload: attribute changes land at
+// once, item contents on the next tab rebuild (the open creative screen re-checks every tick).
+// Picking turns the creative screen into an item picker reporting back to the editor.
 public final class CreativeTabPreview implements CreativeTabsModifiersManager.ModifierOverride {
 
     private static final CreativeTabPreview INSTANCE = new CreativeTabPreview();
@@ -50,8 +44,6 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
     // Items the author has picked but not yet written into the form, so a long picking session stays
     // readable in game.
     private static final Set<ResourceLocation> pending = new LinkedHashSet<>();
-
-    // ---- the installed override ------------------------------------------------------------------
 
     @Nullable
     private CreativeTabModifier previewed;
@@ -72,10 +64,7 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         restore.put(tab, previous);
     }
 
-    /**
-     * Apply {@code mod} to the live game as if it were the saved file {@code fileId}, or drop a previous
-     * preview with a null modifier. Marshals to the render thread.
-     */
+    // null drops a previous preview; marshals to the render thread
     public static void pushPreview(@Nullable ResourceLocation fileId, @Nullable CreativeTabModifier mod) {
         Minecraft.getInstance().execute(() -> INSTANCE.install(fileId, mod));
     }
@@ -97,8 +86,6 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         CreativeModeTabs.CACHED_PARAMETERS = null; // makes the open screen rebuild its contents next tick
     }
 
-    // ---- picking ---------------------------------------------------------------------------------
-
     public static boolean isPickingEnabled() {
         return pickingEnabled;
     }
@@ -107,12 +94,10 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         pickingEnabled = enabled;
     }
 
-    /** The editor registers a listener here; the overlay fires it when an item is clicked. */
     public static void setPickListener(@Nullable Consumer<ItemStack> listener) {
         pickListener = listener;
     }
 
-    /** Called by the overlay (render thread) when the user clicks an item while picking. */
     public static void onPick(ItemStack stack) {
         Consumer<ItemStack> l = pickListener;
         if (l != null) l.accept(stack);
@@ -131,9 +116,6 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         return !pending.isEmpty() && pending.contains(BuiltInRegistries.ITEM.getKey(item));
     }
 
-    // ---- what the overlay draws from -------------------------------------------------------------
-
-    /** Tracks the editor form so the overlay can show what the modifier currently matches. */
     public static void setEdited(@Nullable ResourceLocation fileId, @Nullable CreativeTabModifier mod) {
         edited = mod;
         editedTargets = mod == null ? Set.of()
@@ -151,19 +133,16 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         return tabId != null && editedTargets.contains(tabId);
     }
 
-    /** Whether the edited modifier reaches the tab currently open - nothing it says applies if not. */
     public static boolean targetsOpenTab() {
         return targets(openTab());
     }
 
-    /** Id of the creative tab currently selected in the open creative screen. */
     @Nullable
     public static ResourceLocation openTab() {
         CreativeModeTab tab = selectedTab();
         return tab == null ? null : BuiltInRegistries.CREATIVE_MODE_TAB.getKey(tab);
     }
 
-    /** Items of the open tab that the edited modifier's removals match - the count the editor shows. */
     public static int countRemoved() {
         CreativeModeTab tab = selectedTab();
         CreativeTabModifier mod = edited;

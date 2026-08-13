@@ -36,14 +36,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
-/**
- * Editor preview for creative tab modifiers. Like GUI modifiers these decorate something that only
- * exists in the running game, so the panel is a remote control rather than a renderer. It does two
- * things: <b>apply</b> pushes the edited modifier onto the live tabs with no resource reload, and
- * <b>pick</b> turns the creative screen into an item picker whose picks are written straight into the
- * form's {@code removals} or {@code additions}. While picking, the in-game overlay also washes every
- * item the current removals match, which is the only practical way to check a tag or regex predicate.
- */
+// Creative tab modifiers decorate something that only exists in the running game, so this panel is a
+// remote control rather than a renderer: apply pushes the edited modifier onto the live tabs with no
+// reload, pick turns the creative screen into an item picker writing into removals/additions.
+// While picking, the overlay also washes every item the current removals match, which is the only
+// practical way to check a tag or regex predicate.
 public final class CreativeTabPreviewPanel implements TabPreview {
 
     private static final String FOLDER = "creative_tab_modifiers";
@@ -141,8 +138,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         CreativeTabPreview.pushPreview(fileId, null);
     }
 
-    // --- actions --------------------------------------------------------------------------------
-
     private void apply() {
         if (currentModifier == null) {
             status.error("No valid modifier yet - fix the form first.");
@@ -236,8 +231,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         clearPicked.setEnabled(any);
     }
 
-    // --- writing back to the form ---------------------------------------------------------------
-
     // Picked items become one items_match removal / one addition entry, merged into an existing one when
     // there is a matching one already, so repeated picking doesn't grow a wall of one-item entries.
     private void writePicked(boolean removals) {
@@ -300,8 +293,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         formWriter.accept(copy);
         return true;
     }
-
-    // --- layout ---------------------------------------------------------------------------------
 
     private void buildLayout() {
         Box toolbar = PreviewPanels.header("Live Creative Tabs", status);

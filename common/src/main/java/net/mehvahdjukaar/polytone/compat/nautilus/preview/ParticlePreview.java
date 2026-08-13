@@ -36,17 +36,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Live preview for Polytone custom particles. It spawns a real {@link CustomParticleInstance} from
- * the edited type and ticks it on the render thread, drawing each frame through the game's own
- * particle render path into the Nautilus {@link LiveViewport} - so what you see is the runtime
- * particle, not a re-implementation.
- *
- * <p>The particle's own state ({@code p.*}) comes from the live instance, so only the world-context
- * {@code global.*} sliders from {@link ExpressionPreview} are simulated, and only when the type's
- * expressions actually read them. Sprites are borrowed from the pack's already-baked particle of the
- * same id (a not-yet-registered particle can't be drawn until the pack is reloaded).
- */
+// Spawns a real CustomParticleInstance from the edited type and ticks it on the render thread,
+// drawing it through the game's own particle path. Only the world-context global.* sliders are
+// simulated; p.* comes from the live instance. Sprites are borrowed from the pack's already baked
+// particle of the same id, since a not yet registered one can't be drawn before a reload.
 public final class ParticlePreview extends ExpressionPreview {
 
     private final @Nullable ResourceLocation contentId;

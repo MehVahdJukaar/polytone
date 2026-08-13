@@ -15,10 +15,8 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Ticks custom particles in parallel chunks collected during ParticleEngine.tick(), joined before
- * anything reads or mutates particle state. Lifetime expiry stays in CustomParticleInstance#tick.
- */
+// Ticks custom particles in parallel chunks collected during ParticleEngine.tick(), joined before
+// anything reads or mutates particle state. Lifetime expiry stays in CustomParticleInstance#tick.
 public final class PolytoneAsyncParticles {
 
     private static final int THREADS = Mth.clamp(Runtime.getRuntime().availableProcessors() - 1, 1, 6);
@@ -57,29 +55,25 @@ public final class PolytoneAsyncParticles {
 
     private PolytoneAsyncParticles() {}
 
-    /** Called from CustomParticleInstance.tick() instead of ticking inline (main thread only). */
     public static void enqueue(CustomParticleInstance p) {
         PENDING.add(p);
     }
 
-    /** Defers a newborn's spawn-time ticker pass into the parallel batch (main thread only). */
     public static void enqueueInit(CustomParticleInstance p) {
         p.pendingInitTick = true;
         PENDING.add(p);
     }
 
-    /** Submits a render-extraction task to the shared pool. Joined lazily in the render state. */
     public static ForkJoinTask<?> submitRender(Runnable task) {
         return POOL.submit(task);
     }
 
-    /** Camera snapshot for the current tick, or a live lookup when no batch is active. */
     public static Camera camera() {
         Camera c = tickCamera;
         return c != null ? c : Minecraft.getInstance().gameRenderer.getMainCamera();
     }
 
-    /** Ticks one particle without propagating failures; a cosmetic particle must not crash the game. */
+    // a cosmetic particle must not crash the game
     private static void tickOne(CustomParticleInstance p) {
         try {
             if (p.pendingInitTick) {
@@ -96,10 +90,7 @@ public final class PolytoneAsyncParticles {
         }
     }
 
-    /**
-     * Runs the action now on the main thread, else queues it for replay at join.
-     * ParticleEngine#particlesToAdd and SoundEngine are not thread-safe.
-     */
+    // ParticleEngine#particlesToAdd and SoundEngine are not thread safe
     public static void deferToMain(Runnable action) {
         if (Minecraft.getInstance().isSameThread()) {
             action.run();
@@ -108,10 +99,8 @@ public final class PolytoneAsyncParticles {
         }
     }
 
-    /**
-     * Called at the TAIL of ParticleEngine.tick(): submits the batch and returns without waiting,
-     * overlapping the rest of the game tick and early frame render. Joined by {@link #awaitTicks()}.
-     */
+    // called at the TAIL of ParticleEngine.tick(): submits without waiting, so the batch overlaps the
+    // rest of the game tick and the early frame render
     public static void dispatch() {
         int size = PENDING.size();
         if (size == 0) return;
@@ -140,10 +129,8 @@ public final class PolytoneAsyncParticles {
         inFlight = tasks;
     }
 
-    /**
-     * Joins the in-flight batch. Idempotent, main thread only: called before render extract,
-     * before the next engine tick, and on level changes.
-     */
+    // idempotent, main thread only: called before render extract, before the next engine tick, and on
+    // level changes
     public static void awaitTicks() {
         if (inFlight == null) return;
         try {

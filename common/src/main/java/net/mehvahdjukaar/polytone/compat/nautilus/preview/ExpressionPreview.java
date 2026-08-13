@@ -20,20 +20,10 @@ import java.awt.Dimension;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Shared scaffolding for the editor's live expression previews (colormaps, particles, ...). It owns
- * the parts every such panel needs identically: the {@link PreviewSurface} chrome, the "Live at
- * player" toggle and its refresh timer, and the {@link SimProxies} environment-slider harness that
- * feeds simulated {@code global}/{@code camera}/{@code player} inputs into an evaluation and reveals
- * only the sliders the expression actually read.
- *
- * <p>The particle's own state ({@code p.*}) is never simulated here - it is bound live from the real
- * instance being ticked - so this harness only ever exposes world-context inputs.
- *
- * <p>Subclasses build their own visual canvas and simulated inputs, wrap each evaluation in
- * {@link #installSim()}/{@link #clearSim()}, then call {@link #refreshEnvControls()} to show the
- * sliders that pass read.
- */
+// Shared scaffolding for the editor's live expression previews (colormaps, particles, ...): the
+// PreviewSurface chrome, the "Live at player" toggle with its refresh timer, and the SimProxies
+// harness feeding simulated global/camera/player inputs, revealing only the sliders a pass read.
+// Subclasses wrap each evaluation in installSim()/clearSim(), then call refreshEnvControls().
 public abstract class ExpressionPreview implements TabPreview {
 
     protected final PreviewStatus status = new PreviewStatus();
@@ -78,10 +68,7 @@ public abstract class ExpressionPreview implements TabPreview {
         liveTimer.stop();
     }
 
-    /** Re-run the panel's sampling/ticking with the current inputs. */
     protected abstract void recompute();
-
-    // --- live mode ------------------------------------------------------------------------------
 
     protected void setLiveMode(boolean live) {
         this.liveMode = live;
@@ -95,12 +82,9 @@ public abstract class ExpressionPreview implements TabPreview {
         recompute();
     }
 
-    /** Hook for subclasses to show/hide their simulated-input group when live mode flips. */
     protected void onLiveModeChanged(boolean live) {}
 
-    // --- sim environment harness ---------------------------------------------------------------
-
-    /** Header + rows for the auto-revealing environment sliders; embed once in the subclass layout. */
+    // embed once in the subclass layout
     protected JComponent envGroup() {
         Box box = Box.createVerticalBox();
         box.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -109,7 +93,6 @@ public abstract class ExpressionPreview implements TabPreview {
         return box;
     }
 
-    /** Install this panel's sim proxies and reset read tracking for one evaluation pass. */
     protected void installSim() {
         sim.clearReads();
         PreviewContext.install(sim);
@@ -119,11 +102,8 @@ public abstract class ExpressionPreview implements TabPreview {
         PreviewContext.clear();
     }
 
-    /**
-     * Show only the env sliders the last pass read, refresh their value labels, and drive the header
-     * visibility. Returns whether any env slider is shown, so subclasses that add their own extra
-     * rows (e.g. light) under the same header can OR that into {@link #setEnvHeaderVisible(boolean)}.
-     */
+    // returns whether any env slider is shown, so subclasses adding their own rows under the same
+    // header can OR that into setEnvHeaderVisible
     protected boolean refreshEnvControls() {
         boolean any = false;
         for (EnvControl c : envControls.values()) {
@@ -140,13 +120,10 @@ public abstract class ExpressionPreview implements TabPreview {
         envHeader.setVisible(visible);
     }
 
-    /** No expression to sample: clear reads and hide every env slider. */
     protected void hideEnv() {
         sim.clearReads();
         refreshEnvControls();
     }
-
-    // --- shared layout helpers -----------------------------------------------------------------
 
     protected static void addRow(Box toolbar, JComponent row) {
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -186,7 +163,7 @@ public abstract class ExpressionPreview implements TabPreview {
         return row;
     }
 
-    // --- env slider row bound to one SimProxies input ------------------------------------------
+    // env slider row bound to one SimProxies input
 
     protected static final class EnvControl {
         final SimValue input;

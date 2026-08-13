@@ -66,9 +66,6 @@ public class GlobalProxy {
         return ExpTicker.getRainAndThunder();
     }
 
-    /**
-     * Runtime lookup of a global expression's current value by its variable name
-     */
     public double value(String key) {
         return Polytone.GLOBAL_EXPRESSION.getValue(key);
     }

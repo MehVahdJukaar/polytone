@@ -73,11 +73,8 @@ public record ParticleParticleEmitter(
     ).apply(i, ParticleParticleEmitter::new));
 
 
-    /**
-     * Where an emitted child goes. The default {@link #GAME_SINK} spawns it into the world; the editor
-     * preview swaps in its own to capture children instead. Returns false to stop emitting more this
-     * tick (throttled or full).
-     */
+    // the editor preview swaps in its own sink to capture children; returns false to stop emitting
+    // more this tick (throttled or full)
     public interface ParticleSink {
         boolean emit(ParticleParticleEmitter emitter, Level level, ParticleOptions options,
                      double x, double y, double z, double dx, double dy, double dz);
@@ -93,7 +90,6 @@ public record ParticleParticleEmitter(
     // thread (its own sink), so the two never cross.
     private static final ThreadLocal<ParticleSink> SINK = ThreadLocal.withInitial(() -> GAME_SINK);
 
-    /** Route this thread's emitted children through {@code sink}, or null to restore the world sink. */
     public static void setSink(@Nullable ParticleSink sink) {
         if (sink == null) SINK.remove();
         else SINK.set(sink);

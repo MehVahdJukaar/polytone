@@ -13,14 +13,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-/**
- * Fabric counterpart to NeoForge's {@code IClientItemExtensions#getGenericArmorModel}: swaps the worn armor model for
- * the item's Polytone {@code worn_model} override. On 1.21.1, {@code EquipmentLayerRenderer}/{@code EquipmentClientInfo}
- * do not exist yet, so we hook {@link net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer} directly and
- * replace the {@code model} argument that {@code renderArmorPiece} receives (the inner/outer model resolved by
- * {@code getArmorModel(slot)}). The replacement is a {@link HumanoidModel} and is posed via the parent model's
- * {@code copyPropertiesTo}, so no manual property copy is needed.
- */
+// Fabric counterpart to neoforge's IClientItemExtensions#getGenericArmorModel. 1.21.1 has no
+// EquipmentLayerRenderer/EquipmentClientInfo yet, so we hook HumanoidArmorLayer directly and replace
+// the model argument renderArmorPiece receives. The replacement is a HumanoidModel and is posed via
+// the parent model's copyPropertiesTo, so no manual property copy is needed.
 @Mixin(net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer.class)
 public abstract class HumanoidArmorLayerMixin {
 

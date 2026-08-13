@@ -16,15 +16,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-/**
- * A particle's colormap plus its {@link CachePolicy refresh policy}. Pure config: shared by every
- * particle of a type, the per-particle refresh state lives in {@link CustomParticleInstance}'s own
- * colormap cache.
- * <p>
- * Decodes two ways, so old packs keep working: either a bare colormap (the historical form, which
- * defaults to {@link CachePolicy#NONE}), or a compound {@code {colormap, cache}} that names the
- * policy explicitly.
- */
+// Pure config, shared by every particle of a type; the per-particle refresh state lives in Cache.
+// Decodes two ways so old packs keep working: a bare colormap (historical, no caching) or a
+// compound {colormap, cache} naming the policy.
 public record ParticleColor(IColorGetter getter, CachePolicy policy) {
 
     // compound form: pick the colormap and, optionally, how it refreshes
@@ -54,11 +48,8 @@ public record ParticleColor(IColorGetter getter, CachePolicy policy) {
         }
     }
 
-    /**
-     * Per-particle colormap state: owns its {@link ParticleColor} and re-samples the color straight
-     * onto the particle per the cache policy, only when it's stale. Mirrors the block/section-version
-     * invalidation of {@link ParticleLightCache.Entry}.
-     */
+    // re-samples the colour onto the particle per the cache policy, only when stale; mirrors the
+    // block/section-version invalidation of ParticleLightCache.Entry
     public static final class Cache {
         private final CustomParticleInstance p;
         private final ParticleColor colormap;

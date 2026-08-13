@@ -9,15 +9,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-/**
- * Clickable namespace header for the config screen: a disclosure chevron (▶ collapsed / ▼ expanded)
- * followed by the bold namespace title. The whole row toggles the namespace; the options list is
- * rebuilt on toggle, so this widget only ever renders one state.
- *
- * <p>1.21.1 port of the 1.21.11 widget: uses {@link ResourceLocation} + the plain
- * {@code blitSprite(loc, x, y, w, h)} overload (no {@code RenderPipelines}), and overrides
- * {@link #renderWidget} rather than the 1.21.11-only {@code renderContents}.</p>
- */
 class NamespaceHeaderWidget extends Button {
     // White sprites under assets/polytone/textures/gui/sprites/config; blitted 1:1 on the pixel grid.
     private static final ResourceLocation CHEVRON_COLLAPSED = Polytone.res("config/section_collapsed");

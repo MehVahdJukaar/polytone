@@ -192,7 +192,6 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
         }
     }
 
-    /** @see PostShaderRenderer#captureLevelMatrices */
     public void captureLevelMatrices(Matrix4f projection, Matrix4f modelView) {
         renderer.captureLevelMatrices(projection, modelView);
     }

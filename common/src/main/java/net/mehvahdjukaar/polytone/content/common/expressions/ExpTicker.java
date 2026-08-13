@@ -23,7 +23,6 @@ public class ExpTicker {
         refreshPlayerSnapshot(); // keep the async player-stats cache in step with the tick
     }
 
-    // --- per-tick player stats cache ---
     // Re-refreshed by PolytoneAsyncParticles right before it dispatches its parallel batch (a stale
     // position would make player-following particles trail a fast player by a whole tick). Workers
     // only ever read this cache, never the live entity; the volatile reference publishes it.

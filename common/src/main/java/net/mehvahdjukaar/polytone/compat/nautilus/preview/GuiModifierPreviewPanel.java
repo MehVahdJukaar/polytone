@@ -27,15 +27,9 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 
-/**
- * Editor preview for Polytone GUI modifiers. It renders nothing itself: GUI modifiers decorate
- * <i>foreign</i> screens, so the real preview surface is the live Minecraft window. This panel is a
- * thin, read-only remote control over the {@link GuiModifierPreview} bridge. Its primary action is
- * <b>Reload live screen</b> (push the edited modifier onto the open screen in memory, no resource
- * reload); the two helpers below just report what the game sees - the detected target, and slots
- * picked by clicking them in game - each with a Copy button that yields the raw value to paste. The
- * rich per-element detail lives on the in-game overlay, not here; nothing in this panel writes the form.
- */
+// GUI modifiers decorate foreign screens, so the real preview surface is the live Minecraft window
+// and this panel is just a read-only remote control over the GuiModifierPreview bridge. The rich
+// per-element detail lives on the in-game overlay; nothing here writes the form.
 public final class GuiModifierPreviewPanel implements TabPreview {
 
     private PreviewSurface root;
@@ -96,8 +90,6 @@ public final class GuiModifierPreviewPanel implements TabPreview {
         GuiModifierPreview.pushPreview(null);
     }
 
-    // --- actions --------------------------------------------------------------------------------
-
     private void reloadLiveScreen() {
         if (currentModifier == null) {
             status.error("No valid modifier yet - fix the form first.");
@@ -151,8 +143,6 @@ public final class GuiModifierPreviewPanel implements TabPreview {
         }
     }
 
-    // --- layout ---------------------------------------------------------------------------------
-
     private void buildLayout() {
         Box toolbar = PreviewPanels.header("Live GUI Preview", status);
 
@@ -175,7 +165,7 @@ public final class GuiModifierPreviewPanel implements TabPreview {
         root.setMinimumSize(new Dimension(UiScale.px(180), UiScale.px(140)));
     }
 
-    // --- a labelled value with a copy button, used for the detect/pick read-outs -----------------
+    // a labelled value with a copy button, used for the detect/pick read-outs
 
     private static final class Readout {
         private final JPanel row;

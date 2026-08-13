@@ -33,7 +33,7 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
         REGISTRY.add(this);
     }
 
-    /** Fluent, order-independent replacement for a telescoping constructor. */
+    // fluent, order-independent replacement for a telescoping constructor
     public static final class Spec<O> {
         private final String name;
         private String[] folderNames = new String[0];
@@ -45,12 +45,11 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
             this.name = name;
         }
 
-        /** For codec-less (non-editable) managers - O can't be inferred here, so give it explicitly: {@code Spec.<Foo>of(name)}. */
+        // O can't be inferred without a codec, so give it explicitly: Spec.<Foo>of(name)
         public static <O> Spec<O> of(String name) {
             return new Spec<>(name);
         }
 
-        /** O is inferred from the codec supplier, so callers never need a type witness. */
         public static <O> Spec<O> of(String name, Supplier<? extends Codec<O>> codec) {
             return new Spec<O>(name).codec(codec);
         }
@@ -60,12 +59,8 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
             return this;
         }
 
-        /**
-         * Declares the companion textures this content type carries. Order matters: the first
-         * part is the main feature, claiming plain {@code <stem>.png} files nothing else explains.
-         * The manager's parse pass drives adoption and orphan creation itself, off
-         * {@code contentTexture.adoptable}/{@code orphans}.
-         */
+        // order matters: the first part is the main feature, claiming plain <stem>.png files nothing else
+        // explains
         @SafeVarargs
         public final Spec<O> textureParts(TexturePart<O>... parts) {
             this.textureParts = List.of(parts);
@@ -99,37 +94,32 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
         return names.length == 0 ? null : names[0];
     }
 
-    /** Wiki page slug shown as a help link in the pack editor. Managers without one just get no button. */
+    // shown as a help link in the pack editor; managers without one just get no button
     public @Nullable String wikiPage() {
         return wikiPage;
     }
 
-    // -------------------- parse helpers (condition-aware, via the existing Parsed) --------------------
-
-    /** Batch-decode jsons, yielding only entries whose conditions are met. */
     protected final Iterable<Map.Entry<ResourceLocation, O>> parseEnabledJsons(
             Map<ResourceLocation, JsonElement> jsons, DynamicOps<JsonElement> ops) {
         return Parsed.batchParseOnlyEnabled(jsons, this.contentCodec(), ops, name);
     }
 
-    /** Batch-decode jsons, keeping condition-disabled entries too (as {@link Parsed}). */
+    // keeps condition-disabled entries too
     protected final Parsed.SortedMap<O> parseAllJsons(
             Map<ResourceLocation, JsonElement> jsons, DynamicOps<JsonElement> ops) {
         return Parsed.batchParseAlways(jsons, this.contentCodec(), ops, name);
     }
 
-    /** Batch-decode jsons; condition-disabled entries decode with {@code partialCodec} instead. */
+    // condition-disabled entries decode with partialCodec instead
     protected final Parsed.SortedMap<O> parseJsonsOrPartial(
             Map<ResourceLocation, JsonElement> jsons, Decoder<O> partialCodec, DynamicOps<JsonElement> ops) {
         return Parsed.batchParseOrPartial(jsons, this.contentCodec(), partialCodec, ops, name);
     }
 
-    /** Decode one file (condition- and lenient-loading-aware). */
     protected final Parsed<O> parseJson(JsonElement json, ResourceLocation id, DynamicOps<JsonElement> ops) {
         return Parsed.parseAlways(this.contentCodec(), json, ops, id, name);
     }
 
-    /** Decode one file, throwing on any error (no condition handling). */
     protected final O decodeStrict(JsonElement json, ResourceLocation id, DynamicOps<JsonElement> ops) {
         return this.contentCodec().decode(ops, json)
                 .getOrThrow(msg -> new IllegalStateException(

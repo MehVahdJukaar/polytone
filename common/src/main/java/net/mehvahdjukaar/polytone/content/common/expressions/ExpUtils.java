@@ -38,19 +38,12 @@ public class ExpUtils {
         return coerceLogicalOperands(expr);
     }
 
-    /**
-     * MVEL's logical operators ({@code &&}, {@code ||}, {@code !}) require {@code Boolean} operands
-     * and hard-cast them at runtime with no coercion - so a number or an {@code Object}-returning
-     * function (e.g. {@code config(...)}) used directly as a condition throws a
-     * {@code ClassCastException}. Unlike comparison operators, no MVEL typing mode coerces here.
-     * <p>To give JavaScript-like truthiness we wrap every logical operand {@code X} as
-     * {@code (X) != 0}: comparison operators DO coerce {@code Number}/{@code Boolean}/{@code Object}
-     * gracefully, so the operand becomes a real boolean regardless of its runtime type (non-zero /
-     * {@code true} is truthy). The rewrite works on one expression at a time: top-level {@code ;}
-     * and {@code ,} segment first, assignments keep their left side, and ternaries wrap their
-     * condition (MVEL hard-casts it to Boolean too) with the value branches recursing on their
-     * own. Purely numeric expressions are left untouched.
-     */
+    // MVEL's &&, || and ! require Boolean operands and hard-cast them with no coercion, so a number or
+    // an Object-returning function (config(...)) used as a condition throws a ClassCastException, in any
+    // typing mode. Comparison operators DO coerce, so we wrap every logical operand X as (X) != 0 to get
+    // javascript-like truthiness. One expression at a time: top level ; and , segment first, assignments
+    // keep their left side, ternaries wrap their condition (hard-cast too) and recurse into the branches.
+    // Purely numeric expressions are left untouched.
     private static String coerceLogicalOperands(String expr) {
         return coerceExpression(coerceInsideParens(expr));
     }

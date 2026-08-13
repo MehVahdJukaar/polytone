@@ -15,10 +15,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 
-/** Layout bits shared by the remote-control style preview panels (GUI modifiers, creative tabs). */
+// layout bits shared by the remote-control style preview panels (gui modifiers, creative tabs)
 final class PreviewPanels {
 
-    /** Adds a left-aligned, height-hugging row plus the standard gap under it. */
     static void addRow(JComponent box, JComponent comp) {
         comp.setAlignmentX(Component.LEFT_ALIGNMENT);
         comp.setMaximumSize(UiScale.maxHeightHugging(comp));
@@ -34,7 +33,6 @@ final class PreviewPanels {
         return label;
     }
 
-    /** Sticky header: bold title on one row, status underneath. */
     static Box header(String title, JComponent status) {
         Box toolbar = Box.createVerticalBox();
         JLabel label = StyledLabels.of(title, l -> l.setFont(l.getFont().deriveFont(Font.BOLD)));
@@ -45,7 +43,6 @@ final class PreviewPanels {
         return toolbar;
     }
 
-    /** The primary action as a full-width CTA, with a subtle undo right-aligned beneath it. */
     static void addCtaWithUndo(JComponent content, JButton cta, JButton undo) {
         addRow(content, cta);
         Box undoRow = Box.createHorizontalBox();
@@ -56,7 +53,6 @@ final class PreviewPanels {
         content.add(Box.createVerticalStrut(UiScale.med()));
     }
 
-    /** Titled outlined group for the setup helpers, visually secondary to the CTA above them. */
     static JPanel outlinedGroup(String title) {
         JPanel group = GroupPanels.outlined();
         group.setLayout(new BoxLayout(group, BoxLayout.Y_AXIS));

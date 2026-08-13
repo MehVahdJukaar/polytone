@@ -16,14 +16,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-/**
- * Editor-only inspector overlay drawn on top of a live screen while picking is enabled. It answers the
- * two questions that are hardest to author blind: <b>is this screen targeted</b> by a modifier (banner,
- * top-left), and <b>which elements does it actually touch</b> - matched slots and widgets are tinted
- * green, everything else gets a faint outline. Hovering any slot/widget captions it with the data
- * needed to target it (index/message/position/class). It renders on any screen (widgets everywhere,
- * slots on container screens) and never mutates anything - it only reads and draws.
- */
+// Editor-only inspector drawn on top of a live screen while picking is on: whether a modifier
+// targets this screen, and which slots/widgets it touches (matched ones tinted green, the rest
+// faintly outlined). Hovering captions an element with the data needed to target it. Never mutates.
 public final class GuiModifierOverlay {
 
     private static final int SLOT = 16;
@@ -90,8 +85,6 @@ public final class GuiModifierOverlay {
         }
     }
 
-    // --- banner ---------------------------------------------------------------------------------
-
     private static void drawBanner(GuiGraphics graphics, Screen screen, boolean targeted, int modSlots, int modWidgets) {
         GuiModifierPreview.DetectedTarget t = GuiModifierPreview.targetOf(screen);
         String target = t == null ? "?" : t.type().getSerializedName() + " = " + t.target();
@@ -115,8 +108,6 @@ public final class GuiModifierOverlay {
         graphics.drawString(font, head, x + 4, y + 3, targeted ? TARGETED : UNTARGETED, false);
         graphics.drawString(font, detail, x + 4, y + 3 + font.lineHeight + 1, MUTED, false);
     }
-
-    // --- element labels -------------------------------------------------------------------------
 
     private static void drawLabel(GuiGraphics graphics, String text, int anchorX, int anchorY) {
         Font font = Minecraft.getInstance().font;
@@ -142,9 +133,8 @@ public final class GuiModifierOverlay {
                 + w.getWidth() + "x" + w.getHeight();
     }
 
-    // --- shared hit-test used by the click handler ----------------------------------------------
+    // shared hit-test, also used by the click handler
 
-    /** The slot under the cursor as a {@link PickedElement}, or null. Shared with the click mixin. */
     @Nullable
     public static PickedElement pickAt(AbstractContainerScreen<?> screen, double mouseX, double mouseY) {
         int leftPos = ((AbstractContainerScreenAccessor) screen).polytone$getLeftPos();
@@ -161,14 +151,10 @@ public final class GuiModifierOverlay {
         return null;
     }
 
-    // --- the shared screen-render pass (overlay + centered sprites), called by both platforms -----
+    // shared screen-render pass (overlay + centered sprites), called by both platforms
 
-    /**
-     * Full editor render pass for one screen, shared by both platform screen-render hooks (only the
-     * event wiring differs): the inspector overlay in absolute screen space when picking is on, then
-     * the modifier's extra sprites/texts anchored to the screen center. {@code renderExtraSprites}
-     * no-ops when the screen has no modifier, so this is safe to call unconditionally every frame.
-     */
+    // shared by both platform screen-render hooks, only the event wiring differs. renderExtraSprites
+    // no-ops when the screen has no modifier, so this is safe to call every frame
     public static void renderScreenExtras(GuiGraphics graphics, SlotifyScreen ss,
                                           int screenWidth, int screenHeight,
                                           int mouseX, int mouseY, float partialTick) {
@@ -182,8 +168,6 @@ public final class GuiModifierOverlay {
         ss.polytone$renderExtraSprites(graphics, mouseX, mouseY, partialTick);
         pose.popPose();
     }
-
-    // --- helpers --------------------------------------------------------------------------------
 
     private static boolean matchesAny(List<WidgetModifier> mods, AbstractWidget w) {
         for (WidgetModifier m : mods) {

@@ -272,10 +272,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
         } else tickInternal();
     }
 
-    /**
-     * Advance one tick synchronously, bypassing the async-batch enqueue in {@link #tick()}. Used where
-     * the caller drives ticking on its own thread (e.g. the editor preview) regardless of the config.
-     */
+    // bypasses the async batch, for callers that drive ticking on their own thread (editor preview)
     public void tickSync() {
         if (this.removed) return;
         if (this.age >= this.lifetime) {
@@ -285,9 +282,6 @@ public class CustomParticleInstance extends TextureSheetParticle {
         tickInternal();
     }
 
-    /**
-     * Spawn-time ticker pass for a newborn; deferred to the parallel batch when async is on.
-     */
     void initTick() {
         this.type.ticker.tick(this, level);
         this.setAge(0); // reset so the spawn-time pass doesn't age the particle

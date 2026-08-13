@@ -10,43 +10,9 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
 
-/**
- * A single Polytone post-shader entry parsed from {@code polytone/post_shaders/*.json}.
- *
- * <p>Schema (matches 1.21.11):
- * <pre>{@code
- * {
- *   "post_chain": "namespace:effect_name",        // refers to assets/namespace/post_effect/effect_name.json
- *   "activation_condition": "<MVEL expr, >0 enables>",  // optional, defaults to always-on
- *   "expression_uniforms": {                      // optional, name -> MVEL expression (float)
- *       "MyUniform": "<MVEL expr>"                // applied to every pass
- *   },
- *   "use_depth_buffer": false,                    // optional, exposes the level depth as the "InDepth" sampler
- *   "samplers": {                                 // optional, sampler name -> texture resource location
- *       "MySampler": "namespace:textures/effect/noise.png"  // bound as "sampler2D MySampler" on every pass
- *   },
- *   "priority": 0.0                               // 1.21.1-only: controls layering vs other Polytone effects
- * }
- * }</pre>
- *
- * <p><b>Built-in uniforms.</b> Every pass shader may declare any of these and Polytone fills them in
- * each frame (the 1.21.1 equivalent of the 1.21.11 {@code PolyGlobals} UBO block):
- * <ul>
- *     <li>{@code uniform mat4 PolyProjMat} - the level projection matrix</li>
- *     <li>{@code uniform mat4 PolyModelViewMat} - the camera/view (model-view) matrix</li>
- *     <li>{@code uniform float PolySunAngle} - sun angle in radians (0 = noon, like 1.21.11)</li>
- *     <li>{@code uniform float PolyDayTime} - world day time in ticks (0..24000)</li>
- *     <li>{@code uniform float PolyDeltaTime} - frame delta time in ticks (real render delta)</li>
- *     <li>{@code uniform ivec3 PolyPlayerBlockPos} / {@code uniform vec3 PolyPlayerOffset} - lerped player (feet)
- *         position, split for float precision at large coords: {@code exact = vec3(PolyPlayerBlockPos) - PolyPlayerOffset}</li>
- *     <li>{@code uniform sampler2D InDepth} - level depth texture, only bound when {@code use_depth_buffer} is set</li>
- *     <li>{@code uniform sampler2D InShadow} + {@code uniform mat4 PolyShadowMat} - directional shadow depth map
- *         and its light view-projection (camera-relative space), only bound when {@code use_shadow_map} is set.
- *         Transform a reconstructed camera-relative world position by {@code PolyShadowMat}, do the perspective
- *         divide, map to {@code [0,1]}, and compare against {@code InShadow} to test occlusion.</li>
- * </ul>
- * Shaders that don't declare a given uniform/sampler are unaffected ({@code safeGetUniform} no-ops).
- */
+// One post shader entry from polytone/post_shaders/*.json. The field reference and the list of
+// built-in uniforms every pass may declare (PolyProjMat, PolySunAngle, InDepth, InShadow, ...) live
+// in wiki/Shaders.md. Shaders that don't declare one are unaffected, safeGetUniform no-ops.
 public final class PostChainEffect {
 
     public static final String PROJ_MAT = "PolyProjMat";
@@ -120,7 +86,7 @@ public final class PostChainEffect {
         return useShadowMap;
     }
 
-    /** Resource path of the post chain JSON file, e.g. {@code namespace:post_effect/effect_name.json} (1.21.11 location, shared with packs made for it). */
+    // 1.21.11 location, shared with packs made for it
     public ResourceLocation chainResource() {
         return postChain.withPath(p -> "post_effect/" + p + ".json");
     }
@@ -129,11 +95,8 @@ public final class PostChainEffect {
         return turnOnCondition.evaluate() > 0;
     }
 
-    /**
-     * Push all per-frame uniforms for a single pass effect. Called from {@code PostPassMixin}
-     * immediately before {@code EffectInstance.apply()} so sampler/uniform state matches what
-     * {@code PostPass.process} just configured (notably {@code DiffuseSampler}).
-     */
+    // called from PostPassMixin right before EffectInstance.apply(), so sampler/uniform state matches
+    // what PostPass.process just configured (notably DiffuseSampler)
     public void applyUniformsToEffect(EffectInstance effect, PostShadersManager.ActivePostPassFrame frame) {
         // Vanilla blit passes share the chain but don't declare Polytone uniforms; skip them.
         if (effect.getUniform(PROJ_MAT) == null) return;

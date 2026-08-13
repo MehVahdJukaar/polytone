@@ -33,16 +33,10 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 
-/**
- * Draws the biome-modifier diorama offscreen through the game's own block/model path: a stylised sky
- * disk, a grass shore with a small tree and tufts of grass, and a translucent water pool. It isn't the
- * real world renderer - just enough to show the four colours a biome modifier sets, in context.
- *
- * <p>Runs on the render thread inside a nautilus {@code LiveViewport}; matrices/fog/shader-colour are
- * saved and restored by the caller. Geometry is drawn camera-relative (vertices are {@code worldPos -
- * eye}) with the model-view carrying only the orbit rotation, the same scheme {@link ParticleRenderPass}
- * uses, so the orbit camera behaves identically here.
- */
+// Draws the biome modifier diorama offscreen through the game's own block/model path. Not the real
+// world renderer, just enough to show the four colours a biome modifier sets, in context.
+// Geometry is camera relative (vertices are worldPos - eye) with the model-view carrying only the
+// orbit rotation, same scheme as ParticleRenderPass; matrices/fog/colour are restored by the caller.
 final class BiomeSceneRenderPass {
 
     enum Tint { NONE, GRASS, FOLIAGE }

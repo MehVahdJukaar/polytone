@@ -47,21 +47,14 @@ public class PostShaderRenderer {
     private ShaderInstance depthCombineShader = null;
     private boolean depthCombineFailed = false;
 
-    /**
-     * Capture the level projection and camera (model-view) matrices. Called from the
-     * {@code GameRenderer.renderLevel} mixin so the {@code PolyProjMat} / {@code PolyModelViewMat}
-     * built-in uniforms reflect the current frame's view.
-     */
+    // from the GameRenderer.renderLevel mixin, so PolyProjMat/PolyModelViewMat match the current frame
     public void captureLevelMatrices(Matrix4f projection, Matrix4f modelView) {
         this.projMat.set(projection);
         this.modelViewMat.set(modelView);
     }
 
-    /**
-     * Snapshot the main framebuffer's depth while level geometry is still intact. Called (under the
-     * manager's lock, only when some active effect samples depth) from {@code LevelRenderer.renderLevel}
-     * at return - before {@code GameRenderer} clears depth for first-person hand rendering.
-     */
+    // must run while level geometry is still intact, before GameRenderer clears depth for the
+    // first-person hand
     public void captureLevelDepthSnapshot() {
         Minecraft mc = Minecraft.getInstance();
         RenderTarget main = mc.getMainRenderTarget();
@@ -71,18 +64,14 @@ public class PostShaderRenderer {
         depthCapturedThisFrame = true;
     }
 
-    /** Resize the depth snapshot to the new framebuffer dimensions (the chains are resized by the manager). */
     public void resize(int width, int height) {
         if (depthSnapshot != null) {
             depthSnapshot.resize(width, height, Minecraft.ON_OSX);
         }
     }
 
-    /**
-     * Process all active Polytone post-shader chains, in render order. Each chain reads from and writes
-     * back to the main render target, so subsequent chains see the previous chain's output. Called (under
-     * the manager's lock) from the {@code GameRenderer.render} mixin after vanilla's post-effect finishes.
-     */
+    // each chain reads from and writes back to the main render target, so later chains see the
+    // previous chain's output
     public void render(LinkedHashMap<PostChainEffect, PostChain> activeChains, boolean anyUsesDepth, float partialTicks) {
         Minecraft mc = Minecraft.getInstance();
         // Keep persistent post targets allocated/sized to the frame so target_samplers resolve.

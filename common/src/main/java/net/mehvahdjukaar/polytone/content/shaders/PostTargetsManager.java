@@ -17,16 +17,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Persistent render targets declared under {@code polytone/post_targets/<name>.json}
- * ({@code width}/{@code height} optional, defaulting to frame size, plus {@code use_depth}).
- * They keep their content across frames; polytone post effects can sample them by id via the
- * {@code target_samplers} field on a {@link PostChainEffect}.
- *
- * <p>Read-only on 1.21.1: the old {@code net.minecraft.client.renderer.PostChain} has no framegraph
- * to splice a write side into, so unlike the 1.21.11 original a chain can sample these targets but
- * cannot write into one.</p>
- */
+// Persistent render targets from polytone/post_targets/<name>.json, kept across frames and sampled
+// by id through a post effect's target_samplers. Read only on 1.21.1: the old PostChain has no
+// framegraph to splice a write side into, so unlike on 1.21.11 a chain can't write into one.
 public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.TargetSpec> {
 
     record TargetSpec(Optional<Integer> width, Optional<Integer> height, boolean useDepth) {
@@ -78,7 +71,7 @@ public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.T
         return specs.isEmpty();
     }
 
-    /** Creates or resizes the targets; full-frame ones follow the window size. Call once per frame. */
+    // call once per frame; full-frame targets follow the window size
     public void ensureAllocated(int frameWidth, int frameHeight) {
         Map<ResourceLocation, TargetSpec> specs = this.specs;
         if (dirty) {

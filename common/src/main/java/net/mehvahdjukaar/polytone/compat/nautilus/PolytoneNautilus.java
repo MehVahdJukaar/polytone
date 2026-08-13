@@ -108,7 +108,7 @@ public final class PolytoneNautilus {
     }
 
     private static void registerWidgetBindings() {
-        // ---- MVEL expressions (the current system): one binding per PolyExpType leaf.
+        // MVEL expressions (the current system): one binding per PolyExpType leaf.
         SchemaCodecs.registerCompanion(ColormapExp.TYPE.codec(),
                 new Schema.Custom<>(mvelEditor(ColormapExp.TYPE)));
         SchemaCodecs.registerCompanion(ColormapModExp.TYPE.codec(),
@@ -126,7 +126,7 @@ public final class PolytoneNautilus {
         SchemaCodecs.registerCompanion(PackMetadataExp.TYPE.codec(),
                 new Schema.Custom<>(mvelEditor(PackMetadataExp.TYPE)));
 
-        // ---- Legacy exp4j expressions: same editor, exp4j variable chips.
+        // legacy exp4j expressions: same editor, exp4j variable chips
         SchemaCodecs.registerCompanion(ColormapExpressionProvider.CODEC,
                 new Schema.Custom<>(exp4jEditor(ColormapExpressionProvider.CODEC, "state_prop",
                         "BIOME_VALUE", "DAMAGE")));

@@ -13,18 +13,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-/**
- * Client-side bridge for the pack editor's live GUI-modifier preview.
- *
- * <p>Holds one in-memory override {@link GuiModifier} that is applied to a single open screen with no
- * resource reload, so edits in the editor show on the real game screen instantly. The override always
- * wins for the screen it targets and is applied <b>unconditionally</b> - its {@code condition} is
- * ignored while previewing, so the author always sees the result they are editing.
- *
- * <p>Everything here touches live screen/menu state and must run on the render thread; {@link #pushPreview}
- * marshals itself there. Matching is by object identity against the currently previewed screen/menu, so
- * normal gameplay (no override set) is never affected.
- */
+// Client side bridge for the editor's live gui modifier preview: one in-memory GuiModifier applied
+// to a single open screen with no resource reload. The override always wins for the screen it
+// targets and its own condition is ignored while previewing, so the author sees what they edit.
+// Everything here touches live screen/menu state and runs on the render thread (pushPreview
+// marshals itself there); matching is by object identity, so normal gameplay is never affected.
 public final class GuiModifierPreview {
 
     @Nullable
@@ -34,7 +27,7 @@ public final class GuiModifierPreview {
     @Nullable
     private static AbstractContainerMenu menu;
 
-    // ---- in-game picker overlay state (driven by the editor's "toggle picking" button) -------------
+    // in-game picker overlay state, driven by the editor's toggle picking button
 
     private static boolean pickingEnabled = false;
     @Nullable
@@ -48,22 +41,17 @@ public final class GuiModifierPreview {
         pickingEnabled = enabled;
     }
 
-    /** The editor registers a listener here; the in-game overlay fires it when an element is clicked. */
     public static void setPickListener(@Nullable Consumer<PickedElement> listener) {
         pickListener = listener;
     }
 
-    /** Called by the overlay (render/input thread) when the user clicks an element while picking. */
     public static void onPick(PickedElement picked) {
         Consumer<PickedElement> l = pickListener;
         if (l != null) l.accept(picked);
     }
 
-    /**
-     * One picked slot/element, in the coordinate space the modifier JSON uses (relative to screen
-     * center, matching {@code target_x}/{@code target_y} and sprite/text positions). {@code slotIndex}
-     * is -1 for non-slot picks.
-     */
+    // coordinates are relative to screen center, matching target_x/target_y and sprite/text positions;
+    // slotIndex is -1 for non-slot picks
     public record PickedElement(int slotIndex, int x, int y, int width, int height, String className) {
     }
 
@@ -80,21 +68,12 @@ public final class GuiModifierPreview {
         return override;
     }
 
-    /**
-     * The target descriptor of the currently open screen, for the editor's "select screen" button.
-     * Prefers a menu id, falls back to the menu class (id-less menus like the survival inventory),
-     * then the screen class for non-container screens.
-     */
     @Nullable
     public static DetectedTarget detectCurrentScreen() {
         return targetOf(Minecraft.getInstance().screen);
     }
 
-    /**
-     * The target descriptor a modifier would use to match this screen: menu id, else menu class for
-     * id-less menus, else the screen class. Null for no screen. Shared by the editor's detect button
-     * and the in-game overlay's targeting readout.
-     */
+    // menu id, else menu class for id-less menus (the survival inventory), else the screen class
     @Nullable
     public static DetectedTarget targetOf(@Nullable Screen s) {
         if (s == null) return null;
@@ -114,11 +93,8 @@ public final class GuiModifierPreview {
         return new DetectedTarget(GuiModifier.Type.SCREEN_CLASS, s.getClass().getName());
     }
 
-    /**
-     * Push an in-memory modifier onto the currently open screen (marshaled to the render thread).
-     * Re-bakes geometry/widgets/sprites and re-applies slot offsets on the live menu. Pass {@code null}
-     * to clear the preview and restore the screen to its pack-defined (or vanilla) state.
-     */
+    // re-bakes geometry/widgets/sprites and re-applies slot offsets on the live menu; null clears the
+    // preview and restores the screen to its pack-defined state
     public static void pushPreview(@Nullable GuiModifier mod) {
         Minecraft mc = Minecraft.getInstance();
         mc.execute(() -> applyOnMainThread(mc, mod));

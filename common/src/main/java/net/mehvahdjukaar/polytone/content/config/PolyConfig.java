@@ -17,15 +17,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-/**
- * Base for a single pack-declared config entry (bool / number / string). Carries the shared JSON
- * fields every entry type accepts: value labelling, preset stops, section grouping, ordering,
- * performance hint, wide layout and tooltip images. Subclasses add their own type-specific fields.
- *
- * <p>1.21.1 port of the 1.21.11 model. Differences: {@code Identifier}→{@code ResourceLocation};
- * {@link #validated} wraps validation with {@code comapFlatMap} (1.21.1 codecui's {@link SchemaCodec}
- * has no {@code validate}).</p>
- */
+// Base for a pack declared config entry (bool/number/string): the json fields every type accepts.
+// validated wraps validation with comapFlatMap since 1.21.1 codecui's SchemaCodec has no validate.
 public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
 
     private final Optional<String> valueTranslationKey;
@@ -122,10 +115,7 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
         return DataResult.success(o);
     }
 
-    /**
-     * The 10 shared fields, grouped in the order every subclass constructor lists them first.
-     * FieldRefs (not plain codec fields) so the codec editor renders configs structurally.
-     */
+    // FieldRefs rather than plain codec fields, so the codec editor renders configs structurally
     static <T, P extends PolyConfig<T>> SchemaRecord.Group10<P, Optional<String>, Map<String, T>, Map<String, T>,
             Integer, Optional<String>, Optional<Integer>, Optional<PerformanceImpact>, Boolean,
             Map<String, TooltipImage>, T> commonFields(SchemaRecord.Instance<P> i, Codec<T> typeCodec) {

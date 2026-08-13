@@ -22,10 +22,10 @@ dependencies {
     implementation("org.ow2.asm:asm:9.5")
     implementation("org.ow2.asm:asm-commons:9.5")
 
-    // Declarative codec->schema engine — bundled (JiJ) into polytone
+    // Declarative codec->schema engine, bundled (JiJ) into polytone
     implementation("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
     jarJar("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
-    // Nautilus Studio pack editor UI — separate mod, NOT bundled
+    // Nautilus Studio pack editor UI: separate mod, NOT bundled
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     implementation("net.objecthunter:exp4j:${exp4j_version}")

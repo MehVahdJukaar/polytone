@@ -15,10 +15,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Decides when (and which) chat bubble to show on the Polytone config button, and remembers that
- * decision across sessions in a small json file next to the config options.
- */
+// which chat bubble to show on the config button; remembered across sessions in a small json
 public class ConfigBubbleManager {
 
     private static final int SUPPORT_THRESHOLD = 3;

@@ -8,11 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Applies Polytone post-shader uniforms immediately before {@link EffectInstance#apply()} so they
- * are live on the GPU together with the {@code DiffuseSampler} binding that {@code PostPass.process}
- * sets in the same frame.
- */
+// uniforms must go live together with the DiffuseSampler binding PostPass.process sets that frame
 @Mixin(PostPass.class)
 public abstract class PostPassMixin {
 

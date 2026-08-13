@@ -29,17 +29,10 @@ import org.joml.Vector3f;
 
 import java.util.List;
 
-/**
- * Draws one ticked {@link CustomParticleInstance} offscreen through the game's own particle path, so
- * blend modes, billboarding and animated sprites match the runtime exactly. Runs on the render thread
- * inside a nautilus OffscreenContent; matrices/fog/shader-colour are
- * saved and restored by the caller.
- *
- * <p>Particles render camera-relative (vertices are {@code worldPos - cameraEye}), so the model-view
- * is the orbit's rotation alone while the throwaway {@link Camera} carries the eye position that
- * bakes in the orbit distance. Model particles (render type {@code CUSTOM}, whose buffer is null) have
- * no live preview yet.
- */
+// Draws one ticked particle offscreen through the game's own particle path, so blend modes,
+// billboarding and animated sprites match the runtime. Particles render camera relative (vertices
+// are worldPos - cameraEye), so the model-view is the orbit rotation alone while the throwaway
+// Camera carries the eye position. Model particles (render type CUSTOM, null buffer) have no preview.
 final class ParticleRenderPass {
 
     static void render(CustomParticleInstance particle, List<Particle> children,

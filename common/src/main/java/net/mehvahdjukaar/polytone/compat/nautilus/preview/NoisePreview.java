@@ -22,13 +22,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 
-/**
- * Live preview for Polytone noises. Renders the decoded {@link NoiseConfig}'s Perlin/simplex field
- * as a grayscale image, sampled through the exact call the runtime expression functions use
- * ({@code getValue(x, y, false)}), so the picture matches what {@code noise_*(x, y)} returns in game.
- * The "Area shown" slider controls how many blocks the image spans - larger zooms out, revealing
- * more of the noise's structure.
- */
+// Samples through the exact call the runtime expression functions use (getValue(x, y, false)), so the
+// grayscale image matches what noise_*(x, y) returns in game.
 public final class NoisePreview implements TabPreview {
 
     private static final int IMAGE_SIZE = 160;

@@ -20,10 +20,10 @@ dependencies {
     include("org.mvel:mvel2:${mvel_version}")
     implementation("org.mvel:mvel2:${mvel_version}")
 
-    // Declarative codec->schema engine — bundled (JiJ) into polytone
+    // Declarative codec->schema engine, bundled (JiJ) into polytone
     modImplementation("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
     include("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
-    // Nautilus Studio pack editor UI — separate mod, NOT bundled
+    // Nautilus Studio pack editor UI: separate mod, NOT bundled
 
     // Mirror of common deps (the new setup needs every modCompileOnly/modImplementation in common to also live here)
     modCompileOnly("curse.maven:irisshaders-455508:5726475")
@@ -40,6 +40,6 @@ dependencies {
     // Runtime test deps from Modrinth (per-loader version IDs; version number in comment)
     modRuntimeOnly("maven.modrinth:moonlight:M2v3yoSl")       // moonlight 1.21.1-3.1.0 (fabric)
     modRuntimeOnly("maven.modrinth:supplementaries:5pbVz5qU") // supplementaries 1.21.1-3.8.0 (fabric)
-    // Mod Menu — fabric only
+    // Mod Menu, fabric only
     modRuntimeOnly("com.terraformersmc:modmenu:${modmenu_version}")
 }
