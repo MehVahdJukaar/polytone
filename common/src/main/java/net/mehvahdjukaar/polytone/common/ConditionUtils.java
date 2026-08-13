@@ -39,7 +39,6 @@ public class ConditionUtils {
     private static final Codec<Boolean> MC_VERSION_RANGE_CODEC = VersionRange.CODEC.xmap(
             v -> v.matches(SharedConstants.getCurrentVersion().id()), b -> VersionRange.any());
 
-
     private static boolean boolAnd(List<Boolean> list) {
         for (Boolean b : list) {
             if (!b) return false;
@@ -58,7 +57,6 @@ public class ConditionUtils {
     public static final Codec<Boolean> CODEC_EXPRESSION_SINGLE_JSON = PackMetadataExp.CODEC.xmap(
             IPackMetadataExp::evaluate,
             triState -> PackMetadataExp.TRUE);
-
 
     public static final Codec<Boolean> CODEC_SINGLE_JSON = SchemaCodecs.alternatives(
             "conditions", CODEC_SINGLE_JSON_FULL, //old
@@ -115,9 +113,6 @@ public class ConditionUtils {
         return listWithoutEmpty(elementCodec.listOf());
     }
 
-    /**
-     * Creates a codec for a list of optional elements, that removes empty values when decoding.
-     */
     public static <A> Codec<List<A>> listWithoutEmpty(Codec<List<Optional<A>>> codec) {
         return codec.xmap(
                 list -> list.stream().filter(Optional::isPresent).map(Optional::get).toList(),

@@ -40,11 +40,9 @@ public class ExpTicker {
         }
     }
 
-
     // --- per-tick player stats cache ---
     // Like the other values here: refreshed once per tick and read as plain fields. Also
-    // re-refreshed by PolytoneAsyncParticles right before it dispatches its parallel batch —
-    // onTick runs at tick START (pre entity movement) and a stale position would make
+    // re-refreshed by PolytoneAsyncParticles right before it dispatches its parallel batch - // onTick runs at tick START (pre entity movement) and a stale position would make
     // player-following particles trail a fast player by a whole tick. Workers only ever read
     // this cache, never the live entity; the volatile reference publishes it to them.
     // Between ticks the player doesn't move, so cached reads match live ones.
@@ -56,7 +54,7 @@ public class ExpTicker {
                                  boolean crouching) {
     }
 
-    /** Re-caches the player's stats (main thread). No player -> null, proxies fall back to live reads. */
+    // Re-caches the player's stats (main thread). No player -> null, proxies fall back to live reads.
     public static void refreshPlayerSnapshot() {
         Player p = Minecraft.getInstance().player;
         if (p == null) {

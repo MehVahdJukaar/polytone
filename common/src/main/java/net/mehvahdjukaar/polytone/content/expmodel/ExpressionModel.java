@@ -19,42 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Loader-agnostic core for the {@code polytone:expression} blockstate model: the unbaked data, its
- * codec, and the per-block-position selection logic. Each loader wraps a {@link Selector} in its own
- * baked model type (NeoForge {@code DynamicBlockStateModel}, Fabric {@code FabricBlockStateModel}).
- * <p>
- * The first {@link Case} whose {@code when} expression is truthy (non-zero) wins; if none match the
- * {@code fallback} is used. Each {@code model} is a vanilla {@link BlockStateModel.Unbaked}, so it may
- * itself be a single variant or a weighted random list - context routing on the outside, vanilla
- * per-position random variety on the inside.
- * <p>
- * An optional {@code selector} expression is evaluated once per position and bound to {@code v}, so
- * cases that all key off the same quantity can be written compactly.
- * <pre>{@code
- * {
- *   "variants": {
- *     "": {
- *       "type": "polytone:expression",          // NeoForge; on Fabric use "fabric:type"
- *       "selector": "TEMPERATURE",              // optional; its value is bound to `v` in each case
- *       "cases": [
- *         { "when": "v > 0.8", "model": { "model": "minecraft:block/red_sand" } },
- *         { "when": "v > 0.3", "model": [ {"model":"a"}, {"model":"b"} ] }
- *       ],
- *       "fallback": { "model": "minecraft:block/sand" }
- *     }
- *   }
- * }
- * }</pre>
- * Without a {@code selector}, each {@code when} is a standalone expression (and {@code v} is 0).
- */
+// Loader-agnostic core of the polytone:expression blockstate model. Each loader wraps a Selector in its own
+// baked model type (neoforge DynamicBlockStateModel, fabric FabricBlockStateModel).
+// The first case whose when expression is truthy wins, else the fallback. Each model is a vanilla
+// BlockStateModel.Unbaked, so it can itself be a weighted list: context routing outside, vanilla per-position
+// variety inside. An optional selector expression is evaluated once per position and bound to v.
 public final class ExpressionModel {
 
     public static final Identifier ID = Polytone.res("expression");
 
     private ExpressionModel() {}
 
-    /** One unbaked routing case: render {@code model} when {@code when} evaluates non-zero. */
+    // One unbaked routing case: render model when when evaluates non-zero
     public record Case(BlockExp when, BlockStateModel.Unbaked model) {
         public static final SchemaCodec<Case> CODEC = SchemaRecord.create(Case.class, i -> i.group(
                 i.field("when", BlockExp.TYPE.codec(), Case::when),
@@ -76,7 +52,7 @@ public final class ExpressionModel {
         fallback.resolveDependencies(resolver);
     }
 
-    /** Baked selection logic shared by every loader's wrapper model. */
+    // Baked selection logic shared by every loader's wrapper model
     public static final class Selector {
         private final List<BakedCase> cases;
         private final BlockExp selector; // nullable
@@ -88,7 +64,7 @@ public final class ExpressionModel {
             this.fallback = fallback;
         }
 
-        /** @return index of the first matching case, or -1 to mean the fallback. */
+        // index of the first matching case, or -1 to mean the fallback
         public int selectIndex(BlockPos pos, BlockState state) {
             // The render-time level is a BlockAndTintGetter, but the expression engine wants a
             // ClientLevel for biome/light lookups - use the client level, same as colormaps do.

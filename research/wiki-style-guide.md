@@ -34,7 +34,7 @@ prose, it probably wants a table, a list, a collapsible, or a split.
 
 ## Hard rules
 
-- **No em dashes or en dashes.** Use commas, colons, parentheses, or split the sentence. (`—` `–`
+- **No em dashes or en dashes.** Use commas, colons, parentheses, or split the sentence. (` - ` `–`
   both banned.)
 - **Verify every claim against the code** before writing it. The old hand-written wiki has real
   errors (wrong types, stale fields). Trust `common/src/.../content/<x>/` over the old page.
@@ -144,14 +144,14 @@ flagged this):
 
 Never invent per-page tokens like `[block name]`, `[fluidname]`, `[tab namespace]`, `yourmodid`.
 
-**Targeting block** (modifier pages) — replaces the hand-copied paragraph. Keep it short, link out:
+**Targeting block** (modifier pages) - replaces the hand-copied paragraph. Keep it short, link out:
 > By default the file name is the target: `<subfolder>/redstone_wire.json` targets
 > `minecraft:redstone_wire`. To target something else (a list, a `#tag`, or a regex), add a
 > `targets` field. See **[Targeting](Shared-Concepts#targeting)** for the full rules.
 
 **Example intro**: `Here is an example:` (one phrasing, drop the variants).
 
-## Version notes — 3 tiers
+## Version notes - 3 tiers
 
 1. **Whole feature gated** to a version → a `[!NOTE]` box right under the H1:
    `> [!NOTE]\n> This feature is 1.21.11+.` (Also fine as it applies: "removed in 1.21.5".)
@@ -190,7 +190,7 @@ Creative-Tab, Variant-Textures, Entity):
 ## Getting Started
 <file path (name doesn't matter, say so) + smallest example>
 ## JSON Format
-<field table — the target field is just one of the fields, document it here>
+<field table - the target field is just one of the fields, document it here>
 ## <subsections>
 ```
 (No "## Targeting" section; targeting is a field. Still link Shared-Concepts for conditions/priority
@@ -210,5 +210,4 @@ Shaders, Environment-Attributes, Expressions, Models, Extra-Features):
 ## Open decisions
 
 - MOCKUP- prefix is the review-staging convention; drop it when a page is approved.
-- Placeholder token final form (`[namespace]`/`[path]` vs `[target-namespace]`/`[target-path]`) —
-  going with `[namespace]`/`[path]` unless it reads ambiguously on a given page.
+- Placeholder token final form (`[namespace]`/`[path]` vs `[target-namespace]`/`[target-path]`) - going with `[namespace]`/`[path]` unless it reads ambiguously on a given page.

@@ -10,13 +10,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
-/**
- * One value out of a Bedrock particle file. Bedrock lets any numeric field be written as either a
- * literal or a Molang expression string, so both land here and the source is kept verbatim until a
- * {@link MolangTranslator} gets to it. Numeric literals are folded into {@link #constant} so the
- * converter can take the cheap path (fold at conversion time) whenever a field turns out to be
- * constant after all.
- */
+// One value out of a Bedrock particle file. Bedrock lets any numeric field be written as either a literal or a
+// Molang expression string, so both land here and the source is kept verbatim until a MolangTranslator gets to
+// it.
 public record MolangExpr(String source, @Nullable Double constant) {
 
     public static final MolangExpr ZERO = of(0);

@@ -18,13 +18,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Editor-only inspector drawn over the creative screen while item picking is enabled. It answers the
- * question that is hardest to author blind: <b>what does my predicate actually hit</b> - every item the
- * edited modifier's removals match is washed red, items it adds are green, and items already picked but
- * not yet written to the form are amber. Clicking an item reports it to the editor instead of grabbing
- * it. Read-only: it never touches the tab or the menu.
- */
+// Editor-only inspector over the creative screen while picking: removals washed red, additions green,
+// already picked amber. Clicking reports the item to the editor instead of grabbing it.
 public final class CreativeTabOverlay {
 
     private static final int SLOT = 16;
@@ -82,7 +77,6 @@ public final class CreativeTabOverlay {
         if (hovering) box(graphics, hoverX, hoverY, 0, HOVER_OUTLINE);
     }
 
-    /** The item under the cursor, or null. Shared with the click mixin. */
     @Nullable
     public static ItemStack pickAt(AbstractContainerScreen<?> screen, double mouseX, double mouseY) {
         int leftPos = ((AbstractContainerScreenAccessor) screen).polytone$getLeftPos();
@@ -102,8 +96,6 @@ public final class CreativeTabOverlay {
     private static boolean isTabSlot(Slot slot) {
         return !(slot.container instanceof Inventory);
     }
-
-    // --- what the modifier does to an item ------------------------------------------------------
 
     // An addition's item list resolved once per frame - a tag-backed one would otherwise be re-resolved
     // for every slot. `inverse` flips the meaning to "everything but these", like the reload path.
@@ -128,8 +120,6 @@ public final class CreativeTabOverlay {
         }
         return false;
     }
-
-    // --- drawing --------------------------------------------------------------------------------
 
     private static void drawBanner(GuiGraphicsExtractor graphics, @Nullable Identifier tabId, boolean targeted) {
         String head = (targeted ? "● Targeted" : "○ Not targeted") + "   ·   " + (tabId == null ? "?" : tabId);

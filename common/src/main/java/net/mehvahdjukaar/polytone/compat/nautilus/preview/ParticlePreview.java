@@ -61,22 +61,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Live preview for Polytone custom particles. It spawns the real {@link CustomParticleInstance} from
- * the edited type into a throwaway sandbox {@link ParticleEngine} and ticks it on the render thread,
- * then draws it through the game's own particle collect path ({@link ParticleEngine#extract}) into
- * the Nautilus {@link LiveViewport} - so what you see is the runtime particle, not a re-implementation.
- *
- * <p>Because Polytone's particle system is async and its emitters spawn into the live world, the
- * preview ticks via {@link CustomParticleInstance#tickSync()} (bypassing the async batch the sandbox
- * can't drive) and runs inside {@link ParticlePreviewState} (which makes creation synchronous and
- * routes emitter children into the sandbox instead of the world). All of that is gated to the render
- * thread, so normal gameplay is unaffected.
- *
- * <p>Only the world-context {@code global.*} sliders from {@link ExpressionPreview} are simulated -
- * the particle's own {@code p.*} state is real. Sprites are borrowed from the pack's already-baked
- * particle of the same id (a not-yet-registered particle can't be drawn until the pack is reloaded).
- */
+// Live preview for Polytone custom particles
 public final class ParticlePreview extends ExpressionPreview {
 
     private final @Nullable Identifier contentId;
@@ -229,7 +214,6 @@ public final class ParticlePreview extends ExpressionPreview {
         return live instanceof CustomParticleType ct ? ct.getSpriteSet() : null;
     }
 
-    // Pushes the latest frame's particle state into the HUD labels (called on the EDT after a frame).
     private void updateReadout() {
         ParticleScene.Snapshot s = renderer.snapshot;
         if (s == null) {
@@ -569,11 +553,9 @@ public final class ParticlePreview extends ExpressionPreview {
         }
     }
 
-    /**
-     * A {@link Camera} the preview can aim by hand: particles billboard + position relative to the
-     * camera passed to {@code extract}, and vanilla's setters are {@code protected}, so a subclass
-     * exposes them (no access widener, matching the biome scene pass's no-AW approach).
-     */
+    // A Camera the preview can aim by hand: particles billboard + position relative to the camera passed to
+    // extract, and vanilla's setters are protected, so a subclass exposes them (no access widener, matching
+    // the biome scene pass's no-AW approach).
     private static final class PreviewCamera extends Camera {
         // Orient straight from the orbit's yaw/pitch instead of round-tripping through the look vector.
         // SceneCamera.view()'s rotation is Rx(pitch)Ry(yaw); the render pass sets the model-view to the

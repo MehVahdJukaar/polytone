@@ -15,19 +15,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Decides when (and which) chat bubble to show on the Polytone config button, and remembers that
- * decision across sessions in a small json file next to the config options.
- * <p>
- * Two nags, in priority order:
- * <ol>
- *     <li><b>Support</b> — once the config page has been opened {@value #SUPPORT_THRESHOLD}+ times,
- *     a salmon-hearted "consider supporting" message shows on both the config button and the heart
- *     button inside the config screen.</li>
- *     <li><b>Configure me</b> — until the player first clicks the config button, and only while
- *     some pack actually contributed configs, a "configure me!" nudge shows on the config button.</li>
- * </ol>
- */
+// Decides when (and which) chat bubble to show on the Polytone config button, and remembers that decision
+// across sessions in a small json file next to the config options.
 public class ConfigBubbleManager {
 
     private static final int SUPPORT_THRESHOLD = 5;
@@ -52,8 +41,6 @@ public class ConfigBubbleManager {
         this.stateFile = PlatStuff.getGamePath().resolve("polytone_popup.json").toFile();
         load();
     }
-
-    // ----- persisted state -----
 
     private void load() {
         if (!stateFile.exists()) return;
@@ -84,9 +71,7 @@ public class ConfigBubbleManager {
         }
     }
 
-    // ----- events -----
-
-    /** The player clicked the config button: silence the "configure me" nag forever. */
+    // The player clicked the config button: silence the "configure me" nag forever
     public void onConfigButtonClicked() {
         if (!configClicked) {
             configClicked = true;
@@ -94,10 +79,8 @@ public class ConfigBubbleManager {
         }
     }
 
-    /**
-     * The config page was opened (any entry point). Only counts towards the support nag when a pack
-     * actually contributed configs — opening just our builtin options doesn't make a packs user.
-     */
+    // The config page was opened (any entry point). Only counts towards the support nag when a pack actually
+    // contributed configs - opening just our builtin options doesn't make a packs user.
     public void onConfigOpened(boolean hasPackConfigs) {
         if (hasPackConfigs) {
             openCount++;
@@ -105,7 +88,7 @@ public class ConfigBubbleManager {
         }
     }
 
-    /** The player tried the pack editor: silence the "try the editor" nudge forever. */
+    // The player tried the pack editor: silence the "try the editor" nudge forever
     public void onEditorButtonClicked() {
         if (!editorClicked) {
             editorClicked = true;
@@ -113,7 +96,7 @@ public class ConfigBubbleManager {
         }
     }
 
-    /** The support page was opened: retire the support nag, but only if it was actually shown first. */
+    // The support page was opened: retire the support nag, but only if it was actually shown first.
     public void onSupportPageOpened() {
         if (supportShown && !supportDismissed) {
             supportDismissed = true;
@@ -121,9 +104,7 @@ public class ConfigBubbleManager {
         }
     }
 
-    // ----- appearance decisions -----
-
-    /** Message for the bubble on the pack-screen config button, or null to show nothing. */
+    // Message for the bubble on the pack-screen config button, or null to show nothing
     @Nullable
     public Component getConfigButtonMessage(boolean hasPackConfigs) {
         if (shouldShowSupport()) return supportMessage();
@@ -133,13 +114,13 @@ public class ConfigBubbleManager {
         return null;
     }
 
-    /** Message for the bubble on the heart button inside the config screen, or null. */
+    // Message for the bubble on the heart button inside the config screen, or null
     @Nullable
     public Component getHeartButtonMessage() {
         return shouldShowSupport() ? supportMessage() : null;
     }
 
-    /** Message for the bubble on the pack-editor button, or null. */
+    // Message for the bubble on the pack-editor button, or null
     @Nullable
     public Component getEditorButtonMessage() {
         // Nudge the editor until the user tries it. Support bubble wins to avoid two bubbles at once.

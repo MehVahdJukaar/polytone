@@ -18,10 +18,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Shared buffer plumbing for expression-driven uniforms. Each entry becomes a single-float
- * UBO block, named after the map key, and gets bound to the RenderPass under that name.
- */
+// Shared buffer plumbing for expression-driven uniforms. Each entry becomes a single-float UBO block, named
+// after the map key, and gets bound to the RenderPass under that name.
 public final class ExpressionUniformBuffers {
 
     public static final Codec<ExpressionUniformBuffers> CODEC =
@@ -81,16 +79,10 @@ public final class ExpressionUniformBuffers {
         }
     }
 
-    /**
-     * Binds our UBO blocks directly to an arbitrary GL program by raw {@code glBindBufferBase},
-     * for programs not driven through Mojang's RenderPass (e.g. Sodium's chunk shader). Only
-     * blocks the program actually declares are bound (gated by {@code glGetUniformBlockIndex}),
-     * so passing a program without our blocks is a no-op.
-     *
-     * @param program          the GL program name (must be the currently bound program)
-     * @param nextBindingPoint the next free UBO binding point to use
-     * @return the next free binding point after the ones consumed here
-     */
+    // Binds our UBO blocks directly to an arbitrary GL program by raw glBindBufferBase, for programs not
+    // driven through Mojang's RenderPass (e.g. Sodium's chunk shader). Only blocks the program actually
+    // declares are bound (gated by glGetUniformBlockIndex), so passing a program without our blocks is a no-
+    // op.
     public int bindBlocksToProgram(int program, int nextBindingPoint) {
         if (buffers == null) return nextBindingPoint;
         for (var e : buffers.entrySet()) {

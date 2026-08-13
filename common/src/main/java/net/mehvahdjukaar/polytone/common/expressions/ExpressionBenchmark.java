@@ -36,7 +36,6 @@ public class ExpressionBenchmark {
         pc.addInput("y", int.class);
         pc.addInput("myObj", MyObj.class);
 
-        // ---- Build expressions ----
         Serializable[] pureExpr = new Serializable[FIELD_COUNT];
         StringBuilder combinedSrc = new StringBuilder();
 
@@ -65,7 +64,6 @@ public class ExpressionBenchmark {
 
         Serializable combined = MVEL.compileExpression(combinedSrc.toString(), pc);
 
-        // ---- Warmup ----
         for (int i = 0; i < WARMUP; i++) {
             for (int j = 0; j < FIELD_COUNT; j++) {
                 int v = (Integer) MVEL.executeExpression(pureExpr[j], ctx);
@@ -74,7 +72,6 @@ public class ExpressionBenchmark {
             MVEL.executeExpression(combined, ctx);
         }
 
-        // ---- Benchmark: pure expressions + Java setters ----
         long start = System.nanoTime();
         for (int i = 0; i < RUNS; i++) {
             for (int j = 0; j < FIELD_COUNT; j++) {
@@ -84,7 +81,6 @@ public class ExpressionBenchmark {
         }
         long pureTime = System.nanoTime() - start;
 
-        // ---- Benchmark: combined expression ----
         start = System.nanoTime();
         for (int i = 0; i < RUNS; i++) {
             MVEL.executeExpression(combined, ctx);
@@ -121,7 +117,6 @@ public class ExpressionBenchmark {
         String expr2 = "sin(x) * cos(y) + log(z) - sqrt(w)";
         int iterations = 1_000_000;
 
-        // --- Variables for MVEL ---
         Map<String, Object> vars = new HashMap<>();
         vars.put("a", 2.0);
         vars.put("b", 3.0);
@@ -134,14 +129,12 @@ public class ExpressionBenchmark {
         vars.put("z", Math.E);
         vars.put("w", 16.0);
 
-        // --- Register Math functions correctly ---
         vars.put("sin", MVEL.getStaticMethod(Math.class, "sin", new Class[]{double.class}));
         vars.put("cos", MVEL.getStaticMethod(Math.class, "cos", new Class[]{double.class}));
         vars.put("log", MVEL.getStaticMethod(Math.class, "log", new Class[]{double.class}));
         vars.put("sqrt", MVEL.getStaticMethod(Math.class, "sqrt", new Class[]{double.class}));
         vars.put("pow", MVEL.getStaticMethod(Math.class, "pow", new Class[]{double.class, double.class}));
 
-        // --- Precompile MVEL expressions ---
         Serializable compiledExpr1 = MVEL.compileExpression(expr1.replace("^", "pow")); // MVEL uses pow for exponentiation
         Serializable compiledExpr2 = MVEL.compileExpression(expr2);
 
@@ -153,7 +146,6 @@ public class ExpressionBenchmark {
         long mvelEnd = System.nanoTime();
         System.out.println("MVEL (precompiled) total time: " + ((mvelEnd - mvelStart) / 1_000_000) + " ms");
 
-        // --- exp4j functions ---
         Function sinFunc = new Function("sin", 1) {
             @Override
             public double apply(double... args) { return Math.sin(args[0]); }
@@ -175,7 +167,6 @@ public class ExpressionBenchmark {
             public double apply(double... args) { return Math.pow(args[0], args[1]); }
         };
 
-        // --- Build exp4j expressions ---
         Expression e1 = new ExpressionBuilder(expr1.replace("^", "pow"))
                 .variables("a", "b", "c", "d", "e", "f")
                 .function(powFunc)

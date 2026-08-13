@@ -59,7 +59,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
                 Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def, 0, 1, 0.01f), Polytone.res(id));
     }
 
-
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
     private final ThreadLocal<MapRegistry<OptionHolder<?>>> activeLoadConfigs = new ThreadLocal<>(); // from active packs
     private final File optionsFile;
@@ -107,7 +106,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         return needsPackReload.getAndSet(false);
     }
 
-    /** True if any loaded config was contributed by a pack (i.e. not one of Polytone's own builtins). */
+    // True if any loaded config was contributed by a pack (i.e. not one of Polytone's own builtins).
     public boolean hasPackConfigs() {
         for (var option : configs.getValues()) {
             if (!option.fileId.getNamespace().equals(Polytone.MOD_ID)) return true;
@@ -208,7 +207,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         return Objects.requireNonNullElse(activeLoadConfigs.get(), configs);
     }
 
-
     public Object getValue(Identifier configKey) {
         var reg = getActiveRegistry();
         OptionHolder<?> value = reg.getValue(configKey);
@@ -273,10 +271,8 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         Polytone.LOGGER.info("Loaded {} Polytone config entries", configs.size());
     }
 
-    /**
-     * Synthetic entries registered only in dev to exercise namespace grouping, sections, presets,
-     * wide rows, and performance-impact tooltips on the config screen.
-     */
+    // Synthetic entries registered only in dev to exercise namespace grouping, sections, presets, wide rows,
+    // and performance-impact tooltips on the config screen.
     private void registerDevTestConfigs() {
         if (!Polytone.isDevEnv) return;
 

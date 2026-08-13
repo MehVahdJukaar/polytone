@@ -4,24 +4,10 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-/**
- * The set of positions that can cast a shadow into what the camera can actually see, used to cull the
- * shadow pass. Everything is camera-relative (camera at the origin).
- *
- * <p>Two nested tests, cheap first:
- * <ol>
- *   <li>the orthographic light box itself - half-width {@code coverage} on the two light-lateral axes,
- *       {@code depthRange} along the light axis. This is what the shadow map physically covers.</li>
- *   <li>optionally, the <i>caster volume</i>: the camera frustum swept away from the light. An occluder
- *       only matters if its shadow ray lands inside the view frustum, so anything outside this volume
- *       can be dropped even though it sits inside the light box. Typically prunes everything behind and
- *       below the camera.</li>
- * </ol>
- *
- * <p>The caster volume is only valid for the frame it was built from, so it is skipped when the map is
- * being reused across frames (see {@link ShadowMapRenderer}); a stale volume would leave holes where the
- * camera has since turned to look.
- */
+// The positions that can cast a shadow into what the camera actually sees, camera relative. Two tests:
+// the ortho light box the map covers, then optionally the camera frustum swept away from the light,
+// since an occluder only matters if its shadow ray lands in view. That swept volume is only valid for
+// the frame it was built from, so it is skipped while the map is reused across frames.
 public final class ShadowCasterVolume {
 
     // Slack, in blocks, added to every caster-volume plane. The resolve shader samples the map at
@@ -54,10 +40,7 @@ public final class ShadowCasterVolume {
         this.halfDepth = depthRange;
     }
 
-    /**
-     * Builds the caster volume from the camera's view-projection and the direction toward the light.
-     * Both must be in the same camera-relative space this volume is tested in.
-     */
+    // both must be in the same camera-relative space this volume is tested in
     void buildCasterPlanes(Matrix4f cameraViewProjection, Vector3f towardLight) {
         planeCount = 0;
 
@@ -139,10 +122,7 @@ public final class ShadowCasterVolume {
         return plane.x * v.x + plane.y * v.y + plane.z * v.z;
     }
 
-    /**
-     * Conservative test of a camera-relative box given as centre plus per-axis half-extents. Never
-     * reports a false "outside", which is what a caster set needs.
-     */
+    // conservative: never reports a false "outside", which is what a caster set needs
     public boolean intersects(float cx, float cy, float cz, float ex, float ey, float ez) {
         // Light box first: three slab tests, and they reject the overwhelming majority.
         if (outsideSlab(xx, xy, xz, halfLateral, cx, cy, cz, ex, ey, ez)) return false;

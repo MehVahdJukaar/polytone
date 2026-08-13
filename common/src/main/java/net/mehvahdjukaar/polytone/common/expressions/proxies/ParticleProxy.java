@@ -114,7 +114,7 @@ public class ParticleProxy extends PositionalProxy {
         return 0;
     }
 
-    /** Named custom variable, declared under the particle's {@code customs}. Names are case-insensitive. */
+    // Named custom variable, declared under the particle's customs. Names are case-insensitive.
     public double custom(String name) {
         if (particle instanceof CustomParticleInstance cp) {
             return cp.getCustom(name);
@@ -126,7 +126,6 @@ public class ParticleProxy extends PositionalProxy {
     public boolean hasEntitiesWithin() {
         return !level.getEntities(null, particle.getBoundingBox().inflate(1.25)).isEmpty();
     }
-
 
     public void xd(double xd) {
         particle.xd = xd;
@@ -143,7 +142,6 @@ public class ParticleProxy extends PositionalProxy {
     public void red(double r) {
         if (quadParticle != null) quadParticle.rCol = (float) r;
     }
-
 
     public void green(double g) {
         if (quadParticle != null) quadParticle.gCol = (float) g;

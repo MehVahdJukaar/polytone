@@ -18,10 +18,8 @@ import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * NeoForge baked form of the {@code polytone:expression} model. See {@link ExpressionModel} for the
- * shared selection logic and JSON shape.
- */
+// NeoForge baked form of the polytone:expression model. See ExpressionModel for the shared selection logic and
+// JSON shape.
 public record ExpressionBlockStateModel(ExpressionModel.Selector selector) implements DynamicBlockStateModel {
 
     @Override

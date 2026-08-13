@@ -147,7 +147,6 @@ public class PlatStuffImpl {
 
         Identifier oldBackgroundLocation = null;
 
-
         List<Identifier> oldBeforeTabs = null;
 
         List<Identifier> oldAfterTabs = null;
@@ -192,9 +191,8 @@ public class PlatStuffImpl {
         sessionSearchTrees.updateCreativeTags(list);
     }
 
-
     public static ChunkSectionLayer getRenderType(Block block) {
-        // ItemBlockRenderTypes removed in 26.1 — render layer is now baked per-quad
+        // ItemBlockRenderTypes removed in 26.1 - render layer is now baked per-quad
         return null;
     }
 
@@ -244,7 +242,6 @@ public class PlatStuffImpl {
                 .getMetadata().getVersion().getFriendlyString();
     }
 
-
     public static void registerColorResolver(ColorResolver colorResolver) {
         ColorResolverRegistry.register(colorResolver);
         Polytone.LOGGER.info("registered color resolver {}", colorResolver);
@@ -272,7 +269,6 @@ public class PlatStuffImpl {
             ColorResolverRegistryAccessor.setCustomResolvers(custom);
         }
 
-        // --- generation swap ---
         PREVIOUS_CUSTOM_RESOLVERS.clear();
         PREVIOUS_CUSTOM_RESOLVERS.addAll(CURRENT_CUSTOM_RESOLVERS);  // current becomes previous
         CURRENT_CUSTOM_RESOLVERS.clear();           // new frame starts empty

@@ -72,7 +72,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
             SchemaCodecs.alt("reference", Polytone.COLORMAPS.byNameCodec()),
             SchemaCodecs.alt("inline", SINGLE_COLOR_OR_EXPRESSION));
 
-
     // Direct reference, inline definition, color/expression or biome compound. The wire codec
     // is unchanged; the labeled parts splice into ONE flat picker
     // (reference / inline colormap / color / expression / biome compound).
@@ -191,12 +190,9 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return sampleColor(level, state, pos, biome, item, null);
     }
 
-    /**
-     * The real sampler, optionally instrumented. When {@code sink} is non-null the intermediates
-     * (axis outputs, sampled source pixel, final ARGB) are reported right where they are computed, so
-     * tooling never needs a second, drift-prone copy of the sampling math. {@code sink == null} is the
-     * runtime path and costs nothing beyond a null check.
-     */
+    // A non-null sink reports the intermediates (axis outputs, sampled pixel, final argb) right where
+    // they are computed, so tooling never needs a second copy of the sampling math. Null is the runtime
+    // path and costs a null check.
     public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
                            @Nullable Biome biome, @Nullable ItemStack item, @Nullable SampleSink sink) {
         float temperature = Mth.clamp(xGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
@@ -213,7 +209,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return sampled;
     }
 
-    /** Receives the intermediates of a single {@link #sampleColor} pass; used by the editor preview. */
     public interface SampleSink {
         // x/y are the clamped axis outputs (0..1); col/row is the sampled source-image pixel; argb is the final tint.
         void report(float x, float y, int col, int row, int argb);
@@ -255,7 +250,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
         }
     }
 
-
     private int sample(float textY, float textX) {
         // dont ask questions here
         //if (Polytone.sodiumOn) return defValue;
@@ -278,7 +272,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return ((long) w << 32) | (h & 0xFFFFFFFFL);
     }
 
-
     //for items
     @Override
     public int getItemColor(ItemStack itemStack, int i) {
@@ -296,9 +289,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return sampleColor((ClientLevel) player.level(), null, pos, biome, itemStack);
     }
 
-
     //factories
-
 
     //Square map with those 2 getters
     public static Colormap simple(IColormapExp xGetter, IColormapExp yGetter) {

@@ -34,7 +34,6 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
     public final Map<Class<?>, List<ScreenModifier>> byClass = new IdentityHashMap<>();
     public final Map<String, List<ScreenModifier>> byTitle = new HashMap<>();
 
-
     private static final Identifier INVENTORY = Identifier.parse("inventory");
 
     public GuiModifierManager() {
@@ -85,7 +84,6 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
                     Polytone.LOGGER.error("Could not find class target with name {}", target);
                 }
 
-
             } else if (mod.targetsMenuId()) {
                 Identifier menuId = Identifier.parse(mod.target());
                 boolean isInventory = menuId.equals(INVENTORY);
@@ -123,7 +121,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
         }
     }
 
-    /** Keeps only the candidates whose condition currently passes, then merges them (file order). */
+    // Keeps only the candidates whose condition currently passes, then merges them (file order).
     @Nullable
     private static ScreenModifier resolve(@Nullable List<ScreenModifier> candidates) {
         if (candidates == null) return null;
@@ -233,7 +231,6 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
         return Set.of();
     }
 
-
     // Idempotent: snapshots the slot's pristine position on first call, resets to it before each apply,
     // so it can be re-run on an already-built menu (live editor preview) without drifting.
     public void maybeModifySlot(AbstractContainerMenu menu, Slot slot) {
@@ -249,7 +246,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
         }
     }
 
-    /** Preview override slot modifiers matching this slot, or empty when no override is active. */
+    // Preview override slot modifiers matching this slot, or empty when no override is active
     private static Collection<SlotModifier> previewSlotModifiers(Slot slot) {
         GuiModifier o = GuiModifierPreview.override();
         if (o == null) return Set.of();

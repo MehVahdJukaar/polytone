@@ -26,7 +26,7 @@ import java.util.*;
 
 public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModifier> {
 
-    // creative_tabs.csv sidecar — new creative-tab ids to register, keyed by pack namespace
+    // creative_tabs.csv sidecar - new creative-tab ids to register, keyed by pack namespace
     private Map<Identifier, List<String>> extraTabs = Map.of();
 
     private final MapRegistry<CreativeModeTab> customTabs = new MapRegistry<>("Custom Creative Tabs");
@@ -44,7 +44,6 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
                 .wikiPage("Creative-Tab-Modifiers")
                 .folders("creative_tab_modifiers"));
     }
-
 
     @Override
     public AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
@@ -142,13 +141,10 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
         }
     }
 
-    /**
-     * Supplies a modifier that stands in for the loaded one on the tabs it covers - what the editor's
-     * live preview installs so an unsaved file can be tried out without a reload. It <i>replaces</i>
-     * rather than stacks: the file being edited is part of the loaded merge already, so applying both
-     * would double up its item additions. The previous state is handed back through
-     * {@link #onApplied} so whoever installed the override can put the tab back.
-     */
+    // Stands in for the loaded modifier on the tabs it covers, so the editor can try an unsaved file
+    // without a reload. Replaces rather than stacks: the edited file is already part of the loaded
+    // merge, so applying both would double its item additions. The previous state comes back through
+    // onApplied, so whoever installed the override can put the tab back.
     public interface ModifierOverride {
 
         @Nullable
@@ -164,6 +160,5 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
     public boolean isDynamicTab(Identifier entryId) {
         return customTabs.containsKey(entryId);
     }
-
 
 }

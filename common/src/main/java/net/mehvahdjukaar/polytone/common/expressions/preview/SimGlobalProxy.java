@@ -19,7 +19,6 @@ public final class SimGlobalProxy extends GlobalProxy {
 
     private final List<SimValue> values = List.of(gameTime, dayTime, rain, season);
 
-    /** All inputs, in UI display order. */
     public List<SimValue> values() {
         return values;
     }

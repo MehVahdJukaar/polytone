@@ -36,14 +36,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
-/**
- * Editor preview for creative tab modifiers. Like GUI modifiers these decorate something that only
- * exists in the running game, so the panel is a remote control rather than a renderer. It does two
- * things: <b>apply</b> pushes the edited modifier onto the live tabs with no resource reload, and
- * <b>pick</b> turns the creative screen into an item picker whose picks are written straight into the
- * form's {@code removals} or {@code additions}. While picking, the in-game overlay also washes every
- * item the current removals match, which is the only practical way to check a tag or regex predicate.
- */
+// Creative tab modifiers decorate something that only exists in the running game, so this is a remote
+// control, not a renderer: apply pushes onto the live tabs, pick writes into removals/additions.
 public final class CreativeTabPreviewPanel implements TabPreview {
 
     private static final String FOLDER = "creative_tab_modifiers";
@@ -124,7 +118,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         this.currentJson = json;
         this.currentModifier = value instanceof CreativeTabModifier m ? m : null;
         applyButton.setEnabled(currentModifier != null);
-        // The in-game overlay highlights against whatever the form currently says.
         CreativeTabPreview.setEdited(fileId, currentModifier);
         if (applyOnNextValue && currentModifier != null) {
             applyOnNextValue = false;
@@ -140,8 +133,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         CreativeTabPreview.setPending(Set.of());
         CreativeTabPreview.pushPreview(fileId, null);
     }
-
-    // --- actions --------------------------------------------------------------------------------
 
     private void apply() {
         if (currentModifier == null) {
@@ -194,8 +185,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         }
     }
 
-    // Picking and writing are useless if the file doesn't reach the tab being looked at; say so early
-    // rather than letting the author collect items that end up doing nothing.
     private void warnIfTabNotTargeted() {
         Minecraft.getInstance().execute(() -> {
             boolean reaches = CreativeTabPreview.targetsOpenTab();
@@ -236,8 +225,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         clearPicked.setEnabled(any);
     }
 
-    // --- writing back to the form ---------------------------------------------------------------
-
     // Picked items become one items_match removal / one addition entry, merged into an existing one when
     // there is a matching one already, so repeated picking doesn't grow a wall of one-item entries.
     private void writePicked(boolean removals) {
@@ -263,7 +250,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         if (!written) return;
         status.info("Wrote " + pickedModel.size() + " items into " + (removals ? "removals" : "additions") + ".");
         setPicked(Set.of());
-        // Close the loop: the items should disappear from the tab without a second button press.
         applyOnNextValue = true;
     }
 
@@ -300,8 +286,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         formWriter.accept(copy);
         return true;
     }
-
-    // --- layout ---------------------------------------------------------------------------------
 
     private void buildLayout() {
         Box toolbar = PreviewPanels.header("Live Creative Tabs", status);

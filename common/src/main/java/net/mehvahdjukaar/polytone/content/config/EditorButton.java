@@ -14,13 +14,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 
-/**
- * The "open codec editor" button on the {@link ConfigScreen} footer. It boots the Swing
- * workbench, which is heavy (schema bootstrap + window build), so the open runs on a
- * background thread and the button shows an animated spinner sprite meanwhile. The static
- * icon and the spinner are ordinary GUI sprites; the spinner's {@code .mcmeta} makes the
- * atlas tick it, so no manual frame stepping is needed here.
- */
+// The "open codec editor" button on the ConfigScreen footer. It boots the Swing workbench, which is heavy
+// (schema bootstrap + window build), so the open runs on a background thread and the button shows an animated
+// spinner sprite meanwhile.
 final class EditorButton extends Button {
 
     private static final Identifier ICON = Polytone.res("codec_editor");
@@ -32,8 +28,8 @@ final class EditorButton extends Button {
 
     private final int spriteWidth;
     private final int spriteHeight;
-    /** Whether the separate PackEditor mod is installed. When false, every {@link PackEditor}
-     *  call is short-circuited so its (absent) classes are never loaded, and the button stays grey. */
+    // Whether the separate PackEditor mod is installed. When false, every PackEditor call is short-circuited
+    // so its (absent) classes are never loaded, and the button stays grey.
     private final boolean available;
     private volatile boolean loading;
 
@@ -65,10 +61,10 @@ final class EditorButton extends Button {
         }, NAUTILUS_URL, true));
     }
 
-    /** Boot the editor off-thread so the spinner keeps animating; re-enabled when it returns. */
+    // Boot the editor off-thread so the spinner keeps animating; re-enabled when it returns
     private void open() {
         if (loading || Minecraft.getInstance().level == null) return;
-        // Already open: just focus it — no spinner, no rebuild (single instance).
+        // Already open: just focus it - no spinner, no rebuild (single instance).
         if (PackEditor.isOpen()) {
             PackEditor.open();
             return;

@@ -222,7 +222,7 @@ public abstract class PositionalProxy {
 
     public Object environmentAttribute(String attributeName) {
         if (inEnvironmentAttributeCall) {
-            // recursion detected — return default or null
+            // recursion detected - return default or null
             return null; //this will crash but somebody shouldn't try to get an attribute from within an attribute expression
         }
 

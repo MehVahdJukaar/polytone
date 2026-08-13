@@ -19,23 +19,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-/**
- * Everything about attribute values that Polytone computes at runtime instead of storing statically:
- * the codec that folds a Colormap or an Expression into any color/float attribute, the biome context such a
- * value is evaluated for, and the spatial blending that makes it fade like a normal biome attribute would.
- * <p>
- * Background: vanilla only blends attributes that live in per biome maps. The probe gaussian samples the biomes
- * around the camera and {@link SpatialAttributeInterpolator} weight lerps one value per distinct map. A dynamic
- * value is instead computed once, so on its own it has nothing to blend and snaps at biome borders. The two
- * cases are fixed differently:
- * <ul>
- * <li>biome owned entries are bound to their biome at load time, so vanilla's own interpolator blends them
- * for free, with no extra evaluations at all</li>
- * <li>dimension owned entries have no per biome map to live in, so we evaluate them once per distinct biome of
- * that same kernel and fold the results with vanilla's spatial lerp</li>
- * </ul>
- * Client thread only.
- */
+// Everything about attribute values that Polytone computes at runtime instead of storing statically: the codec
+// that folds a Colormap or an Expression into any color/float attribute, the biome context such a value is
+// evaluated for, and the spatial blending that makes it fade like a normal biome attribute would.
 public class DynamicAttributes {
 
     // set while the installed attribute system has at least one dimension level dynamic layer.
@@ -44,15 +30,14 @@ public class DynamicAttributes {
 
     private static @Nullable Biome contextBiome;
 
-    /** Biome a dynamic value is being evaluated for. Defaults to the camera one, as it always used to. */
+    // Biome a dynamic value is being evaluated for. Defaults to the camera one, as it always used to.
     public static Biome biome() {
         return contextBiome != null ? contextBiome : ClientFrameTicker.getCameraBiome().value();
     }
 
-    /**
-     * Pins a supplier to one biome. Used for entries that live in a biome's own attribute map: each targeted
-     * biome gets its own bound copy, so vanilla's interpolator sees a different value per biome and lerps them.
-     */
+    // Pins a supplier to one biome. Used for entries that live in a biome's own attribute map: each targeted
+    // biome gets its own bound copy, so vanilla's interpolator sees a different value per biome and lerps
+    // them.
     public static <T> Supplier<T> boundTo(Biome owner, Supplier<T> supplier) {
         return () -> {
             Biome previous = contextBiome;
@@ -65,11 +50,9 @@ public class DynamicAttributes {
         };
     }
 
-    /**
-     * Evaluates a dimension level entry once per biome of the interpolation kernel and folds the results.
-     * Inside a biome the kernel holds a single one and this costs exactly one evaluation, like before. Only
-     * within ~8 blocks of a border does it become 2 to 4.
-     */
+    // Evaluates a dimension level entry once per biome of the interpolation kernel and folds the results.
+    // Inside a biome the kernel holds a single one and this costs exactly one evaluation, like before. Only
+    // within ~8 blocks of a border does it become 2 to 4.
     public static <Value> Value applyBlended(EnvironmentAttribute<Value> attribute,
                                              EnvironmentAttributeMap.Entry<Value, ?> entry,
                                              Value oldValue,
@@ -108,7 +91,7 @@ public class DynamicAttributes {
         }
     }
 
-    /** Allows a Colormap or an Expression to be used wherever a color or a float attribute value is expected */
+    // Allows a Colormap or an Expression to be used wherever a color or a float attribute value is expected
     public static <A, Value> Codec<Either<A, Supplier<A>>> addDynamicValueCodec(Codec<A> originalCodec,
                                                                                AttributeType<Value> type) {
         if (type == AttributeTypes.ARGB_COLOR || type == AttributeTypes.RGB_COLOR) {

@@ -10,10 +10,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * The {@code emitter_*} half of the component list: when particles come out, where from, and how long
- * the emitter itself lives.
- */
+// The emitter_* half of the component list: when particles come out, where from, and how long the emitter
+// itself lives.
 public class EmitterComponents {
 
     public record Initialization(Optional<MolangExpr> creationExpression,
@@ -24,7 +22,7 @@ public class EmitterComponents {
         ).apply(i, Initialization::new));
     }
 
-    /** Whether an entity-attached emitter simulates its particles in the entity's frame or the world's. */
+    // Whether an entity-attached emitter simulates its particles in the entity's frame or the world's.
     public record LocalSpace(boolean position, boolean rotation, boolean velocity) {
         public static final Codec<LocalSpace> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.BOOL.optionalFieldOf("position", false).forGetter(LocalSpace::position),
@@ -33,15 +31,13 @@ public class EmitterComponents {
         ).apply(i, LocalSpace::new));
     }
 
-    // ---- rate ----
-
     public record RateInstant(MolangExpr numParticles) {
         public static final Codec<RateInstant> CODEC = RecordCodecBuilder.create(i -> i.group(
                 MolangExpr.CODEC.optionalFieldOf("num_particles", MolangExpr.of(10)).forGetter(RateInstant::numParticles)
         ).apply(i, RateInstant::new));
     }
 
-    /** {@code spawn_rate} is particles per second, not per tick. */
+    // spawn_rate is particles per second, not per tick
     public record RateSteady(MolangExpr spawnRate, MolangExpr maxParticles) {
         public static final Codec<RateSteady> CODEC = RecordCodecBuilder.create(i -> i.group(
                 MolangExpr.CODEC.optionalFieldOf("spawn_rate", MolangExpr.ONE).forGetter(RateSteady::spawnRate),
@@ -54,8 +50,6 @@ public class EmitterComponents {
                 MolangExpr.CODEC.optionalFieldOf("max_particles", MolangExpr.of(50)).forGetter(RateManual::maxParticles)
         ).apply(i, RateManual::new));
     }
-
-    // ---- lifetime ----
 
     public record LifetimeOnce(MolangExpr activeTime) {
         public static final Codec<LifetimeOnce> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -91,8 +85,6 @@ public class EmitterComponents {
         ).apply(i, LifetimeEvents::new));
     }
 
-    // ---- shape ----
-
     public record ShapePoint(MolangExpr.Vec3 offset, BedrockShapeDirection direction) {
         public static final Codec<ShapePoint> CODEC = RecordCodecBuilder.create(i -> i.group(
                 MolangExpr.Vec3.CODEC.optionalFieldOf("offset", MolangExpr.Vec3.ZERO).forGetter(ShapePoint::offset),
@@ -124,7 +116,7 @@ public class EmitterComponents {
         ).apply(i, ShapeBox::new));
     }
 
-    /** {@code plane_normal} accepts the axis keywords {@code x}/{@code y}/{@code z} as well as a vector. */
+    // plane_normal accepts the axis keywords x/y/z as well as a vector
     public record ShapeDisc(MolangExpr.Vec3 planeNormal, MolangExpr.Vec3 offset, MolangExpr radius,
                             boolean surfaceOnly, BedrockShapeDirection direction) {
         private static final Codec<MolangExpr.Vec3> PLANE_NORMAL = Codec.withAlternative(
@@ -157,7 +149,7 @@ public class EmitterComponents {
         ).apply(i, ShapeEntityAabb::new));
     }
 
-    /** The one shape that maps cleanly: three expressions, one per axis. */
+    // The one shape that maps cleanly: three expressions, one per axis
     public record ShapeCustom(MolangExpr.Vec3 offset, BedrockShapeDirection direction) {
         public static final Codec<ShapeCustom> CODEC = RecordCodecBuilder.create(i -> i.group(
                 MolangExpr.Vec3.CODEC.optionalFieldOf("offset", MolangExpr.Vec3.ZERO).forGetter(ShapeCustom::offset),

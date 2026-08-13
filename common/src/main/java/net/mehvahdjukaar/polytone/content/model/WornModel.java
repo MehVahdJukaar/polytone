@@ -13,12 +13,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-/**
- * Worn (equipped) model override for an item. Holds the geometry source plus the equipment layer it applies to.
- * The baked model is a {@link HumanoidModel} so NeoForge's {@code getGenericArmorModel} copies the body pose onto it;
- * this requires the geometry to declare the standard humanoid bones (head/hat, body, right_arm, left_arm,
- * right_leg, left_leg).
- */
+// Worn (equipped) model override for an item. Holds the geometry source plus the equipment layer it applies
+// to.
 public final class WornModel {
 
     private static final Codec<EquipmentClientInfo.LayerType> LAYER_TYPE_CODEC = Codec.STRING.comapFlatMap(
@@ -55,7 +51,6 @@ public final class WornModel {
         return this.layerType == type;
     }
 
-    /** Returns the baked model for this worn override, or {@code null} if it could not be built. */
     @Nullable
     public Model getOrBake(EntityModelSet modelSet) {
         if (cachedFrom != modelSet) {
