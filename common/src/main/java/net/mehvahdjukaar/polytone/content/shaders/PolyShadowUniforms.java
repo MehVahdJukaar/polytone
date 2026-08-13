@@ -11,17 +11,11 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 
-/**
- * The {@code PolyShadow} UBO bound to post passes that declare it (see {@link PostChainsManager}):
- * <pre>
- * layout(std140) uniform PolyShadow {
- *     mat4 PolyShadowMat;       // light view-projection, camera-relative space
- *     vec3 PolyShadowLightDir;  // unit direction toward the light
- *     vec3 PolyShadowCamFract;  // fract(cameraPos): world-grid anchor
- * };
- * </pre>
- * Written once per frame by {@link ShadowMapRenderer} while no render pass is open.
- */
+// The PolyShadow UBO bound to post passes that declare it (see PostChainsManager), written once per frame
+// by ShadowMapRenderer while no render pass is open:
+//     mat4 PolyShadowMat;       light view-projection, camera-relative space
+//     vec3 PolyShadowLightDir;  unit direction toward the light
+//     vec3 PolyShadowCamFract;  fract(cameraPos), the world-grid anchor
 public class PolyShadowUniforms implements AutoCloseable {
 
     public static final int UBO_SIZE = new Std140SizeCalculator()

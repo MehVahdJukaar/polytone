@@ -13,10 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * Editor item picker on the creative screen: draws the inspector overlay and turns clicks into picks.
- * Both hooks are inert unless the editor turned picking on, so normal play is untouched.
- */
+// both hooks are inert unless the editor turned picking on
 @Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeScreenPickMixin {
 
@@ -27,7 +24,6 @@ public abstract class CreativeScreenPickMixin {
         }
     }
 
-    // A click on an item identifies it (fed back to the editor) and is swallowed so it never grabs a stack.
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void polytone$pickItem(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
         if (!CreativeTabPreview.isPickingEnabled()) return;

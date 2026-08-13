@@ -201,7 +201,7 @@ public class CustomParticleType implements ICustomParticleFactory {
                                 //If it is still alive, we should not spawn a new one in the same place.
                                 return null;
                             } else {
-                                //It's dead, but still present — remove it to make room for the new one
+                                //It's dead, but still present - remove it to make room for the new one
                                 inst.remove();
                             }
                         }
@@ -227,8 +227,8 @@ public class CustomParticleType implements ICustomParticleFactory {
         }
     }
 
-    /** The baked sprites last handed to {@link #setSpriteSet}, or null if none yet. The editor
-     *  preview borrows these from the pack's already-registered particle of the same id. */
+    // The baked sprites last handed to setSpriteSet, or null if none yet. The editor preview borrows these
+    // from the pack's already-registered particle of the same id.
     public @Nullable SpriteSet getSpriteSet() {
         return this.spriteSet;
     }

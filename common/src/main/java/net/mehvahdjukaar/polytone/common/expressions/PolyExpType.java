@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.common.expressions;
 
-
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import org.mvel2.MVEL;
@@ -36,7 +35,6 @@ public final class PolyExpType<T extends PolyExp> {
         return codec;
     }
 
-    /** Names of the declared MVEL inputs - used by the editor as insertable hint chips. */
     public List<String> inputNames() {
         var inputs = context.getInputs();
         return inputs == null ? List.of()

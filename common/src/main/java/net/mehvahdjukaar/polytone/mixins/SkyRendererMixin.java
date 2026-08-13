@@ -8,13 +8,9 @@ import net.minecraft.client.renderer.SkyRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/**
- * When the {@code sky_depth_write} config is enabled, swaps the sky-disc draw for a pipeline variant
- * that writes depth (see {@link PolytoneRenderTypes#SKY_DEPTH_WRITE_PIPELINE}). This only affects the
- * top sky disc ({@code renderSkyDisc}); the dark disc is left alone. Meant for resource packs whose
- * {@code core/sky} fragment shader writes {@code gl_FragDepth} so clouds register in the depth buffer
- * (e.g. so god-ray post effects get occluded by them).
- */
+// When the sky_depth_write config is enabled, swaps the sky-disc draw for a pipeline variant that writes depth
+// (see PolytoneRenderTypes#SKY_DEPTH_WRITE_PIPELINE). This only affects the top sky disc (renderSkyDisc); the
+// dark disc is left alone.
 @Mixin(SkyRenderer.class)
 public class SkyRendererMixin {
 

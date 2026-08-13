@@ -38,7 +38,7 @@ public record WidgetModifier(int xOffset, int yOffset,
         return DataResult.success(o);
     }, Function.identity());
 
-    /** True when this modifier's target filters all match the widget (no mutation). Used by the editor overlay. */
+    // True when this modifier's target filters all match the widget (no mutation). Used by the editor overlay.
     public boolean matches(AbstractWidget widget) {
         if (targetX.isPresent() && !targetX.get().has(widget.getX())) return false;
         if (targetY.isPresent() && !targetY.get().has(widget.getY())) return false;

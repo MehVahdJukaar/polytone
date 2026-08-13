@@ -37,17 +37,7 @@ public abstract class ColorResolverMixin extends Level {
         super(writableLevelData, resourceKey, registryAccess, holder, bl, bl2, l, i);
     }
 
-    /**
-     * Hack so we don't have to register these on every reload. They are instead added on request.
-     * <p>
-     * We handle ANY missing resolver, not just our {@link Colormap}s: because we swap the static
-     * {@code BiomeColors.WATER/GRASS/FOLIAGE/DRY_FOLIAGE_COLOR_RESOLVER} fields, a ClientLevel built
-     * while a colormap was active keys its fixed {@code tintCaches} slot on that colormap. Once the
-     * colormap is removed (and the vanilla resolver restored) on reload, that slot would be left with
-     * no entry, causing a null cache - which on Fabric becomes a hard crash from its strict
-     * {@code modifyNullCache}. Lazily re-creating the vanilla cache here keeps the map complete
-     * regardless of swap timing.
-     */
+    // Hack so we don't have to register these on every reload. They are instead added on request.
     @Inject(method = "getBlockTint", at = @At("HEAD"))
     private void polytone$makeCachesForColormaps(BlockPos pos, ColorResolver resolver, CallbackInfoReturnable<Integer> info) {
         if (this.tintCaches.containsKey(resolver)) return;
@@ -68,9 +58,6 @@ public abstract class ColorResolverMixin extends Level {
         this.tintCaches = newMap;
     }
 
-    /**
-     * Remove all custom added resolvers
-     */
     @Inject(method = "clearTintCaches", at = @At("HEAD"))
     private void polytone$resetCustomColorResolvers(CallbackInfo info) {
         this.tintCaches.entrySet().removeIf(entry -> entry.getKey() instanceof Colormap);

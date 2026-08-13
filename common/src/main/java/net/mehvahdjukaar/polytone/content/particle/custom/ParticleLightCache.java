@@ -3,11 +3,8 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 
-/**
- * Section-version counters for per-particle light caches. Every section rebuild (block or light
- * change) funnels through LevelRenderer#setSectionDirty, which bumps the section's hashed bucket.
- * Each particle owns an {@link Entry} that re-samples only when stale.
- */
+// Section version counters for per-particle light caches. Every section rebuild (block or light
+// change) funnels through LevelRenderer#setSectionDirty, which bumps the section's hashed bucket.
 public final class ParticleLightCache {
 
     private static final int BUCKETS = 1024; // power of two, ~4 KB
@@ -22,21 +19,15 @@ public final class ParticleLightCache {
         return h & MASK;
     }
 
-    /** Called from the LevelRenderer mixin (section coords) on the client thread. */
     public static void markSectionDirty(int sectionX, int sectionY, int sectionZ) {
         VERSIONS[bucket(sectionX, sectionY, sectionZ)]++;
     }
 
-    /** Current invalidation version for the given section. */
     public static int sectionVersion(int sectionX, int sectionY, int sectionZ) {
         return VERSIONS[bucket(sectionX, sectionY, sectionZ)];
     }
 
-    /**
-     * Per-particle cached light sample. Valid while the particle stays inside the same block
-     * AND its section's version counter hasn't moved; otherwise {@code sampler} re-runs the
-     * expensive world/light lookup. Owned by the particle, so it dies with it.
-     */
+    // valid while the particle stays inside the same block and its section's version hasn't moved
     public static final class Entry {
 
         private final Sampler sampler; // the expensive world/light lookup, bound once at construction
@@ -48,7 +39,6 @@ public final class ParticleLightCache {
             this.sampler = sampler;
         }
 
-        /** The raw (unboosted) light color at the given position, re-sampled only when stale. */
         public int get(double x, double y, double z, float partialTick) {
             int bx = Mth.floor(x), by = Mth.floor(y), bz = Mth.floor(z);
             long key = BlockPos.asLong(bx, by, bz);
@@ -61,7 +51,7 @@ public final class ParticleLightCache {
             return this.rawLight;
         }
 
-        /** The underlying lookup; store the method ref once, so calls stay allocation-free. */
+        // store the method ref once, so calls stay allocation free
         public interface Sampler {
             int sample(float partialTick);
         }

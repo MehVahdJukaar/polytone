@@ -18,29 +18,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.IntFunction;
 
-/**
- * The texture half of a content type's contract with the pack: which {@code .png} files belong
- * to a content json (next to it by naming convention, or at a {@code texture_path} location) and
- * which inline {@link Colormap} receives each one. ONE instance per content type, built from the
- * {@link TexturePart}s declared on the manager's {@code Spec}, is the single source of truth:
- * the reload driver ({@link #fill}, {@link #adoptable}, {@link #orphans}) and the editor's
- * sidecar view both walk the same parts with the same {@link TextureSlot#findFirstMatch} rule,
- * so they can never disagree about which files belong to a json.
- *
- * <p>Every companion texture resolves to a {@code (part, tintIndex)} pair; a part's
- * {@link Naming} decides how file names encode that. This class only answers naming questions -
- * constructing the default content that adopts a texture is the manager's job.</p>
- *
- * <p>Forward direction, json stem to expected files: {@link #expectedSlots},
- * {@link #possibleSlots}, {@link #fill}. Backward direction, file back to its role:
- * {@link #roleLabel}, {@link #adoptable}, {@link #orphans}.</p>
- */
+// Which .png files belong to a content json and which inline colormap receives each one. One per
+// content type; the reload driver and the editor sidecar view both walk it, so they agree.
 public final class ContentTextures<V> {
 
-    /**
-     * A leftover-texture group the manager should turn into a default content entry: the content
-     * id to create and, per part, the tint indexes its textures cover. Produced by {@link #orphans}.
-     */
     public record Orphan<V>(Identifier stemId, Map<TexturePart<V>, Set<Integer>> parts) {
     }
 
@@ -59,13 +40,7 @@ public final class ContentTextures<V> {
         return parts.getFirst();
     }
 
-    // -------------------- forward: json stem -> expected files --------------------
-
-    /**
-     * The slots this content actually expects given its parsed value: what {@link #fill} will
-     * look up, and error about when a bound slot's texture is absent. A null {@code value}
-     * (json not currently parseable) degrades to {@link #possibleSlots}.
-     */
+    // a null value (json not currently parseable) degrades to possibleSlots
     public List<TextureSlot> expectedSlots(@Nullable V value, String stem) {
         if (value == null) return possibleSlots(stem);
         List<TextureSlot> slots = new ArrayList<>();
@@ -102,7 +77,6 @@ public final class ContentTextures<V> {
         return slots;
     }
 
-    /** Every slot the content COULD have, ignoring what its json declares (all unbound). */
     public List<TextureSlot> possibleSlots(String stem) {
         List<TextureSlot> slots = new ArrayList<>();
         boolean plainCovered = false;
@@ -118,13 +92,6 @@ public final class ContentTextures<V> {
         return slots;
     }
 
-    /**
-     * THE reload-time association: walks {@link #expectedSlots} for this content instance and
-     * pours the matching scanned texture into each bound colormap, resolving accepted names in
-     * order against the content's own directory (or the slot's {@code texture_path} location).
-     * Consumed textures are marked used on {@code textures}; {@code strict} = throw when a
-     * bound slot's texture is absent.
-     */
     public void fill(TrackedTextures textures, Identifier contentId, @Nullable V value, boolean strict) {
         String stem = StrUtils.lastSegment(contentId.getPath());
         for (TextureSlot slot : expectedSlots(value, stem)) {
@@ -149,13 +116,6 @@ public final class ContentTextures<V> {
         }
     }
 
-    // -------------------- backward: file -> role --------------------
-
-    /**
-     * The role {@code fileName} plays for content named {@code stem} - a short display label
-     * like {@code "default"} or {@code "tint 3"} - or null when the file is not associated with
-     * that stem at all.
-     */
     public @Nullable String roleLabel(String fileName, String stem) {
         for (TexturePart<V> part : parts) {
             Integer index = part.naming().indexOf(fileName, stem);
@@ -165,12 +125,6 @@ public final class ContentTextures<V> {
         return fileName.equalsIgnoreCase(stem + ".png") ? Naming.label(Naming.DEFAULT_INDEX) : null;
     }
 
-    /**
-     * The parts of {@code contentId} that have a scanned texture but no declared colormap, with
-     * the tint indexes those textures cover - the "auto-attach a default" query. A plain
-     * {@code <stem>.png} with nothing declared anywhere counts toward the main (first) part.
-     * The manager builds and merges the actual default content for each returned entry.
-     */
     public Map<TexturePart<V>, Set<Integer>> adoptable(TrackedTextures textures, Identifier contentId, V value) {
         String stem = StrUtils.lastSegment(contentId.getPath());
         Map<TexturePart<V>, Set<Integer>> out = new LinkedHashMap<>();
@@ -189,13 +143,7 @@ public final class ContentTextures<V> {
         return out;
     }
 
-    /**
-     * The leftover (unclaimed) textures grouped under the content id their names encode, most
-     * specific naming first; a name no part explains reads as the main part's plain texture.
-     * Runs after the per-json pass: any group with a consumed member, or whose id (under either
-     * reading of the name) already belongs to a content json, is skipped - orphans are exactly
-     * the textures no json accounts for.
-     */
+    // most specific naming first, so a name two parts could claim goes to the narrower one
     public List<Orphan<V>> orphans(TrackedTextures textures, Set<Identifier> contentIds) {
         Map<Identifier, Map<TexturePart<V>, Set<Integer>>> groups = new LinkedHashMap<>();
         Set<Identifier> owned = new HashSet<>();
@@ -230,8 +178,6 @@ public final class ContentTextures<V> {
                 .map(e -> new Orphan<>(e.getKey(), e.getValue()))
                 .toList();
     }
-
-    // -------------------- slot building --------------------
 
     private List<TextureSlot> indexedColormapSlots(TexturePart<V> part, String stem,
                                                    IndexCompoundColorGetter compound) {

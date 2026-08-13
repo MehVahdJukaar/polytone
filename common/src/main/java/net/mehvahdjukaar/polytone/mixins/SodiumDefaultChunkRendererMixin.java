@@ -9,15 +9,9 @@ import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-/**
- * Points Sodium's terrain draw at the shadow map while a shadow replay is in flight.
- *
- * <p>Sodium 0.9.2 opens a Mojang {@code RenderPass} over {@code TerrainRenderPass.getTarget()}'s
- * color and depth views instead of binding a framebuffer itself, so the redirect happens on those
- * two lookups. Outside a replay both return the real target untouched.
- *
- * <p>{@code require = 0}: Sodium internal, may move across versions - no-op rather than crash.
- */
+// Points Sodium's terrain draw at the shadow map while a shadow replay is in flight. Sodium 0.9.2 opens a
+// Mojang RenderPass over TerrainRenderPass.getTarget()'s color and depth views instead of binding a
+// framebuffer itself, so the redirect happens on those two lookups.
 @Pseudo
 @Mixin(DefaultChunkRenderer.class)
 public abstract class SodiumDefaultChunkRendererMixin {

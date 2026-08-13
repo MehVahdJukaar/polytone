@@ -8,7 +8,7 @@ DFU version: `com.mojang:datafixerupper:8.0.16` (MC 1.21.1).
 
 ## TL;DR
 
-Yes, achievable. Auto-introspection covers everything *except* monadic combinators (`xmap`, `flatXmap`, `validate`, `mapResult`, `orElse`, `recursive`, `lazyInitialized`) and the per-field types inside `RecordCodecBuilder.create`. Those need a companion — but a wrapping helper at the codec construction site (one-time refactor) closes the gap for the entire codebase without per-codec hand-written companions.
+Yes, achievable. Auto-introspection covers everything *except* monadic combinators (`xmap`, `flatXmap`, `validate`, `mapResult`, `orElse`, `recursive`, `lazyInitialized`) and the per-field types inside `RecordCodecBuilder.create`. Those need a companion - but a wrapping helper at the codec construction site (one-time refactor) closes the gap for the entire codebase without per-codec hand-written companions.
 
 ## Polytone real-codebase counts (common/src/main/java)
 
@@ -18,9 +18,9 @@ Yes, achievable. Auto-introspection covers everything *except* monadic combinato
 | `.xmap(` | 77 | ❌ opaque |
 | `.flatXmap(` | 14 | ❌ opaque |
 | `.dispatch(` | 2 | ❌ needs variant enumeration |
-| `stringResolver` | 0 | — |
+| `stringResolver` | 0 | - |
 
-So the practical migration: **one refactor pass replacing `.xmap`/`.flatXmap` with a schema-attaching wrapper**, plus **2 hand-written dispatch companions**, plus optionally **migrating `RecordCodecBuilder.create` callsites to a schema-aware builder** (also a mechanical refactor — zero per-site thinking).
+So the practical migration: **one refactor pass replacing `.xmap`/`.flatXmap` with a schema-attaching wrapper**, plus **2 hand-written dispatch companions**, plus optionally **migrating `RecordCodecBuilder.create` callsites to a schema-aware builder** (also a mechanical refactor - zero per-site thinking).
 
 ## Source-level introspection tiers
 
@@ -31,7 +31,7 @@ Each codec class falls into one of four tiers:
 | 1. Identity singletons | `Codec.INT`, `STRING`, `BOOL`, `BYTE`, `LONG`, `FLOAT`, `DOUBLE`, `PASSTHROUGH`, `EMPTY` | `codec == Codec.INT` |
 | 2. Concrete public/record classes | `ListCodec` (record), `PairCodec` (record), `EitherCodec` (record), `UnboundedMapCodec` (record), `SimpleMapCodec`, `OptionalFieldCodec`, `PairMapCodec`, `KeyDispatchCodec` | `instanceof` + accessors (records) or one VarHandle per private field |
 | 3. `MapCodec.keys()` only | `RecordCodecBuilder.build(...)` output (anonymous MapCodec) | `keys(ops)` returns Stream of field names, no types |
-| 4. Fully opaque | `xmap`/`flatXmap`/`validate`/`mapResult`/`orElse`/`withLifecycle`/`recursive`/`lazyInitialized`, anything from `Codec.of(enc, dec)` | nothing — inner codec captured in lambda |
+| 4. Fully opaque | `xmap`/`flatXmap`/`validate`/`mapResult`/`orElse`/`withLifecycle`/`recursive`/`lazyInitialized`, anything from `Codec.of(enc, dec)` | nothing - inner codec captured in lambda |
 
 ## Key facts from the DFU source
 
@@ -39,10 +39,10 @@ Each codec class falls into one of four tiers:
 - `KeyDispatchCodec.keys()` returns only `[typeKey, "value"]`. The `Function<K, MapCodec<? extends V>>` cannot be enumerated without an external source (registry, enum, hand-listed set).
 - `Codec.xmap` is `return of(this.comap(from), this.map(to), this + "[xmapped]")`. The returned `Codec.of` is anonymous; the inner codec is captured in the `comap`/`map` lambda and is **unreachable** without reflecting into lambda fields.
 - `RecordCodecBuilder.Instance.ap2/ap3/ap4` build deeply-nested `MapDecoder.Implementation` lambdas. Each field's `MapCodec` is buried in a closure. `keys()` survives via `Stream.concat`, but per-field codec references do not.
-- `Pair`/`Either`/`List`/`UnboundedMap` are `record`s with public accessors — these are free to walk.
-- MC `ExtraCodecs` is mostly `xmap` wrappers (`VECTOR3F`, `QUATERNIONF`, `ARGB_COLOR_CODEC`, `INSTANT_ISO8601`, `BASE64_STRING`, `INTERVAL` family, etc.) — entirely in tier 4. Bootstrap once.
+- `Pair`/`Either`/`List`/`UnboundedMap` are `record`s with public accessors - these are free to walk.
+- MC `ExtraCodecs` is mostly `xmap` wrappers (`VECTOR3F`, `QUATERNIONF`, `ARGB_COLOR_CODEC`, `INSTANT_ISO8601`, `BASE64_STRING`, `INTERVAL` family, etc.) - entirely in tier 4. Bootstrap once.
 
-## Design — three pieces
+## Design - three pieces
 
 ### 1. `Schema<A>` ADT
 
@@ -72,18 +72,18 @@ public sealed interface Schema<A> {
 }
 ```
 
-### 2. `SchemaResolver` — auto-derives where possible
+### 2. `SchemaResolver` - auto-derives where possible
 
 Walks the codec tree using the four tiers. Falls through to `Schema.Opaque` (raw JSON editor with `codec.parse` live-validation) when nothing matches. Memoize on entry to handle recursion.
 
-### 3. Companion API — escape hatches in four flavors
+### 3. Companion API - escape hatches in four flavors
 
 | Flavor | Use when |
 |---|---|
-| **A.** `CodecCompanions.register(codec, schema)` | side-channel — for codecs you can't touch (vanilla) |
+| **A.** `CodecCompanions.register(codec, schema)` | side-channel - for codecs you can't touch (vanilla) |
 | **B.** `CodecCompanions.registerDispatch(dispatchedCodec, typeField, knownKeys, label, codecOf)` | for `KeyDispatchCodec` variant enumeration |
-| **C.** `CodecCompanions.recordOf(cls).field(...).field(...).build(ctor)` | for new record codecs — single builder that produces both `Codec<A>` and `Schema<A>`, auto-registered |
-| **D.** `SchemaCarryingCodec.withSchema(inner, schema)` | inline at codec definition — a delegating `Codec<A>` that exposes `schema()` so the resolver picks it up |
+| **C.** `CodecCompanions.recordOf(cls).field(...).field(...).build(ctor)` | for new record codecs - single builder that produces both `Codec<A>` and `Schema<A>`, auto-registered |
+| **D.** `SchemaCarryingCodec.withSchema(inner, schema)` | inline at codec definition - a delegating `Codec<A>` that exposes `schema()` so the resolver picks it up |
 
 ## The migration plan for Polytone
 
@@ -105,23 +105,23 @@ public final class CodecExt {
 ```
 
 Concrete impact:
-- **All 77 `.xmap` sites**: replace `inner.xmap(to, from)` with `CodecExt.xmap(inner, to, from)`. Schema = inner's schema (correct for ~all xmaps in Polytone: they're newtype wrappers, list/map repacks, or expression parsers — all of which keep the inner edit surface).
+- **All 77 `.xmap` sites**: replace `inner.xmap(to, from)` with `CodecExt.xmap(inner, to, from)`. Schema = inner's schema (correct for ~all xmaps in Polytone: they're newtype wrappers, list/map repacks, or expression parsers - all of which keep the inner edit surface).
 - **All 14 `.flatXmap` sites**: same pattern.
 - **2 `.dispatch` sites** (`ItemPredicate.CODEC`, `EnvironmentAttributeMapMod`): hand-write `registerDispatch` calls.
-- **56 `RecordCodecBuilder.create` sites**: optional migration to `CodecExt.recordCodec` — without it, the GUI degrades to "named fields, raw JSON inner" until migrated.
+- **56 `RecordCodecBuilder.create` sites**: optional migration to `CodecExt.recordCodec` - without it, the GUI degrades to "named fields, raw JSON inner" until migrated.
 - **Vanilla**: one-time `VanillaCompanions.bootstrap()` for the ~20–30 `ExtraCodecs` entries used.
 
 So real companion count: **~3 hand-written project companions + ~30 vanilla bootstrap entries + 1 codec-helper class**. Not "one per xmap."
 
 ## Hard cases (won't be auto)
 
-1. `xmap` that genuinely changes the *shape* of the data the user sees (e.g. an expression parser where the on-disk form is a string but the runtime form is a tree). Default behavior is correct — keep inner schema (string), user types a string. Only override if you want a tree-structured editor.
-2. `Codec.recursive` — needs resolver-side memoization with a placeholder schema or `Schema.Lazy` thunk to avoid stack overflow.
+1. `xmap` that genuinely changes the *shape* of the data the user sees (e.g. an expression parser where the on-disk form is a string but the runtime form is a tree). Default behavior is correct - keep inner schema (string), user types a string. Only override if you want a tree-structured editor.
+2. `Codec.recursive` - needs resolver-side memoization with a placeholder schema or `Schema.Lazy` thunk to avoid stack overflow.
 3. Vanilla `RecordCodecBuilder` outputs you don't control (e.g. `BlockState.CODEC`, `LootTable.CODEC`). Each needs a one-time companion. Stable across MC versions, so it's amortized.
 
 ## Open questions
 
-- Where to store companion registrations — global static or per-pack registry? Likely global, since codecs are static finals.
+- Where to store companion registrations - global static or per-pack registry? Likely global, since codecs are static finals.
 - Should `Schema.Opaque` fallback render as raw JSON or NBT depending on the active `DynamicOps`? Probably JSON for GUI editing, NBT for runtime.
 - For lazy recursive codecs: introduce `Schema.Ref<A>` resolved at first-render time?
 

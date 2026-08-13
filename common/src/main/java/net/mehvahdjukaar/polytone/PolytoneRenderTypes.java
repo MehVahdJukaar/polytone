@@ -64,7 +64,7 @@ public class PolytoneRenderTypes {
     // shader can stamp clouds into the depth buffer (e.g. so god-rays get occluded). Swapped in by SkyRendererMixin
     // only when the sky_depth_write config is on. NOTE: vanilla core/sky does not write gl_FragDepth, so enabling this
     // without a pack whose sky shader writes gl_FragDepth would make the whole sky disc write its geometric depth and
-    // break sky-depth assumptions elsewhere — hence the explicit opt-in config.
+    // break sky-depth assumptions elsewhere - hence the explicit opt-in config.
     public static final RenderPipeline SKY_DEPTH_WRITE_PIPELINE = register(
             RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
                     .withLocation(Polytone.res("pipeline/sky_depth"))

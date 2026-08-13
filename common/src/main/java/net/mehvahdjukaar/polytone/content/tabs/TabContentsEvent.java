@@ -10,13 +10,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-/**
- * {@link ItemToTabEvent} implementation that operates directly on a creative tab's final item
- * collections, instead of being part of a loader event. It is invoked from
- * {@code CreativeModeTabMixin} at the tail of {@link CreativeModeTab#buildContents}, which is
- * guaranteed to run after every other mod's NeoForge/Fabric tab event. This way Polytone always
- * reorders/modifies tab contents last, once all other items have been added.
- */
+// ItemToTabEvent implementation that operates directly on a creative tab's final item collections, instead of
+// being part of a loader event. It is invoked from CreativeModeTabMixin at the tail of
+// CreativeModeTab#buildContents, which is guaranteed to run after every other mod's NeoForge/Fabric tab event.
 public record TabContentsEvent(ResourceKey<CreativeModeTab> tab,
                                Collection<ItemStack> displayItems,
                                Collection<ItemStack> searchItems) implements ItemToTabEvent {

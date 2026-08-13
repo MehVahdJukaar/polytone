@@ -52,23 +52,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-/**
- * Polytone's integration with the standalone <b>PackEditor</b> mod: the ONE class that knows both
- * worlds. It registers Polytone's widget bindings, companion-asset rules and content codecs with
- * the editor's public API, then delegates open/close to it. The vanilla Minecraft entries and the
- * game-service {@code GameHost} are provided by PackEditor itself — Polytone only contributes its
- * own content.
- *
- * <p>Everything here touches Nautilus Studio classes, so callers MUST guard on the {@code nautilus_studio}
- * mod being loaded (see {@code EditorButton} and the {@code Polytone.init} hook). With the mod
- * absent this class is never referenced and the in-game editor button grays out — nothing loads.</p>
- */
+// Polytone's side of the editor integration: registers widget bindings, companion-asset rules and content
+// codecs with the editor's API, then delegates open/close to it. Everything here touches Nautilus Studio
+// classes, so callers must guard on the nautilus_studio mod being loaded.
 public final class PackEditor {
 
-    /**
-     * Register Polytone's widget bindings and content codecs with PackEditor. Called once from
-     * {@code Polytone.init} when the {@code nautilus_studio} mod is present.
-     */
     // Live preview panels keyed by content folder; attached to the matching CodecEntry as it's built.
     private static final Map<String, TabPreview.Factory> PREVIEWS = Map.of(
             "colormaps", ColormapPreview::new,
@@ -106,29 +94,24 @@ public final class PackEditor {
         BedrockImports.register();
     }
 
-    /** Open (or focus) the editor window. Any thread. */
+    // Open (or focus) the editor window. Any thread.
     public static void open() {
         NautilusStudioApi.openEditor();
     }
 
-    /** Whether the editor window is currently open. Any thread. */
+    // Whether the editor window is currently open. Any thread.
     public static boolean isOpen() {
         return NautilusStudioApi.isOpen();
     }
 
-    /** Close the editor window if open — it is tied to the world and goes with it. Any thread. */
+    // Close the editor window if open - it is tied to the world and goes with it. Any thread.
     public static void close() {
         NautilusStudioApi.close();
     }
 
-    // -------------------- Content entries --------------------
-
-    /**
-     * Every manager is a Polytone reload listener scanning a {@code polytone/} folder, so its
-     * entries are grouped "Polytone" regardless of what the codec decodes into. Only codec-backed
-     * managers with a scannable container dir are editable; the rest (legacy/WIP) are skipped.
-     * {@code contentCodec()} IS the file codec, so the editor edits exactly what the reload parses.
-     */
+    // Every manager is a Polytone reload listener scanning a polytone/ folder, so its entries are grouped
+    // "Polytone" regardless of what the codec decodes into. Only codec-backed managers with a scannable
+    // container dir are editable; the rest (legacy/WIP) are skipped.
     private static void registerContentEntries() {
         for (ContentManager<?> manager : Polytone.MANAGERS) {
             if (manager.contentCodec() == null) continue;
@@ -149,19 +132,10 @@ public final class PackEditor {
         }
     }
 
-    // -------------------- Widget bindings --------------------
-
-    /**
-     * Polytone's schema companions + Swing widget bindings for codecs that can't carry their
-     * schema at the declaration site (widget bindings must never leak into content code). The
-     * long-term home for a registration is still the codec's own declaration
-     * (SchemaRecord / SchemaCodecs.alt) whenever no widget is involved.
-     *
-     * <p>Union codecs (IColormapExp / IBlockExp / ISimpleExp) are labeled at their declaration
-     * sites; here we only bind the big expression editor to the LEAF codecs — the MVEL
-     * {@code PolyExpType} codecs (chips from their declared inputs, compile-check through the
-     * real parser) and the legacy exp4j ones.</p>
-     */
+    // Polytone's schema companions + Swing widget bindings for codecs that can't carry their schema at the
+    // declaration site (widget bindings must never leak into content code). The long-term home for a
+    // registration is still the codec's own declaration (SchemaRecord / SchemaCodecs.alt) whenever no widget
+    // is involved.
     private static void registerWidgetBindings() {
         // ---- MVEL expressions (the current system): one binding per PolyExpType leaf.
         // Chips come from the type's declared inputs; validation IS the MVEL compiler.
@@ -171,13 +145,12 @@ public final class PackEditor {
                 new Schema.Custom<>(mvelEditor(BlockExp.TYPE)));
         SchemaCodecs.registerCompanion(SimpleExp.TYPE.codec(),
                 new Schema.Custom<>(mvelEditor(SimpleExp.TYPE)));
-        // The color-modifier channel expressions (red/green/blue) are their OWN leaf codecs —
-        // without their own binding they fell back to a bare string field, unlike the identical
+        // The color-modifier channel expressions (red/green/blue) are their OWN leaf codecs - // without their own binding they fell back to a bare string field, unlike the identical
         // picker on colormap's x/y axes (IColormapExp).
         SchemaCodecs.registerCompanion(ColormapModExp.TYPE.codec(),
                 new Schema.Custom<>(mvelEditor(ColormapModExp.TYPE)));
 
-        // ---- Legacy exp4j expressions: same editor, exp4j variable chips.
+        // legacy exp4j expressions: same editor, exp4j variable chips
         SchemaCodecs.registerCompanion(ColormapExpressionProvider.CODEC,
                 new Schema.Custom<>(exp4jEditor(ColormapExpressionProvider.CODEC, "state_prop",
                         "BIOME_VALUE", "DAMAGE")));
@@ -207,7 +180,6 @@ public final class PackEditor {
         });
     }
 
-    // Expression editor for an MVEL PolyExpType: input chips + real compile check.
     private static ExpressionWidget.Def mvelEditor(PolyExpType<?> type) {
         return ExpressionWidget.define()
                 .variables(type.inputNames().toArray(String[]::new))
@@ -226,7 +198,6 @@ public final class PackEditor {
         return function != null ? def.functions(function) : def;
     }
 
-    // Widget validator that parses the raw text through the expression codec itself.
     private static ExpressionWidget.Validator compileCheck(Codec<?> codec) {
         return text -> {
             if (text.isBlank()) return "empty expression";
@@ -235,15 +206,10 @@ public final class PackEditor {
         };
     }
 
-    // -------------------- Companion (sidecar) assets --------------------
-
-    /**
-     * Projects a content type's {@link ContentTextures} (the runtime companion-asset convention,
-     * shared with the reloaders) onto the json's sibling directory as the generic
-     * {@link SidecarAssets} the editor renders: expected slots are matched (case-insensitively)
-     * against the files actually there, in declaration order; leftover siblings the naming
-     * convention still associates with the stem come last as {@link SidecarAssets.State#UNUSED}.
-     */
+    // Projects a content type's ContentTextures (the runtime companion-asset convention, shared with the
+    // reloaders) onto the json's sibling directory as the generic SidecarAssets the editor renders: expected
+    // slots are matched (case-insensitively) against the files actually there, in declaration order; leftover
+    // siblings the naming convention still associates with the stem come last as SidecarAssets.State#UNUSED.
     private static SidecarAssets sidecarsFromSpec(ContentTextures<?> spec) {
         return (jsonFile, pack, parsedValue) -> {
             Path dir = jsonFile.getParent();
@@ -295,22 +261,18 @@ public final class PackEditor {
         };
     }
 
-    /**
-     * The editor holds textures heterogeneously ({@code ContentTextures<?>}) and decodes each json
-     * to an untyped {@code Object}, so it can't know the value type statically — this is the one
-     * boundary where that erasure is unavoidable. Runtime callers pass a typed value.
-     */
+    // The editor holds textures heterogeneously (ContentTextures<?>) and decodes each json to an untyped
+    // Object, so it can't know the value type statically - this is the one boundary where that erasure is
+    // unavoidable. Runtime callers pass a typed value.
     @SuppressWarnings("unchecked")
     private static List<TextureSlot> expectedSlotsUnchecked(ContentTextures<?> spec, @Nullable Object parsedValue,
                                                             String stem) {
         return ((ContentTextures<Object>) spec).expectedSlots(parsedValue, stem);
     }
 
-    /**
-     * Best-effort lookup of a {@code ns:path} texture inside the opened pack (handles the
-     * lenient root that may or may not contain the {@code assets} level). Null when absent —
-     * which for a MISSING card can also mean "resolves from another pack or vanilla".
-     */
+    // Best-effort lookup of a ns:path texture inside the opened pack (handles the lenient root that may or may
+    // not contain the assets level). Null when absent - which for a MISSING card can also mean "resolves from
+    // another pack or vanilla".
     private static @Nullable Path resolvePackAsset(PackWorkspace pack, String location) {
         Identifier id = Identifier.tryParse(location);
         if (id == null) return null;

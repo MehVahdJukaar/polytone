@@ -59,7 +59,6 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
         return presets;
     }
 
-    /** Values for the entry's own section slider; {@code presets} feeds the pack-wide one. */
     public Map<String, T> getSectionPresets() {
         return sectionPresets;
     }
@@ -72,38 +71,26 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
         return valueTranslationKey;
     }
 
-    /**
-     * Optional grouping id. Entries sharing a section are listed together on the config screen
-     * under a sub-header titled by the {@code config.<namespace>.section.<id>} lang key.
-     */
     public Optional<String> getSection() {
         return section;
     }
 
-    /**
-     * Optional position of the entry's whole section in the tab; a section sorts by the smallest
-     * section_order among its entries, else alphabetically. Entry order stays with display_order.
-     */
     public Optional<Integer> getSectionOrder() {
         return sectionOrder;
     }
 
-    /** Optional cost hint appended to the option tooltip as a colored "Performance Impact" line. */
     public Optional<PerformanceImpact> getPerformanceImpact() {
         return performanceImpact;
     }
 
-    /** When true the option renders as a full-width row instead of a half-width paired button. */
     public boolean isWide() {
         return wide;
     }
 
-    /** Per-value preview images shown in the option tooltip (keyed by the value's string form). */
     public Map<String, TooltipImage> getTooltipImages() {
         return tooltipImages;
     }
 
-    /** A tooltip preview image: a resource-pack texture drawn at the given pixel size. */
     public record TooltipImage(Identifier texture, int width, int height) {
         public static final SchemaCodec<TooltipImage> CODEC = SchemaRecord.create(TooltipImage.class, i -> i.group(
                 i.field("texture", Identifier.CODEC, TooltipImage::texture),
@@ -112,10 +99,8 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
         ).apply(i, TooltipImage::new));
     }
 
-    /**
-     * Default value rendering for the options screen when no {@code value_translation} is given.
-     * Each subclass owns its type's formatting so {@link OptionHolder} stays type-agnostic.
-     */
+    // Default value rendering for the options screen when no value_translation is given. Each subclass owns
+    // its type's formatting so OptionHolder stays type-agnostic.
     public abstract MutableComponent formatValue(T value);
 
     static <A, T extends PolyConfig<A>> @NonNull DataResult<T> validatePresets(T o) {
@@ -130,10 +115,7 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
         return DataResult.success(o);
     }
 
-    /**
-     * The 10 shared fields, grouped in the order every subclass constructor lists them first.
-     * FieldRefs (not plain codec fields) so the codec editor renders configs structurally.
-     */
+    // FieldRefs rather than plain codec fields, so the codec editor renders configs structurally
     static <T, P extends PolyConfig<T>> SchemaRecord.Group10<P, Optional<String>, Map<String, T>, Map<String, T>,
             Integer, Optional<String>, Optional<Integer>, Optional<PerformanceImpact>, Boolean,
             Map<String, TooltipImage>, T> commonFields(SchemaRecord.Instance<P> i, Codec<T> typeCodec) {
@@ -151,7 +133,6 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
         );
     }
 
-    /** Wraps preset validation around the record codec while keeping its schema view. */
     static <T, P extends PolyConfig<T>> SchemaCodec<P> validated(SchemaCodec<P> record) {
         return SchemaCodec.lazy(record.validate(PolyConfig::validatePresets), record::schema);
     }

@@ -106,7 +106,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
         return level;
     }
 
-
     public void notifyInFrustum(boolean wasInFrustum) {
         this.inFrustumLastTick = wasInFrustum;
     }
@@ -248,12 +247,9 @@ public class CustomParticleInstance extends SingleQuadParticle {
         } else tickInternal();
     }
 
-    /**
-     * Preview-only synchronous tick: runs the physics/expression pass on the caller's thread,
-     * bypassing the async batch. Never called in normal gameplay (which always routes through
-     * {@link #tick()}); only the editor particle preview drives its sandbox particles this way,
-     * since it cannot join the game's async batch.
-     */
+    // Preview-only synchronous tick: runs the physics/expression pass on the caller's thread, bypassing the
+    // async batch. Never called in normal gameplay (which always routes through tick()); only the editor
+    // particle preview drives its sandbox particles this way, since it cannot join the game's async batch.
     public void tickSync() {
         if (this.removed) return;
         if (this.age >= this.lifetime) {
@@ -263,9 +259,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
         tickInternal();
     }
 
-    /**
-     * Spawn-time ticker pass for a newborn; deferred to the parallel batch when async is on.
-     */
     void initTick() {
         this.type.ticker.tick(this, level);
         this.setAge(0); // reset so the spawn-time pass doesn't age the particle
@@ -366,12 +359,10 @@ public class CustomParticleInstance extends SingleQuadParticle {
         return type.renderType.getLayer(model != null);
     }
 
-
     @Override
     public ParticleRenderType getGroup() {
         return this.type.getParticleGroup();
     }
-
 
     private static BlockState STATE_HACK = Blocks.AIR.defaultBlockState();
 
@@ -382,7 +373,6 @@ public class CustomParticleInstance extends SingleQuadParticle {
     public void setAge(int i) {
         this.age = i;
     }
-
 
     private boolean isBehindCamera() {
         Camera camera = PolytoneAsyncParticles.camera();

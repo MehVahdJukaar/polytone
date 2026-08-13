@@ -5,19 +5,15 @@ import net.mehvahdjukaar.polytone.bedrock.molang.MolangTranslator;
 
 import java.util.Locale;
 
-/**
- * @param namespace  namespace of the generated particles, also the pack folder they land in
- * @param path       file name of the generated particle, without extension
- * @param translator how Molang source becomes a Polytone expression
- * @param validate   run the generated json back through {@code CustomParticleType.CODEC}
- */
+// namespace of the generated particles, also the pack folder they land in file name of the generated particle,
+// without extension how Molang source becomes a Polytone expression run the generated json back through
+// CustomParticleType.CODEC
 public record ConversionOptions(String namespace, String path, MolangTranslator translator, boolean validate) {
 
     public static ConversionOptions of(String namespace, String path) {
         return new ConversionOptions(sanitize(namespace), sanitize(path), MolangTranslator.PASSTHROUGH, true);
     }
 
-    /** Reuses the effect's own identifier, which is already namespaced the same way ours are. */
     public static ConversionOptions from(BedrockDescription description) {
         String namespace = description.namespace();
         return of(namespace.isEmpty() ? "bedrock" : namespace, description.name());
@@ -31,7 +27,6 @@ public record ConversionOptions(String namespace, String path, MolangTranslator 
         return new ConversionOptions(namespace, path, translator, validate);
     }
 
-    /** Same sanitising, for effect ids referenced from elsewhere (event targets, mostly). */
     public static String identifierOf(String bedrockId) {
         int colon = bedrockId.indexOf(':');
         String namespace = colon < 0 ? "bedrock" : bedrockId.substring(0, colon);
@@ -47,7 +42,7 @@ public record ConversionOptions(String namespace, String path, MolangTranslator 
         return namespace + ":" + path + "_emitter";
     }
 
-    /** Identifiers only accept a narrow character set, and Bedrock names are not held to it. */
+    // Identifiers only accept a narrow character set, and Bedrock names are not held to it
     private static String sanitize(String raw) {
         StringBuilder out = new StringBuilder(raw.length());
         for (char c : raw.toLowerCase(Locale.ROOT).toCharArray()) {

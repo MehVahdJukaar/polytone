@@ -46,22 +46,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-/**
- * Live preview for biome effect modifiers. Renders a tiny stylised diorama - a grass shore with a small
- * oak and tufts of grass dropping into a water pool, under a sky/fog dome - through the game's own block
- * models offscreen (see {@link BiomeSceneRenderPass}).
- *
- * <p>A biome modifier only overrides an existing biome's effects, so the preview resolves a chosen
- * biome's real colours and layers the modifier's overrides on top; absent channels show the biome's own
- * colour. Sky and fog now live in the environment-attribute system (26.x), read statically from the
- * biome's attribute map (with the modifier's attribute modifications applied); grass/foliage/water still
- * come from the biome's own getters. A biome picker chooses the base biome, and a toggle swaps to
- * sampling the biome at the player's position. Without a world loaded, biomes can't resolve and the
- * scene falls back to plains-ish defaults.
- */
+// Live preview for biome effect modifiers. Renders a tiny stylised diorama - a grass shore with a small oak
+// and tufts of grass dropping into a water pool, under a sky/fog dome - through the game's own block models
+// offscreen (see BiomeSceneRenderPass).
 public final class BiomeScenePreview implements TabPreview {
 
-    // Plains-ish fallbacks for when no biome resolves (no world loaded).
     private static final int DEF_SKY = 0x78A7FF;
     private static final int DEF_FOG = 0xC0D8FF;
     private static final int DEF_GRASS = 0x91BD59;
@@ -237,21 +226,17 @@ public final class BiomeScenePreview implements TabPreview {
             }
         }
 
-        // Oak at (2,2): trunk on the shore top, a rounded canopy of tinted leaves.
         for (int y = 2; y <= 4; y++) b.add(new Placement(new BlockPos(2, y, 2), log, Tint.NONE));
         int[][] ring = {{1, 2}, {3, 2}, {2, 1}, {2, 3}, {1, 1}, {3, 3}, {1, 3}, {3, 1}};
         for (int[] o : ring) b.add(new Placement(new BlockPos(o[0], 4, o[1]), leaves, Tint.FOLIAGE));
         int[][] cap = {{2, 2}, {1, 2}, {3, 2}, {2, 1}, {2, 3}};
         for (int[] o : cap) b.add(new Placement(new BlockPos(o[0], 5, o[1]), leaves, Tint.FOLIAGE));
 
-        // Grass tufts on the shore, clear of the tree footprint and the pool.
         int[][] tufts = {{0, 0}, {5, 1}, {6, 2}, {2, 5}, {0, 4}};
         for (int[] o : tufts) b.add(new Placement(new BlockPos(o[0], 2, o[1]), tuft, Tint.GRASS));
 
         return List.copyOf(b);
     }
-
-    // --- small layout helpers ------------------------------------------------------------------
 
     private static void addField(JComponent box, JComponent field) {
         field.setAlignmentX(Component.LEFT_ALIGNMENT);

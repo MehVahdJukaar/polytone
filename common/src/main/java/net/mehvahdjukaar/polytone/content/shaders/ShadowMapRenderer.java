@@ -71,7 +71,6 @@ public class ShadowMapRenderer {
     // in its own pipeline). TRANSLUCENT and TRIPWIRE are intentionally skipped.
     private static final ChunkSectionLayer[] SHADOW_LAYERS = {ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT};
 
-    // Active parameters, pushed in by ShadowMapManager on reload (see ShadowMapSettings).
     private ShadowMapSettings settings = ShadowMapSettings.DEFAULT;
 
     // Reuse state: when we skip a re-render, the last map is kept and only re-aligned for camera motion.
@@ -106,7 +105,6 @@ public class ShadowMapRenderer {
     // Block entities to draw this pass, gathered alongside the sections (or from Sodium's re-culled lists).
     private final List<BlockEntity> shadowBlockEntities = new ArrayList<>();
 
-    // Swap in freshly reloaded settings; force a fresh render (and lazy target rebuild) on the next frame.
     public void setSettings(ShadowMapSettings settings) {
         this.settings = settings;
         this.hasRendered = false;
@@ -472,7 +470,6 @@ public class ShadowMapRenderer {
                     beDispatcher.submit(state, poseStack, submitNodes, camState);
                 }
             } catch (Exception e) {
-                // Never let one broken block-entity renderer kill the frame.
             }
             poseStack.popPose();
         }

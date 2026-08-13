@@ -37,10 +37,8 @@ import java.util.OptionalDouble;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * Owns post-chain activators (turn a {@link PostChain} on/off based on a condition) and the
- * {@code PolyGlobals} UBO that gets bound to every render pass.
- */
+// Owns post-chain activators (turn a PostChain on/off based on a condition) and the PolyGlobals UBO that gets
+// bound to every render pass.
 public class PostChainsManager extends ContentManager<PostChainActivator> {
 
     public static final String GLOBALS_NAME = "PolyGlobals";
@@ -106,21 +104,19 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         return globalUniforms;
     }
 
-    /** Called for every linked program with the uniform blocks it declares (see {@code GlProgramMixin}). */
+    // Called for every linked program with the uniform blocks it declares (see GlProgramMixin)
     public static void onProgramLinked(Set<String> declaredUniforms) {
         if (declaredUniforms.contains(GLOBALS_NAME)) globalsDeclared = true;
         if (declaredUniforms.contains(SHADOW_UBO_NAME)) shadowUboDeclared = true;
     }
 
-    /** Called when a program turned out to declare one of {@link #DYNAMIC_SAMPLERS}. */
+    // Called when a program turned out to declare one of DYNAMIC_SAMPLERS
     public static void onDynamicSamplerDeclared(String name) {
         if (SHADOW_SAMPLER_NAME.equals(name)) shadowSamplerDeclared = true;
     }
 
-    /**
-     * Cheap gate for the per-draw hook: true only once some shader has asked for anything of ours.
-     * Keeps a vanilla setup out of {@code setPipeline} entirely.
-     */
+    // Cheap gate for the per-draw hook: true only once some shader has asked for anything of ours. Keeps a
+    // vanilla setup out of setPipeline entirely.
     public boolean hasAnyPassBindings() {
         return globalsDeclared || shadowUboDeclared || shadowSamplerDeclared || !samplersByShader.isEmpty();
     }
@@ -141,7 +137,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         }
     }
 
-    /** Whether the shadow map should be rendered this frame (some active chain declared use_shadow_map). */
+    // Whether the shadow map should be rendered this frame (some active chain declared use_shadow_map).
     public boolean anyActiveEffectUsesShadowMap() {
         synchronized (activators) {
             for (var a : activators) {
@@ -151,7 +147,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         return false;
     }
 
-    /** External callers (PostChainActivator) register their custom samplers under a pass shader id. */
+    // External callers (PostChainActivator) register their custom samplers under a pass shader id.
     public void registerSamplers(Identifier shaderId, Map<String, Identifier> samplers) {
         if (samplers.isEmpty()) return;
         samplersByShader.computeIfAbsent(shaderId, k -> new ArrayList<>()).add(samplers);
@@ -165,11 +161,9 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         }
     }
 
-    /**
-     * Binds custom textures declared in a post chain's {@code samplers} map to any pass whose
-     * pipeline fragment shader matches. Gated on {@code declaredUniforms} (which includes sampler
-     * names) so we never bind a sampler the program doesn't declare, see {@code GlRenderPassMixin}.
-     */
+    // Binds custom textures declared in a post chain's samplers map to any pass whose pipeline fragment shader
+    // matches. Gated on declaredUniforms (which includes sampler names) so we never bind a sampler the program
+    // doesn't declare, see GlRenderPassMixin.
     public void bindExtraSamplers(RenderPass pass, RenderPipeline pipeline, Set<String> declaredUniforms) {
         // the light-POV depth map rendered by ShadowMapRenderer; only bound once it exists
         if (declaredUniforms.contains(SHADOW_SAMPLER_NAME)) {
@@ -224,11 +218,9 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         }
     }
 
-    /**
-     * Standard placement: add every active chain to the level FrameGraph. Runs before the
-     * first-person hand is drawn, so depth-reading chains don't see held items. Used when
-     * {@code post_chains_after_hand} is off. See {@link #runAfterHand} for the default path.
-     */
+    // Standard placement: add every active chain to the level FrameGraph. Runs before the first-person hand is
+    // drawn, so depth-reading chains don't see held items. Used when post_chains_after_hand is off. See
+    // runAfterHand for the default path.
     public void addPostPass(int width, int height, LevelTargetBundle targets, FrameGraphBuilder frameGraphBuilder, GpuBufferSlice gpuBufferSlice, CameraRenderState cameraRenderState) {
         ShaderManager sm = Minecraft.getInstance().getShaderManager();
         Polytone.POST_TARGETS.ensureAllocated(width, height);
@@ -256,7 +248,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     private TextureTarget worldDepthSnapshot;
     private boolean worldDepthCaptured = false;
 
-    /** Copy the world depth before vanilla clears it for the hand. No-op unless a chain is active. */
+    // Copy the world depth before vanilla clears it for the hand. No-op unless a chain is active.
     public void snapshotWorldDepth(RenderTarget main) {
         worldDepthCaptured = false;
         if (!hasActiveChains()) return;
@@ -265,7 +257,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         worldDepthCaptured = true;
     }
 
-    /** Fold the saved world depth back into the main depth, then run every active chain. */
+    // Fold the saved world depth back into the main depth, then run every active chain
     public void runAfterHand(RenderTarget main, GraphicsResourceAllocator resourceAllocator) {
         if (!worldDepthCaptured) return;
         worldDepthCaptured = false;

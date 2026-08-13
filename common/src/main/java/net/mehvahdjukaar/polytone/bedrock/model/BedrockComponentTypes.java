@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Every component we know how to read. Ids are namespace-less, see {@link BedrockComponents}. */
 public class BedrockComponentTypes {
 
     private static final Map<String, BedrockComponentType<?>> BY_ID = new LinkedHashMap<>();

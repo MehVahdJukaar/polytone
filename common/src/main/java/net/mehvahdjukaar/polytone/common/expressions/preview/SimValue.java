@@ -19,7 +19,7 @@ public final class SimValue {
         return new SimValue(label, min, max, def, step);
     }
 
-    /** Called by the sim proxy accessors: marks the input as read and returns the slider value. */
+    // marks the input as read, so a panel can show only the sliders the expression touched
     public double get() {
         read = true;
         return value;

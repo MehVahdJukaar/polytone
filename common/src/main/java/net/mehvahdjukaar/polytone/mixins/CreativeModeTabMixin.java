@@ -15,18 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Collection;
 import java.util.Set;
 
-/**
- * Applies Polytone's creative tab modifiers (item additions, removals and reordering) directly on
- * the final tab contents, at the tail of {@code buildContents}.
- * <p>
- * We deliberately do NOT hook into the NeoForge {@code BuildCreativeModeTabContentsEvent} or the
- * Fabric {@code ItemGroupEvents}/{@code CreativeModeTabEvents}: those run at an undefined order
- * relative to other mods, so Polytone could end up reordering before another mod has added its
- * items. By injecting here with a higher-than-default priority, we are guaranteed to run after the
- * NeoForge event (fired inside this method body) and after Fabric API's own tail injection
- * (priority 1000), every single time. Category tabs are built before the search tab, so the search
- * tab still aggregates our modifications.
- */
+// Applies Polytone's creative tab modifiers (item additions, removals and reordering) directly on the final
+// tab contents, at the tail of buildContents.
 @Mixin(value = CreativeModeTab.class, priority = 1500)
 public abstract class CreativeModeTabMixin {
 

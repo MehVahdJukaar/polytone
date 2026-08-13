@@ -10,12 +10,8 @@ import org.joml.Quaternionf;
 
 public record ItemModelParticleEmitter(ParticleContextExpression exp) {
 
-    /**
-     * Converts the top of the PoseStack (in view space) into world-space by applying the camera's matrix.
-     *
-     * @param poseStack The current PoseStack, in view space.
-     * @return A Matrix4f representing the model's matrix in world space.
-     */
+    // Converts the top of the PoseStack (in view space) into world-space by applying the camera's matrix. The
+    // current PoseStack, in view space. A Matrix4f representing the model's matrix in world space.
     public static Matrix4f getWorldMatrixFromModelMatrix(PoseStack poseStack) {
         Matrix4f modelView = new Matrix4f(poseStack.last().pose());
 

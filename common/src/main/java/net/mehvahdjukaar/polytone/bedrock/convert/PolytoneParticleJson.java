@@ -7,11 +7,9 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleRenderMode;
 
-/**
- * Builds a {@code polytone/custom_particles/*.json}. Keeping the field names in one class means the
- * converter never spells them out, and {@link #validate()} runs the result back through the real
- * loading codec - the whole reason this importer lives in the mod instead of in a separate tool.
- */
+// Builds a polytone/custom_particles/*.json. Keeping the field names in one class means the converter never
+// spells them out, and validate() runs the result back through the real loading codec - the whole reason this
+// importer lives in the mod instead of in a separate tool.
 public class PolytoneParticleJson {
 
     private final JsonObject root = new JsonObject();
@@ -70,13 +68,13 @@ public class PolytoneParticleJson {
         return this;
     }
 
-    /** A field of the {@code initializer}: evaluated once, when the particle is born. */
+    // A field of the initializer: evaluated once, when the particle is born
     public PolytoneParticleJson init(String key, String expression) {
         initializer.addProperty(key, expression);
         return this;
     }
 
-    /** A field of the {@code ticker}: re-evaluated every tick. */
+    // A field of the ticker: re-evaluated every tick
     public PolytoneParticleJson tick(String key, String expression) {
         ticker.addProperty(key, expression);
         return this;
@@ -105,7 +103,6 @@ public class PolytoneParticleJson {
         return out;
     }
 
-    /** Decodes what we just built with the codec that will load it in game. */
     public DataResult<CustomParticleType> validate() {
         return CustomParticleType.CODEC.parse(JsonOps.INSTANCE, build());
     }

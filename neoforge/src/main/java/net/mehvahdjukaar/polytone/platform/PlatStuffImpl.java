@@ -258,7 +258,7 @@ public class PlatStuffImpl {
     public static boolean dontCheckLoading = false;
 
     public static void setRenderType(Block block, ChunkSectionLayer renderType) {
-        // ItemBlockRenderTypes removed in 26.1 — render layer is now baked per-quad via materialInfo().layer()
+        // ItemBlockRenderTypes removed in 26.1 - render layer is now baked per-quad via materialInfo().layer()
     }
 
     public static void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken, float skyLight, float flicker, int torchX,

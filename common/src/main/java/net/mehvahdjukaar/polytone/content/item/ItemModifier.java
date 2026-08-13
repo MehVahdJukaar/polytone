@@ -161,7 +161,6 @@ public record ItemModifier(Optional<IColorGetter> barColor,
         return !tooltips.isEmpty() || !removedTooltips.isEmpty() || barColor.isPresent() || hasClientItemExtensions();
     }
 
-    /** Whether this modifier drives any NeoForge {@code IClientItemExtensions} hook (so it must be wrapped). */
     public boolean hasClientItemExtensions() {
         return wornModel.isPresent() || armorTint.isPresent() || armorTexture.isPresent()
                 || armPose.isPresent() || scopeOverlay.isPresent() || bobAsEntity.isPresent() || spreadAsEntity.isPresent();

@@ -13,11 +13,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-/**
- * Fabric counterpart to NeoForge's {@code IClientItemExtensions#getGenericArmorModel}: swaps the worn armor model for
- * the item's Polytone {@code worn_model} override. The replacement is a {@link net.minecraft.client.model.HumanoidModel}
- * and is submitted with the same render state, so it is posed automatically by {@code setupAnim} (no manual property copy).
- */
+// Fabric counterpart to NeoForge's IClientItemExtensions#getGenericArmorModel: swaps the worn armor model for
+// the item's Polytone worn_model override.
 @Mixin(EquipmentLayerRenderer.class)
 public abstract class EquipmentLayerRendererMixin {
 

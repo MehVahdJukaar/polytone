@@ -3,11 +3,8 @@ package net.mehvahdjukaar.polytone.common.expressions.preview;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * The full set of sim proxies for one editor preview. Installed via {@link PreviewContext}; the MVEL
- * variable binding swaps each one in for its live singleton (see ExpUtils). Each preview panel owns
- * its own instance, so slider state is independent per open tab.
- */
+// Installed via PreviewContext; the MVEL variable binding swaps each proxy in for its live singleton.
+// One instance per preview panel, so slider state is independent per open tab.
 public final class SimProxies {
 
     public final SimGlobalProxy global = new SimGlobalProxy();
@@ -23,7 +20,6 @@ public final class SimProxies {
         this.values = List.copyOf(all);
     }
 
-    /** All inputs across proxies, in UI display order. */
     public List<SimValue> values() {
         return values;
     }

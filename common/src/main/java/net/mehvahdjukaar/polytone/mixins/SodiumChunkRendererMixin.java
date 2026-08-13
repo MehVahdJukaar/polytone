@@ -11,20 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Captures the terrain atlas {@code GpuSampler} Sodium was handed, to feed back into the shadow-map
- * replay's {@code drawChunkLayer} (see {@link SodiumShadowRenderer}).
- *
- * <p>Since Sodium 0.9.2 terrain is drawn through Mojang's {@code RenderPass}/{@code RenderPipeline}
- * instead of Sodium's own {@code GlProgram}, so our expression-uniform UBOs reach chunk shaders
- * through {@link RenderPassMixin} like every other draw - no raw-GL uniform-block binding needed
- * here anymore, and neither is "Sodium Core Shader Support" for that path. The shadow-pass
- * framebuffer swap moved to {@link SodiumDefaultChunkRendererMixin} for the same reason: {@code begin}
- * no longer binds anything, the attachments are chosen when the render pass is created.
- *
- * <p>{@code require = 0}: this targets a Sodium internal that may change across versions; if the
- * method isn't found we silently no-op rather than crash.
- */
+// Captures the terrain atlas GpuSampler Sodium was handed, to feed back into the shadow-map replay's
+// drawChunkLayer (see SodiumShadowRenderer).
 @Pseudo
 @Mixin(ShaderChunkRenderer.class)
 public abstract class SodiumChunkRendererMixin {

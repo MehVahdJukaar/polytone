@@ -1,6 +1,6 @@
 ## Expression-Driven Uniforms
 
-You can define custom per-effect float uniforms driven by Polytone expressions directly in your polytone post shader file. This gives you full control over shader parameters at runtime — no need to hardcode values.
+You can define custom per-effect float uniforms driven by Polytone expressions directly in your polytone post shader file. This gives you full control over shader parameters at runtime - no need to hardcode values.
 
 Add an `expression_uniforms` map to your polytone post shader JSON:
 
@@ -41,4 +41,4 @@ You can bind arbitrary textures to your post shader passes with a `samplers` map
 }
 ```
 
-The sampler is bound to every pass in the chain that declares it. The name must match a `sampler2D` declared in that pass pipeline's bind-group layout and actually used by the shader — Polytone only binds samplers the program declares, so an unused/undeclared name is silently skipped. Textures are sampled with linear filtering and repeat (tiling) wrap.
+The sampler is bound to every pass in the chain that declares it. The name must match a `sampler2D` declared in that pass pipeline's bind-group layout and actually used by the shader - Polytone only binds samplers the program declares, so an unused/undeclared name is silently skipped. Textures are sampled with linear filtering and repeat (tiling) wrap.

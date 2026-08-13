@@ -31,10 +31,8 @@ public interface IBlockExp {
 
     double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state);
 
-    /**
-     * Variant that binds {@code v}, an externally supplied value (e.g. an expression-driven model
-     * selector's result). Implementations that don't support it simply ignore the value.
-     */
+    // Variant that binds v, an externally supplied value (e.g. an expression-driven model selector's result).
+    // Implementations that don't support it simply ignore the value.
     default double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state, double v) {
         return evaluate(level, pos, state);
     }
