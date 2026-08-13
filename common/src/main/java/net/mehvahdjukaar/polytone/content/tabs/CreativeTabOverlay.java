@@ -18,9 +18,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-// Editor-only inspector over the creative screen while item picking is on: items the edited
-// modifier removes are washed red, additions green, already picked ones amber. Clicking reports
-// the item to the editor instead of grabbing it. Never touches the tab or the menu.
+// Editor-only inspector over the creative screen while picking: removals washed red, additions green,
+// already picked amber. Clicking reports the item to the editor instead of grabbing it.
 public final class CreativeTabOverlay {
 
     private static final int SLOT = 16;

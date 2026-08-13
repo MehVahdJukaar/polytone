@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-// Base for a pack declared config entry (bool/number/string): the json fields every type accepts.
-// validated wraps validation with comapFlatMap since 1.21.1 codecui's SchemaCodec has no validate.
 public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
 
     private final Optional<String> valueTranslationKey;

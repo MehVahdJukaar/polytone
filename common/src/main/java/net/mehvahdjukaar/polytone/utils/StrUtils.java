@@ -7,20 +7,17 @@ import java.util.stream.Collectors;
 
 public final class StrUtils {
 
-    // snake_case or namespaced id to Title Case: "foo:bar_baz" -> "Foo Bar Baz"
     public static String readableName(String name) {
         return Arrays.stream(name.replace(':', '_').split("_"))
                 .map(StringUtils::capitalize)
                 .collect(Collectors.joining(" "));
     }
 
-    // "a/b/c" -> "a/b/", no slash -> ""
     public static String directoryOf(String path) {
         int slash = path.lastIndexOf('/');
         return slash < 0 ? "" : path.substring(0, slash + 1);
     }
 
-    // "a/b/c" -> "c", no slash -> the whole string
     public static String lastSegment(String path) {
         int slash = path.lastIndexOf('/');
         return slash < 0 ? path : path.substring(slash + 1);

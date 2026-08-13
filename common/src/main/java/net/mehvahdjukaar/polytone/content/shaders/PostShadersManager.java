@@ -64,8 +64,7 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
                     }
                     effects.add(result.getOrThrow());
                 } catch (Exception ex) {
-                    // Belt-and-suspenders: never let one bad polytone post_shaders/*.json file
-                    // abort the reload for the rest of the pack.
+                    // never let one bad post_shaders json abort the reload for the rest of the pack
                     Polytone.LOGGER.warn("Failed to parse post shader '{}': {}", id, ex.getMessage());
                 }
             }
@@ -88,14 +87,12 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
 
     public void tick() {
         synchronized (effects) {
-            // Build the desired set (in render order) honouring priority
             List<PostChainEffect> desired = new ArrayList<>();
             for (PostChainEffect e : effects) {
                 if (e.shouldBeOn()) desired.add(e);
             }
             desired.sort(Comparator.comparing(PostChainEffect::priority));
 
-            // Close any chains we no longer want
             Map<PostChainEffect, PostChain> keep = new IdentityHashMap<>();
             for (var entry : activeChains.entrySet()) {
                 if (desired.contains(entry.getKey())) {
@@ -105,7 +102,6 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
                 }
             }
 
-            // Open any new chains, preserving desired order
             activeChains.clear();
             for (PostChainEffect e : desired) {
                 if (failedChains.contains(e.postChain())) continue; // skip - already logged once

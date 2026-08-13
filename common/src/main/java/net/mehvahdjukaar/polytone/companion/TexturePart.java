@@ -4,9 +4,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
-// One companion texture family a content type carries, declared on its manager's Spec.
-// Declaration order matters: the first part is the main feature and claims plain <stem>.png files
-// no other part explains. Managers keep these as constants and compare by identity.
+// One companion texture family a content type carries. Declaration order matters: the first part is
+// the main feature and claims plain <stem>.png files no other part explains.
 public record TexturePart<V>(Naming naming, String label,
                              Function<V, @Nullable Object> declaredGetter) {
 

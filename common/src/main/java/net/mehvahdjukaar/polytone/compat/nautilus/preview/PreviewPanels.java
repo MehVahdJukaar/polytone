@@ -15,7 +15,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 
-// layout bits shared by the remote-control style preview panels (gui modifiers, creative tabs)
 final class PreviewPanels {
 
     static void addRow(JComponent box, JComponent comp) {

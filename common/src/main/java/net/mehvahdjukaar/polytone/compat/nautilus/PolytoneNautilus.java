@@ -44,7 +44,6 @@ public final class PolytoneNautilus {
 
     private static final String WIKI_BASE = "https://github.com/MehVahdJukaar/polytone/wiki/";
 
-    // Special preview panels keyed by content folder; attached to the matching CodecEntry as it's built.
     private static final Map<String, TabPreview.Factory> PREVIEWS = Map.of(
             "colormaps", ColormapPreview::new,
             "gui_modifiers", GuiModifierPreviewPanel::new,
@@ -53,8 +52,7 @@ public final class PolytoneNautilus {
             "biome_modifiers", BiomeScenePreview::new,
             "creative_tab_modifiers", CreativeTabPreviewPanel::new);
 
-    // Bundled Nautilus icons reused by content folder - only the types with an obvious glyph;
-    // the rest fall back to Nautilus' generic content icon.
+    // only the types with an obvious glyph; the rest fall back to Nautilus' generic content icon
     private static final Map<String, String> ICONS = Map.ofEntries(
             Map.entry("colormaps", "palette"),
             Map.entry("biome_modifiers", "trees"),
@@ -84,7 +82,6 @@ public final class PolytoneNautilus {
             String folder = manager.primaryFolder();
             if (folder == null) continue;
 
-            // Nautilus derives the schema from the raw codec itself - Polytone doesn't need to build it.
             CodecEntry entry = new CodecEntry(manager.name, "Polytone", SchemaCodec.wrap(codec), Side.CLIENT_RESOURCES,
                     Polytone.MOD_ID + "/" + folder);
 
@@ -146,15 +143,12 @@ public final class PolytoneNautilus {
                         .validator(compileCheck(LightmapContextExpression.CODEC))));
     }
 
-    // Expression editor for an MVEL PolyExpType: input chips + real compile check.
     private static ExpressionWidget.Def mvelEditor(PolyExpType<?> type) {
         return ExpressionWidget.define()
                 .variables(type.inputNames().toArray(String[]::new))
                 .validator(compileCheck(type.codec()));
     }
 
-    // Expression editor for an exp4j PolytoneExpression codec: the family's base variables
-    // plus the flavor's own extras, compile-check through the codec itself.
     private static ExpressionWidget.Def exp4jEditor(Codec<?> codec, @Nullable String function,
                                                     String... extraVars) {
         ExpressionWidget.Def def = ExpressionWidget.define()
@@ -164,7 +158,6 @@ public final class PolytoneNautilus {
         return function != null ? def.functions(function) : def;
     }
 
-    // Widget validator that parses the raw text through the expression codec itself.
     private static ExpressionWidget.Validator compileCheck(Codec<?> codec) {
         return text -> {
             if (text.isBlank()) return "empty expression";

@@ -33,7 +33,6 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
         REGISTRY.add(this);
     }
 
-    // fluent, order-independent replacement for a telescoping constructor
     public static final class Spec<O> {
         private final String name;
         private String[] folderNames = new String[0];
@@ -94,7 +93,6 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
         return names.length == 0 ? null : names[0];
     }
 
-    // shown as a help link in the pack editor; managers without one just get no button
     public @Nullable String wikiPage() {
         return wikiPage;
     }
@@ -104,13 +102,11 @@ public abstract class ContentManager<O, T> extends PartialReloader<T> {
         return Parsed.batchParseOnlyEnabled(jsons, this.contentCodec(), ops, name);
     }
 
-    // keeps condition-disabled entries too
     protected final Parsed.SortedMap<O> parseAllJsons(
             Map<ResourceLocation, JsonElement> jsons, DynamicOps<JsonElement> ops) {
         return Parsed.batchParseAlways(jsons, this.contentCodec(), ops, name);
     }
 
-    // condition-disabled entries decode with partialCodec instead
     protected final Parsed.SortedMap<O> parseJsonsOrPartial(
             Map<ResourceLocation, JsonElement> jsons, Decoder<O> partialCodec, DynamicOps<JsonElement> ops) {
         return Parsed.batchParseOrPartial(jsons, this.contentCodec(), partialCodec, ops, name);

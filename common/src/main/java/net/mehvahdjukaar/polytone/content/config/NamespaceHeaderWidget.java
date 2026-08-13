@@ -10,7 +10,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 class NamespaceHeaderWidget extends Button {
-    // White sprites under assets/polytone/textures/gui/sprites/config; blitted 1:1 on the pixel grid.
     private static final ResourceLocation CHEVRON_COLLAPSED = Polytone.res("config/section_collapsed");
     private static final ResourceLocation CHEVRON_EXPANDED = Polytone.res("config/section_expanded");
     // 7x7 native: one shy of the 8px glyph, since bold text gains a pixel and would otherwise overpower it.
@@ -29,7 +28,6 @@ class NamespaceHeaderWidget extends Button {
     @Override
     protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         boolean highlighted = this.active && this.isHoveredOrFocused();
-        // Faint full-row highlight so the header reads as a clickable strip, vanilla list-row style.
         if (highlighted) {
             guiGraphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(),
                     this.getY() + this.getHeight(), 0x22FFFFFF);

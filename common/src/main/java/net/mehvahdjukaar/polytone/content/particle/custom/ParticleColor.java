@@ -21,7 +21,6 @@ import java.util.Locale;
 // compound {colormap, cache} naming the policy.
 public record ParticleColor(IColorGetter getter, CachePolicy policy) {
 
-    // compound form: pick the colormap and, optionally, how it refreshes
     private static final SchemaCodec<ParticleColor> WITH_OPTIONS = SchemaRecord.create(ParticleColor.class, i -> i.group(
             i.field("colormap", Colormap.CODEC, ParticleColor::getter),
             i.optional("cache", CachePolicy.CODEC, CachePolicy.NONE, ParticleColor::policy)

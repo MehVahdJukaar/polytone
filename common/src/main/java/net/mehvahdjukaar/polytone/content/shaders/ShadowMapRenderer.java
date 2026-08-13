@@ -49,7 +49,6 @@ import java.util.Map;
 // reloadable settings and feeds them here via setSettings().
 public class ShadowMapRenderer {
 
-    // Active parameters, pushed in by ShadowMapManager on reload (see ShadowMapSettings).
     private ShadowMapSettings settings = ShadowMapSettings.DEFAULT;
 
     // Reuse state: when we skip a re-render, the last map is kept and only re-aligned for camera motion.
@@ -78,7 +77,6 @@ public class ShadowMapRenderer {
     private ShaderInstance cutoutDepthShader = null;
     private boolean depthShadersFailed = false;
 
-    // Swap in freshly reloaded settings; force a fresh render (and lazy target rebuild) on the next frame.
     public void setSettings(ShadowMapSettings settings) {
         this.settings = settings;
         this.hasRendered = false;
@@ -259,7 +257,6 @@ public class ShadowMapRenderer {
         shadowMatrix.set(lightProj).mul(lightView);
     }
 
-    // Signed distance from a light-space coordinate back to the nearest texel boundary.
     private static double offsetToTexelGrid(double lightSpaceCoord, double texel) {
         return lightSpaceCoord - Math.round(lightSpaceCoord / texel) * texel;
     }
@@ -278,11 +275,9 @@ public class ShadowMapRenderer {
     // paths; unlike vanilla we include the camera entity so the player casts a shadow in first person.
     private void drawEntities(Minecraft mc, ClientLevel level, Vec3 camPos, ShadowCasterVolume volume) {
         var dispatcher = mc.getEntityRenderDispatcher();
-        // The frame's shared buffer, borrowed empty and handed back empty: renderLevel flushes it in
-        // full before the weather block, well before the TAIL we run at, and our endBatch below closes
-        // whatever we put in. Anything a mod leaves pending there past that flush would be drawn into
-        // the shadow map instead of the screen - a private buffer source is the fix if that ever shows
-        // up, together with sorting entities by type (see SHADOW_PERF.md).
+        // The frame's shared buffer, borrowed empty and handed back empty: renderLevel flushes it in full
+        // before the weather block, well before the TAIL we run at, and our endBatch below closes whatever we
+        // put in. Anything a mod leaves pending past that flush would be drawn into the shadow map instead.
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
 
         // Swap the light matrices onto the RenderSystem globals. The pushMatrix()/popMatrix() pair MUST
@@ -396,7 +391,6 @@ public class ShadowMapRenderer {
         try {
             beDispatcher.render(be, partial, poseStack, bufferSource);
         } catch (Exception e) {
-            // Never let one broken block-entity renderer kill the frame.
         }
         poseStack.popPose();
     }

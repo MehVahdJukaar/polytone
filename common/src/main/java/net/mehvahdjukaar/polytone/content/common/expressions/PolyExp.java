@@ -16,11 +16,9 @@ public abstract class PolyExp {
         this.expr = expr;
     }
 
-    /**
-     * Evaluates the expression and coerces the result to a double. Never throws: a misbehaving
-     * expression (e.g. a runtime type mismatch MVEL can't handle) logs once and returns 0 instead
-     * of crashing the render/tick loop.
-     */
+    // Evaluates the expression and coerces the result to a double. Never throws: a misbehaving expression
+    // (e.g. a runtime type mismatch MVEL can't handle) logs once and returns 0 instead of crashing the
+    // render/tick loop.
     protected double executeDouble(Map<String, Object> vars) {
         try {
             return toDouble(MVEL.executeExpression(expr, vars));
@@ -30,7 +28,7 @@ public abstract class PolyExp {
         }
     }
 
-    /** As {@link #executeDouble} but coerces to a boolean; returns false on failure. */
+    // As executeDouble but coerces to a boolean; returns false on failure
     protected boolean executeBool(Map<String, Object> vars) {
         try {
             return toBool(MVEL.executeExpression(expr, vars));

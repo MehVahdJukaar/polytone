@@ -139,7 +139,6 @@ public final class PolytoneAsyncParticles {
             inFlight = null;
             tickCamera = null; // async-off path falls back to a live lookup
         }
-        // replay worker-requested main-thread actions (spawns, sounds)
         Runnable action;
         while ((action = DEFERRED_MAIN_ACTIONS.poll()) != null) {
             action.run();

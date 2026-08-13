@@ -9,9 +9,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 // How a TexturePart's files are named relative to its content stem: a literal suffix
-// (<stem><suffix>.png) or the tinted family (<stem>.png is the default, <stem>_<n>.png is tint n).
-// The statics are the only parser/printer for the convention, shared by reload and editor, so the
-// two can't disagree (the old regex did: stems containing digits fell out of grouping).
+// (<stem><suffix>.png) or the tinted family (<stem>.png default, <stem>_<n>.png for tint n).
+// The statics are the only parser/printer for it, shared by reload and editor.
 public sealed interface Naming {
 
     int DEFAULT_INDEX = -1;
@@ -23,7 +22,6 @@ public sealed interface Naming {
 
     @Nullable Integer indexOf(String fileName, String stem);
 
-    // reverse parse with no stem known upfront, for orphan routing
     @Nullable ParsedName parseName(String baseName);
 
     String slotLabel(String partLabel, int index);

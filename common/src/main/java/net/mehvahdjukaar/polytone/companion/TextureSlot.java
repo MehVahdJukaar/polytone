@@ -7,10 +7,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
-// One texture a piece of content expects (or can use), in the abstract: pure file names, no IO.
-// acceptedNames are the names that can fill it, canonical first - tint 0 of a block modifier accepts
-// foo_0.png but falls back to foo.png. Bound slots (filling/fillingRemote) are required, unbound
-// ones aren't: the reload auto attaches a default colormap when their texture happens to exist.
+// One texture a piece of content expects, in the abstract: pure file names, no IO. acceptedNames are
+// the names that can fill it, canonical first. Bound slots are required, unbound ones aren't.
 public record TextureSlot(List<String> acceptedNames, String label,
                           @Nullable Colormap target, @Nullable ResourceLocation remoteLocation) {
 
@@ -45,7 +43,6 @@ public record TextureSlot(List<String> acceptedNames, String label,
         return acceptedNames.getFirst();
     }
 
-    // tries each accepted name in order; shared by the reload driver and the editor view
     public <T> @Nullable T findFirstMatch(Function<String, @Nullable T> lookup) {
         for (String fileName : acceptedNames) {
             T found = lookup.apply(fileName);

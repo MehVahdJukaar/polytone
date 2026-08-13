@@ -36,11 +36,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
-// Creative tab modifiers decorate something that only exists in the running game, so this panel is a
-// remote control rather than a renderer: apply pushes the edited modifier onto the live tabs with no
-// reload, pick turns the creative screen into an item picker writing into removals/additions.
-// While picking, the overlay also washes every item the current removals match, which is the only
-// practical way to check a tag or regex predicate.
+// Creative tab modifiers decorate something that only exists in the running game, so this is a remote
+// control, not a renderer: apply pushes onto the live tabs, pick writes into removals/additions.
 public final class CreativeTabPreviewPanel implements TabPreview {
 
     private static final String FOLDER = "creative_tab_modifiers";
@@ -121,7 +118,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         this.currentJson = json;
         this.currentModifier = value instanceof CreativeTabModifier m ? m : null;
         applyButton.setEnabled(currentModifier != null);
-        // The in-game overlay highlights against whatever the form currently says.
         CreativeTabPreview.setEdited(fileId, currentModifier);
         if (applyOnNextValue && currentModifier != null) {
             applyOnNextValue = false;
@@ -189,8 +185,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         }
     }
 
-    // Picking and writing are useless if the file doesn't reach the tab being looked at; say so early
-    // rather than letting the author collect items that end up doing nothing.
     private void warnIfTabNotTargeted() {
         Minecraft.getInstance().execute(() -> {
             boolean reaches = CreativeTabPreview.targetsOpenTab();
@@ -256,7 +250,6 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         if (!written) return;
         status.info("Wrote " + pickedModel.size() + " items into " + (removals ? "removals" : "additions") + ".");
         setPicked(Set.of());
-        // Close the loop: the items should disappear from the tab without a second button press.
         applyOnNextValue = true;
     }
 

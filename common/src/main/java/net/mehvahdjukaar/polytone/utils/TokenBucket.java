@@ -28,14 +28,12 @@ public class TokenBucket {
 
         double refillPerTick = (double) maxEveryFiveSeconds / ticksPerFiveSeconds;
 
-        // Critical: enforce steady-state limit
-        // We cap refill so steady-state cannot exceed desired per-tick max
+        // cap the refill so steady state can't exceed the per-tick max
         refillPerTick = Math.min(refillPerTick, maxSteadyStatePerTick);
 
         return new TokenBucket(maxEveryFiveSeconds, (int) refillPerTick);
     }
 
-    // Called once per game tick
     public synchronized void onTick() {
         if (tokens >= capacity) return;
         tokens = Math.min(capacity, tokens + refillPerTick);

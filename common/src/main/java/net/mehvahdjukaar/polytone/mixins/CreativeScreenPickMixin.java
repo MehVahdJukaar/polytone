@@ -23,7 +23,6 @@ public abstract class CreativeScreenPickMixin {
         }
     }
 
-    // A click on an item identifies it (fed back to the editor) and is swallowed so it never grabs a stack.
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void polytone$pickItem(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         if (!CreativeTabPreview.isPickingEnabled()) return;

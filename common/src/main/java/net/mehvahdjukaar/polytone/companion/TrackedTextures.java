@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-// scanned textures of one reload pass, tracking which files got consumed by a colormap
 public final class TrackedTextures {
 
     private final Map<ResourceLocation, ArrayImage> textures;

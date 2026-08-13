@@ -39,7 +39,6 @@ public abstract class PackEntryMixin extends ObjectSelectionList.Entry<Transfera
     private static final ResourceLocation POLYTONE$BADGE_HIGHLIGHTED = Polytone.res("pack_info_highlighted");
     @Unique
     private static final int POLYTONE$BADGE_SIZE = 8;
-    // kept clear on the right of the row for the scrollbar gutter plus a small margin
     @Unique
     private static final int POLYTONE$BADGE_INSET = 10;
     // vanilla's own (private) MAX_NAME_WIDTH_PIXELS

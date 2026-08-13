@@ -53,7 +53,6 @@ public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.Cy
 
     @Override
     public MutableComponent formatValue(Boolean value) {
-        // Same constants vanilla uses everywhere else for boolean toggles (Music: ON / Music: OFF).
         return (value ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF).copy();
     }
 

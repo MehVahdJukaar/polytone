@@ -9,9 +9,8 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
 
-// Loads the reloadable shadow-map settings (polytone/shadow_map.json) and feeds them to the
-// ShadowMapRenderer, which does the actual light-POV depth pass. This is the config/reload half of
-// the shadow system; the rendering half lives in ShadowMapRenderer, reached via renderer().
+// The config/reload half of the shadow system: loads polytone/shadow_map.json and feeds it to the
+// ShadowMapRenderer, which does the actual light-POV depth pass.
 public class ShadowMapManager extends SingleJsonOrPropertiesReloadListener {
 
     private final ShadowMapRenderer renderer = new ShadowMapRenderer();

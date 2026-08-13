@@ -29,10 +29,9 @@ import org.joml.Vector3f;
 
 import java.util.List;
 
-// Draws one ticked particle offscreen through the game's own particle path, so blend modes,
-// billboarding and animated sprites match the runtime. Particles render camera relative (vertices
-// are worldPos - cameraEye), so the model-view is the orbit rotation alone while the throwaway
-// Camera carries the eye position. Model particles (render type CUSTOM, null buffer) have no preview.
+// Particles render camera relative (vertices are worldPos - cameraEye), so the model-view is the orbit
+// rotation alone while the throwaway Camera carries the eye position. Model particles (render type
+// CUSTOM, null buffer) have no preview.
 final class ParticleRenderPass {
 
     static void render(CustomParticleInstance particle, List<Particle> children,
@@ -145,7 +144,6 @@ final class ParticleRenderPass {
             builder.addVertex(cx + o, gy, cz - span).setColor(g, g, g, 1f);
             builder.addVertex(cx + o, gy, cz + span).setColor(g, g, g, 1f);
         }
-        // Axis cross at the subject centre: X red, Y green, Z blue.
         float a = 0.6f;
         builder.addVertex(cx, cy, cz).setColor(1f, 0.2f, 0.2f, 1f);
         builder.addVertex(cx + a, cy, cz).setColor(1f, 0.2f, 0.2f, 1f);

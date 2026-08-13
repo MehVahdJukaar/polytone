@@ -27,9 +27,8 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 
-// GUI modifiers decorate foreign screens, so the real preview surface is the live Minecraft window
-// and this panel is just a read-only remote control over the GuiModifierPreview bridge. The rich
-// per-element detail lives on the in-game overlay; nothing here writes the form.
+// GUI modifiers decorate foreign screens, so the real preview surface is the live Minecraft window and
+// this panel is only a read-only remote control over GuiModifierPreview.
 public final class GuiModifierPreviewPanel implements TabPreview {
 
     private PreviewSurface root;
@@ -113,7 +112,6 @@ public final class GuiModifierPreviewPanel implements TabPreview {
             detectReadout.clear();
             return;
         }
-        // Show both bits; copy only the target string (the part that's a pain to type).
         detectReadout.set(t.type().getSerializedName() + " = " + t.target(), t.target());
         status.info("Detected the open screen.");
     }

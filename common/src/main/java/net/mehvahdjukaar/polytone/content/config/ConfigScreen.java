@@ -61,7 +61,6 @@ public class ConfigScreen extends OptionsSubScreen {
     private static final Component TITLE = Component.translatable("screen.polytone.configs.title");
     // gap before the impact line, matching the 4px tooltip image margins
     private static final int IMPACT_GAP = 4;
-    // Where the "install the editor" button sends users when Nautilus Studio isn't present.
     private static final String NAUTILUS_URL = "https://github.com/MehVahdJukaar/pack_editor";
 
     private final Multimap<String, OptionHolder<?>> opt = MultimapBuilder.linkedHashKeys().arrayListValues().build();
@@ -118,7 +117,6 @@ public class ConfigScreen extends OptionsSubScreen {
                     Polytone.CONFIGS.bubbleManager::getHeartButtonMessage));
         }
 
-        // Only nudge people toward the editor when they don't already have it installed.
         if (this.editorButton != null && !this.editorAvailable) {
             this.addRenderableOnly(new PointingChatBubbleOverlay(
                     this.editorButton,
@@ -141,14 +139,12 @@ public class ConfigScreen extends OptionsSubScreen {
     @Override
     protected void addFooter() {
         int iconW = 20;
-        // One centered footer row: [editor] Reset Undo Done [heart]. The 20px icons on each end
-        // roughly balance, so the Reset/Undo/Done buttons read as centered. Text-button widths are
-        // sized so the whole row fits the vanilla footer.
+        // One centered footer row: [editor] Reset Undo Done [heart]. The 20px icons on each end roughly
+        // balance, so the text buttons read as centered; their width is sized to fit the vanilla footer.
         int textBtnW = Mth.positiveCeilDiv(150 * 2 - 8, 3);
         LinearLayout footer = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
 
-        // Nautilus Studio pack-editor button (left) - always shown. With the editor mod present it
-        // opens the editor; without it, its tooltip explains and a click opens the download page.
+        // always shown: with the editor mod present it opens the editor, without it a click opens the download page
         this.editorAvailable = PlatStuff.isModLoaded("nautilus_studio");
         EditorIconButton editor = new EditorIconButton(iconW, 20,
                 Component.translatable("screen.polytone.editor.open"),
@@ -163,7 +159,6 @@ public class ConfigScreen extends OptionsSubScreen {
                 b -> undoValues()).width(textBtnW).build());
         footer.addChild(Button.builder(CommonComponents.GUI_DONE,
                 b -> this.minecraft.setScreen(this.lastScreen)).width(textBtnW).build());
-        // Support/heart button (right).
         this.heartButton = footer.addChild(SpriteIconButton.builder(
                         Component.translatable("screen.polytone.support.title"),
                         b -> this.minecraft.setScreen(new SupportScreen(this)),
@@ -187,7 +182,6 @@ public class ConfigScreen extends OptionsSubScreen {
             openEditor();
             return;
         }
-        // They followed the nudge; stop showing it.
         Polytone.CONFIGS.bubbleManager.onEditorButtonClicked();
         this.minecraft.setScreen(new ConfirmLinkScreen(confirmed -> {
             if (confirmed) Util.getPlatform().openUri(NAUTILUS_URL);
@@ -260,7 +254,6 @@ public class ConfigScreen extends OptionsSubScreen {
                             .thenComparing(o -> o.fileId))
                     .toList();
 
-            // Group entries by section, keeping display_order within each; section placement below.
             Map<Optional<String>, List<OptionHolder<?>>> bySection = new LinkedHashMap<>();
             for (OptionHolder<?> holder : sorted) {
                 bySection.computeIfAbsent(sectionOf(holder), k -> new ArrayList<>()).add(holder);
@@ -299,7 +292,6 @@ public class ConfigScreen extends OptionsSubScreen {
     }
 
     private void addNamespaceHeader(Component title, boolean expanded, String modId) {
-        // Clickable namespace header (chevron + bold title); toggling rebuilds the list.
         NamespaceHeaderWidget header = new NamespaceHeaderWidget(
                 this.list.getRowWidth(), 20, title, expanded, b -> toggleNamespace(modId));
         this.list.addSmall(List.<AbstractWidget>of(header));
@@ -385,7 +377,6 @@ public class ConfigScreen extends OptionsSubScreen {
             if (widget == null || !widget.isHovered()) continue;
 
             List<ClientTooltipComponent> components = new ArrayList<>();
-            // description on top, when the entry has a tooltip translation
             String tooltipKey = holder.fileId.toLanguageKey("config", "tooltip");
             if (I18n.exists(tooltipKey)) {
                 Component text = Component.translatable(tooltipKey);
@@ -393,13 +384,11 @@ public class ConfigScreen extends OptionsSubScreen {
                     components.add(ClientTooltipComponent.create(line));
                 }
             }
-            // image in the middle, chosen by the option's current value
             PolyConfig.TooltipImage image = config.getTooltipImages().get(String.valueOf(holder.get()));
             boolean hasImage = image != null;
             if (hasImage) {
                 components.add(new ClientImageTooltip(image.texture(), image.width(), image.height()));
             }
-            // performance impact (bottom); a small spacer when no image already supplies the gap
             if (hasImpact) {
                 if (!hasImage && !components.isEmpty()) {
                     components.add(new SpacerTooltip(IMPACT_GAP));
@@ -459,11 +448,9 @@ public class ConfigScreen extends OptionsSubScreen {
 
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(modId, "presets");
         String titleKey = id.toLanguageKey();
-        // Per-section title override -> pack-wide title -> generic "Preset".
         Component caption = firstTranslated(
                 section == null ? null : titleKey + ".section." + section, titleKey);
 
-        // General slider tooltip, used as the fallback for stops without their own.
         Component fallbackTooltip = null;
         if (section != null) fallbackTooltip = translatedOrNull(titleKey + ".section." + section + ".tooltip");
         if (fallbackTooltip == null) fallbackTooltip = translatedOrNull(titleKey + ".tooltip");
@@ -484,7 +471,6 @@ public class ConfigScreen extends OptionsSubScreen {
                 customSnapshot.add(captureRestore(option));
             }
         };
-        // Applies a stop's values, then rebuilds so the affected option widgets refresh.
         IntConsumer applyStop = index -> {
             if (index >= names.size()) {
                 customSnapshot.forEach(Runnable::run);
@@ -725,7 +711,6 @@ public class ConfigScreen extends OptionsSubScreen {
 
         @Override
         public void renderString(GuiGraphics guiGraphics, Font font, int color) {
-            // Icon-only: no label.
         }
     }
 }

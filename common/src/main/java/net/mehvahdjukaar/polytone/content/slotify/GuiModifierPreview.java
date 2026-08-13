@@ -13,11 +13,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-// Client side bridge for the editor's live gui modifier preview: one in-memory GuiModifier applied
-// to a single open screen with no resource reload. The override always wins for the screen it
-// targets and its own condition is ignored while previewing, so the author sees what they edit.
-// Everything here touches live screen/menu state and runs on the render thread (pushPreview
-// marshals itself there); matching is by object identity, so normal gameplay is never affected.
+// One in-memory GuiModifier applied to a single open screen with no resource reload. It always wins for
+// the screen it targets and its own condition is ignored while previewing. Touches live screen/menu
+// state, so it runs on the render thread; matching is by object identity, so gameplay is unaffected.
 public final class GuiModifierPreview {
 
     @Nullable

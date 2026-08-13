@@ -23,10 +23,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-// Client side bridge for the editor's creative tab tooling. Preview installs the edited modifier as
-// a ModifierOverride so it stands in for the saved file with no reload: attribute changes land at
-// once, item contents on the next tab rebuild (the open creative screen re-checks every tick).
-// Picking turns the creative screen into an item picker reporting back to the editor.
+// Preview installs the edited modifier as a ModifierOverride, so it stands in for the saved file with no
+// reload: attributes land at once, item contents on the next tab rebuild. Picking turns the creative
+// screen into an item picker.
 public final class CreativeTabPreview implements CreativeTabsModifiersManager.ModifierOverride {
 
     private static final CreativeTabPreview INSTANCE = new CreativeTabPreview();

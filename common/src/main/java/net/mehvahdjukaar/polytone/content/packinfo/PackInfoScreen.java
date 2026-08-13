@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-// Heading and body straight from pack.mcmeta. MultiLineTextWidget buys the wrapping and layout;
-// link hit tests run against the same split it renders with.
 public class PackInfoScreen extends Screen {
 
     private static final ResourceLocation INWORLD_MENU_BACKGROUND =

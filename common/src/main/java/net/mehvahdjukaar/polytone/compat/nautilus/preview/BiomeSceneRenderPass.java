@@ -33,10 +33,8 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 
-// Draws the biome modifier diorama offscreen through the game's own block/model path. Not the real
-// world renderer, just enough to show the four colours a biome modifier sets, in context.
 // Geometry is camera relative (vertices are worldPos - eye) with the model-view carrying only the
-// orbit rotation, same scheme as ParticleRenderPass; matrices/fog/colour are restored by the caller.
+// orbit rotation, same scheme as ParticleRenderPass. Matrices/fog/colour are restored by the caller.
 final class BiomeSceneRenderPass {
 
     enum Tint { NONE, GRASS, FOLIAGE }
@@ -104,11 +102,9 @@ final class BiomeSceneRenderPass {
         RenderSystem.enableDepthTest();
     }
 
-    // Vanilla-style sky: a flat disk hovering a couple blocks above the eye. Being a flat plane just
-    // overhead it fills the whole upper sky, and its far parts recede toward the horizon - which is where
-    // fog takes over. The core position_color shader doesn't sample fog, so instead of relying on the fog
-    // uniforms we bake vanilla's exact linear_fog blend into the vertex colours across a tessellated disk
-    // (colour by distance from the eye), giving the same sky->fog horizon the game's fog shader produces.
+    // Vanilla-style sky: a flat disk hovering above the eye, so its far parts recede toward the horizon.
+    // position_color doesn't sample fog, so vanilla's linear_fog blend is baked into the vertex colours
+    // across a tessellated disk instead, giving the same sky to fog horizon the game's fog shader makes.
     private static void drawSky(Colors colors) {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
@@ -207,17 +203,14 @@ final class BiomeSceneRenderPass {
         float sr = c[0] * shade, sg = c[1] * shade, sb = c[2] * shade;
 
         BufferBuilder bb = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        // Top surface.
         bb.addVertex(x0, top, z0).setColor(c[0], c[1], c[2], WATER_ALPHA);
         bb.addVertex(x0, top, z1).setColor(c[0], c[1], c[2], WATER_ALPHA);
         bb.addVertex(x1, top, z1).setColor(c[0], c[1], c[2], WATER_ALPHA);
         bb.addVertex(x1, top, z0).setColor(c[0], c[1], c[2], WATER_ALPHA);
-        // +x edge face.
         bb.addVertex(x1, floor, z0).setColor(sr, sg, sb, WATER_ALPHA);
         bb.addVertex(x1, floor, z1).setColor(sr, sg, sb, WATER_ALPHA);
         bb.addVertex(x1, top, z1).setColor(sr, sg, sb, WATER_ALPHA);
         bb.addVertex(x1, top, z0).setColor(sr, sg, sb, WATER_ALPHA);
-        // +z edge face.
         bb.addVertex(x0, floor, z1).setColor(sr, sg, sb, WATER_ALPHA);
         bb.addVertex(x1, floor, z1).setColor(sr, sg, sb, WATER_ALPHA);
         bb.addVertex(x1, top, z1).setColor(sr, sg, sb, WATER_ALPHA);

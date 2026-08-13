@@ -16,20 +16,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-// Editor-only inspector drawn on top of a live screen while picking is on: whether a modifier
-// targets this screen, and which slots/widgets it touches (matched ones tinted green, the rest
-// faintly outlined). Hovering captions an element with the data needed to target it. Never mutates.
+// Editor-only inspector drawn over a live screen while picking is on: whether a modifier targets this
+// screen, and which slots/widgets it touches. Never mutates anything.
 public final class GuiModifierOverlay {
 
     private static final int SLOT = 16;
 
-    // Resting outlines: slots blue, widgets violet - so the two element kinds read apart at a glance.
     private static final int SLOT_OUTLINE = 0x55_3AA0FF;
     private static final int WIDGET_OUTLINE = 0x55_C07BFF;
-    // "This element is modified": green wash + solid green box, shared by slots and widgets.
     private static final int MOD_FILL = 0x33_3BE06B;
     private static final int MOD_OUTLINE = 0xDD_3BE06B;
-    // Hovered element: amber wash + box, drawn over everything else.
     private static final int HOVER_FILL = 0x44_FFCC33;
     private static final int HOVER_OUTLINE = 0xFF_FFCC33;
 
@@ -43,7 +39,6 @@ public final class GuiModifierOverlay {
         ScreenModifier mod = Polytone.SLOTIFY.getGuiModifier(screen);
         List<WidgetModifier> widgetMods = mod != null ? mod.widgetModifiers() : List.of();
 
-        // Widgets (present on every screen kind).
         AbstractWidget hoveredWidget = null;
         int modifiedWidgets = 0;
         for (GuiEventListener child : screen.children()) {
@@ -54,7 +49,6 @@ public final class GuiModifierOverlay {
             if (inside(mouseX, mouseY, w.getX(), w.getY(), w.getWidth(), w.getHeight())) hoveredWidget = w;
         }
 
-        // Slots (container screens only).
         Slot hoveredSlot = null;
         int leftPos = 0, topPos = 0, modifiedSlots = 0;
         if (screen instanceof AbstractContainerScreen<?> cs) {
@@ -176,7 +170,6 @@ public final class GuiModifierOverlay {
         return false;
     }
 
-    // Fill (when fillColor != 0) + a 1px outline just outside the element bounds.
     private static void box(GuiGraphics graphics, int x, int y, int w, int h, int fillColor, int outlineColor) {
         if (fillColor != 0) graphics.fill(x, y, x + w, y + h, fillColor);
         graphics.renderOutline(x - 1, y - 1, w + 2, h + 2, outlineColor);

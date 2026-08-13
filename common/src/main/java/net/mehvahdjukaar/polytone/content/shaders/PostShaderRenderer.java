@@ -25,12 +25,10 @@ import java.util.function.IntSupplier;
 
 import net.mehvahdjukaar.polytone.content.shaders.PostShadersManager.ActivePostPassFrame;
 
-// The per-frame GPU half of the post-shader system: captures the level matrices / depth snapshot,
-// folds the held-item depth in, and runs the active chains. PostShadersManager owns the chains and
-// their lifecycle and drives this class through its (locked) entry points.
+// The per-frame GPU half of the post-shader system: captures the level matrices and depth snapshot,
+// folds the held-item depth in, and runs the active chains. PostShadersManager drives it under its lock.
 public class PostShaderRenderer {
 
-    // Whether captureLevelDepthSnapshot() already copied level depth this frame.
     private boolean depthCapturedThisFrame = false;
 
     // Level projection / camera matrices captured during GameRenderer.renderLevel, exposed to pass
@@ -47,7 +45,6 @@ public class PostShaderRenderer {
     private ShaderInstance depthCombineShader = null;
     private boolean depthCombineFailed = false;
 
-    // from the GameRenderer.renderLevel mixin, so PolyProjMat/PolyModelViewMat match the current frame
     public void captureLevelMatrices(Matrix4f projection, Matrix4f modelView) {
         this.projMat.set(projection);
         this.modelViewMat.set(modelView);
@@ -206,13 +203,10 @@ public class PostShaderRenderer {
         } else if (depthSnapshot.width != main.width || depthSnapshot.height != main.height) {
             depthSnapshot.resize(main.width, main.height, Minecraft.ON_OSX);
         }
-        // On (Neo)Forge a mod can call RenderTarget.enableStencil() on the main framebuffer (several of
-        // MehVahd's own mods do), which flips its depth attachment from GL_DEPTH_COMPONENT to a combined
-        // GL_DEPTH32F_STENCIL8. copyDepthFrom() blits GL_DEPTH_BUFFER_BIT, and that blit requires source and
-        // destination depth formats to match - otherwise GL raises INVALID_OPERATION and copies nothing, so
-        // the snapshot stays cleared and depth-driven effects (godrays, etc.) silently do nothing. Vanilla's
-        // own PostChain.addTempTarget propagates stencil to its temp targets; mirror the same onto our
-        // snapshot. The stencil API is Forge-only, hence the platform hop (no-op on Fabric).
+        // On (Neo)Forge a mod can call RenderTarget.enableStencil() on the main framebuffer, flipping its depth
+        // attachment to a combined GL_DEPTH32F_STENCIL8. copyDepthFrom() blits GL_DEPTH_BUFFER_BIT, which needs
+        // matching formats, or GL raises INVALID_OPERATION and copies nothing - the snapshot stays cleared and
+        // depth effects silently do nothing. Vanilla propagates stencil to its temp targets the same way.
         PlatStuff.matchStencil(main, depthSnapshot);
     }
 

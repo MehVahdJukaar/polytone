@@ -18,12 +18,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.IntFunction;
 
-// Which .png files belong to a content json (next to it by naming convention, or at a texture_path
-// location) and which inline colormap receives each one. One per content type, built from the
-// TextureParts its manager declares; the reload driver and the editor sidecar view both walk it.
+// Which .png files belong to a content json and which inline colormap receives each one. One per
+// content type; the reload driver and the editor sidecar view both walk it, so they agree.
 public final class ContentTextures<V> {
 
-    // leftover textures the manager should turn into a default content entry
     public record Orphan<V>(ResourceLocation stemId, Map<TexturePart<V>, Set<Integer>> parts) {
     }
 
@@ -94,7 +92,6 @@ public final class ContentTextures<V> {
         return slots;
     }
 
-    // strict = throw when a bound slot's texture is missing
     public void fill(TrackedTextures textures, ResourceLocation contentId, @Nullable V value, boolean strict) {
         String stem = StrUtils.lastSegment(contentId.getPath());
         for (TextureSlot slot : expectedSlots(value, stem)) {
@@ -128,7 +125,6 @@ public final class ContentTextures<V> {
         return fileName.equalsIgnoreCase(stem + ".png") ? Naming.label(Naming.DEFAULT_INDEX) : null;
     }
 
-    // parts with a scanned texture but no declared colormap: the auto attach a default query
     public Map<TexturePart<V>, Set<Integer>> adoptable(TrackedTextures textures, ResourceLocation contentId, V value) {
         String stem = StrUtils.lastSegment(contentId.getPath());
         Map<TexturePart<V>, Set<Integer>> out = new LinkedHashMap<>();
@@ -147,7 +143,7 @@ public final class ContentTextures<V> {
         return out;
     }
 
-    // textures no json accounts for, grouped under the content id their name encodes, most specific naming first
+    // most specific naming first, so a name two parts could claim goes to the narrower one
     public List<Orphan<V>> orphans(TrackedTextures textures, Set<ResourceLocation> contentIds) {
         Map<ResourceLocation, Map<TexturePart<V>, Set<Integer>>> groups = new LinkedHashMap<>();
         Set<ResourceLocation> owned = new HashSet<>();

@@ -22,8 +22,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 
-// Samples through the exact call the runtime expression functions use (getValue(x, y, false)), so the
-// grayscale image matches what noise_*(x, y) returns in game.
+// samples through the exact call the runtime expression functions use, so the image matches what
+// noise_*(x, y) returns in game
 public final class NoisePreview implements TabPreview {
 
     private static final int IMAGE_SIZE = 160;
@@ -107,7 +107,6 @@ public final class NoisePreview implements TabPreview {
         imageView.setCaption(null);
     }
 
-    // Grayscale field: pixel (x, y) sampled at the same call the runtime noise functions use.
     private static BufferedImage render(PerlinSimplexNoise noise, int spanBlocks) {
         BufferedImage img = new BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_INT_RGB);
         double step = spanBlocks / (double) IMAGE_SIZE;
@@ -121,8 +120,6 @@ public final class NoisePreview implements TabPreview {
         return img;
     }
 
-    // Small label-over-field / slider-with-readout helpers (ExpressionPreview keeps its own copies for
-    // subclasses; this panel isn't one, so it carries the two rows it needs).
     private static JComponent labeled(String text, JComponent field) {
         Box row = Box.createVerticalBox();
         JLabel l = StyledLabels.small(text);

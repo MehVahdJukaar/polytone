@@ -43,13 +43,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-// Live preview for biome effect modifiers: a small stylised diorama drawn through the game's own
-// block models (see BiomeSceneRenderPass). A modifier only overrides an existing biome's effects,
-// so the chosen biome's real colours are resolved first and the overrides layered on top.
-// Without a world loaded biomes can't resolve and the scene falls back to plains-ish defaults.
+// A biome modifier only overrides an existing biome's effects, so the chosen biome's real colours are
+// resolved first and the overrides layered on top. No world loaded = plains-ish defaults.
 public final class BiomeScenePreview implements TabPreview {
 
-    // Plains-ish fallbacks for when no biome resolves (no world loaded).
     private static final int DEF_SKY = 0x78A7FF;
     private static final int DEF_FOG = 0xC0D8FF;
     private static final int DEF_GRASS = 0x91BD59;
@@ -213,14 +210,12 @@ public final class BiomeScenePreview implements TabPreview {
             }
         }
 
-        // Oak at (2,2): trunk on the shore top, a rounded canopy of tinted leaves.
         for (int y = 2; y <= 4; y++) b.add(new Placement(new BlockPos(2, y, 2), log, Tint.NONE));
         int[][] ring = {{1, 2}, {3, 2}, {2, 1}, {2, 3}, {1, 1}, {3, 3}, {1, 3}, {3, 1}};
         for (int[] o : ring) b.add(new Placement(new BlockPos(o[0], 4, o[1]), leaves, Tint.FOLIAGE));
         int[][] cap = {{2, 2}, {1, 2}, {3, 2}, {2, 1}, {2, 3}};
         for (int[] o : cap) b.add(new Placement(new BlockPos(o[0], 5, o[1]), leaves, Tint.FOLIAGE));
 
-        // Grass tufts on the shore, clear of the tree footprint and the pool.
         int[][] tufts = {{0, 0}, {5, 1}, {6, 2}, {2, 5}, {0, 4}};
         for (int[] o : tufts) b.add(new Placement(new BlockPos(o[0], 2, o[1]), tuft, Tint.GRASS));
 

@@ -34,7 +34,7 @@ public class ExpTicker {
                                  boolean crouching) {
     }
 
-    /** Re-caches the player's stats (main thread). No player -> null, proxies fall back to live reads. */
+    // Re-caches the player's stats (main thread). No player -> null, proxies fall back to live reads.
     public static void refreshPlayerSnapshot() {
         Player p = Minecraft.getInstance().player;
         if (p == null) {
@@ -51,7 +51,6 @@ public class ExpTicker {
     public static @Nullable PlayerSnapshot playerSnapshot() {
         return playerSnapshot;
     }
-
 
     public static int getGuiTime() {
         return screenTime;

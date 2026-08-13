@@ -11,8 +11,6 @@ import net.minecraft.server.packs.OverlayMetadataSection;
 
 import java.util.List;
 
-// builds the polytone_condition codec that gates pack overlay entries on config values, loaded mods
-// or expressions, plus the helper decorating the vanilla OverlayEntry codec to read it
 public class ConditionUtils {
 
     private static final Codec<Boolean> CONFIG_MATCH_CODEC = ResourceLocation.CODEC.xmap(

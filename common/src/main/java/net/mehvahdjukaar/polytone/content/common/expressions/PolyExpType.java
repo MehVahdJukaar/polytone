@@ -36,7 +36,6 @@ public final class PolyExpType<T extends PolyExp> {
         return codec;
     }
 
-    // used by the editor as insertable hint chips
     public List<String> inputNames() {
         var inputs = context.getInputs();
         return inputs == null ? List.of()

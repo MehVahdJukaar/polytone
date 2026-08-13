@@ -20,10 +20,9 @@ import java.awt.Dimension;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-// Shared scaffolding for the editor's live expression previews (colormaps, particles, ...): the
-// PreviewSurface chrome, the "Live at player" toggle with its refresh timer, and the SimProxies
-// harness feeding simulated global/camera/player inputs, revealing only the sliders a pass read.
-// Subclasses wrap each evaluation in installSim()/clearSim(), then call refreshEnvControls().
+// Shared scaffolding for the live expression previews: surface chrome, the "Live at player" toggle and
+// the SimProxies harness, which reveals only the sliders a pass actually read. Subclasses wrap each
+// evaluation in installSim()/clearSim(), then call refreshEnvControls().
 public abstract class ExpressionPreview implements TabPreview {
 
     protected final PreviewStatus status = new PreviewStatus();
@@ -84,7 +83,6 @@ public abstract class ExpressionPreview implements TabPreview {
 
     protected void onLiveModeChanged(boolean live) {}
 
-    // embed once in the subclass layout
     protected JComponent envGroup() {
         Box box = Box.createVerticalBox();
         box.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -102,8 +100,7 @@ public abstract class ExpressionPreview implements TabPreview {
         PreviewContext.clear();
     }
 
-    // returns whether any env slider is shown, so subclasses adding their own rows under the same
-    // header can OR that into setEnvHeaderVisible
+    // returns whether any env slider is shown, so subclasses adding rows under the same header can OR it
     protected boolean refreshEnvControls() {
         boolean any = false;
         for (EnvControl c : envControls.values()) {
@@ -132,7 +129,6 @@ public abstract class ExpressionPreview implements TabPreview {
         toolbar.add(Box.createVerticalStrut(UiScale.small()));
     }
 
-    // Adds a full-width field to a vertical group, capped to its own height so it doesn't stretch.
     protected static void addField(JComponent box, JComponent field) {
         field.setAlignmentX(Component.LEFT_ALIGNMENT);
         field.setMaximumSize(UiScale.maxHeightHugging(field));
@@ -140,7 +136,6 @@ public abstract class ExpressionPreview implements TabPreview {
         box.add(Box.createVerticalStrut(UiScale.small()));
     }
 
-    // Label over field, field stretches horizontally but keeps its own height.
     protected static JComponent labeled(String text, JComponent field) {
         Box row = Box.createVerticalBox();
         JLabel l = StyledLabels.small(text);

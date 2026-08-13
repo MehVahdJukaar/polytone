@@ -36,10 +36,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-// Spawns a real CustomParticleInstance from the edited type and ticks it on the render thread,
-// drawing it through the game's own particle path. Only the world-context global.* sliders are
-// simulated; p.* comes from the live instance. Sprites are borrowed from the pack's already baked
-// particle of the same id, since a not yet registered one can't be drawn before a reload.
+// Ticks a real CustomParticleInstance from the edited type on the render thread. Sprites are borrowed
+// from the pack's already baked particle of the same id, since a new one can't be drawn before a reload.
 public final class ParticlePreview extends ExpressionPreview {
 
     private final @Nullable ResourceLocation contentId;
@@ -100,7 +98,6 @@ public final class ParticlePreview extends ExpressionPreview {
 
         Box content = Box.createVerticalBox();
 
-        // Transport controls.
         Box transport = Box.createHorizontalBox();
         transport.setAlignmentX(Component.LEFT_ALIGNMENT);
         transport.add(playButton);
@@ -116,7 +113,6 @@ public final class ParticlePreview extends ExpressionPreview {
         content.add(transport);
         content.add(Box.createVerticalStrut(UiScale.small()));
 
-        // Live-at-player toggle + the auto-revealing global sliders, exactly like the colormap panel.
         liveToggle.setAlignmentX(Component.LEFT_ALIGNMENT);
         content.add(liveToggle);
         content.add(Box.createVerticalStrut(UiScale.small()));
@@ -125,14 +121,12 @@ public final class ParticlePreview extends ExpressionPreview {
         content.add(env);
         content.add(Box.createVerticalStrut(UiScale.med()));
 
-        // The viewport.
         viewport.setBorder(UiTheme.hairlineBorder());
         SquareRow view = new SquareRow(0, UiScale.px(200), UiScale.px(460), viewport);
         view.setAlignmentX(Component.LEFT_ALIGNMENT);
         content.add(view);
         content.add(Box.createVerticalStrut(UiScale.small()));
 
-        // Readout HUD.
         Box hud = Box.createVerticalBox();
         hud.setAlignmentX(Component.LEFT_ALIGNMENT);
         ageReadout.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -198,7 +192,6 @@ public final class ParticlePreview extends ExpressionPreview {
         return live instanceof CustomParticleType ct ? ct.getSpriteSet() : null;
     }
 
-    // Pushes the latest frame's particle state into the HUD labels (called on the EDT after a frame).
     private void updateReadout() {
         ParticleScene.Snapshot s = renderer.snapshot;
         if (s == null) {

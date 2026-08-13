@@ -6,11 +6,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 
-// The editor hands a contentId only for read-only registry views; while editing a file it hands a
-// path instead, so previews that need the id derive it from the pack layout.
+// The editor hands a contentId only for read-only registry views; while editing a file it hands a path,
+// so the id has to come from the pack layout.
 final class PreviewIds {
 
-    // <pack>/assets/<namespace>/polytone/<folder>/<path...>.json -> <namespace>:<path...>
     @Nullable
     static ResourceLocation of(@Nullable ResourceLocation contentId, @Nullable Path file, String folder) {
         if (contentId != null) return contentId;

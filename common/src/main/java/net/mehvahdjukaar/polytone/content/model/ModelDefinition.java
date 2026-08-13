@@ -15,8 +15,7 @@ import org.joml.Vector3f;
 import java.util.List;
 import java.util.Map;
 
-// Codec backed entity model: mirrors what a hardcoded create*Layer() method would build, so it can
-// become a real LayerDefinition. Rotations are authored in degrees.
+// mirrors what a hardcoded create*Layer() would build; rotations are authored in degrees
 public record ModelDefinition(int[] textureSize, Map<String, Bone> bones) {
 
     static final Codec<Vector3f> VEC3 = ExtraCodecs.VECTOR3F.xmap(Vector3f::new, v -> v);
@@ -73,7 +72,6 @@ public record ModelDefinition(int[] textureSize, Map<String, Bone> bones) {
         ).apply(i, Cube::new));
     }
 
-    // rotation is authored in degrees, converted to radians at bake
     public record Pose(Vector3f offset, Vector3f rotation) {
 
         public static final Pose ZERO = new Pose(new Vector3f(), new Vector3f());

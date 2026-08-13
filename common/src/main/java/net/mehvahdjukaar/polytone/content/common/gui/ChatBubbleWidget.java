@@ -9,9 +9,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-/**
- * A rounded chat-bubble widget: white interior, black outline, fixed height, any width.
- */
+// A rounded chat-bubble widget: white interior, black outline, fixed height, any width
 public class ChatBubbleWidget extends AbstractWidget {
 
     private static final ResourceLocation BODY = Polytone.res("widget/chat_bubble_body");

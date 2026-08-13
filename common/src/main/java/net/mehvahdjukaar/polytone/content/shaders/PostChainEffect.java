@@ -116,7 +116,6 @@ public final class PostChainEffect {
             effect.setSampler(DEPTH_SAMPLER, frame.depthTexture());
         }
         if (useShadowMap) {
-            // Light view-projection + light direction + the shadow depth map rendered this frame (see ShadowMapRenderer).
             ShadowMapRenderer shadows = Polytone.SHADOWS.renderer();
             effect.safeGetUniform(SHADOW_MAT).set(shadows.getShadowMatrix());
             var dir = shadows.getLightDir();
@@ -131,7 +130,6 @@ public final class PostChainEffect {
             effect.setSampler(e.getKey(),
                     () -> Minecraft.getInstance().getTextureManager().getTexture(texture).getId());
         }
-        // Persistent post targets bound as samplers (read side of the 1.21.1 post-targets port).
         for (var e : targetSamplers.entrySet()) {
             ResourceLocation targetId = e.getValue();
             effect.setSampler(e.getKey(), () -> {

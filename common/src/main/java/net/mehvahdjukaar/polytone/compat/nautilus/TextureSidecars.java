@@ -17,10 +17,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-// Bridges a content type's ContentTextures (the runtime-side texture contract) to the editor's
-// SidecarAssets view, so the Nautilus tab shows a colormap's .png textures next to its json: present,
-// expected-but-missing, and stray-but-unused. Slot matching goes through the same
-// TextureSlot.findFirstMatch rule as the reload driver (ContentTextures.fill), so the two can't drift.
+// Bridges a content type's ContentTextures to the editor's SidecarAssets view, so the Nautilus tab
+// shows a colormap's .png files: present, expected-but-missing and stray. Slot matching goes through
+// the same TextureSlot.findFirstMatch rule as the reload driver, so the two can't drift.
 final class TextureSidecars {
 
     static SidecarAssets of(ContentTextures<?> association, Side side) {
@@ -81,9 +80,8 @@ final class TextureSidecars {
         return out;
     }
 
-    // A slot whose file lives at a resource location (texture_path), not next to the json: try each
-    // accepted name in that location's directory; when none is in this pack, report the canonical
-    // name EXTERNAL (it resolves from vanilla or another pack, still previewable off the live stack).
+    // A slot whose file lives at a texture_path location instead of next to the json. When no accepted
+    // name is in this pack, report the canonical one EXTERNAL: it still resolves from vanilla or another pack.
     private static SidecarAssets.Slot remoteSlot(TextureSlot slot, PackWorkspace pack, Side side) {
         ResourceLocation location = slot.remoteLocation();
         String dir = StrUtils.directoryOf(location.getPath());

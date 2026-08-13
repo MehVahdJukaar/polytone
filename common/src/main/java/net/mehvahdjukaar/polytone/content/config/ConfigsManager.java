@@ -42,10 +42,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-// Pack defined configs at polytone/config_entries/*.json, persisted to polytone_options.json and
-// readable from overlay conditions and config("ns:id") expressions. Loaded eagerly per pack at
-// discovery time (see PackMixin) so overlay conditions can be evaluated before the reload, and
-// unlike the other reloaders they also parse with no world open, since the pack screen reads them.
+// Loaded eagerly per pack at discovery time (see PackMixin) so overlay conditions can be evaluated
+// before the reload, and unlike the other reloaders these also parse with no world open, since that's
+// where the pack screen reads them.
 public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
 
     public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);

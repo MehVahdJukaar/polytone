@@ -4,12 +4,10 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-// The positions that can cast a shadow into what the camera actually sees, used to cull the shadow
-// pass. Camera relative. Two tests, cheap first: the orthographic light box the shadow map covers,
-// then optionally the camera frustum swept away from the light, since an occluder only matters if
-// its shadow ray lands in view (this typically prunes everything behind and below the camera).
-// The swept volume is only valid for the frame it was built from, so it is skipped while the map is
-// reused across frames; a stale one would leave holes where the camera has since turned to look.
+// The positions that can cast a shadow into what the camera actually sees, camera relative. Two tests:
+// the ortho light box the map covers, then optionally the camera frustum swept away from the light,
+// since an occluder only matters if its shadow ray lands in view. That swept volume is only valid for
+// the frame it was built from, so it is skipped while the map is reused across frames.
 public final class ShadowCasterVolume {
 
     // Slack, in blocks, added to every caster-volume plane. The resolve shader samples the map at

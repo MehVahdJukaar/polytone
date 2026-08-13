@@ -15,9 +15,8 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.HashMap;
 import java.util.Map;
 
-// Data driven entity model geometry, exposed both as a referenceable registry and as real
-// LayerDefinitions. Those layers are merged into the game's EntityModelSet so they bake through the
-// vanilla pipeline, which keeps them visible to model replacing mods such as EMF.
+// Layers are merged into the game's EntityModelSet so they bake through the vanilla pipeline, which
+// keeps them visible to model replacing mods such as EMF.
 public class CustomModelsManager extends JsonPartialReloader<ModelDefinition> {
 
     public static final String LAYER = "main";
