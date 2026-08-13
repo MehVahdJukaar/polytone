@@ -52,3 +52,10 @@ classes/
 /resourcepacks/shadowmap/
 /resourcepacks/shadowmap_debug/
 /resourcepacks/smooth_shadows/
+
+# internal notes & research - never published
+/research/
+/wiki/
+/resourcepacks/NOTES.md
+/PORT_*.md
+/BACKPORT_*.md
