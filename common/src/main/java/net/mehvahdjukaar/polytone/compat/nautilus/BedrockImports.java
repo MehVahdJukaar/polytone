@@ -26,15 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-/**
- * Wires the Bedrock particle importer into Nautilus Studio's Import button: one for a single effect,
- * one for a whole Bedrock resource pack. Both write straight into the open workspace and hand back
- * the converter's diagnostics as notes, which is where the user finds out what still needs doing by
- * hand.
- *
- * <p>Existing files are never overwritten - a re-import after hand editing would otherwise throw the
- * edits away. Skipped files are reported so the user can delete and retry deliberately.
- */
+// Wires the Bedrock particle importer into Nautilus Studio's Import button: one for a single effect, one for a
+// whole Bedrock resource pack. Both write straight into the open workspace and hand back the converter's
+// diagnostics as notes, which is where the user finds out what still needs doing by hand.
 public final class BedrockImports {
 
     // Not html-escaped: expressions are full of < and >, and < in a pack file is unreadable.
@@ -83,11 +77,9 @@ public final class BedrockImports {
         return writer.finish();
     }
 
-    /**
-     * A Bedrock texture path is relative to the resource pack root, so resolving one means knowing
-     * where that root is. For a single file it is the parent of the {@code particles} folder it sits
-     * in; anything else and textures simply don't resolve, which the report says.
-     */
+    // A Bedrock texture path is relative to the resource pack root, so resolving one means knowing where that
+    // root is. For a single file it is the parent of the particles folder it sits in; anything else and
+    // textures simply don't resolve, which the report says.
     private static @Nullable Path bedrockRootOf(Path particleFile) {
         Path dir = particleFile.getParent();
         while (dir != null) {
@@ -97,7 +89,7 @@ public final class BedrockImports {
         return null;
     }
 
-    /** Accumulates one import: converts effects, writes files, collects notes. */
+    // Accumulates one import: converts effects, writes files, collects notes
     private static final class Writer {
 
         private final PackWorkspace workspace;
@@ -164,7 +156,7 @@ public final class BedrockImports {
             }
         }
 
-        /** Cuts the effect's rect out of the Bedrock atlas and drops it in as a particle sprite. */
+        // Cuts the effect's rect out of the Bedrock atlas and drops it in as a particle sprite
         private void extractTexture(ConversionResult.TextureRequest request, String source) {
             Path target = spritePath(request.targetSprite());
             if (target == null) {
@@ -194,10 +186,8 @@ public final class BedrockImports {
             }
         }
 
-        /**
-         * Bedrock states the rect against a declared texture size, which need not be the png's real
-         * one (and is 1x1 when the rect is a fraction), so everything goes through that ratio.
-         */
+        // Bedrock states the rect against a declared texture size, which need not be the png's real one (and
+        // is 1x1 when the rect is a fraction), so everything goes through that ratio.
         private static BufferedImage crop(BufferedImage image, ConversionResult.TextureRequest request) {
             if (request.isWholeTexture()) return image;
             double scaleX = image.getWidth() / Math.max(1e-6, request.textureWidth());
@@ -213,7 +203,7 @@ public final class BedrockImports {
             return Math.clamp(value, min, max);
         }
 
-        /** {@code ns:path} to {@code <root>/assets/<ns>/textures/particle/<path>.png}. */
+        // ns:path to <root>/assets/<ns>/textures/particle/<path>.png.
         private @Nullable Path spritePath(String sprite) {
             int colon = sprite.indexOf(':');
             if (colon < 0) return null;
@@ -221,7 +211,7 @@ public final class BedrockImports {
                     .resolve("textures/particle").resolve(sprite.substring(colon + 1) + ".png");
         }
 
-        /** Bedrock writes texture paths without an extension, relative to the pack root. */
+        // Bedrock writes texture paths without an extension, relative to the pack root
         private @Nullable Path resolveAtlas(String texture) {
             if (bedrockRoot == null) return null;
             for (String extension : new String[]{".png", ".tga", ""}) {

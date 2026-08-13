@@ -16,20 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Conditionally adds a post chain to the FrameGraph each frame.
- *
- * <p>{@code expression_uniforms} on this object are chain-level: they get bound to every
- * pass shader in the chain. Implemented internally as a single
- * {@link ExpressionUniformBuffers} registered with {@link ShaderUniformsManager} under each
- * pass's pipeline fragment-shader id. Chain gating ({@link #turnOnCondition}) implicitly
- * gates the binds too — when the chain isn't in the FrameGraph, its passes never bind.
- *
- * <p>{@code samplers} are chain-level custom texture bindings: {@code sampler name -> texture id}.
- * The name must match a {@code sampler2D} declared in the pass pipeline's bind-group layout and
- * used by its shader. Registered by pass fragment-shader id and bound by
- * {@link PostChainsManager#bindExtraSamplers} (see {@code RenderPassMixin}).
- */
+// Conditionally adds a post chain to the FrameGraph each frame. expression_uniforms on this object are chain-
+// level: they get bound to every pass shader in the chain. Implemented internally as a single
+// ExpressionUniformBuffers registered with ShaderUniformsManager under each pass's pipeline fragment-shader
+// id.
 public final class PostChainActivator {
 
     public static final SchemaCodec<PostChainActivator> CODEC = SchemaRecord.create(PostChainActivator.class,
@@ -67,8 +57,8 @@ public final class PostChainActivator {
         cachedOn = turnOnCondition.evaluate() > 0;
     }
 
-    /** True when this chain is currently on and declared {@code use_shadow_map}, i.e. it wants the
-     * light-POV depth map rendered this frame (see {@code ShadowMapRenderer}). */
+    // True when this chain is currently on and declared use_shadow_map, i.e. it wants the light-POV depth map
+    // rendered this frame (see ShadowMapRenderer).
     public boolean wantsShadowMap() {
         return cachedOn && useShadowMap;
     }

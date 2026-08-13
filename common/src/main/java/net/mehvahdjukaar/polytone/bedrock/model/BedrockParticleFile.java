@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.bedrock.model;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-/** Top level of a Bedrock {@code particles/*.json}. */
 public record BedrockParticleFile(String formatVersion, BedrockParticleEffect effect) {
 
     public static final Codec<BedrockParticleFile> CODEC = RecordCodecBuilder.create(i -> i.group(

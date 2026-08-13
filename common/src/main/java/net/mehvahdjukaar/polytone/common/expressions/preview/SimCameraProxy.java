@@ -4,11 +4,8 @@ import net.mehvahdjukaar.polytone.common.expressions.proxies.CameraProxy;
 
 import java.util.List;
 
-/**
- * Preview-only stand-in for {@link CameraProxy}: position and rotation come from editor sliders
- * instead of the live camera. Must stay a subclass for the same MVEL accessor-cache reason as
- * {@link SimGlobalProxy}. Level-backed queries inherited from PositionalProxy stay live.
- */
+// Position and rotation come from editor sliders instead of the live camera. Must stay a subclass
+// for the MVEL accessor-cache reason noted in SimGlobalProxy; level-backed queries stay live.
 public final class SimCameraProxy extends CameraProxy {
 
     // Private, not public: a public field named like an accessor (x -> x()) wins over the bean

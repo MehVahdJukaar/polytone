@@ -29,10 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Owns post-chain activators (turn a {@link PostChain} on/off based on a condition) and the
- * {@code PolyGlobals} UBO that gets bound to every render pass.
- */
+// Owns post-chain activators (turn a PostChain on/off based on a condition) and the PolyGlobals UBO that gets
+// bound to every render pass.
 public class PostChainsManager extends ContentManager<PostChainActivator> {
 
     public static final String GLOBALS_NAME = "PolyGlobals";
@@ -103,7 +101,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         }
     }
 
-    /** Whether the shadow map should be rendered this frame (some active chain declared use_shadow_map). */
+    // Whether the shadow map should be rendered this frame (some active chain declared use_shadow_map).
     public boolean anyActiveEffectUsesShadowMap() {
         synchronized (activators) {
             for (var a : activators) {
@@ -113,7 +111,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         return false;
     }
 
-    /** External callers (PostChainActivator) register their custom samplers under a pass shader id. */
+    // External callers (PostChainActivator) register their custom samplers under a pass shader id.
     public void registerSamplers(Identifier shaderId, Map<String, Identifier> samplers) {
         if (samplers.isEmpty()) return;
         samplersByShader.computeIfAbsent(shaderId, k -> new ArrayList<>()).add(samplers);
@@ -127,11 +125,9 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         }
     }
 
-    /**
-     * Binds custom textures declared in a post chain's {@code samplers} map to any pass whose
-     * pipeline fragment shader matches. Gated on {@code declaredUniforms} (which includes sampler
-     * names) so we never bind a sampler the program doesn't declare — see {@code RenderPassMixin}.
-     */
+    // Binds custom textures declared in a post chain's samplers map to any pass whose pipeline fragment shader
+    // matches. Gated on declaredUniforms (which includes sampler names) so we never bind a sampler the program
+    // doesn't declare - see RenderPassMixin.
     public void bindExtraSamplers(RenderPass pass, RenderPipeline pipeline, Set<String> declaredUniforms) {
         // the light-POV depth map rendered by ShadowMapRenderer; only bound once it exists
         if (declaredUniforms.contains(SHADOW_SAMPLER_NAME)) {

@@ -20,11 +20,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-/**
- * Fabric baked form of the {@code polytone:expression} model. See {@link ExpressionModel} for the
- * shared selection logic and JSON shape. Fabric feeds block context through {@code emitQuads}, so
- * we select there and delegate to the chosen sub-model's own emission (keeping its weighted random).
- */
+// Fabric baked form of the polytone:expression model. See ExpressionModel for the shared selection logic and
+// JSON shape. Fabric feeds block context through emitQuads, so we select there and delegate to the chosen sub-
+// model's own emission (keeping its weighted random).
 public record ExpressionBlockStateModel(ExpressionModel.Selector selector) implements BlockStateModel {
 
     @Override

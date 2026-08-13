@@ -6,11 +6,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-/**
- * Reaches Sodium's private {@code renderSectionManager} so the shadow pass can re-cull its terrain
- * render list against the light volume (see {@code SodiumShadowRenderer}). {@code @Pseudo} so this
- * simply doesn't apply when Sodium is absent.
- */
+// Reaches Sodium's private renderSectionManager so the shadow pass can re-cull its terrain render list against
+// the light volume (see SodiumShadowRenderer). @Pseudo so this simply doesn't apply when Sodium is absent.
 @Pseudo
 @Mixin(SodiumWorldRenderer.class)
 public interface SodiumWorldRendererShadowAccessor {

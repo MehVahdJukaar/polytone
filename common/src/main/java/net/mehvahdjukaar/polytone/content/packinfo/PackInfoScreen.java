@@ -16,11 +16,9 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 
-/**
- * A pack's info page: a heading and a body, both straight from its pack.mcmeta. Both are
- * {@link MultiLineTextWidget}s with a component click handler, which is what buys us wrapping,
- * clickable links, hover tooltips and the pointer cursor without any layout or hit-testing here.
- */
+// A pack's info page: a heading and a body, both straight from its pack.mcmeta. Both are MultiLineTextWidgets
+// with a component click handler, which is what buys us wrapping, clickable links, hover tooltips and the
+// pointer cursor without any layout or hit-testing here.
 public class PackInfoScreen extends Screen {
 
     private static final Identifier INWORLD_MENU_BACKGROUND =
@@ -109,11 +107,9 @@ public class PackInfoScreen extends Screen {
         this.minecraft.setScreen(this.lastScreen);
     }
 
-    /**
-     * Text widgets ship inactive, which makes {@link #mouseClicked} bail before it ever reaches the
-     * component click handler. Activating one also makes it click back at every stray click on plain
-     * text, so the sound moves to the handler, where we know a link was actually hit.
-     */
+    // Text widgets ship inactive, which makes mouseClicked bail before it ever reaches the component click
+    // handler. Activating one also makes it click back at every stray click on plain text, so the sound moves
+    // to the handler, where we know a link was actually hit.
     private static class TextBlock extends MultiLineTextWidget {
 
         TextBlock(Component message, Font font) {

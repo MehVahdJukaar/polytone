@@ -47,7 +47,6 @@ public class EnvironmentAttributeMapMod {
                     }
             );
 
-
     private static <Value, Argument> Codec<EnvironmentAttributeMap.Entry<Value, Argument>> createEntryCodec(
             EnvironmentAttribute<Value> environmentAttribute) {
 
@@ -72,7 +71,6 @@ public class EnvironmentAttributeMapMod {
                         EnvironmentAttributeMapMod::entryToValueOrMod
                 );
     }
-
 
     private static <Value, Argument> @NotNull Either<Either<Argument, Supplier<Argument>>, EnvironmentAttributeMap.Entry<Value, Argument>> entryToValueOrMod(
             EnvironmentAttributeMap.Entry<Value, Argument> entry) {
@@ -132,11 +130,9 @@ public class EnvironmentAttributeMapMod {
         );
     }
 
-    /**
-     * Copy of a dynamic entry pinned to one biome. Each biome an entry is installed into gets its own, so
-     * vanilla's spatial interpolator sees a different value per biome and blends them like any other biome
-     * attribute. Entries that opted out of blending are shared as they were and keep sampling at the camera.
-     */
+    // Copy of a dynamic entry pinned to one biome. Each biome an entry is installed into gets its own, so
+    // vanilla's spatial interpolator sees a different value per biome and blends them like any other biome
+    // attribute. Entries that opted out of blending are shared as they were and keep sampling at the camera.
     private static EnvironmentAttributeMap.Entry<?, ?> bindToBiome(EnvironmentAttributeMap.Entry<?, ?> entry,
                                                                   Biome owner) {
         IExtendedEntry ext = (IExtendedEntry) (Object) entry;
@@ -147,7 +143,6 @@ public class EnvironmentAttributeMapMod {
         ((IExtendedEntry) (Object) bound).polytone$setArgumentSupplier(DynamicAttributes.boundTo(owner, supplier));
         return bound;
     }
-
 
     private static <Value, Argument> MapCodec<EnvironmentAttributeMap.Entry<Value, Argument>> createEntryCodec(
             EnvironmentAttribute<Value> environmentAttribute, AttributeModifier<Value, Argument> attributeModifier) {
@@ -187,7 +182,6 @@ public class EnvironmentAttributeMapMod {
         this.entriesToRemove = entriesToRemove;
     }
 
-
     public static Builder builder() {
         return new Builder();
     }
@@ -214,7 +208,6 @@ public class EnvironmentAttributeMapMod {
             return this;
         }
 
-
         public <Value> Builder set(EnvironmentAttribute<Value> environmentAttribute, Value object) {
             return this.modify(environmentAttribute, AttributeModifier.override(), object);
         }
@@ -237,7 +230,7 @@ public class EnvironmentAttributeMapMod {
         return toVanilla(null);
     }
 
-    /** {@code owner} is the biome this map is being built for, if any. See {@link #bindToBiome} */
+    // owner is the biome this map is being built for, if any. See bindToBiome
     public EnvironmentAttributeMap toVanilla(@Nullable Biome owner) {
         EnvironmentAttributeMap.Builder builder = EnvironmentAttributeMap.builder();
         putEntries(builder, owner);
@@ -281,7 +274,7 @@ public class EnvironmentAttributeMapMod {
         return modify(original, null);
     }
 
-    /** {@code owner} is the biome this map is being built for, if any. See {@link #bindToBiome} */
+    // owner is the biome this map is being built for, if any. See bindToBiome
     public EnvironmentAttributeMap modify(EnvironmentAttributeMap original, @Nullable Biome owner) {
         if (isEmpty()) return original;
         EnvironmentAttributeMap.Builder builder = EnvironmentAttributeMap.builder();

@@ -12,10 +12,8 @@ import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
-/**
- * {@link OptionsList} with a collapsible namespace header row (chevron + bold title) and a tighter
- * section sub-header. Sections are not collapsible; only namespaces are.
- */
+// OptionsList with a collapsible namespace header row (chevron + bold title) and a tighter section sub-header.
+// Sections are not collapsible; only namespaces are.
 public class CollapsibleOptionsList extends OptionsList {
     // Namespace header: the clickable/highlighted strip, plus a gap above (to separate namespaces)
     // and a small gap below (so the first widget under it isn't cramped when no section follows).
@@ -40,7 +38,7 @@ public class CollapsibleOptionsList extends OptionsList {
                 paddingTop + HEADER_HEIGHT + HEADER_PADDING_BOTTOM);
     }
 
-    /** Tighter alternative to vanilla {@link #addHeader(Component)} for non-collapsible sub-groups. */
+    // Tighter alternative to vanilla addHeader(Component) for non-collapsible sub-groups
     public void addSectionHeader(Component title) {
         this.addEntry(new SectionHeaderEntry(this.ownerScreen, title),
                 SECTION_PADDING_TOP + SECTION_TEXT_HEIGHT + SECTION_PADDING_BOTTOM);

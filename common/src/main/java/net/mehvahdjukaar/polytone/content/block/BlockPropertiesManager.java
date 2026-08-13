@@ -39,7 +39,7 @@ import java.util.*;
 
 public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier> {
 
-    // legacy OptiFine/Colormatic .properties — scanned from other mods' dirs, not our folder
+    // legacy OptiFine/Colormatic .properties - scanned from other mods' dirs, not our folder
     private Map<Identifier, Properties> ofProperties = Map.of();
 
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();

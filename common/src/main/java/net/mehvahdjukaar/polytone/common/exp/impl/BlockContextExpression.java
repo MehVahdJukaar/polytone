@@ -66,7 +66,7 @@ public class BlockContextExpression extends PolytoneExpression implements IBlock
         return evaluate(level, p, state, 0);
     }
 
-    /** Variant that binds {@code v}, the value of a model selector's "selector" expression. */
+    // Variant that binds v, the value of a model selector's "selector" expression
     public double evaluate(LevelReader level, @NotNull Vec3 p, @Nullable BlockState state, double v) {
         BlockPos pos = BlockPos.containing(p);
         ExpressionUtils.seedRandom(state == null ? 42 : state.getSeed(pos));

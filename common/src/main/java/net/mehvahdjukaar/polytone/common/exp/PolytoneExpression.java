@@ -132,11 +132,9 @@ public abstract class PolytoneExpression {
         builder.addAll(baseVariableNames());
     }
 
-    /**
-     * The variable names every expression flavor accepts (the base {@link #buildVars} set).
-     * Public so the editor ({@code polytone.editor.PolytoneSchemas}) can build its variable
-     * chips from the same list instead of a hand-kept copy.
-     */
+    // The variable names every expression flavor accepts (the base buildVars set). Public so the editor
+    // (polytone.editor.PolytoneSchemas) can build its variable chips from the same list instead of a hand-kept
+    // copy.
     public static String[] baseVariableNames() {
         return new String[]{POS_X, POS_Y, POS_Z, TIME, DAY_TIME, SUN_TIME, RAIN, SEASON,
                 TEMPERATURE, DOWNFALL, BLOCK_LIGHT, SKY_LIGHT, DISTANCE_SQUARED,

@@ -23,12 +23,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Wrapping {@link IClientItemExtensions} that applies Polytone's {@link ItemModifier} client data and forwards every
- * other call to the extension that was already registered for the item (vanilla {@code DEFAULT} or another mod's).
- * This way we never clobber other mods' extensions: we only take over the specific hooks Polytone actually drives.
- * Hooked in via {@code IClientItemExtensionsMixin#of}, and cached one instance per delegate.
- */
+// Applies an item modifier's client data and forwards everything else to the extension already
+// registered for the item (vanilla DEFAULT or another mod's), so we only take over the hooks we
+// actually drive. Hooked in from IClientItemExtensionsMixin#of, one wrapper cached per delegate.
 public class PolytoneClientItemExtensions implements IClientItemExtensions {
 
     private static final Map<IClientItemExtensions, PolytoneClientItemExtensions> CACHE = new ConcurrentHashMap<>();
@@ -39,7 +36,6 @@ public class PolytoneClientItemExtensions implements IClientItemExtensions {
         this.delegate = delegate;
     }
 
-    /** Returns a Polytone wrapper around the already resolved extension, reusing a single wrapper per delegate. */
     public static PolytoneClientItemExtensions wrap(IClientItemExtensions delegate) {
         return CACHE.computeIfAbsent(delegate, PolytoneClientItemExtensions::new);
     }
@@ -54,8 +50,6 @@ public class PolytoneClientItemExtensions implements IClientItemExtensions {
         ItemModifier mod = modFor(stack);
         return mod == null ? null : mod.getWornModel();
     }
-
-    // --- Polytone driven hooks ---
 
     @Override
     public Model getHumanoidArmorModel(ItemStack stack, EquipmentClientInfo.LayerType layerType, Model original) {
@@ -76,8 +70,6 @@ public class PolytoneClientItemExtensions implements IClientItemExtensions {
         }
         return delegate.getGenericArmorModel(stack, layerType, original);
     }
-
-    // --- Pure delegation (Polytone logic gets added here as more client extension features land) ---
 
     @Override
     public @Nullable Font getFont(ItemStack stack, FontContext context) {

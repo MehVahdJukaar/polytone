@@ -118,11 +118,9 @@ public class MapColorHelper {
         return map;
     });
 
-    /**
-     * Declaration-site schema: enum dropdown over every accepted color name (canonical +
-     * OptiFine-compat aliases). Inference only sees STRING.xmap and would give plain text.
-     * Declared AFTER {@code colorNames} — the option list snapshots its keys at class-init.
-     */
+    // Declaration-site schema: enum dropdown over every accepted color name (canonical + OptiFine-compat
+    // aliases). Inference only sees STRING.xmap and would give plain text. Declared AFTER colorNames - the
+    // option list snapshots its keys at class-init.
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static final Codec<MapColor> CODEC = net.mehvahdjukaar.codecui.SchemaCodec.of(
             Codec.STRING.xmap(MapColorHelper::byName, mapColor -> "none"),

@@ -131,7 +131,6 @@ public class PlatStuffImpl {
         }
     }
 
-
     public static CreativeTabModifier modifyTab(CreativeTabModifier mod, CreativeModeTab tab) {
         CreativeTabAccessor acc = (CreativeTabAccessor) tab;
         Component oldName = null;
@@ -173,7 +172,6 @@ public class PlatStuffImpl {
         Identifier oldTabsImage = null;
 
         Identifier oldBackgroundLocation = null;
-
 
         List<Identifier> oldBeforeTabs = null;
 
@@ -218,7 +216,6 @@ public class PlatStuffImpl {
         List<ItemStack> list = List.copyOf(CreativeModeTabs.searchTab().getDisplayItems());
         sessionSearchTrees.updateCreativeTags(list);
     }
-
 
     public static ChunkSectionLayer getRenderType(Block block) {
         return ItemBlockRenderTypes.getChunkRenderType(block.defaultBlockState());
@@ -312,7 +309,6 @@ public class PlatStuffImpl {
                 .getMetadata().getVersion().getFriendlyString();
     }
 
-
     public static void registerColorResolver(ColorResolver colorResolver) {
         ColorResolverRegistry.register(colorResolver);
         Polytone.LOGGER.info("registered color resolver {}", colorResolver);
@@ -340,7 +336,6 @@ public class PlatStuffImpl {
             ColorResolverRegistryAccessor.setCustomResolvers(custom);
         }
 
-        // --- generation swap ---
         PREVIOUS_CUSTOM_RESOLVERS.clear();
         PREVIOUS_CUSTOM_RESOLVERS.addAll(CURRENT_CUSTOM_RESOLVERS);  // current becomes previous
         CURRENT_CUSTOM_RESOLVERS.clear();           // new frame starts empty
@@ -405,6 +400,5 @@ public class PlatStuffImpl {
     public static String getModLoader() {
         return "Fabric";
     }
-
 
 }

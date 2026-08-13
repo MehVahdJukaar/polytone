@@ -59,30 +59,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Supplier;
 
-/**
- * Live preview for Polytone colormaps.
- *
- * <p>It reuses the standard Nautilus 2D-preview chrome: a {@link PreviewSurface} (scrolling dark canvas
- * under a themed toolbar) holds the visuals - a small square block view and a same-size result swatch
- * side by side, then a bigger square {@link PixelTextureView} of the source colormap texture with the
- * sampled texel marked and its coordinates captioned right under it. The block picker sits on its own
- * above a "Live at player" toggle; every simulated-only input (biome picker, y slider, env/light
- * sliders) lives in one titled group under that toggle, which the toggle hides outright when on.
- *
- * <p>The block/biome pickers are the editor's own searchable, icon-bearing {@link RegistryPickerField},
- * so they look and behave exactly like the identifier fields in the schema form. The block is not a
- * simulated input - it just chooses what the 3D view previews - so it stays pickable in live mode too.
- *
- * <p>The block view renders the picked block, tinted live by the colormap's current output through the
- * Nautilus {@link BlockTint} seam - so the picker drives both the sampled state and what you see in 3D.
- *
- * <p>All sampling goes through the decoded {@link Colormap}'s instrumented sampler
- * ({@link Colormap#sampleColor} with a {@link CaptureSink}), so the swatch, the 2D marker and the 3D
- * block tint all come from one runtime-faithful evaluation. In simulated mode it is fed a minimal
- * {@link SimLevel} and the {@link ExpressionPreview} env-slider harness (shown only when the expression
- * reads them). With "Live at player" on it samples the real level at the player's feet with the live
- * clock/proxies instead, and a timer keeps it refreshed.
- */
+// Live preview for Polytone colormaps
 public final class ColormapPreview extends ExpressionPreview {
 
     private final @Nullable Path file;
@@ -92,14 +69,12 @@ public final class ColormapPreview extends ExpressionPreview {
     private final ColorSwatch swatch = new ColorSwatch();
     private final PixelTextureView imageView = new PixelTextureView();
 
-    // The editor's searchable, icon-bearing registry pickers (same widget the schema form uses).
     private final RegistryPickerField blockPicker;
     private final RegistryPickerField biomePicker;
     private final JSlider ySlider = new JSlider(-64, 320, 64);
     private final JLabel yLabel = StyledLabels.mutedSmall("");
     private final JLabel climateReadout = StyledLabels.mutedSmall(" ");
 
-    // Titled group holding every simulated input; greyed out (disabled) while in live mode.
     private JPanel inputsBox;
 
     // Light sliders feed SimLevel; shown only when the expression reads sky/block light.
@@ -114,7 +89,6 @@ public final class ColormapPreview extends ExpressionPreview {
     // thread, so currentTint is volatile. -1 -> vanilla tint (invalid/no sample).
     private volatile int currentTint = -1;
     private final BlockTint blockTint = (state, tintIndex) -> currentTint;
-    // The state currently placed in the 3D scene; rebuilt only when the picked/live block changes.
     private @Nullable BlockState sceneState;
 
     private @Nullable Colormap colormap;
@@ -155,8 +129,6 @@ public final class ColormapPreview extends ExpressionPreview {
     }
 
     private void buildLayout() {
-        // Sticky header: only the mode toggle + status stay pinned. Keeping it to one short row means
-        // the header never grows tall enough to push the visuals below the fold.
         Box toolbar = Box.createVerticalBox();
 
         Box topRow = Box.createHorizontalBox();
@@ -164,22 +136,16 @@ public final class ColormapPreview extends ExpressionPreview {
         topRow.add(Box.createHorizontalGlue());
         addRow(toolbar, topRow);
 
-        // Everything else lives in the scrolling body, so a crowded set of controls scrolls instead
-        // of clipping the visuals, and the panel can be dragged down to any size.
         Box content = Box.createVerticalBox();
 
         // The block choice isn't a simulated input - it only picks which block the 3D view shows and
         // tints - so it lives outside the group and stays usable in every mode, live included.
         addField(content, labeled("Block", blockPicker));
 
-        // The toggle sits right above the group it governs; flipping it on hides the whole group,
-        // since those simulated inputs are replaced by the live readings at the player.
         liveToggle.setAlignmentX(Component.LEFT_ALIGNMENT);
         content.add(liveToggle);
         content.add(Box.createVerticalStrut(UiScale.small()));
 
-        // The simulated-only inputs sit in one titled group under the toggle. Every field is laid out
-        // label-over-field at full width, so the pickers and sliders line up and nothing crops.
         inputsBox = GroupPanels.outlined();
         inputsBox.setLayout(new BoxLayout(inputsBox, BoxLayout.Y_AXIS));
         inputsBox.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -195,7 +161,6 @@ public final class ColormapPreview extends ExpressionPreview {
         inputsBox.add(Box.createVerticalStrut(UiScale.med()));
         addField(inputsBox, labeled("Y level", withValue(ySlider, yLabel)));
 
-        // Env-global sliders (base harness) + this panel's own light sliders, all under one header.
         skyRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         blockRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         inputsBox.add(envGroup());
@@ -205,7 +170,6 @@ public final class ColormapPreview extends ExpressionPreview {
         content.add(inputsBox);
         content.add(Box.createVerticalStrut(UiScale.med()));
 
-        // Canvas content: block view + result swatch, then the source texture with the sample marker.
         blockView.setBorder(UiTheme.hairlineBorder());
         imageView.setBorder(UiTheme.hairlineBorder());
 
@@ -218,7 +182,6 @@ public final class ColormapPreview extends ExpressionPreview {
         content.add(textureRow);
 
         root = new PreviewSurface(toolbar, content);
-        // Let the host split pane drag the preview down to any size; the body scrolls when it doesn't fit.
         root.setMinimumSize(new Dimension(UiScale.px(160), UiScale.px(120)));
     }
 
@@ -230,7 +193,6 @@ public final class ColormapPreview extends ExpressionPreview {
 
     @Override
     protected void onLiveModeChanged(boolean live) {
-        // The simulated inputs are fully replaced by the live readings, so hide the whole group.
         inputsBox.setVisible(!live);
     }
 
@@ -289,7 +251,6 @@ public final class ColormapPreview extends ExpressionPreview {
             clearSim();
         }
 
-        // Show only the sliders the expression actually read this pass.
         showEnv(level.usedSky, level.usedBlock);
         applyResult(sink);
     }
@@ -360,8 +321,6 @@ public final class ColormapPreview extends ExpressionPreview {
         blockView.setScene(scene, first); // keep the camera after the first build
     }
 
-    // Updates the swatch (fill + hex) and the 3D block tint, then re-renders the scene. The sampled
-    // texel coordinates live under the source texture instead, so the swatch stays uncluttered.
     private void setResult(int argb) {
         int rgb = argb & 0xFFFFFF;
         swatch.set(new Color(rgb), String.format("#%06X", rgb));
@@ -375,7 +334,6 @@ public final class ColormapPreview extends ExpressionPreview {
         blockView.refresh();
     }
 
-    // No source image at all: blank the texture view.
     private void clearImage() {
         imageView.setImage(null);
         imageView.clearMarker();
@@ -398,8 +356,6 @@ public final class ColormapPreview extends ExpressionPreview {
         inputsBox.repaint();
     }
 
-    // The base harness reveals the global sliders it read; this panel adds its own sky/block light
-    // rows under the same header, so the header shows if either the base or the light rows do.
     private void showEnv(boolean usedSky, boolean usedBlock) {
         boolean anyEnv = refreshEnvControls();
         skyRow.setVisible(usedSky);
@@ -421,8 +377,6 @@ public final class ColormapPreview extends ExpressionPreview {
         return size <= 1 ? 0f : index / (float) (size - 1);
     }
 
-    // --- picker resolution ----------------------------------------------------------------------
-
     private static Block resolveBlock(@Nullable Identifier id) {
         if (id == null) return Blocks.AIR;
         return BuiltInRegistries.BLOCK.getOptional(id).orElse(Blocks.AIR);
@@ -442,8 +396,6 @@ public final class ColormapPreview extends ExpressionPreview {
             return null;
         }
     }
-
-    // --- source image resolution ---------------------------------------------------------------
 
     private @Nullable ArrayImage resolveSourceImage(Colormap cm) {
         String key;
@@ -535,7 +487,7 @@ public final class ColormapPreview extends ExpressionPreview {
         return out;
     }
 
-    // --- sink: captures the intermediates of one real sampling pass ----------------------------
+    // captures the intermediates of one real sampling pass
 
     private static final class CaptureSink implements Colormap.SampleSink {
         boolean captured;
@@ -553,11 +505,10 @@ public final class ColormapPreview extends ExpressionPreview {
         }
     }
 
-    // --- minimal BlockAndTintGetter for axis evaluation ----------------------------------------
+    // minimal BlockAndTintGetter for axis evaluation
 
-    // A one-block world: the picked state at the origin, air elsewhere, the picked biome for tint, and
-    // slider-driven light. Records whether sky/block light was queried so the preview can show those
-    // sliders only when the expression uses them.
+    // A one-block world: the picked state at the origin, air elsewhere, the picked biome, slider-driven
+    // light. Records whether sky/block light was queried so the panel can hide those sliders.
     private static final class SimLevel implements BlockAndTintGetter {
         private final BlockPos origin;
         private final BlockState state;

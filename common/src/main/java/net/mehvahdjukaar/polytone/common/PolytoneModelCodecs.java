@@ -7,27 +7,20 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.renderer.block.model.Variant;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Editor-facing companions for the block-variant model state that {@link SimpleModelStateExtension}
- * extends. Only touched from client code (the deserializer mixin and the PackEditor compat), so its
- * reference to the client {@code SimpleModelState} type never loads on a dedicated server.
- */
+// Editor-facing companions for the block-variant model state that SimpleModelStateExtension extends. Only
+// touched from client code (the deserializer mixin and the PackEditor compat), so its reference to the client
+// SimpleModelState type never loads on a dedicated server.
 public final class PolytoneModelCodecs {
 
     private PolytoneModelCodecs() {}
 
-    /**
-     * The live wrapped {@code SimpleModelState} map codec the blockstate chain uses, captured by
-     * {@code VariantDeserializerMixin} when it wraps the vanilla codec at class init. Null until then.
-     */
+    // The live wrapped SimpleModelState map codec the blockstate chain uses, captured by
+    // VariantDeserializerMixin when it wraps the vanilla codec at class init. Null until then.
     public static volatile @Nullable MapCodec<Variant.SimpleModelState> WRAPPED;
 
-    /**
-     * The flat JSON a variant model state accepts once Polytone is present: the vanilla
-     * {@code x}/{@code y}/{@code z} rotations (as free floats here) and {@code uvlock}, plus
-     * Polytone's {@code xoffset}/{@code yoffset}/{@code zoffset}. Shape only - never used to decode
-     * or encode real data, just to give the editor a schema for the otherwise opaque wrapper.
-     */
+    // The flat JSON a variant model state accepts once Polytone is present: the vanilla x/y/z rotations (as
+    // free floats here) and uvlock, plus Polytone's xoffset/yoffset/zoffset. Shape only - never used to decode
+    // or encode real data, just to give the editor a schema for the otherwise opaque wrapper.
     public static final MapCodec<Variant.SimpleModelState> EDITOR_SHAPE = RecordCodecBuilder.mapCodec(
             instance -> instance.group(
                     Codec.FLOAT.optionalFieldOf("x", 0f).forGetter(a -> 0f),

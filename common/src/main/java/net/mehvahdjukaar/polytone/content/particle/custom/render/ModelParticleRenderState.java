@@ -24,7 +24,7 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
 
     private ForkJoinTask<?> extractionFuture;
 
-    /** Set by ModelParticleRenderGroup when extraction is dispatched off-thread. */
+    // Set by ModelParticleRenderGroup when extraction is dispatched off-thread
     public void setExtractionFuture(ForkJoinTask<?> future) {
         // Join any still-in-flight extraction before overwriting it. submit()/clear() normally join
         // it first (so this is a no-op in the frame loop), but if a frame skips both, this stops the
@@ -33,7 +33,7 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
         this.extractionFuture = future;
     }
 
-    /** Block until off-thread extraction (if any) has finished writing this state. */
+    // Block until off-thread extraction (if any) has finished writing this state
     private void awaitExtraction() {
         ForkJoinTask<?> f = this.extractionFuture;
         if (f != null) {
@@ -92,7 +92,6 @@ public class ModelParticleRenderState implements ParticleGroupRenderState {
             buffer.putBulkData(pose, bakedQuad, r, g, b, a, combinedLight, combinedOverlay);
         }
     }
-
 
     private record ParticleRenderInstance(float x, float y, float z,
                                           float rx, float ry, float rz, float rw, float size,

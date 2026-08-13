@@ -26,11 +26,9 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
-/**
- * Maps one Bedrock effect onto Polytone json: the {@code particle_*} components become the visible
- * particle, the {@code emitter_*} ones become a second, invisible particle whose {@code particle_emitters}
- * spawn the first. See the package README for what that trade costs.
- */
+// Maps one Bedrock effect onto Polytone json: the particle_* components become the visible particle, the
+// emitter_* ones become a second, invisible particle whose particle_emitters spawn the first. See the package
+// README for what that trade costs.
 public class BedrockParticleConverter {
 
     public static ConversionResult convert(BedrockParticleFile file, ConversionOptions options) {
@@ -56,8 +54,6 @@ public class BedrockParticleConverter {
         return new ConversionResult(options.particleId(), emitter != null ? options.emitterId() : null,
                 files, textures, diagnostics);
     }
-
-    // ---------------------------------------------------------------- the visible particle
 
     private static PolytoneParticleJson buildParticle(BedrockParticleEffect effect, BedrockComponents components,
                                                       ConversionOptions options, DiagnosticSink sink) {
@@ -85,7 +81,7 @@ public class BedrockParticleConverter {
         return json;
     }
 
-    /** @return the lifetime in ticks when it is a fixed number, which decides how creation events convert */
+    // the lifetime in ticks when it is a fixed number, which decides how creation events convert
     private static OptionalDouble convertLifetime(BedrockComponents components, PolytoneParticleJson json,
                                                   ConversionOptions options, DiagnosticSink sink) {
         Optional<ParticleComponents.LifetimeExpression> lifetime =
@@ -116,7 +112,7 @@ public class BedrockParticleConverter {
         return ticks;
     }
 
-    /** @return true when this particle draws nothing, i.e. it exists only to run its components */
+    // true when this particle draws nothing, i.e. it exists only to run its components
     private static boolean convertBillboard(BedrockComponents components, PolytoneParticleJson json,
                                             ConversionOptions options, DiagnosticSink sink) {
         Optional<ParticleComponents.AppearanceBillboard> maybe =
@@ -296,15 +292,10 @@ public class BedrockParticleConverter {
         });
     }
 
-    // ---------------------------------------------------------------- creation events
-
-    /**
-     * A creation event fires once, our emitters fire every tick, so the two only line up on a particle
-     * that lives a single tick. That is not the corner case it sounds like: Bedrock's own "emitter"
-     * effects are size-0 particles whose creation event spawns the real thing, which is the same trick
-     * we play with the meta particle. When the particle draws nothing, its lifetime is pinned to one
-     * tick and the event becomes emitters; when it is visible, the event is left to the author.
-     */
+    // A creation event fires once, our emitters fire every tick, so the two only line up on a particle that
+    // lives a single tick. That is not the corner case it sounds like: Bedrock's own "emitter" effects are
+    // size-0 particles whose creation event spawns the real thing, which is the same trick we play with the
+    // meta particle.
     private static void convertCreationEvents(BedrockParticleEffect effect, BedrockComponents components,
                                               PolytoneParticleJson json, ConversionOptions options,
                                               OptionalDouble lifetimeTicks, boolean drawsNothing,
@@ -354,10 +345,8 @@ public class BedrockParticleConverter {
         }
     }
 
-    /**
-     * An {@code emitter} reference points at a whole effect, which on our side is the meta particle,
-     * while a {@code particle} reference points at the visible one.
-     */
+    // An emitter reference points at a whole effect, which on our side is the meta particle, while a particle
+    // reference points at the visible one.
     private static String targetId(BedrockEvent.EffectRef ref, ConversionOptions options) {
         String id = ConversionOptions.identifierOf(ref.effect());
         return ref.type().startsWith("emitter") ? id + "_emitter" : id;
@@ -377,7 +366,7 @@ public class BedrockParticleConverter {
         return actions;
     }
 
-    /** Walks an event tree into leaves: a sequence runs all of them, a randomize picks one by weight. */
+    // Walks an event tree into leaves: a sequence runs all of them, a randomize picks one by weight.
     private static void flatten(BedrockEvent event, double chance, List<EventAction> out) {
         event.particleEffect().ifPresent(ref -> out.add(new EventAction(chance, ref, null)));
         event.soundEffect().ifPresent(ref -> out.add(new EventAction(chance, null, ref.eventName())));
@@ -401,8 +390,6 @@ public class BedrockParticleConverter {
 
     private record EventAction(double chance, BedrockEvent.@Nullable EffectRef effect, @Nullable String sound) {
     }
-
-    // ---------------------------------------------------------------- the emitter particle
 
     private static @Nullable PolytoneParticleJson buildEmitter(BedrockComponents components,
                                                                ConversionOptions options, DiagnosticSink sink) {
@@ -597,9 +584,6 @@ public class BedrockParticleConverter {
                         "actually got, which a separate velocity expression cannot see; using a random direction instead");
     }
 
-    // ---------------------------------------------------------------- shared bits
-
-    /** Field goes in the initializer when it is a plain number and in the ticker when it can change. */
     private static void assign(PolytoneParticleJson json, String field, String expression) {
         if (PolytoneExpressions.asNumber(expression).isPresent()) {
             json.init(field, expression);
@@ -613,12 +597,10 @@ public class BedrockParticleConverter {
         return options.translator().translate(expr, scope, where, sink);
     }
 
-    /** Emitter entries and tickers both spell velocity as {@code dx}/{@code dy}/{@code dz}. */
     private static String velocityField(Axis axis) {
         return "d" + axis.getSerializedName();
     }
 
-    /** The axis a constant, axis-aligned normal points along, or null. */
     private static @Nullable Axis constantAxis(MolangExpr.Vec3 normal) {
         Axis found = null;
         for (Axis axis : Axis.values()) {
@@ -712,8 +694,6 @@ public class BedrockParticleConverter {
         }
     }
 
-    // ---------------------------------------------------------------- output files
-
     private static void addParticleFiles(List<ConversionResult.OutputFile> files, String namespace, String path,
                                          PolytoneParticleJson particle, ConversionOptions options, DiagnosticSink sink) {
         if (options.validate()) {
@@ -726,7 +706,7 @@ public class BedrockParticleConverter {
                 "assets/" + namespace + "/particles/" + path + ".json", spriteList(namespace + ":" + options.path())));
     }
 
-    /** The vanilla side of a custom particle: even an invisible emitter needs a sprite list to register. */
+    // The vanilla side of a custom particle: even an invisible emitter needs a sprite list to register.
     private static JsonObject spriteList(String sprite) {
         JsonObject json = new JsonObject();
         JsonArray textures = new JsonArray();
@@ -776,10 +756,8 @@ public class BedrockParticleConverter {
                 rect.textureWidth(), rect.textureHeight()));
     }
 
-    /**
-     * @param instant whether the whole batch comes out in one tick, which decides how long the meta
-     *                particle needs to stay alive
-     */
+    // whether the whole batch comes out in one tick, which decides how long the meta particle needs to stay
+    // alive
     private record SpawnRate(String chance, String count, boolean instant) {
     }
 }

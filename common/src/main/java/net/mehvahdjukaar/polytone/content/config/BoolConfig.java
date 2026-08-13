@@ -28,7 +28,6 @@ public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.Cy
 
     private static final List<Boolean> VALUES = ImmutableList.of(Boolean.TRUE, Boolean.FALSE);
 
-
     protected BoolConfig(Optional<String> valueTranslation, Map<String, Boolean> presets,
                          Map<String, Boolean> sectionPresets, int priority,
                          Optional<String> section, Optional<Integer> sectionOrder,
@@ -50,7 +49,6 @@ public class BoolConfig extends PolyConfig<Boolean> implements OptionInstance.Cy
 
     @Override
     public MutableComponent formatValue(Boolean value) {
-        // Same constants vanilla uses everywhere else for boolean toggles (Music: ON / Music: OFF).
         return (value ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF).copy();
     }
 

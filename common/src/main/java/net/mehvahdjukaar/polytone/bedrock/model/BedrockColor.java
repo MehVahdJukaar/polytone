@@ -14,13 +14,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * The {@code color} of {@code particle_appearance_tinting}, which Bedrock writes in three different
- * shapes: an rgb(a) array, an {@code #AARRGGBB} string, or a gradient driven by an interpolant.
- */
+// The color of particle_appearance_tinting, which Bedrock writes in three different shapes: an rgb(a) array,
+// an #AARRGGBB string, or a gradient driven by an interpolant.
 public sealed interface BedrockColor {
 
-    /** One colour. Gradient stops are these too, and packs mix the two spellings freely. */
+    // One colour. Gradient stops are these too, and packs mix the two spellings freely.
     Codec<BedrockColor> SOLID = Codec.withAlternative(
             BedrockCodecs.branch(Rgba.CODEC, Rgba.class),
             BedrockCodecs.branch(Hex.CODEC, Hex.class));
@@ -42,7 +40,7 @@ public sealed interface BedrockColor {
     record Hex(String value) implements BedrockColor {
         public static final Codec<Hex> CODEC = Codec.STRING.xmap(Hex::new, Hex::value);
 
-        /** Bedrock hex is {@code #AARRGGBB}: alpha first, and 8 digits overflow a signed int. */
+        // Bedrock hex is #AARRGGBB: alpha first, and 8 digits overflow a signed int
         public @Nullable Rgba toRgba() {
             String digits = value.replace("#", "").replace("0x", "").trim();
             long packed;
@@ -63,10 +61,8 @@ public sealed interface BedrockColor {
         }
     }
 
-    /**
-     * Stops are keyed by their position along the interpolant. Bedrock also accepts a bare list, in
-     * which case they are spread evenly from 0 to 1.
-     */
+    // Stops are keyed by their position along the interpolant. Bedrock also accepts a bare list, in which case
+    // they are spread evenly from 0 to 1.
     record Gradient(List<Stop> stops, Optional<MolangExpr> interpolant) implements BedrockColor {
 
         private static final Codec<List<Stop>> KEYED_STOPS = Codec.unboundedMap(Codec.STRING, SOLID)

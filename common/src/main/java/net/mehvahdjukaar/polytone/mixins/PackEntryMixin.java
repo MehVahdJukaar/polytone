@@ -35,7 +35,6 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
     private static final Identifier POLYTONE$BADGE_HIGHLIGHTED = Polytone.res("pack_info_highlighted");
     @Unique
     private static final int POLYTONE$BADGE_SIZE = 8;
-    /** Gap kept between the heart and the entry's right edge, and between the heart and the title. */
     @Unique
     private static final int POLYTONE$BADGE_MARGIN = 2;
 

@@ -202,7 +202,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         return Objects.requireNonNullElse(activeLoadConfigs.get(), configs);
     }
 
-
     public Object getValue(Identifier configKey) {
         var reg = getActiveRegistry();
         OptionHolder<?> value = reg.getValue(configKey);
@@ -267,10 +266,8 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         Polytone.LOGGER.info("Loaded {} Polytone config entries", configs.size());
     }
 
-    /**
-     * Synthetic entries registered only in dev to exercise namespace grouping, sections, presets,
-     * wide rows, and performance-impact tooltips on the config screen.
-     */
+    // Synthetic entries registered only in dev to exercise namespace grouping, sections, presets, wide rows,
+    // and performance-impact tooltips on the config screen.
     private void registerDevTestConfigs() {
         if (!Polytone.isDevEnv) return;
 

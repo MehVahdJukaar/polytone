@@ -23,12 +23,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * Persistent render targets declared under {@code polytone/post_targets/<name>.json}
- * ({@code width}/{@code height} optional, defaulting to frame size, plus {@code use_depth}).
- * They keep their content across frames and get spliced into every polytone post chain's
- * target bundle, so chains can read and write them like the vanilla targets.
- */
+// Persistent render targets declared under polytone/post_targets/<name>.json (width/height optional,
+// defaulting to frame size, plus use_depth). They keep their content across frames and get spliced into every
+// polytone post chain's target bundle, so chains can read and write them like the vanilla targets.
 public class PostTargetsManager extends ContentManager<PostTargetsManager.TargetSpec> {
 
     public record TargetSpec(Optional<Integer> width, Optional<Integer> height, boolean useDepth) {
@@ -67,7 +64,7 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
         this.dirty = true;
     }
 
-    /** Target ids post chains may reference: the vanilla sorting targets plus all custom ones. */
+    // Target ids post chains may reference: the vanilla sorting targets plus all custom ones
     public Set<Identifier> allowedTargets() {
         Map<Identifier, TargetSpec> specs = this.specs;
         if (specs.isEmpty()) return LevelTargetBundle.SORTING_TARGETS;
@@ -76,7 +73,7 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
         return set;
     }
 
-    /** Creates or resizes the targets; full-frame ones follow the window size. */
+    // Creates or resizes the targets; full-frame ones follow the window size
     public void ensureAllocated(int frameWidth, int frameHeight) {
         Map<Identifier, TargetSpec> specs = this.specs;
         if (dirty) {
@@ -97,7 +94,7 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
         }
     }
 
-    /** Wraps the vanilla bundle so custom ids resolve to the persistent targets. */
+    // Wraps the vanilla bundle so custom ids resolve to the persistent targets
     public PostChain.TargetBundle wrap(LevelTargetBundle vanilla, FrameGraphBuilder builder) {
         if (targets.isEmpty()) return vanilla;
         Map<Identifier, ResourceHandle<RenderTarget>> handles = new HashMap<>();

@@ -5,15 +5,9 @@ import net.minecraft.core.Direction.Axis;
 
 import java.util.OptionalDouble;
 
-/**
- * The one place that knows our expression dialect. Everything is emitted in the scripting syntax
- * ({@code o.age()}, {@code random.rand()}, named customs) rather than the older uppercase-variable
- * one: it is the more capable of the two, and it is the only one that can hold the per-particle
- * state Molang leans on so heavily.
- *
- * <p>Every combinator folds constants, so a conversion whose inputs were all literals comes out as
- * literals instead of arithmetic nobody wants to read.
- */
+// The one place that knows our expression dialect. Everything is emitted in the scripting syntax (o.age(),
+// random.rand(), named customs) rather than the older uppercase-variable one: it is the more capable of the
+// two, and it is the only one that can hold the per-particle state Molang leans on so heavily.
 public class PolytoneExpressions {
 
     public static final String AGE = "o.age()";
@@ -26,7 +20,6 @@ public class PolytoneExpressions {
         };
     }
 
-    /** A named variable on the particle, which is how per-particle state from Molang lands here. */
     public static String custom(String name) {
         return "o.custom(\"" + name + "\")";
     }
@@ -74,7 +67,7 @@ public class PolytoneExpressions {
         return parenthesize(left) + "*" + parenthesize(right);
     }
 
-    /** Uniform in {@code [-half, half]}, which is what a box emitter needs on each axis. */
+    // Uniform in [-half, half], which is what a box emitter needs on each axis
     public static String randomSymmetric(String half) {
         if (isZero(half)) return "0";
         OptionalDouble constant = asNumber(half);
@@ -84,22 +77,20 @@ public class PolytoneExpressions {
         return "(random.rand()*2-1)*" + parenthesize(half);
     }
 
-    /**
-     * A rough stand-in for "a random direction" on axes that would need a shared normalisation. Three
-     * independent gaussians do give an isotropic direction, but each axis is sampled separately so the
-     * length varies instead of staying on the unit sphere.
-     */
+    // A rough stand-in for "a random direction" on axes that would need a shared normalisation. Three
+    // independent gaussians do give an isotropic direction, but each axis is sampled separately so the length
+    // varies instead of staying on the unit sphere.
     public static String randomGaussian(String scale) {
         if (isZero(scale)) return "0";
         return "random.gaussian()*" + parenthesize(scale);
     }
 
-    /** {@code v * dragMultiplier + accelerationPerTick}, the per-tick form of Bedrock's dynamic motion. */
+    // v * dragMultiplier + accelerationPerTick, the per-tick form of Bedrock's dynamic motion
     public static String integrateVelocity(Axis axis, double dragMultiplier, String accelerationPerTick) {
         return add(scale(velocity(axis), dragMultiplier), accelerationPerTick);
     }
 
-    /** Spin as a closed form over age rather than an accumulator, so it cannot drift: {@code start + rate * age}. */
+    // Spin as a closed form over age rather than an accumulator, so it cannot drift: start + rate * age.
     public static String spin(String startRadians, String radiansPerTick) {
         return add(startRadians, multiply(radiansPerTick, AGE));
     }

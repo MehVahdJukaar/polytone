@@ -6,10 +6,8 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 
-/**
- * A {@link ClientTooltipComponent} drawing a texture at 1:1 pixel size inside a tooltip, the way
- * the bundle tooltip draws its item grid. Not config-specific, works in any component list.
- */
+// A ClientTooltipComponent drawing a texture at 1:1 pixel size inside a tooltip, the way the bundle tooltip
+// draws its item grid. Not config-specific, works in any component list.
 public class ClientImageTooltip implements ClientTooltipComponent {
     // uniform 4px breathing room on all sides, matching vanilla's bundle element spacing
     private static final int SIDE_MARGIN = 4;

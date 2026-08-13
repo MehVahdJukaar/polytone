@@ -200,7 +200,7 @@ public record BlockPropertyModifier(
                 false, Targets.EMPTY, false);
     }
 
-    // Declaration-site schema: enum dropdown over the layer labels — inference only sees
+    // Declaration-site schema: enum dropdown over the layer labels - inference only sees
     // STRING.xmap and would render plain text.
     public static final Codec<ChunkSectionLayer> SECTION_LAYER_CODEC =
             net.mehvahdjukaar.codecui.SchemaCodec.of(

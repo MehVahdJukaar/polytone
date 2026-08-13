@@ -79,7 +79,7 @@ public class ConfigScreen extends OptionsSubScreen {
         this.saveFunc = saveFunc;
     }
 
-    /** Required by OptionsSubScreen; the single list is built in {@link #init()}, so this stays empty. */
+    // Required by OptionsSubScreen; the single list is built in init(), so this stays empty
     @Override
     protected void addOptions() {
     }
@@ -192,10 +192,8 @@ public class ConfigScreen extends OptionsSubScreen {
         this.supportBubble.renderPointingAt(guiGraphics, this.heartButton, this.width, mouseX, mouseY, partialTick);
     }
 
-    /**
-     * Tooltip for a hovered option with a preview image and/or impact line, drawn like vanilla item
-     * tooltips. The built-in text tooltip is suppressed in {@link OptionHolder} for these entries.
-     */
+    // Tooltip for a hovered option with a preview image and/or impact line, drawn like vanilla item tooltips.
+    // The built-in text tooltip is suppressed in OptionHolder for these entries.
     private void renderCustomTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         if (this.list == null) return;
 
@@ -207,7 +205,6 @@ public class ConfigScreen extends OptionsSubScreen {
             if (widget == null || !widget.isHovered()) continue;
 
             List<ClientTooltipComponent> components = new ArrayList<>();
-            // description on top, when the entry has a tooltip translation
             String tooltipKey = holder.fileId.toLanguageKey("config", "tooltip");
             if (I18n.exists(tooltipKey)) {
                 Component text = Component.translatable(tooltipKey);
@@ -241,7 +238,7 @@ public class ConfigScreen extends OptionsSubScreen {
         }
     }
 
-    /** An empty tooltip line that just reserves vertical space (renders nothing). */
+    // An empty tooltip line that just reserves vertical space (renders nothing)
     private record SpacerTooltip(int height) implements ClientTooltipComponent {
         @Override
         public int getWidth(Font font) {
@@ -253,8 +250,6 @@ public class ConfigScreen extends OptionsSubScreen {
             return height;
         }
     }
-
-    // --- list population ---
 
     private void populateList(CollapsibleOptionsList list) {
         for (String modId : optionsPerCategory.keySet()) {
@@ -322,11 +317,9 @@ public class ConfigScreen extends OptionsSubScreen {
         rebuildPreservingScroll();
     }
 
-    /**
-     * Decides the top-to-bottom order of sections: the sectionless group first, then named
-     * sections by their {@code section_order} (smallest declared among the section's entries),
-     * with sections that declare none falling back to alphabetical by id.
-     */
+    // Decides the top-to-bottom order of sections: the sectionless group first, then named sections by their
+    // section_order (smallest declared among the section's entries), with sections that declare none falling
+    // back to alphabetical by id.
     private static List<Optional<String>> orderedSections(Map<Optional<String>, List<OptionHolder<?>>> bySection) {
         return bySection.keySet().stream()
                 .sorted(Comparator
@@ -336,7 +329,6 @@ public class ConfigScreen extends OptionsSubScreen {
                 .toList();
     }
 
-    /** Smallest section_order declared by any entry in the section; MAX_VALUE if none declare it. */
     private static int sectionSortKey(List<OptionHolder<?>> entries) {
         int min = Integer.MAX_VALUE;
         for (OptionHolder<?> holder : entries) {
@@ -347,12 +339,8 @@ public class ConfigScreen extends OptionsSubScreen {
         return min;
     }
 
-    /**
-     * Adds a section's options preserving order: entries flagged {@code "wide": true} get their
-     * own full-width row (addBig), the rest are packed two-per-row (addSmall). A run of normal
-     * options is flushed whenever a wide one interrupts it, so a wide button cleanly breaks up a
-     * long list and dodges the lonely half-button an odd count would otherwise leave.
-     */
+    // Adds a section's options preserving order: entries flagged "wide": true get their own full-width row
+    // (addBig), the rest are packed two-per-row (addSmall).
     private void addOptionRows(OptionsList list, List<OptionHolder<?>> group) {
         List<OptionInstance<?>> pending = new ArrayList<>();
         for (OptionHolder<?> holder : group) {
@@ -384,10 +372,8 @@ public class ConfigScreen extends OptionsSubScreen {
         list.addBig(makePresetOpt(presets, modId, section));
     }
 
-    /**
-     * Rebuilds every widget from current option values, then restores scroll. Option buttons are
-     * value snapshots, so programmatic changes (reset/undo/presets) need this.
-     */
+    // Rebuilds every widget from current option values, then restores scroll. Option buttons are value
+    // snapshots, so programmatic changes (reset/undo/presets) need this.
     private void rebuildPreservingScroll() {
         double scroll = this.list != null ? this.list.scrollAmount() : 0;
         this.rebuildWidgets();
@@ -408,20 +394,16 @@ public class ConfigScreen extends OptionsSubScreen {
         rebuildPreservingScroll();
     }
 
-    /**
-     * Called by {@link OptionHolder} on any option value change so the preset sliders re-derive
-     * their position (hand-tweaking an option snaps the slider to Custom, vanilla-style).
-     */
+    // Called by OptionHolder on any option value change so the preset sliders re-derive their position (hand-
+    // tweaking an option snaps the slider to Custom, vanilla-style).
     static void onOptionValueChanged() {
         if (Minecraft.getInstance().screen instanceof ConfigScreen cs && !cs.suppressRederive) {
             cs.presetRederivers.values().forEach(Runnable::run);
         }
     }
 
-    /**
-     * Refreshes the given options' widgets in place via {@code OptionsList#resetOption}, the
-     * vanilla live-update path, so labels follow programmatic changes without a screen rebuild.
-     */
+    // Refreshes the given options' widgets in place via OptionsList#resetOption, the vanilla live-update path,
+    // so labels follow programmatic changes without a screen rebuild.
     private void refreshOptionWidgets(Collection<OptionInstance<?>> options) {
         if (this.list == null) return;
         for (OptionInstance<?> option : options) {
@@ -440,8 +422,6 @@ public class ConfigScreen extends OptionsSubScreen {
         }
         rebuildPreservingScroll();
     }
-
-    // --- header title resolution ---
 
     private Component namespaceTitle(String modId) {
         return Component.translatableWithFallback("config." + modId + ".header",
@@ -481,12 +461,10 @@ public class ConfigScreen extends OptionsSubScreen {
 
         Identifier id = Identifier.fromNamespaceAndPath(modId, "presets");
         String titleKey = id.toLanguageKey();
-        // Per-section title override -> pack-wide title -> generic "Preset".
         Component caption = firstTranslated(
                 section == null ? null : titleKey + ".section." + section,
                 titleKey);
 
-        // General slider tooltip, used as the fallback for stops without their own.
         Component fallbackTooltip = null;
         if (section != null) fallbackTooltip = translatedOrNull(titleKey + ".section." + section + ".tooltip");
         if (fallbackTooltip == null) fallbackTooltip = translatedOrNull(titleKey + ".tooltip");
@@ -568,7 +546,7 @@ public class ConfigScreen extends OptionsSubScreen {
         });
     }
 
-    /** First key with an actual translation wins; generic "Preset" as the final fallback. */
+    // First key with an actual translation wins; generic "Preset" as the final fallback
     private static Component firstTranslated(@Nullable String... keys) {
         for (String key : keys) {
             if (key == null) continue;
@@ -605,7 +583,7 @@ public class ConfigScreen extends OptionsSubScreen {
         return I18n.exists(key) ? Component.translatable(key) : null;
     }
 
-    /** Per-stop tooltip: per-section override -> per-preset -> the general slider tooltip. */
+    // Per-stop tooltip: per-section override -> per-preset -> the general slider tooltip
     @Nullable
     private static Component presetTooltip(String modId, @Nullable String section, int index,
                                            List<String> names, @Nullable Component fallback) {

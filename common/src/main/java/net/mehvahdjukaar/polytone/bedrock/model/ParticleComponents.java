@@ -10,13 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * The {@code particle_*} half of the component list: what an individual particle looks like, how it
- * moves once it exists, and when it dies.
- */
+// The particle_* half of the component list: what an individual particle looks like, how it moves once it
+// exists, and when it dies.
 public class ParticleComponents {
 
-    /** The particle-side counterpart of {@code emitter_initialization}. */
     public record Initialization(Optional<MolangExpr> creationExpression,
                                  Optional<MolangExpr> perUpdateExpression) {
         public static final Codec<Initialization> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -25,9 +22,7 @@ public class ParticleComponents {
         ).apply(i, Initialization::new));
     }
 
-    // ---- initial state ----
-
-    /** Speed along the direction the emitter shape handed out. Bedrock accepts a scalar or a vector. */
+    // Speed along the direction the emitter shape handed out. Bedrock accepts a scalar or a vector.
     public record InitialSpeed(Optional<MolangExpr> scalar, Optional<MolangExpr.Vec3> vector) {
         public static final Codec<InitialSpeed> CODEC = Codec.withAlternative(
                 MolangExpr.Vec3.CODEC.xmap(v -> new InitialSpeed(Optional.empty(), Optional.of(v)),
@@ -36,15 +31,13 @@ public class ParticleComponents {
                         s -> s.scalar.orElse(MolangExpr.ZERO)));
     }
 
-    /** Degrees, and {@code rotation_rate} is degrees per second. */
+    // Degrees, and rotation_rate is degrees per second
     public record InitialSpin(MolangExpr rotation, MolangExpr rotationRate) {
         public static final Codec<InitialSpin> CODEC = RecordCodecBuilder.create(i -> i.group(
                 MolangExpr.CODEC.optionalFieldOf("rotation", MolangExpr.ZERO).forGetter(InitialSpin::rotation),
                 MolangExpr.CODEC.optionalFieldOf("rotation_rate", MolangExpr.ZERO).forGetter(InitialSpin::rotationRate)
         ).apply(i, InitialSpin::new));
     }
-
-    // ---- motion ----
 
     public record MotionDynamic(MolangExpr.Vec3 linearAcceleration, MolangExpr linearDragCoefficient,
                                 MolangExpr rotationAcceleration, MolangExpr rotationDragCoefficient) {
@@ -60,7 +53,7 @@ public class ParticleComponents {
         ).apply(i, MotionDynamic::new));
     }
 
-    /** Position driven directly, relative to the emitter, instead of by forces. */
+    // Position driven directly, relative to the emitter, instead of by forces
     public record MotionParametric(MolangExpr.Vec3 relativePosition, Optional<MolangExpr.Vec3> direction,
                                    MolangExpr rotation) {
         public static final Codec<MotionParametric> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -91,8 +84,6 @@ public class ParticleComponents {
         }
     }
 
-    // ---- appearance ----
-
     public record AppearanceBillboard(MolangExpr.Vec2 size, FacingMode facingCameraMode,
                                       Optional<Direction> direction, Optional<Uv> uv) {
         public static final Codec<AppearanceBillboard> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -104,7 +95,7 @@ public class ParticleComponents {
                 Uv.CODEC.optionalFieldOf("uv").forGetter(AppearanceBillboard::uv)
         ).apply(i, AppearanceBillboard::new));
 
-        /** Frame count of the flipbook animation, when there is one, as written in the file. */
+        // Frame count of the flipbook animation, when there is one, as written in the file
         public Optional<String> flipbookFrames() {
             return uv.flatMap(Uv::flipbook).map(f -> f.maxFrame().source());
         }
@@ -117,7 +108,7 @@ public class ParticleComponents {
             ).apply(i, Direction::new));
         }
 
-        /** The rect of the effect's texture this particle draws, in pixels. */
+        // The rect of the effect's texture this particle draws, in pixels
         public record Uv(double textureWidth, double textureHeight, MolangExpr.Vec2 uv, MolangExpr.Vec2 uvSize,
                          Optional<Flipbook> flipbook) {
             public static final Codec<Uv> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -176,13 +167,11 @@ public class ParticleComponents {
         ).apply(i, AppearanceTinting::new));
     }
 
-    /** Marker component: the particle is tinted by the light level at its position. */
+    // Marker component: the particle is tinted by the light level at its position
     public record AppearanceLighting() {
         public static final Codec<AppearanceLighting> CODEC =
                 RecordCodecBuilder.create(i -> i.point(new AppearanceLighting()));
     }
-
-    // ---- lifetime ----
 
     public record LifetimeExpression(MolangExpr expirationExpression, Optional<MolangExpr> maxLifetime) {
         public static final Codec<LifetimeExpression> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -201,7 +190,7 @@ public class ParticleComponents {
         ).apply(i, LifetimeEvents::new));
     }
 
-    /** {@code [a, b, c, d]} of the plane equation; particles crossing to the negative side expire. */
+    // [a, b, c, d] of the plane equation; particles crossing to the negative side expire
     public record KillPlane(double a, double b, double c, double d) {
         public static final Codec<KillPlane> CODEC = Codec.DOUBLE.listOf().comapFlatMap(
                 list -> list.size() == 4

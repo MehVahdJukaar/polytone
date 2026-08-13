@@ -16,15 +16,10 @@ import net.minecraft.resources.RegistryOps;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Loads data driven entity model geometry from {@code polytone/custom_models/} and exposes it both as a
- * referenceable registry (for item modifiers, by name or inlined) and as a set of real {@link LayerDefinition}s
- * keyed by {@link ModelLayerLocation}. Those layers are merged into the game's {@code EntityModelSet} so they bake
- * through the vanilla pipeline, which makes them visible to model replacing mods such as EMF.
- */
+// Layers are merged into the game's EntityModelSet so they bake through the vanilla pipeline, which
+// keeps them visible to model replacing mods such as EMF.
 public class CustomModelsManager extends ContentManager<ModelDefinition> {
 
-    /** Sub layer name used for every Polytone model layer. */
     public static final String LAYER = "main";
 
     private final MapRegistry<ModelDefinition> models = new MapRegistry<>("Polytone Custom Models");
@@ -34,7 +29,7 @@ public class CustomModelsManager extends ContentManager<ModelDefinition> {
         super("Custom models", "custom_models");
     }
 
-    /** Reference-by-id codec, used by {@code CodecUtils.referenceOrDirect} alongside {@link ModelDefinition#CODEC}. */
+    // Reference-by-id codec, used by CodecUtils.referenceOrDirect alongside ModelDefinition#CODEC.
     public Codec<ModelDefinition> byNameCodec() {
         return models;
     }
@@ -43,7 +38,6 @@ public class CustomModelsManager extends ContentManager<ModelDefinition> {
         return new ModelLayerLocation(id, LAYER);
     }
 
-    /** Live view of the data driven layers, read by the {@code EntityModelSet} mixin when baking. */
     public Map<ModelLayerLocation, LayerDefinition> getLayers() {
         return layers;
     }

@@ -9,12 +9,9 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-/**
- * Clickable namespace header for the config screen: a disclosure chevron (▶ collapsed / ▼ expanded)
- * followed by the bold namespace title. The chevron is a white polytone sprite, tinted per state.
- * The whole row toggles the namespace; the list is rebuilt on toggle, so this widget only ever
- * renders one state.
- */
+// Clickable namespace header for the config screen: a disclosure chevron (▶ collapsed / ▼ expanded) followed
+// by the bold namespace title. The chevron is a white polytone sprite, tinted per state. The whole row toggles
+// the namespace; the list is rebuilt on toggle, so this widget only ever renders one state.
 class NamespaceHeaderWidget extends Button {
     // White sprites under assets/polytone/textures/gui/sprites/config; the gui atlas picks them up
     // by namespace and they are blitted 1:1 (native == on-screen size) to stay on the pixel grid.
@@ -38,7 +35,6 @@ class NamespaceHeaderWidget extends Button {
     @Override
     protected void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         boolean highlighted = this.active && this.isHoveredOrFocused();
-        // Faint full-row highlight so the header reads as a clickable strip, vanilla list-row style.
         if (highlighted) {
             guiGraphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(),
                     this.getY() + this.getHeight(), 0x22FFFFFF);

@@ -24,20 +24,9 @@ import org.joml.Vector3f;
 
 import java.util.List;
 
-/**
- * Draws the biome-modifier diorama offscreen through the game's own block/model path: a stylised sky
- * disk, a grass shore with a small tree and tufts of grass, and a translucent water pool. It isn't the
- * real world renderer - just enough to show the colours a biome modifier sets, in context.
- *
- * <p>Runs on the render thread inside a nautilus {@code LiveViewport}: nautilus binds an offscreen
- * target (via {@code outputColorTextureOverride}, cleared transparent + depth 1), backs up the
- * projection, and reads the result back. We set our own perspective projection and bake the
- * {@link SceneCamera} view into the {@link PoseStack} (there is no global model-view matrix any more),
- * exactly like nautilus's own block/gizmo scene passes, then draw everything in world space through
- * the shared {@code RenderType} buffers. The transparent clear means the diorama supplies its own
- * fog backdrop; depth testing (all draws are depth-tested) resolves sky-behind / blocks-in-front
- * regardless of the buffer flush order.
- */
+// Draws the biome-modifier diorama offscreen through the game's own block/model path: a stylised sky disk, a
+// grass shore with a small tree and tufts of grass, and a translucent water pool. It isn't the real world
+// renderer - just enough to show the colours a biome modifier sets, in context.
 final class BiomeSceneRenderPass {
 
     enum Tint { NONE, GRASS, FOLIAGE }

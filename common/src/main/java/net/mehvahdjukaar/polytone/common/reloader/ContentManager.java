@@ -83,12 +83,8 @@ public abstract class ContentManager<O> {
             return this;
         }
 
-        /**
-         * Declares the companion textures this content type carries. Order matters: the first
-         * part is the main feature, claiming plain {@code <stem>.png} files nothing else explains.
-         * The manager's parse pass drives adoption and orphan creation itself, off
-         * {@code contentTexture.adoptable}/{@code orphans}.
-         */
+        // order matters: the first part is the main feature, claiming plain <stem>.png files nothing else
+        // explains
         @SafeVarargs
         public final Spec<O> textureParts(TexturePart<O>... parts) {
             this.textureParts = List.of(parts);
@@ -125,39 +121,24 @@ public abstract class ContentManager<O> {
     public @Nullable String wikiPage() {
         return wikiPage;
     }
-    /**
-     * Batch-decode jsons, yielding only entries whose conditions are met.
-     */
     protected final Iterable<Map.Entry<Identifier, O>> parseEnabledJsons(Map<Identifier, JsonElement> jsons, DynamicOps<JsonElement> ops) {
         return Parsed.batchParseOnlyEnabled(jsons, this.contentCodec(), ops, name);
     }
 
-    /**
-     * Batch-decode jsons, keeping condition-disabled entries too (as {@link Parsed}).
-     */
     protected final Parsed.SortedMap<O> parseAllJsons(Map<Identifier, JsonElement> jsons, DynamicOps<JsonElement> ops) {
         return Parsed.batchParseAlways(jsons, this.contentCodec(), ops, name);
     }
 
-    /**
-     * Batch-decode jsons; condition-disabled entries decode with {@code partialCodec} instead.
-     */
     protected final Parsed.SortedMap<O> parseJsonsOrPartial(Map<Identifier, JsonElement> jsons,
                                                                 Decoder<O> partialCodec,
                                                                 DynamicOps<JsonElement> ops) {
         return Parsed.batchParseOrPartial(jsons, this.contentCodec(), partialCodec, ops, name);
     }
 
-    /**
-     * Decode one file (condition- and lenient-loading-aware).
-     */
     protected final Parsed<O> parseJson(JsonElement json, Identifier id, DynamicOps<JsonElement> ops) {
         return Parsed.parseAlways(this.contentCodec(), json, ops, id, name);
     }
 
-    /**
-     * Decode one file, throwing on any error (no condition handling).
-     */
     protected final O decodeStrict(JsonElement json, Identifier id, DynamicOps<JsonElement> ops) {
         return this.contentCodec().decode(ops, json)
                 .getOrThrow(msg -> new IllegalStateException(
@@ -229,11 +210,9 @@ public abstract class ContentManager<O> {
     protected void earlyProcess(PreparableReloadListener.SharedState sharedState) {
     }
 
-    /**
-     * Scan this manager's folder(s) off-thread and group the files by type. The default gathers
-     * every {@code .json} and sibling {@code .png}; managers that need more (extra scan paths,
-     * csv sidecars) override, stash the extras in their own fields, and return this bundle.
-     */
+    // Scan this manager's folder(s) off-thread and group the files by type. The default gathers every .json
+    // and sibling .png; managers that need more (extra scan paths, csv sidecars) override, stash the extras in
+    // their own fields, and return this bundle.
     protected AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
         var resourceManager = sharedState.resourceManager();
         return new AssetsFiles(getJsonsInDirectories(resourceManager),
@@ -243,10 +222,8 @@ public abstract class ContentManager<O> {
     protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
     }
 
-
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
     }
-
 
     protected void resetWithLevel(boolean logOff) {
     }

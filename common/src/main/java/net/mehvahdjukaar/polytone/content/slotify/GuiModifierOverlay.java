@@ -16,25 +16,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-/**
- * Editor-only inspector overlay drawn on top of a live screen while picking is enabled. It answers the
- * two questions that are hardest to author blind: <b>is this screen targeted</b> by a modifier (banner,
- * top-left), and <b>which elements does it actually touch</b> - matched slots and widgets are tinted
- * green, everything else gets a faint outline. Hovering any slot/widget captions it with the data
- * needed to target it (index/message/position/class). It renders on any screen (widgets everywhere,
- * slots on container screens) and never mutates anything - it only reads and draws.
- */
+// Editor-only inspector drawn over a live screen while picking is on: whether a modifier targets this
+// screen, and which slots/widgets it touches. Never mutates anything.
 public final class GuiModifierOverlay {
 
     private static final int SLOT = 16;
 
-    // Resting outlines: slots blue, widgets violet - so the two element kinds read apart at a glance.
     private static final int SLOT_OUTLINE = 0x55_3AA0FF;
     private static final int WIDGET_OUTLINE = 0x55_C07BFF;
-    // "This element is modified": green wash + solid green box, shared by slots and widgets.
     private static final int MOD_FILL = 0x33_3BE06B;
     private static final int MOD_OUTLINE = 0xDD_3BE06B;
-    // Hovered element: amber wash + box, drawn over everything else.
     private static final int HOVER_FILL = 0x44_FFCC33;
     private static final int HOVER_OUTLINE = 0xFF_FFCC33;
 
@@ -48,7 +39,6 @@ public final class GuiModifierOverlay {
         ScreenModifier mod = Polytone.SLOTIFY.getGuiModifier(screen);
         List<WidgetModifier> widgetMods = mod != null ? mod.widgetModifiers() : List.of();
 
-        // Widgets (present on every screen kind).
         AbstractWidget hoveredWidget = null;
         int modifiedWidgets = 0;
         for (GuiEventListener child : screen.children()) {
@@ -59,7 +49,6 @@ public final class GuiModifierOverlay {
             if (inside(mouseX, mouseY, w.getX(), w.getY(), w.getWidth(), w.getHeight())) hoveredWidget = w;
         }
 
-        // Slots (container screens only).
         Slot hoveredSlot = null;
         int leftPos = 0, topPos = 0, modifiedSlots = 0;
         if (screen instanceof AbstractContainerScreen<?> cs) {
@@ -90,8 +79,6 @@ public final class GuiModifierOverlay {
         }
     }
 
-    // --- banner ---------------------------------------------------------------------------------
-
     private static void drawBanner(GuiGraphics graphics, Screen screen, boolean targeted, int modSlots, int modWidgets) {
         GuiModifierPreview.DetectedTarget t = GuiModifierPreview.targetOf(screen);
         String target = t == null ? "?" : t.type().getSerializedName() + " = " + t.target();
@@ -115,8 +102,6 @@ public final class GuiModifierOverlay {
         graphics.drawString(font, head, x + 4, y + 3, targeted ? TARGETED : UNTARGETED, false);
         graphics.drawString(font, detail, x + 4, y + 3 + font.lineHeight + 1, MUTED, false);
     }
-
-    // --- element labels -------------------------------------------------------------------------
 
     private static void drawLabel(GuiGraphics graphics, String text, int anchorX, int anchorY) {
         Font font = Minecraft.getInstance().font;
@@ -142,9 +127,8 @@ public final class GuiModifierOverlay {
                 + w.getWidth() + "x" + w.getHeight();
     }
 
-    // --- shared hit-test used by the click handler ----------------------------------------------
+    // shared hit-test, also used by the click handler
 
-    /** The slot under the cursor as a {@link PickedElement}, or null. Shared with the click mixin. */
     @Nullable
     public static PickedElement pickAt(AbstractContainerScreen<?> screen, double mouseX, double mouseY) {
         int leftPos = ((AbstractContainerScreenAccessor) screen).polytone$getLeftPos();
@@ -161,14 +145,10 @@ public final class GuiModifierOverlay {
         return null;
     }
 
-    // --- the shared screen-render pass (overlay + centered sprites), called by both platforms -----
+    // shared screen-render pass (overlay + centered sprites), called by both platforms
 
-    /**
-     * Full editor render pass for one screen, shared by both platform screen-render hooks (only the
-     * event wiring differs): the inspector overlay in absolute screen space when picking is on, then
-     * the modifier's extra sprites/texts anchored to the screen center. {@code renderExtraSprites}
-     * no-ops when the screen has no modifier, so this is safe to call unconditionally every frame.
-     */
+    // shared by both platform screen-render hooks, only the event wiring differs. renderExtraSprites
+    // no-ops when the screen has no modifier, so this is safe to call every frame
     public static void renderScreenExtras(GuiGraphics graphics, SlotifyScreen ss,
                                           int screenWidth, int screenHeight,
                                           int mouseX, int mouseY, float partialTick) {
@@ -184,8 +164,6 @@ public final class GuiModifierOverlay {
         pose.popMatrix();
     }
 
-    // --- helpers --------------------------------------------------------------------------------
-
     private static boolean matchesAny(List<WidgetModifier> mods, AbstractWidget w) {
         for (WidgetModifier m : mods) {
             if (m.matches(w)) return true;
@@ -193,7 +171,6 @@ public final class GuiModifierOverlay {
         return false;
     }
 
-    // Fill (when fillColor != 0) + a 1px outline just outside the element bounds.
     private static void box(GuiGraphics graphics, int x, int y, int w, int h, int fillColor, int outlineColor) {
         if (fillColor != 0) graphics.fill(x, y, x + w, y + h, fillColor);
         graphics.renderOutline(x - 1, y - 1, w + 2, h + 2, outlineColor);

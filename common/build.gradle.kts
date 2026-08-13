@@ -14,9 +14,9 @@ val nautilus_studio_version: String by extra
 
 
 dependencies {
-    // Declarative codec schema API — compile against the common (named-mappings) artifact.
+    // Declarative codec schema API - compile against the common (named-mappings) artifact.
     compileOnly ("net.mehvahdjukaar:codecui-common:${codecui_version}")
-    // The pack editor UI is a SEPARATE mod (not bundled) — compile against it; the in-game
+    // The pack editor UI is a SEPARATE mod (not bundled) - compile against it; the in-game
     // "open editor" button grays out at runtime when it isn't installed.
     compileOnly ("net.mehvahdjukaar:nautilus_studio-common:${nautilus_studio_version}")
 

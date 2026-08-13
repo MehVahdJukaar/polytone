@@ -4,11 +4,8 @@ import net.mehvahdjukaar.polytone.common.expressions.proxies.PlayerProxy;
 
 import java.util.List;
 
-/**
- * Preview-only stand-in for {@link PlayerProxy}: position and speed come from editor sliders instead
- * of the live player (also avoiding NPEs when no world is loaded). Must stay a subclass for the same
- * MVEL accessor-cache reason as {@link SimGlobalProxy}. The remaining entity accessors stay live.
- */
+// Position and speed come from editor sliders instead of the live player (also avoiding NPEs with no
+// world loaded). Must stay a subclass for the MVEL accessor-cache reason noted in SimGlobalProxy.
 public final class SimPlayerProxy extends PlayerProxy {
 
     // Private, not public: a public field named like an accessor (x -> x()) wins over the bean
