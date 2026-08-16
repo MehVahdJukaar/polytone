@@ -47,7 +47,7 @@ dependencies {
     // module metadata as "group": null and crash modifyMetadataFile (JsonNull). Instead: compileOnly for the
     // API + localRuntime/additionalRuntimeClasspath so they still load in dev runs but are NOT published
     // (same recipe as mvel above).
-    modImplementation(":sodium-neoforge-mod:0.8.12")
+    modCompileOnly(":sodium-neoforge-mod:0.8.12")
     localRuntime(":sodium-neoforge-mod:0.8.12")
     localRuntime(":fabric-api-base:0.4.42")
     localRuntime(":fabric-block-view-api-v2:1.0.10")

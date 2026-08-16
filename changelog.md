@@ -1,1 +1,1 @@
-- fixed config issues
+- improved pack support screen and added mod menu compat
