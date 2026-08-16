@@ -118,7 +118,6 @@ public class PackInfoScreen extends Screen {
 
         Style style = this.titleBlock.styleAt(mouseX, mouseY);
         if (style == null) style = this.bodyPanel.styleUnderMouse(mouseX, mouseY);
-        // outside the panel's scissor, so a tooltip near the bottom isn't cut off
         if (style != null) graphics.renderComponentHoverEffect(this.font, style, mouseX, mouseY);
     }
 
@@ -139,7 +138,6 @@ public class PackInfoScreen extends Screen {
             content.setPosition(x + (width - content.getWidth()) / 2, y + this.innerPadding());
         }
 
-        // the screen already drew the list panel here; the vanilla text box border would look out of place
         @Override
         protected void renderBackground(GuiGraphics graphics) {
         }
@@ -183,9 +181,6 @@ public class PackInfoScreen extends Screen {
         }
     }
 
-    // Text widgets ship inactive, which makes mouseClicked bail before the link hit test. Activating one
-    // also makes it click back at every stray click on plain text, so the sound moved to the click
-    // handler, where we know a link was hit.
     private static class TextBlock extends MultiLineTextWidget {
 
         private final Font font;
