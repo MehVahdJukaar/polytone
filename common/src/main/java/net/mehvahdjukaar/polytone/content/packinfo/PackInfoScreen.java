@@ -3,9 +3,13 @@ package net.mehvahdjukaar.polytone.content.packinfo;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractTextAreaWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
@@ -53,25 +57,29 @@ public class PackInfoScreen extends Screen {
 
     @Override
     protected void init() {
-        TextBlock titleBlock = addTextBlock(this.heading);
+        TextBlock titleBlock = makeTextBlock(this.heading);
         this.headerHeight = Math.max(MIN_HEADER_HEIGHT, titleBlock.getHeight() + TITLE_MARGIN * 2);
         titleBlock.setPosition((this.width - titleBlock.getWidth()) / 2,
                 (this.headerHeight - titleBlock.getHeight()) / 2);
+        this.addRenderableWidget(titleBlock);
 
-        TextBlock bodyBlock = addTextBlock(this.body);
-        bodyBlock.setPosition((this.width - bodyBlock.getWidth()) / 2,
-                Math.max(this.headerHeight + TITLE_MARGIN,
-                        (this.headerHeight + panelBottom() - bodyBlock.getHeight()) / 2));
+        TextBlock bodyBlock = makeTextBlock(this.body);
+        // panel only grows to what the text needs, so short content stays centered and doesn't scroll
+        int available = panelBottom() - this.headerHeight;
+        int panelWidth = textWidth() + 4;
+        int panelHeight = Math.min(available, bodyBlock.getHeight() + TITLE_MARGIN * 2);
+        this.addRenderableWidget(new BodyPanel((this.width - panelWidth) / 2,
+                this.headerHeight + (available - panelHeight) / 2, panelWidth, panelHeight, bodyBlock));
 
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, b -> this.onClose())
                 .bounds(this.width / 2 - 100, this.height - 32, 200, 20).build());
     }
 
-    private TextBlock addTextBlock(Component text) {
+    private TextBlock makeTextBlock(Component text) {
         TextBlock block = new TextBlock(text, this.font);
         block.setCentered(true).setMaxWidth(textWidth());
         block.setComponentClickHandler(this::onComponentClicked);
-        return this.addRenderableWidget(block);
+        return block;
     }
 
     private void onComponentClicked(Style style) {
@@ -105,6 +113,54 @@ public class PackInfoScreen extends Screen {
     @Override
     public void onClose() {
         this.minecraft.setScreen(this.lastScreen);
+    }
+
+    // Scrolls the body text. Its widget isn't a screen child, so mouse coords get the scroll offset added
+    // before they reach it, which also lands vanilla's link hover effect back under the real cursor.
+    private static class BodyPanel extends AbstractTextAreaWidget {
+
+        private final TextBlock content;
+
+        BodyPanel(int x, int y, int width, int height, TextBlock content) {
+            super(x, y, width, height, content.getMessage());
+            this.content = content;
+            content.setPosition(x + (width - content.getWidth()) / 2, y + this.innerPadding());
+        }
+
+        // the screen already drew the list panel here; the vanilla text box border would look out of place
+        @Override
+        protected void renderBackground(GuiGraphics graphics) {
+        }
+
+        @Override
+        protected int getInnerHeight() {
+            return this.content.getHeight();
+        }
+
+        @Override
+        protected double scrollRate() {
+            return 9.0;
+        }
+
+        @Override
+        protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            this.content.render(graphics, mouseX, (int) (mouseY + this.scrollAmount()), partialTick);
+        }
+
+        @Override
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+            if (this.isMouseOver(event.x(), event.y())) {
+                MouseButtonEvent scrolled = new MouseButtonEvent(event.x(),
+                        event.y() + this.scrollAmount(), event.buttonInfo());
+                if (this.content.mouseClicked(scrolled, doubleClick)) return true;
+            }
+            return super.mouseClicked(event, doubleClick);
+        }
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput output) {
+            output.add(NarratedElementType.TITLE, this.content.getMessage());
+        }
     }
 
     // Text widgets ship inactive, which makes mouseClicked bail before it ever reaches the component click
