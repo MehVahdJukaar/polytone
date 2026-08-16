@@ -4,9 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-// Drop-in replacement for the static BUILT_IN_UNIFORMS set in GlProgram. Its contains(Object) also returns
-// true for any dynamically registered uniform name (collected from polytone JSONs during reload prepare), so
-// user shaders that declare those UBO blocks get auto-bound during GlProgram.setupUniforms.
+// Swapped in for GlProgram's BUILT_IN_UNIFORMS so blocks named in polytone jsons count as known and get a binding
 public class PolytoneBuiltInUniformsSet extends HashSet<String> {
 
     private static final Set<String> DYNAMIC = ConcurrentHashMap.newKeySet();

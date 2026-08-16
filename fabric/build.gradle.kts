@@ -35,13 +35,14 @@ dependencies {
     // modRuntimeOnly("maven.modrinth:sodium:mc1.21-0.6.0-beta.1-fabric")
 //modImplementation "curse.maven:continuity-531351:5425853"
     // modImplementation ("curse.maven:continuity-531351:5425853")
-    modImplementation("maven.modrinth:sodium:mc26.2-0.9.2-alpha.3-fabric")
+    // 0.9.1, not 0.9.2-alpha: Iris 1.11.2+26.2 pins 0.9.1 and its sodium-compat mixins fail to apply on the alphas
+    modImplementation("maven.modrinth:sodium:mc26.2-0.9.1-fabric")
     // re-enables vanilla core-shader replacement under Sodium (terrain/block shaders); no 26.2 build yet,
     // newest is still built against Sodium 0.9.0-beta.1 on 26.1.2 - we only need its own API classes to compile
     modCompileOnly("curse.maven:sodium-core-shader-support-956376:8267839") // 1.5.0-mc26.1.2-sodium0.9.0beta.1
      //modImplementation ("curse.maven:distant-horizons-508933:6387715")
     // Compile-only: pulling Iris into the dev runtime changes how the whole render path behaves.
-    modCompileOnly("maven.modrinth:iris:1.11.2+26.1-fabric")
+    modImplementation("maven.modrinth:iris:1.11.2+26.2-fabric")
     // No 26.1 build yet
     // modCompileOnly("curse.maven:serene-seasons-291874:6182595")
     // modmenu 4.0.6 is for 1.18.2 - no 26.1 build available

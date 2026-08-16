@@ -7,14 +7,10 @@ import net.minecraft.core.HolderLookup;
 import com.google.gson.JsonElement;
 import net.minecraft.resources.RegistryOps;
 
-// Loads the reloadable shadow-map settings (polytone/shadow_map.json) and feeds them to the ShadowMapRenderer,
-// which does the actual light-POV depth pass. This is the config/reload half of the shadow system; the
-// rendering half lives in ShadowMapRenderer, reached via renderer().
 public class ShadowMapManager extends SingleFileContentManager<ShadowMapSettings> {
 
     private final ShadowMapRenderer renderer = new ShadowMapRenderer();
 
-    // Staged on the (off-thread) parse and pushed to the renderer on apply.
     private ShadowMapSettings parsedSettings = ShadowMapSettings.DEFAULT;
 
     public ShadowMapManager() {
@@ -28,7 +24,7 @@ public class ShadowMapManager extends SingleFileContentManager<ShadowMapSettings
     @Override
     protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         ShadowMapSettings result = ShadowMapSettings.DEFAULT;
-        for (var entry : resources.jsons().entrySet()) { // each pack file overrides only the params it sets; the rest keep defaults
+        for (var entry : resources.jsons().entrySet()) {
             try {
                 ShadowMapSettings parsed = ShadowMapSettings.CODEC.parse(ops, entry.getValue()).getOrThrow();
                 result = result.merge(parsed);

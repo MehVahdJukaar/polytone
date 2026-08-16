@@ -3,8 +3,6 @@ package net.mehvahdjukaar.polytone.content.shaders;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-// Packs author these in polytone/shadow_map.json. merge() layers one file over another treating any
-// still-default field as unset, so a pack overrides just the params it actually changed.
 public record ShadowMapSettings(float coverage, float depthRange, int resolution, float updateInterval,
                                 boolean renderEntities, boolean renderBlockEntities) {
 

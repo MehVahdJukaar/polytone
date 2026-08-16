@@ -18,8 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-// Shared buffer plumbing for expression-driven uniforms. Each entry becomes a single-float UBO block, named
-// after the map key, and gets bound to the RenderPass under that name.
+// A map of block name -> expression; each entry becomes a single-float UBO block of that name
 public final class ExpressionUniformBuffers {
 
     public static final Codec<ExpressionUniformBuffers> CODEC =
@@ -72,22 +71,19 @@ public final class ExpressionUniformBuffers {
     public void bind(RenderPass pass, Set<String> declaredUniforms) {
         if (buffers == null) return;
         for (var e : buffers.entrySet()) {
-            // skip blocks the bound program doesn't declare, else Iris/Sodium logs binding errors
+            // undeclared binds make Iris/Sodium log errors
             if (declaredUniforms.contains(e.getKey())) {
                 pass.setUniform(e.getKey(), e.getValue());
             }
         }
     }
 
-    // Binds our UBO blocks directly to an arbitrary GL program by raw glBindBufferBase, for programs not
-    // driven through Mojang's RenderPass (e.g. Sodium's chunk shader). Only blocks the program actually
-    // declares are bound (gated by glGetUniformBlockIndex), so passing a program without our blocks is a no-
-    // op.
+    // raw GL bind for programs not driven through RenderPass (Sodium chunk shaders); only declared blocks are bound
     public int bindBlocksToProgram(int program, int nextBindingPoint) {
         if (buffers == null) return nextBindingPoint;
         for (var e : buffers.entrySet()) {
             int blockIndex = GL32C.glGetUniformBlockIndex(program, e.getKey());
-            if (blockIndex < 0) continue; // GL_INVALID_INDEX: block not declared in this program
+            if (blockIndex < 0) continue;
             int glId = ((GlBufferAccessor) (Object) e.getValue()).polytone$getHandle();
             GL32C.glUniformBlockBinding(program, blockIndex, nextBindingPoint);
             GL30C.glBindBufferBase(GL31C.GL_UNIFORM_BUFFER, nextBindingPoint, glId);

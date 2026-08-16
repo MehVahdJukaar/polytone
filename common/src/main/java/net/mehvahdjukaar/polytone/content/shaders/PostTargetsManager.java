@@ -24,9 +24,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-// Persistent render targets declared under polytone/post_targets/<name>.json (width/height optional,
-// defaulting to frame size, plus use_depth). They keep their content across frames and get spliced into every
-// polytone post chain's target bundle, so chains can read and write them like the vanilla targets.
 public class PostTargetsManager extends ContentManager<PostTargetsManager.TargetSpec> {
 
     public record TargetSpec(Optional<Integer> width, Optional<Integer> height, boolean useDepth) {
@@ -65,7 +62,6 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
         this.dirty = true;
     }
 
-    // Target ids post chains may reference: the vanilla sorting targets plus all custom ones
     public Set<Identifier> allowedTargets() {
         Map<Identifier, TargetSpec> specs = this.specs;
         if (specs.isEmpty()) return LevelTargetBundle.SORTING_TARGETS;
@@ -74,29 +70,29 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
         return set;
     }
 
-    // Creates or resizes the targets; full-frame ones follow the window size
+    // targets without an explicit size follow the frame size
     public void ensureAllocated(int frameWidth, int frameHeight) {
         Map<Identifier, TargetSpec> specs = this.specs;
         if (dirty) {
             destroyAll();
             for (var e : specs.entrySet()) {
-                TargetSpec s = e.getValue();
+                TargetSpec spec = e.getValue();
                 targets.put(e.getKey(), new TextureTarget(e.getKey().toString(),
-                        s.width().orElse(frameWidth), s.height().orElse(frameHeight), s.useDepth(),
+                        spec.width().orElse(frameWidth), spec.height().orElse(frameHeight), spec.useDepth(),
                         GpuFormat.RGBA8_UNORM));
             }
             dirty = false;
         } else {
             for (var e : specs.entrySet()) {
-                TargetSpec s = e.getValue();
-                int w = s.width().orElse(frameWidth), h = s.height().orElse(frameHeight);
-                RenderTarget t = targets.get(e.getKey());
-                if (t != null && (t.width != w || t.height != h)) t.resize(w, h);
+                TargetSpec spec = e.getValue();
+                int width = spec.width().orElse(frameWidth);
+                int height = spec.height().orElse(frameHeight);
+                RenderTarget target = targets.get(e.getKey());
+                if (target != null && (target.width != width || target.height != height)) target.resize(width, height);
             }
         }
     }
 
-    // Wraps the vanilla bundle so custom ids resolve to the persistent targets
     public PostChain.TargetBundle wrap(LevelTargetBundle vanilla, FrameGraphBuilder builder) {
         if (targets.isEmpty()) return vanilla;
         Map<Identifier, ResourceHandle<RenderTarget>> handles = new HashMap<>();
@@ -120,8 +116,8 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
             implements PostChain.TargetBundle {
         @Override
         public ResourceHandle<RenderTarget> get(Identifier id) {
-            ResourceHandle<RenderTarget> h = custom.get(id);
-            return h != null ? h : delegate.get(id);
+            ResourceHandle<RenderTarget> handle = custom.get(id);
+            return handle != null ? handle : delegate.get(id);
         }
 
         @Override

@@ -16,75 +16,68 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-// Conditionally adds a post chain to the FrameGraph each frame. expression_uniforms on this object are chain-
-// level: they get bound to every pass shader in the chain. Implemented internally as a single
-// ExpressionUniformBuffers registered with ShaderUniformsManager under each pass's pipeline fragment-shader
-// id.
+// One polytone/post_chains json: a vanilla post chain plus the condition that turns it on. Its expression
+// uniforms and samplers are registered under every pass's fragment shader id so they reach all passes.
 public final class PostChainActivator {
 
     public static final SchemaCodec<PostChainActivator> CODEC = SchemaRecord.create(PostChainActivator.class,
             i -> i.group(
-                    i.field("post_chain", Identifier.CODEC, p -> p.postChain),
-                    i.optional("activation_condition", ISimpleExp.CODEC, ISimpleExp.ONE, p -> p.turnOnCondition),
+                    i.field("post_chain", Identifier.CODEC, p -> p.postChainId),
+                    i.optional("activation_condition", ISimpleExp.CODEC, ISimpleExp.ONE, p -> p.activationCondition),
                     i.optional("expression_uniforms", ExpressionUniformBuffers.CODEC,
-                            new ExpressionUniformBuffers(Map.of()), p -> p.buffers),
+                            new ExpressionUniformBuffers(Map.of()), p -> p.expressionUniforms),
                     i.optional("samplers", Codec.unboundedMap(Codec.STRING, Identifier.CODEC),
                             Map.of(), p -> p.samplers),
                     i.optional("use_shadow_map", Codec.BOOL, false, p -> p.useShadowMap)
             ).apply(i, PostChainActivator::new));
 
-    private final Identifier postChain;
-    private final ISimpleExp turnOnCondition;
-    private final ExpressionUniformBuffers buffers;
+    private final Identifier postChainId;
+    private final ISimpleExp activationCondition;
+    private final ExpressionUniformBuffers expressionUniforms;
     private final Map<String, Identifier> samplers;
     private final boolean useShadowMap;
 
-    private boolean cachedOn = false;
+    private boolean active = false;
     private PostChain cachedPostChain = null;
-    private final List<Identifier> registeredShaderIds = new ArrayList<>();
+    private final List<Identifier> registeredPassShaderIds = new ArrayList<>();
 
-    public PostChainActivator(Identifier postChain, ISimpleExp turnOnCondition,
-                              ExpressionUniformBuffers buffers, Map<String, Identifier> samplers,
+    public PostChainActivator(Identifier postChainId, ISimpleExp activationCondition,
+                              ExpressionUniformBuffers expressionUniforms, Map<String, Identifier> samplers,
                               boolean useShadowMap) {
-        this.postChain = postChain;
-        this.turnOnCondition = turnOnCondition;
-        this.buffers = buffers;
+        this.postChainId = postChainId;
+        this.activationCondition = activationCondition;
+        this.expressionUniforms = expressionUniforms;
         this.samplers = samplers;
         this.useShadowMap = useShadowMap;
     }
 
-    public void refreshEnabled() {
-        cachedOn = turnOnCondition.evaluate() > 0;
+    public void refreshActive() {
+        active = activationCondition.evaluate() > 0;
     }
 
-    // Whether this chain's activation condition currently passes (as of the last refreshEnabled).
-    public boolean isOn() {
-        return cachedOn;
+    public boolean isActive() {
+        return active;
     }
 
-    // True when this chain is currently on and declared use_shadow_map, i.e. it wants the light-POV depth map
-    // rendered this frame (see ShadowMapRenderer).
     public boolean wantsShadowMap() {
-        return cachedOn && useShadowMap;
+        return active && useShadowMap;
     }
 
     @Nullable
     public PostChain getPostChain(ShaderManager manager) {
-        if (!cachedOn) return null;
+        if (!active) return null;
         if (cachedPostChain == null) {
             try {
-                // Sorting targets plus the pack's custom persistent targets. Validation only;
-                // the real handles come from the bundle at addToFrame.
-                cachedPostChain = manager.getPostChain(postChain, Polytone.POST_TARGETS.allowedTargets());
-                if (cachedPostChain == null) return null; // not resolvable yet (mid-reload), retry quietly
-                buffers.ensureInitialized("Polytone post expr uniform");
-                registerByPassShaders(cachedPostChain);
+                cachedPostChain = manager.getPostChain(postChainId, Polytone.POST_TARGETS.allowedTargets());
+                if (cachedPostChain == null) return null; // mid-reload, try again next frame
+                expressionUniforms.ensureInitialized("Polytone post expr uniform");
+                registerOnPassShaders(cachedPostChain);
             } catch (Throwable ex) {
                 Polytone.LOGGER.error("Failed to load post chain", ex);
                 return null;
             }
         }
-        if (isPostPassClosed(cachedPostChain)) {
+        if (isChainClosed(cachedPostChain)) {
             close();
             return null;
         }
@@ -92,33 +85,33 @@ public final class PostChainActivator {
     }
 
     void close() {
-        unregisterByPassShaders();
-        buffers.close();
+        unregisterFromPassShaders();
+        expressionUniforms.close();
         cachedPostChain = null;
     }
 
-    private void registerByPassShaders(PostChain chain) {
-        if (buffers.isEmpty() && samplers.isEmpty()) return;
+    private void registerOnPassShaders(PostChain chain) {
+        if (expressionUniforms.isEmpty() && samplers.isEmpty()) return;
         for (PostPass pass : chain.passes) {
             Identifier shaderId = ((PostPassAccessor) pass).polytone$getPipeline().getFragmentShader();
-            if (!buffers.isEmpty()) Polytone.SHADER_EFFECTS.registerExternal(shaderId, buffers);
+            if (!expressionUniforms.isEmpty()) Polytone.SHADER_EFFECTS.registerExternal(shaderId, expressionUniforms);
             if (!samplers.isEmpty()) Polytone.POST_CHAINS.registerSamplers(shaderId, samplers);
-            registeredShaderIds.add(shaderId);
+            registeredPassShaderIds.add(shaderId);
         }
     }
 
-    private void unregisterByPassShaders() {
-        for (Identifier id : registeredShaderIds) {
-            if (!buffers.isEmpty()) Polytone.SHADER_EFFECTS.unregisterExternal(id, buffers);
+    private void unregisterFromPassShaders() {
+        for (Identifier id : registeredPassShaderIds) {
+            if (!expressionUniforms.isEmpty()) Polytone.SHADER_EFFECTS.unregisterExternal(id, expressionUniforms);
             if (!samplers.isEmpty()) Polytone.POST_CHAINS.unregisterSamplers(id, samplers);
         }
-        registeredShaderIds.clear();
+        registeredPassShaderIds.clear();
     }
 
-    private static boolean isPostPassClosed(@Nullable PostChain pass) {
-        if (pass != null && !pass.passes.isEmpty()) {
-            var buffer = pass.passes.getFirst().infoUbo.buffers[0];
-            return buffer.isClosed();
+    // The ShaderManager closes the chain's buffers on reload; a closed first pass means our cached chain is dead
+    private static boolean isChainClosed(@Nullable PostChain chain) {
+        if (chain != null && !chain.passes.isEmpty()) {
+            return chain.passes.getFirst().infoUbo.buffers[0].isClosed();
         }
         return false;
     }

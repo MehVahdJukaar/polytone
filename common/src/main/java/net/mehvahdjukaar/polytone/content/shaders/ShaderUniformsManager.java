@@ -22,9 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-// Binds expression-driven UBO uniforms to any pipeline whose vertex or fragment shader id matches a key in
-// byShader. JSONs live under polytone/shader_effects/<target-shader-path>.json. The file path determines the
-// target shader id (standard polytone convention - see e.g. BlockPropertiesManager).
+// Expression-driven float UBOs bound to any pipeline whose vertex or fragment shader id matches. The json path
+// under polytone/shader_modifiers is the target shader id.
 public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffers> {
 
     private final List<ExpressionUniformBuffers> owned = new ArrayList<>();
@@ -41,7 +40,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         return resources;
     }
 
-    // Collects UBO-block names from expression_uniforms JSON objects (for activator files)
+    // post chain files: block names are the expression_uniforms keys
     static void registerExpressionUniformNames(Map<Identifier, JsonElement> jsons) {
         for (var e : jsons.values()) {
             if (e == null || !e.isJsonObject()) continue;
@@ -54,7 +53,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         }
     }
 
-    // Collects UBO-block names directly from the top-level JSON keys of shader_effects files
+    // shader_modifiers files: block names are the top-level keys
     private static void registerUniformNames(Map<Identifier, JsonElement> jsons) {
         for (var e : jsons.values()) {
             if (e instanceof JsonObject obj) {
@@ -94,7 +93,6 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         }
     }
 
-    // External callers (e.g. PostChainActivator) bind their buffers under a shader id.
     public void registerExternal(Identifier shaderId, ExpressionUniformBuffers buffers) {
         byShader.computeIfAbsent(shaderId, k -> new ArrayList<>()).add(buffers);
     }
@@ -107,12 +105,10 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         }
     }
 
-    // Evaluates all expressions and uploads their UBO buffers. MUST be called once per frame from a point
-    // where no render pass is open (GPU buffer writes are illegal mid-pass), e.g. at renderLevel HEAD.
-    // tryApply then only binds the already-updated buffers.
+    // once per frame while no render pass is open; tryApply only binds what this uploaded
     public void updateAll() {
         if (byShader.isEmpty()) return;
-        // the same buffers can be registered under several shader ids; update each only once
+        // one buffer set can be registered under several shader ids
         Set<ExpressionUniformBuffers> seen = Collections.newSetFromMap(new IdentityHashMap<>());
         for (List<ExpressionUniformBuffers> list : byShader.values()) {
             for (ExpressionUniformBuffers b : list) {
@@ -121,9 +117,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         }
     }
 
-    // Binds all registered expression-uniform UBOs to the currently bound GL program by raw GL, for renderers
-    // that bypass Mojang's RenderPass (Sodium chunk shaders). Each buffer only binds the blocks the program
-    // actually declares, so this is safe to call for any bound program.
+    // raw GL path for renderers that bypass RenderPass (Sodium chunk shaders); safe for any bound program
     public void bindToCurrentGlProgram() {
         if (byShader.isEmpty()) return;
         int program = GL11C.glGetInteger(GL20C.GL_CURRENT_PROGRAM);
@@ -137,7 +131,6 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         }
     }
 
-    // Whether any pack (or post chain) registered expression uniforms at all
     public boolean hasAnyRegistered() {
         return !byShader.isEmpty();
     }

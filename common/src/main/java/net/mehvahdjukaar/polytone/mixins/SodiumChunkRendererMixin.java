@@ -11,8 +11,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// Captures the terrain atlas GpuSampler Sodium was handed, to feed back into the shadow-map replay's
-// drawChunkLayer (see SodiumShadowRenderer).
 @Pseudo
 @Mixin(ShaderChunkRenderer.class)
 public abstract class SodiumChunkRendererMixin {

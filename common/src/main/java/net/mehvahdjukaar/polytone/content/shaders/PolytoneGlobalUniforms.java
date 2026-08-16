@@ -29,16 +29,14 @@ public class PolytoneGlobalUniforms implements AutoCloseable {
             GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_UNIFORM, UBO_SIZE);
 
     public void update(Matrix4fc projectionMat, Matrix4fc viewMat, float sunAngle, float dayTime, float deltaTime) {
-
-        // lerped player (feet) position, split like vanilla's CameraBlockPos/CameraOffset so shaders
-        // keep float precision at large coordinates: exact = vec3(PolyPlayerBlockPos) - PolyPlayerOffset
+        // player position split like vanilla's CameraBlockPos/CameraOffset: exact = vec3(PolyPlayerBlockPos) - PolyPlayerOffset
         Minecraft mc = Minecraft.getInstance();
         Vec3 playerPos = mc.player == null ? Vec3.ZERO
                 : mc.player.getPosition(mc.getDeltaTracker().getGameTimeDeltaPartialTick(false));
         BlockPos playerBlockPos = BlockPos.containing(playerPos);
 
-        try (MemoryStack memoryStack = MemoryStack.stackPush()) {
-            ByteBuffer byteBuffer = Std140Builder.onStack(memoryStack, UBO_SIZE)
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            ByteBuffer bytes = Std140Builder.onStack(stack, UBO_SIZE)
                     .putMat4f(projectionMat)
                     .putMat4f(viewMat)
                     .putFloat(sunAngle - Mth.HALF_PI)
@@ -49,8 +47,7 @@ public class PolytoneGlobalUniforms implements AutoCloseable {
                             (float) (playerBlockPos.getY() - playerPos.y),
                             (float) (playerBlockPos.getZ() - playerPos.z))
                     .get();
-            RenderSystem.getDevice().createCommandEncoder()
-                    .writeToBuffer(this.buffer.slice(), byteBuffer);
+            RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), bytes);
         }
     }
 

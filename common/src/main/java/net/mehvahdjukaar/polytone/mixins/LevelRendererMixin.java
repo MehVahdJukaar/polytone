@@ -55,16 +55,11 @@ public class LevelRendererMixin {
                                Vector4f fogColor,
                                boolean shouldRenderSky,
                                CallbackInfo ci) {
-        // deltaTime from this call's own tracker parameter, fresh every render call
-        Polytone.POST_CHAINS.captureLevelRendererParams(cameraState.projectionMatrix, modelViewMatrix,
+        // no render pass is open here, which the UBO writes below need
+        Polytone.POST_CHAINS.updateGlobalUniforms(cameraState.projectionMatrix, modelViewMatrix,
                 deltaTracker.getGameTimeDeltaTicks());
-        // upload expression-driven UBOs now, while no render pass is open; tryApply() only binds them
         Polytone.SHADER_EFFECTS.updateAll();
-        // Render the directional shadow map here: no render pass is open (UBO writes need that), last
-        // frame's compiled section meshes are still current, and the frame graph that runs the post
-        // chains sampling it hasn't been built yet. The matrices are this call's own rather than the
-        // GameRenderer globals, so they still agree when a mod renders a second view; they narrow the
-        // caster volume to what the camera can see.
+        // shadow map goes first so the post chains built into this frame's graph sample this frame's map
         Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(terrainFog, Minecraft.getInstance().gameRenderer.mainCamera(),
                 modelViewMatrix, cameraState.projectionMatrix);
     }
@@ -83,12 +78,10 @@ public class LevelRendererMixin {
                                     boolean shouldRenderSky,
                                     CallbackInfo ci,
                                     @Local FrameGraphBuilder frameGraphBuilder) {
-        // Standard placement only. When post_chains_after_hand is on (default), chains run later,
-        // after the first-person hand, from GameRendererMixin so held items occlude depth effects.
+        // with post_chains_after_hand (default) GameRendererMixin runs the chains after the hand instead
         if (Polytone.CONFIGS.postChainsAfterHand.get()) return;
         RenderTarget mainTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
-        int i = mainTarget.width;
-        int j = mainTarget.height;
-        Polytone.POST_CHAINS.addPostPass(i, j, this.targets, frameGraphBuilder, terrainFog, this.levelRenderState.cameraRenderState);
+        Polytone.POST_CHAINS.addChainsToFrameGraph(mainTarget.width, mainTarget.height, this.targets, frameGraphBuilder,
+                terrainFog, this.levelRenderState.cameraRenderState);
     }
 }

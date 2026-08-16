@@ -60,259 +60,185 @@ import java.util.List;
 import java.util.OptionalDouble;
 import java.util.Optional;
 
-// Generates a directional (sun/moon) shadow depth map by replaying the level's already-compiled chunk
-// section meshes from the light's point of view - nothing is re-meshed, we just draw the section
-// buffers with the light's ortho matrices. Exposed to post chains as the InShadow sampler and the
-// PolyShadow UBO (see PostChainsManager). The rendering half of the shadow system; ShadowMapManager
-// owns the reloadable settings and feeds them here via setSettings().
 public class ShadowMapRenderer {
 
-    // Only opaque geometry casts: a shadow map stores occluder depth (CUTOUT still alpha-discards
-    // in its own pipeline). TRANSLUCENT and TRIPWIRE are intentionally skipped.
     private static final ChunkSectionLayer[] SHADOW_LAYERS = {ChunkSectionLayer.SOLID, ChunkSectionLayer.CUTOUT};
 
     private ShadowMapSettings settings = ShadowMapSettings.DEFAULT;
 
-    // Reuse state: when we skip a re-render, the last map is kept and only re-aligned for camera motion.
-    private final Matrix4f renderedMatrix = new Matrix4f();  // shadowMatrix at the last real render
-    private Vec3 renderedCamPos = Vec3.ZERO;                 // camera position at the last real render
-    private ClientLevel renderedLevel = null;                // level of the last real render
-    private long lastUpdateMs = 0L;
-    private boolean hasRendered = false;
+    private final Matrix4f lastRenderedShadowMatrix = new Matrix4f();
+    private Vec3 lastRenderedCamPos = Vec3.ZERO;
+    private ClientLevel lastRenderedLevel = null;
+    private long lastRenderMs = 0L;
+    private boolean hasRenderedMap = false;
 
-    // Set for the duration of a pass. The pass dispatches entity and block-entity renderers, and mods
-    // render entire levels from those - a nested LevelRenderer.renderLevel landing back here would
-    // clear shadowSections while we iterate it and hand our output overrides to the nested pass.
-    private boolean insidePass = false;
+    private boolean renderingShadowPass = false;
 
     private GpuTexture depthTexture = null;
     private GpuTextureView depthTextureView = null;
-    private GpuTexture colorTexture = null;      // never sampled: passes need a color attachment
+    private GpuTexture colorTexture = null; // never sampled, render passes just need a color attachment
     private GpuTextureView colorTextureView = null;
 
-    // Our own "Projection" UBO holding the light's ortho projection, bound per-pass (terrain) or
-    // swapped onto the RenderSystem global (entity replay) - the camera projection is never touched.
-    private GpuBuffer projectionBuffer = null;
+    private GpuBuffer lightProjectionBuffer = null;
 
-    // Created on first use: constructing it allocates a GPU buffer, and this class is instantiated
-    // during Polytone's static init, before the GPU device exists.
     private PolyShadowUniforms uniforms = null;
 
-    private final Matrix4f shadowMatrix = new Matrix4f();  // light view-proj -> PolyShadowMat
-    private final Vector3f lightDir = new Vector3f(0, 1, 0);  // toward the light -> PolyShadowLightDir
-    private final Vector3f camFract = new Vector3f();  // fract(camPos) -> PolyShadowCamFract (grid anchor)
-    private final List<SectionRenderDispatcher.RenderSection> shadowSections = new ArrayList<>();
-    // Block entities to draw this pass, gathered alongside the sections (or from Sodium's re-culled lists).
-    private final List<BlockEntity> shadowBlockEntities = new ArrayList<>();
+    private final Matrix4f shadowMatrix = new Matrix4f();
+    private final Vector3f towardLight = new Vector3f(0, 1, 0);
+    private final Vector3f cameraFract = new Vector3f();
+    private final List<SectionRenderDispatcher.RenderSection> casterSections = new ArrayList<>();
+    private final List<BlockEntity> casterBlockEntities = new ArrayList<>();
 
     public void setSettings(ShadowMapSettings settings) {
         this.settings = settings;
-        this.hasRendered = false;
-        // Also the disconnect path (resetWithLevel), so the cache can't pin a dead ClientLevel.
-        this.renderedLevel = null;
+        this.hasRenderedMap = false;
+        this.lastRenderedLevel = null;
     }
 
     public GpuTextureView getShadowTexture() {
         return depthTextureView;
     }
 
-    // Null until the first shadow pass has run this session (bind sites skip a null slice).
     @Nullable
     public GpuBufferSlice getUniformsSlice() {
         return uniforms == null ? null : uniforms.getSlice();
     }
 
-    // Called from LevelRenderer.renderLevel HEAD (before the frame graph is built and executed, so the
-    // post chains that sample us this frame see this frame's map); no render pass is open here, which
-    // the UBO writes require. Skips all work unless some active post chain declares use_shadow_map.
     public void renderShadowPassIfNeeded(GpuBufferSlice shaderFog, Camera cam,
                                          Matrix4fc cameraFrustumMatrix, Matrix4f cameraProjectionMatrix) {
-        if (insidePass) return;
-        if (!Polytone.POST_CHAINS.anyActiveEffectUsesShadowMap()) return;
+        if (renderingShadowPass) return;
+        if (!Polytone.POST_CHAINS.anyActiveChainWantsShadowMap()) return;
 
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        // The camera comes from renderLevel's own parameter rather than gameRenderer.getMainCamera():
-        // that field is a global other mods swap while they render a second view, and it has to agree
-        // with the frustum matrices above - they are all camera-relative to the same eye.
         if (level == null || !cam.isInitialized()) return;
 
         Vec3 camPos = cam.position();
-        // fract(camPos) every frame: the resolve shader's world-grid snap must track the live camera
-        // even on frames where we reuse the map.
-        camFract.set((float) Mth.frac(camPos.x), (float) Mth.frac(camPos.y), (float) Mth.frac(camPos.z));
+        cameraFract.set((float) Mth.frac(camPos.x), (float) Mth.frac(camPos.y), (float) Mth.frac(camPos.z));
 
         long now = Util.getMillis();
         float updateInterval = settings.updateInterval();
-        // The re-align below is a translation of a box centered on the camera at render time, so it only
-        // holds while the camera is still well inside that box. A teleport, a dimension change or a
-        // second view rendered from somewhere else entirely would otherwise slide the whole map away.
         float maxReuseDrift = settings.coverage() * 0.25f;
-        boolean reusable = hasRendered && level == renderedLevel
-                && camPos.distanceToSqr(renderedCamPos) <= maxReuseDrift * maxReuseDrift;
-        boolean due = !reusable || updateInterval <= 0f || (now - lastUpdateMs) >= updateInterval * 50f;
+        boolean reusable = hasRenderedMap && level == lastRenderedLevel
+                && camPos.distanceToSqr(lastRenderedCamPos) <= maxReuseDrift * maxReuseDrift;
+        boolean due = !reusable || updateInterval <= 0f || (now - lastRenderMs) >= updateInterval * 50f;
         if (due) {
-            float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
-            boolean ok = true;
-            insidePass = true;
+            float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+            boolean completed = true;
+            renderingShadowPass = true;
             try {
-                render(mc, level, cam, camPos, partial, shaderFog, cameraFrustumMatrix, cameraProjectionMatrix);
+                renderShadowMap(mc, level, cam, camPos, partialTick, shaderFog, cameraFrustumMatrix, cameraProjectionMatrix);
             } catch (Exception e) {
-                // render() restores its own global state in finally blocks; swallow here so a failed
-                // shadow pass can never propagate into renderLevel or leave the frame half-rendered.
-                ok = false;
+                completed = false;
                 Polytone.LOGGER.error("Polytone shadow-map render failed", e);
             } finally {
-                insidePass = false;
+                renderingShadowPass = false;
             }
-            // Only a completed pass may be reused: caching a half-drawn map would keep it on screen for
-            // the whole update interval.
-            if (ok) {
-                renderedMatrix.set(shadowMatrix);
-                renderedCamPos = camPos;
-                renderedLevel = level;
-                lastUpdateMs = now;
-                hasRendered = true;
+            // a half-drawn map must not be reused for the whole update interval
+            if (completed) {
+                lastRenderedShadowMatrix.set(shadowMatrix);
+                lastRenderedCamPos = camPos;
+                lastRenderedLevel = level;
+                lastRenderMs = now;
+                hasRenderedMap = true;
             } else {
-                hasRendered = false;
+                hasRenderedMap = false;
             }
         } else {
-            // Reuse the last depth map; only re-align it for how far the camera has moved since. The
-            // projection is orthographic and the light basis is fixed between updates, so a plain
-            // translate by the camera delta maps current camera-relative positions back into the map.
-            shadowMatrix.set(renderedMatrix).translate(
-                    (float) (camPos.x - renderedCamPos.x),
-                    (float) (camPos.y - renderedCamPos.y),
-                    (float) (camPos.z - renderedCamPos.z));
+            shadowMatrix.set(lastRenderedShadowMatrix).translate(
+                    (float) (camPos.x - lastRenderedCamPos.x),
+                    (float) (camPos.y - lastRenderedCamPos.y),
+                    (float) (camPos.z - lastRenderedCamPos.z));
         }
-        // Post passes bind the PolyShadow UBO, so it must track the (possibly re-aligned) matrix every frame.
         if (uniforms == null) uniforms = new PolyShadowUniforms();
-        uniforms.update(shadowMatrix, lightDir, camFract);
+        uniforms.update(shadowMatrix, towardLight, cameraFract);
     }
 
-    private void render(Minecraft mc, ClientLevel level, Camera cam, Vec3 camPos, float partial,
-                        GpuBufferSlice shaderFog, Matrix4fc cameraFrustumMatrix, Matrix4f cameraProjectionMatrix) {
-        ensureTarget();
+    private void renderShadowMap(Minecraft mc, ClientLevel level, Camera cam, Vec3 camPos, float partialTick,
+                                 GpuBufferSlice shaderFog, Matrix4fc cameraFrustumMatrix, Matrix4f cameraProjectionMatrix) {
+        ensureGpuResources();
 
         float coverage = settings.coverage();
         float depthRange = settings.depthRange();
 
-        // Light direction: unit vector pointing FROM the scene TOWARD the sun (or moon at night).
-        lightDir.set(computeLightDir(cam, partial));
-        Vector3f up = Math.abs(lightDir.y) > 0.99f ? new Vector3f(0, 0, 1) : new Vector3f(0, 1, 0);
+        towardLight.set(directionTowardLight(cam, partialTick));
+        Vector3f up = Math.abs(towardLight.y) > 0.99f ? new Vector3f(0, 0, 1) : new Vector3f(0, 1, 0);
 
-        // Built in camera-relative space (camera at origin) to match the camera-relative section
-        // origins the terrain shader consumes per section. A single ortho cascade centered on the camera.
         Matrix4f lightView = new Matrix4f().lookAlong(
-                -lightDir.x, -lightDir.y, -lightDir.z, up.x, up.y, up.z);
+                -towardLight.x, -towardLight.y, -towardLight.z, up.x, up.y, up.z);
         Matrix4f lightProj = new Matrix4f().ortho(
                 -coverage, coverage, -coverage, coverage, -depthRange, depthRange);
 
-        // Texel snap keeps world geometry on the same shadow texels frame to frame, so the map doesn't
-        // slide with the camera. Anchored to the camera's CHUNK corner, not the world origin: the snap
-        // offset's sensitivity to a rotating sun scales with distance to the anchor, so a world-origin
-        // anchor shimmered badly far from spawn while a chunk-local one (<=16 blocks) does not.
-        // Doubles keep the mod exact.
-        //
-        // KNOWN, DELIBERATELY ACCEPTED ARTIFACT - do not "fix" by deleting this again. The offset is
-        // `anchor-in-light-space mod texel`, a sawtooth in the sun angle: as the sun turns it ramps
-        // across a full texel and wraps, roughly once a second (anchor <=16 blocks * 0.0052 rad/s sun
-        // rate / a 0.047 block texel at coverage 48 / res 2048). One lateral texel is 1/sin(elevation)
-        // blocks of GROUND - ~0.27 at a 10 degree sun, several PixelGridRes cells - so a rising sun's
-        // shadow edge creeps outward a few cells and snaps back instead of shrinking monotonically.
-        // That is NOT fixable by picking a better anchor: the light-space grid rotates about the
-        // camera, so any fixed world reference drifts by |offset from camera| * dTheta, and a smaller
-        // anchor only trades drift rate for a wrap at every block crossing. Removing the snap trades
-        // it for the whole shadow sliding while you walk, which the user judged clearly worse.
-        double ax = camPos.x - Math.floor(camPos.x / 16.0) * 16.0;
-        double ay = camPos.y - Math.floor(camPos.y / 16.0) * 16.0;
-        double az = camPos.z - Math.floor(camPos.z / 16.0) * 16.0;
-        double sx = lightView.m00() * ax + lightView.m10() * ay + lightView.m20() * az;
-        double sy = lightView.m01() * ax + lightView.m11() * ay + lightView.m21() * az;
-        double texel = 2.0 * coverage / settings.resolution(); // world-space size of one shadow texel
-        lightProj.m30(lightProj.m30() + (float) ((sx - Math.round(sx / texel) * texel) / coverage));
-        lightProj.m31(lightProj.m31() + (float) ((sy - Math.round(sy / texel) * texel) / coverage));
+        // texel snap, anchored to the camera's chunk corner; known accepted artifact, see research/POST_SHADOW_NOTES.md
+        double anchorX = camPos.x - Math.floor(camPos.x / 16.0) * 16.0;
+        double anchorY = camPos.y - Math.floor(camPos.y / 16.0) * 16.0;
+        double anchorZ = camPos.z - Math.floor(camPos.z / 16.0) * 16.0;
+        double lightSpaceX = lightView.m00() * anchorX + lightView.m10() * anchorY + lightView.m20() * anchorZ;
+        double lightSpaceY = lightView.m01() * anchorX + lightView.m11() * anchorY + lightView.m21() * anchorZ;
+        double texelSize = 2.0 * coverage / settings.resolution();
+        lightProj.m30(lightProj.m30() + (float) ((lightSpaceX - Math.round(lightSpaceX / texelSize) * texelSize) / coverage));
+        lightProj.m31(lightProj.m31() + (float) ((lightSpaceY - Math.round(lightSpaceY / texelSize) * texelSize) / coverage));
 
         shadowMatrix.set(lightProj).mul(lightView);
 
-        // The caster set: the light box, narrowed to what can actually shadow the view frustum. The
-        // narrowing is only sound while the map is rendered every frame - with reuse enabled the camera
-        // turns between renders and would look into parts of the map we never filled, so we drop back to
-        // the plain box there.
         ShadowCasterVolume volume = new ShadowCasterVolume(lightView, coverage, depthRange);
-        if (settings.updateInterval() <= 0f && cameraFrustumMatrix != null && cameraProjectionMatrix != null) {
-            volume.buildCasterPlanes(cameraProjectionMatrix.mul(cameraFrustumMatrix, new Matrix4f()), lightDir);
+        boolean rendersEveryFrame = settings.updateInterval() <= 0f;
+        if (rendersEveryFrame && cameraFrustumMatrix != null && cameraProjectionMatrix != null) {
+            volume.buildCasterPlanes(cameraProjectionMatrix.mul(cameraFrustumMatrix, new Matrix4f()), towardLight);
         }
 
-        collectShadowSections(mc, volume, camPos);
+        collectCasterSections(mc, volume, camPos);
 
         GpuDevice device = RenderSystem.getDevice();
 
-        // Upload the light projection to our own "Projection" UBO (no render pass may be open here).
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            ByteBuffer bb = Std140Builder.onStack(stack, RenderSystem.PROJECTION_MATRIX_UBO_SIZE)
+            ByteBuffer bytes = Std140Builder.onStack(stack, RenderSystem.PROJECTION_MATRIX_UBO_SIZE)
                     .putMat4f(lightProj).get();
-            device.createCommandEncoder().writeToBuffer(projectionBuffer.slice(), bb);
+            device.createCommandEncoder().writeToBuffer(lightProjectionBuffer.slice(), bytes);
         }
 
-        // Always clear to far depth (1.0), even when there's nothing to draw - a stale map would
-        // shadow the world with last frame's (differently-projected) depth.
+        // always clear, even with nothing to draw: a stale map has last frame's projection
         device.createCommandEncoder().clearColorAndDepthTextures(colorTexture, new Vector4f(0, 0, 0, 0), depthTexture, 1.0);
 
-        // Fog is fetched globally by the draws below; make sure this frame's slice is current
-        // (the main pass sets the same one at its own start).
         RenderSystem.setShaderFog(shaderFog);
 
         if (CompatHandler.SODIUM) {
-            // Under Sodium the vanilla ViewArea sections are uncompiled, so drawTerrain draws nothing
-            // and collectShadowSections found no block entities either; replay Sodium's own terrain from
-            // the light POV into the shadow attachments and take its block entities from the same pass.
             SodiumShadowRenderer.replayTerrain(mc, cam, camPos, lightView, lightProj,
-                    volume, colorTextureView, depthTextureView, shadowBlockEntities);
+                    volume, colorTextureView, depthTextureView, casterBlockEntities);
         } else {
-            drawTerrain(mc, camPos, lightView);
+            drawVanillaTerrain(mc, camPos, lightView);
         }
         if (settings.renderEntities() || settings.renderBlockEntities()) {
             drawEntitiesAndBlockEntities(mc, level, camPos, lightView, volume);
         } else {
-            shadowBlockEntities.clear();
+            casterBlockEntities.clear();
         }
     }
 
-    // Every compiled section mesh intersecting the light volume drawn with the light matrices - the
-    // body of vanilla's prepareChunkRenders + renderGroup, restricted to the opaque layers, with the
-    // light view standing in for the frustum matrix and our ortho UBO bound as "Projection".
-    private void drawTerrain(Minecraft mc, Vec3 camPos, Matrix4f lightView) {
-        if (shadowSections.isEmpty()) return;
+    private void drawVanillaTerrain(Minecraft mc, Vec3 camPos, Matrix4f lightView) {
+        if (casterSections.isEmpty()) return;
 
         SectionRenderDispatcher dispatcher =
                 ((LevelRendererShadowAccessor) mc.levelRenderer).polytone$getSectionRenderDispatcher();
         if (dispatcher == null) return;
 
         GpuTextureView atlasView = mc.getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTextureView();
-        int atlasW = atlasView.getWidth(0);
-        int atlasH = atlasView.getHeight(0);
+        int atlasWidth = atlasView.getWidth(0);
+        int atlasHeight = atlasView.getHeight(0);
 
-        // Draws are grouped by source buffer (vanilla's combinedHash) so each drawMultipleIndexed call
-        // sees one vertex/index buffer; TRANSLUCENT is never in SHADOW_LAYERS so ordering doesn't matter.
         EnumMap<ChunkSectionLayer, Int2ObjectOpenHashMap<List<RenderPass.Draw<GpuBufferSlice[]>>>> drawsPerLayer =
                 new EnumMap<>(ChunkSectionLayer.class);
         for (ChunkSectionLayer layer : SHADOW_LAYERS) {
             drawsPerLayer.put(layer, new Int2ObjectOpenHashMap<>());
         }
-        List<DynamicUniforms.ChunkSectionInfo> infos = new ArrayList<>();
+        List<DynamicUniforms.ChunkSectionInfo> sectionInfos = new ArrayList<>();
         int maxIndices = 0;
         long now = Util.getMillis();
 
-        // The uber buffers the slices point into are shared with the main pass, so take the same lock
-        // it does. READ ONLY from here: never call uploadGlobalGeomBuffersToGPU. extractLevel already
-        // ran prepareChunkRenders and froze the main pass's draws (buffer, baseVertex, firstIndex);
-        // an upload here would free and move the allocations under them - moved sections then draw
-        // from clobbered memory, which shows up as whole chunks flickering as they stream in.
-        // Sections still pending upload just have no slice yet and cast no shadow this frame.
+        // read only under the lock: an upload here would move allocations under the main pass's frozen draws
         dispatcher.lock();
         try {
-            for (SectionRenderDispatcher.RenderSection section : shadowSections) {
+            for (SectionRenderDispatcher.RenderSection section : casterSections) {
                 SectionMesh mesh = section.getSectionMesh();
                 BlockPos origin = section.getRenderOrigin();
                 int infoIndex = -1;
@@ -323,10 +249,10 @@ public class ShadowMapRenderer {
                     if (draw == null || slice == null) continue;
                     if (draw.hasCustomIndexBuffer() && slice.indexBuffer() == null) continue;
                     if (infoIndex == -1) {
-                        infoIndex = infos.size();
-                        infos.add(new DynamicUniforms.ChunkSectionInfo(new Matrix4f(lightView),
+                        infoIndex = sectionInfos.size();
+                        sectionInfos.add(new DynamicUniforms.ChunkSectionInfo(new Matrix4f(lightView),
                                 origin.getX(), origin.getY(), origin.getZ(),
-                                section.getVisibility(now), atlasW, atlasH));
+                                section.getVisibility(now), atlasWidth, atlasHeight));
                     }
                     VertexFormat vertexFormat = layer.pipeline().getVertexFormatBinding(0);
                     GpuBuffer vertexBuffer = slice.vertexBuffer();
@@ -347,36 +273,36 @@ public class ShadowMapRenderer {
                         firstIndex = (int) (slice.indexBufferOffset() / indexType.bytes);
                     }
                     int baseVertex = (int) (slice.vertexBufferOffset() / vertexFormat.getVertexSize());
-                    int idx = infoIndex;
+                    int uniformIndex = infoIndex;
                     drawsPerLayer.get(layer).computeIfAbsent(bufferGroup, k -> new ArrayList<>())
                             .add(new RenderPass.Draw<>(0, vertexBuffer, indexBuffer, indexType,
                                     firstIndex, draw.indexCount(), baseVertex,
-                                    (slices, uploader) -> uploader.upload("ChunkSection", slices[idx])));
+                                    (slices, uploader) -> uploader.upload("ChunkSection", slices[uniformIndex])));
                 }
             }
         } finally {
             dispatcher.unlock();
         }
-        if (infos.isEmpty()) return;
+        if (sectionInfos.isEmpty()) return;
 
         GpuBufferSlice[] slices = RenderSystem.getDynamicUniforms()
-                .writeChunkSections(infos.toArray(new DynamicUniforms.ChunkSectionInfo[0]));
+                .writeChunkSections(sectionInfos.toArray(new DynamicUniforms.ChunkSectionInfo[0]));
 
         RenderSystem.AutoStorageIndexBuffer sequential = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
         GpuBuffer sharedIndexBuffer = maxIndices == 0 ? null : sequential.getBuffer(maxIndices);
         IndexType sharedIndexType = maxIndices == 0 ? null : sequential.type();
 
-        GpuSampler sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR, true);
+        GpuSampler atlasSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR, true);
         try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> "Polytone shadow map terrain", colorTextureView, Optional.empty(),
                 depthTextureView, OptionalDouble.empty())) {
             RenderSystem.bindDefaultUniforms(pass);
-            pass.setUniform("Projection", projectionBuffer.slice()); // after the defaults: last bind wins
+            pass.setUniform("Projection", lightProjectionBuffer.slice()); // after the defaults, last bind wins
             pass.bindTexture("Sampler2", mc.gameRenderer.lightmap(),
                     RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             for (ChunkSectionLayer layer : SHADOW_LAYERS) {
                 pass.setPipeline(layer.pipeline());
-                pass.bindTexture("Sampler0", atlasView, sampler);
+                pass.bindTexture("Sampler0", atlasView, atlasSampler);
                 for (var draws : drawsPerLayer.get(layer).values()) {
                     if (draws.isEmpty()) continue;
                     pass.drawMultipleIndexed(draws, sharedIndexBuffer, sharedIndexType, List.of("ChunkSection"), slices);
@@ -385,89 +311,76 @@ public class ShadowMapRenderer {
         }
     }
 
-    // Entities and block entities aren't in the section meshes - extract and submit them like the main
-    // pass does, then flush the feature dispatcher with the light matrices swapped onto the RenderSystem
-    // globals and the shadow target as output override. Light-volume culled; unlike vanilla we include
-    // the camera entity so the player casts a shadow in first person.
     private void drawEntitiesAndBlockEntities(Minecraft mc, ClientLevel level, Vec3 camPos, Matrix4f lightView,
                                               ShadowCasterVolume volume) {
-        EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
-        BlockEntityRenderDispatcher beDispatcher = mc.getBlockEntityRenderDispatcher();
+        EntityRenderDispatcher entityDispatcher = mc.getEntityRenderDispatcher();
+        BlockEntityRenderDispatcher blockEntityDispatcher = mc.getBlockEntityRenderDispatcher();
         FeatureRenderDispatcher featureDispatcher = mc.gameRenderer.featureRenderDispatcher();
         CameraRenderState camState = mc.levelRenderer.levelRenderState.cameraRenderState;
-        // Our own storage rather than the level's: 26.2 passes the storage into renderAllFeatures, so
-        // nothing this pass submits can leak into the main one even if a renderer throws halfway.
         SubmitNodeStorage submitNodes = new SubmitNodeStorage();
 
-        // Swap the light matrices + shadow target onto the RenderSystem globals the feature draws
-        // read. Everything is restored in the finally no matter what throws, so a failure can never
-        // leave later frames rendering from the sun's POV or into the shadow target.
         RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(projectionBuffer.slice(), ProjectionType.ORTHOGRAPHIC);
-        Matrix4fStack mvStack = RenderSystem.getModelViewStack();
-        mvStack.pushMatrix();
-        mvStack.set(lightView);
+        RenderSystem.setProjectionMatrix(lightProjectionBuffer.slice(), ProjectionType.ORTHOGRAPHIC);
+        Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
+        modelViewStack.pushMatrix();
+        modelViewStack.set(lightView);
         RenderSystem.outputColorTextureOverride = colorTextureView;
         RenderSystem.outputDepthTextureOverride = depthTextureView;
-        // Only depth matters, but entity shaders still evaluate diffuse light; use the level setup.
         mc.gameRenderer.lighting().setupFor(Lighting.Entry.LEVEL);
         try {
             PoseStack poseStack = new PoseStack();
 
-            // Caster-volume cull, same conservative test as the sections but with a scalar radius.
             if (settings.renderEntities()) {
                 for (Entity entity : level.entitiesForRendering()) {
                     if (entity.isSpectator()) continue;
 
-                    AABB bb = entity.getBoundingBox();
-                    float radius = (float) Math.max(bb.getXsize(), Math.max(bb.getYsize(), bb.getZsize()));
-                    Vec3 c = bb.getCenter();
-                    if (!castsIntoView(volume, camPos, c.x, c.y, c.z, radius)) continue;
+                    AABB box = entity.getBoundingBox();
+                    float radius = (float) Math.max(box.getXsize(), Math.max(box.getYsize(), box.getZsize()));
+                    Vec3 center = box.getCenter();
+                    if (!canCastIntoView(volume, camPos, center.x, center.y, center.z, radius)) continue;
 
-                    float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(
+                    float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(
                             !level.tickRateManager().isEntityFrozen(entity));
                     try {
-                        EntityRenderState state = dispatcher.extractEntity(entity, partial);
-                        dispatcher.submit(state, camState, state.x - camPos.x, state.y - camPos.y,
+                        EntityRenderState state = entityDispatcher.extractEntity(entity, partialTick);
+                        entityDispatcher.submit(state, camState, state.x - camPos.x, state.y - camPos.y,
                                 state.z - camPos.z, poseStack, submitNodes);
                     } catch (Exception e) {
-                        // Never let one broken entity renderer (called outside its usual pass) kill the frame.
+                        // one broken entity renderer must not kill the frame
                     }
                 }
             }
 
             if (settings.renderBlockEntities()) {
-                submitBlockEntities(mc, beDispatcher, submitNodes, camState, camPos, poseStack);
+                submitBlockEntities(mc, blockEntityDispatcher, submitNodes, camState, camPos, poseStack);
             }
 
-            featureRenderSafely(featureDispatcher, submitNodes);
+            try {
+                featureDispatcher.renderAllFeatures(submitNodes);
+            } catch (Exception e) {
+                Polytone.LOGGER.error("Error rendering polytone shadow features", e);
+            }
         } finally {
-            // Don't hold the casters past the pass - the list survives until the next render, which may
-            // never come (post chain disabled, level unloaded) and would pin block entities from a level
-            // that's already gone.
-            shadowBlockEntities.clear();
+            casterBlockEntities.clear();
             RenderSystem.outputColorTextureOverride = null;
             RenderSystem.outputDepthTextureOverride = null;
-            mvStack.popMatrix();
+            modelViewStack.popMatrix();
             RenderSystem.restoreProjectionMatrix();
         }
     }
 
-    // Block entities (chests, banners, signs) aren't part of the terrain geometry; they were gathered
-    // with the sections (or from Sodium) so the caster set matches the terrain cull. Extracted and
-    // submitted like vanilla's submitBlockEntities.
-    private void submitBlockEntities(Minecraft mc, BlockEntityRenderDispatcher beDispatcher,
+    private void submitBlockEntities(Minecraft mc, BlockEntityRenderDispatcher blockEntityDispatcher,
                                      SubmitNodeStorage submitNodes, CameraRenderState camState,
                                      Vec3 camPos, PoseStack poseStack) {
-        float partial = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
-        for (BlockEntity be : shadowBlockEntities) {
-            BlockPos pos = be.getBlockPos();
+        float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        for (BlockEntity blockEntity : casterBlockEntities) {
+            BlockPos pos = blockEntity.getBlockPos();
             poseStack.pushPose();
             poseStack.translate(pos.getX() - camPos.x, pos.getY() - camPos.y, pos.getZ() - camPos.z);
             try {
-                var state = beDispatcher.tryExtractRenderState(be, partial, null, false);
+                var state = blockEntityDispatcher.tryExtractRenderState(blockEntity, partialTick, null, false);
                 if (state != null) {
-                    beDispatcher.submit(state, poseStack, submitNodes, camState);
+                    blockEntityDispatcher.submit(state, poseStack, submitNodes, camState);
                 }
             } catch (Exception e) {
             }
@@ -475,25 +388,9 @@ public class ShadowMapRenderer {
         }
     }
 
-    // Draw everything this pass submitted. Nothing may escape: the caller's finally still has to
-    // restore the global matrices, and a renderer called outside its usual pass is exactly the kind
-    // of thing that throws. Our storage is local, so unlike the shared one there is nothing to clean
-    // up on failure - whatever stayed queued dies with it instead of being drawn by the main pass.
-    private static void featureRenderSafely(FeatureRenderDispatcher featureDispatcher,
-                                            SubmitNodeStorage submitNodes) {
-        try {
-            featureDispatcher.renderAllFeatures(submitNodes);
-        } catch (Exception e) {
-            Polytone.LOGGER.error("Error rendering polytone shadow features", e);
-        }
-    }
-
-    // Every compiled section that can cast into the view, regardless of camera visibility (so off-screen
-    // occluders still cast). A 16^3 section is a box of half-extent 8 on each world axis, which the
-    // volume folds onto its own axes itself.
-    private void collectShadowSections(Minecraft mc, ShadowCasterVolume volume, Vec3 camPos) {
-        shadowSections.clear();
-        shadowBlockEntities.clear();
+    private void collectCasterSections(Minecraft mc, ShadowCasterVolume volume, Vec3 camPos) {
+        casterSections.clear();
+        casterBlockEntities.clear();
         ViewArea viewArea = ((LevelRendererShadowAccessor) mc.levelRenderer).polytone$getViewArea();
         if (viewArea == null) return;
 
@@ -501,51 +398,43 @@ public class ShadowMapRenderer {
             if (!section.getSectionMesh().hasRenderableLayers()) continue;
 
             BlockPos origin = section.getRenderOrigin();
-            if (castsIntoView(volume, camPos, origin.getX() + 8, origin.getY() + 8, origin.getZ() + 8, 8f)) {
-                shadowSections.add(section);
-                shadowBlockEntities.addAll(section.getSectionMesh().getRenderableBlockEntities());
+            if (canCastIntoView(volume, camPos, origin.getX() + 8, origin.getY() + 8, origin.getZ() + 8, 8f)) {
+                casterSections.add(section);
+                casterBlockEntities.addAll(section.getSectionMesh().getRenderableBlockEntities());
             }
         }
     }
 
-    // Cube test in the volume's camera-relative space; every caller here has a world-space centre and a
-    // single conservative half-extent.
-    private static boolean castsIntoView(ShadowCasterVolume volume, Vec3 camPos,
-                                         double x, double y, double z, float halfExtent) {
+    private static boolean canCastIntoView(ShadowCasterVolume volume, Vec3 camPos,
+                                           double x, double y, double z, float halfExtent) {
         return volume.intersects((float) (x - camPos.x), (float) (y - camPos.y), (float) (z - camPos.z),
                 halfExtent, halfExtent, halfExtent);
     }
 
-    // Direction toward the light, matching vanilla's sun placement in the sky pass: (-sin a, cos a, 0)
-    // with a = the SUN_ANGLE environment attribute (straight up at noon, travelling east-up-west),
-    // the successor of the old getSunAngle. Continuous (no stepping); respects dimension/datapack
-    // overrides. Below the horizon we flip to the moon on the opposite side.
-    private static Vector3f computeLightDir(Camera cam, float partial) {
-        float a = cam.attributeProbe().getValue(EnvironmentAttributes.SUN_ANGLE, partial) * Mth.DEG_TO_RAD;
-        Vector3f sunDir = new Vector3f(-Mth.sin(a), Mth.cos(a), 0f); // already unit length
-        if (sunDir.y < 0f) sunDir.negate(); // sun below horizon -> moonlight from the opposite side
+    private static Vector3f directionTowardLight(Camera cam, float partialTick) {
+        float angle = cam.attributeProbe().getValue(EnvironmentAttributes.SUN_ANGLE, partialTick) * Mth.DEG_TO_RAD;
+        Vector3f sunDir = new Vector3f(-Mth.sin(angle), Mth.cos(angle), 0f);
+        if (sunDir.y < 0f) sunDir.negate();
         return sunDir;
     }
 
-    private void ensureTarget() {
+    private void ensureGpuResources() {
         GpuDevice device = RenderSystem.getDevice();
-        if (projectionBuffer == null) {
-            projectionBuffer = device.createBuffer(() -> "Polytone shadow projection UBO",
+        if (lightProjectionBuffer == null) {
+            lightProjectionBuffer = device.createBuffer(() -> "Polytone shadow projection UBO",
                     GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_UNIFORM, RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
         }
-        // Recreate when the configured resolution changes (a shadow_map.json reload can move it).
-        int shadowRes = settings.resolution();
-        if (depthTexture == null || depthTexture.getWidth(0) != shadowRes) {
+        int resolution = settings.resolution();
+        if (depthTexture == null || depthTexture.getWidth(0) != resolution) {
             closeTextures();
             depthTexture = device.createTexture(() -> "Polytone shadow map depth",
                     GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_TEXTURE_BINDING
                             | GpuTexture.USAGE_COPY_DST,
-                    GpuFormat.D32_FLOAT, shadowRes, shadowRes, 1, 1);
+                    GpuFormat.D32_FLOAT, resolution, resolution, 1, 1);
             depthTextureView = device.createTextureView(depthTexture);
-            // COPY_DST as well: 26.1's CommandEncoder rejects a clear on a texture without it.
             colorTexture = device.createTexture(() -> "Polytone shadow map color",
                     GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_COPY_DST,
-                    GpuFormat.RGBA8_UNORM, shadowRes, shadowRes, 1, 1);
+                    GpuFormat.RGBA8_UNORM, resolution, resolution, 1, 1);
             colorTextureView = device.createTextureView(colorTexture);
         }
     }
@@ -565,17 +454,17 @@ public class ShadowMapRenderer {
 
     public void close() {
         closeTextures();
-        if (projectionBuffer != null) {
-            projectionBuffer.close();
-            projectionBuffer = null;
+        if (lightProjectionBuffer != null) {
+            lightProjectionBuffer.close();
+            lightProjectionBuffer = null;
         }
         if (uniforms != null) {
             uniforms.close();
             uniforms = null;
         }
-        shadowSections.clear();
-        shadowBlockEntities.clear();
-        hasRendered = false;
-        renderedLevel = null;
+        casterSections.clear();
+        casterBlockEntities.clear();
+        hasRenderedMap = false;
+        lastRenderedLevel = null;
     }
 }

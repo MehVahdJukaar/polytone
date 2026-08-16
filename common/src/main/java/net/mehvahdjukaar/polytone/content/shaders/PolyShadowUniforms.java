@@ -11,11 +11,10 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 
-// The PolyShadow UBO bound to post passes that declare it (see PostChainsManager), written once per frame
-// by ShadowMapRenderer while no render pass is open:
+// The PolyShadow block:
 //     mat4 PolyShadowMat;       light view-projection, camera-relative space
 //     vec3 PolyShadowLightDir;  unit direction toward the light
-//     vec3 PolyShadowCamFract;  fract(cameraPos), the world-grid anchor
+//     vec3 PolyShadowCamFract;  fract(cameraPos), lets shaders snap to the world grid
 public class PolyShadowUniforms implements AutoCloseable {
 
     public static final int UBO_SIZE = new Std140SizeCalculator()
@@ -27,15 +26,14 @@ public class PolyShadowUniforms implements AutoCloseable {
     private final GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Polytone Shadow UBO",
             GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_UNIFORM, UBO_SIZE);
 
-    public void update(Matrix4f shadowMat, Vector3f lightDir, Vector3f camFract) {
-        try (MemoryStack memoryStack = MemoryStack.stackPush()) {
-            ByteBuffer byteBuffer = Std140Builder.onStack(memoryStack, UBO_SIZE)
-                    .putMat4f(shadowMat)
-                    .putVec3(lightDir.x, lightDir.y, lightDir.z)
-                    .putVec3(camFract.x, camFract.y, camFract.z)
+    public void update(Matrix4f shadowMatrix, Vector3f towardLight, Vector3f cameraFract) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            ByteBuffer bytes = Std140Builder.onStack(stack, UBO_SIZE)
+                    .putMat4f(shadowMatrix)
+                    .putVec3(towardLight.x, towardLight.y, towardLight.z)
+                    .putVec3(cameraFract.x, cameraFract.y, cameraFract.z)
                     .get();
-            RenderSystem.getDevice().createCommandEncoder()
-                    .writeToBuffer(this.buffer.slice(), byteBuffer);
+            RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), bytes);
         }
     }
 

@@ -10,9 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ShadowFeatureRenderer.class)
 public abstract class ShadowFeatureRendererMixin {
 
-    // colors.json "entity_shadows": false turns off the blob shadows under entities.
-    // 26.2: the translucent feature pass became buildGroup(context, submits) - bail before it
-    // asks for a vertex builder so nothing is emitted for the whole batch.
+    // colors.json "entity_shadows": false
     @Inject(method = "buildGroup", at = @At("HEAD"), cancellable = true)
     private void polytone$cancelEntityShadow(CallbackInfo ci) {
         if (Polytone.COLORS.areEntityShadowsDisabled()) {
