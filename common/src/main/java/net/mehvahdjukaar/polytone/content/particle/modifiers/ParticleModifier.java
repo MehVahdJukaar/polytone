@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.content.particle.modifiers;
 
+import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
@@ -15,6 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
@@ -24,7 +27,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class ParticleModifier {
 
@@ -177,25 +182,27 @@ public class ParticleModifier {
     }
 
 
-    private record Filter(@Nullable Block forBlock,
-                          @Nullable Item forItem) implements Predicate<ParticleOptions> {
-
-        Filter(Optional<Optional<Block>> state, Optional<Optional<Item>> item) {
-            this(state.flatMap(x -> x).orElse(null), item.flatMap(x -> x).orElse(null));
-        }
+    private record Filter(Set<Block> forBlocks,
+                          Set<Item> forItems) implements Predicate<ParticleOptions> {
 
         public static final SchemaCodec<Filter> CODEC = SchemaRecord.create(Filter.class, i -> i.group(
-                i.optional("block", CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.BLOCK), p -> Optional.of(Optional.ofNullable(p.forBlock))),
-                i.optional("item", CodecUtils.forwardAwareByNameCodec(BuiltInRegistries.ITEM), p -> Optional.of(Optional.ofNullable(p.forItem)))
+                i.optional("block", setOf(BuiltInRegistries.BLOCK), Set.of(), Filter::forBlocks),
+                i.optional("item", setOf(BuiltInRegistries.ITEM), Set.of(), Filter::forItems)
         ).apply(i, Filter::new));
+
+        private static <E> Codec<Set<E>> setOf(Registry<E> registry) {
+            return SchemaCodecs.singleOrList(CodecUtils.forwardAwareByNameCodec(registry))
+                    .xmap(list -> list.stream().flatMap(Optional::stream).collect(Collectors.toUnmodifiableSet()),
+                            set -> set.stream().map(Optional::of).toList());
+        }
 
         @Override
         public boolean test(ParticleOptions particleOptions) {
-            if (forBlock != null && particleOptions instanceof BlockParticleOption bo) {
-                return bo.getState().getBlock() == forBlock;
+            if (!forBlocks.isEmpty() && particleOptions instanceof BlockParticleOption bo) {
+                return forBlocks.contains(bo.getState().getBlock());
             }
-            if (forItem != null && particleOptions instanceof ItemParticleOption io) {
-                return io.getItem().is(forItem);
+            if (!forItems.isEmpty() && particleOptions instanceof ItemParticleOption io) {
+                return forItems.stream().anyMatch(item -> io.getItem().is(item));
             }
             return true;
         }
