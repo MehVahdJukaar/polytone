@@ -10,6 +10,8 @@ import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.content.particle.custom.render.ModelParticleRenderGroup;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.BindGroupLayouts;
@@ -36,35 +38,22 @@ public class PolytoneRenderTypes {
     public static final ParticleRenderType PARTICLE_MODEL_GROUP =
             new ParticleRenderType(Polytone.res("particle_model").toString(), "PM");
 
-    // Additive-translucent particle pipeline. Mirrors vanilla TRANSLUCENT_PARTICLE (PARTICLE_SNIPPET bind groups
-    // + core/particle vertex shader) but uses Polytone's no-cutoff fragment shader and an additive blend
-    // (SRC_ALPHA, ONE). Consumed directly by a SingleQuadParticle.Layer in ParticleRenderMode.
     public static final RenderPipeline ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE = register(
             RenderPipeline.builder()
                     .withBindGroupLayout(BindGroupLayouts.GLOBALS)
                     .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
                     .withBindGroupLayout(BindGroupLayouts.FOG)
                     .withVertexShader("core/particle")
-                    .withFragmentShader(Polytone.res("core/particle_no_cutoff")) //identical to vanilla core/particle minus the alpha discard
+                    .withFragmentShader(Polytone.res("core/particle_no_cutoff"))
                     .withBindGroupLayout(BindGroupLayouts.SAMPLER0_SAMPLER2)
                     .withVertexBinding(0, DefaultVertexFormat.PARTICLE)
                     .withPrimitiveTopology(PrimitiveTopology.QUADS)
-                    // No depth WRITE: the no-cutoff frag shader keeps fully-transparent fragments (for smooth
-                    // additive edges), so writing depth would let those invisible bits occlude clouds/translucents
-                    // drawn afterward. Depth TEST stays on (GREATER_THAN_OR_EQUAL = 26.2 reversed-Z) so solid
-                    // geometry still occludes the particle.
                     .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
                     .withLocation(Polytone.res("pipeline/additive_particle"))
                     .withColorTargetState(new ColorTargetState(new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE)))
                     .build());
 
 
-    // Sky-disc pipeline variant WITH depth writing enabled. Mirrors vanilla RenderPipelines.SKY (MATRICES_FOG_SNIPPET
-    // + core/sky shaders, POSITION, TRIANGLE_FAN) but adds a depth-write state so a resource pack's sky fragment
-    // shader can stamp clouds into the depth buffer (e.g. so god-rays get occluded). Swapped in by SkyRendererMixin
-    // only when the sky_depth_write config is on. NOTE: vanilla core/sky does not write gl_FragDepth, so enabling this
-    // without a pack whose sky shader writes gl_FragDepth would make the whole sky disc write its geometric depth and
-    // break sky-depth assumptions elsewhere - hence the explicit opt-in config.
     public static final RenderPipeline SKY_DEPTH_WRITE_PIPELINE = register(
             RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
                     .withLocation(Polytone.res("pipeline/sky_depth"))
@@ -72,12 +61,9 @@ public class PolytoneRenderTypes {
                     .withFragmentShader("core/sky")
                     .withVertexBinding(0, DefaultVertexFormat.POSITION)
                     .withPrimitiveTopology(PrimitiveTopology.TRIANGLE_FAN)
-                    // reversed-Z depth test (26.2), depth WRITE on. Sky draws first on cleared depth so this always passes.
                     .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
                     .build());
 
-    // Textured leash. Vanilla leashes are untextured colored quads (RenderTypes.leash()); this gives resource packs
-    // a textured leash by reusing the in-world text pipeline (core/text, samples Sampler0) as a TRIANGLE_STRIP.
     public static final RenderPipeline LEASH_PIPELINE = register(
             RenderPipeline.builder()
                     .withBindGroupLayout(BindGroupLayouts.GLOBALS)
@@ -92,13 +78,9 @@ public class PolytoneRenderTypes {
                     .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_LIGHTMAP_COLOR)
                     .withPrimitiveTopology(PrimitiveTopology.TRIANGLE_STRIP)
                     .withCull(false)
-                    .withLocation("polytone/pipeline/leash")
+                    .withLocation(Polytone.res("pipeline/leash"))
                     .build());
 
-    // Depth-only fullscreen pass: samples a saved world-depth texture (InSampler) and writes it
-    // back into the bound depth attachment. The depth test keeps whichever of the two samples is
-    // nearer the camera; color writes are masked off so the scene color is untouched. Used to fold
-    // the first-person hand's depth back together with the world depth before running post chains.
     public static final RenderPipeline DEPTH_COMBINE_PIPELINE = register(
             RenderPipeline.builder()
                     .withBindGroupLayout(BindGroupLayouts.GLOBALS)
@@ -106,7 +88,6 @@ public class PolytoneRenderTypes {
                     .withVertexShader("core/screenquad")
                     .withFragmentShader(Polytone.res("core/depth_combine"))
                     .withBindGroupLayout(BindGroupLayouts.IN_SAMPLER)
-                    // 26.2 is reversed-Z (near = 1.0), so "keep the nearest" is a >= test, not the <= this used pre-26.2
                     .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
                     .withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM,
                             ColorTargetState.WRITE_NONE))
@@ -123,8 +104,10 @@ public class PolytoneRenderTypes {
                     .createRenderSetup());
 
 
+    // TODO: leashes need their own pipeline under Iris. Copying vanilla TEXT gets us a GLYPH program that
+    // doesn't shade leashes right, so for now we just fall back to vanilla leashes while shaders are on.
     private static boolean isLeashRenderOn() {
-        return true;
+        return !CompatHandler.IRIS || !IrisCompat.isIrisRenderOn();
     }
 
     public static RenderType getLeashRenderType() {
@@ -132,7 +115,6 @@ public class PolytoneRenderTypes {
         return LEASH_RENDER_TYPE;
     }
 
-    // Mirrors LeashFeatureRenderer.addVertexPair geometry, but writes white-tinted UVs so the leash texture shows.
     public static boolean addLeashVertexPair(VertexConsumer builder, Matrix4fc pose,
                                              float dx, float dy, float dz,
                                              float fudge, float dxOff, float dzOff,
