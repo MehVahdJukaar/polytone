@@ -3,8 +3,11 @@ package net.mehvahdjukaar.polytone.content.packinfo;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractScrollWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
@@ -15,10 +18,8 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -31,20 +32,14 @@ public class PackInfoScreen extends Screen {
     private static final int TITLE_MARGIN = 8;
     private static final int MIN_HEADER_HEIGHT = 33;
     private static final int FOOTER_HEIGHT = 44;
-    private static final int SCROLLBAR_WIDTH = 6;
-    private static final int SCROLL_RATE = 12;
 
     private final Screen lastScreen;
     private final Component heading;
     private final Component body;
-    private final List<TextBlock> scrollingBlocks = new ArrayList<>();
 
-    @Nullable
-    private TextBlock headerTitle;
+    private TextBlock titleBlock;
+    private BodyPanel bodyPanel;
     private int headerHeight = MIN_HEADER_HEIGHT;
-    private int maxScroll;
-    private double scrollAmount;
-    private boolean draggingScrollbar;
 
     public PackInfoScreen(Screen lastScreen, Component packName, PackInfo info) {
         super(info.title().orElse(packName));
@@ -64,24 +59,20 @@ public class PackInfoScreen extends Screen {
 
     @Override
     protected void init() {
-        this.scrollingBlocks.clear();
-        this.headerTitle = null;
+        this.titleBlock = makeTextBlock(this.heading);
+        this.headerHeight = Math.max(MIN_HEADER_HEIGHT, this.titleBlock.getHeight() + TITLE_MARGIN * 2);
+        this.titleBlock.setPosition((this.width - this.titleBlock.getWidth()) / 2,
+                (this.headerHeight - this.titleBlock.getHeight()) / 2);
+        this.addRenderableWidget(this.titleBlock);
 
-        TextBlock titleBlock = makeTextBlock(this.heading);
-        // a title too tall for the header would bleed over the panel, so let it scroll with the body instead
-        boolean titleFitsHeader = titleBlock.getHeight() + TITLE_MARGIN * 2 <= this.height / 3;
-        if (titleFitsHeader) {
-            this.headerHeight = Math.max(MIN_HEADER_HEIGHT, titleBlock.getHeight() + TITLE_MARGIN * 2);
-            titleBlock.setPosition((this.width - titleBlock.getWidth()) / 2,
-                    (this.headerHeight - titleBlock.getHeight()) / 2);
-            this.headerTitle = this.addRenderableWidget(titleBlock);
-        } else {
-            this.headerHeight = MIN_HEADER_HEIGHT;
-            this.scrollingBlocks.add(titleBlock);
-        }
-
-        this.scrollingBlocks.add(makeTextBlock(this.body));
-        layoutScrollingBlocks();
+        TextBlock bodyBlock = makeTextBlock(this.body);
+        // panel only grows to what the text needs, so short content stays centered and doesn't scroll
+        int available = panelBottom() - this.headerHeight;
+        int panelWidth = textWidth() + 4;
+        int panelHeight = Math.min(available, bodyBlock.getHeight() + TITLE_MARGIN * 2);
+        this.bodyPanel = this.addRenderableWidget(new BodyPanel((this.width - panelWidth) / 2,
+                this.headerHeight + (available - panelHeight) / 2, panelWidth, panelHeight,
+                bodyBlock, this::onComponentClicked));
 
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, b -> this.onClose())
                 .bounds(this.width / 2 - 100, this.height - 32, 200, 20).build());
@@ -91,28 +82,6 @@ public class PackInfoScreen extends Screen {
         TextBlock block = new TextBlock(text, this.font, this::onComponentClicked);
         block.setCentered(true).setMaxWidth(textWidth());
         return block;
-    }
-
-    // stacks the scrolling blocks under the header, centered vertically while they still fit
-    private void layoutScrollingBlocks() {
-        int contentHeight = TITLE_MARGIN * (this.scrollingBlocks.size() - 1);
-        for (TextBlock block : this.scrollingBlocks) contentHeight += block.getHeight();
-
-        int visibleHeight = panelBottom() - this.headerHeight;
-        int y = contentHeight + TITLE_MARGIN * 2 <= visibleHeight
-                ? this.headerHeight + (visibleHeight - contentHeight) / 2
-                : this.headerHeight + TITLE_MARGIN;
-
-        for (TextBlock block : this.scrollingBlocks) {
-            block.setPosition((this.width - block.getWidth()) / 2, y);
-            y += block.getHeight() + TITLE_MARGIN;
-        }
-        this.maxScroll = Math.max(0, y - panelBottom());
-        setScrollAmount(this.scrollAmount);
-    }
-
-    private void setScrollAmount(double amount) {
-        this.scrollAmount = Mth.clamp(amount, 0, this.maxScroll);
     }
 
     private void onComponentClicked(Style style) {
@@ -147,102 +116,71 @@ public class PackInfoScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
 
-        int top = this.headerHeight;
-        int bottom = panelBottom();
-        int scrolledMouseY = (int) (mouseY + this.scrollAmount);
-
-        graphics.enableScissor(0, top, this.width, bottom);
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, (float) -this.scrollAmount, 0);
-        for (TextBlock block : this.scrollingBlocks) {
-            block.render(graphics, mouseX, scrolledMouseY, partialTick);
-        }
-        graphics.pose().popPose();
-        graphics.disableScissor();
-
-        renderScrollbar(graphics);
-
-        Style style = styleUnderMouse(mouseX, mouseY);
+        Style style = this.titleBlock.styleAt(mouseX, mouseY);
+        if (style == null) style = this.bodyPanel.styleUnderMouse(mouseX, mouseY);
+        // outside the panel's scissor, so a tooltip near the bottom isn't cut off
         if (style != null) graphics.renderComponentHoverEffect(this.font, style, mouseX, mouseY);
-    }
-
-    private void renderScrollbar(GuiGraphics graphics) {
-        if (this.maxScroll <= 0) return;
-
-        int top = this.headerHeight;
-        int visibleHeight = panelBottom() - top;
-        int thumbHeight = Mth.clamp(visibleHeight * visibleHeight / (visibleHeight + this.maxScroll), 32, visibleHeight);
-        int thumbTop = top + (int) (this.scrollAmount * (visibleHeight - thumbHeight) / this.maxScroll);
-        int left = scrollbarLeft();
-
-        graphics.fill(left, top, left + SCROLLBAR_WIDTH, top + visibleHeight, 0xFF000000);
-        graphics.fill(left, thumbTop, left + SCROLLBAR_WIDTH, thumbTop + thumbHeight, 0xFF808080);
-        graphics.fill(left, thumbTop, left + SCROLLBAR_WIDTH - 1, thumbTop + thumbHeight - 1, 0xFFC0C0C0);
-    }
-
-    private int scrollbarLeft() {
-        return Math.min(this.width - SCROLLBAR_WIDTH - 4, (this.width + textWidth()) / 2 + 8);
-    }
-
-    @Nullable
-    private Style styleUnderMouse(double mouseX, double mouseY) {
-        if (this.headerTitle != null) {
-            Style style = this.headerTitle.styleAt(mouseX, mouseY);
-            if (style != null) return style;
-        }
-        if (mouseY < this.headerHeight || mouseY >= panelBottom()) return null;
-        for (TextBlock block : this.scrollingBlocks) {
-            Style style = block.styleAt(mouseX, mouseY + this.scrollAmount);
-            if (style != null) return style;
-        }
-        return null;
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (this.maxScroll > 0) {
-            setScrollAmount(this.scrollAmount - scrollY * SCROLL_RATE);
-            return true;
-        }
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0 && this.maxScroll > 0 && mouseX >= scrollbarLeft()
-                && mouseX < scrollbarLeft() + SCROLLBAR_WIDTH
-                && mouseY >= this.headerHeight && mouseY < panelBottom()) {
-            this.draggingScrollbar = true;
-            return true;
-        }
-        Style style = styleUnderMouse(mouseX, mouseY);
-        if (button == 0 && style != null && style.getClickEvent() != null) {
-            onComponentClicked(style);
-            return true;
-        }
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
-
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (this.draggingScrollbar) {
-            int visibleHeight = panelBottom() - this.headerHeight;
-            int thumbHeight = Mth.clamp(visibleHeight * visibleHeight / (visibleHeight + this.maxScroll), 32, visibleHeight);
-            setScrollAmount(this.scrollAmount + dragY * this.maxScroll / Math.max(1, visibleHeight - thumbHeight));
-            return true;
-        }
-        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
-    }
-
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        this.draggingScrollbar = false;
-        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public void onClose() {
         this.minecraft.setScreen(this.lastScreen);
+    }
+
+    private static class BodyPanel extends AbstractScrollWidget {
+
+        private final TextBlock content;
+        private final Consumer<Style> onStyleClicked;
+
+        BodyPanel(int x, int y, int width, int height, TextBlock content, Consumer<Style> onStyleClicked) {
+            super(x, y, width, height, content.getMessage());
+            this.content = content;
+            this.onStyleClicked = onStyleClicked;
+            content.setPosition(x + (width - content.getWidth()) / 2, y + this.innerPadding());
+        }
+
+        // the screen already drew the list panel here; the vanilla text box border would look out of place
+        @Override
+        protected void renderBackground(GuiGraphics graphics) {
+        }
+
+        @Override
+        protected int getInnerHeight() {
+            return this.content.getHeight();
+        }
+
+        @Override
+        protected double scrollRate() {
+            return 9.0;
+        }
+
+        @Override
+        protected void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            this.content.render(graphics, mouseX, mouseY, partialTick);
+        }
+
+        @Nullable
+        Style styleUnderMouse(double mouseX, double mouseY) {
+            if (!this.withinContentAreaPoint(mouseX, mouseY)) return null;
+            return this.content.styleAt(mouseX, mouseY + this.scrollAmount());
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (button == 0) {
+                Style style = styleUnderMouse(mouseX, mouseY);
+                if (style != null && style.getClickEvent() != null) {
+                    this.onStyleClicked.accept(style);
+                    return true;
+                }
+            }
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput output) {
+            output.add(NarratedElementType.TITLE, this.content.getMessage());
+        }
     }
 
     // Text widgets ship inactive, which makes mouseClicked bail before the link hit test. Activating one
