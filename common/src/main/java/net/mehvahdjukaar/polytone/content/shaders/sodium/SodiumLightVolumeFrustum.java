@@ -4,9 +4,6 @@ import net.caffeinemc.mods.sodium.client.render.viewport.frustum.Frustum;
 import net.mehvahdjukaar.polytone.content.shaders.ShadowCasterVolume;
 import org.joml.FrustumIntersection;
 
-// Adapts the shadow pass's caster volume to Sodium's culling Frustum, so the Sodium terrain replay is
-// narrowed by exactly the same test as the vanilla one. Sodium pre-subtracts the camera position from
-// every test coordinate, which is already the space the volume works in, so this is a plain forward.
 final class SodiumLightVolumeFrustum implements Frustum {
 
     private final ShadowCasterVolume volume;
@@ -17,7 +14,6 @@ final class SodiumLightVolumeFrustum implements Frustum {
         this.sectionRadius = sectionRadius;
     }
 
-    // Section tests get the section center; Sodium bakes the padded section radius in, so we do too.
     @Override
     public boolean testSection(float x, float y, float z) {
         return volume.intersects(x, y, z, sectionRadius, sectionRadius, sectionRadius);
@@ -37,7 +33,7 @@ final class SodiumLightVolumeFrustum implements Frustum {
 
     @Override
     public int intersectAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
-        // Report INTERSECT (never INSIDE) when visible so the tree traversal keeps testing children.
+        // never INSIDE, so the tree traversal keeps testing children
         return testAab(minX, minY, minZ, maxX, maxY, maxZ) ? FrustumIntersection.INTERSECT : FrustumIntersection.OUTSIDE;
     }
 }

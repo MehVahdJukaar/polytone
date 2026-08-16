@@ -17,9 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-// Persistent render targets from polytone/post_targets/<name>.json, kept across frames and sampled
-// by id through a post effect's target_samplers. Read only on 1.21.1: the old PostChain has no
-// framegraph to splice a write side into, so unlike on 1.21.11 a chain can't write into one.
+// Read only on 1.21.1: the old PostChain has no framegraph to splice a write side into, so unlike
+// on 1.21.11 a chain can't write into one.
 public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.TargetSpec> {
 
     record TargetSpec(Optional<Integer> width, Optional<Integer> height, boolean useDepth) {
@@ -71,23 +70,26 @@ public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.T
         return specs.isEmpty();
     }
 
-    // call once per frame; full-frame targets follow the window size
+    // call once per frame; targets without an explicit size follow the frame size
     public void ensureAllocated(int frameWidth, int frameHeight) {
         Map<ResourceLocation, TargetSpec> specs = this.specs;
         if (dirty) {
             destroyAll();
             for (var e : specs.entrySet()) {
-                TargetSpec s = e.getValue();
+                TargetSpec spec = e.getValue();
                 targets.put(e.getKey(), new TextureTarget(
-                        s.width().orElse(frameWidth), s.height().orElse(frameHeight), s.useDepth(), Minecraft.ON_OSX));
+                        spec.width().orElse(frameWidth), spec.height().orElse(frameHeight), spec.useDepth(), Minecraft.ON_OSX));
             }
             dirty = false;
         } else {
             for (var e : specs.entrySet()) {
-                TargetSpec s = e.getValue();
-                int w = s.width().orElse(frameWidth), h = s.height().orElse(frameHeight);
-                RenderTarget t = targets.get(e.getKey());
-                if (t != null && (t.width != w || t.height != h)) t.resize(w, h, Minecraft.ON_OSX);
+                TargetSpec spec = e.getValue();
+                int width = spec.width().orElse(frameWidth);
+                int height = spec.height().orElse(frameHeight);
+                RenderTarget target = targets.get(e.getKey());
+                if (target != null && (target.width != width || target.height != height)) {
+                    target.resize(width, height, Minecraft.ON_OSX);
+                }
             }
         }
     }
@@ -97,7 +99,7 @@ public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.T
     }
 
     private void destroyAll() {
-        for (RenderTarget t : targets.values()) t.destroyBuffers();
+        for (RenderTarget target : targets.values()) target.destroyBuffers();
         targets.clear();
     }
 }

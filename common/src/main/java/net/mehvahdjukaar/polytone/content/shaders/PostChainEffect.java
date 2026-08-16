@@ -118,10 +118,10 @@ public final class PostChainEffect {
         if (useShadowMap) {
             ShadowMapRenderer shadows = Polytone.SHADOWS.renderer();
             effect.safeGetUniform(SHADOW_MAT).set(shadows.getShadowMatrix());
-            var dir = shadows.getLightDir();
+            var dir = shadows.getTowardLight();
             effect.safeGetUniform(SHADOW_LIGHT_DIR).set(dir.x, dir.y, dir.z);
             // Camera fract, letting the pass snap camera-relative positions to a world-aligned block grid.
-            var fract = shadows.getCamFract();
+            var fract = shadows.getCameraFract();
             effect.safeGetUniform(SHADOW_CAM_FRACT).set(fract.x, fract.y, fract.z);
             effect.setSampler(SHADOW_SAMPLER, shadows::getShadowTextureId);
         }
