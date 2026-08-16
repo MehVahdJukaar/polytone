@@ -89,7 +89,7 @@ public abstract class PackSelectScreenMixin extends Screen {
                         b -> {
                             Polytone.CONFIGS.bubbleManager.onConfigButtonClicked();
                             Minecraft.getInstance().setScreen(
-                                    Polytone.CONFIGS.createScreen((PackSelectionScreen) (Object) this));
+                                    Polytone.CONFIGS.createScreenForPack((PackSelectionScreen) (Object) this));
                         },
                         true).width(buttonW)
                 .sprite(Polytone.res("paint_brush"), 16, 16).build();

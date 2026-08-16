@@ -41,5 +41,6 @@ dependencies {
     modRuntimeOnly("maven.modrinth:moonlight:M2v3yoSl")       // moonlight 1.21.1-3.1.0 (fabric)
     modRuntimeOnly("maven.modrinth:supplementaries:5pbVz5qU") // supplementaries 1.21.1-3.8.0 (fabric)
     // Mod Menu, fabric only
+    modCompileOnly("com.terraformersmc:modmenu:${modmenu_version}")
     modRuntimeOnly("com.terraformersmc:modmenu:${modmenu_version}")
 }

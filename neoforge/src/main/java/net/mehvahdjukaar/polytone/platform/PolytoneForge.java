@@ -25,6 +25,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.*;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
@@ -59,6 +60,9 @@ public class PolytoneForge {
             LOGGER.warn("Polytone has been installed on a server. This wont cause issues but mod wont do anything here as its a client mod");
         }
 
+        ModList.get().getModContainerById(Polytone.MOD_ID).ifPresent(container ->
+                container.registerExtensionPoint(IConfigScreenFactory.class, (modContainer, modListScreen) ->
+                        Polytone.CONFIGS.createScreenForMainMenu(modListScreen)));
     }
 
     //@SubscribeEvent

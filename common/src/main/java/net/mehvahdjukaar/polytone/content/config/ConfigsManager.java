@@ -112,14 +112,26 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
         return false;
     }
 
-    public Screen createScreen(PackSelectionScreen parent) {
+    public Screen createScreenForPack(PackSelectionScreen parent) {
         bubbleManager.onConfigOpened(hasPackConfigs());
         List<OptionHolder<?>> shown = shownOptions();
         return new ConfigScreen(parent, shown, () -> {
             if (shown.stream().noneMatch(OptionHolder::hasUnsavedChanges)) return;
             needsPackReload.set(true);
             saveConfigsToDisk(shown);
+            // reloading packs here too would make it a double reload
             parent.reload();
+        });
+    }
+
+    // for the mod list config buttons (neoforge mod menu, fabric mod menu), where there's no pack screen to reload
+    public Screen createScreenForMainMenu(Screen parent) {
+        bubbleManager.onConfigOpened(hasPackConfigs());
+        List<OptionHolder<?>> shown = shownOptions();
+        return new ConfigScreen(parent, shown, () -> {
+            if (shown.stream().noneMatch(OptionHolder::hasUnsavedChanges)) return;
+            saveConfigsToDisk(shown);
+            Minecraft.getInstance().reloadResourcePacks();
         });
     }
 
