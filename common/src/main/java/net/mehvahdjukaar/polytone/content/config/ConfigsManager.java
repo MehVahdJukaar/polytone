@@ -223,7 +223,10 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public void loadCurrentPackConfigs(PackResources packResources, PackType packType) {
         //gets called every time the pack repository list is updated
         if (packType != PackType.CLIENT_RESOURCES) return;
-        if (packResources.location().source() != PackSource.DEFAULT) return;
+        // server packs and world packs need this just as much as local ones (#372); only the
+        // vanilla/mod-provided packs are worth skipping, they can't carry config entries
+        PackSource source = packResources.location().source();
+        if (source == PackSource.BUILT_IN || source == PackSource.FEATURE) return;
         //this is overall still quite fast. we shouldnt't have overhead at all, not more than loading these normally
         MultiPackResourceManager resourceManager = new MultiPackResourceManager(packType, List.of(packResources));
 
