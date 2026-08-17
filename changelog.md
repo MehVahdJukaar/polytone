@@ -1,1 +1,2 @@
-- improved pack support screen and added mod menu compat
+- hacky port of exp driven blockstate models
+- new colormap property

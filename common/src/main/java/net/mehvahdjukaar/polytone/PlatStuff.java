@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
+import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -96,6 +97,11 @@ public class PlatStuff {
     @Contract
     @PlatformImpl
     public static ItemColor getItemColor(ItemColors colors, Item item) {
+        throw new AssertionError();
+    }
+
+    @PlatformImpl
+    public static BakedModel makeExpressionModel(ExpressionModel.Selector selector) {
         throw new AssertionError();
     }
 

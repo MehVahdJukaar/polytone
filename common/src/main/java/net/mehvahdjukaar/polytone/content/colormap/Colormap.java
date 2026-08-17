@@ -40,6 +40,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     private final boolean usesBiome;
     private final boolean usesPos;
     private final boolean usesState;
+    private final boolean usePlayerPosition;
 
     public boolean inlined = true;
     public ResourceLocation debugID = null;
@@ -64,7 +65,8 @@ public final class Colormap implements IColorGetter, ColorResolver {
             Codec.BOOL.optionalFieldOf("biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
             BiomeIdMapper.CODEC.optionalFieldOf("biome_id_mapper").forGetter(c -> Optional.of(c.biomeMapper)),
             ResourceLocation.CODEC.optionalFieldOf("texture_path").forGetter(c -> Optional.ofNullable(c.explicitTargetTexture)),
-            ColormapColorModulatorExpression.CODEC.optionalFieldOf("color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult))
+            ColormapColorModulatorExpression.CODEC.optionalFieldOf("color_modifier").forGetter(c -> Optional.ofNullable(c.colorMult)),
+            Codec.BOOL.optionalFieldOf("use_player_position", true).forGetter(c -> c.usePlayerPosition)
     ).apply(i, Colormap::new));
 
     public static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
@@ -96,8 +98,10 @@ public final class Colormap implements IColorGetter, ColorResolver {
 
     private Colormap(Optional<Integer> defaultColor, IColormapExp xGetter, IColormapExp yGetter,
                      boolean triangular, boolean rounds, Optional<Boolean> biomeBlend, Optional<BiomeIdMapper> biomeMapper,
-                     Optional<ResourceLocation> explicitTargetTexture, Optional<ColormapColorModulatorExpression> colorMult) {
+                     Optional<ResourceLocation> explicitTargetTexture, Optional<ColormapColorModulatorExpression> colorMult,
+                     boolean usePlayerPosition) {
         this.defaultColor = defaultColor.orElse(null);
+        this.usePlayerPosition = usePlayerPosition;
         this.xGetter = xGetter;
         this.yGetter = yGetter;
         this.triangular = triangular;

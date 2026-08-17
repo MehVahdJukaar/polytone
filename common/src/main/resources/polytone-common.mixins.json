@@ -38,6 +38,7 @@
     "MinecraftMixin",
     "ModelBakeryMixin",
     "MultiPlayerGameModeMixin",
+    "MultiVariantDeserializerMixin",
     "ModelBlockRendererMixin",
     "OptionsMixin",
     "OverlayMetadataSectionMixin",

@@ -24,6 +24,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
+import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBakedModel;
+import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
@@ -109,6 +111,10 @@ public class PlatStuffImpl {
     @org.jetbrains.annotations.Contract
     public static ItemColor getItemColor(ItemColors colors, Item item) {
         return ((ItemColorsAccessor) colors).getItemColors().byId(BuiltInRegistries.ITEM.getId(item));
+    }
+
+    public static BakedModel makeExpressionModel(ExpressionModel.Selector selector) {
+        return new ExpressionBakedModel(selector);
     }
 
     public static String maybeRemapName(String s) {

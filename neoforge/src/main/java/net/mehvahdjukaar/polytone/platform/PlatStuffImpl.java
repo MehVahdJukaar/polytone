@@ -8,6 +8,8 @@ import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.mixins.neoforge.*;
+import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBakedModel;
+import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.utils.Targets;
@@ -131,6 +133,10 @@ public class PlatStuffImpl {
 
     public static ItemColor getItemColor(ItemColors colors, Item item) {
         return ((ItemColorsAccessor) colors).getItemColors().get(item);
+    }
+
+    public static BakedModel makeExpressionModel(ExpressionModel.Selector selector) {
+        return new ExpressionBakedModel(selector);
     }
 
     public static String maybeRemapName(String s) {
