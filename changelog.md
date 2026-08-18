@@ -1,2 +1,1 @@
-- hacky port of exp driven blockstate models
-- new colormap property
+- added new extremely experiemntal gpu driven "particles" system
