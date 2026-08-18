@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-// One entry of the effect's events block. Events nest: a sequence runs its children in order, a randomize
-// picks one by weight, so this is recursive.
 public record BedrockEvent(Optional<EffectRef> particleEffect, Optional<SoundRef> soundEffect,
                            Optional<MolangExpr> expression, Optional<String> log,
                            Optional<Double> weight, List<BedrockEvent> sequence, List<BedrockEvent> randomize) {
@@ -17,7 +15,7 @@ public record BedrockEvent(Optional<EffectRef> particleEffect, Optional<SoundRef
     public static final Codec<List<String>> NAMES = Codec.withAlternative(
             Codec.STRING.listOf(), Codec.STRING.xmap(List::of, l -> l.getFirst()));
 
-    // Keyed by time in seconds (or by travelled distance in blocks, for the emitter variant)
+    // keyed by time in seconds, or by travelled distance in blocks for the emitter variant
     public static final Codec<Map<String, List<String>>> TIMELINE = Codec.unboundedMap(Codec.STRING, NAMES);
 
     public static final Codec<BedrockEvent> CODEC = Codec.recursive("BedrockEvent", self ->

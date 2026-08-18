@@ -3,9 +3,8 @@ package net.mehvahdjukaar.polytone.bedrock.model;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-// Identity and render setup of an effect. material stays a raw string on purpose: packs in the wild use
-// materials outside the documented three, and an unknown one should downgrade to a warning at conversion time
-// rather than fail the whole parse.
+// material stays a raw string: packs use materials outside the documented three, and an unknown one should warn
+// at conversion time instead of failing the parse
 public record BedrockDescription(String identifier, RenderParams renderParams) {
 
     public static final BedrockDescription UNNAMED =

@@ -20,6 +20,7 @@ out float sphericalVertexDistance;
 out float cylindricalVertexDistance;
 out vec2 texCoord0;
 out vec4 vertexColor;
+out vec4 debugRealColor;
 
 const float TAU = 6.2831853;
 
@@ -29,18 +30,42 @@ float hash(float seed, float salt) {
 
 void main() {
     int corner = gl_VertexID & 3;
+
+    // TEMP DEBUG: slot 0 = quad 3 blocks in front of the camera through the real matrices (magenta),
+    // slot 1 = quad sitting exactly on the record Origin (yellow). Both run before any record check.
+    int debugSlot = gl_VertexID >> 2;
+    if (debugSlot < 2) {
+        vec3 dRight = vec3(ModelViewMat[0][0], ModelViewMat[1][0], ModelViewMat[2][0]);
+        vec3 dUp = vec3(ModelViewMat[0][1], ModelViewMat[1][1], ModelViewMat[2][1]);
+        vec3 dFwd = -vec3(ModelViewMat[0][2], ModelViewMat[1][2], ModelViewMat[2][2]);
+        vec2 dcn = vec2((corner == 1 || corner == 2) ? 1.0 : -1.0, (corner >= 2) ? 1.0 : -1.0);
+        vec3 dBase = debugSlot == 0 ? dFwd * 3.0 : Origin;
+        vec3 dVert = dBase + dRight * dcn.x * 0.5 + dUp * dcn.y * 0.5;
+        gl_Position = ProjMat * ModelViewMat * vec4(dVert, 1.0);
+        vertexColor = debugSlot == 0 ? vec4(1.0, 0.0, 1.0, 2.0) : vec4(1.0, 1.0, 0.0, 2.0);
+        debugRealColor = vec4(1.0);
+        texCoord0 = vec2(0.5);
+        sphericalVertexDistance = 0.0;
+        cylindricalVertexDistance = 0.0;
+        return;
+    }
+
     float life = SpawnLife.y;
     float age = Time - SpawnLife.x;
-    if (life <= 0.0 || age < 0.0 || age >= life) {
+    // TEMP DEBUG: only empty slots collapse; live ones draw big and solid, coloured by the lightmap
+    bool debugExpired = age < 0.0 || age >= life;
+    if (life <= 0.0) {
         gl_Position = vec4(-2.0, -2.0, -2.0, 1.0);
         sphericalVertexDistance = 0.0;
         cylindricalVertexDistance = 0.0;
         vertexColor = vec4(0.0);
+        debugRealColor = vec4(0.0);
         texCoord0 = vec2(0.0);
         return;
     }
+    age = clamp(age, 0.0, max(life - 0.001, 0.0));
     float f = age / life;
-    float size0 = Params.x;
+    float size0 = 0.25;
     float roll0 = Params.y;
     float seed = Params.w;
 
@@ -101,7 +126,8 @@ void main() {
     if (Fade.y > 0.0) fade *= 1.0 - smoothstep(1.0 - Fade.y, 1.0, f);
 
     vec4 color = UseColorEnd == 1 ? mix(Color, ColorEnd, f) : Color;
-    vertexColor = color * texelFetch(Sampler2, UV2 / 16, 0) * vec4(1.0, 1.0, 1.0, fade);
+    debugRealColor = color * texelFetch(Sampler2, UV2 / 16, 0) * vec4(1.0, 1.0, 1.0, fade);
+    vertexColor = vec4(0.0, 0.0, 0.0, 2.0);
     sphericalVertexDistance = fog_spherical_distance(vert);
     cylindricalVertexDistance = fog_cylindrical_distance(vert);
     gl_Position = ProjMat * ModelViewMat * vec4(vert, 1.0);
