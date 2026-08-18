@@ -2,16 +2,14 @@ package net.mehvahdjukaar.polytone.bedrock;
 
 import org.apache.commons.lang3.StringUtils;
 
-// A single note about a conversion. where is the component id (or json path) the note came from, so the editor
-// can point the user at the thing that didn't survive the trip.
+// where is the component id or json path the note came from, so the editor can point at it
 public record Diagnostic(Level level, String where, String message) {
 
     public enum Level {
-        // Converted, but the author should know how
         INFO,
-        // Converted approximately, or dropped without breaking the result
+        // converted approximately, or dropped without breaking the result
         WARN,
-        // Could not be converted; the output is likely wrong or incomplete
+        // not converted, output is likely wrong
         ERROR
     }
 

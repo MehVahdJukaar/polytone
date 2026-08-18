@@ -14,11 +14,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// The color of particle_appearance_tinting, which Bedrock writes in three different shapes: an rgb(a) array,
-// an #AARRGGBB string, or a gradient driven by an interpolant.
+// particle_appearance_tinting color, written as an rgb(a) array, an #AARRGGBB string or a gradient
 public sealed interface BedrockColor {
 
-    // One colour. Gradient stops are these too, and packs mix the two spellings freely.
+    // gradient stops are these too, and packs mix both spellings freely
     Codec<BedrockColor> SOLID = Codec.withAlternative(
             BedrockCodecs.branch(Rgba.CODEC, Rgba.class),
             BedrockCodecs.branch(Hex.CODEC, Hex.class));
@@ -61,8 +60,7 @@ public sealed interface BedrockColor {
         }
     }
 
-    // Stops are keyed by their position along the interpolant. Bedrock also accepts a bare list, in which case
-    // they are spread evenly from 0 to 1.
+    // stops are keyed by position along the interpolant; a bare list spreads them evenly from 0 to 1
     record Gradient(List<Stop> stops, Optional<MolangExpr> interpolant) implements BedrockColor {
 
         private static final Codec<List<Stop>> KEYED_STOPS = Codec.unboundedMap(Codec.STRING, SOLID)

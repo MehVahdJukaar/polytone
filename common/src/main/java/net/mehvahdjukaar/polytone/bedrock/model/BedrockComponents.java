@@ -9,9 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
-// The raw components map, with the minecraft: prefix stripped off the keys. Values stay as Dynamic until
-// someone asks for a specific BedrockComponentType, so one unknown or malformed component degrades into a
-// diagnostic instead of failing the whole file.
+// Keys have the minecraft: prefix stripped. Values stay Dynamic until someone asks for a specific type, so a
+// broken component becomes a diagnostic instead of failing the whole file.
 public record BedrockComponents(Map<String, Dynamic<?>> raw) {
 
     public static final BedrockComponents EMPTY = new BedrockComponents(Map.of());
@@ -40,7 +39,6 @@ public record BedrockComponents(Map<String, Dynamic<?>> raw) {
         return parsed.result();
     }
 
-    // Flags every component we don't model, so nothing goes missing silently
     public void reportUnknown(DiagnosticSink sink) {
         for (String key : raw.keySet()) {
             if (!BedrockComponentTypes.isKnown(key)) {

@@ -7,9 +7,8 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleType;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleRenderMode;
 
-// Builds a polytone/custom_particles/*.json. Keeping the field names in one class means the converter never
-// spells them out, and validate() runs the result back through the real loading codec - the whole reason this
-// importer lives in the mod instead of in a separate tool.
+// Builds a polytone/custom_particles json. validate() runs it back through the real loading codec, which is why
+// the importer lives in the mod and not in a separate tool.
 public class PolytoneParticleJson {
 
     private final JsonObject root = new JsonObject();
@@ -68,13 +67,13 @@ public class PolytoneParticleJson {
         return this;
     }
 
-    // A field of the initializer: evaluated once, when the particle is born
+    // evaluated once, when the particle is born
     public PolytoneParticleJson init(String key, String expression) {
         initializer.addProperty(key, expression);
         return this;
     }
 
-    // A field of the ticker: re-evaluated every tick
+    // re-evaluated every tick
     public PolytoneParticleJson tick(String key, String expression) {
         ticker.addProperty(key, expression);
         return this;
