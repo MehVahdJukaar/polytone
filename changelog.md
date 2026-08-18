@@ -1,1 +1,3 @@
+- added new extremely experiemntal gpu driven "particles" system
 - attribute mods addition can adopt biome blend
+- item colormaps can opt out of sampling at the player position (use_player_position)

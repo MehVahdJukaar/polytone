@@ -80,6 +80,26 @@ public class LevelRendererMixin {
         Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(gpuBufferSlice, camera, modelView, cullingProjection);
     }
 
+    // Own pass right after vanilla's particles one, on the same target, so gpu particles land in the
+    // world with depth and fog like any other particle.
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addParticlesPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V",
+            shift = At.Shift.AFTER))
+    public void poly$addGpuParticlesPass(GraphicsResourceAllocator graphicsResourceAllocator,
+                                         DeltaTracker deltaTracker,
+                                         boolean bl,
+                                         Camera camera,
+                                         Matrix4f modelView,
+                                         Matrix4f project,
+                                         Matrix4f cullingProjection,
+                                         GpuBufferSlice shaderFog,
+                                         Vector4f vector4f,
+                                         boolean bl2, CallbackInfo ci,
+                                         @Local FrameGraphBuilder frameGraphBuilder) {
+        Polytone.GPU_PARTICLES.addRenderPass(frameGraphBuilder, this.targets, shaderFog,
+                this.levelRenderState.cameraRenderState.pos, this.levelRenderState.gameTime,
+                deltaTracker.getGameTimeDeltaPartialTick(false));
+    }
+
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addLateDebugPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/state/CameraRenderState;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Matrix4f;)V",
     shift = At.Shift.BEFORE))
     public void poly$addPostShaders(GraphicsResourceAllocator graphicsResourceAllocator,
