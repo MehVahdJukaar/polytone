@@ -197,8 +197,9 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
         return customParticleFactories;
     }
 
+    // GPU particle types too: same dynamic registration, same emitter overrides
     public boolean isDynamicParticle(Identifier entryId) {
-        return customParticleFactories.containsKey(entryId);
+        return customParticleFactories.containsKey(entryId) || Polytone.GPU_PARTICLES.isGpuParticle(entryId);
     }
 
     @Nullable

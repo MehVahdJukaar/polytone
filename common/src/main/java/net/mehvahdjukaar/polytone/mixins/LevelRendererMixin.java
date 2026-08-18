@@ -64,6 +64,25 @@ public class LevelRendererMixin {
                 modelViewMatrix, cameraState.projectionMatrix);
     }
 
+    // Own pass right after the main one, on the particles target, so gpu particles land in the
+    // world with depth and fog like any other particle.
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addMainPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher$PreparedFrame;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/util/profiling/ProfilerFiller;Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;)V",
+            shift = At.Shift.AFTER))
+    public void poly$addGpuParticlesPass(GraphicsResourceAllocator resourceAllocator,
+                                         DeltaTracker deltaTracker,
+                                         boolean renderOutline,
+                                         CameraRenderState cameraState,
+                                         Matrix4fc modelViewMatrix,
+                                         GpuBufferSlice terrainFog,
+                                         Vector4f fogColor,
+                                         boolean shouldRenderSky,
+                                         CallbackInfo ci,
+                                         @Local FrameGraphBuilder frameGraphBuilder) {
+        Polytone.GPU_PARTICLES.addRenderPass(frameGraphBuilder, this.targets, terrainFog,
+                this.levelRenderState.cameraRenderState.pos, this.levelRenderState.gameTime,
+                deltaTracker.getGameTimeDeltaPartialTick(false));
+    }
+
     // 26.2: addLateDebugPass(...) was removed; inject our post passes into the frame graph right before it executes.
     @Inject(method = "render", at = @At(value = "INVOKE",
             target = "Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;execute(Lcom/mojang/blaze3d/resource/GraphicsResourceAllocator;Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder$Inspector;)V",

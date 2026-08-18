@@ -29,6 +29,13 @@ public interface IBlockExp {
             SchemaCodecs.alt("expression", BlockExp.TYPE.codec()),
             SchemaCodecs.alt("legacy expression", BlockContextExpression.CODEC)));
 
+    Codec<IBlockExp> MVEL_CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.alternatives(
+                    CodecUtils.LENIENT_DOUBLE.xmap(IBlockExp::constant, i -> 0.0),
+                    BlockExp.TYPE.codec()),
+            SchemaCodecs.alt("constant", Codec.DOUBLE),
+            SchemaCodecs.alt("expression", BlockExp.TYPE.codec())));
+
     double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state);
 
     // Variant that binds v, an externally supplied value (e.g. an expression-driven model selector's result).
@@ -37,8 +44,12 @@ public interface IBlockExp {
         return evaluate(level, pos, state);
     }
 
-    IBlockExp ZERO = (a, b, c) -> 0.0;
-    IBlockExp ONE = (a, b, c) -> 1.0;
+    static IBlockExp constant(double value) {
+        return (level, pos, state) -> value;
+    }
+
+    IBlockExp ZERO = constant(0.0);
+    IBlockExp ONE = constant(1.0);
     IBlockExp PARTICLE_RAND = (a, b, c) -> (Math.random() * 2 - 1) * 0.4;
 
 }
