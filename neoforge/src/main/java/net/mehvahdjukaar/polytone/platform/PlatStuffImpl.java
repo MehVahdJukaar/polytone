@@ -44,6 +44,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
@@ -73,6 +74,7 @@ import org.joml.Vector3f;
 import sereneseasons.api.season.SeasonHelper;
 
 import java.lang.reflect.Field;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -385,6 +387,10 @@ public class PlatStuffImpl {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static ShaderInstance createShader(ResourceProvider provider, ResourceLocation id, VertexFormat format) throws IOException {
+        return new ShaderInstance(provider, id, format);
     }
 
     public static void registerShaders(ResourceLocation id, VertexFormat format, Consumer<ShaderInstance> shaderConsumer) {

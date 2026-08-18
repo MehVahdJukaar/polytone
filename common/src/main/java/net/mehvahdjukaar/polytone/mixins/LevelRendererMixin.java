@@ -58,6 +58,9 @@ public class LevelRendererMixin {
                                             net.minecraft.client.renderer.LightTexture lightTexture,
                                             org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
                                             CallbackInfo ci) {
+        // every pass, so mirrors and portals get them too; before the depth snapshot on purpose
+        Polytone.GPU_PARTICLES.render(camera, gameRenderer, lightTexture, frustumMatrix, projectionMatrix,
+                deltaTracker.getGameTimeDeltaPartialTick(false));
         // Only for the pass that reaches the screen. A mirror or TV feed rendering the world into its
         // own canvas gets here too, and nothing it draws samples either of these (see LevelRenderPass).
         if (!LevelRenderPass.popAndWasMain()) return;

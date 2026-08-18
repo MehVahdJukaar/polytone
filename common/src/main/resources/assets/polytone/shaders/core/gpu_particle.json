@@ -1,0 +1,35 @@
+{
+    "vertex": "polytone:gpu_particle",
+    "fragment": "polytone:gpu_particle",
+    "attributes": [
+        "Position"
+    ],
+    "samplers": [
+        { "name": "Sampler0" },
+        { "name": "Sampler2" }
+    ],
+    "uniforms": [
+        { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+        { "name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+        { "name": "ColorModulator", "type": "float", "count": 4, "values": [ 1.0, 1.0, 1.0, 1.0 ] },
+        { "name": "FogStart", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "FogEnd", "type": "float", "count": 1, "values": [ 1.0 ] },
+        { "name": "FogColor", "type": "float", "count": 4, "values": [ 0.0, 0.0, 0.0, 0.0 ] },
+        { "name": "FogShape", "type": "int", "count": 1, "values": [ 0 ] },
+        { "name": "Origin", "type": "float", "count": 3, "values": [ 0.0, 0.0, 0.0 ] },
+        { "name": "Time", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "Gravity", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "Drag", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "SizeEnd", "type": "float", "count": 1, "values": [ -1.0 ] },
+        { "name": "UseColorEnd", "type": "int", "count": 1, "values": [ 0 ] },
+        { "name": "ColorEnd", "type": "float", "count": 4, "values": [ 1.0, 1.0, 1.0, 1.0 ] },
+        { "name": "Fade", "type": "float", "count": 2, "values": [ 0.0, 0.0 ] },
+        { "name": "Sway", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "Spin", "type": "float", "count": 1, "values": [ 0.0 ] },
+        { "name": "Aspect", "type": "float", "count": 1, "values": [ 1.0 ] },
+        { "name": "Billboard", "type": "int", "count": 1, "values": [ 0 ] },
+        { "name": "Frames", "type": "int", "count": 1, "values": [ 1 ] },
+        { "name": "RandomSprite", "type": "int", "count": 1, "values": [ 0 ] },
+        { "name": "AlphaCutoff", "type": "float", "count": 1, "values": [ 0.1 ] }
+    ]
+}

@@ -22,6 +22,7 @@ import net.mehvahdjukaar.polytone.content.global_expressions.GlobalExpressionsMa
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.ParticleModifiersManager;
+import net.mehvahdjukaar.polytone.content.particle.gpu.GpuParticlesManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.content.sound.SoundTypesManager;
@@ -78,6 +79,7 @@ public class Polytone {
     public static final DimensionEffectsManager DIMENSION_MODIFIERS = new DimensionEffectsManager();
     public static final CustomParticlesManager CUSTOM_PARTICLES = new CustomParticlesManager();
     public static final ParticleModifiersManager PARTICLE_MODIFIERS = new ParticleModifiersManager();
+    public static final GpuParticlesManager GPU_PARTICLES = new GpuParticlesManager();
     public static final EntityModifiersManager ENTITY_MODIFIERS = new EntityModifiersManager();
     public static final SoundTypesManager SOUND_TYPES = new SoundTypesManager();
     public static final VariantTextureManager VARIANT_TEXTURES = new VariantTextureManager();
@@ -108,7 +110,7 @@ public class Polytone {
         // used by everything else, so they must be up to date before any other reloader parses.
         COMPOUND_RELOADER = new CompoundReloader(
                 CONFIGS,
-                NOISES, GLOBAL_EXPRESSION, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
+                NOISES, GLOBAL_EXPRESSION, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, GPU_PARTICLES, COLORS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,

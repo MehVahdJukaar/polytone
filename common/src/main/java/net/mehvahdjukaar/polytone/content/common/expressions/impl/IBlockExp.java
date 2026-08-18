@@ -38,10 +38,23 @@ public interface IBlockExp {
             SchemaCodecs.alt("legacy expression", BlockContextExpression.CODEC))
     );
 
+    // for new systems: constant or MVEL only, no exp4j legacy branch
+    Codec<IBlockExp> MVEL_CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.alternatives(
+                    CodecUtils.LENIENT_DOUBLE.xmap(IBlockExp::constant, i -> 0.0),
+                    BlockExp.TYPE.codec()),
+            SchemaCodecs.alt("constant", Codec.DOUBLE),
+            SchemaCodecs.alt("expression", BlockExp.TYPE.codec()))
+    );
+
     double evaluate(LevelReader level, Vec3 pos, @Nullable BlockState state);
 
-    IBlockExp ZERO = (a, b, c) -> 0.0;
-    IBlockExp ONE = (a, b, c) -> 1.0;
+    static IBlockExp constant(double value) {
+        return (level, pos, state) -> value;
+    }
+
+    IBlockExp ZERO = constant(0.0);
+    IBlockExp ONE = constant(1.0);
     IBlockExp PARTICLE_RAND = (a, b, c) -> (Math.random() * 2 - 1) * 0.4;
 
 }

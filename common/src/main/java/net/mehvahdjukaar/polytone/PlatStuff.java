@@ -21,6 +21,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
@@ -33,6 +34,7 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
 import org.joml.Vector3f;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -266,6 +268,12 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+
+    // core shader by namespaced id; vanilla's String constructor only takes minecraft-namespace names
+    @PlatformImpl
+    public static ShaderInstance createShader(ResourceProvider provider, ResourceLocation id, VertexFormat format) throws IOException {
+        throw new AssertionError();
+    }
 
     @PlatformImpl
     public static void registerShaders(ResourceLocation event, VertexFormat format,
