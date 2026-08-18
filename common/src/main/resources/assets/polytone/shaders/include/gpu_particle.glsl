@@ -19,6 +19,12 @@ layout(std140) uniform ParticleInfo {
     int RandomSprite;
     int UseColorEnd;
     vec4 ColorEnd;
+    vec4 HeightmapInfo; // xy: heightmap origin (xz) relative to the camera, z: size in blocks, w: world minY
+    vec4 AreaSize;      // xyz: box one spawn spreads over
+    float CameraY;
+    int KillBelowHeightmap;
+    int AreaCount;      // quads per spawn
+    float _pad;
 };
 
 #define Origin (OriginTime.xyz)

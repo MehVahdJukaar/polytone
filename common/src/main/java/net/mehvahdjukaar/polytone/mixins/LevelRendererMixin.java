@@ -95,7 +95,7 @@ public class LevelRendererMixin {
                                          Vector4f vector4f,
                                          boolean bl2, CallbackInfo ci,
                                          @Local FrameGraphBuilder frameGraphBuilder) {
-        Polytone.GPU_PARTICLES.addRenderPass(frameGraphBuilder, this.targets, shaderFog,
+        Polytone.CUSTOM_PARTICLES.gpuParticles.addRenderPass(frameGraphBuilder, this.targets, shaderFog,
                 this.levelRenderState.cameraRenderState.pos, this.levelRenderState.gameTime,
                 deltaTracker.getGameTimeDeltaPartialTick(false));
     }
