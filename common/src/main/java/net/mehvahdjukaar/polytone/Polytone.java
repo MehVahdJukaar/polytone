@@ -28,6 +28,7 @@ import net.mehvahdjukaar.polytone.content.model.CustomModelsManager;
 import net.mehvahdjukaar.polytone.content.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
+import net.mehvahdjukaar.polytone.content.particle.gpu.GpuParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostChainsManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostTargetsManager;
@@ -88,6 +89,7 @@ public class Polytone {
     public static final BiomeIdMapperManager BIOME_ID_MAPPERS = new BiomeIdMapperManager();
     public static final DimensionEffectsManager DIMENSION_MODIFIERS = new DimensionEffectsManager();
     public static final CustomParticlesManager CUSTOM_PARTICLES = new CustomParticlesManager();
+    public static final GpuParticlesManager GPU_PARTICLES = new GpuParticlesManager();
     public static final ParticleModifiersManager PARTICLE_MODIFIERS = new ParticleModifiersManager();
     public static final EntityModifiersManager ENTITY_MODIFIERS = new EntityModifiersManager();
     public static final SoundTypesManager SOUND_TYPES = new SoundTypesManager();
@@ -104,7 +106,7 @@ public class Polytone {
 
     public static final List<ContentManager<?>> MANAGERS = List.of(
             CONFIGS, GLOBAL_EXPRESSION,
-            NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS,
+            NOISES, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, GPU_PARTICLES, COLORS,
             BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
             BIOME_MODIFIERS, LIGHTMAPS,
             DIMENSION_MODIFIERS, POST_TARGETS, POST_CHAINS, SHADOWS, SHADER_EFFECTS,

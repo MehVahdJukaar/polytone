@@ -280,6 +280,9 @@ public final class Colormap implements IColorGetter, ColorResolver {
     //for items
     @Override
     public int getItemColor(ItemStack itemStack, int i) {
+        // items have no position so we sample where the player stands. with use_player_position off we
+        // instead act like vanilla does for grass/leaves items and give a fixed color
+        if (!usePlayerPosition && usesPos) return defaultColor;
         Vec3 pos = null;
         Biome biome = null;
         var level = Minecraft.getInstance().level;

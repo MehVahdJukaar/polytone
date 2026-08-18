@@ -81,6 +81,26 @@ public class LevelRendererMixin {
                 modelViewMatrix, cameraState.projectionMatrix);
     }
 
+    // Own pass right after the main one, on the particles target, so gpu particles land in the
+    // world with depth and fog like any other particle.
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addMainPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/culling/Frustum;Lorg/joml/Matrix4fc;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;ZLnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/util/profiling/ProfilerFiller;Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;)V",
+            shift = At.Shift.AFTER))
+    public void poly$addGpuParticlesPass(GraphicsResourceAllocator resourceAllocator,
+                                         DeltaTracker deltaTracker,
+                                         boolean renderOutline,
+                                         CameraRenderState cameraState,
+                                         Matrix4fc modelViewMatrix,
+                                         GpuBufferSlice terrainFog,
+                                         Vector4f fogColor,
+                                         boolean shouldRenderSky,
+                                         ChunkSectionsToRender chunkSectionsToRender,
+                                         CallbackInfo ci,
+                                         @Local FrameGraphBuilder frameGraphBuilder) {
+        Polytone.GPU_PARTICLES.addRenderPass(frameGraphBuilder, this.targets, terrainFog,
+                this.levelRenderState.cameraRenderState.pos, this.levelRenderState.gameTime,
+                deltaTracker.getGameTimeDeltaPartialTick(false));
+    }
+
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addLateDebugPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Matrix4fc;)V",
             shift = At.Shift.BEFORE))
     public void poly$addPostShaders(GraphicsResourceAllocator resourceAllocator,
