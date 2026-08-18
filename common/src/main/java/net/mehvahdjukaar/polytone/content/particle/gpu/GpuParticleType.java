@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.gpu;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -11,6 +11,7 @@ import net.mehvahdjukaar.polytone.content.particle.custom.ParticleRenderMode;
 import net.mehvahdjukaar.polytone.content.particle.custom.RotationMode;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Map;
@@ -33,19 +34,14 @@ public record GpuParticleType(Identifier texture,
                               float aspect,
                               int frames,
                               boolean randomSprite,
+                              Optional<Area> area,
+                              boolean killBelowHeightmap,
                               Map<String, ISimpleExp> uniforms) {
 
     public static final Identifier DEFAULT_SHADER = Polytone.res("gpu_particle");
     public static final int MAX_LIMIT = 1_000_000;
 
-    public static final String TYPE_KEY = "type";
-    public static final String TYPE_VALUE = "gpu";
-    // discriminator that tells the custom particle codec to come here, always written back
-    private static final Codec<String> TYPE_TAG = Codec.STRING.validate(s -> s.equals(TYPE_VALUE)
-            ? DataResult.success(s) : DataResult.error(() -> "expected \"" + TYPE_VALUE + "\""));
-
     public static final SchemaCodec<GpuParticleType> CODEC = SchemaRecord.create(GpuParticleType.class, i -> i.group(
-            i.field(TYPE_KEY, TYPE_TAG, t -> TYPE_VALUE),
             i.field("texture", Identifier.CODEC, GpuParticleType::texture),
             i.optional("shader", Identifier.CODEC, DEFAULT_SHADER, GpuParticleType::shader),
             i.optional("limit", Codec.intRange(1, MAX_LIMIT), 16384, GpuParticleType::limit),
@@ -63,11 +59,22 @@ public record GpuParticleType(Identifier texture,
             i.optional("aspect", ExtraCodecs.POSITIVE_FLOAT, 1f, GpuParticleType::aspect),
             i.optional("frames", ExtraCodecs.POSITIVE_INT, 1, GpuParticleType::frames),
             i.optional("random_sprite", Codec.BOOL, false, GpuParticleType::randomSprite),
+            i.optional("area", Area.CODEC, GpuParticleType::area),
+            i.optional("kill_below_heightmap", Codec.BOOL, false, GpuParticleType::killBelowHeightmap),
             i.optional("uniforms", Codec.unboundedMap(Codec.STRING, ISimpleExp.CODEC), Map.of(), GpuParticleType::uniforms)
-    ).apply(i, (tag, texture, shader, limit, renderType, rotationMode, lightLevel, initializer, gravity, friction,
-                sizeEnd, colorEnd, fade, sway, spin, aspect, frames, randomSprite, uniforms) ->
-            new GpuParticleType(texture, shader, limit, renderType, rotationMode, lightLevel, initializer, gravity, friction,
-                    sizeEnd, colorEnd, fade, sway, spin, aspect, frames, randomSprite, uniforms)));
+    ).apply(i, GpuParticleType::new));
+
+    // one spawn becomes count quads spread over a size box around the spawn point
+    public record Area(Vec3 size, int count) {
+        public static final Codec<Area> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Vec3.CODEC.fieldOf("size").forGetter(Area::size),
+                Codec.intRange(1, 1024).fieldOf("count").forGetter(Area::count)
+        ).apply(i, Area::new));
+    }
+
+    public int quadsPerSpawn() {
+        return area.map(Area::count).orElse(1);
+    }
 
     public record Fade(float in, float out) {
         public static final Codec<Fade> CODEC = Codec.floatRange(0, 1).listOf(2, 2)
