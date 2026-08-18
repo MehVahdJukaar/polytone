@@ -10,8 +10,7 @@ import net.mehvahdjukaar.polytone.bedrock.model.BedrockParticleFile;
 
 import java.util.List;
 
-// Entry point of the Bedrock particle importer. Nothing here runs during a resource reload: it is meant to be
-// driven by an editor action or a dev command that writes ConversionResult#files() into a pack.
+// Not part of a resource reload. Driven by an editor action or dev command that writes the result files into a pack.
 public class BedrockParticleImporter {
 
     public static DataResult<BedrockParticleFile> parse(JsonElement json) {

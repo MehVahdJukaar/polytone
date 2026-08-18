@@ -8,8 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-// The direction every emitter shape carries: either the keyword inwards/outwards (relative to the shape's own
-// surface) or an explicit vector.
+// either the keyword inwards/outwards, relative to the shape's own surface, or an explicit vector
 public record BedrockShapeDirection(Mode mode, @Nullable MolangExpr.Vec3 custom) {
 
     public static final BedrockShapeDirection OUTWARDS = new BedrockShapeDirection(Mode.OUTWARDS, null);

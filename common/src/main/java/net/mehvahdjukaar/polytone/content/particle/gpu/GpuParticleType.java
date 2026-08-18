@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.gpu;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -37,7 +38,14 @@ public record GpuParticleType(Identifier texture,
     public static final Identifier DEFAULT_SHADER = Polytone.res("gpu_particle");
     public static final int MAX_LIMIT = 1_000_000;
 
+    public static final String TYPE_KEY = "type";
+    public static final String TYPE_VALUE = "gpu";
+    // discriminator that tells the custom particle codec to come here, always written back
+    private static final Codec<String> TYPE_TAG = Codec.STRING.validate(s -> s.equals(TYPE_VALUE)
+            ? DataResult.success(s) : DataResult.error(() -> "expected \"" + TYPE_VALUE + "\""));
+
     public static final SchemaCodec<GpuParticleType> CODEC = SchemaRecord.create(GpuParticleType.class, i -> i.group(
+            i.field(TYPE_KEY, TYPE_TAG, t -> TYPE_VALUE),
             i.field("texture", Identifier.CODEC, GpuParticleType::texture),
             i.optional("shader", Identifier.CODEC, DEFAULT_SHADER, GpuParticleType::shader),
             i.optional("limit", Codec.intRange(1, MAX_LIMIT), 16384, GpuParticleType::limit),
@@ -56,7 +64,10 @@ public record GpuParticleType(Identifier texture,
             i.optional("frames", ExtraCodecs.POSITIVE_INT, 1, GpuParticleType::frames),
             i.optional("random_sprite", Codec.BOOL, false, GpuParticleType::randomSprite),
             i.optional("uniforms", Codec.unboundedMap(Codec.STRING, ISimpleExp.CODEC), Map.of(), GpuParticleType::uniforms)
-    ).apply(i, GpuParticleType::new));
+    ).apply(i, (tag, texture, shader, limit, renderType, rotationMode, lightLevel, initializer, gravity, friction,
+                sizeEnd, colorEnd, fade, sway, spin, aspect, frames, randomSprite, uniforms) ->
+            new GpuParticleType(texture, shader, limit, renderType, rotationMode, lightLevel, initializer, gravity, friction,
+                    sizeEnd, colorEnd, fade, sway, spin, aspect, frames, randomSprite, uniforms)));
 
     public record Fade(float in, float out) {
         public static final Codec<Fade> CODEC = Codec.floatRange(0, 1).listOf(2, 2)

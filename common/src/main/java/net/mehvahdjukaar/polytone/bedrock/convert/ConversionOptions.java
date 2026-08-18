@@ -5,9 +5,6 @@ import net.mehvahdjukaar.polytone.bedrock.molang.MolangTranslator;
 
 import java.util.Locale;
 
-// namespace of the generated particles, also the pack folder they land in file name of the generated particle,
-// without extension how Molang source becomes a Polytone expression run the generated json back through
-// CustomParticleType.CODEC
 public record ConversionOptions(String namespace, String path, MolangTranslator translator, boolean validate) {
 
     public static ConversionOptions of(String namespace, String path) {
@@ -42,7 +39,7 @@ public record ConversionOptions(String namespace, String path, MolangTranslator 
         return namespace + ":" + path + "_emitter";
     }
 
-    // Identifiers only accept a narrow character set, and Bedrock names are not held to it
+    // Bedrock names are not held to the character set an identifier accepts
     private static String sanitize(String raw) {
         StringBuilder out = new StringBuilder(raw.length());
         for (char c : raw.toLowerCase(Locale.ROOT).toCharArray()) {

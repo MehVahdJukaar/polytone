@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-// The particle_* half of the component list: what an individual particle looks like, how it moves once it
-// exists, and when it dies.
 public class ParticleComponents {
 
     public record Initialization(Optional<MolangExpr> creationExpression,
@@ -22,7 +20,7 @@ public class ParticleComponents {
         ).apply(i, Initialization::new));
     }
 
-    // Speed along the direction the emitter shape handed out. Bedrock accepts a scalar or a vector.
+    // speed along the direction the emitter shape handed out; scalar or vector
     public record InitialSpeed(Optional<MolangExpr> scalar, Optional<MolangExpr.Vec3> vector) {
         public static final Codec<InitialSpeed> CODEC = Codec.withAlternative(
                 MolangExpr.Vec3.CODEC.xmap(v -> new InitialSpeed(Optional.empty(), Optional.of(v)),
@@ -53,7 +51,7 @@ public class ParticleComponents {
         ).apply(i, MotionDynamic::new));
     }
 
-    // Position driven directly, relative to the emitter, instead of by forces
+    // position driven directly, relative to the emitter, instead of by forces
     public record MotionParametric(MolangExpr.Vec3 relativePosition, Optional<MolangExpr.Vec3> direction,
                                    MolangExpr rotation) {
         public static final Codec<MotionParametric> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -95,7 +93,6 @@ public class ParticleComponents {
                 Uv.CODEC.optionalFieldOf("uv").forGetter(AppearanceBillboard::uv)
         ).apply(i, AppearanceBillboard::new));
 
-        // Frame count of the flipbook animation, when there is one, as written in the file
         public Optional<String> flipbookFrames() {
             return uv.flatMap(Uv::flipbook).map(f -> f.maxFrame().source());
         }
@@ -108,7 +105,7 @@ public class ParticleComponents {
             ).apply(i, Direction::new));
         }
 
-        // The rect of the effect's texture this particle draws, in pixels
+        // rect of the effect's texture this particle draws, in pixels
         public record Uv(double textureWidth, double textureHeight, MolangExpr.Vec2 uv, MolangExpr.Vec2 uvSize,
                          Optional<Flipbook> flipbook) {
             public static final Codec<Uv> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -167,7 +164,7 @@ public class ParticleComponents {
         ).apply(i, AppearanceTinting::new));
     }
 
-    // Marker component: the particle is tinted by the light level at its position
+    // marker component: the particle is tinted by the light level at its position
     public record AppearanceLighting() {
         public static final Codec<AppearanceLighting> CODEC =
                 RecordCodecBuilder.create(i -> i.point(new AppearanceLighting()));
@@ -190,7 +187,7 @@ public class ParticleComponents {
         ).apply(i, LifetimeEvents::new));
     }
 
-    // [a, b, c, d] of the plane equation; particles crossing to the negative side expire
+    // [a, b, c, d] of the plane equation, particles crossing to the negative side expire
     public record KillPlane(double a, double b, double c, double d) {
         public static final Codec<KillPlane> CODEC = Codec.DOUBLE.listOf().comapFlatMap(
                 list -> list.size() == 4

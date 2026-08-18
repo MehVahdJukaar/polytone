@@ -3,13 +3,10 @@ package net.mehvahdjukaar.polytone.bedrock.model;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 
-// Union helpers for the Bedrock model. Deliberately plain DFU rather than SchemaCodecs: these codecs describe
-// a foreign format that is only ever read, so labelling their branches for the pack editor would be dead
-// weight.
+// Plain DFU on purpose, not SchemaCodecs: this format is only ever read, never shown in the pack editor.
 public class BedrockCodecs {
 
-    // Widens a branch codec to the union type. Encoding fails cleanly on a foreign subtype instead of throwing
-    // a ClassCastException, which matters because these unions are otherwise write-only.
+    // encoding a foreign subtype fails cleanly instead of throwing a ClassCastException
     public static <T extends U, U> Codec<U> branch(Codec<T> codec, Class<T> type) {
         return codec.flatComapMap(
                 value -> value,

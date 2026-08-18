@@ -15,13 +15,14 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
+import net.mehvahdjukaar.polytone.content.particle.custom.ICustomParticleFactory;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleRenderMode;
 import net.mehvahdjukaar.polytone.content.particle.custom.RotationMode;
 import net.mehvahdjukaar.polytone.content.shaders.ExpressionUniformBuffers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.BlockPos;
@@ -35,21 +36,21 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 
-public final class GpuParticleRenderer implements ParticleProvider<ParticleOptions>, AutoCloseable {
+public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCloseable {
 
     // vanilla ADDITIVE is (ONE, ONE); particles want the source alpha to fade the add out
     private static final BlendFunction ADDITIVE_PARTICLE_BLEND = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE);
 
     private static final int INFO_UBO_SIZE = new Std140SizeCalculator()
-            .putVec3().putFloat()
+            .putVec4()
             .putFloat().putFloat().putFloat().putFloat()
             .putFloat().putFloat().putFloat().putInt()
             .putVec2().putInt().putInt()
             .putInt().putVec4()
             .get();
 
-    private final Identifier id;
-    private final String debugLabel;
+    private Identifier id = Polytone.res("unnamed");
+    private String debugLabel = "Polytone gpu particle";
     private final GpuParticleType type;
     private final GpuParticleBuffer records;
     private final ExpressionUniformBuffers customUniforms;
@@ -57,19 +58,41 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
     private @Nullable RenderPipeline pipeline;
     private @Nullable GpuBuffer infoUbo;
     private boolean shaderFailed = false;
+    private boolean closed = false;
     // resolved in prepare: both of these can upload or grow GPU storage, which a render pass forbids
     private @Nullable GpuTextureView texture;
     private @Nullable GpuBuffer indexBuffer;
     private VertexFormat.IndexType indexType = VertexFormat.IndexType.SHORT;
     private int indexCount;
-    private int debugFrames = 0;
 
-    public GpuParticleRenderer(Identifier id, GpuParticleType type) {
-        this.id = id;
-        this.debugLabel = "Polytone gpu particle " + id;
+    public GpuParticleRenderer(GpuParticleType type) {
         this.type = type;
         this.records = new GpuParticleBuffer(type.limit());
         this.customUniforms = new ExpressionUniformBuffers(type.uniforms());
+    }
+
+    public GpuParticleType type() {
+        return type;
+    }
+
+    public void setId(Identifier id) {
+        this.id = id;
+        this.debugLabel = "Polytone gpu particle " + id;
+    }
+
+    @Override
+    public void setSpriteSet(SpriteSet spriteSet) {
+        // sprites still come from the texture field; the atlas sprite set is not read yet
+    }
+
+    @Override
+    public boolean isValid() {
+        return !closed;
+    }
+
+    @Override
+    public boolean forceSpawns() {
+        return false;
     }
 
     @Override
@@ -141,10 +164,6 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
         RenderSystem.AutoStorageIndexBuffer sequential = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
         indexBuffer = sequential.getBuffer(indexCount);
         indexType = sequential.type();
-        if (Polytone.isDevEnv && debugFrames++ % 200 == 0) {
-            Polytone.LOGGER.info("[gpu debug] {} drawing {} indices, Time {}, origin {}, texture {}",
-                    id, indexCount, (gameTime - records.timeBase()) + partialTick, records.origin(), texture);
-        }
         return true;
     }
 
@@ -153,8 +172,8 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
         int colorEnd = type.colorEnd().orElse(-1);
         try (MemoryStack stack = MemoryStack.stackPush()) {
             ByteBuffer bb = Std140Builder.onStack(stack, INFO_UBO_SIZE)
-                    .putVec3((float) (origin.x - cameraPos.x), (float) (origin.y - cameraPos.y), (float) (origin.z - cameraPos.z))
-                    .putFloat((gameTime - records.timeBase()) + partialTick)
+                    .putVec4((float) (origin.x - cameraPos.x), (float) (origin.y - cameraPos.y),
+                            (float) (origin.z - cameraPos.z), (gameTime - records.timeBase()) + partialTick)
                     .putFloat(type.gravity())
                     .putFloat(dragOf(type.friction()))
                     .putFloat(type.sway())
@@ -211,6 +230,7 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
 
     @Override
     public void close() {
+        closed = true;
         records.close();
         customUniforms.close();
         if (infoUbo != null) infoUbo.close();

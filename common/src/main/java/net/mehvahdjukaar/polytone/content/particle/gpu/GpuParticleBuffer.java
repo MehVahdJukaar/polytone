@@ -4,7 +4,6 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
@@ -44,7 +43,6 @@ public final class GpuParticleBuffer implements AutoCloseable {
     private int cursor = 0;
     private Vec3 origin = null;
     private long timeBase = 0;
-    private int debugTotalSpawned = 0;
 
     public GpuParticleBuffer(int capacity) {
         this.capacity = capacity;
@@ -82,7 +80,6 @@ public final class GpuParticleBuffer implements AutoCloseable {
         return capacity * 4;
     }
 
-    // render thread, no render pass open: creates the buffer on first use, rebases if needed, uploads spawns
     public void prepareForFrame(Vec3 cameraPos, long gameTime) {
         if (buffer == null) createStorage();
         boolean rebase = origin == null
@@ -104,7 +101,6 @@ public final class GpuParticleBuffer implements AutoCloseable {
         origin = null;
     }
 
-    // zeroed storage: lifetime 0 means an empty slot to the shader
     private void clearStorage() {
         ByteBuffer zeros = MemoryUtil.memCalloc(capacity * RECORD_BYTES);
         try {
@@ -132,13 +128,6 @@ public final class GpuParticleBuffer implements AutoCloseable {
                 encoder.writeToBuffer(buffer.slice(0, (long) rest * RECORD_BYTES), bytes);
             }
             cursor = (cursor + count) % capacity;
-            debugTotalSpawned += count;
-            if (Polytone.isDevEnv) {
-                Spawn first = pendingSpawns.get(start);
-                Polytone.LOGGER.info("[gpu debug] uploaded {} records (total {}) cursor {} origin {} timeBase {} | first: pos {} {} {} life {} size {} light {}",
-                        count, debugTotalSpawned, cursor, origin, timeBase,
-                        first.x, first.y, first.z, first.values.lifetime, first.values.size, first.packedLight);
-            }
         } finally {
             MemoryUtil.memFree(bytes);
             pendingSpawns.clear();

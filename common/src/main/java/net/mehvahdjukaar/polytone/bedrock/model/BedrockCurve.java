@@ -9,9 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-// A named interpolator. The effect declares them under curves and reads the result back as a Molang variable
-// of the same name, so a curve is really a function of input baked into the expression environment.
-// bezier_chain keys its control points by position instead of listing them, so Nodes covers both shapes.
+// A curve is read back as a Molang variable of the same name, so it acts as a function of input in the expression
+// environment. bezier_chain keys its control points by position instead of listing them, hence the two Nodes shapes.
 public record BedrockCurve(Type type, Optional<MolangExpr> input, Optional<MolangExpr> horizontalRange,
                            Nodes nodes) {
 

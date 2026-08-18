@@ -26,9 +26,8 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
-// Maps one Bedrock effect onto Polytone json: the particle_* components become the visible particle, the
-// emitter_* ones become a second, invisible particle whose particle_emitters spawn the first. See the package
-// README for what that trade costs.
+// particle_* components become the visible particle, emitter_* ones a second invisible particle whose
+// particle_emitters spawn the first. See the package README for what that trade costs.
 public class BedrockParticleConverter {
 
     public static ConversionResult convert(BedrockParticleFile file, ConversionOptions options) {
@@ -81,7 +80,7 @@ public class BedrockParticleConverter {
         return json;
     }
 
-    // the lifetime in ticks when it is a fixed number, which decides how creation events convert
+    // returns the lifetime in ticks when it is a fixed number, which decides how creation events convert
     private static OptionalDouble convertLifetime(BedrockComponents components, PolytoneParticleJson json,
                                                   ConversionOptions options, DiagnosticSink sink) {
         Optional<ParticleComponents.LifetimeExpression> lifetime =
@@ -105,14 +104,14 @@ public class BedrockParticleConverter {
         }
         MolangExpr expiration = lifetime.get().expirationExpression();
         if (!expiration.isConstant(0)) {
-            // same contract on both sides: non-zero means "this particle is done"
+            // same contract on both sides: non-zero means the particle is done
             json.tick("remove_condition", translate(expiration, Scope.PARTICLE,
                     "particle_lifetime_expression/expiration_expression", options, sink));
         }
         return ticks;
     }
 
-    // true when this particle draws nothing, i.e. it exists only to run its components
+    // true when the particle draws nothing and exists only to run its components
     private static boolean convertBillboard(BedrockComponents components, PolytoneParticleJson json,
                                             ConversionOptions options, DiagnosticSink sink) {
         Optional<ParticleComponents.AppearanceBillboard> maybe =
@@ -129,7 +128,7 @@ public class BedrockParticleConverter {
             sink.warn(where, "Non-square size " + Diagnostic.brief(width) + " x " + Diagnostic.brief(height)
                     + ", using the width: our particles have a single size");
         }
-        // both sides measure a billboard by its half extent in blocks, so this is 1:1
+        // both sides measure a billboard by half extent in blocks, so this is 1:1
         assign(json, "size", width);
 
         billboard.flipbookFrames().ifPresent(frames ->
@@ -201,7 +200,7 @@ public class BedrockParticleConverter {
     private static void convertMotion(BedrockComponents components, PolytoneParticleJson json,
                                       ConversionOptions options, DiagnosticSink sink) {
         components.get(BedrockComponentTypes.PARTICLE_MOTION_PARAMETRIC, sink).ifPresent(parametric -> {
-            // packs often reach for this component only to drive rotation, which does convert
+            // packs often use this component only to drive rotation, which does convert
             boolean movesPosition = !parametric.relativePosition().isZero() || parametric.direction().isPresent();
             if (movesPosition) {
                 sink.error("particle_motion_parametric",
@@ -292,10 +291,9 @@ public class BedrockParticleConverter {
         });
     }
 
-    // A creation event fires once, our emitters fire every tick, so the two only line up on a particle that
-    // lives a single tick. That is not the corner case it sounds like: Bedrock's own "emitter" effects are
-    // size-0 particles whose creation event spawns the real thing, which is the same trick we play with the
-    // meta particle.
+    // A creation event fires once but our emitters fire every tick, so the two only line up on a particle living
+    // a single tick. Common enough: Bedrock emitter effects are size-0 particles whose creation event spawns the
+    // real thing, the same trick as our meta particle.
     private static void convertCreationEvents(BedrockParticleEffect effect, BedrockComponents components,
                                               PolytoneParticleJson json, ConversionOptions options,
                                               OptionalDouble lifetimeTicks, boolean drawsNothing,
@@ -345,8 +343,7 @@ public class BedrockParticleConverter {
         }
     }
 
-    // An emitter reference points at a whole effect, which on our side is the meta particle, while a particle
-    // reference points at the visible one.
+    // an emitter ref points at a whole effect, so the meta particle; a particle ref points at the visible one
     private static String targetId(BedrockEvent.EffectRef ref, ConversionOptions options) {
         String id = ConversionOptions.identifierOf(ref.effect());
         return ref.type().startsWith("emitter") ? id + "_emitter" : id;
@@ -366,7 +363,7 @@ public class BedrockParticleConverter {
         return actions;
     }
 
-    // Walks an event tree into leaves: a sequence runs all of them, a randomize picks one by weight.
+    // a sequence runs all children, a randomize picks one by weight
     private static void flatten(BedrockEvent event, double chance, List<EventAction> out) {
         event.particleEffect().ifPresent(ref -> out.add(new EventAction(chance, ref, null)));
         event.soundEffect().ifPresent(ref -> out.add(new EventAction(chance, null, ref.eventName())));
@@ -671,8 +668,7 @@ public class BedrockParticleConverter {
 
     private static void reportStructuralGaps(BedrockParticleEffect effect, BedrockComponents components,
                                              DiagnosticSink sink) {
-        // the events map itself is not reported: what matters is which hooks fire, and those are
-        // diagnosed one by one where they are (or are not) converted
+        // the events map itself is not reported, the hooks are diagnosed one by one where they convert
         if (!effect.curves().isEmpty()) {
             sink.warn("curves", effect.curves().size() + " curve(s) are not converted; inline the interpolation " +
                     "into whichever expression reads them");
@@ -706,7 +702,7 @@ public class BedrockParticleConverter {
                 "assets/" + namespace + "/particles/" + path + ".json", spriteList(namespace + ":" + options.path())));
     }
 
-    // The vanilla side of a custom particle: even an invisible emitter needs a sprite list to register.
+    // even an invisible emitter needs a sprite list to register on the vanilla side
     private static JsonObject spriteList(String sprite) {
         JsonObject json = new JsonObject();
         JsonArray textures = new JsonArray();
@@ -733,7 +729,7 @@ public class BedrockParticleConverter {
         }
 
         ParticleComponents.AppearanceBillboard.Uv rect = uv.get();
-        // a flipbook restates the rect in its own fields, and those are the ones that actually draw
+        // a flipbook restates the rect in its own fields, and those are the ones that draw
         MolangExpr.Vec2 origin = rect.flipbook().map(ParticleComponents.AppearanceBillboard.Flipbook::baseUv)
                 .orElse(rect.uv());
         MolangExpr.Vec2 size = rect.flipbook().map(ParticleComponents.AppearanceBillboard.Flipbook::sizeUv)
@@ -756,8 +752,7 @@ public class BedrockParticleConverter {
                 rect.textureWidth(), rect.textureHeight()));
     }
 
-    // whether the whole batch comes out in one tick, which decides how long the meta particle needs to stay
-    // alive
+    // instant means the whole batch comes out in one tick, which decides how long the meta particle stays alive
     private record SpawnRate(String chance, String count, boolean instant) {
     }
 }

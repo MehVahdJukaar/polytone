@@ -10,8 +10,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-// The emitter_* half of the component list: when particles come out, where from, and how long the emitter
-// itself lives.
 public class EmitterComponents {
 
     public record Initialization(Optional<MolangExpr> creationExpression,
@@ -22,7 +20,7 @@ public class EmitterComponents {
         ).apply(i, Initialization::new));
     }
 
-    // Whether an entity-attached emitter simulates its particles in the entity's frame or the world's.
+    // whether an entity-attached emitter simulates in the entity's frame or the world's
     public record LocalSpace(boolean position, boolean rotation, boolean velocity) {
         public static final Codec<LocalSpace> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.BOOL.optionalFieldOf("position", false).forGetter(LocalSpace::position),
@@ -149,7 +147,6 @@ public class EmitterComponents {
         ).apply(i, ShapeEntityAabb::new));
     }
 
-    // The one shape that maps cleanly: three expressions, one per axis
     public record ShapeCustom(MolangExpr.Vec3 offset, BedrockShapeDirection direction) {
         public static final Codec<ShapeCustom> CODEC = RecordCodecBuilder.create(i -> i.group(
                 MolangExpr.Vec3.CODEC.optionalFieldOf("offset", MolangExpr.Vec3.ZERO).forGetter(ShapeCustom::offset),
