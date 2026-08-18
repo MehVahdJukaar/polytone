@@ -96,7 +96,7 @@ public class LevelRendererMixin {
                                          ChunkSectionsToRender chunkSectionsToRender,
                                          CallbackInfo ci,
                                          @Local FrameGraphBuilder frameGraphBuilder) {
-        Polytone.GPU_PARTICLES.addRenderPass(frameGraphBuilder, this.targets, terrainFog,
+        Polytone.CUSTOM_PARTICLES.gpuParticles.addRenderPass(frameGraphBuilder, this.targets, terrainFog,
                 this.levelRenderState.cameraRenderState.pos, this.levelRenderState.gameTime,
                 deltaTracker.getGameTimeDeltaPartialTick(false));
     }

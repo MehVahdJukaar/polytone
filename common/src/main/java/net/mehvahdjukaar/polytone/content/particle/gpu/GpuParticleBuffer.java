@@ -14,7 +14,8 @@ import java.util.List;
 
 // Ring buffer of particle records. There is no per-frame update: a spawn writes the four corners of
 // its quad once and the vertex shader derives everything else from the record and the current time.
-// The four vertices of a particle carry identical data; the shader tells them apart by gl_VertexID & 3.
+// All vertices of a record carry identical data; the shader tells corners (and, with an area, the
+// quads of one spawn) apart by gl_VertexID.
 // Positions are relative to origin and spawn ticks to timeBase; both are rebased (buffer cleared) when
 // the camera or the clock drift far enough that float precision would suffer.
 public final class GpuParticleBuffer implements AutoCloseable {
@@ -29,7 +30,6 @@ public final class GpuParticleBuffer implements AutoCloseable {
             .build();
 
     private static final int VERTEX_BYTES = FORMAT.getVertexSize();
-    private static final int RECORD_BYTES = VERTEX_BYTES * 4;
     private static final double REBASE_DISTANCE = 1024;
     private static final long REBASE_TICKS = 1L << 20;
 
@@ -38,14 +38,18 @@ public final class GpuParticleBuffer implements AutoCloseable {
                          float seed, int packedLight, GpuParticleInitializer.SpawnValues values) {}
 
     private final int capacity;
+    private final int quadsPerRecord;
+    private final int recordBytes;
     private final List<Spawn> pendingSpawns = new ArrayList<>();
     private @Nullable GpuBuffer buffer;
     private int cursor = 0;
     private Vec3 origin = null;
     private long timeBase = 0;
 
-    public GpuParticleBuffer(int capacity) {
+    public GpuParticleBuffer(int capacity, int quadsPerRecord) {
         this.capacity = capacity;
+        this.quadsPerRecord = quadsPerRecord;
+        this.recordBytes = VERTEX_BYTES * 4 * quadsPerRecord;
     }
 
     // GENERIC elements are matched to shader attributes by name, so any free id works
@@ -77,7 +81,7 @@ public final class GpuParticleBuffer implements AutoCloseable {
     }
 
     public int vertexCount() {
-        return capacity * 4;
+        return capacity * quadsPerRecord * 4;
     }
 
     public void prepareForFrame(Vec3 cameraPos, long gameTime) {
@@ -97,12 +101,12 @@ public final class GpuParticleBuffer implements AutoCloseable {
 
     private void createStorage() {
         buffer = RenderSystem.getDevice().createBuffer(() -> "Polytone gpu particle records",
-                GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST, (long) capacity * RECORD_BYTES);
+                GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST, (long) capacity * recordBytes);
         origin = null;
     }
 
     private void clearStorage() {
-        ByteBuffer zeros = MemoryUtil.memCalloc(capacity * RECORD_BYTES);
+        ByteBuffer zeros = MemoryUtil.memCalloc(capacity * recordBytes);
         try {
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(buffer.slice(), zeros);
         } finally {
@@ -114,18 +118,18 @@ public final class GpuParticleBuffer implements AutoCloseable {
         // more spawns than slots: only the newest capacity ones can survive anyway
         int start = Math.max(0, pendingSpawns.size() - capacity);
         int count = pendingSpawns.size() - start;
-        ByteBuffer bytes = MemoryUtil.memAlloc(count * RECORD_BYTES);
+        ByteBuffer bytes = MemoryUtil.memAlloc(count * recordBytes);
         try {
             for (int i = start; i < pendingSpawns.size(); i++) writeRecord(bytes, pendingSpawns.get(i));
 
             var encoder = RenderSystem.getDevice().createCommandEncoder();
             int untilEnd = Math.min(count, capacity - cursor);
-            bytes.limit(untilEnd * RECORD_BYTES).position(0);
-            encoder.writeToBuffer(buffer.slice((long) cursor * RECORD_BYTES, (long) untilEnd * RECORD_BYTES), bytes);
+            bytes.limit(untilEnd * recordBytes).position(0);
+            encoder.writeToBuffer(buffer.slice((long) cursor * recordBytes, (long) untilEnd * recordBytes), bytes);
             if (untilEnd < count) {
                 int rest = count - untilEnd;
-                bytes.limit(count * RECORD_BYTES).position(untilEnd * RECORD_BYTES);
-                encoder.writeToBuffer(buffer.slice(0, (long) rest * RECORD_BYTES), bytes);
+                bytes.limit(count * recordBytes).position(untilEnd * recordBytes);
+                encoder.writeToBuffer(buffer.slice(0, (long) rest * recordBytes), bytes);
             }
             cursor = (cursor + count) % capacity;
         } finally {
@@ -140,7 +144,7 @@ public final class GpuParticleBuffer implements AutoCloseable {
         float y = (float) (s.y - origin.y);
         float z = (float) (s.z - origin.z);
         float spawn = s.tick - timeBase;
-        for (int corner = 0; corner < 4; corner++) {
+        for (int vertex = 0; vertex < 4 * quadsPerRecord; vertex++) {
             out.putFloat(x).putFloat(y).putFloat(z);
             out.putFloat(s.vx).putFloat(s.vy).putFloat(s.vz);
             out.putFloat(spawn).putFloat(v.lifetime);

@@ -13,6 +13,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.particle.custom.ICustomParticleFactory;
@@ -38,6 +39,9 @@ import java.nio.ByteBuffer;
 
 public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCloseable {
 
+    public static final Codec<GpuParticleRenderer> CODEC = GpuParticleType.CODEC
+            .xmap(GpuParticleRenderer::new, GpuParticleRenderer::type);
+
     // vanilla ADDITIVE is (ONE, ONE); particles want the source alpha to fade the add out
     private static final BlendFunction ADDITIVE_PARTICLE_BLEND = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE);
 
@@ -47,6 +51,8 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
             .putFloat().putFloat().putFloat().putInt()
             .putVec2().putInt().putInt()
             .putInt().putVec4()
+            .putVec4().putVec4()
+            .putFloat().putInt().putInt().putFloat()
             .get();
 
     private Identifier id = Polytone.res("unnamed");
@@ -61,13 +67,14 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
     private boolean closed = false;
     // resolved in prepare: both of these can upload or grow GPU storage, which a render pass forbids
     private @Nullable GpuTextureView texture;
+    private @Nullable GpuParticleHeightmap heightmap;
     private @Nullable GpuBuffer indexBuffer;
     private VertexFormat.IndexType indexType = VertexFormat.IndexType.SHORT;
     private int indexCount;
 
     public GpuParticleRenderer(GpuParticleType type) {
         this.type = type;
-        this.records = new GpuParticleBuffer(type.limit());
+        this.records = new GpuParticleBuffer(type.limit(), type.quadsPerSpawn());
         this.customUniforms = new ExpressionUniformBuffers(type.uniforms());
     }
 
@@ -122,6 +129,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
                     .withVertexShader(shader)
                     .withFragmentShader(shader)
                     .withSampler("Sampler0")
+                    .withSampler("Sampler1")
                     .withSampler("Sampler2")
                     .withUniform("ParticleInfo", UniformType.UNIFORM_BUFFER)
                     .withVertexFormat(GpuParticleBuffer.FORMAT, VertexFormat.Mode.QUADS)
@@ -146,7 +154,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
     }
 
     // no render pass may be open here: everything that writes to a buffer happens in this half
-    public boolean prepare(Vec3 cameraPos, long gameTime, float partialTick) {
+    public boolean prepare(Vec3 cameraPos, long gameTime, float partialTick, GpuParticleHeightmap heightmap) {
         if (type.renderType() == ParticleRenderMode.INVISIBLE) return false;
         if (pipeline() == null) return false;
         records.prepareForFrame(cameraPos, gameTime);
@@ -156,7 +164,8 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
             infoUbo = RenderSystem.getDevice().createBuffer(() -> debugLabel + " info",
                     GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_UNIFORM, INFO_UBO_SIZE);
         }
-        writeInfo(cameraPos, gameTime, partialTick);
+        writeInfo(cameraPos, gameTime, partialTick, heightmap);
+        this.heightmap = heightmap;
 
         // getTexture loads and uploads the image the first time it is asked for
         texture = Minecraft.getInstance().getTextureManager().getTexture(type.texture()).getTextureView();
@@ -167,9 +176,10 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         return true;
     }
 
-    private void writeInfo(Vec3 cameraPos, long gameTime, float partialTick) {
+    private void writeInfo(Vec3 cameraPos, long gameTime, float partialTick, GpuParticleHeightmap heightmap) {
         Vec3 origin = records.origin();
         int colorEnd = type.colorEnd().orElse(-1);
+        Vec3 areaSize = type.area().map(GpuParticleType.Area::size).orElse(Vec3.ZERO);
         try (MemoryStack stack = MemoryStack.stackPush()) {
             ByteBuffer bb = Std140Builder.onStack(stack, INFO_UBO_SIZE)
                     .putVec4((float) (origin.x - cameraPos.x), (float) (origin.y - cameraPos.y),
@@ -188,6 +198,13 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
                     .putInt(type.colorEnd().isPresent() ? 1 : 0)
                     .putVec4(ARGB.red(colorEnd) / 255f, ARGB.green(colorEnd) / 255f,
                             ARGB.blue(colorEnd) / 255f, ARGB.alpha(colorEnd) / 255f)
+                    .putVec4((float) (heightmap.originX() - cameraPos.x), (float) (heightmap.originZ() - cameraPos.z),
+                            GpuParticleHeightmap.SIZE, heightmap.minY())
+                    .putVec4((float) areaSize.x, (float) areaSize.y, (float) areaSize.z, 0f)
+                    .putFloat((float) cameraPos.y)
+                    .putInt(type.killBelowHeightmap() ? 1 : 0)
+                    .putInt(type.quadsPerSpawn())
+                    .putFloat(0f)
                     .get();
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(infoUbo.slice(), bb);
         }
@@ -195,10 +212,11 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
 
     public void draw(RenderPass pass) {
         GpuBuffer vertices = records.vertexBuffer();
-        if (pipeline == null || vertices == null || texture == null || indexBuffer == null) return;
+        if (pipeline == null || vertices == null || texture == null || indexBuffer == null || heightmap == null) return;
 
         pass.setPipeline(pipeline);
         pass.bindTexture("Sampler0", texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+        pass.bindTexture("Sampler1", heightmap.textureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
         pass.bindTexture("Sampler2", Minecraft.getInstance().gameRenderer.lightTexture().getTextureView(),
                 RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
         pass.setUniform("ParticleInfo", infoUbo);
