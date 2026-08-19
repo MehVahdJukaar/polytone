@@ -5,7 +5,6 @@ import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.ColormapModContextExpression;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;

@@ -8,7 +8,6 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.exp.ConcurrentExpression;
 import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.exp.IExpression;
-import net.minecraft.core.BlockPos;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.jetbrains.annotations.NotNull;
 

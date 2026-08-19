@@ -4,13 +4,10 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.expressions.preview.PreviewContext;
 import net.mehvahdjukaar.polytone.common.expressions.preview.SimProxies;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.*;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.attribute.EnvironmentAttribute;
-import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.NonNull;
 import org.mvel2.ParserContext;
 import org.mvel2.util.MethodStub;
@@ -22,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 public class ExpUtils {
 

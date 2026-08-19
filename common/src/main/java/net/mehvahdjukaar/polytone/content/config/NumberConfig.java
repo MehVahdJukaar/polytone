@@ -9,7 +9,6 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.ExtraCodecs;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;

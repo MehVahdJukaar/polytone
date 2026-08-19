@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.common.Targets;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.minecraft.resources.Identifier;
 

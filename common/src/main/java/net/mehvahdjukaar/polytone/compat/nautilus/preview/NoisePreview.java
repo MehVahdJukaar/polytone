@@ -15,7 +15,6 @@ import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.Box;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
 import java.awt.image.BufferedImage;

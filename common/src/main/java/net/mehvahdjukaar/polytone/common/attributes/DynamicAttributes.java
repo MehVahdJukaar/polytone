@@ -14,7 +14,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Holder;
 import net.minecraft.world.attribute.*;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;

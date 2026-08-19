@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.common.struc;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.minecraft.server.packs.OverlayMetadataSection;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
