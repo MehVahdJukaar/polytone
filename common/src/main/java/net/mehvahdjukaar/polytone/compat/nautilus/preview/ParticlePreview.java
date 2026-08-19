@@ -54,14 +54,12 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class ParticlePreview extends ExpressionPreview {
 
-    private final @Nullable Identifier contentId;
-    private final @Nullable Path file;
+    private final @Nullable Identifier particleId;
 
     private final LiveViewport viewport = new LiveViewport();
     private final ParticleScene renderer = new ParticleScene();
@@ -79,8 +77,7 @@ public final class ParticlePreview extends ExpressionPreview {
     private volatile @Nullable CustomParticleType type;
 
     public ParticlePreview(TabPreview.Context ctx) {
-        this.contentId = ctx.contentId();
-        this.file = ctx.file();
+        this.particleId = ctx.idUnder(Polytone.MOD_ID, "custom_particles");
 
         viewport.setRenderer(renderer);
         viewport.setPanEnabled(true); // orbit, zoom and pan to inspect against the grid
@@ -182,13 +179,15 @@ public final class ParticlePreview extends ExpressionPreview {
 
     // Sprites come from the pack's already-registered particle of this id (baked into the atlas).
     private @Nullable SpriteSet borrowSprites() {
-        Identifier id = PreviewIds.of(contentId, file, "custom_particles");
-        if (id == null) return null;
-        ICustomParticleFactory live = Polytone.CUSTOM_PARTICLES.customParticleFactories.getValue(id);
+        if (particleId == null) return null;
+        ICustomParticleFactory live = Polytone.CUSTOM_PARTICLES.customParticleFactories.getValue(particleId);
         return live instanceof CustomParticleType ct ? ct.getSpriteSet() : null;
     }
 
+    // Runs on the EDT after every render-thread tick, so this is also where the env sliders learn
+    // which sim inputs the particle's expressions just read.
     private void updateReadout() {
+        refreshEnvControls();
         ParticleScene.Snapshot s = renderer.snapshot;
         if (s == null) {
             String d = renderer.diag;

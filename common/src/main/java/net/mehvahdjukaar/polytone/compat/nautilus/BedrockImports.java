@@ -1,18 +1,19 @@
 package net.mehvahdjukaar.polytone.compat.nautilus;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.nautilus.NautilusStudioApi;
+import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiICons;
 import net.mehvahdjukaar.nautilus.workbench.ImportEntry;
 import net.mehvahdjukaar.nautilus.workbench.ImportReport;
+import net.mehvahdjukaar.nautilus.workbench.ImportSink;
 import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
 import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.BedrockParticleImporter;
 import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.Diagnostic;
 import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.convert.ConversionResult;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
@@ -25,11 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-// Wires the Bedrock particle importer into Nautilus Studio's Import button: one for a single effect, one for a
+// Wires the Bedrock particle importer into Nautilus Studio's Import button: one entry for a single effect,
+// one for a whole resource pack.
 public final class BedrockImports {
-
-    // Not html-escaped: expressions are full of < and >, and < in a pack file is unreadable.
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     private static final String BEDROCK_PARTICLES_DIR = "particles";
 
@@ -47,9 +46,9 @@ public final class BedrockImports {
     }
 
     private static ImportReport importOne(PackWorkspace workspace, Path file) throws IOException {
-        Writer writer = new Writer(workspace, bedrockRootOf(file));
-        writer.convert(file);
-        return writer.finish();
+        Converter converter = new Converter(new ImportSink(workspace), bedrockRootOf(file));
+        converter.convert(file);
+        return converter.sink.finish();
     }
 
     private static ImportReport importPack(PackWorkspace workspace, Path packRoot) throws IOException {
@@ -60,7 +59,7 @@ public final class BedrockImports {
                     "No 'particles' folder here. Pick the root of a Bedrock resource pack, the one "
                             + "holding manifest.json")));
         }
-        Writer writer = new Writer(workspace, packRoot);
+        Converter converter = new Converter(new ImportSink(workspace), packRoot);
         List<Path> sources = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(particles)) {
             walk.filter(Files::isRegularFile)
@@ -69,9 +68,9 @@ public final class BedrockImports {
                     .forEach(sources::add);
         }
         for (Path source : sources) {
-            writer.convert(source);
+            converter.convert(source);
         }
-        return writer.finish();
+        return converter.sink.finish();
     }
 
     // A Bedrock texture path is relative to the resource pack root, so resolving one means knowing where that
@@ -86,16 +85,14 @@ public final class BedrockImports {
         return null;
     }
 
-    private static final class Writer {
+    private static final class Converter {
 
-        private final PackWorkspace workspace;
+        private final ImportSink sink;
         private final @Nullable Path bedrockRoot;
-        private final List<Path> written = new ArrayList<>();
-        private final List<ImportReport.Note> notes = new ArrayList<>();
-        private @Nullable Path firstParticle;
+        private boolean pickedFileToOpen;
 
-        Writer(PackWorkspace workspace, @Nullable Path bedrockRoot) {
-            this.workspace = workspace;
+        Converter(ImportSink sink, @Nullable Path bedrockRoot) {
+            this.sink = sink;
             this.bedrockRoot = bedrockRoot;
         }
 
@@ -107,77 +104,58 @@ public final class BedrockImports {
                 // comments and trailing commas
                 json = JsonParser.parseReader(reader);
             } catch (Exception e) {
-                notes.add(ImportReport.Note.error(name, "Could not read the file: " + e.getMessage()));
+                sink.note(ImportReport.Note.error(name, "Could not read the file: " + e.getMessage()));
                 return;
             }
 
             DataResult<ConversionResult> converted = BedrockParticleImporter.convert(json);
             if (converted.result().isEmpty()) {
-                notes.add(ImportReport.Note.error(name, "Not a bedrock particle file: "
+                sink.note(ImportReport.Note.error(name, "Not a bedrock particle file: "
                         + converted.error().map(DataResult.Error::message).orElse("unknown")));
                 return;
             }
             ConversionResult result = converted.result().get();
 
             for (ConversionResult.OutputFile out : result.files()) {
-                Path target = workspace.root().resolve(out.path());
-                if (writeJson(target, out.content(), name)) {
-                    if (firstParticle == null && out.path().contains("custom_particles")) firstParticle = target;
+                Path target = sink.workspace().root().resolve(out.path());
+                if (sink.writeJson(target, out.content(), name)
+                        && !pickedFileToOpen && out.path().contains("custom_particles")) {
+                    pickedFileToOpen = true;
+                    sink.openAfter(target);
                 }
             }
             for (ConversionResult.TextureRequest texture : result.textures()) {
                 extractTexture(texture, name);
             }
             for (Diagnostic diagnostic : result.diagnostics()) {
-                notes.add(new ImportReport.Note(severity(diagnostic.level()),
+                sink.note(new ImportReport.Note(severity(diagnostic.level()),
                         name + " · " + diagnostic.where(), diagnostic.message()));
-            }
-        }
-
-        private boolean writeJson(Path target, JsonElement content, String source) {
-            if (Files.exists(target)) {
-                notes.add(ImportReport.Note.warn(source, "Kept the existing "
-                        + workspace.relativize(target) + "; delete it first to import over it"));
-                return false;
-            }
-            try {
-                Files.createDirectories(target.getParent());
-                Files.writeString(target, GSON.toJson(content) + "\n");
-                written.add(target);
-                return true;
-            } catch (IOException e) {
-                notes.add(ImportReport.Note.error(source, "Could not write "
-                        + workspace.relativize(target) + ": " + e.getMessage()));
-                return false;
             }
         }
 
         private void extractTexture(ConversionResult.TextureRequest request, String source) {
             Path target = spritePath(request.targetSprite());
             if (target == null) {
-                notes.add(ImportReport.Note.warn(source, "Could not tell where sprite '"
+                sink.note(ImportReport.Note.warn(source, "Could not tell where sprite '"
                         + request.targetSprite() + "' should go; add the png yourself"));
                 return;
             }
-            if (Files.exists(target)) return; // same rule as the json: never clobber
             Path atlas = resolveAtlas(request.sourceTexture());
             if (atlas == null) {
-                notes.add(ImportReport.Note.warn(source, "Texture '" + request.sourceTexture()
-                        + "' not found in the source pack; add " + workspace.relativize(target) + " yourself"));
+                sink.note(ImportReport.Note.warn(source, "Texture '" + request.sourceTexture()
+                        + "' not found in the source pack; add "
+                        + sink.workspace().relativize(target) + " yourself"));
                 return;
             }
             try {
                 BufferedImage image = ImageIO.read(atlas.toFile());
                 if (image == null) {
-                    notes.add(ImportReport.Note.warn(source, "Could not read " + atlas.getFileName()));
+                    sink.note(ImportReport.Note.warn(source, "Could not read " + atlas.getFileName()));
                     return;
                 }
-                BufferedImage sprite = crop(image, request);
-                Files.createDirectories(target.getParent());
-                ImageIO.write(sprite, "png", target.toFile());
-                written.add(target);
+                sink.writeImage(target, crop(image, request), source);
             } catch (IOException e) {
-                notes.add(ImportReport.Note.error(source, "Could not extract the sprite: " + e.getMessage()));
+                sink.note(ImportReport.Note.error(source, "Could not extract the sprite: " + e.getMessage()));
             }
         }
 
@@ -198,12 +176,13 @@ public final class BedrockImports {
             return Math.clamp(value, min, max);
         }
 
-        // ns:path to <root>/assets/<ns>/textures/particle/<path>.png.
+        // ns:path to <root>/assets/<ns>/textures/particle/<path>.png. A bare path has no namespace to
+        // place it under, so it is left to the user.
         private @Nullable Path spritePath(String sprite) {
-            int colon = sprite.indexOf(':');
-            if (colon < 0) return null;
-            return workspace.root().resolve("assets").resolve(sprite.substring(0, colon))
-                    .resolve("textures/particle").resolve(sprite.substring(colon + 1) + ".png");
+            if (sprite.indexOf(':') < 0) return null;
+            Identifier id = Identifier.tryParse(sprite);
+            return id == null ? null
+                    : sink.workspace().assetPath(Side.CLIENT_RESOURCES, id, "textures/particle", ".png");
         }
 
         // Bedrock writes texture paths without an extension, relative to the pack root
@@ -214,10 +193,6 @@ public final class BedrockImports {
                 if (Files.isRegularFile(candidate)) return candidate;
             }
             return null;
-        }
-
-        ImportReport finish() {
-            return new ImportReport(List.copyOf(written), List.copyOf(notes), firstParticle);
         }
 
         private static ImportReport.Severity severity(Diagnostic.Level level) {

@@ -2,12 +2,12 @@ package net.mehvahdjukaar.polytone.compat.nautilus.preview;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.mehvahdjukaar.nautilus.swing.preview.LabeledSlider;
 import net.mehvahdjukaar.nautilus.swing.preview.PixelTextureView;
 import net.mehvahdjukaar.nautilus.swing.preview.PreviewLayout;
 import net.mehvahdjukaar.nautilus.swing.preview.PreviewPanel;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
 import net.mehvahdjukaar.nautilus.swing.toolkit.SquareRow;
-import net.mehvahdjukaar.nautilus.swing.toolkit.StyledLabels;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiTheme;
 import net.minecraft.util.Mth;
@@ -15,8 +15,6 @@ import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.Box;
-import javax.swing.JLabel;
-import javax.swing.JSlider;
 import java.awt.image.BufferedImage;
 
 // Live preview for Polytone noises. Renders the decoded PerlinSimplexNoise field as a grayscale image, sampled
@@ -27,8 +25,7 @@ public final class NoisePreview extends PreviewPanel {
     private static final int IMAGE_SIZE = 160;
 
     private final PixelTextureView imageView = new PixelTextureView();
-    private final JSlider spanSlider = new JSlider(4, 128, 32);
-    private final JLabel spanLabel = StyledLabels.mutedSmall("");
+    private final LabeledSlider spanSlider = new LabeledSlider("Area shown", 4, 128, 1, 32, v -> recompute());
 
     // The 1.21.11 noise codec decodes straight to a PerlinSimplexNoise, so we render from the value
     // and keep the raw json only for the seed/octaves caption.
@@ -36,16 +33,15 @@ public final class NoisePreview extends PreviewPanel {
     private @Nullable String caption;
 
     public NoisePreview(TabPreview.Context ctx) {
+        spanSlider.setFormatter(v -> (int) v + " blocks");
+
         Box content = PreviewLayout.column();
-        PreviewLayout.add(content, PreviewLayout.labeled("Area shown",
-                PreviewLayout.withValue(spanSlider, spanLabel)));
+        PreviewLayout.add(content, spanSlider);
         content.add(Box.createVerticalStrut(UiScale.med()));
 
         imageView.setBorder(UiTheme.hairlineBorder());
         imageView.setPlaceholder("Waiting for a valid noise...");
         PreviewLayout.addFilling(content, new SquareRow(0, UiScale.px(160), UiScale.px(400), imageView));
-
-        spanSlider.addChangeListener(e -> recompute());
 
         install(content);
         recompute();
@@ -59,9 +55,7 @@ public final class NoisePreview extends PreviewPanel {
     }
 
     private void recompute() {
-        int span = spanSlider.getValue();
-        spanLabel.setText(span + " blocks");
-
+        int span = (int) spanSlider.value();
         PerlinSimplexNoise n = this.noise;
         if (n == null) {
             statusText("Waiting for a valid noise...");

@@ -110,7 +110,7 @@ public abstract class ContentManager<O> {
         return contentCodec.get();
     }
 
-    public Iterable<String> folderNames() {
+    public List<String> folderNames() {
         return Arrays.stream(folderNames).toList();
     }
 
