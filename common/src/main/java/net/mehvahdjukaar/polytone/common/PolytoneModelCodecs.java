@@ -8,11 +8,9 @@ import net.minecraft.client.renderer.block.dispatch.Variant;
 import org.jetbrains.annotations.Nullable;
 
 // Editor-facing companions for the block-variant model state that SimpleModelStateExtension extends. Only
-// touched from client code (the deserializer mixin and the PackEditor compat), so its reference to the client
+// touched from client code (the deserializer mixin and the Nautilus compat), so its reference to the client
 // SimpleModelState type never loads on a dedicated server.
 public final class PolytoneModelCodecs {
-
-    private PolytoneModelCodecs() {}
 
     // The live wrapped SimpleModelState map codec the blockstate chain uses, captured by
     // VariantDeserializerMixin when it wraps the vanilla codec at class init. Null until then.

@@ -41,7 +41,7 @@ public class LevelRendererMixin {
     // 26.2: getParticlesTarget() -> particlesTarget()
     @Inject(method = "particlesTarget", at = @At("HEAD"), cancellable = true)
     private void poly$redirectParticlesTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {
-        if (CompatHandler.PACK_EDITOR && PreviewRenderTarget.current() != null) cir.setReturnValue(null);
+        if (CompatHandler.NAUTILUS && PreviewRenderTarget.current() != null) cir.setReturnValue(null);
     }
 
     // 26.2: LevelRenderer.renderLevel(...) -> render(...) (dropped the ChunkSectionsToRender param; it's a local now)

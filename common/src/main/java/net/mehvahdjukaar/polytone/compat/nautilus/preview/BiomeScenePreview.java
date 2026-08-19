@@ -1,15 +1,12 @@
 package net.mehvahdjukaar.polytone.compat.nautilus.preview;
 
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
 import net.mehvahdjukaar.nautilus.render.SceneCamera;
-import net.mehvahdjukaar.nautilus.swing.preview.PreviewStatus;
-import net.mehvahdjukaar.nautilus.swing.preview.PreviewSurface;
+import net.mehvahdjukaar.nautilus.swing.preview.LivePreview;
+import net.mehvahdjukaar.nautilus.swing.preview.PreviewLayout;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
 import net.mehvahdjukaar.nautilus.swing.preview.scene.LiveViewport;
-import net.mehvahdjukaar.nautilus.swing.toolkit.EditorOps;
 import net.mehvahdjukaar.nautilus.swing.toolkit.SquareRow;
-import net.mehvahdjukaar.nautilus.swing.toolkit.StyledLabels;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiTheme;
 import net.mehvahdjukaar.nautilus.swing.widget.RegistryPickerField;
@@ -20,10 +17,8 @@ import net.mehvahdjukaar.polytone.compat.nautilus.preview.BiomeSceneRenderPass.W
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectModifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.EnvironmentAttributes;
@@ -35,12 +30,6 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import javax.swing.Box;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.Timer;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -49,7 +38,7 @@ import java.util.function.Function;
 // Live preview for biome effect modifiers. Renders a tiny stylised diorama - a grass shore with a small oak
 // and tufts of grass dropping into a water pool, under a sky/fog dome - through the game's own block models
 // offscreen (see BiomeSceneRenderPass).
-public final class BiomeScenePreview implements TabPreview {
+public final class BiomeScenePreview extends LivePreview {
 
     private static final int DEF_SKY = 0x78A7FF;
     private static final int DEF_FOG = 0xC0D8FF;
@@ -58,65 +47,37 @@ public final class BiomeScenePreview implements TabPreview {
     private static final int DEF_WATER = 0x3F76E4;
 
     private static final List<Placement> BLOCKS = buildDiorama();
-    // Pool occupies the far corner (x/z 4..6), one block below the shore.
     private static final WaterQuad WATER = new WaterQuad(4f, 4f, 7f, 7f, 1.85f, 1f);
 
-    private final PreviewStatus status = new PreviewStatus();
     private final LiveViewport viewport = new LiveViewport();
     private final RegistryPickerField biomePicker = new RegistryPickerField(Registries.BIOME, id -> recompute());
-    private final JCheckBox liveToggle = new JCheckBox("Sample at player position");
-    private final Timer liveTimer = new Timer(500, e -> { if (liveToggle.isSelected()) recompute(); });
-    private PreviewSurface root;
 
     // Read on the render thread by the render pass; written on the EDT from recompute().
     private volatile Colors colors = new Colors(DEF_SKY, DEF_FOG, DEF_GRASS, DEF_FOLIAGE, DEF_WATER, GrassColorModifier.NONE);
     private volatile @Nullable BiomeEffectModifier mod;
 
     public BiomeScenePreview(TabPreview.Context ctx) {
+        super("Sample at player position", "Sample the biome the player is standing in instead of the picked one.");
         biomePicker.setSelected(Identifier.withDefaultNamespace("plains"));
-        liveToggle.setOpaque(false);
-        liveToggle.setToolTipText("Sample the biome the player is standing in instead of the picked one.");
-        liveToggle.addActionListener(e -> setLive(liveToggle.isSelected()));
 
         viewport.setRenderer(new SceneRenderer());
         viewport.setPanEnabled(true);
         viewport.frame(new Vector3f(3.5f, 2f, 3.5f), 7f, true);
         viewport.setBorder(UiTheme.hairlineBorder());
 
-        buildLayout();
-        recompute();
-    }
-
-    private void buildLayout() {
-        Box toolbar = Box.createVerticalBox();
-        Box topRow = Box.createHorizontalBox();
-        topRow.add(status);
-        topRow.add(Box.createHorizontalGlue());
-        topRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        toolbar.add(topRow);
-
-        Box content = Box.createVerticalBox();
-        addField(content, labeled("Biome", biomePicker));
-        liveToggle.setAlignmentX(Component.LEFT_ALIGNMENT);
-        content.add(liveToggle);
+        Box content = PreviewLayout.column();
+        PreviewLayout.add(content, PreviewLayout.labeled("Biome", biomePicker));
+        PreviewLayout.add(content, liveToggle);
         content.add(Box.createVerticalStrut(UiScale.med()));
+        PreviewLayout.addFilling(content, new SquareRow(0, UiScale.px(200), UiScale.px(460), viewport));
 
-        SquareRow sceneRow = new SquareRow(0, UiScale.px(200), UiScale.px(460), viewport);
-        sceneRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        content.add(sceneRow);
-
-        root = new PreviewSurface(toolbar, content);
-        root.setMinimumSize(new Dimension(UiScale.px(160), UiScale.px(120)));
-    }
-
-    @Override
-    public JComponent component() {
-        return root;
+        install(content);
+        recompute();
     }
 
     @Override
     public void dispose() {
-        liveTimer.stop();
+        super.dispose();
         viewport.dispose();
     }
 
@@ -126,34 +87,33 @@ public final class BiomeScenePreview implements TabPreview {
         recompute();
     }
 
-    private void setLive(boolean live) {
+    @Override
+    protected void onLiveChanged(boolean live) {
         biomePicker.setEnabled(!live);
-        if (live) liveTimer.start();
-        else liveTimer.stop();
-        recompute();
     }
 
-    private void recompute() {
+    @Override
+    protected void recompute() {
         BiomeEffectModifier m = this.mod;
         Biome biome;
         double bx = 0, bz = 0;
 
-        if (liveToggle.isSelected()) {
+        if (isLive()) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null || mc.level == null) {
                 biome = null;
-                status.error("No world loaded - showing defaults.");
+                statusText("No world loaded - showing defaults.");
             } else {
                 BlockPos pos = mc.player.blockPosition();
                 biome = mc.level.getBiome(pos).value();
                 bx = pos.getX();
                 bz = pos.getZ();
-                status.setText("Sampling at player position.");
+                statusText("Sampling at player position.");
             }
         } else {
-            biome = resolveBiome(biomePicker.getSelected());
-            if (biome == null) status.info("Biome unavailable (world not loaded?) - showing defaults.");
-            else status.setText("");
+            biome = biomePicker.getSelectedValue(Registries.BIOME);
+            if (biome == null) statusText("Biome unavailable (world not loaded?) - showing defaults.");
+            else statusText("");
         }
 
         colors = resolveColors(m, biome, bx, bz);
@@ -185,19 +145,6 @@ public final class BiomeScenePreview implements TabPreview {
         if (eff.contains(attr)) return eff.applyModifier(attr, def) & 0xFFFFFF;
         if (base.contains(attr)) return base.applyModifier(attr, def) & 0xFFFFFF;
         return def;
-    }
-
-    private @Nullable Biome resolveBiome(@Nullable Identifier id) {
-        if (id == null) return null;
-        try {
-            Side side = EditorOps.resolveSide(biomePicker);
-            return EditorOps.registries(side).lookup(Registries.BIOME)
-                    .flatMap(lookup -> lookup.get(ResourceKey.create(Registries.BIOME, id)))
-                    .map(Holder::value)
-                    .orElse(null);
-        } catch (Exception ignored) {
-            return null;
-        }
     }
 
     private static Optional<Integer> opt(@Nullable BiomeEffectModifier m, Function<BiomeEffectModifier, Optional<Integer>> getter) {
@@ -238,29 +185,9 @@ public final class BiomeScenePreview implements TabPreview {
         return List.copyOf(b);
     }
 
-    private static void addField(JComponent box, JComponent field) {
-        field.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, field.getPreferredSize().height));
-        box.add(field);
-        box.add(Box.createVerticalStrut(UiScale.small()));
-    }
-
-    private static JComponent labeled(String text, JComponent field) {
-        Box row = Box.createVerticalBox();
-        JLabel l = StyledLabels.small(text);
-        l.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, field.getPreferredSize().height));
-        row.add(l);
-        row.add(field);
-        row.setAlignmentX(Component.LEFT_ALIGNMENT);
-        return row;
-    }
-
     private final class SceneRenderer implements LiveViewport.Renderer {
         @Override
         public void advance() {
-            // Static scene - nothing to tick.
         }
 
         @Override

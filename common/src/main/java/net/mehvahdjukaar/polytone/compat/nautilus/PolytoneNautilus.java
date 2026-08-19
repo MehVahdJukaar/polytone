@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.compat;
+package net.mehvahdjukaar.polytone.compat.nautilus;
 
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.Codec;
@@ -21,7 +21,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.PolytoneModelCodecs;
 import net.mehvahdjukaar.polytone.common.companion.ContentTextures;
 import net.mehvahdjukaar.polytone.common.companion.TextureSlot;
-import net.mehvahdjukaar.polytone.compat.nautilus.BedrockImports;
+import net.mehvahdjukaar.polytone.compat.nautilus.preview.BiomeScenePreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.ColormapPreview;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.CreativeTabPreviewPanel;
 import net.mehvahdjukaar.polytone.compat.nautilus.preview.GuiModifierPreviewPanel;
@@ -52,10 +52,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-// Polytone's side of the editor integration: registers widget bindings, companion-asset rules and content
-// codecs with the editor's API, then delegates open/close to it. Everything here touches Nautilus Studio
-// classes, so callers must guard on the nautilus_studio mod being loaded.
-public final class PackEditor {
+// Polytone's side of the editor integration: widget bindings, companion-asset rules and content codecs go
+// into Nautilus Studio's API, open/close is delegated to it. Everything here touches Nautilus classes, so
+// callers must guard on CompatHandler.NAUTILUS.
+public final class PolytoneNautilus {
 
     // Live preview panels keyed by content folder; attached to the matching CodecEntry as it's built.
     private static final Map<String, TabPreview.Factory> PREVIEWS = Map.of(
@@ -92,6 +92,7 @@ public final class PackEditor {
         registerWidgetBindings();
         registerContentEntries();
         BedrockImports.register();
+        NautilusEnvironment.register();
     }
 
     // Open (or focus) the editor window. Any thread.
@@ -132,21 +133,20 @@ public final class PackEditor {
         }
     }
 
-    // Polytone's schema companions + Swing widget bindings for codecs that can't carry their schema at the
-    // declaration site (widget bindings must never leak into content code). The long-term home for a
-    // registration is still the codec's own declaration (SchemaRecord / SchemaCodecs.alt) whenever no widget
-    // is involved.
+    // Schema companions for codecs that can't carry their schema where they're declared, because a Swing
+    // widget must never be referenced from content code. Anything not involving a widget belongs on the
+    // codec's own declaration (SchemaRecord / SchemaCodecs.alt) instead.
     private static void registerWidgetBindings() {
-        // ---- MVEL expressions (the current system): one binding per PolyExpType leaf.
-        // Chips come from the type's declared inputs; validation IS the MVEL compiler.
+        // One binding per MVEL PolyExpType leaf. Chips come from the type's declared inputs, and the
+        // validator is the MVEL compiler itself.
         SchemaCodecs.registerCompanion(ColormapExp.TYPE.codec(),
                 new Schema.Custom<>(mvelEditor(ColormapExp.TYPE)));
         SchemaCodecs.registerCompanion(BlockExp.TYPE.codec(),
                 new Schema.Custom<>(mvelEditor(BlockExp.TYPE)));
         SchemaCodecs.registerCompanion(SimpleExp.TYPE.codec(),
                 new Schema.Custom<>(mvelEditor(SimpleExp.TYPE)));
-        // The color-modifier channel expressions (red/green/blue) are their OWN leaf codecs - // without their own binding they fell back to a bare string field, unlike the identical
-        // picker on colormap's x/y axes (IColormapExp).
+        // The color-modifier channels (red/green/blue) are their own leaf codec, so they need their own
+        // binding to get the same picker colormap's x/y axes have.
         SchemaCodecs.registerCompanion(ColormapModExp.TYPE.codec(),
                 new Schema.Custom<>(mvelEditor(ColormapModExp.TYPE)));
 
@@ -206,10 +206,9 @@ public final class PackEditor {
         };
     }
 
-    // Projects a content type's ContentTextures (the runtime companion-asset convention, shared with the
-    // reloaders) onto the json's sibling directory as the generic SidecarAssets the editor renders: expected
-    // slots are matched (case-insensitively) against the files actually there, in declaration order; leftover
-    // siblings the naming convention still associates with the stem come last as SidecarAssets.State#UNUSED.
+    // Projects a content type's ContentTextures onto the json's sibling directory as the SidecarAssets the
+    // editor renders. Expected slots match case-insensitively against the files actually there, in
+    // declaration order; leftover siblings the naming convention still ties to the stem come last as UNUSED.
     private static SidecarAssets sidecarsFromSpec(ContentTextures<?> spec) {
         return (jsonFile, pack, parsedValue) -> {
             Path dir = jsonFile.getParent();
@@ -261,18 +260,16 @@ public final class PackEditor {
         };
     }
 
-    // The editor holds textures heterogeneously (ContentTextures<?>) and decodes each json to an untyped
-    // Object, so it can't know the value type statically - this is the one boundary where that erasure is
-    // unavoidable. Runtime callers pass a typed value.
+    // The editor decodes each json to an untyped Object and holds textures as ContentTextures<?>, so the
+    // value type isn't known statically here. Runtime callers pass a typed value.
     @SuppressWarnings("unchecked")
     private static List<TextureSlot> expectedSlotsUnchecked(ContentTextures<?> spec, @Nullable Object parsedValue,
                                                             String stem) {
         return ((ContentTextures<Object>) spec).expectedSlots(parsedValue, stem);
     }
 
-    // Best-effort lookup of a ns:path texture inside the opened pack (handles the lenient root that may or may
-    // not contain the assets level). Null when absent - which for a MISSING card can also mean "resolves from
-    // another pack or vanilla".
+    // Looks up a ns:path texture inside the opened pack; the root may or may not include the assets level.
+    // Null when absent, which on a MISSING card can also just mean it resolves from another pack or vanilla.
     private static @Nullable Path resolvePackAsset(PackWorkspace pack, String location) {
         Identifier id = Identifier.tryParse(location);
         if (id == null) return null;

@@ -11,6 +11,6 @@ public class CompatHandler {
     public static final boolean EMF = PlatStuff.isModLoaded("entity_model_features");
     public static final boolean ETF = PlatStuff.isModLoaded("entity_texture_features");
     public static final boolean SODIUM = PlatStuff.isModLoaded("sodium");
-    public static final boolean PACK_EDITOR = PlatStuff.isModLoaded("nautilus_studio");
+    public static final boolean NAUTILUS = PlatStuff.isModLoaded("nautilus_studio");
 
 }

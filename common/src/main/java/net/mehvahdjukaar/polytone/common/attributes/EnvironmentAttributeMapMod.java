@@ -251,6 +251,14 @@ public class EnvironmentAttributeMapMod {
         return entriesToReplace.keySet();
     }
 
+    public @Nullable EnvironmentAttributeMap.Entry<?, ?> getEntry(EnvironmentAttribute<?> attribute) {
+        return entriesToReplace.get(attribute);
+    }
+
+    public boolean removes(EnvironmentAttribute<?> attribute) {
+        return entriesToRemove.contains(attribute);
+    }
+
     public boolean isEmpty() {
         return entriesToReplace.isEmpty() && entriesToRemove.isEmpty();
     }
