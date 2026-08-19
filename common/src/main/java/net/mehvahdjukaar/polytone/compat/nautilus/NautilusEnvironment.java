@@ -2,17 +2,14 @@ package net.mehvahdjukaar.polytone.compat.nautilus;
 
 import net.mehvahdjukaar.nautilus.NautilusStudioApi;
 import net.mehvahdjukaar.nautilus.env.ClientEnvironment;
-import net.mehvahdjukaar.nautilus.env.EnvironmentResolver;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.polytone.common.attributes.IExtendedEntry;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectModifier;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Polytone's attribute layers live on the client only: the server never hears about them, so the editor's
-// environment-attribute view can't find them by folding pack data. This tells it what we installed, which
+// environment-attribute view can't find them by folding pack data. This tells it what we installed so
+// those layers show up in the view anyway.
 final class NautilusEnvironment implements ClientEnvironment.Contributor {
 
     static void register() {
@@ -28,11 +26,8 @@ final class NautilusEnvironment implements ClientEnvironment.Contributor {
     }
 
     @Override
-    public List<ClientEnvironment.Row> describe(EnvironmentAttribute<?> attribute) {
-        Level level = Minecraft.getInstance().level;
-        if (level == null) return List.of();
-        HolderLookup.Provider registries = level.registryAccess();
-
+    public List<ClientEnvironment.Row> describe(EnvironmentAttribute<?> attribute,
+                                               HolderLookup.Provider registries) {
         List<ClientEnvironment.Row> rows = new ArrayList<>();
         for (var e : Polytone.DIMENSION_MODIFIERS.modifiersById().entrySet()) {
             var mods = e.getValue().attributeModifications();
@@ -55,16 +50,14 @@ final class NautilusEnvironment implements ClientEnvironment.Contributor {
                             HolderLookup.Provider registries, String source, String stage,
                             EnvironmentAttributeMapMod mod) {
         if (mod.removes(attribute)) {
-            rows.add(new ClientEnvironment.Row(source, stage, "remove", null, null,
+            rows.add(ClientEnvironment.Row.removal(source, stage,
                     "Drops the entry this map had, so the layer below shows through."));
             return;
         }
         EnvironmentAttributeMap.Entry<?, ?> entry = mod.getEntry(attribute);
         if (entry == null) return;
 
-        EnvironmentResolver.EntryText text = EnvironmentResolver.describeEntry(attribute, entry, registries);
-        rows.add(new ClientEnvironment.Row(source, stage, text.operation(), text.argument(), text.argb(),
-                dynamicNote(entry)));
+        rows.add(ClientEnvironment.Row.of(source, stage, attribute, entry, registries, dynamicNote(entry)));
     }
 
     // A colormap- or expression-backed argument is re-read every frame, so the number in the row is only

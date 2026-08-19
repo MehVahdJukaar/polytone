@@ -3,7 +3,9 @@ package net.mehvahdjukaar.polytone.compat.nautilus.preview;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.nautilus.render.BlockScene;
 import net.mehvahdjukaar.nautilus.render.BlockTint;
+import net.mehvahdjukaar.nautilus.swing.preview.LabeledSlider;
 import net.mehvahdjukaar.nautilus.swing.preview.PixelTextureView;
+import net.mehvahdjukaar.nautilus.swing.preview.PreviewImages;
 import net.mehvahdjukaar.nautilus.swing.preview.PreviewLayout;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
 import net.mehvahdjukaar.nautilus.swing.preview.scene.SceneViewport;
@@ -39,14 +41,12 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
 import javax.swing.Box;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Supplier;
@@ -68,12 +68,8 @@ public final class ColormapPreview extends ExpressionPreview {
 
     private JPanel inputsBox;
 
-    private final JSlider skySlider = new JSlider(0, 15, 15);
-    private final JLabel skyLabel = StyledLabels.mutedSmall("");
-    private final JComponent skyRow;
-    private final JSlider blockSlider = new JSlider(0, 15, 0);
-    private final JLabel blockLabel = StyledLabels.mutedSmall("");
-    private final JComponent blockRow;
+    private final LabeledSlider skySlider = new LabeledSlider("Sky light", 0, 15, 1, 15, v -> recompute());
+    private final LabeledSlider blockSlider = new LabeledSlider("Block light", 0, 15, 1, 0, v -> recompute());
 
     private volatile int currentTint = -1;
     private final BlockTint blockTint = (state, tintIndex) -> currentTint;
@@ -94,17 +90,12 @@ public final class ColormapPreview extends ExpressionPreview {
         blockPicker.setSelected(Identifier.withDefaultNamespace("grass_block"));
         biomePicker.setSelected(Identifier.withDefaultNamespace("plains"));
 
-        this.skyRow = PreviewLayout.labeled("Sky light", PreviewLayout.withValue(skySlider, skyLabel));
-        this.blockRow = PreviewLayout.labeled("Block light", PreviewLayout.withValue(blockSlider, blockLabel));
-
         blockView.setPanEnabled(false); // small fixed thumbnail: orbit/zoom to inspect, but never pan off-view
         updateScene(Blocks.GRASS_BLOCK.defaultBlockState());
 
         buildLayout();
 
         ySlider.addChangeListener(e -> recompute());
-        skySlider.addChangeListener(e -> recompute());
-        blockSlider.addChangeListener(e -> recompute());
 
         recompute();
     }
@@ -129,8 +120,8 @@ public final class ColormapPreview extends ExpressionPreview {
                 PreviewLayout.withValue(ySlider, yLabel)));
 
         PreviewLayout.addFilling(inputsBox, envGroup());
-        PreviewLayout.addFilling(inputsBox, skyRow);
-        PreviewLayout.addFilling(inputsBox, blockRow);
+        PreviewLayout.addFilling(inputsBox, skySlider);
+        PreviewLayout.addFilling(inputsBox, blockSlider);
 
         PreviewLayout.addFilling(content, inputsBox);
         content.add(Box.createVerticalStrut(UiScale.med()));
@@ -190,13 +181,11 @@ public final class ColormapPreview extends ExpressionPreview {
         Biome biome = biomePicker.getSelectedValue(Registries.BIOME);
         int y = ySlider.getValue();
         yLabel.setText("y = " + y);
-        skyLabel.setText(String.valueOf(skySlider.getValue()));
-        blockLabel.setText(String.valueOf(blockSlider.getValue()));
         updateClimate(biome);
         updateScene(state);
 
         BlockPos pos = new BlockPos(0, y, 0);
-        SimLevel level = new SimLevel(pos, state, biome, skySlider.getValue(), blockSlider.getValue());
+        SimLevel level = new SimLevel(pos, state, biome, (int) skySlider.value(), (int) blockSlider.value());
         CaptureSink sink = new CaptureSink();
 
         installSim();
@@ -308,16 +297,16 @@ public final class ColormapPreview extends ExpressionPreview {
     @Override
     protected void hideEnv() {
         super.hideEnv();
-        skyRow.setVisible(false);
-        blockRow.setVisible(false);
+        skySlider.setVisible(false);
+        blockSlider.setVisible(false);
         inputsBox.revalidate();
         inputsBox.repaint();
     }
 
     private void showEnv(boolean usedSky, boolean usedBlock) {
         boolean anyEnv = refreshEnvControls();
-        skyRow.setVisible(usedSky);
-        blockRow.setVisible(usedBlock);
+        skySlider.setVisible(usedSky);
+        blockSlider.setVisible(usedBlock);
         setEnvHeaderVisible(anyEnv || usedSky || usedBlock);
         inputsBox.revalidate();
         inputsBox.repaint();
@@ -356,7 +345,7 @@ public final class ColormapPreview extends ExpressionPreview {
                 png = dir.resolve(name + ".png");
             }
             key = "file:" + png;
-            loader = () -> readDisk(png);
+            loader = () -> PreviewImages.readFile(png);
         } else {
             // Read-only content view: resolve through the game resource manager.
             Identifier base = explicit != null ? explicit : contentId;
@@ -378,18 +367,8 @@ public final class ColormapPreview extends ExpressionPreview {
         }
         cachedImageKey = key;
         cachedArrayImage = toArrayImage(img);
-        cachedDisplayImage = toOpaque(img);
+        cachedDisplayImage = PreviewImages.toOpaque(img);
         return cachedArrayImage;
-    }
-
-    private static @Nullable BufferedImage readDisk(Path png) {
-        try {
-            if (!Files.isRegularFile(png)) return null;
-            return ImageIO.read(png.toFile());
-        } catch (Exception e) {
-            Polytone.LOGGER.warn("Colormap preview: failed to read {}", png, e);
-            return null;
-        }
     }
 
     private static @Nullable BufferedImage readResource(Identifier rl) {
@@ -415,18 +394,6 @@ public final class ColormapPreview extends ExpressionPreview {
             }
         }
         return new ArrayImage(px, w, h);
-    }
-
-    private static BufferedImage toOpaque(BufferedImage img) {
-        int w = img.getWidth();
-        int h = img.getHeight();
-        BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        for (int yy = 0; yy < h; yy++) {
-            for (int xx = 0; xx < w; xx++) {
-                out.setRGB(xx, yy, img.getRGB(xx, yy) & 0xFFFFFF);
-            }
-        }
-        return out;
     }
 
     private static final class CaptureSink implements Colormap.SampleSink {

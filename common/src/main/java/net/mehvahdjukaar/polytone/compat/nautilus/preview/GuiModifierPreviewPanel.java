@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.compat.nautilus.preview;
 
+import net.mehvahdjukaar.nautilus.swing.preview.LiveGamePanel;
 import net.mehvahdjukaar.nautilus.swing.preview.PreviewLayout;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
 import net.mehvahdjukaar.nautilus.swing.toolkit.CopyableReadout;
@@ -26,7 +27,7 @@ public final class GuiModifierPreviewPanel extends LiveGamePanel<GuiModifier> {
     private final CopyableReadout pickReadout = new CopyableReadout("Toggle picking, then click a slot in game.");
 
     public GuiModifierPreviewPanel(TabPreview.Context ctx) {
-        super("Reload live screen",
+        super(ctx, "Reload live screen",
                 "Push the modifier you're editing onto the open screen instantly (no reload).",
                 "Remove the live preview and restore the screen to its saved/loaded state.",
                 "Pick in game",
