@@ -14,10 +14,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// particle_appearance_tinting color, written as an rgb(a) array, an #AARRGGBB string or a gradient
 public sealed interface BedrockColor {
 
-    // gradient stops are these too, and packs mix both spellings freely
     Codec<BedrockColor> SOLID = Codec.withAlternative(
             BedrockCodecs.branch(Rgba.CODEC, Rgba.class),
             BedrockCodecs.branch(Hex.CODEC, Hex.class));
@@ -26,7 +24,6 @@ public sealed interface BedrockColor {
 
     record Rgba(MolangExpr r, MolangExpr g, MolangExpr b, MolangExpr a) implements BedrockColor {
 
-        // alpha is optional: plenty of packs write [r, g, b]
         public static final Codec<Rgba> CODEC = MolangExpr.CODEC.listOf().comapFlatMap(
                 list -> switch (list.size()) {
                     case 3 -> DataResult.success(new Rgba(list.get(0), list.get(1), list.get(2), MolangExpr.ONE));
@@ -60,7 +57,6 @@ public sealed interface BedrockColor {
         }
     }
 
-    // stops are keyed by position along the interpolant; a bare list spreads them evenly from 0 to 1
     record Gradient(List<Stop> stops, Optional<MolangExpr> interpolant) implements BedrockColor {
 
         private static final Codec<List<Stop>> KEYED_STOPS = Codec.unboundedMap(Codec.STRING, SOLID)

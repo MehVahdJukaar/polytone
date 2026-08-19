@@ -9,7 +9,6 @@ public class BedrockComponentTypes {
 
     private static final Map<String, BedrockComponentType<?>> BY_ID = new LinkedHashMap<>();
 
-    // emitter
     public static final BedrockComponentType<EmitterComponents.Initialization> EMITTER_INITIALIZATION =
             register("emitter_initialization", EmitterComponents.Initialization.CODEC);
     public static final BedrockComponentType<EmitterComponents.LocalSpace> EMITTER_LOCAL_SPACE =
@@ -41,7 +40,6 @@ public class BedrockComponentTypes {
     public static final BedrockComponentType<EmitterComponents.ShapeCustom> EMITTER_SHAPE_CUSTOM =
             register("emitter_shape_custom", EmitterComponents.ShapeCustom.CODEC);
 
-    // particle
     public static final BedrockComponentType<ParticleComponents.Initialization> PARTICLE_INITIALIZATION =
             register("particle_initialization", ParticleComponents.Initialization.CODEC);
     public static final BedrockComponentType<ParticleComponents.InitialSpeed> PARTICLE_INITIAL_SPEED =

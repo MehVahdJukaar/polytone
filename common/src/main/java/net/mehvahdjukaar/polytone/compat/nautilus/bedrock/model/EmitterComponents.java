@@ -20,7 +20,6 @@ public class EmitterComponents {
         ).apply(i, Initialization::new));
     }
 
-    // whether an entity-attached emitter simulates in the entity's frame or the world's
     public record LocalSpace(boolean position, boolean rotation, boolean velocity) {
         public static final Codec<LocalSpace> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.BOOL.optionalFieldOf("position", false).forGetter(LocalSpace::position),
@@ -114,7 +113,6 @@ public class EmitterComponents {
         ).apply(i, ShapeBox::new));
     }
 
-    // plane_normal accepts the axis keywords x/y/z as well as a vector
     public record ShapeDisc(MolangExpr.Vec3 planeNormal, MolangExpr.Vec3 offset, MolangExpr radius,
                             boolean surfaceOnly, BedrockShapeDirection direction) {
         private static final Codec<MolangExpr.Vec3> PLANE_NORMAL = Codec.withAlternative(

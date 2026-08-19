@@ -52,12 +52,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-// Polytone's side of the editor integration: widget bindings, companion-asset rules and content codecs go
-// into Nautilus Studio's API, open/close is delegated to it. Everything here touches Nautilus classes, so
-// callers must guard on CompatHandler.NAUTILUS.
 public final class PolytoneNautilus {
 
-    // Live preview panels keyed by content folder; attached to the matching CodecEntry as it's built.
     private static final Map<String, TabPreview.Factory> PREVIEWS = Map.of(
             "colormaps", ColormapPreview::new,
             "noises", NoisePreview::new,
@@ -66,10 +62,8 @@ public final class PolytoneNautilus {
             "custom_particles", ParticlePreview::new,
             "creative_tab_modifiers", CreativeTabPreviewPanel::new);
 
-    // Base of the in-repo wiki; a manager's wikiPage() is appended for its editor entry's help link.
     private static final String WIKI_BASE = "https://github.com/MehVahdJukaar/polytone/wiki/";
 
-    // Editor sidebar icon (nautilus svg name) per content folder.
     private static final Map<String, String> ICONS = Map.ofEntries(
             Map.entry("colormaps", "palette"),
             Map.entry("biome_modifiers", "trees"),
@@ -95,17 +89,14 @@ public final class PolytoneNautilus {
         NautilusEnvironment.register();
     }
 
-    // Open (or focus) the editor window. Any thread.
     public static void open() {
         NautilusStudioApi.openEditor();
     }
 
-    // Whether the editor window is currently open. Any thread.
     public static boolean isOpen() {
         return NautilusStudioApi.isOpen();
     }
 
-    // Close the editor window if open - it is tied to the world and goes with it. Any thread.
     public static void close() {
         NautilusStudioApi.close();
     }
@@ -137,8 +128,6 @@ public final class PolytoneNautilus {
     // widget must never be referenced from content code. Anything not involving a widget belongs on the
     // codec's own declaration (SchemaRecord / SchemaCodecs.alt) instead.
     private static void registerWidgetBindings() {
-        // One binding per MVEL PolyExpType leaf. Chips come from the type's declared inputs, and the
-        // validator is the MVEL compiler itself.
         SchemaCodecs.registerCompanion(ColormapExp.TYPE.codec(),
                 new Schema.Custom<>(mvelEditor(ColormapExp.TYPE)));
         SchemaCodecs.registerCompanion(BlockExp.TYPE.codec(),
@@ -156,7 +145,6 @@ public final class PolytoneNautilus {
                         "BIOME_VALUE", "DAMAGE")));
         SchemaCodecs.registerCompanion(BlockContextExpression.CODEC,
                 new Schema.Custom<>(exp4jEditor(BlockContextExpression.CODEC, null)));
-        // Legacy exp4j color-modifier expression: the colormap vars plus the RGBA channel inputs.
         SchemaCodecs.registerCompanion(ColormapModContextExpression.CODEC,
                 new Schema.Custom<>(exp4jEditor(ColormapModContextExpression.CODEC, "state_prop",
                         "BIOME_VALUE", "DAMAGE", "RED", "GREEN", "BLUE", "ALPHA")));
@@ -186,9 +174,6 @@ public final class PolytoneNautilus {
                 .validator(compileCheck(type.codec()));
     }
 
-    // Expression editor for an exp4j PolytoneExpression codec: the family's base variables
-    // (straight from PolytoneExpression.buildVars) plus the flavor's own extras, compile-check
-    // through the codec itself.
     private static ExpressionWidget.Def exp4jEditor(Codec<?> codec, @Nullable String function,
                                                     String... extraVars) {
         ExpressionWidget.Def def = ExpressionWidget.define()
@@ -215,10 +200,10 @@ public final class PolytoneNautilus {
             if (dir == null || !Files.isDirectory(dir)) return List.of();
             String stem = FileNamesUtil.stem(String.valueOf(jsonFile.getFileName()));
 
-            Map<String, Path> siblings = new LinkedHashMap<>(); // lowercase name -> path
+            Map<String, Path> siblingsByLowerName = new LinkedHashMap<>();
             try (Stream<Path> stream = Files.list(dir)) {
                 stream.filter(Files::isRegularFile).sorted().forEach(p ->
-                        siblings.putIfAbsent(String.valueOf(p.getFileName()).toLowerCase(Locale.ROOT), p));
+                        siblingsByLowerName.putIfAbsent(String.valueOf(p.getFileName()).toLowerCase(Locale.ROOT), p));
             } catch (IOException e) {
                 return List.of();
             }
@@ -237,7 +222,7 @@ public final class PolytoneNautilus {
                 }
                 Path found = null;
                 for (String name : slot.acceptedNames()) {
-                    found = siblings.get(name.toLowerCase(Locale.ROOT));
+                    found = siblingsByLowerName.get(name.toLowerCase(Locale.ROOT));
                     if (found != null) break;
                 }
                 if (found != null) {
@@ -250,7 +235,7 @@ public final class PolytoneNautilus {
                             SidecarAssets.State.MISSING, slot.label()));
                 }
             }
-            for (Path p : siblings.values()) {
+            for (Path p : siblingsByLowerName.values()) {
                 if (consumed.contains(p)) continue;
                 String name = String.valueOf(p.getFileName());
                 String label = spec.roleLabel(name, stem);

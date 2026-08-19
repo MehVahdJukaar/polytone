@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 // Wires the Bedrock particle importer into Nautilus Studio's Import button: one for a single effect, one for a
-// whole Bedrock resource pack. Both write straight into the open workspace and hand back the converter's
-// diagnostics as notes, which is where the user finds out what still needs doing by hand.
 public final class BedrockImports {
 
     // Not html-escaped: expressions are full of < and >, and < in a pack file is unreadable.
@@ -88,7 +86,6 @@ public final class BedrockImports {
         return null;
     }
 
-    // Accumulates one import: converts effects, writes files, collects notes
     private static final class Writer {
 
         private final PackWorkspace workspace;
@@ -155,7 +152,6 @@ public final class BedrockImports {
             }
         }
 
-        // Cuts the effect's rect out of the Bedrock atlas and drops it in as a particle sprite
         private void extractTexture(ConversionResult.TextureRequest request, String source) {
             Path target = spritePath(request.targetSprite());
             if (target == null) {
