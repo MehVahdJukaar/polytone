@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.mixins;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ResourceManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

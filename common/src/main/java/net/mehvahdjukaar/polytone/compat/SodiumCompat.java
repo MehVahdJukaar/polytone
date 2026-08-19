@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.compat;
 
-import net.caffeinemc.mods.sodium.client.render.chunk.region.RenderRegion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LevelReader;

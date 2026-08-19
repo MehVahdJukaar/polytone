@@ -26,7 +26,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.material.FogType;
 import org.joml.Vector4f;
-import org.lwjgl.system.MemoryStack;
 
 public class FogRenderer {
     public static final List<FogEnvironment> FOG_ENVIRONMENTS = Lists.newArrayList(

@@ -13,7 +13,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class OptionHolder<T> {

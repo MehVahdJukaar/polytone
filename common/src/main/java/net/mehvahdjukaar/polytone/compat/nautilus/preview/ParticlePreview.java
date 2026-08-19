@@ -51,7 +51,6 @@ import org.joml.Vector3f;
 
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
@@ -371,9 +370,7 @@ public final class ParticlePreview extends ExpressionPreview {
             RenderSystem.setProjectionMatrix(projectionBuffer.getBuffer(camera.projection((float) width / height)),
                     ProjectionType.PERSPECTIVE);
 
-            // Ground grid + RGB axes at the spawn point, for spatial reference (and so the viewport is
-            // never blank while the particle is between lives). Drawn through the RenderType pipeline,
-            // which honours the editor's offscreen redirect, before the particle model-view is pushed.
+            // Goes through the RenderType pipeline, which honours the editor's offscreen redirect.
             drawReference(camera);
 
             CustomParticleInstance p = particle;
@@ -386,12 +383,10 @@ public final class ParticlePreview extends ExpressionPreview {
             addToGroup(engine, p);
             for (Particle c : children) if (c.isAlive()) addToGroup(engine, c);
 
-            // Frustum expects the camera-RELATIVE (rotation-only) view matrix: calculateFrustum bakes
-            // projection*frustum, and cubeInFrustum then subtracts the prepare() camera position from
-            // every AABB. Passing the full camera.view() (which already carries the -distance/-target
-            // translation) on top of prepare(ex,ey,ez) double-counts the camera offset, so the cull
-            // volume lands in the wrong place and the particle popped out after a few degrees of orbit.
-            // Rx(pitch)Ry(yaw) is exactly SceneCamera.view() minus its translations.
+            // Frustum wants the rotation-only view matrix: cubeInFrustum already subtracts the prepare()
+            // camera position from every AABB, so passing the full camera.view() (which carries the
+            // -distance/-target translation) double-counts the offset and the particle culls out after a
+            // few degrees of orbit. Rx(pitch)Ry(yaw) is SceneCamera.view() minus its translations.
             Matrix4f frustumRotation = new Matrix4f()
                     .rotateX((float) Math.toRadians(camera.pitchDeg()))
                     .rotateY((float) Math.toRadians(camera.yawDeg()));
@@ -414,11 +409,10 @@ public final class ParticlePreview extends ExpressionPreview {
             camState.orientation = previewCamera.rotation();
             camState.initialized = true;
 
-            // Particle quads are stored camera-relative (worldPos - eye) with a world-space billboard
-            // (LOOK_AT_* copies previewCamera.rotation()); prepare() bakes the model-view matrix into
-            // their transform. Using the conjugate of the very rotation the billboard used guarantees
-            // the two cancel to screen-facing, whatever yaw/pitch convention place() picked - deriving
-            // it independently (Rx(pitch)Ry(yaw)) only lines up when place() happens to be exact.
+            // Particle quads are camera-relative (worldPos - eye) with a world-space billboard that copies
+            // previewCamera.rotation(), and prepare() bakes the model-view into their transform. Using the
+            // conjugate of that same rotation is what makes the two cancel to screen-facing; deriving the
+            // matrix independently only lines up when place() happens to agree on the convention.
             Matrix4fStack mv = RenderSystem.getModelViewStack();
             mv.pushMatrix();
             mv.mul(new Matrix4f().rotation(new Quaternionf(previewCamera.rotation()).conjugate()));
@@ -437,12 +431,11 @@ public final class ParticlePreview extends ExpressionPreview {
             }
         }
 
-        // A ground grid on the spawn plane plus short red/green/blue X/Y/Z axes at the spawn point.
-        // Drawn as flat/edge quads through debugQuads (POSITION_COLOR): the lines render type needs a
-        // per-vertex LineWidth element the buffer source can't supply here (it corrupts the shared
-        // buffer and crashes the next frame's ShadowFeatureRenderer). Camera view baked into the pose
-        // (world space), like the biome scene pass; the model-view stack is at identity here, before
-        // the particle pass pushes its rotation onto it. Lines are ~4cm thick so they read at any zoom.
+        // Ground grid on the spawn plane plus short red/green/blue axes, so the viewport is never blank
+        // while the particle is between lives. Quads, not lines: the lines render type needs a per-vertex
+        // LineWidth element the buffer source can't supply here, which corrupts the shared buffer and
+        // crashes the next frame's ShadowFeatureRenderer. Camera view baked into the pose, since the
+        // model-view stack is still at identity at this point.
         private void drawReference(SceneCamera camera) {
             if (spawn == null) return;
             MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
@@ -529,18 +522,14 @@ public final class ParticlePreview extends ExpressionPreview {
         }
     }
 
-    // A Camera the preview can aim by hand: particles billboard + position relative to the camera passed to
-    // extract, and vanilla's setters are protected, so a subclass exposes them (no access widener, matching
-    // the biome scene pass's no-AW approach).
+    // Particles billboard and position relative to the camera handed to extract, and vanilla's setters are
+    // protected, so a subclass exposes them (no access widener, same as the biome scene pass).
     private static final class PreviewCamera extends Camera {
-        // Orient straight from the orbit's yaw/pitch instead of round-tripping through the look vector.
-        // SceneCamera.view()'s rotation is Rx(pitch)Ry(yaw); the render pass sets the model-view to the
-        // conjugate of this camera's rotation, so for the billboard (which copies camera.rotation()) to
-        // cancel to screen-facing AND for positions to line up with the reference grid, this camera's
-        // rotation must be exactly Ry(-yaw)Rx(-pitch) = conjugate of that view rotation. Vanilla
-        // setRotation(yRot, xRot) builds Ry(pi - yRot)Rx(-xRot), so yRot = 180 + yaw and xRot = pitch
-        // give precisely Ry(-yaw)Rx(-pitch). The old atan2 reconstruction only matched by luck of
-        // convention, which left the quad tilted edge-on (visible only as the whole atlas when zoomed far out).
+        // The rotation has to be exactly Ry(-yaw)Rx(-pitch), the conjugate of SceneCamera.view()'s rotation:
+        // the render pass sets the model-view to that conjugate, and the billboard copies this camera's
+        // rotation, so only then do the two cancel to screen-facing. setRotation(yRot, xRot) builds
+        // Ry(pi - yRot)Rx(-xRot), hence the 180 + yaw. Rebuilding it from the look vector instead lands
+        // edge-on, which only shows up as the whole atlas once you zoom far out.
         void place(Vec3 eye, float yawDeg, float pitchDeg) {
             this.setRotation(180f + yawDeg, pitchDeg);
             this.setPosition(eye);

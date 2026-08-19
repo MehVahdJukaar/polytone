@@ -3,9 +3,7 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
-import net.minecraft.world.entity.Display;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
