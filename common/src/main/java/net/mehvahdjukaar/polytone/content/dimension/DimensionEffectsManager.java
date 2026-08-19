@@ -19,6 +19,7 @@ import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -132,6 +133,10 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         if (post != null) {
             builder.addConstantLayer(post);
         }
+    }
+
+    public Map<Identifier, DimensionEffectsModifier> modifiersById() {
+        return Collections.unmodifiableMap(effectsToApply);
     }
 
     public boolean hasModifiedAttributes() {

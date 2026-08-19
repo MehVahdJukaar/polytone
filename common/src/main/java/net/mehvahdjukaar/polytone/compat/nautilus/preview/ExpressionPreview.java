@@ -1,36 +1,24 @@
 package net.mehvahdjukaar.polytone.compat.nautilus.preview;
 
-import net.mehvahdjukaar.nautilus.swing.preview.PreviewStatus;
-import net.mehvahdjukaar.nautilus.swing.preview.PreviewSurface;
-import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
+import net.mehvahdjukaar.nautilus.swing.preview.LivePreview;
+import net.mehvahdjukaar.nautilus.swing.preview.PreviewLayout;
 import net.mehvahdjukaar.nautilus.swing.toolkit.StyledLabels;
-import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
 import net.mehvahdjukaar.polytone.common.expressions.preview.PreviewContext;
 import net.mehvahdjukaar.polytone.common.expressions.preview.SimProxies;
 import net.mehvahdjukaar.polytone.common.expressions.preview.SimValue;
 
 import javax.swing.Box;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
-import javax.swing.Timer;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-// Shared scaffolding for the live expression previews: surface chrome, the "Live at player" toggle and
-// the SimProxies harness, which reveals only the sliders a pass actually read. Subclasses wrap each
-// evaluation in installSim()/clearSim(), then call refreshEnvControls().
-public abstract class ExpressionPreview implements TabPreview {
-
-    protected final PreviewStatus status = new PreviewStatus();
-
-    // "Live at player" bypasses simulation: subclasses sample/tick against the real world on a timer.
-    protected final JCheckBox liveToggle = new JCheckBox("Live at player");
-    protected boolean liveMode;
-    private final Timer liveTimer = new Timer(500, e -> { if (liveMode) recompute(); });
+// Shared scaffolding for the live expression previews: the SimProxies harness, which reveals only the
+// sliders a pass actually read. Subclasses wrap each evaluation in installSim()/clearSim(), then call
+// refreshEnvControls().
+public abstract class ExpressionPreview extends LivePreview {
 
     // One SimProxies per panel, so slider state is independent per open tab.
     protected final SimProxies sim = new SimProxies();
@@ -38,9 +26,8 @@ public abstract class ExpressionPreview implements TabPreview {
     private final Box envSection = Box.createVerticalBox();
     private final JLabel envHeader = StyledLabels.muted("Environment");
 
-    protected PreviewSurface root;
-
     protected ExpressionPreview() {
+        super("Live at player", "Sample the real world at the player instead of the simulated inputs.");
         // One row per sim input, hidden until an evaluation is seen reading it.
         for (SimValue v : sim.values()) {
             EnvControl c = new EnvControl(v, this::recompute);
@@ -51,41 +38,10 @@ public abstract class ExpressionPreview implements TabPreview {
         }
         envHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
         envSection.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        liveToggle.setOpaque(false);
-        liveToggle.setToolTipText("Sample the real world at the player instead of the simulated inputs.");
-        liveToggle.addActionListener(e -> setLiveMode(liveToggle.isSelected()));
     }
-
-    @Override
-    public JComponent component() {
-        return root;
-    }
-
-    @Override
-    public void dispose() {
-        liveTimer.stop();
-    }
-
-    protected abstract void recompute();
-
-    protected void setLiveMode(boolean live) {
-        this.liveMode = live;
-        onLiveModeChanged(live);
-        if (live) liveTimer.start();
-        else liveTimer.stop();
-        if (root != null) {
-            root.revalidate();
-            root.repaint();
-        }
-        recompute();
-    }
-
-    protected void onLiveModeChanged(boolean live) {}
 
     protected JComponent envGroup() {
-        Box box = Box.createVerticalBox();
-        box.setAlignmentX(Component.LEFT_ALIGNMENT);
+        Box box = PreviewLayout.column();
         box.add(envHeader);
         box.add(envSection);
         return box;
@@ -122,45 +78,9 @@ public abstract class ExpressionPreview implements TabPreview {
         refreshEnvControls();
     }
 
-    protected static void addRow(Box toolbar, JComponent row) {
-        row.setAlignmentX(Component.LEFT_ALIGNMENT);
-        row.setMaximumSize(UiScale.maxHeightHugging(row));
-        toolbar.add(row);
-        toolbar.add(Box.createVerticalStrut(UiScale.small()));
-    }
-
-    protected static void addField(JComponent box, JComponent field) {
-        field.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setMaximumSize(UiScale.maxHeightHugging(field));
-        box.add(field);
-        box.add(Box.createVerticalStrut(UiScale.small()));
-    }
-
-    protected static JComponent labeled(String text, JComponent field) {
-        Box row = Box.createVerticalBox();
-        JLabel l = StyledLabels.small(text);
-        l.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, field.getPreferredSize().height));
-        row.add(l);
-        row.add(field);
-        row.setAlignmentX(Component.LEFT_ALIGNMENT);
-        return row;
-    }
-
-    protected static JComponent withValue(JSlider slider, JLabel value) {
-        Box row = Box.createHorizontalBox();
-        slider.setAlignmentY(Component.CENTER_ALIGNMENT);
-        value.setAlignmentY(Component.CENTER_ALIGNMENT);
-        row.add(slider);
-        row.add(Box.createHorizontalStrut(6));
-        row.add(value);
-        return row;
-    }
-
     // env slider row bound to one SimProxies input
 
-    protected static final class EnvControl {
+    private static final class EnvControl {
         final SimValue input;
         final JLabel value = new JLabel();
         final JComponent row;
@@ -175,7 +95,7 @@ public abstract class ExpressionPreview implements TabPreview {
                 input.set(input.min() + slider.getValue() * input.step());
                 onChange.run();
             });
-            this.row = labeled(input.label(), withValue(slider, value));
+            this.row = PreviewLayout.labeled(input.label(), PreviewLayout.withValue(slider, value));
             value.setText(format());
         }
 
