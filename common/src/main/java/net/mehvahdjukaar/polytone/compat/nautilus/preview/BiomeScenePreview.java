@@ -35,9 +35,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-// Live preview for biome effect modifiers. Renders a tiny stylised diorama - a grass shore with a small oak
-// and tufts of grass dropping into a water pool, under a sky/fog dome - through the game's own block models
-// offscreen (see BiomeSceneRenderPass).
 public final class BiomeScenePreview extends LivePreview {
 
     private static final int DEF_SKY = 0x78A7FF;
@@ -120,7 +117,6 @@ public final class BiomeScenePreview extends LivePreview {
         viewport.refresh();
     }
 
-    // Base = the biome's own colour (or a default when unresolved); each channel the modifier sets wins.
     private Colors resolveColors(@Nullable BiomeEffectModifier m, @Nullable Biome biome, double bx, double bz) {
         int sky = DEF_SKY, fog = DEF_FOG;
         if (biome != null) {
@@ -138,8 +134,6 @@ public final class BiomeScenePreview extends LivePreview {
         return new Colors(sky, fog, grass, foliage, water, gcm);
     }
 
-    // Static read of a colour attribute: prefer the modifier-applied map, fall back to the biome's own,
-    // then the default. applyModifier resolves any modifier chain against the supplied base.
     private static int readColor(EnvironmentAttributeMap eff, EnvironmentAttributeMap base,
                                  EnvironmentAttribute<Integer> attr, int def) {
         if (eff.contains(attr)) return eff.applyModifier(attr, def) & 0xFFFFFF;
@@ -155,8 +149,7 @@ public final class BiomeScenePreview extends LivePreview {
         return (override.isPresent() ? override.get() : base) & 0xFFFFFF;
     }
 
-    // A 7x7 grass shelf on dirt, a far corner carved out one block deep for the pool, plus a small oak
-    // and a few grass tufts on the shore. Block y=1 is the shore top, y=0 the pool floor.
+    // Block y=1 is the shore top, y=0 the pool floor.
     private static List<Placement> buildDiorama() {
         BlockState grass = Blocks.GRASS_BLOCK.defaultBlockState();
         BlockState dirt = Blocks.DIRT.defaultBlockState();

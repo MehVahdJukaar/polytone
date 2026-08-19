@@ -80,7 +80,6 @@ abstract class LiveGamePanel<T> extends PreviewPanel {
         PreviewLayout.add(group, pickActive);
     }
 
-    // Titled toolbar row, a one-line blurb, the apply/undo pair, then the subclass's own group under it.
     protected void installPanel(String title, String blurb, JPanel group) {
         Box content = PreviewLayout.column();
         PreviewLayout.add(content, PreviewLayout.ellipsizing(StyledLabels.small(blurb)));

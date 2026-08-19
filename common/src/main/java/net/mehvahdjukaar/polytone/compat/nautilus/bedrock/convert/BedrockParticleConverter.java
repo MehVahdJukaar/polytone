@@ -27,7 +27,7 @@ import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
 // particle_* components become the visible particle, emitter_* ones a second invisible particle whose
-// particle_emitters spawn the first. See the package README for what that trade costs.
+// particle_emitters spawn the first.
 public class BedrockParticleConverter {
 
     public static ConversionResult convert(BedrockParticleFile file, ConversionOptions options) {
@@ -80,7 +80,6 @@ public class BedrockParticleConverter {
         return json;
     }
 
-    // returns the lifetime in ticks when it is a fixed number, which decides how creation events convert
     private static OptionalDouble convertLifetime(BedrockComponents components, PolytoneParticleJson json,
                                                   ConversionOptions options, DiagnosticSink sink) {
         Optional<ParticleComponents.LifetimeExpression> lifetime =
@@ -111,7 +110,6 @@ public class BedrockParticleConverter {
         return ticks;
     }
 
-    // true when the particle draws nothing and exists only to run its components
     private static boolean convertBillboard(BedrockComponents components, PolytoneParticleJson json,
                                             ConversionOptions options, DiagnosticSink sink) {
         Optional<ParticleComponents.AppearanceBillboard> maybe =
@@ -363,7 +361,6 @@ public class BedrockParticleConverter {
         return actions;
     }
 
-    // a sequence runs all children, a randomize picks one by weight
     private static void flatten(BedrockEvent event, double chance, List<EventAction> out) {
         event.particleEffect().ifPresent(ref -> out.add(new EventAction(chance, ref, null)));
         event.soundEffect().ifPresent(ref -> out.add(new EventAction(chance, null, ref.eventName())));

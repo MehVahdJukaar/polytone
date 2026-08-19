@@ -10,7 +10,6 @@ import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.model.BedrockParticleF
 
 import java.util.List;
 
-// Not part of a resource reload. Driven by an editor action or dev command that writes the result files into a pack.
 public class BedrockParticleImporter {
 
     public static DataResult<BedrockParticleFile> parse(JsonElement json) {

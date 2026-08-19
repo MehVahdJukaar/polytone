@@ -66,7 +66,6 @@ public class PolytoneExpressions {
         return parenthesize(left) + "*" + parenthesize(right);
     }
 
-    // uniform in [-half, half], what a box emitter needs per axis
     public static String randomSymmetric(String half) {
         if (isZero(half)) return "0";
         OptionalDouble constant = asNumber(half);
@@ -83,7 +82,6 @@ public class PolytoneExpressions {
         return "random.gaussian()*" + parenthesize(scale);
     }
 
-    // per-tick form of Bedrock's dynamic motion
     public static String integrateVelocity(Axis axis, double dragMultiplier, String accelerationPerTick) {
         return add(scale(velocity(axis), dragMultiplier), accelerationPerTick);
     }

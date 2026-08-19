@@ -27,7 +27,6 @@ public final class NoisePreview extends PreviewPanel {
     private static final int IMAGE_SIZE = 160;
 
     private final PixelTextureView imageView = new PixelTextureView();
-    // World span across the image, in blocks; larger = more zoomed out (more features visible).
     private final JSlider spanSlider = new JSlider(4, 128, 32);
     private final JLabel spanLabel = StyledLabels.mutedSmall("");
 

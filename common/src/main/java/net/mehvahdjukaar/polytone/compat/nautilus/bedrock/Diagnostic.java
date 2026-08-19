@@ -2,14 +2,11 @@ package net.mehvahdjukaar.polytone.compat.nautilus.bedrock;
 
 import org.apache.commons.lang3.StringUtils;
 
-// where is the component id or json path the note came from, so the editor can point at it
 public record Diagnostic(Level level, String where, String message) {
 
     public enum Level {
         INFO,
-        // converted approximately, or dropped without breaking the result
         WARN,
-        // not converted, output is likely wrong
         ERROR
     }
 

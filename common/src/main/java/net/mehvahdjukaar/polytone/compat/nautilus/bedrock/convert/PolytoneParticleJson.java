@@ -67,13 +67,11 @@ public class PolytoneParticleJson {
         return this;
     }
 
-    // evaluated once, when the particle is born
     public PolytoneParticleJson init(String key, String expression) {
         initializer.addProperty(key, expression);
         return this;
     }
 
-    // re-evaluated every tick
     public PolytoneParticleJson tick(String key, String expression) {
         ticker.addProperty(key, expression);
         return this;

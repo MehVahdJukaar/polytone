@@ -59,7 +59,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-// Live preview for Polytone custom particles
 public final class ParticlePreview extends ExpressionPreview {
 
     private final @Nullable Identifier contentId;
@@ -338,7 +337,6 @@ public final class ParticlePreview extends ExpressionPreview {
             installSim();
             ParticlePreviewState.begin(this::captureChild);
             try {
-                // null options: the type builds a plain instance (no BlockState / extra data needed here).
                 Particle p = t.createParticle(null, level, spawn.x, spawn.y, spawn.z, 0, 0, 0, random);
                 particle = p instanceof CustomParticleInstance cpi ? cpi : null;
                 if (particle == null) diag = "spawn returned null";
