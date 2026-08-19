@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.bedrock;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,7 +25,6 @@ public record Diagnostic(Level level, String where, String message) {
         return new Diagnostic(Level.ERROR, where, message);
     }
 
-    // Molang in the wild runs to thousands of characters; quoting one whole drowns the report
     public static String brief(String text) {
         return StringUtils.abbreviate(StringUtils.normalizeSpace(text), 70);
     }

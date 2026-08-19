@@ -10,10 +10,9 @@ import net.mehvahdjukaar.nautilus.swing.toolkit.UiICons;
 import net.mehvahdjukaar.nautilus.workbench.ImportEntry;
 import net.mehvahdjukaar.nautilus.workbench.ImportReport;
 import net.mehvahdjukaar.nautilus.workbench.PackWorkspace;
-import net.mehvahdjukaar.polytone.bedrock.BedrockParticleImporter;
-import net.mehvahdjukaar.polytone.bedrock.Diagnostic;
-import net.mehvahdjukaar.polytone.bedrock.convert.ConversionOptions;
-import net.mehvahdjukaar.polytone.bedrock.convert.ConversionResult;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.BedrockParticleImporter;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.Diagnostic;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.convert.ConversionResult;
 import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
