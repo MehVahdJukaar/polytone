@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.config;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.compat.PackEditor;
+import net.mehvahdjukaar.polytone.compat.nautilus.PolytoneNautilus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -28,7 +28,7 @@ final class EditorButton extends Button {
 
     private final int spriteWidth;
     private final int spriteHeight;
-    // Whether the separate PackEditor mod is installed. When false, every PackEditor call is short-circuited
+    // Whether Nautilus Studio is installed. When false, every editor call is short-circuited
     // so its (absent) classes are never loaded, and the button stays grey.
     private final boolean available;
     private volatile boolean loading;
@@ -65,14 +65,14 @@ final class EditorButton extends Button {
     private void open() {
         if (loading || Minecraft.getInstance().level == null) return;
         // Already open: just focus it - no spinner, no rebuild (single instance).
-        if (PackEditor.isOpen()) {
-            PackEditor.open();
+        if (PolytoneNautilus.isOpen()) {
+            PolytoneNautilus.open();
             return;
         }
         loading = true;
         Thread t = new Thread(() -> {
             try {
-                PackEditor.open();
+                PolytoneNautilus.open();
             } catch (Throwable e) {
                 Polytone.LOGGER.error("Failed to open Polytone codec editor", e);
             } finally {
@@ -88,7 +88,7 @@ final class EditorButton extends Button {
     protected void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         // Vanilla button background (greys to the disabled sprite when inactive) + centred icon.
         renderDefaultSprite(guiGraphics);
-        boolean active = available && !loading && PackEditor.isOpen();
+        boolean active = available && !loading && PolytoneNautilus.isOpen();
         Identifier sprite = loading ? ICON_LOADING : (active ? ICON_ACTIVE : ICON);
         int x = getX() + (getWidth() - spriteWidth) / 2;
         int y = getY() + (getHeight() - spriteHeight) / 2;

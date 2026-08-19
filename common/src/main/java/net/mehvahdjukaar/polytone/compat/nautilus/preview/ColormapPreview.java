@@ -1,16 +1,13 @@
 package net.mehvahdjukaar.polytone.compat.nautilus.preview;
 
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.nautilus.SchemaEditor.Side;
 import net.mehvahdjukaar.nautilus.render.BlockScene;
 import net.mehvahdjukaar.nautilus.render.BlockTint;
 import net.mehvahdjukaar.nautilus.swing.preview.PixelTextureView;
-import net.mehvahdjukaar.nautilus.swing.preview.PreviewSurface;
+import net.mehvahdjukaar.nautilus.swing.preview.PreviewLayout;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
 import net.mehvahdjukaar.nautilus.swing.preview.scene.SceneViewport;
 import net.mehvahdjukaar.nautilus.swing.toolkit.ColorSwatch;
-import net.mehvahdjukaar.nautilus.swing.toolkit.EditorOps;
-import net.mehvahdjukaar.nautilus.swing.toolkit.GroupPanels;
 import net.mehvahdjukaar.nautilus.swing.toolkit.SquareRow;
 import net.mehvahdjukaar.nautilus.swing.toolkit.StyledLabels;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
@@ -24,11 +21,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.LightLayer;
@@ -44,14 +39,11 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -107,8 +99,8 @@ public final class ColormapPreview extends ExpressionPreview {
         blockPicker.setSelected(Identifier.withDefaultNamespace("grass_block"));
         biomePicker.setSelected(Identifier.withDefaultNamespace("plains"));
 
-        this.skyRow = labeled("Sky light", withValue(skySlider, skyLabel));
-        this.blockRow = labeled("Block light", withValue(blockSlider, blockLabel));
+        this.skyRow = PreviewLayout.labeled("Sky light", PreviewLayout.withValue(skySlider, skyLabel));
+        this.blockRow = PreviewLayout.labeled("Block light", PreviewLayout.withValue(blockSlider, blockLabel));
 
         blockView.setPanEnabled(false); // small fixed thumbnail: orbit/zoom to inspect, but never pan off-view
         updateScene(Blocks.GRASS_BLOCK.defaultBlockState());
@@ -129,60 +121,36 @@ public final class ColormapPreview extends ExpressionPreview {
     }
 
     private void buildLayout() {
-        Box toolbar = Box.createVerticalBox();
-
-        Box topRow = Box.createHorizontalBox();
-        topRow.add(status);
-        topRow.add(Box.createHorizontalGlue());
-        addRow(toolbar, topRow);
-
-        Box content = Box.createVerticalBox();
+        Box content = PreviewLayout.column();
 
         // The block choice isn't a simulated input - it only picks which block the 3D view shows and
         // tints - so it lives outside the group and stays usable in every mode, live included.
-        addField(content, labeled("Block", blockPicker));
+        PreviewLayout.add(content, PreviewLayout.labeled("Block", blockPicker));
+        PreviewLayout.add(content, liveToggle);
 
-        liveToggle.setAlignmentX(Component.LEFT_ALIGNMENT);
-        content.add(liveToggle);
-        content.add(Box.createVerticalStrut(UiScale.small()));
-
-        inputsBox = GroupPanels.outlined();
-        inputsBox.setLayout(new BoxLayout(inputsBox, BoxLayout.Y_AXIS));
-        inputsBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        JLabel groupHeader = StyledLabels.muted("Simulated inputs");
-        groupHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
-        inputsBox.add(groupHeader);
+        inputsBox = PreviewLayout.group("Simulated inputs");
+        PreviewLayout.add(inputsBox, PreviewLayout.labeled("Biome", biomePicker));
+        PreviewLayout.add(inputsBox, climateReadout);
         inputsBox.add(Box.createVerticalStrut(UiScale.small()));
+        PreviewLayout.add(inputsBox, PreviewLayout.labeled("Y level",
+                PreviewLayout.withValue(ySlider, yLabel)));
 
-        addField(inputsBox, labeled("Biome", biomePicker));
-        climateReadout.setAlignmentX(Component.LEFT_ALIGNMENT);
-        inputsBox.add(climateReadout);
-        inputsBox.add(Box.createVerticalStrut(UiScale.med()));
-        addField(inputsBox, labeled("Y level", withValue(ySlider, yLabel)));
+        PreviewLayout.addFilling(inputsBox, envGroup());
+        PreviewLayout.addFilling(inputsBox, skyRow);
+        PreviewLayout.addFilling(inputsBox, blockRow);
 
-        skyRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        blockRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        inputsBox.add(envGroup());
-        inputsBox.add(skyRow);
-        inputsBox.add(blockRow);
-
-        content.add(inputsBox);
+        PreviewLayout.addFilling(content, inputsBox);
         content.add(Box.createVerticalStrut(UiScale.med()));
 
         blockView.setBorder(UiTheme.hairlineBorder());
         imageView.setBorder(UiTheme.hairlineBorder());
 
-        SquareRow topSquares = new SquareRow(UiScale.med(), UiScale.px(84), UiScale.px(196), blockView, swatch);
-        topSquares.setAlignmentX(Component.LEFT_ALIGNMENT);
-        content.add(topSquares);
+        PreviewLayout.addFilling(content,
+                new SquareRow(UiScale.med(), UiScale.px(84), UiScale.px(196), blockView, swatch));
         content.add(Box.createVerticalStrut(UiScale.med()));
-        SquareRow textureRow = new SquareRow(0, UiScale.px(140), UiScale.px(400), imageView);
-        textureRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-        content.add(textureRow);
+        PreviewLayout.addFilling(content, new SquareRow(0, UiScale.px(140), UiScale.px(400), imageView));
 
-        root = new PreviewSurface(toolbar, content);
-        root.setMinimumSize(new Dimension(UiScale.px(160), UiScale.px(120)));
+        install(content);
     }
 
     @Override
@@ -192,7 +160,7 @@ public final class ColormapPreview extends ExpressionPreview {
     }
 
     @Override
-    protected void onLiveModeChanged(boolean live) {
+    protected void onLiveChanged(boolean live) {
         inputsBox.setVisible(!live);
     }
 
@@ -200,7 +168,7 @@ public final class ColormapPreview extends ExpressionPreview {
     protected void recompute() {
         Colormap cm = this.colormap;
         if (cm == null) {
-            status.info("Waiting for a valid colormap...");
+            statusText("Waiting for a valid colormap...");
             clearResult();
             clearImage();
             hideEnv();
@@ -211,7 +179,7 @@ public final class ColormapPreview extends ExpressionPreview {
         if (cm.needsToFillTexture()) {
             ArrayImage img = resolveSourceImage(cm);
             if (img == null) {
-                status.error("No source .png found for this colormap.");
+                statusError("No source .png found for this colormap.");
                 clearResult();
                 clearImage();
                 hideEnv();
@@ -220,13 +188,13 @@ public final class ColormapPreview extends ExpressionPreview {
             cm.acceptTexture(img);
         }
 
-        if (liveMode) sampleLive(cm);
+        if (isLive()) sampleLive(cm);
         else sampleSimulated(cm);
     }
 
     private void sampleSimulated(Colormap cm) {
         BlockState state = resolveBlock(blockPicker.getSelected()).defaultBlockState();
-        Biome biome = resolveBiome(biomePicker.getSelected());
+        Biome biome = biomePicker.getSelectedValue(Registries.BIOME);
         int y = ySlider.getValue();
         yLabel.setText("y = " + y);
         skyLabel.setText(String.valueOf(skySlider.getValue()));
@@ -242,7 +210,7 @@ public final class ColormapPreview extends ExpressionPreview {
         try {
             cm.sampleColor(level, state, pos.getCenter(), biome, null, sink);
         } catch (Exception ex) {
-            status.error("Sampling failed: " + ex.getMessage());
+            statusError("Sampling failed: " + ex.getMessage());
             clearResult();
             showSourceNoMarker();
             showEnv(level.usedSky, level.usedBlock);
@@ -260,7 +228,7 @@ public final class ColormapPreview extends ExpressionPreview {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null || mc.level == null) {
-            status.error("No world loaded - can't sample at the player.");
+            statusText("No world loaded - can't sample at the player.");
             clearResult();
             showSourceNoMarker();
             return;
@@ -278,7 +246,7 @@ public final class ColormapPreview extends ExpressionPreview {
         try {
             cm.sampleColor(mc.level, state, pos.getCenter(), biome, null, sink);
         } catch (Exception ex) {
-            status.error("Sampling failed: " + ex.getMessage());
+            statusError("Sampling failed: " + ex.getMessage());
             clearResult();
             showSourceNoMarker();
             return;
@@ -288,7 +256,7 @@ public final class ColormapPreview extends ExpressionPreview {
 
     private void applyResult(CaptureSink sink) {
         if (!sink.captured) {
-            status.info("Colormap produced no sample.");
+            statusText("Colormap produced no sample.");
             clearResult();
             showSourceNoMarker();
             return;
@@ -299,7 +267,7 @@ public final class ColormapPreview extends ExpressionPreview {
         imageView.setImage(cachedDisplayImage);
         imageView.setMarker(u, v);
         imageView.setCaption(String.format("x %.3f   y %.3f   @ %d, %d", sink.x, sink.y, sink.col, sink.row));
-        status.setText("");
+        statusText("");
     }
 
     private void updateClimate(@Nullable Biome biome) {
@@ -380,21 +348,6 @@ public final class ColormapPreview extends ExpressionPreview {
     private static Block resolveBlock(@Nullable Identifier id) {
         if (id == null) return Blocks.AIR;
         return BuiltInRegistries.BLOCK.getOptional(id).orElse(Blocks.AIR);
-    }
-
-    // Resolve against the same registry view the picker listed from (world registries when loaded, else
-    // the cached vanilla ones), so any id the biome picker offered resolves back to a Biome here.
-    private @Nullable Biome resolveBiome(@Nullable Identifier id) {
-        if (id == null) return null;
-        try {
-            Side side = EditorOps.resolveSide(biomePicker);
-            return EditorOps.registries(side).lookup(Registries.BIOME)
-                    .flatMap(lookup -> lookup.get(ResourceKey.create(Registries.BIOME, id)))
-                    .map(Holder::value)
-                    .orElse(null);
-        } catch (Exception ignored) {
-            return null;
-        }
     }
 
     private @Nullable ArrayImage resolveSourceImage(Colormap cm) {

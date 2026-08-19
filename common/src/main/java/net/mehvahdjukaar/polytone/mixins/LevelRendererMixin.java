@@ -46,7 +46,7 @@ public class LevelRendererMixin {
     // in the single main-target pass (into the offscreen buffer) instead of a screen-bound target.
     @Inject(method = "getParticlesTarget", at = @At("HEAD"), cancellable = true)
     private void poly$redirectParticlesTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {
-        if (CompatHandler.PACK_EDITOR && PreviewRenderTarget.current() != null) cir.setReturnValue(null);
+        if (CompatHandler.NAUTILUS && PreviewRenderTarget.current() != null) cir.setReturnValue(null);
     }
 
     // Every section rebuild (block or light change) funnels through setSectionDirty; bump that

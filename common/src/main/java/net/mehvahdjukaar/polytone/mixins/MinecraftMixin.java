@@ -30,7 +30,7 @@ public abstract class MinecraftMixin {
     // the screen. Set only on the render thread for the duration of that one draw, so gameplay is untouched.
     @Inject(method = "getMainRenderTarget", at = @At("HEAD"), cancellable = true)
     private void polytone$redirectMainTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {
-        if (!CompatHandler.PACK_EDITOR) return; // the preview that sets this only exists with the editor
+        if (!CompatHandler.NAUTILUS) return; // the preview that sets this only exists with the editor
         RenderTarget preview = PreviewRenderTarget.current();
         if (preview != null) cir.setReturnValue(preview);
     }

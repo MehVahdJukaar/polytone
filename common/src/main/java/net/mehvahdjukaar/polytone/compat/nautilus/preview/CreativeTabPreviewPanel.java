@@ -4,10 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.mehvahdjukaar.nautilus.swing.preview.PreviewStatus;
-import net.mehvahdjukaar.nautilus.swing.preview.PreviewSurface;
+import net.mehvahdjukaar.nautilus.swing.preview.PreviewLayout;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
-import net.mehvahdjukaar.nautilus.swing.toolkit.StyledLabels;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiICons;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiStyle;
@@ -22,12 +20,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -38,19 +33,11 @@ import java.util.function.Consumer;
 
 // Creative tab modifiers decorate something that only exists in the running game, so this is a remote
 // control, not a renderer: apply pushes onto the live tabs, pick writes into removals/additions.
-public final class CreativeTabPreviewPanel implements TabPreview {
+public final class CreativeTabPreviewPanel extends LiveGamePanel<CreativeTabModifier> {
 
     private static final String FOLDER = "creative_tab_modifiers";
 
-    private PreviewSurface root;
-    private final PreviewStatus status = new PreviewStatus();
-
-    private final JButton applyButton = UiStyle.ctaButton("Apply to game", UiICons.refresh());
-    private final JButton undoButton = UiStyle.buttonAsToolbar(new JButton("Undo preview"));
-
     private final JButton targetButton = UiStyle.primaryButton("Target the open tab", UiICons.search());
-    private final JToggleButton pickToggle = new JToggleButton("Pick items in game", UiICons.eye());
-    private final JLabel pickActive = StyledLabels.accentSmall("● Overlay active in the game window");
 
     private final DefaultListModel<String> pickedModel = new DefaultListModel<>();
     private final JList<String> pickedList = new JList<>(pickedModel);
@@ -63,9 +50,7 @@ public final class CreativeTabPreviewPanel implements TabPreview {
     @Nullable
     private final Consumer<JsonElement> formWriter;
 
-    // Latest form state; the modifier drives "apply", the json is what the pick buttons rewrite.
-    @Nullable
-    private CreativeTabModifier currentModifier;
+    // What the pick buttons rewrite; the decoded modifier lives in the base as `current`.
     @Nullable
     private JsonElement currentJson;
 
@@ -73,30 +58,17 @@ public final class CreativeTabPreviewPanel implements TabPreview {
     private boolean applyOnNextValue;
 
     public CreativeTabPreviewPanel(TabPreview.Context ctx) {
-        Path file = ctx.file();
-        this.fileId = PreviewIds.of(ctx.contentId(), file, FOLDER);
+        super("Apply to game",
+                "Apply the modifier you're editing to the live tabs instantly (no reload).",
+                "Drop the preview and put the tabs back to their loaded state.",
+                "Pick items in game",
+                "Mark what this modifier removes and adds on the open creative screen, "
+                        + "and collect the items you click.");
+        this.fileId = PreviewIds.of(ctx.contentId(), ctx.file(), FOLDER);
         this.formWriter = ctx.formWriter();
-
-        buildLayout();
-
-        applyButton.setToolTipText("Apply the modifier you're editing to the live tabs instantly (no reload).");
-        applyButton.addActionListener(e -> apply());
-        applyButton.setEnabled(false);
-
-        undoButton.setToolTipText("Drop the preview and put the tabs back to their loaded state.");
-        undoButton.addActionListener(e -> {
-            CreativeTabPreview.pushPreview(fileId, null);
-            status.info("Preview dropped - tabs restored to their loaded state.");
-        });
 
         targetButton.setToolTipText("Write the creative tab currently open in game into this file's targets.");
         targetButton.addActionListener(e -> targetOpenTab());
-
-        pickToggle.setToolTipText("Mark what this modifier removes and adds on the open creative screen, "
-                + "and collect the items you click.");
-        pickToggle.setIconTextGap(UiScale.small());
-        pickToggle.addActionListener(e -> setPicking(pickToggle.isSelected()));
-        pickActive.setVisible(false);
 
         toRemovals.setToolTipText("Add the picked items to this file's removals, as an items_match predicate.");
         toRemovals.addActionListener(e -> writePicked(true));
@@ -105,21 +77,21 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         clearPicked.addActionListener(e -> setPicked(Set.of()));
         updatePickedButtons();
 
-        status.info("Open the creative screen in game, then use these controls.");
+        buildLayout();
+        statusText("Open the creative screen in game, then use these controls.");
     }
 
     @Override
-    public JComponent component() {
-        return root;
+    protected Class<CreativeTabModifier> valueType() {
+        return CreativeTabModifier.class;
     }
 
     @Override
     public void onValueChanged(@Nullable JsonElement json, @Nullable Object value) {
+        super.onValueChanged(json, value);
         this.currentJson = json;
-        this.currentModifier = value instanceof CreativeTabModifier m ? m : null;
-        applyButton.setEnabled(currentModifier != null);
-        CreativeTabPreview.setEdited(fileId, currentModifier);
-        if (applyOnNextValue && currentModifier != null) {
+        CreativeTabPreview.setEdited(fileId, current);
+        if (applyOnNextValue && current != null) {
             applyOnNextValue = false;
             apply();
         }
@@ -134,21 +106,25 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         CreativeTabPreview.pushPreview(fileId, null);
     }
 
-    private void apply() {
-        if (currentModifier == null) {
-            status.error("No valid modifier yet - fix the form first.");
-            return;
-        }
-        CreativeTabPreview.pushPreview(fileId, currentModifier);
+    @Override
+    protected void undo() {
+        CreativeTabPreview.pushPreview(fileId, null);
+        statusText("Preview dropped - tabs restored to their loaded state.");
+    }
+
+    @Override
+    protected void apply() {
+        if (!requireValue()) return;
+        CreativeTabPreview.pushPreview(fileId, current);
         // Item contents rebuild on the screen's next tick, so read the count back once it has.
         Minecraft.getInstance().execute(() -> {
             boolean reaches = CreativeTabPreview.targetsOpenTab();
             int removed = CreativeTabPreview.countRemoved();
             SwingUtilities.invokeLater(() -> {
                 if (!reaches) {
-                    status.error("Applied, but this file doesn't target the open tab - use \"Target the open tab\".");
+                    statusError("Applied, but this file doesn't target the open tab - use \"Target the open tab\".");
                 } else {
-                    status.info(removed > 0
+                    statusText(removed > 0
                             ? "Applied - removing " + removed + " items from the open tab."
                             : "Applied to the live tabs.");
                 }
@@ -161,27 +137,26 @@ public final class CreativeTabPreviewPanel implements TabPreview {
             Identifier tab = CreativeTabPreview.openTab();
             SwingUtilities.invokeLater(() -> {
                 if (tab == null) {
-                    status.error("No creative screen open in the game window.");
+                    statusError("No creative screen open in the game window.");
                     return;
                 }
                 if (writeForm(obj -> obj.add("targets", new JsonPrimitive(tab.toString())))) {
-                    status.info("Targeting " + tab + ".");
+                    statusText("Targeting " + tab + ".");
                 }
             });
         });
     }
 
-    private void setPicking(boolean on) {
+    @Override
+    protected void setPicking(boolean on) {
         CreativeTabPreview.setPickingEnabled(on);
-        pickActive.setVisible(on);
-        pickToggle.setText(on ? "Stop picking" : "Pick items in game");
         if (on) {
             CreativeTabPreview.setPickListener(stack -> SwingUtilities.invokeLater(() -> togglePicked(stack)));
-            status.info("Overlay active: red items are removed, green added. Click items to select them.");
+            statusText("Overlay active: red items are removed, green added. Click items to select them.");
             warnIfTabNotTargeted();
         } else {
             CreativeTabPreview.setPickListener(null);
-            status.setText("");
+            statusText("");
         }
     }
 
@@ -190,7 +165,7 @@ public final class CreativeTabPreviewPanel implements TabPreview {
             boolean reaches = CreativeTabPreview.targetsOpenTab();
             if (!reaches) {
                 SwingUtilities.invokeLater(() ->
-                        status.error("This file doesn't target the open tab - use \"Target the open tab\"."));
+                        statusError("This file doesn't target the open tab - use \"Target the open tab\"."));
             }
         });
     }
@@ -248,7 +223,7 @@ public final class CreativeTabPreviewPanel implements TabPreview {
             }
         });
         if (!written) return;
-        status.info("Wrote " + pickedModel.size() + " items into " + (removals ? "removals" : "additions") + ".");
+        statusText("Wrote " + pickedModel.size() + " items into " + (removals ? "removals" : "additions") + ".");
         setPicked(Set.of());
         applyOnNextValue = true;
     }
@@ -274,11 +249,11 @@ public final class CreativeTabPreviewPanel implements TabPreview {
 
     private boolean writeForm(Consumer<JsonObject> mutation) {
         if (formWriter == null) {
-            status.error("This view is read-only - open the file to edit it.");
+            statusError("This view is read-only - open the file to edit it.");
             return false;
         }
         if (!(currentJson instanceof JsonObject obj)) {
-            status.error("The form isn't a valid object yet - fix it first.");
+            statusError("The form isn't a valid object yet - fix it first.");
             return false;
         }
         JsonObject copy = obj.deepCopy();
@@ -288,24 +263,14 @@ public final class CreativeTabPreviewPanel implements TabPreview {
     }
 
     private void buildLayout() {
-        Box toolbar = PreviewPanels.header("Live Creative Tabs", status);
-
-        Box content = Box.createVerticalBox();
-        PreviewPanels.addRow(content, PreviewPanels.ellipsizing(
-                StyledLabels.small("Edits preview on the live creative screen.")));
-        content.add(Box.createVerticalStrut(UiScale.small()));
-        PreviewPanels.addCtaWithUndo(content, applyButton, undoButton);
-
-        JPanel group = PreviewPanels.outlinedGroup("Target & pick");
-        PreviewPanels.addRow(group, targetButton);
-        group.add(Box.createVerticalStrut(UiScale.small()));
-        PreviewPanels.addRow(group, pickToggle);
-        PreviewPanels.addRow(group, PreviewPanels.ellipsizing(pickActive));
+        JPanel group = PreviewLayout.group("Target & pick");
+        PreviewLayout.add(group, targetButton);
+        addPickControls(group);
 
         pickedList.setVisibleRowCount(5);
         JScrollPane scroll = new JScrollPane(pickedList);
         scroll.setPreferredSize(new Dimension(UiScale.px(180), UiScale.px(90)));
-        PreviewPanels.addRow(group, scroll);
+        PreviewLayout.add(group, scroll);
 
         Box pickedRow = Box.createHorizontalBox();
         pickedRow.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -314,10 +279,8 @@ public final class CreativeTabPreviewPanel implements TabPreview {
         pickedRow.add(toAdditions);
         pickedRow.add(Box.createHorizontalGlue());
         pickedRow.add(clearPicked);
-        PreviewPanels.addRow(group, pickedRow);
-        content.add(group);
+        PreviewLayout.add(group, pickedRow);
 
-        root = new PreviewSurface(toolbar, content);
-        root.setMinimumSize(new Dimension(UiScale.px(180), UiScale.px(140)));
+        installPanel("Live Creative Tabs", "Edits preview on the live creative screen.", group);
     }
 }

@@ -20,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -113,6 +114,10 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier> {
         hasPostAttributes = false;
         postAttributes.clear();
         alteredAttributes.clear();
+    }
+
+    public Map<Biome, BiomeEffectModifier> modifiersByBiome() {
+        return Collections.unmodifiableMap(effectsToApply);
     }
 
     public boolean hasModifiedAttributes() {

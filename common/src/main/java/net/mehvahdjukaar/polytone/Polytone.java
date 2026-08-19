@@ -11,7 +11,7 @@ import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectsManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapperManager;
-import net.mehvahdjukaar.polytone.compat.PackEditor;
+import net.mehvahdjukaar.polytone.compat.nautilus.PolytoneNautilus;
 import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertiesManager;
 import net.mehvahdjukaar.polytone.content.block.BlockSetManager;
@@ -139,7 +139,7 @@ public class Polytone {
 
         PolytoneRenderTypes.init();
         if (CompatHandler.IRIS) IrisCompat.init();
-        if (CompatHandler.PACK_EDITOR) PackEditor.init();
+        if (CompatHandler.NAUTILUS) PolytoneNautilus.init();
 
         //weather darken and other fog custom
         //independent fog env fog and sky fog stuff. also independent from render distnace
@@ -192,7 +192,7 @@ public class Polytone {
         COMPOUND_RELOADER.resetWithLevel(true);
         BiomeKeysCache.clear();
         // The codec editor closes itself on logout (its own client-disconnect hook lives in the
-        // PackEditor mod), so there is nothing to do here.
+        // Nautilus Studio mod), so there is nothing to do here.
     }
 
     public static void onEarlyPackLoad(ResourceManager manager) {

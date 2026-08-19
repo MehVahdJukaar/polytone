@@ -8,7 +8,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.nautilus.render.OffscreenTargetContext;
 import net.mehvahdjukaar.nautilus.render.SceneCamera;
-import net.mehvahdjukaar.nautilus.swing.preview.PreviewSurface;
+import net.mehvahdjukaar.nautilus.swing.preview.PreviewLayout;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
 import net.mehvahdjukaar.nautilus.swing.preview.scene.LiveViewport;
 import net.mehvahdjukaar.nautilus.swing.toolkit.SquareRow;
@@ -55,8 +55,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,55 +114,33 @@ public final class ParticlePreview extends ExpressionPreview {
     }
 
     private void buildLayout() {
-        Box toolbar = Box.createVerticalBox();
-        Box topRow = Box.createHorizontalBox();
-        topRow.add(status);
-        topRow.add(Box.createHorizontalGlue());
-        addRow(toolbar, topRow);
-
-        Box content = Box.createVerticalBox();
+        Box content = PreviewLayout.column();
 
         Box transport = Box.createHorizontalBox();
-        transport.setAlignmentX(Component.LEFT_ALIGNMENT);
         transport.add(playButton);
         transport.add(Box.createHorizontalStrut(UiScale.small()));
         transport.add(stepButton);
         transport.add(Box.createHorizontalStrut(UiScale.med()));
         transport.add(StyledLabels.small("Speed"));
-        transport.add(Box.createHorizontalStrut(6));
+        transport.add(Box.createHorizontalStrut(UiScale.small()));
         transport.add(speedSlider);
-        transport.add(Box.createHorizontalStrut(6));
+        transport.add(Box.createHorizontalStrut(UiScale.small()));
         transport.add(speedLabel);
-        transport.setMaximumSize(UiScale.maxHeightHugging(transport));
-        content.add(transport);
-        content.add(Box.createVerticalStrut(UiScale.small()));
+        PreviewLayout.add(content, transport);
 
-        liveToggle.setAlignmentX(Component.LEFT_ALIGNMENT);
-        content.add(liveToggle);
-        content.add(Box.createVerticalStrut(UiScale.small()));
-        JComponent env = envGroup();
-        env.setAlignmentX(Component.LEFT_ALIGNMENT);
-        content.add(env);
+        PreviewLayout.add(content, liveToggle);
+        PreviewLayout.addFilling(content, envGroup());
         content.add(Box.createVerticalStrut(UiScale.med()));
 
         viewport.setBorder(UiTheme.hairlineBorder());
-        SquareRow view = new SquareRow(0, UiScale.px(200), UiScale.px(460), viewport);
-        view.setAlignmentX(Component.LEFT_ALIGNMENT);
-        content.add(view);
+        PreviewLayout.addFilling(content, new SquareRow(0, UiScale.px(200), UiScale.px(460), viewport));
         content.add(Box.createVerticalStrut(UiScale.small()));
 
-        Box hud = Box.createVerticalBox();
-        hud.setAlignmentX(Component.LEFT_ALIGNMENT);
-        ageReadout.setAlignmentX(Component.LEFT_ALIGNMENT);
-        motionReadout.setAlignmentX(Component.LEFT_ALIGNMENT);
-        colorReadout.setAlignmentX(Component.LEFT_ALIGNMENT);
-        hud.add(ageReadout);
-        hud.add(motionReadout);
-        hud.add(colorReadout);
-        content.add(hud);
+        PreviewLayout.addFilling(content, ageReadout);
+        PreviewLayout.addFilling(content, motionReadout);
+        PreviewLayout.addFilling(content, colorReadout);
 
-        root = new PreviewSurface(toolbar, content);
-        root.setMinimumSize(new Dimension(UiScale.px(160), UiScale.px(120)));
+        install(content);
     }
 
     @Override
@@ -174,16 +150,16 @@ public final class ParticlePreview extends ExpressionPreview {
             SpriteSet sprites = borrowSprites();
             if (sprites == null) {
                 this.type = null;
-                status.info("No baked sprites yet - reload the pack in-game to preview this particle.");
+                statusText("No baked sprites yet - reload the pack in-game to preview this particle.");
             } else {
                 t.setSpriteSet(sprites);
                 this.type = t;
-                status.setText("");
+                statusText("");
             }
         } else {
             this.type = null;
             if (value instanceof ICustomParticleFactory) {
-                status.info("Only fully custom particles have a live preview.");
+                statusText("Only fully custom particles have a live preview.");
             }
         }
         if (this.type == null) {
@@ -196,7 +172,7 @@ public final class ParticlePreview extends ExpressionPreview {
     }
 
     @Override
-    protected void onLiveModeChanged(boolean live) {
+    protected void onLiveChanged(boolean live) {
         renderer.requestRespawn();
     }
 
