@@ -7,7 +7,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
-import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IPackMetadataExp;
 import net.mehvahdjukaar.polytone.common.expressions.impl.PackMetadataExp;
 import net.mehvahdjukaar.polytone.common.struc.VersionRange;
@@ -16,7 +15,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.OverlayMetadataSection;
 import net.minecraft.util.TriState;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 

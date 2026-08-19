@@ -1,6 +1,5 @@
 package net.mehvahdjukaar.polytone.common.exp;
 
-import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;

@@ -1,7 +1,6 @@
 package net.mehvahdjukaar.polytone.content.dimension;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Decoder;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;

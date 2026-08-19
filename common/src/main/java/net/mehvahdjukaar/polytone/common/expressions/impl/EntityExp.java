@@ -3,13 +3,9 @@ package net.mehvahdjukaar.polytone.common.expressions.impl;
 import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExp;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;
-import net.mehvahdjukaar.polytone.common.expressions.proxies.AbstractEntityProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.EntityProxy;
-import net.mehvahdjukaar.polytone.common.expressions.proxies.ParticleProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.RandomProxy;
-import net.minecraft.client.particle.Particle;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
 
 import java.io.Serializable;
 import java.util.HashMap;

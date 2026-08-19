@@ -26,7 +26,6 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Consumer;
