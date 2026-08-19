@@ -1,9 +1,9 @@
-package net.mehvahdjukaar.polytone.bedrock.model;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock.model;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.bedrock.molang.MolangExpr;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.molang.MolangExpr;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;

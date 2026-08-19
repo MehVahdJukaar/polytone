@@ -1,7 +1,7 @@
-package net.mehvahdjukaar.polytone.bedrock.convert;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock.convert;
 
-import net.mehvahdjukaar.polytone.bedrock.model.BedrockDescription;
-import net.mehvahdjukaar.polytone.bedrock.molang.MolangTranslator;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.model.BedrockDescription;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.molang.MolangTranslator;
 
 import java.util.Locale;
 

@@ -1,9 +1,9 @@
-package net.mehvahdjukaar.polytone.bedrock.model;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock.model;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
-import net.mehvahdjukaar.polytone.bedrock.DiagnosticSink;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.DiagnosticSink;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

@@ -1,7 +1,7 @@
-package net.mehvahdjukaar.polytone.bedrock.molang;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock.molang;
 
-import net.mehvahdjukaar.polytone.bedrock.Diagnostic;
-import net.mehvahdjukaar.polytone.bedrock.DiagnosticSink;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.Diagnostic;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.DiagnosticSink;
 
 @FunctionalInterface
 public interface MolangTranslator {

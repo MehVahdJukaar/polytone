@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.bedrock.convert;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock.convert;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

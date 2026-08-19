@@ -1,7 +1,7 @@
-package net.mehvahdjukaar.polytone.bedrock.convert;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock.convert;
 
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.polytone.bedrock.Diagnostic;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.Diagnostic;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

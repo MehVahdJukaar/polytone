@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.bedrock;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock;
 
 import java.util.List;
 
