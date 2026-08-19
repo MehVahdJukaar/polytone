@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.bedrock.convert;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock.convert;
 
 import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.minecraft.core.Direction.Axis;

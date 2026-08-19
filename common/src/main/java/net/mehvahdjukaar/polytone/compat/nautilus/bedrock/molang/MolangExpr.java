@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.bedrock.molang;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock.molang;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;

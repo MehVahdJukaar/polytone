@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.bedrock.model;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock.model;
 
 import com.mojang.serialization.Codec;
 

@@ -1,12 +1,12 @@
-package net.mehvahdjukaar.polytone.bedrock;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import net.mehvahdjukaar.polytone.bedrock.convert.BedrockParticleConverter;
-import net.mehvahdjukaar.polytone.bedrock.convert.ConversionOptions;
-import net.mehvahdjukaar.polytone.bedrock.convert.ConversionResult;
-import net.mehvahdjukaar.polytone.bedrock.model.BedrockParticleFile;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.convert.BedrockParticleConverter;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.convert.ConversionOptions;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.convert.ConversionResult;
+import net.mehvahdjukaar.polytone.compat.nautilus.bedrock.model.BedrockParticleFile;
 
 import java.util.List;
 

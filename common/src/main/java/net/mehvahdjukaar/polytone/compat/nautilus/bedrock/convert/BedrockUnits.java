@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.bedrock.convert;
+package net.mehvahdjukaar.polytone.compat.nautilus.bedrock.convert;
 
 // Bedrock is seconds, meters and degrees per frame. We are ticks, blocks and radians at 20 tps.
 public class BedrockUnits {
