@@ -4,11 +4,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import net.mehvahdjukaar.nautilus.swing.preview.LiveGamePanel;
 import net.mehvahdjukaar.nautilus.swing.preview.PreviewLayout;
 import net.mehvahdjukaar.nautilus.swing.preview.TabPreview;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiICons;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiScale;
 import net.mehvahdjukaar.nautilus.swing.toolkit.UiStyle;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabPreview;
 import net.minecraft.client.Minecraft;
@@ -28,7 +30,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.function.Consumer;
 
 // Creative tab modifiers decorate something that only exists in the running game, so this is a remote
 // control, not a renderer: apply pushes onto the live tabs, pick writes into removals/additions.
@@ -46,25 +47,18 @@ public final class CreativeTabPreviewPanel extends LiveGamePanel<CreativeTabModi
 
     @Nullable
     private final Identifier fileId;
-    @Nullable
-    private final Consumer<JsonElement> formWriter;
-
-    // What the pick buttons rewrite; the decoded modifier lives in the base as `current`.
-    @Nullable
-    private JsonElement currentJson;
 
     // A write-back re-decodes the form asynchronously, so "apply what I just wrote" waits for the value.
     private boolean applyOnNextValue;
 
     public CreativeTabPreviewPanel(TabPreview.Context ctx) {
-        super("Apply to game",
+        super(ctx, "Apply to game",
                 "Apply the modifier you're editing to the live tabs instantly (no reload).",
                 "Drop the preview and put the tabs back to their loaded state.",
                 "Pick items in game",
                 "Mark what this modifier removes and adds on the open creative screen, "
                         + "and collect the items you click.");
-        this.fileId = PreviewIds.of(ctx.contentId(), ctx.file(), FOLDER);
-        this.formWriter = ctx.formWriter();
+        this.fileId = ctx.idUnder(Polytone.MOD_ID, FOLDER);
 
         targetButton.setToolTipText("Write the creative tab currently open in game into this file's targets.");
         targetButton.addActionListener(e -> targetOpenTab());
@@ -88,7 +82,6 @@ public final class CreativeTabPreviewPanel extends LiveGamePanel<CreativeTabModi
     @Override
     public void onValueChanged(@Nullable JsonElement json, @Nullable Object value) {
         super.onValueChanged(json, value);
-        this.currentJson = json;
         CreativeTabPreview.setEdited(fileId, current);
         if (applyOnNextValue && current != null) {
             applyOnNextValue = false;
@@ -244,21 +237,6 @@ public final class CreativeTabPreviewPanel extends LiveGamePanel<CreativeTabModi
         JsonArray created = new JsonArray();
         obj.add(field, created);
         return created;
-    }
-
-    private boolean writeForm(Consumer<JsonObject> mutation) {
-        if (formWriter == null) {
-            statusError("This view is read-only - open the file to edit it.");
-            return false;
-        }
-        if (!(currentJson instanceof JsonObject obj)) {
-            statusError("The form isn't a valid object yet - fix it first.");
-            return false;
-        }
-        JsonObject copy = obj.deepCopy();
-        mutation.accept(copy);
-        formWriter.accept(copy);
-        return true;
     }
 
     private void buildLayout() {
