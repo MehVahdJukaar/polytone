@@ -39,7 +39,6 @@ public record ConversionOptions(String namespace, String path, MolangTranslator 
         return namespace + ":" + path + "_emitter";
     }
 
-    // Bedrock names are not held to the character set an identifier accepts
     private static String sanitize(String raw) {
         StringBuilder out = new StringBuilder(raw.length());
         for (char c : raw.toLowerCase(Locale.ROOT).toCharArray()) {

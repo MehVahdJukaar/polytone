@@ -78,8 +78,6 @@ public abstract class ExpressionPreview extends LivePreview {
         refreshEnvControls();
     }
 
-    // env slider row bound to one SimProxies input
-
     private static final class EnvControl {
         final SimValue input;
         final JLabel value = new JLabel();

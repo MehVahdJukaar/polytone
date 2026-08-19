@@ -19,9 +19,6 @@ import org.joml.Vector3f;
 
 import java.util.List;
 
-// Draws the biome-modifier diorama offscreen through the game's own block/model path: a stylised sky disk, a
-// grass shore with a small tree and tufts of grass, and a translucent water pool. It isn't the real world
-// renderer - just enough to show the colours a biome modifier sets, in context.
 final class BiomeSceneRenderPass {
 
     enum Tint { NONE, GRASS, FOLIAGE }
@@ -30,22 +27,24 @@ final class BiomeSceneRenderPass {
 
     record WaterQuad(float minX, float minZ, float maxX, float maxZ, float y, float floorY) {}
 
-    // sky/fog are RGB; grass/foliage/water are RGB used to tint their models (water also gets an alpha).
-    // grassModifier is the biome's grass post-process (dark forest / swamp), applied per grass block.
     record Colors(int sky, int fog, int grass, int foliage, int water, GrassColorModifier grassModifier) {}
 
     private static final float WATER_ALPHA = 0.72f;
-    // The sky disk hovers this high above the eye; being flat, its points map to elevation atan(h/rho),
-    // so the height sets how much of the sky the fog band below can span.
     private static final float SKY_DISK_HEIGHT = 16f;
     private static final float SKY_DISK_RADIUS = 512f;
     private static final float SKY_FOG_START = 32f;
     private static final float SKY_FOG_END = 200f;
-    // Fog backdrop that encloses the whole scene, filling everything the sky disk and blocks don't.
     private static final float BACKDROP_RADIUS = 480f;
 
+<<<<<<< HEAD
     // Lazily created; the projection matrix must be uploaded to a UBO on the new stack.
     private static ProjectionMatrixBuffer projectionBuffer;
+||||||| parent of b0b7a1c5 (more nautilus)
+    // Lazily created; the projection matrix must be uploaded to a UBO on the new stack.
+    private static PerspectiveProjectionMatrixBuffer projectionBuffer;
+=======
+    private static PerspectiveProjectionMatrixBuffer projectionBuffer;
+>>>>>>> b0b7a1c5 (more nautilus)
 
     static void render(SceneCamera camera, int width, int height, Colors colors,
                        List<Placement> blocks, WaterQuad water) {
@@ -65,7 +64,6 @@ final class BiomeSceneRenderPass {
         RenderSystem.setProjectionMatrix(projectionBuffer.getBuffer(camera.projection((float) width / height)),
                 ProjectionType.PERSPECTIVE);
 
-        // Camera view baked into the pose; all geometry drawn in world space (like nautilus SceneRenderer).
         PoseStack pose = new PoseStack();
         pose.mulPose(camera.view());
 
@@ -78,8 +76,6 @@ final class BiomeSceneRenderPass {
         drawBlocks(mc, pose, colors, blocks);
     }
 
-    // Uniform fog sphere enclosing the scene + an overhead sky disk fading sky->fog outward, both far
-    // and depth-tested so nearer blocks occlude them. Coloured POSITION_COLOR quads via debugQuads.
     private static void drawBackdropAndSky(PoseStack pose, MultiBufferSource.BufferSource buffers, Colors colors,
                                            float ex, float ey, float ez) {
         VertexConsumer c = buffers.getBuffer(RenderTypes.debugQuads());

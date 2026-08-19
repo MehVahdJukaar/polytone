@@ -20,7 +20,6 @@ public class ParticleComponents {
         ).apply(i, Initialization::new));
     }
 
-    // speed along the direction the emitter shape handed out; scalar or vector
     public record InitialSpeed(Optional<MolangExpr> scalar, Optional<MolangExpr.Vec3> vector) {
         public static final Codec<InitialSpeed> CODEC = Codec.withAlternative(
                 MolangExpr.Vec3.CODEC.xmap(v -> new InitialSpeed(Optional.empty(), Optional.of(v)),
@@ -51,7 +50,6 @@ public class ParticleComponents {
         ).apply(i, MotionDynamic::new));
     }
 
-    // position driven directly, relative to the emitter, instead of by forces
     public record MotionParametric(MolangExpr.Vec3 relativePosition, Optional<MolangExpr.Vec3> direction,
                                    MolangExpr rotation) {
         public static final Codec<MotionParametric> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -105,7 +103,6 @@ public class ParticleComponents {
             ).apply(i, Direction::new));
         }
 
-        // rect of the effect's texture this particle draws, in pixels
         public record Uv(double textureWidth, double textureHeight, MolangExpr.Vec2 uv, MolangExpr.Vec2 uvSize,
                          Optional<Flipbook> flipbook) {
             public static final Codec<Uv> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -164,7 +161,6 @@ public class ParticleComponents {
         ).apply(i, AppearanceTinting::new));
     }
 
-    // marker component: the particle is tinted by the light level at its position
     public record AppearanceLighting() {
         public static final Codec<AppearanceLighting> CODEC =
                 RecordCodecBuilder.create(i -> i.point(new AppearanceLighting()));
