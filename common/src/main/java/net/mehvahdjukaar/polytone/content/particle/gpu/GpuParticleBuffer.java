@@ -63,9 +63,12 @@ public final class GpuParticleBuffer implements AutoCloseable {
         throw new IllegalStateException("No free vertex format element ids left for gpu particles");
     }
 
+    // spawns arrive from the async particle tick threads, uploads happen on the render thread
     public void add(double x, double y, double z, float vx, float vy, float vz,
                     long tick, float seed, int packedLight, GpuParticleInitializer.SpawnValues values) {
-        pendingSpawns.add(new Spawn(x, y, z, vx, vy, vz, tick, seed, packedLight, values));
+        synchronized (pendingSpawns) {
+            pendingSpawns.add(new Spawn(x, y, z, vx, vy, vz, tick, seed, packedLight, values));
+        }
     }
 
     public Vec3 origin() {
@@ -96,7 +99,7 @@ public final class GpuParticleBuffer implements AutoCloseable {
             cursor = 0;
             clearStorage();
         }
-        if (!pendingSpawns.isEmpty()) uploadPending();
+        uploadPending();
     }
 
     private void createStorage() {
@@ -115,12 +118,19 @@ public final class GpuParticleBuffer implements AutoCloseable {
     }
 
     private void uploadPending() {
-        // more spawns than slots: only the newest capacity ones can survive anyway
-        int start = Math.max(0, pendingSpawns.size() - capacity);
-        int count = pendingSpawns.size() - start;
+        List<Spawn> batch;
+        synchronized (pendingSpawns) {
+            if (pendingSpawns.isEmpty()) return;
+            // more spawns than slots: only the newest capacity ones can survive anyway
+            int start = Math.max(0, pendingSpawns.size() - capacity);
+            batch = new ArrayList<>(pendingSpawns.subList(start, pendingSpawns.size()));
+            pendingSpawns.clear();
+        }
+
+        int count = batch.size();
         ByteBuffer bytes = MemoryUtil.memAlloc(count * recordBytes);
         try {
-            for (int i = start; i < pendingSpawns.size(); i++) writeRecord(bytes, pendingSpawns.get(i));
+            for (Spawn s : batch) writeRecord(bytes, s);
 
             var encoder = RenderSystem.getDevice().createCommandEncoder();
             int untilEnd = Math.min(count, capacity - cursor);
@@ -134,7 +144,6 @@ public final class GpuParticleBuffer implements AutoCloseable {
             cursor = (cursor + count) % capacity;
         } finally {
             MemoryUtil.memFree(bytes);
-            pendingSpawns.clear();
         }
     }
 
@@ -162,6 +171,8 @@ public final class GpuParticleBuffer implements AutoCloseable {
     public void close() {
         if (buffer != null) buffer.close();
         buffer = null;
-        pendingSpawns.clear();
+        synchronized (pendingSpawns) {
+            pendingSpawns.clear();
+        }
     }
 }
