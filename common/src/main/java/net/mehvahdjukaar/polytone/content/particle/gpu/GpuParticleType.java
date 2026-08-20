@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.gpu;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -10,6 +11,7 @@ import net.mehvahdjukaar.polytone.content.particle.custom.RotationMode;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,8 @@ public record GpuParticleType(ResourceLocation texture,
                               float aspect,
                               int frames,
                               boolean randomSprite,
+                              Optional<Area> area,
+                              boolean killBelowHeightmap,
                               Map<String, ISimpleExp> uniforms) {
 
     public static final ResourceLocation DEFAULT_SHADER = Polytone.res("gpu_particle");
@@ -55,8 +59,22 @@ public record GpuParticleType(ResourceLocation texture,
             i.optional("aspect", ExtraCodecs.POSITIVE_FLOAT, 1f, GpuParticleType::aspect),
             i.optional("frames", ExtraCodecs.POSITIVE_INT, 1, GpuParticleType::frames),
             i.optional("random_sprite", Codec.BOOL, false, GpuParticleType::randomSprite),
+            i.optional("area", Area.CODEC, GpuParticleType::area),
+            i.optional("kill_below_heightmap", Codec.BOOL, false, GpuParticleType::killBelowHeightmap),
             i.optional("uniforms", Codec.unboundedMap(Codec.STRING, ISimpleExp.CODEC), Map.of(), GpuParticleType::uniforms)
     ).apply(i, GpuParticleType::new));
+
+    // one spawn becomes count quads spread over a size box around the spawn point
+    public record Area(Vec3 size, int count) {
+        public static final Codec<Area> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Vec3.CODEC.fieldOf("size").forGetter(Area::size),
+                Codec.intRange(1, 1024).fieldOf("count").forGetter(Area::count)
+        ).apply(i, Area::new));
+    }
+
+    public int quadsPerSpawn() {
+        return area.map(Area::count).orElse(1);
+    }
 
     public record Fade(float in, float out) {
         public static final Codec<Fade> CODEC = Codec.floatRange(0, 1).listOf(2, 2)

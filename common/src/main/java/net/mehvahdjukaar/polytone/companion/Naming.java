@@ -8,9 +8,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-// How a TexturePart's files are named relative to its content stem: a literal suffix
-// (<stem><suffix>.png) or the tinted family (<stem>.png default, <stem>_<n>.png for tint n).
-// The statics are the only parser/printer for it, shared by reload and editor.
 public sealed interface Naming {
 
     int DEFAULT_INDEX = -1;

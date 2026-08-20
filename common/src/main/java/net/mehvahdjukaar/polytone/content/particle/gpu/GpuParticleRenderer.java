@@ -9,15 +9,17 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
+import net.mehvahdjukaar.polytone.content.particle.custom.ICustomParticleFactory;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleRenderMode;
 import net.mehvahdjukaar.polytone.content.particle.custom.RotationMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -31,15 +33,16 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL20;
 
-// One GPU particle type at runtime, both sides of it: the ParticleProvider that turns a spawn into a
-// record (and returns no Particle), and the draw of all records with one program. The vertex buffer
-// is a static dummy of limit quads; the shader reads everything from the record buffer via gl_VertexID.
-public final class GpuParticleRenderer implements ParticleProvider<ParticleOptions>, AutoCloseable {
+public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCloseable {
 
-    // above the units ShaderInstance hands to the json samplers
+    public static final Codec<GpuParticleRenderer> CODEC = GpuParticleType.CODEC
+            .xmap(GpuParticleRenderer::new, GpuParticleRenderer::type);
+
+    // ParticleData is not a json sampler, so its unit sits above the ones ShaderInstance hands out
     private static final int RECORD_SAMPLER_UNIT = 4;
+    private static final int HEIGHTMAP_SAMPLER_UNIT = 1;
 
-    private final ResourceLocation id;
+    private ResourceLocation id = Polytone.res("unnamed");
     private final GpuParticleType type;
     private final GpuParticleBuffer records;
     private final RandomSource random = RandomSource.create();
@@ -47,11 +50,33 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
     private @Nullable VertexBuffer quads;
     private int recordSamplerLocation = -1;
     private boolean shaderFailed = false;
+    private boolean closed = false;
 
-    public GpuParticleRenderer(ResourceLocation id, GpuParticleType type) {
-        this.id = id;
+    public GpuParticleRenderer(GpuParticleType type) {
         this.type = type;
         this.records = new GpuParticleBuffer(type.limit());
+    }
+
+    public GpuParticleType type() {
+        return type;
+    }
+
+    public void setId(ResourceLocation id) {
+        this.id = id;
+    }
+
+    @Override
+    public void setSpriteSet(SpriteSet spriteSet) {
+    }
+
+    @Override
+    public boolean isValid() {
+        return !closed;
+    }
+
+    @Override
+    public boolean forceSpawns() {
+        return false;
     }
 
     @Override
@@ -82,7 +107,7 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
                 return false;
             }
         }
-        if (quads == null) quads = buildDummyQuads(type.limit());
+        if (quads == null) quads = buildDummyQuads(type.limit() * type.quadsPerSpawn());
         return true;
     }
 
@@ -100,9 +125,8 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
         return buffer;
     }
 
-    // modelView/projection are the level ones, so vertices come out camera-relative
     public void render(Minecraft mc, Vec3 cameraPos, long gameTime, float partialTick,
-                       Matrix4f modelView, Matrix4f projection) {
+                       Matrix4f modelView, Matrix4f projection, GpuParticleHeightmap heightmap) {
         if (type.renderType() == ParticleRenderMode.INVISIBLE) return;
         if (!ensureLoaded(mc)) return;
         ShaderInstance shader = this.shader;
@@ -110,11 +134,11 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
         if (shader == null || quads == null) return;
 
         records.prepareForFrame(cameraPos, gameTime);
-        setUniforms(shader, cameraPos, gameTime, partialTick);
+        setUniforms(shader, cameraPos, gameTime, partialTick, heightmap);
         RenderSystem.setShaderTexture(0, type.texture());
+        RenderSystem.setShaderTexture(HEIGHTMAP_SAMPLER_UNIT, heightmap.textureId());
         setupBlendState();
 
-        // ShaderInstance only knows 2D samplers, so the record buffer is bound by hand after apply()
         shader.setDefaultUniforms(VertexFormat.Mode.QUADS, modelView, projection, mc.getWindow());
         shader.apply();
         if (recordSamplerLocation != -1) GL20.glUniform1i(recordSamplerLocation, RECORD_SAMPLER_UNIT);
@@ -129,8 +153,10 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
         }
     }
 
-    private void setUniforms(ShaderInstance shader, Vec3 cameraPos, long gameTime, float partialTick) {
+    private void setUniforms(ShaderInstance shader, Vec3 cameraPos, long gameTime, float partialTick,
+                             GpuParticleHeightmap heightmap) {
         Vec3 origin = records.origin();
+        Vec3 areaSize = type.area().map(GpuParticleType.Area::size).orElse(Vec3.ZERO);
         shader.safeGetUniform("Origin").set((float) (origin.x - cameraPos.x), (float) (origin.y - cameraPos.y), (float) (origin.z - cameraPos.z));
         shader.safeGetUniform("Time").set((gameTime - records.timeBase()) + partialTick);
         shader.safeGetUniform("Gravity").set(type.gravity());
@@ -146,6 +172,12 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
         shader.safeGetUniform("Frames").set(type.frames());
         shader.safeGetUniform("RandomSprite").set(type.randomSprite() ? 1 : 0);
         shader.safeGetUniform("AlphaCutoff").set(isTranslucent() ? 0.003f : 0.1f);
+        shader.safeGetUniform("AreaCount").set(type.quadsPerSpawn());
+        shader.safeGetUniform("AreaSize").set((float) areaSize.x, (float) areaSize.y, (float) areaSize.z);
+        shader.safeGetUniform("KillBelowHeightmap").set(type.killBelowHeightmap() ? 1 : 0);
+        shader.safeGetUniform("HeightmapInfo").set((float) (heightmap.originX() - cameraPos.x),
+                (float) (heightmap.originZ() - cameraPos.z), GpuParticleHeightmap.SIZE, heightmap.minY());
+        shader.safeGetUniform("CameraY").set((float) cameraPos.y);
         for (var e : type.uniforms().entrySet()) {
             shader.safeGetUniform(e.getKey()).set((float) e.getValue().evaluate());
         }
@@ -175,12 +207,10 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
                 || type.renderType() == ParticleRenderMode.ADDITIVE_TRANSLUCENT;
     }
 
-    // per-tick friction f means v *= f each tick, i.e. dv/dt = -k v with k = -ln f
     private static float dragOf(float friction) {
         return friction >= 1f ? 0f : (float) -Math.log(Math.max(friction, 1e-4));
     }
 
-    // the shader knows four orientations, the other RotationMode values fall back to the camera one
     private static int billboardOf(RotationMode mode) {
         return switch (mode) {
             case LOOK_AT_Y, LOOK_AT_PLAYER_Y -> 1;
@@ -197,6 +227,7 @@ public final class GpuParticleRenderer implements ParticleProvider<ParticleOptio
 
     @Override
     public void close() {
+        closed = true;
         if (shader != null) shader.close();
         if (quads != null) quads.close();
         records.close();

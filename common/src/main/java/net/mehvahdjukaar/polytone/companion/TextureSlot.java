@@ -7,8 +7,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
-// One texture a piece of content expects, in the abstract: pure file names, no IO. acceptedNames are
-// the names that can fill it, canonical first. Bound slots are required, unbound ones aren't.
 public record TextureSlot(List<String> acceptedNames, String label,
                           @Nullable Colormap target, @Nullable ResourceLocation remoteLocation) {
 

@@ -6,6 +6,7 @@
 in vec3 Position;
 
 uniform samplerBuffer ParticleData;
+uniform sampler2D Sampler1; // heightmap, see GpuParticleHeightmap
 uniform sampler2D Sampler2; // lightmap
 
 uniform mat4 ModelViewMat;
@@ -26,6 +27,11 @@ uniform float Aspect;     // height / width
 uniform int Billboard;    // 0 camera, 1 around Y, 2 flat, 3 along velocity
 uniform int Frames;
 uniform int RandomSprite;
+uniform int AreaCount;    // quads per spawn
+uniform vec3 AreaSize;    // box one spawn spreads over
+uniform int KillBelowHeightmap;
+uniform vec4 HeightmapInfo; // xy: heightmap origin (xz) relative to the camera, z: size in blocks, w: world minY
+uniform float CameraY;
 
 out float vertexDistance;
 out vec4 vertexColor;
@@ -38,8 +44,11 @@ float hash(float seed, float salt) {
 }
 
 void main() {
-    int id = gl_VertexID >> 2;
+    int quad = gl_VertexID >> 2;
     int corner = gl_VertexID & 3;
+    // with an area, one record is AreaCount quads in a row; each gets its own offset and phase
+    int id = quad / AreaCount;
+    int sub = quad - id * AreaCount;
     vec4 a = texelFetch(ParticleData, id * 4);
     vec4 b = texelFetch(ParticleData, id * 4 + 1);
     vec4 c = texelFetch(ParticleData, id * 4 + 2);
@@ -55,7 +64,7 @@ void main() {
         return;
     }
     float f = age / life;
-    float seed = c.x;
+    float seed = c.x + float(sub) * 0.6180339;
     float lightAlpha = c.y;
     float rgb = c.z;
     float size0 = c.w;
@@ -73,6 +82,23 @@ void main() {
         pos = p0 + v0 * age + 0.5 * g * age * age;
     }
     pos += Origin;
+    if (AreaCount > 1) {
+        pos += (vec3(hash(seed, 5.0), hash(seed, 6.0), hash(seed, 7.0)) - 0.5) * AreaSize;
+    }
+    if (KillBelowHeightmap == 1) {
+        vec2 uv = (pos.xz - HeightmapInfo.xy) / HeightmapInfo.z;
+        if (all(greaterThanEqual(uv, vec2(0.0))) && all(lessThan(uv, vec2(1.0)))) {
+            vec4 t = texelFetch(Sampler1, ivec2(uv * HeightmapInfo.z), 0);
+            float surface = HeightmapInfo.w + t.r * 255.0 + t.g * 255.0 * 256.0;
+            if (pos.y + CameraY < surface) {
+                gl_Position = vec4(-2.0, -2.0, -2.0, 1.0);
+                vertexDistance = 0.0;
+                vertexColor = vec4(0.0);
+                texCoord0 = vec2(0.0);
+                return;
+            }
+        }
+    }
     if (Sway != 0.0) {
         pos.x += Sway * sin(age * 0.1 + hash(seed, 1.0) * TAU);
         pos.z += Sway * cos(age * 0.08 + hash(seed, 2.0) * TAU);

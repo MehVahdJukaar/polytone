@@ -52,7 +52,6 @@ public final class PolytoneNautilus {
             "biome_modifiers", BiomeScenePreview::new,
             "creative_tab_modifiers", CreativeTabPreviewPanel::new);
 
-    // only the types with an obvious glyph; the rest fall back to Nautilus' generic content icon
     private static final Map<String, String> ICONS = Map.ofEntries(
             Map.entry("colormaps", "palette"),
             Map.entry("biome_modifiers", "trees"),
@@ -71,7 +70,6 @@ public final class PolytoneNautilus {
             Map.entry("dimension_modifiers", "globe"));
 
     public static void init() {
-        // Widget bindings must exist before any schema resolves (companion registrations only).
         registerWidgetBindings();
 
         for (ContentManager<?, ?> manager : ContentManager.REGISTRY) {
@@ -105,57 +103,46 @@ public final class PolytoneNautilus {
     }
 
     private static void registerWidgetBindings() {
-        // MVEL expressions (the current system): one binding per PolyExpType leaf.
-        SchemaCodecs.registerCompanion(ColormapExp.TYPE.codec(),
-                new Schema.Custom<>(mvelEditor(ColormapExp.TYPE)));
-        SchemaCodecs.registerCompanion(ColormapModExp.TYPE.codec(),
-                new Schema.Custom<>(mvelEditor(ColormapModExp.TYPE)));
-        SchemaCodecs.registerCompanion(BlockExp.TYPE.codec(),
-                new Schema.Custom<>(mvelEditor(BlockExp.TYPE)));
-        SchemaCodecs.registerCompanion(SimpleExp.TYPE.codec(),
-                new Schema.Custom<>(mvelEditor(SimpleExp.TYPE)));
-        SchemaCodecs.registerCompanion(EntityExp.TYPE.codec(),
-                new Schema.Custom<>(mvelEditor(EntityExp.TYPE)));
-        SchemaCodecs.registerCompanion(ParticleExp.TYPE.codec(),
-                new Schema.Custom<>(mvelEditor(ParticleExp.TYPE)));
-        SchemaCodecs.registerCompanion(LightmapExp.TYPE.codec(),
-                new Schema.Custom<>(mvelEditor(LightmapExp.TYPE)));
-        SchemaCodecs.registerCompanion(PackMetadataExp.TYPE.codec(),
-                new Schema.Custom<>(mvelEditor(PackMetadataExp.TYPE)));
+        bindMvel(ColormapExp.TYPE);
+        bindMvel(ColormapModExp.TYPE);
+        bindMvel(BlockExp.TYPE);
+        bindMvel(SimpleExp.TYPE);
+        bindMvel(EntityExp.TYPE);
+        bindMvel(ParticleExp.TYPE);
+        bindMvel(LightmapExp.TYPE);
+        bindMvel(PackMetadataExp.TYPE);
 
         // legacy exp4j expressions: same editor, exp4j variable chips
-        SchemaCodecs.registerCompanion(ColormapExpressionProvider.CODEC,
-                new Schema.Custom<>(exp4jEditor(ColormapExpressionProvider.CODEC, "state_prop",
-                        "BIOME_VALUE", "DAMAGE")));
-        SchemaCodecs.registerCompanion(ColormapColorModulatorExpression.Exp.CODEC,
-                new Schema.Custom<>(exp4jEditor(ColormapColorModulatorExpression.Exp.CODEC, "state_prop",
-                        "BIOME_VALUE", "DAMAGE", "RED", "GREEN", "BLUE", "ALPHA")));
-        SchemaCodecs.registerCompanion(BlockContextExpression.CODEC,
-                new Schema.Custom<>(exp4jEditor(BlockContextExpression.CODEC, "state_prop")));
-        SchemaCodecs.registerCompanion(ParticleContextExpression.CODEC,
-                new Schema.Custom<>(exp4jEditor(ParticleContextExpression.CODEC, null,
-                        "COLOR", "SPEED", "X", "Y", "Z", "DX", "DY", "DZ", "RED", "GREEN", "BLUE",
-                        "ALPHA", "SIZE", "LIFETIME", "AGE", "ROLL", "CUSTOM")));
+        bindExp4j(ColormapExpressionProvider.CODEC, "state_prop", "BIOME_VALUE", "DAMAGE");
+        bindExp4j(ColormapColorModulatorExpression.Exp.CODEC, "state_prop",
+                "BIOME_VALUE", "DAMAGE", "RED", "GREEN", "BLUE", "ALPHA");
+        bindExp4j(BlockContextExpression.CODEC, "state_prop");
+        bindExp4j(ParticleContextExpression.CODEC, null,
+                "COLOR", "SPEED", "X", "Y", "Z", "DX", "DY", "DZ", "RED", "GREEN", "BLUE",
+                "ALPHA", "SIZE", "LIFETIME", "AGE", "ROLL", "CUSTOM");
         // Standalone exp4j flavor with its own tiny variable set (not PolytoneExpression-based).
-        SchemaCodecs.registerCompanion(LightmapContextExpression.CODEC,
-                new Schema.Custom<>(ExpressionWidget.define()
-                        .variables("TIME", "RAIN", "THUNDER", "TEMPERATURE", "DOWNFALL")
-                        .validator(compileCheck(LightmapContextExpression.CODEC))));
+        bind(LightmapContextExpression.CODEC, ExpressionWidget.define()
+                .variables("TIME", "RAIN", "THUNDER", "TEMPERATURE", "DOWNFALL")
+                .validator(compileCheck(LightmapContextExpression.CODEC)));
     }
 
-    private static ExpressionWidget.Def mvelEditor(PolyExpType<?> type) {
-        return ExpressionWidget.define()
+    private static void bindMvel(PolyExpType<?> type) {
+        bind(type.codec(), ExpressionWidget.define()
                 .variables(type.inputNames().toArray(String[]::new))
-                .validator(compileCheck(type.codec()));
+                .validator(compileCheck(type.codec())));
     }
 
-    private static ExpressionWidget.Def exp4jEditor(Codec<?> codec, @Nullable String function,
-                                                    String... extraVars) {
+    private static void bindExp4j(Codec<?> codec, @Nullable String function, String... extraVars) {
         ExpressionWidget.Def def = ExpressionWidget.define()
                 .variables(PolytoneExpression.baseVariableNames())
                 .variables(extraVars)
                 .validator(compileCheck(codec));
-        return function != null ? def.functions(function) : def;
+        if (function != null) def = def.functions(function);
+        bind(codec, def);
+    }
+
+    private static <T> void bind(Codec<T> codec, ExpressionWidget.Def def) {
+        SchemaCodecs.registerCompanion(codec, new Schema.Custom<>(def));
     }
 
     private static ExpressionWidget.Validator compileCheck(Codec<?> codec) {
@@ -173,9 +160,4 @@ public final class PolytoneNautilus {
     public static boolean isOpen() {
         return NautilusStudioApi.isOpen();
     }
-
-    public static void close() {
-        NautilusStudioApi.close();
-    }
-
 }

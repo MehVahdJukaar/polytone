@@ -43,8 +43,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-// A biome modifier only overrides an existing biome's effects, so the chosen biome's real colours are
-// resolved first and the overrides layered on top. No world loaded = plains-ish defaults.
 public final class BiomeScenePreview implements TabPreview {
 
     private static final int DEF_SKY = 0x78A7FF;
@@ -157,9 +155,6 @@ public final class BiomeScenePreview implements TabPreview {
         viewport.refresh();
     }
 
-    // Base = the biome's own colour (or a default when unresolved); each channel the modifier sets wins.
-    // Grass takes the biome's grass colour then the modifier's grass post-process, applied per block in
-    // the render pass so swamp's two-tone shows.
     private Colors resolveColors(@Nullable BiomeEffectModifier m, @Nullable Biome biome, double bx, double bz) {
         int sky = channel(opt(m, BiomeEffectModifier::skyColor), biome != null ? biome.getSkyColor() : DEF_SKY);
         int fog = channel(opt(m, BiomeEffectModifier::fogColor), biome != null ? biome.getFogColor() : DEF_FOG);
@@ -191,9 +186,6 @@ public final class BiomeScenePreview implements TabPreview {
         return (override.isPresent() ? override.get() : base) & 0xFFFFFF;
     }
 
-    // A 7x7 grass shelf on dirt, a far corner carved out one block deep for the pool, plus a small oak
-    // and a few grass tufts on the shore. Grass tops/tufts take the grass colour, leaves the foliage
-    // colour; dirt and logs keep their own texture. Block y=1 is the shore top, y=0 the pool floor.
     private static List<Placement> buildDiorama() {
         BlockState grass = Blocks.GRASS_BLOCK.defaultBlockState();
         BlockState dirt = Blocks.DIRT.defaultBlockState();
@@ -244,7 +236,6 @@ public final class BiomeScenePreview implements TabPreview {
     private final class SceneRenderer implements LiveViewport.Renderer {
         @Override
         public void advance() {
-            // Static scene - nothing to tick.
         }
 
         @Override

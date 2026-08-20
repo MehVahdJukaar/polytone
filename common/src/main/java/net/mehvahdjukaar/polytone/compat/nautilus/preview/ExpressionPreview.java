@@ -158,8 +158,6 @@ public abstract class ExpressionPreview implements TabPreview {
         return row;
     }
 
-    // env slider row bound to one SimProxies input
-
     protected static final class EnvControl {
         final SimValue input;
         final JLabel value = new JLabel();

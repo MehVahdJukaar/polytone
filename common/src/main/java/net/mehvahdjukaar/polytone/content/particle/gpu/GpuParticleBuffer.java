@@ -14,13 +14,6 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-// Ring buffer of particle records, read by the vertex shader as an RGBA32F samplerBuffer.
-// One record = 4 texels:
-//   [x y z vx] [vy vz spawn life] [seed lightAlpha rgb size] [roll custom 0 0]
-// lightAlpha = blockUv + skyUv * 256 + alpha8 * 65536, rgb = r8 + g8 * 256 + b8 * 65536: both stay
-// under 2^24 so they survive the float round trip exactly and unpack with plain arithmetic in GLSL 150.
-// Positions are relative to origin and spawn ticks to timeBase; both are rebased (buffer cleared) when
-// the camera or the clock drift far enough that float precision would suffer.
 public final class GpuParticleBuffer implements AutoCloseable {
 
     public static final int FLOATS_PER_RECORD = 16;
@@ -28,7 +21,6 @@ public final class GpuParticleBuffer implements AutoCloseable {
     private static final double REBASE_DISTANCE = 1024;
     private static final long REBASE_TICKS = 1L << 20;
 
-    // absolute position and tick; made relative at upload so a rebase in between can't skew them
     private record Spawn(double x, double y, double z, float vx, float vy, float vz, long tick,
                          float seed, int packedLight, GpuParticleInitializer.SpawnValues values) {}
 
@@ -44,9 +36,12 @@ public final class GpuParticleBuffer implements AutoCloseable {
         this.capacity = capacity;
     }
 
+    // spawns arrive from the async particle tick threads, uploads happen on the render thread
     public void add(double x, double y, double z, float vx, float vy, float vz,
                     long tick, float seed, int packedLight, GpuParticleInitializer.SpawnValues values) {
-        pendingSpawns.add(new Spawn(x, y, z, vx, vy, vz, tick, seed, packedLight, values));
+        synchronized (pendingSpawns) {
+            pendingSpawns.add(new Spawn(x, y, z, vx, vy, vz, tick, seed, packedLight, values));
+        }
     }
 
     public Vec3 origin() {
@@ -72,7 +67,7 @@ public final class GpuParticleBuffer implements AutoCloseable {
             clearStorage();
             GlStateManager._glBindBuffer(GL31.GL_TEXTURE_BUFFER, 0);
         }
-        if (!pendingSpawns.isEmpty()) uploadPending();
+        uploadPending();
     }
 
     private void createStorage() {
@@ -87,7 +82,6 @@ public final class GpuParticleBuffer implements AutoCloseable {
         origin = null;
     }
 
-    // zeroed storage: lifetime 0 means an empty slot to the shader
     private void clearStorage() {
         ByteBuffer zeros = MemoryUtil.memCalloc(capacity * BYTES_PER_RECORD);
         try {
@@ -98,13 +92,20 @@ public final class GpuParticleBuffer implements AutoCloseable {
     }
 
     private void uploadPending() {
-        // more spawns than slots: only the newest capacity ones can survive anyway
-        int start = Math.max(0, pendingSpawns.size() - capacity);
-        int count = pendingSpawns.size() - start;
+        List<Spawn> batch;
+        synchronized (pendingSpawns) {
+            if (pendingSpawns.isEmpty()) return;
+            // more spawns than slots: only the newest capacity ones can survive anyway
+            int start = Math.max(0, pendingSpawns.size() - capacity);
+            batch = new ArrayList<>(pendingSpawns.subList(start, pendingSpawns.size()));
+            pendingSpawns.clear();
+        }
+
+        int count = batch.size();
         ByteBuffer bytes = MemoryUtil.memAlloc(count * BYTES_PER_RECORD);
         try {
             FloatBuffer floats = bytes.asFloatBuffer();
-            for (int i = start; i < pendingSpawns.size(); i++) writeRecord(floats, pendingSpawns.get(i));
+            for (Spawn s : batch) writeRecord(floats, s);
 
             GlStateManager._glBindBuffer(GL31.GL_TEXTURE_BUFFER, glBuffer);
             int untilEnd = Math.min(count, capacity - cursor);
@@ -118,7 +119,6 @@ public final class GpuParticleBuffer implements AutoCloseable {
             cursor = (cursor + count) % capacity;
         } finally {
             MemoryUtil.memFree(bytes);
-            pendingSpawns.clear();
         }
     }
 
@@ -154,6 +154,8 @@ public final class GpuParticleBuffer implements AutoCloseable {
         if (glBuffer != -1) GlStateManager._glDeleteBuffers(glBuffer);
         glTexture = -1;
         glBuffer = -1;
-        pendingSpawns.clear();
+        synchronized (pendingSpawns) {
+            pendingSpawns.clear();
+        }
     }
 }

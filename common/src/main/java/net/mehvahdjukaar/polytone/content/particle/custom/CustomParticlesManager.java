@@ -12,6 +12,9 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
+import net.mehvahdjukaar.polytone.content.particle.gpu.GpuParticleRenderer;
+import net.mehvahdjukaar.polytone.content.particle.gpu.GpuParticleType;
+import net.mehvahdjukaar.polytone.content.particle.gpu.GpuParticles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -37,14 +40,14 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
 
     public final MapRegistry<ICustomParticleFactory> customParticleFactories = new MapRegistry<>("Custom Particles");
     private final Map<ParticleType<?>, ParticleProvider<?>> overwrittenVanillaProviders = new HashMap<>();
+    public final GpuParticles gpuParticles = new GpuParticles();
 
-    // The wire codec is the copy_from-dispatching one (NOT a try-both fold: a broken
-    // semi-custom json must fail as semi-custom, not silently decode as custom, which
-    // ignores unknown keys); labeled() splices editor labels on without touching the wire.
+    // labeled() only adds the editor labels, the wire codec does its own dispatch
     public static final SchemaCodec<ICustomParticleFactory> CUSTOM_OR_SEMI_CUSTOM_CODEC = SchemaCodecs.labeled(
-            CustomOrSemiCustomParticleCodec.INSTANCE,
-            SchemaCodecs.alt("semi custom", SemiCustomParticleType.CODEC),
-            SchemaCodecs.alt("custom", CustomParticleType.CODEC));
+            CustomParticleFactoryCodec.INSTANCE,
+            SchemaCodecs.alt("semi_custom", SemiCustomParticleType.CODEC),
+            SchemaCodecs.alt("custom", CustomParticleType.CODEC),
+            SchemaCodecs.alt("gpu", GpuParticleType.CODEC));
 
     public CustomParticlesManager() {
         super(Spec.of("Custom particle", () -> CUSTOM_OR_SEMI_CUSTOM_CODEC)
@@ -82,6 +85,7 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
             PlatStuff.unregisterDynamic(BuiltInRegistries.PARTICLE_TYPE, id);
         }
         customParticleFactories.clear();
+        gpuParticles.retireAll();
         for (var v : overwrittenVanillaProviders.entrySet()) {
             PlatStuff.setParticleProvider(v.getKey(), v.getValue());
         }
@@ -121,6 +125,9 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
             if (factory instanceof CustomParticleType c) {
                 customTypes.add(c);
                 c.debugId = id;
+            } else if (factory instanceof GpuParticleRenderer g) {
+                g.setId(id);
+                gpuParticles.add(g);
             }
 
             factory.setSpriteSet(particleEngine.spriteSets.get(id));
@@ -186,9 +193,8 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
         return customParticleFactories;
     }
 
-    // GPU particle types too: same dynamic registration, same emitter overrides
     public boolean isDynamicParticle(ResourceLocation entryId) {
-        return customParticleFactories.containsKey(entryId) || Polytone.GPU_PARTICLES.isGpuParticle(entryId);
+        return customParticleFactories.containsKey(entryId);
     }
 
     @Nullable

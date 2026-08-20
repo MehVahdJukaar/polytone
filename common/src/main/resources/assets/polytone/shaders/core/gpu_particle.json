@@ -6,6 +6,7 @@
     ],
     "samplers": [
         { "name": "Sampler0" },
+        { "name": "Sampler1" },
         { "name": "Sampler2" }
     ],
     "uniforms": [
@@ -30,6 +31,11 @@
         { "name": "Billboard", "type": "int", "count": 1, "values": [ 0 ] },
         { "name": "Frames", "type": "int", "count": 1, "values": [ 1 ] },
         { "name": "RandomSprite", "type": "int", "count": 1, "values": [ 0 ] },
-        { "name": "AlphaCutoff", "type": "float", "count": 1, "values": [ 0.1 ] }
+        { "name": "AlphaCutoff", "type": "float", "count": 1, "values": [ 0.1 ] },
+        { "name": "AreaCount", "type": "int", "count": 1, "values": [ 1 ] },
+        { "name": "AreaSize", "type": "float", "count": 3, "values": [ 0.0, 0.0, 0.0 ] },
+        { "name": "KillBelowHeightmap", "type": "int", "count": 1, "values": [ 0 ] },
+        { "name": "HeightmapInfo", "type": "float", "count": 4, "values": [ 0.0, 0.0, 1.0, 0.0 ] },
+        { "name": "CameraY", "type": "float", "count": 1, "values": [ 0.0 ] }
     ]
 }

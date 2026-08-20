@@ -78,7 +78,6 @@ public final class ColormapPreview extends ExpressionPreview {
 
     private JPanel inputsBox;
 
-    // Light sliders feed SimLevel; shown only when the expression reads sky/block light.
     private final JSlider skySlider = new JSlider(0, 15, 15);
     private final JLabel skyLabel = StyledLabels.mutedSmall("");
     private final JComponent skyRow;
@@ -86,15 +85,12 @@ public final class ColormapPreview extends ExpressionPreview {
     private final JLabel blockLabel = StyledLabels.mutedSmall("");
     private final JComponent blockRow;
 
-    // The block's BlockTint reads currentTint (set on every recompute); the callback runs on the render
-    // thread, so currentTint is volatile. -1 -> vanilla tint (invalid/no sample).
     private volatile int currentTint = -1;
     private final BlockTint blockTint = (state, tintIndex) -> currentTint;
     private @Nullable BlockState sceneState;
 
     private @Nullable Colormap colormap;
 
-    // Cache the decoded source image so we don't hit the disk on every keystroke.
     private @Nullable String cachedImageKey;
     private @Nullable ArrayImage cachedArrayImage;
     private @Nullable BufferedImage cachedDisplayImage;
@@ -139,8 +135,6 @@ public final class ColormapPreview extends ExpressionPreview {
 
         Box content = Box.createVerticalBox();
 
-        // The block choice isn't a simulated input - it only picks which block the 3D view shows and
-        // tints - so it lives outside the group and stays usable in every mode, live included.
         addField(content, labeled("Block", blockPicker));
 
         liveToggle.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -256,7 +250,6 @@ public final class ColormapPreview extends ExpressionPreview {
         applyResult(sink);
     }
 
-    // Real world at the player's feet: no SimLevel, no PreviewContext, so the live clock/proxies drive it.
     private void sampleLive(Colormap cm) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
@@ -313,7 +306,6 @@ public final class ColormapPreview extends ExpressionPreview {
         }
     }
 
-    // Rebuilds the 3D scene only when the block actually changes, so per-keystroke resamples don't churn it.
     private void updateScene(BlockState state) {
         if (state.equals(sceneState)) return;
         boolean first = sceneState == null;
@@ -341,7 +333,6 @@ public final class ColormapPreview extends ExpressionPreview {
         imageView.setCaption(null);
     }
 
-    // Keep the source texture visible but drop the marker/caption (used on sampling failures).
     private void showSourceNoMarker() {
         imageView.setImage(cachedDisplayImage);
         imageView.clearMarker();
@@ -463,7 +454,6 @@ public final class ColormapPreview extends ExpressionPreview {
         }
     }
 
-    // Force alpha 255 to match the runtime ArrayImage loader (NativeImage RGBA -> opaque).
     private static ArrayImage toArrayImage(BufferedImage img) {
         int w = img.getWidth();
         int h = img.getHeight();
@@ -488,8 +478,6 @@ public final class ColormapPreview extends ExpressionPreview {
         return out;
     }
 
-    // captures the intermediates of one real sampling pass
-
     private static final class CaptureSink implements Colormap.SampleSink {
         boolean captured;
         float x, y;
@@ -506,10 +494,6 @@ public final class ColormapPreview extends ExpressionPreview {
         }
     }
 
-    // minimal BlockAndTintGetter for axis evaluation
-
-    // A one-block world: the picked state at the origin, air elsewhere, the picked biome, slider-driven
-    // light. Records whether sky/block light was queried so the panel can hide those sliders.
     private static final class SimLevel implements BlockAndTintGetter {
         private final BlockPos origin;
         private final BlockState state;

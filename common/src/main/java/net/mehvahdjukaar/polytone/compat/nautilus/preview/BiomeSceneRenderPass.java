@@ -33,8 +33,6 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 
-// Geometry is camera relative (vertices are worldPos - eye) with the model-view carrying only the
-// orbit rotation, same scheme as ParticleRenderPass. Matrices/fog/colour are restored by the caller.
 final class BiomeSceneRenderPass {
 
     enum Tint { NONE, GRASS, FOLIAGE }
@@ -43,17 +41,11 @@ final class BiomeSceneRenderPass {
 
     record WaterQuad(float minX, float minZ, float maxX, float maxZ, float y, float floorY) {}
 
-    // sky/fog are RGB; grass/foliage/water are RGB used to tint their models (water also gets an alpha).
-    // grassModifier is the biome's grass post-process (dark forest / swamp), applied per grass block.
     record Colors(int sky, int fog, int grass, int foliage, int water, GrassColorModifier grassModifier) {}
 
     private static final float WATER_ALPHA = 0.72f;
-    // The sky disk hovers this high above the eye; being flat, its points map to elevation atan(h/rho),
-    // so the height sets how much of the sky the fog band below can span (too low -> a sliver at the horizon).
     private static final float SKY_DISK_HEIGHT = 16f;
     private static final float SKY_DISK_RADIUS = 512f; // must exceed SKY_FOG_END so the rim is fully fogged
-    // Distances over which the disk fades to fog: with h=16 this is a gradient from ~30 deg elevation down
-    // to the horizon.
     private static final float SKY_FOG_START = 32f;
     private static final float SKY_FOG_END = 200f;
 
@@ -61,7 +53,6 @@ final class BiomeSceneRenderPass {
                        List<Placement> blocks, WaterQuad water) {
         Minecraft mc = Minecraft.getInstance();
 
-        // Orbit basis: eye pushed back from the target along the view direction (see ParticleRenderPass).
         Matrix4fStack orbit = new Matrix4fStack(1);
         orbit.rotateY((float) Math.toRadians(-camera.yawDeg())).rotateX((float) Math.toRadians(-camera.pitchDeg()));
         Vector3f look = orbit.transformDirection(new Vector3f(0f, 0f, -1f), new Vector3f());
@@ -80,8 +71,6 @@ final class BiomeSceneRenderPass {
         modelView.identity().rotate(new Quaternionf(cam.rotation()).conjugate());
         RenderSystem.applyModelViewMatrix();
 
-        // Opaque fog fill behind everything, so the canvas colour never shows and the sky-disk rim melts
-        // into the horizon.
         float[] fog = rgb(colors.fog());
         GlStateManager._clearColor(fog[0], fog[1], fog[2], 1f);
         GlStateManager._clearDepth(1.0);
@@ -95,16 +84,12 @@ final class BiomeSceneRenderPass {
         drawBlocks(mc, blocks, colors, ex, ey, ez);
         drawWater(colors, water, ex, ey, ez);
 
-        // Leave the pipeline in a sane default state for whatever the caller flushes next.
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
     }
 
-    // Vanilla-style sky: a flat disk hovering above the eye, so its far parts recede toward the horizon.
-    // position_color doesn't sample fog, so vanilla's linear_fog blend is baked into the vertex colours
-    // across a tessellated disk instead, giving the same sky to fog horizon the game's fog shader makes.
     private static void drawSky(Colors colors) {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
@@ -137,7 +122,6 @@ final class BiomeSceneRenderPass {
         }
     }
 
-    // Vanilla linear_fog: fully sky within fogStart, fully fog past fogEnd, linear between.
     private static float[] fogMix(float[] sky, float[] fog, float dist) {
         float fade = dist <= SKY_FOG_START ? 1f
                 : dist >= SKY_FOG_END ? 0f
@@ -183,9 +167,6 @@ final class BiomeSceneRenderPass {
         lightTexture.turnOffLightLayer();
     }
 
-    // The pool surface plus the side faces on its exposed outer edges (the +x / +z diorama boundary),
-    // so the water reads as a body with depth, not a decal. Depth-tested against the terrain but not
-    // writing depth, so the dirt bed shows through it like water.
     private static void drawWater(Colors colors, WaterQuad w, float ex, float ey, float ez) {
         RenderSystem.enableDepthTest();
         RenderSystem.depthMask(false);

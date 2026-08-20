@@ -30,7 +30,6 @@ public final class NoisePreview implements TabPreview {
 
     private final PreviewStatus status = new PreviewStatus();
     private final PixelTextureView imageView = new PixelTextureView();
-    // World span across the image, in blocks; larger = more zoomed out (more features visible).
     private final JSlider spanSlider = new JSlider(4, 128, 32);
     private final JLabel spanLabel = StyledLabels.mutedSmall("");
     private final PreviewSurface root;
