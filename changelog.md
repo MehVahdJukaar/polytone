@@ -1,4 +1,1 @@
-- gpu particles are now custom particles with `"type": "gpu"`, in the same `custom_particles` folder
-- added `area` to gpu particles: one spawn becomes up to 1024 quads spread over a box
-- added `kill_below_heightmap` to gpu particles, so rain and snow don't show up under roofs and in caves
-- fixed gpu particle spawns racing with the render thread when async particles are on
+- ported gpu particles changes from 1.21.11
