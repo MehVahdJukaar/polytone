@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.particle.gpu;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
-import net.minecraft.world.level.LevelReader;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -31,7 +31,7 @@ public record GpuParticleInitializer(IBlockExp size,
             i.optional("custom", IBlockExp.MVEL_CODEC, DEFAULT.custom, GpuParticleInitializer::custom)
     ).apply(i, GpuParticleInitializer::new));
 
-    public SpawnValues evaluate(LevelReader level, Vec3 pos, BlockState state) {
+    public SpawnValues evaluate(ClientLevel level, Vec3 pos, BlockState state) {
         SpawnValues v = new SpawnValues();
         v.size = (float) size.evaluate(level, pos, state);
         v.lifetime = (float) Math.max(1, lifetime.evaluate(level, pos, state));
