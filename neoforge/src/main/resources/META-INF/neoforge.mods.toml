@@ -48,6 +48,7 @@ issueTrackerURL = "${mod_github}/issues"
 [[dependencies.${mod_id}]]
     modId = "nautilus_studio"
     type = "optional"
+    versionRange = "[26.1.2-1.9.0,)"
     ordering = "NONE"
     side = "CLIENT"
 

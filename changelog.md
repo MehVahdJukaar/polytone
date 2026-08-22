@@ -1,1 +1,1 @@
-- fixed an issue with gpu particles
+- backported 1.21.11 changes
