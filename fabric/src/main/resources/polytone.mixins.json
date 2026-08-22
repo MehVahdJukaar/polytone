@@ -3,8 +3,7 @@
   "required": true,
   "compatibilityLevel": "JAVA_17",
   "package": "net.mehvahdjukaar.polytone.mixins.fabric",
-  "mixins": [
-  ],
+  "mixins": [],
   "client": [
     "ClientLevelFabricMixin",
     "ColorResolverRegistryAccessor",
@@ -15,7 +14,8 @@
     "FaceBakeryMixin",
     "ParticleEngineAccessor",
     "ParticleResourcesAccessor",
-    "RegistrySyncManagerMixin"
+    "RegistrySyncManagerMixin",
+    "FogRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

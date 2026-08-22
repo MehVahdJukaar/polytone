@@ -1,3 +1,5 @@
 - fixes #381, fixes #378, fixes #373, fixes #372
+- fluid modifier fog_colormap now works on fabric, and on any fluid, and is sampled where the camera is
 - fixed translucent gpu particles only showing in front of terrain and vanishing against the sky
+- gpu particles are no longer painted over by clouds
 - gpu particles no longer make iris log a "missing program" error every frame

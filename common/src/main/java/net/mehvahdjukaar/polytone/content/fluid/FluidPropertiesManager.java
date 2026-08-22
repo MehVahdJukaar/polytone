@@ -196,6 +196,11 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
         return concurrentTints.get(fluid);
     }
 
+    public boolean hasAnyModifier() {
+        return !modifiers.isEmpty();
+    }
+
+    // a pack usually only targets one of the still/flowing pair, so accept either one here
     @Nullable
     public IColorGetter getFogColormap(Fluid fluid) {
         IColorGetter fog = fogColormapOf(fluid);

@@ -33,18 +33,13 @@ public class LevelRendererMixin {
 
     @Shadow
     @Final
-    private LevelRenderState levelRenderState;
+    public LevelRenderState levelRenderState;
 
-    // During the particle editor preview the main target is redirected to the offscreen buffer; force
-    // the separate translucent-particles target to null too, so opaque AND translucent particles render
-    // in the single main-target pass (into the offscreen buffer) instead of a screen-bound target.
-    // 26.2: getParticlesTarget() -> particlesTarget()
     @Inject(method = "particlesTarget", at = @At("HEAD"), cancellable = true)
     private void poly$redirectParticlesTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {
         if (CompatHandler.NAUTILUS && PreviewRenderTarget.current() != null) cir.setReturnValue(null);
     }
 
-    // 26.2: LevelRenderer.renderLevel(...) -> render(...) (dropped the ChunkSectionsToRender param; it's a local now)
     @Inject(method = "render", at = @At("HEAD"))
     public void poly$preRender(GraphicsResourceAllocator resourceAllocator,
                                DeltaTracker deltaTracker,
@@ -64,10 +59,8 @@ public class LevelRendererMixin {
                 modelViewMatrix, cameraState.projectionMatrix);
     }
 
-    // Own pass right after the main one, on the particles target, so gpu particles land in the
-    // world with depth and fog like any other particle.
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addMainPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher$PreparedFrame;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/util/profiling/ProfilerFiller;Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;)V",
-            shift = At.Shift.AFTER))
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addWeatherPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V",
+            shift = At.Shift.BEFORE))
     public void poly$addGpuParticlesPass(GraphicsResourceAllocator resourceAllocator,
                                          DeltaTracker deltaTracker,
                                          boolean renderOutline,

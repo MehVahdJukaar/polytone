@@ -25,10 +25,11 @@ public class FluidPropertiesManagerImpl {
     private static final Map<FluidType, IClientFluidTypeExtensions> FLUID_EXTENSIONS = new HashMap<>();
 
     public static void tryAddSpecial(Fluid fluid, FluidPropertyModifier prop) {
+        IColorGetter fogColormap = prop.getFogColormap();
+        if (fogColormap == null) return;
         FluidType fluidType = fluid.getFluidType();
         IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fluidType);
         if (!(ext instanceof FluidExtensionWrapper)) {
-            IColorGetter fogColormap = prop.getFogColormap();
             FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, fogColormap));
         }
     }
@@ -46,7 +47,7 @@ public class FluidPropertiesManagerImpl {
     }
 
     private record FluidExtensionWrapper(IClientFluidTypeExtensions existingProperties,
-                                         @Nullable IColorGetter fogColor) implements IClientFluidTypeExtensions {
+                                         IColorGetter fogColor) implements IClientFluidTypeExtensions {
 
         @Override
         public @Nullable Identifier getRenderOverlayTexture(Minecraft mc) {
@@ -60,14 +61,9 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public void modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector4f fluidFogColor) {
-            if (fogColor != null) {
-                // sample where the camera is, otherwise biome/position driven colormaps have nothing to go on
-                BlockPos pos = camera.blockPosition();
-                float[] unpack = ColorUtils.unpack(fogColor.colorInWorld(level.getBlockState(pos), level, pos));
-                fluidFogColor.set(unpack[0], unpack[1], unpack[2], fluidFogColor.w);
-            } else {
-                existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
-            }
+            BlockPos pos = camera.blockPosition();
+            float[] unpack = ColorUtils.unpack(fogColor.colorInWorld(level.getBlockState(pos), level, pos));
+            fluidFogColor.set(unpack[0], unpack[1], unpack[2], fluidFogColor.w);
         }
     }
 }

@@ -89,8 +89,7 @@
     "accessor.PostPassAccessor",
     "accessor.GlRenderPassAccessor",
     "accessor.SodiumRenderSectionManagerAccessor",
-    "accessor.SodiumWorldRendererShadowAccessor",
-    "LavaFogEnvironmentMixin"
+    "accessor.SodiumWorldRendererShadowAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
