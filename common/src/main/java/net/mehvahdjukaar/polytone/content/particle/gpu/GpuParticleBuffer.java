@@ -52,12 +52,11 @@ public final class GpuParticleBuffer implements AutoCloseable {
         this.recordBytes = VERTEX_BYTES * 4 * quadsPerRecord;
     }
 
-    // GENERIC elements are matched to shader attributes by name, so any free id works
+    // elements are matched to shader attributes by name, so any free id works
     private static VertexFormatElement genericFloats(int count) {
         for (int id = 0; id < VertexFormatElement.MAX_COUNT; id++) {
             if (VertexFormatElement.byId(id) == null) {
-                return VertexFormatElement.register(id, 0, VertexFormatElement.Type.FLOAT,
-                        VertexFormatElement.Usage.GENERIC, count);
+                return VertexFormatElement.register(id, 0, VertexFormatElement.Type.FLOAT, false, count);
             }
         }
         throw new IllegalStateException("No free vertex format element ids left for gpu particles");

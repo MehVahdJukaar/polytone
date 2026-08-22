@@ -4,6 +4,8 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.SourceFactor;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -24,8 +26,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SpriteSet;
+import com.mojang.blaze3d.platform.CompareOp;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.resources.Identifier;
@@ -89,7 +92,6 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
 
     @Override
     public void setSpriteSet(SpriteSet spriteSet) {
-        // sprites still come from the texture field; the atlas sprite set is not read yet
     }
 
     @Override
@@ -111,9 +113,9 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         if (options instanceof ExtraDataParticleOptions extra) {
             extra.extraData().forEach(values::override);
         }
-        int light = LevelRenderer.getLightColor(level, pos);
+        int light = LevelRenderer.getLightCoords(level, pos);
         if (type.lightLevel() > 0) {
-            light = LightTexture.pack(Math.max(LightTexture.block(light), type.lightLevel()), LightTexture.sky(light));
+            light = LightCoordsUtil.pack(Math.max(LightCoordsUtil.block(light), type.lightLevel()), LightCoordsUtil.sky(light));
         }
         records.add(x, y, z, (float) dx, (float) dy, (float) dz, level.getGameTime(), random.nextFloat(), light, values);
         return null;
@@ -138,9 +140,12 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
                 builder.withUniform(name, UniformType.UNIFORM_BUFFER);
             }
             switch (type.renderType()) {
-                case TRANSLUCENT -> builder.withBlend(BlendFunction.TRANSLUCENT).withDepthWrite(false);
-                case ADDITIVE_TRANSLUCENT -> builder.withBlend(ADDITIVE_PARTICLE_BLEND).withDepthWrite(false);
-                default -> builder.withoutBlend().withDepthWrite(true);
+                case TRANSLUCENT -> builder.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+                        .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false));
+                case ADDITIVE_TRANSLUCENT -> builder.withColorTargetState(new ColorTargetState(ADDITIVE_PARTICLE_BLEND))
+                        .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false));
+                default -> builder.withColorTargetState(ColorTargetState.DEFAULT)
+                        .withDepthStencilState(DepthStencilState.DEFAULT);
             }
             pipeline = builder.build();
             if (!RenderSystem.getDevice().precompilePipeline(pipeline, null).isValid()) {
@@ -217,7 +222,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         pass.setPipeline(pipeline);
         pass.bindTexture("Sampler0", texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
         pass.bindTexture("Sampler1", heightmap.textureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-        pass.bindTexture("Sampler2", Minecraft.getInstance().gameRenderer.lightTexture().getTextureView(),
+        pass.bindTexture("Sampler2", Minecraft.getInstance().gameRenderer.lightmap(),
                 RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
         pass.setUniform("ParticleInfo", infoUbo);
         customUniforms.bind(pass, type.uniforms().keySet());
@@ -231,12 +236,10 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
                 || type.renderType() == ParticleRenderMode.ADDITIVE_TRANSLUCENT;
     }
 
-    // per-tick friction f means v *= f each tick, i.e. dv/dt = -k v with k = -ln f
     private static float dragOf(float friction) {
         return friction >= 1f ? 0f : (float) -Math.log(Math.max(friction, 1e-4));
     }
 
-    // the shader knows four orientations, the other RotationMode values fall back to the camera one
     private static int billboardOf(RotationMode mode) {
         return switch (mode) {
             case LOOK_AT_Y, LOOK_AT_PLAYER_Y -> 1;

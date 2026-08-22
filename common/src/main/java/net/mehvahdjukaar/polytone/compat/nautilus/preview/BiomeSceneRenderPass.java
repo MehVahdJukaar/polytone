@@ -36,15 +36,7 @@ final class BiomeSceneRenderPass {
     private static final float SKY_FOG_END = 200f;
     private static final float BACKDROP_RADIUS = 480f;
 
-<<<<<<< HEAD
-    // Lazily created; the projection matrix must be uploaded to a UBO on the new stack.
     private static ProjectionMatrixBuffer projectionBuffer;
-||||||| parent of b0b7a1c5 (more nautilus)
-    // Lazily created; the projection matrix must be uploaded to a UBO on the new stack.
-    private static PerspectiveProjectionMatrixBuffer projectionBuffer;
-=======
-    private static PerspectiveProjectionMatrixBuffer projectionBuffer;
->>>>>>> b0b7a1c5 (more nautilus)
 
     static void render(SceneCamera camera, int width, int height, Colors colors,
                        List<Placement> blocks, WaterQuad water) {
