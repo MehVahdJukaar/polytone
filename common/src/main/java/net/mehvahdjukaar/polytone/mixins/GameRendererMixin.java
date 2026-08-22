@@ -46,7 +46,7 @@ public abstract class GameRendererMixin {
     // 26.2: this used to be Minecraft.getMainRenderTarget(); the target now lives on GameRenderer.
     @Inject(method = "mainRenderTarget", at = @At("HEAD"), cancellable = true)
     private void polytone$redirectMainTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {
-        if (!CompatHandler.PACK_EDITOR) return; // the preview that sets this only exists with the editor
+        if (!CompatHandler.NAUTILUS) return; // the preview that sets this only exists with the editor
         RenderTarget preview = PreviewRenderTarget.current();
         if (preview != null) cir.setReturnValue(preview);
     }

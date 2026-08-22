@@ -1,9 +1,9 @@
 package net.mehvahdjukaar.polytone.content.particle.gpu;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
@@ -20,13 +20,13 @@ import java.util.List;
 // the camera or the clock drift far enough that float precision would suffer.
 public final class GpuParticleBuffer implements AutoCloseable {
 
-    public static final VertexFormat FORMAT = VertexFormat.builder()
-            .add("Position", VertexFormatElement.POSITION)
-            .add("Velocity", genericFloats(3))
-            .add("SpawnLife", genericFloats(2))
-            .add("Params", genericFloats(4)) // size, roll, custom, seed
-            .add("Color", VertexFormatElement.COLOR)
-            .add("UV2", VertexFormatElement.UV2)
+    public static final VertexFormat FORMAT = VertexFormat.builder(0)
+            .addAttribute("Position", GpuFormat.RGB32_FLOAT)
+            .addAttribute("Velocity", GpuFormat.RGB32_FLOAT)
+            .addAttribute("SpawnLife", GpuFormat.RG32_FLOAT)
+            .addAttribute("Params", GpuFormat.RGBA32_FLOAT) // size, roll, custom, seed
+            .addAttribute("Color", GpuFormat.RGBA8_UNORM)
+            .addAttribute("UV2", GpuFormat.RG16_SINT)
             .build();
 
     private static final int VERTEX_BYTES = FORMAT.getVertexSize();
@@ -50,16 +50,6 @@ public final class GpuParticleBuffer implements AutoCloseable {
         this.capacity = capacity;
         this.quadsPerRecord = quadsPerRecord;
         this.recordBytes = VERTEX_BYTES * 4 * quadsPerRecord;
-    }
-
-    // elements are matched to shader attributes by name, so any free id works
-    private static VertexFormatElement genericFloats(int count) {
-        for (int id = 0; id < VertexFormatElement.MAX_COUNT; id++) {
-            if (VertexFormatElement.byId(id) == null) {
-                return VertexFormatElement.register(id, 0, VertexFormatElement.Type.FLOAT, false, count);
-            }
-        }
-        throw new IllegalStateException("No free vertex format element ids left for gpu particles");
     }
 
     // spawns arrive from the async particle tick threads, uploads happen on the render thread

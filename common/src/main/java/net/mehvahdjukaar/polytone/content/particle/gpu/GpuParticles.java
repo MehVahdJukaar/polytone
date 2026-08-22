@@ -18,8 +18,8 @@ import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 
 public final class GpuParticles {
 
@@ -73,10 +73,10 @@ public final class GpuParticles {
 
         // vertices are already camera relative, so the transform is the plain camera view matrix
         GpuBufferSlice transforms = RenderSystem.getDynamicUniforms().writeTransform(
-                RenderSystem.getModelViewMatrix(), new Vector4f(1, 1, 1, 1), new Vector3f(), new Matrix4f());
+                new Matrix4f(RenderSystem.getModelViewStack()), new Vector4f(1, 1, 1, 1), new Vector3f(), new Matrix4f());
 
         try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                () -> "Polytone gpu particles", target.getColorTextureView(), OptionalInt.empty(),
+                () -> "Polytone gpu particles", target.getColorTextureView(), Optional.empty(),
                 target.getDepthTextureView(), OptionalDouble.empty())) {
             RenderSystem.bindDefaultUniforms(pass);
             pass.setUniform("DynamicTransforms", transforms);

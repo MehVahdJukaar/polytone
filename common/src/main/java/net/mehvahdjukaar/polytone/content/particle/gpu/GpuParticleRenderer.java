@@ -6,15 +6,16 @@ import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.platform.DestFactor;
-import com.mojang.blaze3d.platform.SourceFactor;
+import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.PrimitiveTopology;
+import com.mojang.blaze3d.pipeline.BindGroupLayout;
+import com.mojang.blaze3d.platform.BlendFactor;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
@@ -27,7 +28,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SpriteSet;
 import com.mojang.blaze3d.platform.CompareOp;
-import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.BindGroupLayouts;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
@@ -46,7 +48,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
             .xmap(GpuParticleRenderer::new, GpuParticleRenderer::type);
 
     // vanilla ADDITIVE is (ONE, ONE); particles want the source alpha to fade the add out
-    private static final BlendFunction ADDITIVE_PARTICLE_BLEND = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE);
+    private static final BlendFunction ADDITIVE_PARTICLE_BLEND = new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE);
 
     private static final int INFO_UBO_SIZE = new Std140SizeCalculator()
             .putVec4()
@@ -72,7 +74,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
     private @Nullable GpuTextureView texture;
     private @Nullable GpuParticleHeightmap heightmap;
     private @Nullable GpuBuffer indexBuffer;
-    private VertexFormat.IndexType indexType = VertexFormat.IndexType.SHORT;
+    private IndexType indexType = IndexType.SHORT;
     private int indexCount;
 
     public GpuParticleRenderer(GpuParticleType type) {
@@ -113,7 +115,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         if (options instanceof ExtraDataParticleOptions extra) {
             extra.extraData().forEach(values::override);
         }
-        int light = LevelRenderer.getLightCoords(level, pos);
+        int light = LightCoordsUtil.getLightCoords(level, pos);
         if (type.lightLevel() > 0) {
             light = LightCoordsUtil.pack(Math.max(LightCoordsUtil.block(light), type.lightLevel()), LightCoordsUtil.sky(light));
         }
@@ -126,19 +128,21 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         if (shaderFailed) return null;
         if (pipeline == null) {
             Identifier shader = Identifier.fromNamespaceAndPath(type.shader().getNamespace(), "core/" + type.shader().getPath());
-            RenderPipeline.Builder builder = RenderPipeline.builder(net.minecraft.client.renderer.RenderPipelines.MATRICES_FOG_SNIPPET)
+            // 26.2 declares samplers and uniform blocks through bind group layouts instead of on the pipeline
+            BindGroupLayout.Builder ownBlocks = BindGroupLayout.builder()
+                    .withUniform("ParticleInfo", UniformType.UNIFORM_BUFFER);
+            for (String name : type.uniforms().keySet()) {
+                ownBlocks.withUniform(name, UniformType.UNIFORM_BUFFER);
+            }
+            RenderPipeline.Builder builder = RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
                     .withLocation(Polytone.res("pipeline/gpu_particle/" + id.getNamespace() + "/" + id.getPath()))
                     .withVertexShader(shader)
                     .withFragmentShader(shader)
-                    .withSampler("Sampler0")
-                    .withSampler("Sampler1")
-                    .withSampler("Sampler2")
-                    .withUniform("ParticleInfo", UniformType.UNIFORM_BUFFER)
-                    .withVertexFormat(GpuParticleBuffer.FORMAT, VertexFormat.Mode.QUADS)
+                    .withBindGroupLayout(BindGroupLayouts.SAMPLER0_SAMPLER1_SAMPLER2)
+                    .withBindGroupLayout(ownBlocks.build())
+                    .withVertexBinding(0, GpuParticleBuffer.FORMAT)
+                    .withPrimitiveTopology(PrimitiveTopology.QUADS)
                     .withCull(false);
-            for (String name : type.uniforms().keySet()) {
-                builder.withUniform(name, UniformType.UNIFORM_BUFFER);
-            }
             switch (type.renderType()) {
                 case TRANSLUCENT -> builder.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
                         .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false));
@@ -175,7 +179,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         // getTexture loads and uploads the image the first time it is asked for
         texture = Minecraft.getInstance().getTextureManager().getTexture(type.texture()).getTextureView();
         indexCount = records.vertexCount() / 4 * 6;
-        RenderSystem.AutoStorageIndexBuffer sequential = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+        RenderSystem.AutoStorageIndexBuffer sequential = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
         indexBuffer = sequential.getBuffer(indexCount);
         indexType = sequential.type();
         return true;
@@ -226,9 +230,9 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
                 RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
         pass.setUniform("ParticleInfo", infoUbo);
         customUniforms.bind(pass, type.uniforms().keySet());
-        pass.setVertexBuffer(0, vertices);
+        pass.setVertexBuffer(0, vertices.slice());
         pass.setIndexBuffer(indexBuffer, indexType);
-        pass.drawIndexed(0, 0, indexCount, 1);
+        pass.drawIndexed(indexCount, 1, 0, 0, 0);
     }
 
     private boolean isTranslucent() {
