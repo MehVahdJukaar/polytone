@@ -8,6 +8,7 @@ import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.Fluid;
@@ -60,7 +61,9 @@ public class FluidPropertiesManagerImpl {
         @Override
         public void modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector4f fluidFogColor) {
             if (fogColor != null) {
-                float[] unpack = ColorUtils.unpack(fogColor.sampleColor(null, null, null, null, null));
+                // sample where the camera is, otherwise biome/position driven colormaps have nothing to go on
+                BlockPos pos = camera.blockPosition();
+                float[] unpack = ColorUtils.unpack(fogColor.colorInWorld(level.getBlockState(pos), level, pos));
                 fluidFogColor.set(unpack[0], unpack[1], unpack[2], fluidFogColor.w);
             } else {
                 existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);

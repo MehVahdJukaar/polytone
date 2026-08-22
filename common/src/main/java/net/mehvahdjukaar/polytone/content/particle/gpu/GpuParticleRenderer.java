@@ -143,11 +143,17 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
                     .withVertexBinding(0, GpuParticleBuffer.FORMAT)
                     .withPrimitiveTopology(PrimitiveTopology.QUADS)
                     .withCull(false);
+            // depth is reversed, so the test is GREATER and the buffer is cleared to 0 (far). LESS here
+            // would only pass in front of terrain and never against the sky
             switch (type.renderType()) {
+                // same state as vanilla TRANSLUCENT_PARTICLE, depth write included: clouds and weather
+                // draw after us and test depth, so without it they paint straight over the particles
                 case TRANSLUCENT -> builder.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-                        .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false));
+                        .withDepthStencilState(DepthStencilState.DEFAULT);
+                // additive glows must not write depth or they'd cull each other and lose the stacking,
+                // which is why the pass runs after the clouds one instead
                 case ADDITIVE_TRANSLUCENT -> builder.withColorTargetState(new ColorTargetState(ADDITIVE_PARTICLE_BLEND))
-                        .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false));
+                        .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false));
                 default -> builder.withColorTargetState(ColorTargetState.DEFAULT)
                         .withDepthStencilState(DepthStencilState.DEFAULT);
             }

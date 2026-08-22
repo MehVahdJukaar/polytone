@@ -1,3 +1,3 @@
-- added new extremely experiemntal gpu driven "particles" system
-- multiple block and item targets for particle modifiers
-- scrollable pack info screen
+- fixes #381, fixes #378, fixes #373, fixes #372
+- fixed translucent gpu particles only showing in front of terrain and vanishing against the sky
+- gpu particles no longer make iris log a "missing program" error every frame

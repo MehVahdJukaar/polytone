@@ -7,6 +7,8 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.mehvahdjukaar.polytone.compat.CompatHandler;
+import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelTargetBundle;
@@ -24,9 +26,7 @@ import java.util.OptionalDouble;
 public final class GpuParticles {
 
     private final List<GpuParticleRenderer> active = new ArrayList<>();
-    // GL objects can only be dropped on the render thread, so the next frame does it
     private final List<GpuParticleRenderer> pendingClose = new ArrayList<>();
-    // shared by every type; only refreshed while a type asks for it
     private @Nullable GpuParticleHeightmap heightmap;
 
     public void add(GpuParticleRenderer renderer) {
@@ -75,6 +75,7 @@ public final class GpuParticles {
         GpuBufferSlice transforms = RenderSystem.getDynamicUniforms().writeTransform(
                 new Matrix4f(RenderSystem.getModelViewStack()), new Vector4f(1, 1, 1, 1), new Vector3f(), new Matrix4f());
 
+        if (CompatHandler.IRIS) IrisCompat.setShaderOverrideBypass(true);
         try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> "Polytone gpu particles", target.getColorTextureView(), Optional.empty(),
                 target.getDepthTextureView(), OptionalDouble.empty())) {
@@ -83,6 +84,8 @@ public final class GpuParticles {
             for (GpuParticleRenderer r : ready) {
                 r.draw(pass);
             }
+        } finally {
+            if (CompatHandler.IRIS) IrisCompat.setShaderOverrideBypass(false);
         }
     }
 }

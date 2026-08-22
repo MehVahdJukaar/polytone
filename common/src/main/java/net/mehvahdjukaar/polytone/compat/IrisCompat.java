@@ -4,6 +4,7 @@ import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.IrisPipelines;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
+import net.irisshaders.iris.vertices.ImmediateState;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.minecraft.client.renderer.RenderPipelines;
 
@@ -17,6 +18,10 @@ public class IrisCompat {
         IrisPipelines.copyPipeline(RenderPipelines.SKY, PolytoneRenderTypes.SKY_DEPTH_WRITE_PIPELINE);
     }
 
+
+    public static void setShaderOverrideBypass(boolean bypass) {
+        ImmediateState.bypass = bypass;
+    }
 
     public static boolean isIrisRenderOn() {
         WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();

@@ -191,10 +191,25 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
         return modifiers.get(water);
     }
 
-    // Render-thread safe: the tint to use as the fluid's FluidModel tintSource, or null for none.
     @Nullable
     public IColorGetter getConcurrentTint(Fluid fluid) {
         return concurrentTints.get(fluid);
+    }
+
+    @Nullable
+    public IColorGetter getFogColormap(Fluid fluid) {
+        IColorGetter fog = fogColormapOf(fluid);
+        if (fog == null && fluid instanceof FlowingFluid ff) {
+            fog = fogColormapOf(ff.getSource());
+            if (fog == null) fog = fogColormapOf(ff.getFlowing());
+        }
+        return fog;
+    }
+
+    @Nullable
+    private IColorGetter fogColormapOf(Fluid fluid) {
+        FluidPropertyModifier mod = modifiers.get(fluid);
+        return mod == null ? null : mod.getFogColormap();
     }
 
 }

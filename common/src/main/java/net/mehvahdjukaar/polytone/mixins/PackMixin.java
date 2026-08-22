@@ -25,7 +25,7 @@ public class PackMixin {
                                                     PackFormat packFormat, PackType packType,
                                                     CallbackInfoReturnable<Pack.Metadata> cir,
                                                     @Local PackResources packResources) {
-        Polytone.CONFIGS.loadCurrentPackConfigs(packResources, packType);
+        Polytone.CONFIGS.loadCurrentPackConfigs(packResources, resourcesSupplier, packLocationInfo, packFormat, packType);
         PackInfos.readFrom(packResources, packType);
     }
 
