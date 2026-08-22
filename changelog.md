@@ -1,1 +1,3 @@
-- hotfix an iris issue
+- added new extremely experiemntal gpu driven "particles" system
+- multiple block and item targets for particle modifiers
+- scrollable pack info screen

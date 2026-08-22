@@ -30,9 +30,10 @@
     "minecraft": ">=26.2 <26.2.1"
   },
   "recommends": {
-    "nautilus_studio": "*"
+    "nautilus_studio": ">=26.1.2-1.9.0"
   },
   "breaks": {
-    "sodium": "<0.9"
+    "sodium": "<0.9",
+    "nautilus_studio": "<26.1.2-1.9.0"
   }
 }
