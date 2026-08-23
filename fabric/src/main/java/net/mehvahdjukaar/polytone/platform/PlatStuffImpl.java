@@ -47,6 +47,7 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Holder;
+import net.minecraft.core.IdMapper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleOptions;
@@ -109,6 +110,16 @@ public class PlatStuffImpl {
 
     public static BlockColor getBlockColor(BlockColors colors, Block block) {
         return ((BlockColorsAccessor) colors).getBlockColors().byId(BuiltInRegistries.BLOCK.getId(block));
+    }
+
+    public static void removeBlockColor(BlockColors colors, Block block) {
+        IdMapper<BlockColor> mapper = ((BlockColorsAccessor) colors).getBlockColors();
+        int id = BuiltInRegistries.BLOCK.getId(block);
+        BlockColor old = mapper.byId(id);
+        if (old == null) return;
+        // same instance can be registered for many blocks, so only drop the reverse entry if it points back here
+        if (mapper.tToId.getInt(old) == id) mapper.tToId.removeInt(old);
+        mapper.idToT.set(id, null);
     }
 
     @org.jetbrains.annotations.Contract

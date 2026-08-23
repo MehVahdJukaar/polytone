@@ -186,6 +186,8 @@ accessible field net/minecraft/world/level/block/state/BlockBehaviour dynamicSha
 mutable field net/minecraft/world/level/block/state/BlockBehaviour dynamicShape Z
 
 # reg hacks
+accessible field net/minecraft/core/IdMapper tToId Lit/unimi/dsi/fastutil/objects/Reference2IntMap;
+accessible field net/minecraft/core/IdMapper idToT Ljava/util/List;
 accessible field net/minecraft/core/MappedRegistry byLocation Ljava/util/Map;
 accessible field net/minecraft/core/MappedRegistry byKey Ljava/util/Map;
 accessible field net/minecraft/core/MappedRegistry byValue Ljava/util/Map;
