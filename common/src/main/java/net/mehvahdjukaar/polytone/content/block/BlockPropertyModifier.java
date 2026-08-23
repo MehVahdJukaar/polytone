@@ -12,6 +12,7 @@ import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.content.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.content.sound.BlockSoundEmitter;
 import net.mehvahdjukaar.polytone.content.sound.PolytoneSoundType;
+import net.mehvahdjukaar.polytone.mixins.BlockColorsAccessor;
 import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColors;
@@ -147,16 +148,16 @@ public record BlockPropertyModifier(
         BlockTintSource oldColor = null;
         if (tintGetter.isPresent()) {
             BlockColors blockColors = Minecraft.getInstance().getBlockColors();
-            List<BlockTintSource> oldLayers = blockColors.getTintSources(block.defaultBlockState());
-            if (!oldLayers.isEmpty()) {
-                oldColor = new IColorGetter.OfLayers(new ArrayList<>(oldLayers));
-            }
+            // must be recorded even when empty, otherwise a block vanilla never tinted has nothing to restore
+            oldColor = new IColorGetter.OfLayers(new ArrayList<>(blockColors.getTintSources(block.defaultBlockState())));
             IColorGetter blockColor = tintGetter.get();
-            if (blockColor instanceof IColorGetter cg) {
-                blockColor = Polytone.COLORMAPS.getOrCreateConcurrentColormap(cg);
+            if (blockColor instanceof IColorGetter.OfLayers ol && ol.layers().isEmpty()) {
+                ((BlockColorsAccessor) blockColors).getSources().remove(block);
+            } else {
+                blockColor = Polytone.COLORMAPS.getOrCreateConcurrentColormap(blockColor);
+                blockColors.register(toLayersList(blockColor), block);
+                Polytone.BLOCK_MODIFIERS.maybeAssignToDefaultGrassAndFoliage(block, blockColor);
             }
-            blockColors.register(toLayersList(blockColor), block);
-            Polytone.BLOCK_MODIFIERS.maybeAssignToDefaultGrassAndFoliage(block, blockColor);
         }
 
         BlockSetTypeProvider oldType = null;
