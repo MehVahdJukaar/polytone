@@ -111,6 +111,10 @@ public class PlatStuffImpl {
         return ((BlockColorsAccessor) colors).getBlockColors().get(block);
     }
 
+    public static void removeBlockColor(BlockColors colors, Block block) {
+        ((BlockColorsAccessor) colors).getBlockColors().remove(block);
+    }
+
     public static String maybeRemapName(String s) {
         return s;
     }

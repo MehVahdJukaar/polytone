@@ -95,6 +95,8 @@ public record BlockPropertyModifier(
                 false, t, false);
     }
 
+    private static final BlockColor NO_VANILLA_TINT_DUMMY = (state, level, pos, tintIndex) -> -1;
+
     // returns the old ones
     public BlockPropertyModifier apply(Block block) {
 
@@ -146,13 +148,18 @@ public record BlockPropertyModifier(
         BlockColor oldColor = null;
         if (tintGetter.isPresent()) {
             BlockColors blockColors = Minecraft.getInstance().getBlockColors();
-            oldColor = PlatStuff.getBlockColor(blockColors, block);
+            BlockColor vanillaColor = PlatStuff.getBlockColor(blockColors, block);
+            oldColor = vanillaColor == null ? NO_VANILLA_TINT_DUMMY : vanillaColor;
             BlockColor blockColor = tintGetter.get();
-            if (blockColor instanceof IColorGetter cg) {
-                blockColor = Polytone.COLORMAPS.getOrCreateConcurrentColormap(cg);
+            if (blockColor == NO_VANILLA_TINT_DUMMY) {
+                PlatStuff.removeBlockColor(blockColors, block);
+            } else {
+                if (blockColor instanceof IColorGetter cg) {
+                    blockColor = Polytone.COLORMAPS.getOrCreateConcurrentColormap(cg);
+                }
+                blockColors.register(blockColor, block);
+                Polytone.BLOCK_MODIFIERS.maybeAssignToDefaultGrassAndFoliage(block, blockColor);
             }
-            blockColors.register(blockColor, block);
-            Polytone.BLOCK_MODIFIERS.maybeAssignToDefaultGrassAndFoliage(block, blockColor);
         }
 
         BlockSetTypeProvider oldType = null;

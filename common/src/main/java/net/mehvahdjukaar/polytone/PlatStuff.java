@@ -77,6 +77,11 @@ public class PlatStuff {
         throw new AssertionError();
     }
 
+    @PlatformImpl
+    public static void removeBlockColor(BlockColors colors, Block block) {
+        throw new AssertionError();
+    }
+
     @Contract
     @PlatformImpl
     public static boolean isModLoaded(String mod) {
