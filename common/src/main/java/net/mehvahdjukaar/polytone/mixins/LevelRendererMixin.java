@@ -59,8 +59,12 @@ public class LevelRendererMixin {
                 modelViewMatrix, cameraState.projectionMatrix);
     }
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addWeatherPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V",
-            shift = At.Shift.BEFORE))
+    // neoforge patches addWeatherPass to take the model view matrix, so both descriptors must be listed. only one matches per loader
+    @Inject(method = "render", at = {
+            @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addWeatherPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V",
+                    shift = At.Shift.BEFORE),
+            @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addWeatherPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Matrix4fc;)V",
+                    shift = At.Shift.BEFORE)})
     public void poly$addGpuParticlesPass(GraphicsResourceAllocator resourceAllocator,
                                          DeltaTracker deltaTracker,
                                          boolean renderOutline,
