@@ -42,7 +42,6 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
     public static final Codec<GpuParticleRenderer> CODEC = GpuParticleType.CODEC
             .xmap(GpuParticleRenderer::new, GpuParticleRenderer::type);
 
-    // vanilla ADDITIVE is (ONE, ONE); particles want the source alpha to fade the add out
     private static final BlendFunction ADDITIVE_PARTICLE_BLEND = new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE);
 
     private static final int INFO_UBO_SIZE = new Std140SizeCalculator()
@@ -65,7 +64,6 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
     private @Nullable GpuBuffer infoUbo;
     private boolean shaderFailed = false;
     private boolean closed = false;
-    // resolved in prepare: both of these can upload or grow GPU storage, which a render pass forbids
     private @Nullable GpuTextureView texture;
     private @Nullable GpuParticleHeightmap heightmap;
     private @Nullable GpuBuffer indexBuffer;
@@ -89,7 +87,6 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
 
     @Override
     public void setSpriteSet(SpriteSet spriteSet) {
-        // sprites still come from the texture field; the atlas sprite set is not read yet
     }
 
     @Override
