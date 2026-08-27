@@ -4,12 +4,12 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.struc.VersionRange;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -185,7 +185,7 @@ public class ExpMath {
             Polytone.LOGGER.warn("Colormap '{}' not found!", colormap);
             return 0;
         }
-        Level level = Minecraft.getInstance().level;
+        ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return 0;
         BlockPos pos = BlockPos.containing(x, y, z);
         // unloaded chunk would hand back an air fallback, which is not what the sampler wants
