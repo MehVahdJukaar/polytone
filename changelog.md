@@ -1,1 +1,1 @@
-- fixed an issue with gpu particles
+gpu colormap particles fixeronis

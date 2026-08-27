@@ -9,7 +9,9 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -179,14 +181,16 @@ public class ExpMath {
 
     public static int colormap(String colormap, double x, double y, double z, double tint) {
         var c = Polytone.COLORMAPS.get(colormap);
-        if (c != null) {
-            var pos = BlockPos.containing(x, y, z);
-            c.getColor(Blocks.AIR.defaultBlockState(), Minecraft.getInstance().level,
-                    pos, (int) tint);
-        } else {
+        if (c == null) {
             Polytone.LOGGER.warn("Colormap '{}' not found!", colormap);
+            return 0;
         }
-        return 0;
+        Level level = Minecraft.getInstance().level;
+        if (level == null) return 0;
+        BlockPos pos = BlockPos.containing(x, y, z);
+        // unloaded chunk would hand back an air fallback, which is not what the sampler wants
+        BlockState state = level.hasChunkAt(pos) ? level.getBlockState(pos) : Blocks.AIR.defaultBlockState();
+        return c.getColor(state, level, pos, (int) tint);
     }
 
 
