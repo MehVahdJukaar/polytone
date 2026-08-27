@@ -3,3 +3,5 @@
 - fixed translucent gpu particles only showing in front of terrain and vanishing against the sky
 - gpu particles are no longer painted over by clouds
 - gpu particles no longer make iris log a "missing program" error every frame
+- fixed the colormap() expression function always returning 0
+- gpu particle initializers now accept a colormap field, sampled once when the particle spawns
