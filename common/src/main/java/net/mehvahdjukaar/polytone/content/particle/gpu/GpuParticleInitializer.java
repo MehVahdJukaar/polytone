@@ -2,10 +2,16 @@ package net.mehvahdjukaar.polytone.content.particle.gpu;
 
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
+import net.mehvahdjukaar.polytone.content.colormap.Colormap;
+import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.common.expressions.impl.IBlockExp;
-import net.minecraft.world.level.LevelReader;
+import net.mehvahdjukaar.polytone.utils.ColorUtils;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Optional;
 
 public record GpuParticleInitializer(IBlockExp size,
                                      IBlockExp lifetime,
@@ -13,12 +19,13 @@ public record GpuParticleInitializer(IBlockExp size,
                                      IBlockExp green,
                                      IBlockExp blue,
                                      IBlockExp alpha,
+                                     Optional<IColorGetter> colormap,
                                      IBlockExp roll,
                                      IBlockExp custom) {
 
     public static final GpuParticleInitializer DEFAULT = new GpuParticleInitializer(
             IBlockExp.constant(0.1), IBlockExp.constant(40), IBlockExp.ONE, IBlockExp.ONE, IBlockExp.ONE, IBlockExp.ONE,
-            IBlockExp.ZERO, IBlockExp.ZERO);
+            Optional.empty(), IBlockExp.ZERO, IBlockExp.ZERO);
 
     public static final SchemaCodec<GpuParticleInitializer> CODEC = SchemaRecord.create(GpuParticleInitializer.class, i -> i.group(
             i.optional("size", IBlockExp.MVEL_CODEC, DEFAULT.size, GpuParticleInitializer::size),
@@ -27,11 +34,12 @@ public record GpuParticleInitializer(IBlockExp size,
             i.optional("green", IBlockExp.MVEL_CODEC, DEFAULT.green, GpuParticleInitializer::green),
             i.optional("blue", IBlockExp.MVEL_CODEC, DEFAULT.blue, GpuParticleInitializer::blue),
             i.optional("alpha", IBlockExp.MVEL_CODEC, DEFAULT.alpha, GpuParticleInitializer::alpha),
+            i.optional("colormap", SchemaCodec.wrap(Colormap.CODEC), GpuParticleInitializer::colormap),
             i.optional("roll", IBlockExp.MVEL_CODEC, DEFAULT.roll, GpuParticleInitializer::roll),
             i.optional("custom", IBlockExp.MVEL_CODEC, DEFAULT.custom, GpuParticleInitializer::custom)
     ).apply(i, GpuParticleInitializer::new));
 
-    public SpawnValues evaluate(LevelReader level, Vec3 pos, BlockState state) {
+    public SpawnValues evaluate(Level level, Vec3 pos, BlockState state) {
         SpawnValues v = new SpawnValues();
         v.size = (float) size.evaluate(level, pos, state);
         v.lifetime = (float) Math.max(1, lifetime.evaluate(level, pos, state));
@@ -39,6 +47,13 @@ public record GpuParticleInitializer(IBlockExp size,
         v.green = (float) green.evaluate(level, pos, state);
         v.blue = (float) blue.evaluate(level, pos, state);
         v.alpha = (float) alpha.evaluate(level, pos, state);
+        if (colormap.isPresent()) {
+            // sampled here and never again: these particles don't tick, so the color is frozen at spawn
+            float[] tint = ColorUtils.unpack(colormap.get().getColor(state, level, BlockPos.containing(pos), 0));
+            v.red *= tint[0];
+            v.green *= tint[1];
+            v.blue *= tint[2];
+        }
         v.roll = (float) roll.evaluate(level, pos, state);
         v.custom = (float) custom.evaluate(level, pos, state);
         return v;

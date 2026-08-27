@@ -1,1 +1,5 @@
 - ported gpu particles changes from 1.21.11
+- fixes #384
+- gpu particle initializers now accept a colormap field, sampled once when the particle spawns
+- particle colormaps are sampled at the particle itself instead of through the shared block tint cache, so they no longer all wear one color
+- links in the pack info screen are clickable again

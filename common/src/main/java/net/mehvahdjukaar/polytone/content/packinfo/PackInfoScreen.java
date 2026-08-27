@@ -197,12 +197,16 @@ public class PackInfoScreen extends Screen {
         @Override
         public MultiLineTextWidget setMaxWidth(int maxWidth) {
             this.wrapWidth = maxWidth;
-            return super.setMaxWidth(maxWidth);
+            MultiLineTextWidget widget = super.setMaxWidth(maxWidth);
+            this.width = this.getWidth();
+            this.height = this.getHeight();
+            return widget;
         }
 
         @Nullable
         Style styleAt(double mouseX, double mouseY) {
-            if (!this.isMouseOver(mouseX, mouseY)) return null;
+            if (mouseX < this.getX() || mouseX >= this.getX() + this.getWidth()) return null;
+            if (mouseY < this.getY() || mouseY >= this.getY() + this.getHeight()) return null;
             List<FormattedCharSequence> lines = this.font.split(this.getMessage(), this.wrapWidth);
             int lineIndex = (int) ((mouseY - this.getY()) / 9);
             if (lineIndex < 0 || lineIndex >= lines.size()) return null;

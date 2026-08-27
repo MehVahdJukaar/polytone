@@ -52,8 +52,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
 
     private final ThreadLocal<BlockState> stateHack = new ThreadLocal<>();
     private final ThreadLocal<Integer> yHack = new ThreadLocal<>();
-    // MVEL axis getters need the level for the `o`/`object` block proxy; the biome-blend and Sodium
-    // ColorResolver paths reach sampleColor without one, so stash it here like stateHack/yHack.
     private final ThreadLocal<BlockAndTintGetter> levelHack = new ThreadLocal<>();
 
     static final Codec<Colormap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -228,9 +226,13 @@ public final class Colormap implements IColorGetter, ColorResolver {
         void report(float x, float y, int col, int row, int argb);
     }
 
-    // Editor-preview entry: puts an explicit level into the same ThreadLocal the runtime paths use (so the
-    // axis expressions and MVEL block proxy see it), then runs the instrumented sampler. Not a second
-    // sampler - just level plumbing plus a delegate.
+    @Override
+    public int sampleColorUncached(BlockAndTintGetter level, @Nullable BlockState state, BlockPos pos,
+                                   @Nullable Biome biome) {
+        this.levelHack.set(level);
+        return sampleColor(state, pos, biome, null);
+    }
+
     public int sampleColorForPreview(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
                                      @Nullable ItemStack item, @Nullable BlockAndTintGetter level,
                                      @Nullable SampleSink sink) {
@@ -367,6 +369,4 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return new Colormap(IColormapExp.DAMAGE, IColormapExp.ZERO, false);
     }
 
-
-    //texture stuff
 }

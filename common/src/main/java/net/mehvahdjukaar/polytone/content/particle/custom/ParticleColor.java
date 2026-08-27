@@ -11,14 +11,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-// Pure config, shared by every particle of a type; the per-particle refresh state lives in Cache.
-// Decodes two ways so old packs keep working: a bare colormap (historical, no caching) or a
-// compound {colormap, cache} naming the policy.
 public record ParticleColor(IColorGetter getter, CachePolicy policy) {
 
     private static final SchemaCodec<ParticleColor> WITH_OPTIONS = SchemaRecord.create(ParticleColor.class, i -> i.group(
@@ -26,8 +24,7 @@ public record ParticleColor(IColorGetter getter, CachePolicy policy) {
             i.optional("cache", CachePolicy.CODEC, CachePolicy.NONE, ParticleColor::policy)
     ).apply(i, ParticleColor::new));
 
-    // backward compat: a bare colormap (reference / inline / color / expression / biome compound)
-    // decodes to the compound form with the default (re-sample every tick) policy.
+    // backward compat
     public static final SchemaCodec<ParticleColor> CODEC = SchemaCodecs.withAlternative(
             SchemaCodecs.alt("with options", WITH_OPTIONS),
             SchemaCodecs.alt("colormap", SchemaCodecs.xmap(SchemaCodec.wrap(Colormap.CODEC),
@@ -47,18 +44,19 @@ public record ParticleColor(IColorGetter getter, CachePolicy policy) {
         }
     }
 
-    // re-samples the colour onto the particle per the cache policy, only when stale; mirrors the
-    // block/section-version invalidation of ParticleLightCache.Entry
     public static final class Cache {
         private final CustomParticleInstance p;
         private final ParticleColor colormap;
+        private final @Nullable BlockState spawnState;
+        private @Nullable Biome biome;
         private long blockKey = Long.MIN_VALUE; // forces the first sample
         private int sectionVersion;
 
         Cache(CustomParticleInstance p, ParticleColor colormap, @Nullable BlockState spawnState, BlockPos spawnPos) {
             this.colormap = colormap;
             this.p = p;
-            sampleAndApply(p.getLevel(), spawnState, spawnPos);
+            this.spawnState = spawnState;
+            sampleAndApply(p.getLevel(), spawnPos);
         }
 
         void tick() {
@@ -79,13 +77,16 @@ public record ParticleColor(IColorGetter getter, CachePolicy policy) {
             BlockPos pos = BlockPos.containing(p.x, p.y, p.z);
             // off-thread safe: skip unloaded chunks so we don't sample an air fallback
             if (!level.hasChunkAt(pos)) return;
-            sampleAndApply(level,level.getBlockState(pos), pos);
+            sampleAndApply(level, pos);
         }
 
-        private void sampleAndApply(Level level, @Nullable BlockState state, BlockPos pos) {
-            blockKey = pos.asLong();
+        private void sampleAndApply(Level level, BlockPos pos) {
+            long key = pos.asLong();
+            if (key != blockKey || biome == null) biome = level.getBiome(pos).value();
+            blockKey = key;
             sectionVersion = ParticleLightCache.sectionVersion(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
-            float[] unpack = ColorUtils.unpack(colormap.getter().getColor(state, level, pos, 0));
+            float[] unpack = ColorUtils.unpack(
+                    colormap.getter().sampleColorUncached(level, spawnState, pos, biome));
             p.rCol = unpack[0];
             p.gCol = unpack[1];
             p.bCol = unpack[2];
