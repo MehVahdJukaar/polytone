@@ -12,6 +12,7 @@ val exp4j_version: String by extra
 val mvel_version: String by extra
 val codecui_version: String by extra
 val nautilus_studio_version: String by extra
+val veil_version: String by extra
 
 val localRuntime by configurations.dependencyScope("localRuntime")
 configurations.runtimeClasspath.configure { extendsFrom(localRuntime) }
@@ -66,6 +67,7 @@ dependencies {
     modCompileOnly("curse.maven:citadel-331936:4786380")
     modCompileOnly("curse.maven:farmers-delight-398521:5772720")
     modCompileOnly("curse.maven:serene-seasons-291874:6182596")
+    modCompileOnly("foundry.veil:veil-neoforge-1.21.1:${veil_version}") { exclude(group = "maven.modrinth") }
 
     // Runtime test deps from Modrinth (per-loader version IDs; version number in comment)
     modRuntimeOnly("maven.modrinth:moonlight:9003gPaE")       // moonlight 1.21.1-3.1.0 (neoforge)

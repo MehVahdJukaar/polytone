@@ -40,3 +40,10 @@ issueTrackerURL = "${mod_github}/issues"
     versionRange = "[1.21.1-1.4.1,)"
     ordering = "NONE"
     side = "CLIENT"
+
+[[dependencies.${mod_id}]]
+    modId = "veil"
+    type = "optional"
+    versionRange = "[4.0.0,)"
+    ordering = "NONE"
+    side = "CLIENT"

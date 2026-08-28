@@ -44,5 +44,7 @@
   "config.polytone.show_config_button": "Show Config Button",
   "config.polytone.show_config_button.tooltip": "Shows the Polytone config button on the resource pack selection screen.",
   "config.polytone.post_shaders_occlude_held_items": "Held Items Occlude Post Shaders",
-  "config.polytone.post_shaders_occlude_held_items.tooltip": "Make post shaders apply at a later stage allowing them to be occluded by held items. Experimental"
+  "config.polytone.post_shaders_occlude_held_items.tooltip": "Make post shaders apply at a later stage allowing them to be occluded by held items. Experimental",
+  "config.polytone.colored_lights": "Colored Lights",
+  "config.polytone.colored_lights.tooltip": "Lets resource packs make blocks, entities and dropped items cast colored light into the world. Requires the Veil mod and costs some performance while such lights are on screen."
 }

@@ -6,6 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.color.MapColorHelper;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.IBlockExp;
+import net.mehvahdjukaar.polytone.content.light.ColoredLight;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.content.particle.BlockParticleEmitter;
@@ -40,6 +42,7 @@ public record BlockPropertyModifier(
         Optional<Boolean> breakingParticlesTinted,
         Optional<IRenderProperties> renderType,
         Optional<ToIntFunction<BlockState>> clientLight,
+        Optional<ColoredLight<IBlockExp>> coloredLight,
         List<BlockParticleEmitter> particleEmitters,
         List<BlockSoundEmitter> soundEmitters,
         Optional<BlockBehaviour.OffsetFunction> offsetType,
@@ -59,6 +62,7 @@ public record BlockPropertyModifier(
                 newMod.breakingParticlesTinted().isPresent() ? newMod.breakingParticlesTinted() : this.breakingParticlesTinted(),
                 newMod.renderType().isPresent() ? newMod.renderType() : this.renderType(),
                 newMod.clientLight.isPresent() ? newMod.clientLight : this.clientLight,
+                newMod.coloredLight.isPresent() ? newMod.coloredLight : this.coloredLight,
                 mergeList(newMod.particleEmitters, this.particleEmitters),
                 mergeList(newMod.soundEmitters, this.soundEmitters),
                 newMod.offsetType().isPresent() ? newMod.offsetType() : this.offsetType(),
@@ -73,7 +77,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.ofNullable(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                java.util.Optional.empty(), java.util.Optional.empty(), List.of(),
+                Optional.empty(), Optional.empty(), Optional.empty(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
                 false, Targets.EMPTY, false);
     }
@@ -91,7 +95,7 @@ public record BlockPropertyModifier(
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
-                java.util.Optional.empty(), Optional.empty(), List.of(),
+                Optional.empty(), Optional.empty(), Optional.empty(), List.of(),
                 List.of(), Optional.empty(), Optional.empty(),
                 false, t, false);
     }
@@ -214,7 +218,7 @@ public record BlockPropertyModifier(
                 Optional.ofNullable(oldMapColor),
                 Optional.ofNullable(oldCanOcclude), Optional.ofNullable(oldSpawnParticlesOnBreak),
                Optional.empty(), Optional.ofNullable(oldRenderType), Optional.ofNullable(oldClientLight),
-                List.of(), List.of(), Optional.empty(),
+                Optional.empty(), List.of(), List.of(), Optional.empty(),
                 Optional.ofNullable(oldType),
                 false, Targets.EMPTY, false);
     }
@@ -222,7 +226,7 @@ public record BlockPropertyModifier(
 
     public static final Codec<BlockPropertyModifier> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
+                    IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null))),
                     //normal opt so it can fail when using modded sounds
                     PolytoneSoundType.CODEC.optionalFieldOf("sound_type").forGetter(BlockPropertyModifier::soundType),
                     MapColorHelper.CODEC.xmap(c -> (Function<BlockState, MapColor>) (a) -> c, f -> MapColor.NONE).optionalFieldOf(
@@ -233,6 +237,8 @@ public record BlockPropertyModifier(
                     IRenderProperties.CODEC.optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
+                    ColoredLight.codec(IBlockExp.MVEL_CODEC, IBlockExp::constant)
+                            .optionalFieldOf("colored_light").forGetter(BlockPropertyModifier::coloredLight),
                     BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(BlockPropertyModifier::particleEmitters),
                     BlockSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(BlockPropertyModifier::soundEmitters),
                     BlockOffsets.CODEC.optionalFieldOf("offset_type").forGetter(BlockPropertyModifier::offsetType),
@@ -245,7 +251,7 @@ public record BlockPropertyModifier(
 
     public static final Decoder<BlockPropertyModifier> PARTIAL_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> java.util.Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null)))
+                    IndexCompoundColorGetter.SINGLE_OR_MULTIPLE.optionalFieldOf("colormap").forGetter(b -> b.tintGetter.flatMap(t -> Optional.ofNullable(t instanceof IndexCompoundColorGetter c ? c : null)))
             ).apply(instance, c -> ofBlockColor(c.orElse(null))));
 
     public boolean hasColormap() {

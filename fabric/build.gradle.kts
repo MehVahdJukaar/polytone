@@ -12,6 +12,7 @@ val mvel_version: String by extra
 val codecui_version: String by extra
 val nautilus_studio_version: String by extra
 val modmenu_version: String by extra
+val veil_version: String by extra
 
 dependencies {
 
@@ -32,6 +33,8 @@ dependencies {
     modImplementation("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
     modCompileOnly("curse.maven:serene-seasons-291874:6182595")
     modCompileOnly("curse.maven:fabric-seasons-413523:5789846")
+    modCompileOnly("foundry.veil:veil-fabric-1.21.1:${veil_version}") { exclude(group = "maven.modrinth") }
+    modRuntimeOnly("foundry.veil:veil-fabric-1.21.1:${veil_version}") { exclude(group = "maven.modrinth") }
 
     // Runtime-only: Entity Model Features (EMF) + Entity Texture Features (ETF), for testing OptiFine-style CEM/CET
     modRuntimeOnly("maven.modrinth:entity-model-features:3.2.4-fabric-1.21")

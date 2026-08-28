@@ -8,6 +8,7 @@
   ],
   "client": [
     "AbstractContainerScreenMixin",
+    "AnimatedTextureMixin",
     "BlockColorsAccessor",
     "BuildCreativeModeTabContentsEventAccessor",
     "CreativeModeInventoryScreenMixin",
@@ -19,13 +20,13 @@
     "InventoryScreenMixin",
     "ItemBlockRenderTypesMixin",
     "ItemColorsAccessor",
-    "AnimatedTextureMixin",
     "ModelManagerMixin",
     "ModelRendererMixin",
     "ModifiableBiomeAccessor",
     "ModifiableBiomeInfoBiomeInfoAccessor",
     "ParticleEngineAccessor",
     "ParticleEngineMixin2",
+    "SectionLightScanMixin",
     "SodiumBlockRendererMixin",
     "TerrainParticleMixin"
   ],

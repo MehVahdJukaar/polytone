@@ -109,6 +109,7 @@ public class ParticleModifiersManager extends ContentManager<ParticleModifier, A
         for (var p : mod.targets().compute(pathId, BuiltInRegistries.PARTICLE_TYPE.asLookup())) {
             //can have multiple
             particleModifiers.put(p.value(), mod);
+            if (mod.coloredLight != null) Polytone.COLORED_LIGHTS.addParticleLight(p.value(), mod.coloredLight);
         }
     }
 

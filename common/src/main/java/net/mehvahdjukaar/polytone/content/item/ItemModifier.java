@@ -8,6 +8,8 @@ import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.content.model.WornModel;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.IEntityExp;
+import net.mehvahdjukaar.polytone.content.light.ColoredLight;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
@@ -44,6 +46,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Optional<ResourceLocation> scopeOverlay,
                            Optional<Boolean> bobAsEntity,
                            Optional<Boolean> spreadAsEntity,
+                           Optional<ColoredLight<IEntityExp>> coloredLight,
                            Targets targets) {
 
     private static final Codec<HumanoidModel.ArmPose> ARM_POSE_CODEC = Codec.STRING.comapFlatMap(
@@ -70,6 +73,8 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
             ResourceLocation.CODEC.optionalFieldOf("scope_overlay").forGetter(ItemModifier::scopeOverlay),
             Codec.BOOL.optionalFieldOf("bob_as_entity").forGetter(ItemModifier::bobAsEntity),
             Codec.BOOL.optionalFieldOf("spread_as_entity").forGetter(ItemModifier::spreadAsEntity),
+            ColoredLight.codec(IEntityExp.CODEC, c -> e -> c)
+                    .optionalFieldOf("colored_light").forGetter(ItemModifier::coloredLight),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(ItemModifier::targets)
     ).apply(instance, ItemModifier::new));
 
@@ -84,14 +89,14 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
         return new ItemModifier(Optional.of(colormap), Optional.empty(), Optional.empty(), List.of(),
                 List.of(), List.of(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY);
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY);
     }
 
     public static ItemModifier ofBarColor(Colormap colormap) {
         return new ItemModifier(Optional.empty(), Optional.of(colormap),
                 Optional.empty(), List.of(), List.of(), List.of(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY);
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY);
     }
 
     public ItemModifier merge(ItemModifier newMod) {
@@ -109,6 +114,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 newMod.scopeOverlay.isPresent() ? newMod.scopeOverlay : this.scopeOverlay,
                 newMod.bobAsEntity.isPresent() ? newMod.bobAsEntity : this.bobAsEntity,
                 newMod.spreadAsEntity.isPresent() ? newMod.spreadAsEntity : this.spreadAsEntity,
+                newMod.coloredLight.isPresent() ? newMod.coloredLight : this.coloredLight,
                 newMod.targets.merge(this.targets)
         );
     }
@@ -139,7 +145,7 @@ public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                 Optional.ofNullable(oldRarity),
                 List.of(), List.of(), List.of(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY);
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Targets.EMPTY);
     }
 
     @Nullable

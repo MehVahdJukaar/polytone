@@ -54,6 +54,7 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
     public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", false);
     public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", true);
     public final OptionHolder<Boolean> postShadersOccludeHeldItems = builtinConfig("post_shaders_occlude_held_items", true);
+    public final OptionHolder<Boolean> coloredLights = builtinConfig("colored_lights", true);
 
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
 
@@ -83,7 +84,7 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
     }
 
     private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
-        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postShadersOccludeHeldItems)) {
+        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postShadersOccludeHeldItems, coloredLights)) {
             b.loadFromJson(configFileSnapshot);
             reg.unregister(b.fileId);
             reg.register(b.fileId, b);

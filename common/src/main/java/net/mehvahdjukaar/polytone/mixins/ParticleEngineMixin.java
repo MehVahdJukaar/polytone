@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.mixins;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.light.ColoredLightsTracker;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
 import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
@@ -39,7 +40,10 @@ public abstract class ParticleEngineMixin {
     @ModifyReturnValue(method = "makeParticle", at = @At("RETURN"))
     public @Nullable <T extends ParticleOptions> Particle polytone$applyModifiers(@Nullable Particle original,
                                                                                   @Local(argsOnly = true) T particleData) {
-        if (original != null) Polytone.PARTICLE_MODIFIERS.maybeModify(particleData, this.level, original);
+        if (original != null) {
+            Polytone.PARTICLE_MODIFIERS.maybeModify(particleData, this.level, original);
+            ColoredLightsTracker.onParticleCreated(particleData.getType(), original);
+        }
         return original;
     }
 

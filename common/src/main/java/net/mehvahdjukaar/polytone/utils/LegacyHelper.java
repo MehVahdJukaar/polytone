@@ -234,7 +234,7 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
-                Optional.empty(), List.of(), List.of(),
+                Optional.empty(), Optional.empty(), List.of(), List.of(),
                 Optional.empty(), Optional.empty(),
                 false, Targets.ofIds(set), false);
     }
@@ -296,7 +296,7 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(),
-                Optional.empty(), List.of(), List.of(), Optional.empty(),
+                Optional.empty(), Optional.empty(), List.of(), List.of(), Optional.empty(),
                 Optional.empty(), false, Targets.ofOptionalIds(set), false);
     }
 

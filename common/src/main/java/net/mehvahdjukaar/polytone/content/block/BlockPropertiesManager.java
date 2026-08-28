@@ -5,6 +5,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
 import net.mehvahdjukaar.polytone.companion.TexturePart;
 import net.mehvahdjukaar.polytone.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
@@ -199,6 +200,9 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
             BlockPropertyModifier modifier = modifierEntry.getValue();
 
             vanillaProperties.put(target, modifier.apply(target));
+
+            modifier.coloredLight().ifPresent(l ->
+                    Polytone.COLORED_LIGHTS.addBlockLight(target, l, AlwaysTrueTest.INSTANCE));
 
             var particle = modifier.particleEmitters();
             if (!particle.isEmpty()) {

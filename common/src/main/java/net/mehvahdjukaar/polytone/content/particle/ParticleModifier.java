@@ -5,6 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
+import net.mehvahdjukaar.polytone.content.common.expressions.impl.IParticleExp;
+import net.mehvahdjukaar.polytone.content.light.ColoredLight;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.Targets;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
@@ -41,6 +43,8 @@ public class ParticleModifier {
             ParticleContextExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             ParticleContextExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             ParticleContextExpression.CODEC.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
+            ColoredLight.codec(IParticleExp.CODEC, c -> (particle, level) -> c)
+                    .optionalFieldOf("colored_light").forGetter(p -> Optional.ofNullable(p.coloredLight)),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(p -> p.targets)
 
     ).apply(instance, ParticleModifier::new));
@@ -71,6 +75,8 @@ public class ParticleModifier {
     public final ParticleContextExpression greenGetter;
     @Nullable
     public final ParticleContextExpression alphaGetter;
+    @Nullable
+    public final ColoredLight<IParticleExp> coloredLight;
     public final Targets targets;
 
     private ParticleModifier(Optional<Filter> filter, Optional<IColorGetter> colormap,
@@ -78,10 +84,11 @@ public class ParticleModifier {
                              Optional<ParticleContextExpression> size, Optional<ParticleContextExpression> red,
                              Optional<ParticleContextExpression> green, Optional<ParticleContextExpression> blue,
                              Optional<ParticleContextExpression> alpha, Optional<ParticleContextExpression> speed,
+                             Optional<ColoredLight<IParticleExp>> coloredLight,
                              Targets targets) {
         this(filter.orElse(null), colormap.orElse(null), color.orElse(null), life.orElse(null), size.orElse(null),
                 red.orElse(null), green.orElse(null), blue.orElse(null),
-                alpha.orElse(null), speed.orElse(null), targets);
+                alpha.orElse(null), speed.orElse(null), coloredLight.orElse(null), targets);
     }
 
     public ParticleModifier(@Nullable Filter filter, @Nullable IColorGetter colormap,
@@ -89,6 +96,7 @@ public class ParticleModifier {
                             @Nullable ParticleContextExpression size, @Nullable ParticleContextExpression red,
                             @Nullable ParticleContextExpression green, @Nullable ParticleContextExpression blue,
                             @Nullable ParticleContextExpression alpha, @Nullable ParticleContextExpression speed,
+                            @Nullable ColoredLight<IParticleExp> coloredLight,
                             Targets explicitTargets) {
         this.colorGetter = color;
         this.lifeGetter = life;
@@ -98,6 +106,7 @@ public class ParticleModifier {
         this.blueGetter = blue;
         this.alphaGetter = alpha;
         this.speedGetter = speed;
+        this.coloredLight = coloredLight;
         this.targets = explicitTargets;
         this.filter = filter;
         this.colormap = colormap;
@@ -106,12 +115,12 @@ public class ParticleModifier {
     public static ParticleModifier ofColor(String color) {
         ParticleContextExpression expression = new ParticleContextExpression(color);
         return new ParticleModifier(null, null, expression, null, null, null, null,
-                null, null, null, Targets.EMPTY);
+                null, null, null, null, Targets.EMPTY);
     }
 
     public static ParticleModifier ofColormap(IColorGetter colormap) {
         return new ParticleModifier(null, colormap, null, null, null, null, null,
-                null, null, null, Targets.EMPTY);
+                null, null, null, null, Targets.EMPTY);
     }
 
 

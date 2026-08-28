@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.entity;
 
+import net.mehvahdjukaar.polytone.Polytone;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.utils.ContentManager;
 import net.mehvahdjukaar.polytone.utils.Parsed;
@@ -41,6 +42,7 @@ public class EntityModifiersManager extends ContentManager<EntityModifier, Map<R
     private void addModifier(ResourceLocation fileId, EntityModifier mod) {
         for (var h : mod.targets().compute(fileId, BuiltInRegistries.ENTITY_TYPE.asLookup())) {
             emittersPerEntity.merge(h.value(), mod, EntityModifier::merge);
+            mod.coloredLight().ifPresent(l -> Polytone.COLORED_LIGHTS.addEntityLight(h.value(), l));
         }
     }
 

@@ -99,6 +99,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader<ItemModifier> {
             modifiers.merge(i, mod, ItemModifier::merge);
 
             Polytone.ITEM_MODELS.addModelFromModifier(i, mod.customModels());
+            mod.coloredLight().ifPresent(l -> Polytone.COLORED_LIGHTS.addItemLight(i, l));
         }
     }
 

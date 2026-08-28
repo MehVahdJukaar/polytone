@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.utils;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.content.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.content.light.ColoredLightsTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -67,6 +68,8 @@ public class ClientFrameTicker {
         cameraPos = mc.gameRenderer.getMainCamera().getBlockPosition();
         cameraBiome = level.getBiome(cameraPos);
 
+        ColoredLightsTracker.onFrame(partialTicks);
+
         deltaTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
         playerSpeed =  mc.player.getDeltaMovement().lengthSqr();
 
@@ -92,6 +95,7 @@ public class ClientFrameTicker {
         }
         screenTime++;
         Polytone.GLOBAL_EXPRESSION.tick(level);
+        if (level instanceof net.minecraft.client.multiplayer.ClientLevel c) ColoredLightsTracker.onTick(c, cameraPos);
         Polytone.POST_SHADERS.tick();
         TokenBucketTracker.tick();
     }

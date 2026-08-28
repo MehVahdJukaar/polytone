@@ -21,6 +21,8 @@ import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.Supplier;
 
@@ -42,6 +44,7 @@ public abstract class ClientLevelMixin extends Level {
         }
     }
 
+
     @WrapOperation(method = "getSkyColor", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/util/CubicSampler;gaussianSampleVec3(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/util/CubicSampler$Vec3Fetcher;)Lnet/minecraft/world/phys/Vec3;"))
     private Vec3 polytone$modifySkyColor(Vec3 center, CubicSampler.Vec3Fetcher fetcher,
@@ -55,7 +58,7 @@ public abstract class ClientLevelMixin extends Level {
     @ModifyExpressionValue(method = "getSkyColor", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F"))
     private float polytone$modifyRainSkyDarken(float original) {
-        if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelSkyWeatherDarken(this)) {
+         if (original != 0 && Polytone.DIMENSION_MODIFIERS.shouldCancelSkyWeatherDarken(this)) {
             return 0;
         }
         return original;

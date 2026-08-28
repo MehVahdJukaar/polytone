@@ -3,10 +3,10 @@
   "required": true,
   "compatibilityLevel": "JAVA_17",
   "package": "net.mehvahdjukaar.polytone.mixins.fabric",
-  "mixins": [
-  ],
+  "mixins": [],
   "client": [
     "AbstractContainerScreenMixin",
+    "AnimatedTextureMixin",
     "BlockColorsAccessor",
     "BlockModelDeserializerMixin",
     "ClientLevelFabricMixin",
@@ -23,13 +23,13 @@
     "InventoryScreenMixin",
     "ItemBlockRenderTypeAccessor",
     "ItemColorsAccessor",
-    "AnimatedTextureMixin",
     "ModelHackMixin",
-    "ModelManagerMixin",
     "ModelManagerAccessor",
+    "ModelManagerMixin",
     "ModelRendererMixin",
     "ParticleEngineAccessor",
     "RegistrySyncManagerMixin",
+    "SectionLightScanMixin",
     "TerrainParticleMixin"
   ],
   "injectors": {
