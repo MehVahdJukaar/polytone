@@ -28,9 +28,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 public final class GpuParticles {
 
     private final List<GpuParticleRenderer> active = new ArrayList<>();
-    // GL objects can only be dropped on the render thread, so the next frame does it
     private final List<GpuParticleRenderer> pendingClose = new ArrayList<>();
-    // shared by every type; only refreshed while a type asks for it
     private @Nullable GpuParticleHeightmap heightmap;
 
     public void add(GpuParticleRenderer renderer) {

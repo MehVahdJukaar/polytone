@@ -166,6 +166,10 @@ accessible field net/minecraft/client/particle/Particle zd D
 accessible field net/minecraft/client/particle/Particle x D
 accessible field net/minecraft/client/particle/Particle y D
 accessible field net/minecraft/client/particle/Particle z D
+# colored light interpolation between ticks
+accessible field net/minecraft/client/particle/Particle xo D
+accessible field net/minecraft/client/particle/Particle yo D
+accessible field net/minecraft/client/particle/Particle zo D
 
 mutable field net/minecraft/world/inventory/Slot x I
 mutable field net/minecraft/world/inventory/Slot y I
