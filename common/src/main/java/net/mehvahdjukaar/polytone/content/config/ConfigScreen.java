@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
@@ -395,10 +396,9 @@ public class ConfigScreen extends OptionsSubScreen {
         rebuildPreservingScroll();
     }
 
-    // Called by OptionHolder on any option value change so the preset sliders re-derive their position (hand-
-    // tweaking an option snaps the slider to Custom, vanilla-style).
     static void onOptionValueChanged() {
-        if (Minecraft.getInstance().gui.screen() instanceof ConfigScreen cs && !cs.suppressRederive) {
+        Gui gui = Minecraft.getInstance().gui;
+        if (gui != null && gui.screen() instanceof ConfigScreen cs && !cs.suppressRederive) {
             cs.presetRederivers.values().forEach(Runnable::run);
         }
     }
