@@ -47,7 +47,6 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
     public static final Codec<GpuParticleRenderer> CODEC = GpuParticleType.CODEC
             .xmap(GpuParticleRenderer::new, GpuParticleRenderer::type);
 
-    // vanilla ADDITIVE is (ONE, ONE); particles want the source alpha to fade the add out
     private static final BlendFunction ADDITIVE_PARTICLE_BLEND = new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE);
 
     private static final int INFO_UBO_SIZE = new Std140SizeCalculator()
@@ -123,7 +122,6 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         return null;
     }
 
-    // null once the shader failed to compile: drawing with a broken program is a GL error storm
     private @Nullable RenderPipeline pipeline() {
         if (shaderFailed) return null;
         if (pipeline == null) {
@@ -143,15 +141,9 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
                     .withVertexBinding(0, GpuParticleBuffer.FORMAT)
                     .withPrimitiveTopology(PrimitiveTopology.QUADS)
                     .withCull(false);
-            // depth is reversed, so the test is GREATER and the buffer is cleared to 0 (far). LESS here
-            // would only pass in front of terrain and never against the sky
             switch (type.renderType()) {
-                // same state as vanilla TRANSLUCENT_PARTICLE, depth write included: clouds and weather
-                // draw after us and test depth, so without it they paint straight over the particles
                 case TRANSLUCENT -> builder.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-                        .withDepthStencilState(DepthStencilState.DEFAULT);
-                // additive glows must not write depth or they'd cull each other and lose the stacking,
-                // which is why the pass runs after the clouds one instead
+                        .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false));
                 case ADDITIVE_TRANSLUCENT -> builder.withColorTargetState(new ColorTargetState(ADDITIVE_PARTICLE_BLEND))
                         .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false));
                 default -> builder.withColorTargetState(ColorTargetState.DEFAULT)
@@ -168,7 +160,6 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         return pipeline;
     }
 
-    // no render pass may be open here: everything that writes to a buffer happens in this half
     public boolean prepare(Vec3 cameraPos, long gameTime, float partialTick, GpuParticleHeightmap heightmap) {
         if (type.renderType() == ParticleRenderMode.INVISIBLE) return false;
         if (pipeline() == null) return false;
@@ -182,7 +173,6 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         writeInfo(cameraPos, gameTime, partialTick, heightmap);
         this.heightmap = heightmap;
 
-        // getTexture loads and uploads the image the first time it is asked for
         texture = Minecraft.getInstance().getTextureManager().getTexture(type.texture()).getTextureView();
         indexCount = records.vertexCount() / 4 * 6;
         RenderSystem.AutoStorageIndexBuffer sequential = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);

@@ -1,1 +1,2 @@
+- translucent gpu particles no longer write depth, so they dont block the ones behind them. The gpu particle pass now runs after weather
 - fixed a 26.2 issue
