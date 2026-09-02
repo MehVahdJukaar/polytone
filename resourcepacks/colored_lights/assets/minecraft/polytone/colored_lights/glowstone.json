@@ -1,0 +1,4 @@
+{
+  "targets": ["minecraft:glowstone", "minecraft:sea_lantern"],
+  "colored_light": "#FFD79B"
+}

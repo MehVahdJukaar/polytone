@@ -1,0 +1,5 @@
+{
+  "target_type": "entity",
+  "targets": "minecraft:glow_squid",
+  "colored_light": "#1FC7C7"
+}

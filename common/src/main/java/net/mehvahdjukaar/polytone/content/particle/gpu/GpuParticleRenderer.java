@@ -40,6 +40,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 
+// most nonsense system in polytone
 public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCloseable {
 
     public static final Codec<GpuParticleRenderer> CODEC = GpuParticleType.CODEC
@@ -68,12 +69,8 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
     private @Nullable GpuBuffer infoUbo;
     private boolean shaderFailed = false;
     private boolean closed = false;
-    // resolved in prepare: both of these can upload or grow GPU storage, which a render pass forbids
     private @Nullable GpuTextureView texture;
     private @Nullable GpuParticleHeightmap heightmap;
-    private @Nullable GpuBuffer indexBuffer;
-    private VertexFormat.IndexType indexType = VertexFormat.IndexType.SHORT;
-    private int indexCount;
 
     public GpuParticleRenderer(GpuParticleType type) {
         this.type = type;
@@ -174,10 +171,6 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
 
         // getTexture loads and uploads the image the first time it is asked for
         texture = Minecraft.getInstance().getTextureManager().getTexture(type.texture()).getTextureView();
-        indexCount = records.vertexCount() / 4 * 6;
-        RenderSystem.AutoStorageIndexBuffer sequential = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
-        indexBuffer = sequential.getBuffer(indexCount);
-        indexType = sequential.type();
         return true;
     }
 
@@ -215,9 +208,13 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         }
     }
 
-    public void draw(RenderPass pass) {
+    public int indexCount() {
+        return records.vertexCount() / 4 * 6;
+    }
+
+    public void draw(RenderPass pass, GpuBuffer indexBuffer, VertexFormat.IndexType indexType) {
         GpuBuffer vertices = records.vertexBuffer();
-        if (pipeline == null || vertices == null || texture == null || indexBuffer == null || heightmap == null) return;
+        if (pipeline == null || vertices == null || texture == null || heightmap == null) return;
 
         pass.setPipeline(pipeline);
         pass.bindTexture("Sampler0", texture, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
@@ -228,7 +225,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
         customUniforms.bind(pass, type.uniforms().keySet());
         pass.setVertexBuffer(0, vertices);
         pass.setIndexBuffer(indexBuffer, indexType);
-        pass.drawIndexed(0, 0, indexCount, 1);
+        pass.drawIndexed(0, 0, indexCount(), 1);
     }
 
     private boolean isTranslucent() {

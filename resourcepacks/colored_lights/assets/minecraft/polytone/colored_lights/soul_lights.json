@@ -1,0 +1,12 @@
+{
+  "targets": [
+    "minecraft:soul_torch",
+    "minecraft:soul_wall_torch",
+    "minecraft:soul_lantern",
+    "minecraft:soul_fire"
+  ],
+  "colored_light": {
+    "color": "#4FD8D8",
+    "radius": 12
+  }
+}
