@@ -1,5 +1,8 @@
 package net.mehvahdjukaar.polytone.content.particle.gpu;
 
+import com.mojang.blaze3d.IndexType;
+import com.mojang.blaze3d.PrimitiveTopology;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
@@ -71,6 +74,12 @@ public final class GpuParticles {
         }
         if (ready.isEmpty()) return;
 
+        int maxIndices = 0;
+        for (GpuParticleRenderer r : ready) maxIndices = Math.max(maxIndices, r.indexCount());
+        RenderSystem.AutoStorageIndexBuffer sequential = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
+        GpuBuffer indexBuffer = sequential.getBuffer(maxIndices);
+        IndexType indexType = sequential.type();
+
         // vertices are already camera relative, so the transform is the plain camera view matrix
         GpuBufferSlice transforms = RenderSystem.getDynamicUniforms().writeTransform(
                 new Matrix4f(RenderSystem.getModelViewStack()), new Vector4f(1, 1, 1, 1), new Vector3f(), new Matrix4f());
@@ -82,7 +91,7 @@ public final class GpuParticles {
             RenderSystem.bindDefaultUniforms(pass);
             pass.setUniform("DynamicTransforms", transforms);
             for (GpuParticleRenderer r : ready) {
-                r.draw(pass);
+                r.draw(pass, indexBuffer, indexType);
             }
         } finally {
             if (CompatHandler.IRIS) IrisCompat.setShaderOverrideBypass(false);
