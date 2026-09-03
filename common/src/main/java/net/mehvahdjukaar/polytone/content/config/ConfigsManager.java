@@ -42,9 +42,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-// Loaded eagerly per pack at discovery time (see PackMixin) so overlay conditions can be evaluated
-// before the reload, and unlike the other reloaders these also parse with no world open, since that's
-// where the pack screen reads them.
 public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
 
     public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);
@@ -188,16 +185,7 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
         return 0;
     }
 
-    // Called per-pack during pack discovery, before the resource reload happens, so overlay
-    // conditions referencing this pack's configs can be evaluated.
-    // Two passes, and the order matters: reading the overlay metadata below already decodes the pack's
-    // overlay entries, which evaluates their polytone_condition and so looks configs up. Seeding the
-    // registry from the pack's base directory first is what makes those lookups resolve. Only then can
-    // we re-open the pack with its applicable overlays, to also pick up config entries declared inside
-    // one (e.g. a version overlay), which are invisible to the first pass.
     public void loadCurrentPackConfigs(PackResources primary, Pack.ResourcesSupplier resources, PackLocationInfo location, int version) {
-        // Server packs and world packs need this just as much as local ones (#372); only the
-        // vanilla/mod-provided packs are worth skipping, they can't carry config entries.
         PackSource source = primary.location().source();
         if (source == PackSource.BUILT_IN || source == PackSource.FEATURE) return;
 
@@ -218,8 +206,6 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
         }
     }
 
-    // The resource manager is deliberately not closed: closing it would close the pack we were handed,
-    // which the caller still owns and goes on using.
     private void parsePackConfigsInto(PackResources pack, MapRegistry<OptionHolder<?>> reg) {
         MultiPackResourceManager resourceManager = new MultiPackResourceManager(PackType.CLIENT_RESOURCES, List.of(pack));
         var jsons = this.getJsonsInDirectories(resourceManager);
@@ -250,9 +236,6 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
         parseConfigs(jsons);
     }
 
-    // Config entries decode with plain JsonOps and never touch registries, so unlike every other
-    // reloader they can load with no world open - which they must, since the pack screen and pack
-    // overlay conditions both read them from the main menu.
     @Override
     protected void parseWithoutLevel(Map<ResourceLocation, JsonElement> jsons) {
         parseConfigs(jsons);

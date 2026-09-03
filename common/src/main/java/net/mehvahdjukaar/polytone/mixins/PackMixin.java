@@ -14,9 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Pack.class)
 public class PackMixin {
 
-    // Load this pack's configs eagerly, before the overlay metadata section (and its conditions) are parsed.
-    // We pass the resources supplier + version too so we can re-open the pack with its format overlays applied,
-    // otherwise config entries defined inside overlay directories would be invisible here (see loadCurrentPackConfigs).
     @Inject(method = "readPackMetadata", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/server/packs/PackResources;getMetadataSection(Lnet/minecraft/server/packs/metadata/MetadataSectionSerializer;)Ljava/lang/Object;",
             ordinal = 0, shift = At.Shift.BEFORE))
@@ -27,9 +24,6 @@ public class PackMixin {
         PackInfos.readFrom(packResources);
     }
 
-    // The per-pack registry is only meant to be visible while this pack's own overlay conditions are being
-    // evaluated. Leaving it set would make that thread (pack discovery runs on the render thread) keep
-    // resolving config() against the last scanned pack forever.
     @Inject(method = "readPackMetadata", at = @At("RETURN"))
     private static void polytone$afterReadPackMetadata(PackLocationInfo location, Pack.ResourcesSupplier resources, int version,
                                                        CallbackInfoReturnable<Pack.Metadata> cir) {

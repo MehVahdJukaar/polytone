@@ -17,8 +17,6 @@ import java.util.Map;
 
 public class NoiseManager extends JsonPartialReloader<NoiseManager.NoiseConfig> {
 
-    // The editor needs a round-trippable codec, and PerlinSimplexNoise can't be re-encoded, so the
-    // manager parses this config (seed + octaves) and builds the noise from it.
     public record NoiseConfig(int seed, List<Integer> octaves) {
         public static final Codec<NoiseConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.INT.fieldOf("seed").forGetter(NoiseConfig::seed),
@@ -29,6 +27,8 @@ public class NoiseManager extends JsonPartialReloader<NoiseManager.NoiseConfig> 
             return new PerlinSimplexNoise(RandomSource.create(seed), octaves);
         }
     }
+
+    public static final PerlinSimplexNoise DEFAULT = new PerlinSimplexNoise(RandomSource.create(0), List.of(1));
 
     public NoiseManager() {
         super(Spec.of("Noise", () -> NoiseConfig.CODEC).folders("noises").wikiPage("Math-Expressions"));

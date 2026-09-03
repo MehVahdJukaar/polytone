@@ -42,11 +42,6 @@ accessible field net/minecraft/client/particle/ParticleEngine particles Ljava/ut
 # editor preview: build a child particle (with sprites) without adding it to the live engine queue
 accessible method net/minecraft/client/particle/ParticleEngine makeParticle (Lnet/minecraft/core/particles/ParticleOptions;DDDDDD)Lnet/minecraft/client/particle/Particle;
 
-# editor particle preview: position a throwaway Camera for the offscreen render
-accessible method net/minecraft/client/Camera <init> ()V
-accessible method net/minecraft/client/Camera setPosition (Lnet/minecraft/world/phys/Vec3;)V
-accessible method net/minecraft/client/Camera setRotation (FF)V
-
 accessible field net/minecraft/client/particle/Particle friction F
 accessible field net/minecraft/client/particle/Particle oRoll F
 accessible field net/minecraft/client/particle/Particle hasPhysics Z

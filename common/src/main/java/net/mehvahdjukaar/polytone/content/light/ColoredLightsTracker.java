@@ -42,9 +42,6 @@ public class ColoredLightsTracker {
 
     private static boolean active;
 
-    public record LitBlock(long pos, BlockState state, ColoredLightsManager.BlockRule rule) {
-    }
-
     static boolean activate() {
         if (!CompatHandler.VEIL) {
             Polytone.LOGGER.info("Resource packs define colored lights but Veil is not installed. Install it to see them");
@@ -64,13 +61,13 @@ public class ColoredLightsTracker {
     }
 
     public static final class Scan {
-        private static final int BLOCKS_PER_SECTION = 16 * 16 * 16;
 
+        private static final int BLOCKS_PER_SECTION = 16 * 16 * 16;
         private final List<LitBlock> found = new ArrayList<>();
+
         private final RandomSource random = RandomSource.create();
         private long sectionKey = Long.MIN_VALUE;
         private int seen;
-
         public void offer(int x, int y, int z, BlockState state) {
             if (sectionKey == Long.MIN_VALUE) {
                 sectionKey = SectionPos.asLong(SectionPos.blockToSectionCoord(x),
@@ -86,8 +83,8 @@ public class ColoredLightsTracker {
                 }
             }
         }
-    }
 
+    }
     @Nullable
     public static Scan openScan() {
         return active && Polytone.COLORED_LIGHTS.hasBlockLights() ? new Scan() : null;
@@ -101,12 +98,12 @@ public class ColoredLightsTracker {
 
     public static void onTick(ClientLevel level, BlockPos camera) {
         if (!active) return;
-        pushBlocks(level, camera.getCenter());
-        pushEntities(level, camera.getCenter());
-        pushParticles(level);
+        addBlocks(level, camera.getCenter());
+        addEntities(level, camera.getCenter());
+        addParticles(level);
     }
 
-    public static void onFrame(float partialTicks) {
+    public static void onRenderTick(float partialTicks) {
         if (!active) return;
         for (LitEntity lit : activeEntities) {
             Entity e = lit.entity;
@@ -128,7 +125,7 @@ public class ColoredLightsTracker {
         if (light != null) activeParticles.add(new LitParticle(particle, light, nextParticleKey++));
     }
 
-    private static void pushParticles(ClientLevel level) {
+    private static void addParticles(ClientLevel level) {
         var it = activeParticles.iterator();
         while (it.hasNext()) {
             LitParticle lit = it.next();
@@ -143,10 +140,7 @@ public class ColoredLightsTracker {
         }
     }
 
-    private record LitParticle(Particle particle, ColoredLight<IParticleExp> light, long key) {
-    }
-
-    private static void pushBlocks(ClientLevel level, Vec3 camera) {
+    private static void addBlocks(ClientLevel level, Vec3 camera) {
         if (!Polytone.COLORED_LIGHTS.hasBlockLights()) {
             if (!litBlocksPerSection.isEmpty() || !litBlocks.isEmpty()) {
                 litBlocksPerSection.clear();
@@ -189,8 +183,7 @@ public class ColoredLightsTracker {
         int emission = state.getLightEmission();
         return emission > 0 ? emission : DEFAULT_LIGHT_RADIUS;
     }
-
-    private static void pushEntities(ClientLevel level, Vec3 camera) {
+    private static void addEntities(ClientLevel level, Vec3 camera) {
         if (!Polytone.COLORED_LIGHTS.hasEntityLights()) {
             if (!litEntities.isEmpty()) {
                 litEntities.clear();
@@ -225,9 +218,6 @@ public class ColoredLightsTracker {
         activeEntities = found;
     }
 
-    private record LitEntity(Entity entity, ColoredLight<IEntityExp> light) {
-    }
-
     @Nullable
     private static ColoredLight<IEntityExp> lightFor(Entity entity) {
         if (entity instanceof ItemEntity item) {
@@ -243,5 +233,15 @@ public class ColoredLightsTracker {
             }
         }
         return null;
+    }
+
+
+    private record LitParticle(Particle particle, ColoredLight<IParticleExp> light, long key) {
+    }
+
+    public record LitBlock(long pos, BlockState state, ColoredLightsManager.BlockRule rule) {
+    }
+
+    private record LitEntity(Entity entity, ColoredLight<IEntityExp> light) {
     }
 }

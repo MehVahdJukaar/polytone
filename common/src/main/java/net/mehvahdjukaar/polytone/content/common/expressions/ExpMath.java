@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.common.expressions;
 
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.utils.VersionRange;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -217,8 +218,14 @@ public class ExpMath {
     }
 
     public static boolean modOn(String mod, String versionRange) {
-        // Stub - 1.21.1 PlatStuff doesn't expose mod version; treat as no version match
-        return PlatStuff.isModLoaded(mod);
+        if (!PlatStuff.isModLoaded(mod)) return false;
+        var range = VersionRange.decode(versionRange);
+        if (range.error().isPresent()) {
+            Polytone.LOGGER.error("Failed to parse version range '{}' for mod '{}'", versionRange, mod);
+            return false;
+        }
+        String v = PlatStuff.getModVersion(mod);
+        return v != null && range.getOrThrow().matches(v);
     }
 
     public static double dateYear() {

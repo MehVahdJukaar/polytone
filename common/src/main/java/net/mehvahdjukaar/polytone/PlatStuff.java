@@ -32,6 +32,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.io.IOException;
@@ -63,6 +64,12 @@ public class PlatStuff {
 
     @PlatformImpl
     public static String getVersion() {
+        throw new AssertionError();
+    }
+
+    @Nullable
+    @PlatformImpl
+    public static String getModVersion(String modId) {
         throw new AssertionError();
     }
 

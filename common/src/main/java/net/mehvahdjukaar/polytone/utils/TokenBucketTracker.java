@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class TokenBucketTracker {
 
-    // Concurrent: async custom particles register/consume buckets off the render thread.
+    //concurrent: async custom particles register/consume buckets off the render thread
     private static final Queue<TokenBucket> BUCKETS = new ConcurrentLinkedQueue<>();
     private static final Map<Object, TokenBucket> OBJECTS_TOKENS = new ConcurrentHashMap<>();
 
@@ -32,6 +32,6 @@ public class TokenBucketTracker {
         if (!Polytone.CONFIGS.autoParticleRateLimit.get()) return true;
         return OBJECTS_TOKENS.computeIfAbsent(obj, o ->
                 track(TokenBucket.create(2, 400))
-        ).tryAcquire();
+        ).tryConsuming();
     }
 }

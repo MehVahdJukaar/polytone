@@ -42,14 +42,11 @@ public class CustomParticleInstance extends TextureSheetParticle {
     protected double custom;
 
     private boolean inFrustumLastTick = true;
-
     private Quaternionf customRotation = null;
     private Quaternionf customRotationO = null;
 
-    // newborn awaiting its spawn-time ticker pass in the parallel batch (see PolytoneAsyncParticles)
+    //used by async particle
     boolean pendingInitTick = false;
-
-    // light cache: re-samples only when the particle crosses a block, or its section changed
     private final ParticleLightCache.Entry lightCache;
     private final @Nullable ParticleColor.Cache colormapCache;
 
@@ -68,7 +65,6 @@ public class CustomParticleInstance extends TextureSheetParticle {
         this.tickables.addAll(customType.sounds);
         this.tickables.addAll(customType.particleEmitters);
 
-        //for normal particles since its simple particle types (so that they can be ued in biomes) we can pass extra params
         if (state == null) state = STATE_HACK;
 
         // remove randomness
@@ -94,8 +90,6 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
         this.oQuadSize = quadSize;
 
-        // seed the spawn color; the cache also records the block so PER_POSITION only re-samples
-        // once the particle moves off it. null when this type has no colormap (the common case)
         this.colormapCache = this.type.colormap == null ? null
                 : new ParticleColor.Cache(this, this.type.colormap, state, pos);
         this.lightCache = new ParticleLightCache.Entry(super::getLightColor);
@@ -130,10 +124,6 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
     @Override
     public void render(VertexConsumer buffer, Camera camera, float partialTicks) {
-        // Fast path: when this particle is just a plain camera-facing textured quad we defer to the
-        // vanilla SingleQuadParticle.render, which Sodium hijacks at HEAD to write straight into its
-        // packed particle buffer. getLightColor/getU0..V1 stay virtual there, so our sprite and
-        // light-level overrides still apply. When Sodium is absent this is simply the vanilla path.
         if (canUseSodiumFastPath()) {
             super.render(buffer, camera, partialTicks);
             return;
@@ -161,16 +151,8 @@ public class CustomParticleInstance extends TextureSheetParticle {
         }
     }
 
-    // The editor preview renders into its own offscreen buffer off the normal particle loop; Sodium's
-    // fast path would hijack super.render and emit into Sodium's packed batch instead, so the preview
-    // never sees the quad. Forcing the full path routes the quad into the caller's buffer. Toggled on
-    // the render thread around one draw, so it never affects the live game's own particle rendering.
     public static boolean PREVIEW_FORCE_FULL_PATH = false;
 
-    // True only when our particle is exactly the quad Sodium's fast path builds, so we can safely let
-    // super.render take over. Requirements: LOOK_AT_XYZ specifically (Sodium billboards with camera
-    // left/up), no model, zero offset, and a render mode that neither redirects the consumer nor is
-    // one Sodium mis-renders (TRANSLUCENT / ADDITIVE_TRANSLUCENT).
     private boolean canUseSodiumFastPath() {
         return !PREVIEW_FORCE_FULL_PATH
                 && this.model == null
@@ -180,9 +162,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
                 && this.type.renderType != ParticleRenderMode.ADDITIVE_TRANSLUCENT;
     }
 
-    // Sodium 0.8.x injects into SingleQuadParticle.renderRotatedQuad(VertexConsumer, Camera, Quaternionf, float)
-    // and cancels it at HEAD. Overriding this overload keeps dispatch out of the mixed-in superclass method
-    // whenever we take the slow path (buffer redirection, offset, model rendering).
+    //Sodium cancels the normal rendering we are forced to override this...
     @Override
     protected void renderRotatedQuad(VertexConsumer buffer, Camera camera, Quaternionf quaternion, float partialTicks) {
         Vec3 cameraPos = camera.getPosition();
@@ -206,7 +186,6 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
             PoseStack poseStack = new PoseStack();
             poseStack.translate(x + offset.x, y + offset.y, z + offset.z);
-
             poseStack.scale(size, size, size);
             poseStack.mulPose(quaternion);
             poseStack.translate(-0.5, -0.5, -0.5);
@@ -260,9 +239,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
     @Override
     public void tick() {
-        // Lifetime expires synchronously: the engine culls right after tick(), a deferred check
-        // makes every particle live one tick longer. super.tick()'s own check then never fires.
-        if (this.removed) return; // removed off-thread last tick, culled right after this call
+        if (this.removed) return;
         if (this.age >= this.lifetime) {
             this.remove();
             return;
@@ -272,7 +249,6 @@ public class CustomParticleInstance extends TextureSheetParticle {
         } else tickInternal();
     }
 
-    // bypasses the async batch, for callers that drive ticking on their own thread (editor preview)
     public void tickSync() {
         if (this.removed) return;
         if (this.age >= this.lifetime) {
@@ -284,7 +260,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
     void initTick() {
         this.type.ticker.tick(this, level);
-        this.setAge(0); // reset so the spawn-time pass doesn't age the particle
+        this.setAge(0);
     }
 
     void tickInternal() {
@@ -326,9 +302,6 @@ public class CustomParticleInstance extends TextureSheetParticle {
         if (type.ticker != null && isTickTime) {
             type.ticker.tick(this, level);
         }
-
-        // colormap: sampled once at spawn (see constructor); the cache policy decides whether to
-        // re-evaluate here (ON_SPAWN freezes, PER_POSITION on block change, NONE every tick)
         if (colormapCache != null) colormapCache.tick();
 
         if (this.age > 1 && type.killWhenStill && this.x == this.xo && this.y == this.yo && this.z == this.zo) {

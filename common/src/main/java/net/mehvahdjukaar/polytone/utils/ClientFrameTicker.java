@@ -2,13 +2,13 @@ package net.mehvahdjukaar.polytone.utils;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.content.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.content.light.ColoredLightsTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
@@ -38,6 +38,30 @@ public class ClientFrameTicker {
     private static float screenTime;
 
     private static WeakReference<Entity> lastEntity = new WeakReference<>(null);
+    private static volatile @Nullable PlayerSnapshot playerSnapshot = null;
+
+    public record PlayerSnapshot(double x, double y, double z,
+                                 double xd, double yd, double zd,
+                                 double speed, double width, double height,
+                                 boolean crouching) {
+    }
+
+    public static void refreshPlayerSnapshot() {
+        Player p = Minecraft.getInstance().player;
+        if (p == null) {
+            playerSnapshot = null;
+            return;
+        }
+        var movement = p.getDeltaMovement();
+        playerSnapshot = new PlayerSnapshot(p.getX(), p.getY(), p.getZ(),
+                movement.x, movement.y, movement.z, movement.length(),
+                p.getBbWidth(), p.getBbHeight(),
+                p.isCrouching());
+    }
+
+    public static @Nullable PlayerSnapshot playerSnapshot() {
+        return playerSnapshot;
+    }
 
     public static void setLastEntity(Entity entity) {
         lastEntity = new WeakReference<>(entity);
@@ -68,7 +92,7 @@ public class ClientFrameTicker {
         cameraPos = mc.gameRenderer.getMainCamera().getBlockPosition();
         cameraBiome = level.getBiome(cameraPos);
 
-        ColoredLightsTracker.onFrame(partialTicks);
+        ColoredLightsTracker.onRenderTick(partialTicks);
 
         deltaTime = Minecraft.getInstance().getTimer().getRealtimeDeltaTicks();
         playerSpeed =  mc.player.getDeltaMovement().lengthSqr();
@@ -85,7 +109,7 @@ public class ClientFrameTicker {
         // server level too) - otherwise off-thread GL calls poison the post shader chains.
         if (level != Minecraft.getInstance().level) return;
         // keep the async player-stats cache in step with the tick (cleared to null when no player)
-        ExpTicker.refreshPlayerSnapshot();
+        refreshPlayerSnapshot();
         if (cameraPos != null) {
             skyLight = level.getBrightness(LightLayer.SKY, cameraPos);
             blockLight = level.getBrightness(LightLayer.BLOCK, cameraPos);

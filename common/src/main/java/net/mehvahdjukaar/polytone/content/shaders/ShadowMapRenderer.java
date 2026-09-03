@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-// Replays the level's already-compiled chunk VBOs from the light's point of view; nothing is re-meshed.
+// Replays the level's already-compiled chunk VBOs from the light's point of view; nothing is re-meshed
 public class ShadowMapRenderer {
 
     private ShadowMapSettings settings = ShadowMapSettings.DEFAULT;
@@ -53,8 +53,6 @@ public class ShadowMapRenderer {
     private long lastRenderMs = 0L;
     private boolean hasRenderedMap = false;
 
-    // the pass dispatches mod renderers, and one of those rendering a level of its own would land back
-    // here and clear the caster list while we iterate it
     private boolean renderingShadowPass = false;
 
     private TextureTarget shadowTarget = null;
@@ -91,16 +89,12 @@ public class ShadowMapRenderer {
         return cameraFract;
     }
 
-    // Called from LevelRenderer.renderLevel TAIL, chunk VBOs still current; skips all work unless some
-    // active post chain declares use_shadow_map.
     public void renderShadowPassIfNeeded(Camera cam, Matrix4f cameraFrustumMatrix, Matrix4f cameraProjectionMatrix) {
         if (renderingShadowPass) return;
         if (!Polytone.POST_SHADERS.anyActiveEffectUsesShadowMap()) return;
 
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        // renderLevel's own camera parameter, not gameRenderer.getMainCamera(): mods swap that global
-        // while rendering a second view, and it has to agree with the frustum matrices passed in
         if (level == null || !cam.isInitialized()) return;
 
         Vec3 camPos = cam.getPosition();
@@ -154,8 +148,6 @@ public class ShadowMapRenderer {
         ensureTarget();
         updateLightMatrices(level, camPos, partialTick);
 
-        // narrowing to the frustum is only sound while the map is rendered every frame: with reuse on,
-        // the camera turns between renders and would look into parts of the map we never filled
         ShadowCasterVolume volume = new ShadowCasterVolume(lightView, settings.coverage(), settings.depthRange());
         boolean rendersEveryFrame = settings.updateInterval() <= 0f;
         if (rendersEveryFrame && cameraFrustumMatrix != null && cameraProjectionMatrix != null) {
@@ -166,19 +158,14 @@ public class ShadowMapRenderer {
 
         RenderTarget mainTarget = mc.getMainRenderTarget();
 
-        // restored in the finally no matter what throws (or what Sodium's replay leaves behind), so the
-        // rest of the frame keeps the camera's view instead of the light's
         Matrix4f savedProjection = new Matrix4f(RenderSystem.getProjectionMatrix());
         VertexSorting savedSorting = RenderSystem.getVertexSorting();
 
-        // always clear, even with nothing to draw: a stale map has last frame's projection. depth only,
-        // the target has no draw buffer bound (see ensureTarget)
         shadowTarget.bindWrite(true);
         RenderSystem.depthMask(true);
         GlStateManager._clearDepth(1.0);
         GlStateManager._clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
         try {
-            // only opaque geometry casts: a shadow map stores occluder depth, so translucent is skipped
             if (!casterSections.isEmpty()) {
                 drawLayer(mc, RenderType.solid(), camPos, depthShader(mc, false));
                 drawLayer(mc, RenderType.cutoutMipped(), camPos, depthShader(mc, true));
@@ -190,20 +177,16 @@ public class ShadowMapRenderer {
                 SodiumShadowRenderer.replayTerrain(mc, cam, camPos, lightView, lightProj, volume);
             }
 
-            // entities are not part of the chunk VBOs, re-dispatch them with the light matrices
             if (settings.renderEntities() || settings.renderBlockEntities()) {
                 drawEntities(mc, level, camPos, volume);
             }
         } finally {
-            // main target again (with its full-window viewport) for the hand, the HUD and later frames
             mainTarget.bindWrite(true);
             RenderSystem.setProjectionMatrix(savedProjection, savedSorting);
             RenderSystem.applyModelViewMatrix();
         }
     }
 
-    // A single ortho cascade centered on the camera, built camera-relative to match the
-    // ChunkOffset = origin - camera the terrain shader consumes per section.
     private void updateLightMatrices(ClientLevel level, Vec3 camPos, float partialTick) {
         float coverage = settings.coverage();
         float depthRange = settings.depthRange();
@@ -239,15 +222,10 @@ public class ShadowMapRenderer {
         if (towardLight.y < 0f) towardLight.negate();
     }
 
-    // Unlike vanilla we include the camera entity, so the player casts a shadow in first person.
     private void drawEntities(Minecraft mc, ClientLevel level, Vec3 camPos, ShadowCasterVolume volume) {
         var entityDispatcher = mc.getEntityRenderDispatcher();
-        // the frame's shared buffer, borrowed empty and handed back empty: renderLevel flushes it in full
-        // before the weather block, well before the TAIL we run at
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
 
-        // the push/pop pair must stay balanced across any throw: the model-view stack is a persistent
-        // global, so a leaked push renders later frames from the sun's POV
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushMatrix();
         try {
@@ -287,9 +265,6 @@ public class ShadowMapRenderer {
             }
 
             try {
-                // the batch only reaches the GPU here, so this binding decides where the entities land.
-                // re-assert it: a renderer that drew a level of its own leaves the main target bound
-                shadowTarget.bindWrite(true);
                 bufferSource.endBatch();
             } catch (Exception e) {
                 Polytone.LOGGER.error("Error flushing polytone shadow entity batch", e);
@@ -300,9 +275,6 @@ public class ShadowMapRenderer {
         }
     }
 
-    // The compiled sections carry only the block entities that actually have a renderer, and they are
-    // already narrowed to the caster volume, so use them instead of walking chunks. Sodium leaves those
-    // sections uncompiled, so that path falls back to scanning the loaded chunks within lateral coverage.
     private void drawBlockEntities(Minecraft mc, ClientLevel level, Vec3 camPos,
                                    MultiBufferSource bufferSource, PoseStack poseStack,
                                    ShadowCasterVolume volume) {
@@ -350,8 +322,6 @@ public class ShadowMapRenderer {
         poseStack.popPose();
     }
 
-    // Every compiled section that can cast into the view, regardless of camera visibility, so
-    // off-screen occluders still cast.
     private void collectCasterSections(Minecraft mc, ShadowCasterVolume volume, Vec3 camPos) {
         casterSections.clear();
         ViewArea viewArea = mc.levelRenderer.viewArea;
@@ -369,15 +339,12 @@ public class ShadowMapRenderer {
         }
     }
 
-    // cube test in the volume's camera-relative space; conservative, never a false "outside"
     private static boolean canCastIntoView(ShadowCasterVolume volume, Vec3 camPos,
                                          double x, double y, double z, float halfExtent) {
         return volume.intersects((float) (x - camPos.x), (float) (y - camPos.y), (float) (z - camPos.z),
                 halfExtent, halfExtent, halfExtent);
     }
 
-    // The body of vanilla's renderSectionLayer minus translucency sorting, profiler and mod
-    // render-stage hooks. depthShader may be null, then whatever setupRenderState bound is used.
     private void drawLayer(Minecraft mc, RenderType renderType, Vec3 camPos, ShaderInstance depthShader) {
         renderType.setupRenderState();
         ShaderInstance shader = depthShader != null ? depthShader : RenderSystem.getShader();
@@ -387,8 +354,6 @@ public class ShadowMapRenderer {
         }
         try {
             if (depthShader != null) {
-                // apply() binds samplers from the shader's own map, not the RenderSystem globals, so the
-                // atlas setupRenderState just bound has to be handed over. only cutout reads it
                 depthShader.setSampler("Sampler0", RenderSystem.getShaderTexture(0));
             }
             shader.setDefaultUniforms(VertexFormat.Mode.QUADS, lightView, lightProj, mc.getWindow());
@@ -418,9 +383,6 @@ public class ShadowMapRenderer {
         }
     }
 
-    // Depth-only terrain programs, loaded on first use: they drop everything the vanilla ones do for
-    // colour, and for the opaque layer the atlas fetch too, which keeps early depth testing on.
-    // Returns null once loading failed, which falls back to the vanilla program.
     private ShaderInstance depthShader(Minecraft mc, boolean cutout) {
         if (depthShadersFailed) return null;
         ShaderInstance cached = cutout ? cutoutDepthShader : opaqueDepthShader;
@@ -446,9 +408,6 @@ public class ShadowMapRenderer {
             if (shadowTarget != null) shadowTarget.destroyBuffers();
             shadowTarget = new TextureTarget(resolution, resolution, true, Minecraft.ON_OSX);
 
-            // TextureTarget always allocates a colour attachment but nothing has to feed it: with
-            // GL_NONE bound the pass writes depth only, dropping the colour clear and blend traffic.
-            // framebuffer state, so it sticks for the target's life
             int previous = GlStateManager.getBoundFramebuffer();
             GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, shadowTarget.frameBufferId);
             GL11.glDrawBuffer(GL11.GL_NONE);

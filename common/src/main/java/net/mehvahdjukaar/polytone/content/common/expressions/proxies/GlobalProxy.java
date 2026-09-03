@@ -2,9 +2,8 @@ package net.mehvahdjukaar.polytone.content.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.common.expressions.ExpTicker;
-import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.compat.ISeason;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
@@ -50,7 +49,7 @@ public class GlobalProxy {
     }
 
     public double seasonNumber() {
-        return ExpTicker.getSeasonNumber();
+        return ClientFrameTicker.getSeason();
     }
 
     public double renderDistance() {
@@ -63,7 +62,7 @@ public class GlobalProxy {
     }
 
     public double rain() {
-        return ExpTicker.getRainAndThunder();
+        return ClientFrameTicker.getRainAndThunder();
     }
 
     public double value(String key) {

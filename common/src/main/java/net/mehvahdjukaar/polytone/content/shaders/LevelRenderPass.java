@@ -21,13 +21,13 @@ public final class LevelRenderPass {
     private static boolean inVanillaFrame = false;
     private static int depth = 0;
 
-    public static void startVanillaFrame() {
+    public static void onStartRenderLevel() {
         inVanillaFrame = true;
         // renderLevel's TAIL doesn't run if the pass throws, so re-anchor rather than trusting the pops.
         depth = 0;
     }
 
-    public static void endVanillaFrame() {
+    public static void onEndRenderLevel() {
         inVanillaFrame = false;
     }
 

@@ -17,8 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-// Read only on 1.21.1: the old PostChain has no framegraph to splice a write side into, so unlike
-// on 1.21.11 a chain can't write into one.
 public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.TargetSpec> {
 
     record TargetSpec(Optional<Integer> width, Optional<Integer> height, boolean useDepth) {
@@ -29,9 +27,9 @@ public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.T
         ).apply(i, TargetSpec::new));
     }
 
+    private final Map<ResourceLocation, RenderTarget> targets = new HashMap<>();
     private volatile Map<ResourceLocation, TargetSpec> specs = Map.of();
     private volatile boolean dirty = false;
-    private final Map<ResourceLocation, RenderTarget> targets = new HashMap<>();
 
     public PostTargetsManager() {
         super(Spec.of("Post target", () -> TargetSpec.CODEC)
@@ -70,7 +68,6 @@ public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.T
         return specs.isEmpty();
     }
 
-    // call once per frame; targets without an explicit size follow the frame size
     public void ensureAllocated(int frameWidth, int frameHeight) {
         Map<ResourceLocation, TargetSpec> specs = this.specs;
         if (dirty) {

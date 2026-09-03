@@ -34,14 +34,9 @@ public abstract class GameRendererMixin {
         Polytone.LIGHTMAPS.setupForGUI(false);
         lightTexture.turnOnLightLayer();
         Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
-        // Belt and braces: renderLevel's RETURN hook doesn't run if the level render threw, and the
-        // off-screen world renders (mirrors, TV feeds) are dispatched from a frame-end hook that runs
-        // after this point - they must never find the flag still set.
-        LevelRenderPass.endVanillaFrame();
+        LevelRenderPass.onEndRenderLevel();
     }
 
-    // Run Polytone post-shader chains on top of vanilla's post effect, once the main target is bound
-    // for compositing (after optional vanilla postEffect.process()).
     @Inject(method = "render",
             at = @At(value = "INVOKE",
                      target = "Lcom/mojang/blaze3d/pipeline/RenderTarget;bindWrite(Z)V",
@@ -51,23 +46,16 @@ public abstract class GameRendererMixin {
         Polytone.POST_SHADERS.renderAfterMainPostEffect(deltaTracker.getGameTimeDeltaTicks());
     }
 
-    // Mark vanilla's own level render. Mods that render the world into an off-screen target (Vista's
-    // mirrors and TV feeds, portal mods) call LevelRenderer.renderLevel directly and never come
-    // through here, which is how the hooks on that method tell the frame apart from a secondary view.
     @Inject(method = "renderLevel", at = @At("HEAD"))
     private void polytone$startVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
-        LevelRenderPass.startVanillaFrame();
+        LevelRenderPass.onStartRenderLevel();
     }
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void polytone$endVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
-        LevelRenderPass.endVanillaFrame();
+        LevelRenderPass.onEndRenderLevel();
     }
 
-    // Capture the level projection / camera matrices so polytone post shaders can expose them as the
-    // PolyProjMat / PolyModelViewMat built-in uniforms. Ordinal 0 is the projection matrix (with bob &
-    // confusion applied), ordinal 1 is the camera rotation (view) matrix - the same pair passed to
-    // LevelRenderer.renderLevel right after this point.
     @Inject(method = "renderLevel",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/renderer/LevelRenderer;renderLevel(Lnet/minecraft/client/DeltaTracker;ZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V"))

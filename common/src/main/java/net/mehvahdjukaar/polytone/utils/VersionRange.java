@@ -17,6 +17,10 @@ public record VersionRange(int minExcl, int maxExcl) {
         if ("*".equals(versionStr)) {
             return DataResult.success(new VersionRange(-1, Integer.MAX_VALUE));
         }
+        if (versionStr.matches("\\d+(\\.\\d+){0,2}")) {
+            int ver = parseVersion(versionStr);
+            return DataResult.success(new VersionRange(ver - 1, ver + 1));
+        }
 
         Matcher matcher = RANGE_PATTERN.matcher(versionStr);
         if (!matcher.matches()) {
@@ -56,6 +60,9 @@ public record VersionRange(int minExcl, int maxExcl) {
     }
 
     public static int parseVersion(String version) {
+        int tail = 0;
+        while (tail < version.length() && (Character.isDigit(version.charAt(tail)) || version.charAt(tail) == '.')) tail++;
+        version = version.substring(0, tail);
         String[] parts = version.split("\\.");
         int major = Integer.parseInt(parts[0]) * 1_000_000;
         int minor = parts.length > 1 ? Integer.parseInt(parts[1]) * 1_000 : 0;

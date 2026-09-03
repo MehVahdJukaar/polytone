@@ -44,7 +44,6 @@ public class PackInfoScreen extends Screen {
     public PackInfoScreen(Screen lastScreen, Component packName, PackInfo info) {
         super(info.title().orElse(packName));
         this.lastScreen = lastScreen;
-        // yellow and gray are only defaults: a color on the author's own component overrides them
         this.heading = withDefaultStyle(ChatFormatting.YELLOW, this.title);
         this.body = withDefaultStyle(ChatFormatting.GRAY, info.content().orElse(CommonComponents.EMPTY));
     }
@@ -66,7 +65,6 @@ public class PackInfoScreen extends Screen {
         this.addRenderableWidget(this.titleBlock);
 
         TextBlock bodyBlock = makeTextBlock(this.body);
-        // panel only grows to what the text needs, so short content stays centered and doesn't scroll
         int available = panelBottom() - this.headerHeight;
         int panelWidth = textWidth() + 4;
         int panelHeight = Math.min(available, bodyBlock.getHeight() + TITLE_MARGIN * 2);

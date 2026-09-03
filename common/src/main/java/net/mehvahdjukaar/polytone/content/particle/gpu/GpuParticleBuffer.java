@@ -133,7 +133,7 @@ public final class GpuParticleBuffer implements AutoCloseable {
     }
 
     private static float toByte(float unorm) {
-        return Math.round(Math.max(0f, Math.min(1f, unorm)) * 255f);
+        return Math.round(Math.clamp(unorm, 0f, 1f) * 255f);
     }
 
     public void bind(int textureUnit) {

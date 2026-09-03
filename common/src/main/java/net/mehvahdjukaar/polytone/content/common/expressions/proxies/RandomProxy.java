@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.content.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
@@ -72,7 +73,6 @@ public class RandomProxy {
     }
 
     public double noise(double x, double y) {
-        // Stub - no DEFAULT noise on 1.21.1's NoiseManager
-        return 0;
+        return NoiseManager.DEFAULT.getValue(x, y, true);
     }
 }

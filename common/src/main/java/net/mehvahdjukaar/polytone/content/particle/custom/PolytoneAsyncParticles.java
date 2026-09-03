@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
@@ -107,8 +107,8 @@ public final class PolytoneAsyncParticles {
 
         // snapshot per-tick context so workers never reach into the render system
         tickCamera = Minecraft.getInstance().gameRenderer.getMainCamera();
-        // re-cache post-entity-tick player stats; ExpTicker's own refresh ran at tick start
-        ExpTicker.refreshPlayerSnapshot();
+        // re-cache post-entity-tick player stats; the tick-start refresh already ran
+        ClientFrameTicker.refreshPlayerSnapshot();
 
         // workers iterate the copy; anything enqueued mid-flight waits for the next batch
         CustomParticleInstance[] batch = PENDING.toArray(new CustomParticleInstance[0]);

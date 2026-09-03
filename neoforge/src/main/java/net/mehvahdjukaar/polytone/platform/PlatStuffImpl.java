@@ -7,16 +7,12 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.serialization.MapCodec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.mixins.neoforge.*;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBakedModel;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
+import net.mehvahdjukaar.polytone.mixins.neoforge.*;
 import net.mehvahdjukaar.polytone.utils.Targets;
-import net.mehvahdjukaar.polytone.mixins.neoforge.BlockColorsAccessor;
-import net.mehvahdjukaar.polytone.mixins.neoforge.CreativeTabAccessor;
-import net.mehvahdjukaar.polytone.mixins.neoforge.ModifiableBiomeAccessor;
-import net.mehvahdjukaar.polytone.mixins.neoforge.ModifiableBiomeInfoBiomeInfoAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -44,8 +40,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -73,8 +69,8 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.joml.Vector3f;
 import sereneseasons.api.season.SeasonHelper;
 
-import java.lang.reflect.Field;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -315,10 +311,10 @@ public class PlatStuffImpl {
         dontCheckLoading = true;
         if (renderType instanceof RenderType rt) {
             ItemBlockRenderTypes.setRenderLayer(block, rt);
-        }else if (renderType instanceof ChunkRenderTypeSet st) {
+        } else if (renderType instanceof ChunkRenderTypeSet st) {
             ItemBlockRenderTypes.setRenderLayer(block, st);
         }
-        dontCheckLoading= false;
+        dontCheckLoading = false;
     }
 
     private static final boolean AC = ModList.get().isLoaded("alexscaves");
@@ -366,13 +362,18 @@ public class PlatStuffImpl {
                 .map(c -> c.getModInfo().getVersion().toString()).orElse("unknown");
     }
 
+    public static String getModVersion(String modId) {
+        return ModList.get().getModContainerById(modId)
+                .map(c -> c.getModInfo().getVersion().toString()).orElse(null);
+    }
+
     public static void unregisterAllCustomColorResolves() {
         for (ColorResolver resolver : MY_CUSTOM_RESOLVERS) {
             try {
-                ImmutableList<ColorResolver> resolvers = (ImmutableList<ColorResolver>) COLOR_RESOLVERS.get(null);
+                var resolvers = (ImmutableList<ColorResolver>) COLOR_RESOLVERS.get(null);
                 List<ColorResolver> temp = new ArrayList<>(resolvers);
                 temp.remove(resolver);
-                ImmutableList<ColorResolver> newList = ImmutableList.copyOf(temp);
+                var newList = ImmutableList.copyOf(temp);
                 COLOR_RESOLVERS.set(null, newList);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
@@ -384,8 +385,8 @@ public class PlatStuffImpl {
     public static void registerColorResolver(ColorResolver colorResolver) {
         MY_CUSTOM_RESOLVERS.add(colorResolver);
         try {
-            ImmutableList<ColorResolver> resolvers = (ImmutableList<ColorResolver>) COLOR_RESOLVERS.get(null);
-            ImmutableList<ColorResolver> newList = ImmutableList.<ColorResolver>builder()
+            var resolvers = (ImmutableList<ColorResolver>) COLOR_RESOLVERS.get(null);
+            var newList = ImmutableList.<ColorResolver>builder()
                     .addAll(resolvers).add(colorResolver).build();
             COLOR_RESOLVERS.set(null, newList);
         } catch (IllegalAccessException e) {

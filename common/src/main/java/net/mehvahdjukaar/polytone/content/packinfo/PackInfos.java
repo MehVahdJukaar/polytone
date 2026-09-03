@@ -21,7 +21,6 @@ public class PackInfos {
                 BY_PACK_ID.remove(id);
             }
         } catch (Exception e) {
-            // never let this break pack discovery. vanilla would drop the whole pack
             BY_PACK_ID.remove(id);
             Polytone.LOGGER.warn("Failed to read Polytone info section of pack {}", id, e);
         }

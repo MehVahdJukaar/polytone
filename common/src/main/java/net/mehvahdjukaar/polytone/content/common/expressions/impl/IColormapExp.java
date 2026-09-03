@@ -4,10 +4,9 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
-import net.mehvahdjukaar.polytone.content.common.expressions.ExpTicker;
+import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.content.common.expressions.preview.PreviewContext;
 import net.mehvahdjukaar.polytone.content.common.expressions.preview.SimProxies;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.utils.ColorUtils;
 import net.mehvahdjukaar.polytone.utils.MapRegistry;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
@@ -210,7 +209,7 @@ public interface IColormapExp {
         public float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
             // editor preview override; null in normal gameplay
             SimProxies sim = PreviewContext.active();
-            return (float) (1 - (sim != null ? sim.global.seasonNumber() : ExpTicker.getSeasonNumber()));
+            return (float) (1 - (sim != null ? sim.global.seasonNumber() : ClientFrameTicker.getSeason()));
         }
 
         @Override

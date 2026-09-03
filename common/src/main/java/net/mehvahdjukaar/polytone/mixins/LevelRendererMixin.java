@@ -29,10 +29,6 @@ public class LevelRendererMixin {
     @Nullable
     private ClientLevel level;
 
-    @Shadow
-    @Final
-    private Minecraft minecraft;
-
     @ModifyExpressionValue(method = "renderClouds",
             require = 0,
             at = @At(value = "INVOKE",
@@ -58,21 +54,15 @@ public class LevelRendererMixin {
                                             net.minecraft.client.renderer.LightTexture lightTexture,
                                             org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
                                             CallbackInfo ci) {
-        // every pass, so mirrors and portals get them too; before the depth snapshot on purpose
         Polytone.CUSTOM_PARTICLES.gpuParticles.render(camera, gameRenderer, lightTexture, frustumMatrix, projectionMatrix,
                 deltaTracker.getGameTimeDeltaPartialTick(false));
-        // Only for the pass that reaches the screen. A mirror or TV feed rendering the world into its
-        // own canvas gets here too, and nothing it draws samples either of these (see LevelRenderPass).
         if (!LevelRenderPass.popAndWasMain()) return;
 
         Polytone.POST_SHADERS.captureLevelDepthSnapshot();
-        // Render the directional shadow map here too: the visible-section list and compiled chunk
-        // VBOs are still current, and we're before GameRenderer clears depth for the first-person hand.
         Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(camera, frustumMatrix, projectionMatrix);
     }
 
-    // Join the async particle tick batch before anything in the frame reads particle state
-    // (particles render inside renderLevel on both loaders).
+    // Join the async particle tick batch
     @Inject(method = "renderLevel", at = @At("HEAD"))
     private void polytone$joinAsyncParticles(DeltaTracker deltaTracker, boolean renderBlockOutline,
                                              Camera camera, GameRenderer gameRenderer,
@@ -82,10 +72,9 @@ public class LevelRendererMixin {
         PolytoneAsyncParticles.awaitTicks();
     }
 
-    // Every section rebuild (block or light change) funnels through setSectionDirty; bump that
-    // section's light-cache version so particles there re-sample. Section coords come in directly.
     @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"))
     private void polytone$invalidateParticleLight(int x, int y, int z, boolean important, CallbackInfo ci) {
+        //rebuild light cache
         ParticleLightCache.markSectionDirty(x, y, z);
     }
 

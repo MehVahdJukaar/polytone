@@ -59,8 +59,6 @@ import static net.minecraft.client.Options.genericValueLabel;
 
 public class ConfigScreen extends OptionsSubScreen {
     private static final Component TITLE = Component.translatable("screen.polytone.configs.title");
-    // gap before the impact line, matching the 4px tooltip image margins
-    private static final int IMPACT_GAP = 4;
     private static final String NAUTILUS_URL = "https://github.com/MehVahdJukaar/pack_editor";
 
     private final Multimap<String, OptionHolder<?>> opt = MultimapBuilder.linkedHashKeys().arrayListValues().build();
@@ -71,17 +69,10 @@ public class ConfigScreen extends OptionsSubScreen {
     private SpriteIconButton heartButton;
     @Nullable
     private EditorIconButton editorButton;
-    // True once the footer is built with the editor mod installed; drives whether we nudge people
-    // toward downloading the editor.
     private boolean editorAvailable;
     private boolean rebuildScheduled;
     private volatile boolean editorBooting;
 
-    // Shadows OptionsSubScreen.layout (which is final and built once in the constructor). That
-    // inherited layout is never emptied, so re-running the vanilla init on every namespace toggle
-    // (via rebuildWidgets) keeps re-appending the list/footer/title to it and visitWidgets then
-    // re-registers every stale copy - the "widgets pile up on collapse" bug. We instead run our
-    // own header/footer flow against a fresh layout each init, leaving the inherited one unused.
     private HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
     public ConfigScreen(Screen screen, Collection<OptionHolder<?>> options, Runnable safeFunc) {
@@ -391,7 +382,7 @@ public class ConfigScreen extends OptionsSubScreen {
             }
             if (hasImpact) {
                 if (!hasImage && !components.isEmpty()) {
-                    components.add(new SpacerTooltip(IMPACT_GAP));
+                    components.add(new SpacerTooltip(4));
                 }
                 Component impactLine = Component.translatable("polytone.tooltip.performance_impact",
                                 config.getPerformanceImpact().get().getDisplayName())

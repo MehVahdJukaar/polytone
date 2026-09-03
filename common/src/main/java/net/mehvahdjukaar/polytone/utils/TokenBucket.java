@@ -4,7 +4,6 @@ public class TokenBucket {
 
     private final int capacity;        // max tokens (burst size)
     private final int refillPerTick;   // tokens added each tick
-
     private int tokens;
 
     public TokenBucket(int capacity, int refillPerTick) {
@@ -13,13 +12,10 @@ public class TokenBucket {
         }
         this.capacity = capacity;
         this.refillPerTick = refillPerTick;
-        this.tokens = capacity; // start full
+        this.tokens = capacity;
     }
 
-    public static TokenBucket create(
-            int maxSteadyStatePerTick,
-            int maxEveryFiveSeconds
-    ) {
+    public static TokenBucket create(int maxSteadyStatePerTick, int maxEveryFiveSeconds) {
         if (maxSteadyStatePerTick <= 0 || maxEveryFiveSeconds <= 0) {
             throw new IllegalArgumentException();
         }
@@ -27,8 +23,6 @@ public class TokenBucket {
         final int ticksPerFiveSeconds = 20 * 5; // 100
 
         double refillPerTick = (double) maxEveryFiveSeconds / ticksPerFiveSeconds;
-
-        // cap the refill so steady state can't exceed the per-tick max
         refillPerTick = Math.min(refillPerTick, maxSteadyStatePerTick);
 
         return new TokenBucket(maxEveryFiveSeconds, (int) refillPerTick);
@@ -39,8 +33,7 @@ public class TokenBucket {
         tokens = Math.min(capacity, tokens + refillPerTick);
     }
 
-    // Try to consume 1 token. Synchronized: async custom particles emit off-thread.
-    public synchronized boolean tryAcquire() {
+    public synchronized boolean tryConsuming() {
         if (tokens > 0) {
             tokens--;
             return true;
