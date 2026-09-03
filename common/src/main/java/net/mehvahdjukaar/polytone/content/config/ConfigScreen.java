@@ -2,20 +2,17 @@ package net.mehvahdjukaar.polytone.content.config;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.common.gui.PointingChatBubbleOverlay;
 import net.mehvahdjukaar.polytone.compat.nautilus.PolytoneNautilus;
+import net.mehvahdjukaar.polytone.content.common.gui.PointingChatBubbleOverlay;
+import net.mehvahdjukaar.polytone.utils.StrUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
-import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.OptionsList;
@@ -32,8 +29,6 @@ import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.mehvahdjukaar.polytone.utils.StrUtils;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
@@ -43,19 +38,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.IntConsumer;
-import java.util.function.IntFunction;
-import java.util.function.IntSupplier;
-
-import static net.minecraft.client.Options.genericValueLabel;
+import java.util.function.Supplier;
 
 public class ConfigScreen extends OptionsSubScreen {
     private static final Component TITLE = Component.translatable("screen.polytone.configs.title");
@@ -85,8 +73,6 @@ public class ConfigScreen extends OptionsSubScreen {
 
     @Override
     protected void init() {
-        // Fresh layout every (re)init so a namespace toggle doesn't stack duplicate widgets;
-        // we deliberately do NOT call super.init(), which would drive the inherited final layout.
         this.layout = new HeaderAndFooterLayout(this);
         this.heartButton = null;
         this.editorButton = null;
@@ -101,19 +87,15 @@ public class ConfigScreen extends OptionsSubScreen {
         this.layout.visitWidgets(this::addRenderableWidget);
         repositionElements();
 
-        if (this.heartButton != null) {
-            this.addRenderableOnly(new PointingChatBubbleOverlay(
-                    this.heartButton,
-                    () -> this.width,
-                    Polytone.CONFIGS.bubbleManager::getHeartButtonMessage));
+        addBubble(this.heartButton, Polytone.CONFIGS.bubbleManager::getHeartButtonMessage);
+        if (!this.editorAvailable) {
+            addBubble(this.editorButton, Polytone.CONFIGS.bubbleManager::getEditorButtonMessage);
         }
+    }
 
-        if (this.editorButton != null && !this.editorAvailable) {
-            this.addRenderableOnly(new PointingChatBubbleOverlay(
-                    this.editorButton,
-                    () -> this.width,
-                    Polytone.CONFIGS.bubbleManager::getEditorButtonMessage));
-        }
+    private void addBubble(@Nullable AbstractWidget anchor, Supplier<Component> message) {
+        if (anchor == null) return;
+        this.addRenderableOnly(new PointingChatBubbleOverlay(anchor, () -> this.width, message));
     }
 
     @Override
@@ -124,30 +106,27 @@ public class ConfigScreen extends OptionsSubScreen {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderCustomTooltip(guiGraphics, mouseX, mouseY);
+        renderTooltips(guiGraphics, mouseX, mouseY);
     }
 
     @Override
     protected void addFooter() {
         int iconW = 20;
-        // One centered footer row: [editor] Reset Undo Done [heart]. The 20px icons on each end roughly
-        // balance, so the text buttons read as centered; their width is sized to fit the vanilla footer.
         int textBtnW = Mth.positiveCeilDiv(150 * 2 - 8, 3);
         LinearLayout footer = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
 
-        // always shown: with the editor mod present it opens the editor, without it a click opens the download page
         this.editorAvailable = PlatStuff.isModLoaded("nautilus_studio");
         EditorIconButton editor = new EditorIconButton(iconW, 20,
                 Component.translatable("screen.polytone.editor.open"),
-                editorAvailable, this,
-                b -> onEditorPressed(editorAvailable));
+                editorAvailable, () -> this.editorBooting,
+                b -> onEditorPressed());
         editor.setTooltip(Tooltip.create(Component.translatable(
                 editorAvailable ? "screen.polytone.editor.open" : "screen.polytone.editor.no_mod")));
         this.editorButton = footer.addChild(editor);
         footer.addChild(Button.builder(Component.translatable("screen.polytone.configs.reset"),
-                b -> resetValues()).width(textBtnW).build());
+                b -> applyToAll(OptionHolder::resetToDefault)).width(textBtnW).build());
         footer.addChild(Button.builder(Component.translatable("screen.polytone.configs.undo"),
-                b -> undoValues()).width(textBtnW).build());
+                b -> applyToAll(OptionHolder::undoChanges)).width(textBtnW).build());
         footer.addChild(Button.builder(CommonComponents.GUI_DONE,
                 b -> this.minecraft.setScreen(this.lastScreen)).width(textBtnW).build());
         this.heartButton = footer.addChild(SpriteIconButton.builder(
@@ -161,15 +140,14 @@ public class ConfigScreen extends OptionsSubScreen {
 
     @Override
     protected void repositionElements() {
-        // Arrange our shadow layout (mirrors OptionsSubScreen#repositionElements, but on our layout).
         this.layout.arrangeElements();
         if (this.list != null) {
             this.list.updateSize(this.width, this.layout);
         }
     }
 
-    private void onEditorPressed(boolean available) {
-        if (available) {
+    private void onEditorPressed() {
+        if (editorAvailable) {
             openEditor();
             return;
         }
@@ -199,22 +177,11 @@ public class ConfigScreen extends OptionsSubScreen {
         t.start();
     }
 
-    private void resetValues() {
-        for (OptionHolder<?> holder : opt.values()) {
-            holder.resetToDefault();
-        }
+    private void applyToAll(Consumer<OptionHolder<?>> action) {
+        opt.values().forEach(action);
         rebuildPreservingScroll();
     }
 
-    private void undoValues() {
-        for (OptionHolder<?> holder : opt.values()) {
-            holder.undoChanges();
-        }
-        rebuildPreservingScroll();
-    }
-
-    // option buttons are value snapshots, so a programmatic change (reset/undo/preset) needs a rebuild
-    // to refresh their labels. Only the scroll position is restored, so the list doesn't jump.
     private void rebuildPreservingScroll() {
         double scroll = this.list != null ? this.list.getScrollAmount() : 0;
         this.rebuildWidgets();
@@ -223,7 +190,6 @@ public class ConfigScreen extends OptionsSubScreen {
         }
     }
 
-    // rebuilding synchronously inside a widget's own mouse-release handler would free it mid-dispatch
     private void scheduleRebuild() {
         if (rebuildScheduled) return;
         rebuildScheduled = true;
@@ -237,69 +203,60 @@ public class ConfigScreen extends OptionsSubScreen {
     protected void addOptions() {
         for (String modId : opt.keySet()) {
             boolean expanded = !collapsed.contains(modId);
-            addNamespaceHeader(getCategoryHeader(modId), expanded, modId);
-            if (!expanded) continue;
-
-            List<OptionHolder<?>> sorted = opt.get(modId).stream()
-                    .sorted(Comparator.comparingInt(ConfigScreen::displayOrderOf)
-                            .thenComparing(o -> o.fileId))
-                    .toList();
-
-            Map<Optional<String>, List<OptionHolder<?>>> bySection = new LinkedHashMap<>();
-            for (OptionHolder<?> holder : sorted) {
-                bySection.computeIfAbsent(sectionOf(holder), k -> new ArrayList<>()).add(holder);
-            }
-
-            // "presets" feeds the pack-wide slider at the top of the namespace, "section_presets"
-            // the slider of the entry's own section.
-            Map<String, List<PresetAction<?>>> overall = new LinkedHashMap<>();
-            Map<Optional<String>, Map<String, List<PresetAction<?>>>> sectionSliders = new LinkedHashMap<>();
-            for (OptionHolder<?> holder : sorted) {
-                collectPresetActions(overall, holder.option, false);
-                Optional<String> section = sectionOf(holder);
-                if (section.isPresent()) {
-                    collectPresetActions(
-                            sectionSliders.computeIfAbsent(section, k -> new LinkedHashMap<>()),
-                            holder.option, true);
-                } else {
-                    // section_presets on a sectionless entry has no section slider to live on;
-                    // fold it into the pack-wide slider rather than dropping it silently.
-                    collectPresetActions(overall, holder.option, true);
-                }
-            }
-
-            addPresetSlider(modId, overall, null);
-
-            for (Optional<String> section : orderedSections(bySection)) {
-                List<OptionHolder<?>> group = bySection.get(section);
-                if (group == null || group.isEmpty()) continue;
-                section.ifPresent(s -> {
-                    addSectionHeader(sectionTitle(modId, s));
-                    addPresetSlider(modId, sectionSliders.get(section), s);
-                });
-                addOptionRows(group);
-            }
+            NamespaceHeaderWidget header = new NamespaceHeaderWidget(this.list.getRowWidth(), 20,
+                    namespaceTitle(modId), expanded, b -> toggleNamespace(modId));
+            this.list.addSmall(List.of(header));
+            if (expanded) addNamespace(modId);
         }
     }
 
-    private void addNamespaceHeader(Component title, boolean expanded, String modId) {
-        NamespaceHeaderWidget header = new NamespaceHeaderWidget(
-                this.list.getRowWidth(), 20, title, expanded, b -> toggleNamespace(modId));
-        this.list.addSmall(List.<AbstractWidget>of(header));
+    private void addNamespace(String modId) {
+        List<OptionHolder<?>> sorted = opt.get(modId).stream()
+                .sorted(Comparator.comparingInt(ConfigScreen::displayOrderOf)
+                        .thenComparing(o -> o.fileId))
+                .toList();
+
+        Map<Optional<String>, List<OptionHolder<?>>> bySection = new LinkedHashMap<>();
+        for (OptionHolder<?> holder : sorted) {
+            bySection.computeIfAbsent(sectionOf(holder), k -> new ArrayList<>()).add(holder);
+        }
+
+        ConfigPresets packWidePresets = new ConfigPresets(modId, null);
+        Map<Optional<String>, ConfigPresets> sectionPresets = new LinkedHashMap<>();
+        for (OptionHolder<?> holder : sorted) {
+            packWidePresets.collect(holder.option, false);
+            Optional<String> section = sectionOf(holder);
+            ConfigPresets scoped = section.isEmpty() ? packWidePresets : sectionPresets
+                    .computeIfAbsent(section, k -> new ConfigPresets(modId, section.get()));
+            scoped.collect(holder.option, true);
+        }
+
+        addPresetSlider(packWidePresets);
+        for (Optional<String> section : orderedSections(bySection)) {
+            section.ifPresent(s -> {
+                addSectionHeader(sectionTitle(modId, s));
+                addPresetSlider(sectionPresets.get(section));
+            });
+            addOptionRows(bySection.get(section));
+        }
+    }
+
+    private void addPresetSlider(@Nullable ConfigPresets presets) {
+        if (presets == null || presets.isEmpty()) return;
+        this.list.addBig(presets.makeOption(this::scheduleRebuild));
     }
 
     private void addSectionHeader(Component title) {
         StringWidget widget = new StringWidget(this.list.getRowWidth(), 20,
                 title.copy().withStyle(ChatFormatting.GRAY), this.font);
         widget.alignLeft();
-        this.list.addSmall(List.<AbstractWidget>of(widget));
+        this.list.addSmall(List.of(widget));
     }
 
     private void addOptionRows(List<OptionHolder<?>> group) {
         List<OptionInstance<?>> pending = new ArrayList<>();
         for (OptionHolder<?> holder : group) {
-            boolean wide = holder.option.values() instanceof PolyConfig<?> c && c.isWide();
-            if (wide) {
+            if (holder.option.values() instanceof PolyConfig<?> c && c.isWide()) {
                 flushSmall(pending);
                 this.list.addBig(holder.option);
             } else {
@@ -347,7 +304,7 @@ public class ConfigScreen extends OptionsSubScreen {
         return min;
     }
 
-    private static Component getCategoryHeader(String modId) {
+    private static Component namespaceTitle(String modId) {
         return Component.translatableWithFallback("config." + modId + ".header",
                 StrUtils.readableName(modId));
     }
@@ -357,45 +314,43 @@ public class ConfigScreen extends OptionsSubScreen {
                 StrUtils.readableName(section));
     }
 
-    private void renderCustomTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    private void renderTooltips(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         if (this.list == null) return;
-
         for (OptionHolder<?> holder : opt.values()) {
             if (!(holder.option.values() instanceof PolyConfig<?> config)) continue;
-            boolean hasImpact = config.getPerformanceImpact().isPresent();
-            if (config.getTooltipImages().isEmpty() && !hasImpact) continue; // plain entries use the built-in tooltip
+            if (config.getTooltipImages().isEmpty() && config.getPerformanceImpact().isEmpty()) continue;
             AbstractWidget widget = this.list.findOption(holder.option);
             if (widget == null || !widget.isHovered()) continue;
 
-            List<ClientTooltipComponent> components = new ArrayList<>();
-            String tooltipKey = holder.fileId.toLanguageKey("config", "tooltip");
-            if (I18n.exists(tooltipKey)) {
-                Component text = Component.translatable(tooltipKey);
-                for (FormattedCharSequence line : this.font.split(text, 170)) {
-                    components.add(ClientTooltipComponent.create(line));
-                }
-            }
-            PolyConfig.TooltipImage image = config.getTooltipImages().get(String.valueOf(holder.get()));
-            boolean hasImage = image != null;
-            if (hasImage) {
-                components.add(new ClientImageTooltip(image.texture(), image.width(), image.height()));
-            }
-            if (hasImpact) {
-                if (!hasImage && !components.isEmpty()) {
-                    components.add(new SpacerTooltip(4));
-                }
-                Component impactLine = Component.translatable("polytone.tooltip.performance_impact",
-                                config.getPerformanceImpact().get().getDisplayName())
-                        .withStyle(ChatFormatting.GRAY);
-                components.add(ClientTooltipComponent.create(impactLine.getVisualOrderText()));
-            }
-
-            if (!components.isEmpty()) {
-                guiGraphics.renderTooltipInternal(this.font, components, mouseX, mouseY,
+            List<ClientTooltipComponent> lines = richTooltipFor(holder, config);
+            if (!lines.isEmpty()) {
+                guiGraphics.renderTooltipInternal(this.font, lines, mouseX, mouseY,
                         DefaultTooltipPositioner.INSTANCE);
             }
-            return; // at most one option is hovered at a time
+            return;
         }
+    }
+
+    private List<ClientTooltipComponent> richTooltipFor(OptionHolder<?> holder, PolyConfig<?> config) {
+        List<ClientTooltipComponent> lines = new ArrayList<>();
+        String tooltipKey = holder.fileId.toLanguageKey("config", "tooltip");
+        if (I18n.exists(tooltipKey)) {
+            for (FormattedCharSequence line : this.font.split(Component.translatable(tooltipKey), 170)) {
+                lines.add(ClientTooltipComponent.create(line));
+            }
+        }
+        PolyConfig.TooltipImage image = config.getTooltipImages().get(String.valueOf(holder.get()));
+        if (image != null) {
+            lines.add(new ClientImageTooltip(image.texture(), image.width(), image.height()));
+        }
+        config.getPerformanceImpact().ifPresent(impact -> {
+            if (image == null && !lines.isEmpty()) lines.add(new SpacerTooltip(4));
+            lines.add(ClientTooltipComponent.create(Component
+                    .translatable("polytone.tooltip.performance_impact", impact.getDisplayName())
+                    .withStyle(ChatFormatting.GRAY)
+                    .getVisualOrderText()));
+        });
+        return lines;
     }
 
     private record SpacerTooltip(int height) implements ClientTooltipComponent {
@@ -407,301 +362,6 @@ public class ConfigScreen extends OptionsSubScreen {
         @Override
         public int getHeight() {
             return height;
-        }
-    }
-
-    private void addPresetSlider(String modId, @Nullable Map<String, List<PresetAction<?>>> presets,
-                                 @Nullable String section) {
-        if (presets == null || presets.isEmpty()) return;
-        this.list.addBig(makePresetOpt(presets, modId, section));
-    }
-
-    private OptionInstance<?> makePresetOpt(Map<String, List<PresetAction<?>>> presets, String modId,
-                                            @Nullable String section) {
-        List<String> names = List.copyOf(presets.keySet());
-
-        // Every option any preset touches; used to snapshot/restore for the Custom stop.
-        Set<OptionInstance<?>> affected = new LinkedHashSet<>();
-        for (var actions : presets.values()) {
-            for (var action : actions) affected.add(action.option());
-        }
-
-        // Current slider position: first fully-matching preset, else the last stop = Custom.
-        IntSupplier derive = () -> {
-            for (int i = 0; i < names.size(); i++) {
-                if (presets.get(names.get(i)).stream().allMatch(PresetAction::matches)) {
-                    return i;
-                }
-            }
-            return names.size();
-        };
-        int current = derive.getAsInt();
-
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(modId, "presets");
-        String titleKey = id.toLanguageKey();
-        Component caption = firstTranslated(
-                section == null ? null : titleKey + ".section." + section, titleKey);
-
-        Component fallbackTooltip = null;
-        if (section != null) fallbackTooltip = translatedOrNull(titleKey + ".section." + section + ".tooltip");
-        if (fallbackTooltip == null) fallbackTooltip = translatedOrNull(titleKey + ".tooltip");
-        net.minecraft.client.gui.components.Tooltip[] stopTooltips =
-                new net.minecraft.client.gui.components.Tooltip[names.size() + 1];
-        for (int i = 0; i < stopTooltips.length; i++) {
-            Component t = presetTooltip(modId, section, i, names, fallbackTooltip);
-            stopTooltips[i] = t == null ? null : net.minecraft.client.gui.components.Tooltip.create(t);
-        }
-        OptionInstance.TooltipSupplier<Integer> tooltipSupplier =
-                index -> (index >= 0 && index < stopTooltips.length) ? stopTooltips[index] : null;
-
-        // snapshot taken at drag start; the Custom stop restores it
-        List<Runnable> customSnapshot = new ArrayList<>();
-        Runnable onDragStart = () -> {
-            customSnapshot.clear();
-            for (OptionInstance<?> option : affected) {
-                customSnapshot.add(captureRestore(option));
-            }
-        };
-        IntConsumer applyStop = index -> {
-            if (index >= names.size()) {
-                customSnapshot.forEach(Runnable::run);
-            } else {
-                presets.get(names.get(index)).forEach(PresetAction::apply);
-            }
-            scheduleRebuild();
-        };
-
-        return new OptionInstance<>(titleKey,
-                tooltipSupplier,
-                (component, index) -> genericValueLabel(caption, presetValueLabel(modId, section, index, names)),
-                new PresetSliderValueSet(names.size(),
-                        index -> genericValueLabel(caption, presetValueLabel(modId, section, index, names)),
-                        onDragStart, applyStop),
-                current, index -> {});
-    }
-
-    private static <T> Runnable captureRestore(OptionInstance<T> option) {
-        T value = option.get();
-        return () -> option.set(value);
-    }
-
-    private static Component firstTranslated(@Nullable String... keys) {
-        for (String key : keys) {
-            if (key == null) continue;
-            Component c = translatedOrNull(key);
-            if (c != null) return c;
-        }
-        return Component.translatable("polytone.preset");
-    }
-
-    private static Component presetValueLabel(String modId, @Nullable String section,
-                                              int index, List<String> names) {
-        if (index >= names.size()) {
-            // "Custom" is mod-provided but packs can override it, per slider or pack-wide.
-            if (section != null) {
-                Component c = translatedOrNull(modId + ".presets.section." + section + ".custom");
-                if (c != null) return c;
-            }
-            Component c = translatedOrNull(modId + ".presets.custom");
-            return c != null ? c : Component.translatable("polytone.preset.custom");
-        }
-        String name = names.get(index);
-        if (section != null) {
-            Component c = translatedOrNull(modId + ".presets.section." + section + "." + name);
-            if (c != null) return c;
-        }
-        return Component.translatableWithFallback(modId + ".presets." + name,
-                StrUtils.readableName(name));
-    }
-
-    @Nullable
-    private static Component translatedOrNull(String key) {
-        return I18n.exists(key) ? Component.translatable(key) : null;
-    }
-
-    @Nullable
-    private static Component presetTooltip(String modId, @Nullable String section, int index,
-                                           List<String> names, @Nullable Component fallback) {
-        String suffix = (index >= names.size() ? "custom" : names.get(index)) + ".tooltip";
-        if (section != null) {
-            Component c = translatedOrNull(modId + ".presets.section." + section + "." + suffix);
-            if (c != null) return c;
-        }
-        Component c = translatedOrNull(modId + ".presets." + suffix);
-        return c != null ? c : fallback;
-    }
-
-    private static <T> void collectPresetActions(Map<String, List<PresetAction<?>>> presets,
-                                                 OptionInstance<T> option, boolean sectionScoped) {
-        if (option.values() instanceof PolyConfig<T> c) {
-            Map<String, T> declared = sectionScoped ? c.getSectionPresets() : c.getPresets();
-            for (var entry : declared.entrySet()) {
-                presets.computeIfAbsent(entry.getKey(), k -> new ArrayList<>())
-                        .add(new PresetAction<>(option, entry.getValue()));
-            }
-        }
-    }
-
-    private record PresetAction<T>(OptionInstance<T> option, T value) {
-        void apply() {
-            option.set(value);
-        }
-
-        boolean matches() {
-            return option.get().equals(value);
-        }
-    }
-
-    // ValueSet whose widget is the snap-to-stop slider below, mirroring vanilla's graphics Preset
-    // slider: free thumb while dragging, snap + apply on release. Position is derived from values.
-    private record PresetSliderValueSet(int maxIndex, IntFunction<Component> labelGetter,
-                                        Runnable onDragStart, IntConsumer onStopCommit)
-            implements OptionInstance.ValueSet<Integer> {
-
-        @Override
-        public Function<OptionInstance<Integer>, AbstractWidget> createButton(
-                OptionInstance.TooltipSupplier<Integer> tooltipSupplier, Options options,
-                int x, int y, int width, Consumer<Integer> onChanged) {
-            return optionInstance -> new PresetSliderButton(x, y, width, 20,
-                    optionInstance, maxIndex, labelGetter, onDragStart, onStopCommit, tooltipSupplier);
-        }
-
-        @Override
-        public Optional<Integer> validateValue(Integer value) {
-            return (value >= 0 && value <= maxIndex) ? Optional.of(value) : Optional.empty();
-        }
-
-        @Override
-        public Codec<Integer> codec() {
-            return Codec.intRange(0, maxIndex);
-        }
-    }
-
-    private static final class PresetSliderButton extends AbstractSliderButton {
-        private final OptionInstance<Integer> option;
-        private final int maxIndex;
-        private final IntFunction<Component> labelGetter;
-        private final Runnable onDragStart;
-        private final IntConsumer onStopCommit;
-        private final OptionInstance.TooltipSupplier<Integer> tooltipSupplier;
-        private boolean smoothDragging;
-
-        PresetSliderButton(int x, int y, int width, int height, OptionInstance<Integer> option,
-                           int maxIndex, IntFunction<Component> labelGetter, Runnable onDragStart,
-                           IntConsumer onStopCommit, OptionInstance.TooltipSupplier<Integer> tooltipSupplier) {
-            super(x, y, width, height, labelGetter.apply(option.get()),
-                    maxIndex == 0 ? 0 : option.get() / (double) maxIndex);
-            this.option = option;
-            this.maxIndex = maxIndex;
-            this.labelGetter = labelGetter;
-            this.onDragStart = onDragStart;
-            this.onStopCommit = onStopCommit;
-            this.tooltipSupplier = tooltipSupplier;
-            this.updateMessage();
-        }
-
-        private int nearestIndex() {
-            return (int) Math.round(this.value * maxIndex);
-        }
-
-        private double sliderPos(int index) {
-            return maxIndex == 0 ? 0 : index / (double) maxIndex;
-        }
-
-        @Override
-        protected void updateMessage() {
-            // The label and tooltip describe the stop the thumb would snap to, live during a drag.
-            int index = nearestIndex();
-            this.setMessage(labelGetter.apply(index));
-            this.setTooltip(tooltipSupplier.apply(index));
-        }
-
-        @Override
-        protected void applyValue() {
-            // No live apply: preset values are committed on release / keyboard commit only.
-        }
-
-        @Override
-        public void onClick(double mouseX, double mouseY) {
-            this.smoothDragging = true;
-            // Capture the pre-drag mix so sliding onto Custom can restore it.
-            this.onDragStart.run();
-            super.onClick(mouseX, mouseY);
-        }
-
-        @Override
-        protected void onDrag(double mouseX, double mouseY, double dragX, double dragY) {
-            this.smoothDragging = true;
-            super.onDrag(mouseX, mouseY, dragX, dragY);
-        }
-
-        @Override
-        public void onRelease(double mouseX, double mouseY) {
-            if (this.smoothDragging) {
-                this.smoothDragging = false;
-                commit();
-            }
-            super.onRelease(mouseX, mouseY);
-        }
-
-        private void commit() {
-            int index = nearestIndex();
-            this.value = sliderPos(index);
-            if (!Objects.equals(option.get(), index)) {
-                option.set(index);
-                onStopCommit.accept(index);
-            }
-            this.updateMessage();
-        }
-
-        @Override
-        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-            // One stop per arrow key press, rather than vanilla's pixel-sized nudge.
-            int dir = keyCode == InputConstants.KEY_LEFT ? -1 : keyCode == InputConstants.KEY_RIGHT ? 1 : 0;
-            if (dir != 0) {
-                this.value = sliderPos(Mth.clamp(nearestIndex() + dir, 0, maxIndex));
-                commit();
-                return true;
-            }
-            return super.keyPressed(keyCode, scanCode, modifiers);
-        }
-    }
-
-    // subclasses Button rather than SpriteIconButton because the latter's sprite field is final
-    private static final class EditorIconButton extends Button {
-        private static final ResourceLocation SPRITE = Polytone.res("codec_editor");
-        private static final ResourceLocation SPRITE_ON = Polytone.res("codec_editor_on");
-        private static final ResourceLocation SPRITE_LOADING = Polytone.res("codec_editor_loading");
-        private static final int ICON = 16;
-
-        private final ConfigScreen screen;
-        private final boolean available;
-
-        EditorIconButton(int width, int height, Component message, boolean available,
-                         ConfigScreen screen, OnPress onPress) {
-            super(0, 0, width, height, message, onPress, DEFAULT_NARRATION);
-            this.available = available;
-            this.screen = screen;
-        }
-
-        private ResourceLocation icon() {
-            // Guard on availability before touching PolytoneEditor: with nautilus_studio absent that
-            // class must never load.
-            if (!available) return SPRITE;
-            if (screen.editorBooting) return SPRITE_LOADING;
-            return PolytoneNautilus.isOpen() ? SPRITE_ON : SPRITE;
-        }
-
-        @Override
-        protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
-            int x = this.getX() + this.getWidth() / 2 - ICON / 2;
-            int y = this.getY() + this.getHeight() / 2 - ICON / 2;
-            guiGraphics.blitSprite(this.icon(), x, y, ICON, ICON);
-        }
-
-        @Override
-        public void renderString(GuiGraphics guiGraphics, Font font, int color) {
         }
     }
 }
