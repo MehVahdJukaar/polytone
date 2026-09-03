@@ -1,6 +1,9 @@
-package net.mehvahdjukaar.polytone.content.tabs;
+package net.mehvahdjukaar.polytone.compat.nautilus;
 
-import net.mehvahdjukaar.polytone.mixins.accessor.AbstractContainerScreenAccessor;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabPreview;
+import net.mehvahdjukaar.polytone.content.tabs.ItemAddition;
+import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 import net.mehvahdjukaar.polytone.utils.StrUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -18,9 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-// Editor-only inspector over the creative screen while picking: removals washed red, additions green,
-// already picked amber. Clicking reports the item to the editor instead of grabbing it.
-public final class CreativeTabOverlay {
+public final class NautilusCreativeTabOverlay {
 
     private static final int SLOT = 16;
 
@@ -37,17 +38,16 @@ public final class CreativeTabOverlay {
     private static final int MUTED = 0xFF_B0B0B0;
 
     public static void render(GuiGraphics graphics, AbstractContainerScreen<?> screen, int mouseX, int mouseY) {
-        CreativeTabModifier mod = CreativeTabPreview.edited();
+        CreativeTabModifier mod = CreativeTabPreview.tabBeingEdited();
         ResourceLocation tabId = CreativeTabPreview.openTab();
         boolean targeted = CreativeTabPreview.targets(tabId);
 
         List<ItemPredicate> removals = mod == null ? List.of() : mod.removals();
         List<AddedSet> additions = mod == null ? List.of() : addedSets(mod);
 
-        int leftPos = ((AbstractContainerScreenAccessor) screen).polytone$getLeftPos();
-        int topPos = ((AbstractContainerScreenAccessor) screen).polytone$getTopPos();
+        int leftPos = screen.leftPos;
+        int topPos = screen.topPos;
 
-        // Vanilla already captions the hovered item, so the overlay only outlines it.
         boolean hovering = false;
         int hoverX = 0, hoverY = 0;
 
@@ -74,13 +74,14 @@ public final class CreativeTabOverlay {
 
         drawBanner(graphics, tabId, targeted);
 
+        //vanilla already captions the hovered item so we just outline it
         if (hovering) box(graphics, hoverX, hoverY, 0, HOVER_OUTLINE);
     }
 
     @Nullable
     public static ItemStack pickAt(AbstractContainerScreen<?> screen, double mouseX, double mouseY) {
-        int leftPos = ((AbstractContainerScreenAccessor) screen).polytone$getLeftPos();
-        int topPos = ((AbstractContainerScreenAccessor) screen).polytone$getTopPos();
+        int leftPos = screen.leftPos;
+        int topPos = screen.topPos;
         for (Slot slot : screen.getMenu().slots) {
             ItemStack stack = slot.getItem();
             if (!stack.isEmpty() && isTabSlot(slot)
@@ -91,17 +92,15 @@ public final class CreativeTabOverlay {
         return null;
     }
 
-    // The hotbar strip under the grid is the player's inventory, not tab contents - a modifier can't
-    // touch those items, so they are neither marked nor pickable.
+    //bottom strip is the player inventory, no modifier can touch those
     private static boolean isTabSlot(Slot slot) {
         return !(slot.container instanceof Inventory);
     }
 
-    // An addition's item list resolved once per frame - a tag-backed one would otherwise be re-resolved
-    // for every slot. `inverse` flips the meaning to "everything but these", like the reload path.
     private record AddedSet(Set<Item> items, boolean inverse) {
     }
 
+    //resolved once per frame, else a tag backed addition gets rebuilt for every single slot
     private static List<AddedSet> addedSets(CreativeTabModifier mod) {
         List<AddedSet> out = new ArrayList<>();
         for (ItemAddition addition : mod.additions()) {
@@ -122,15 +121,15 @@ public final class CreativeTabOverlay {
     }
 
     private static void drawBanner(GuiGraphics graphics, @Nullable ResourceLocation tabId, boolean targeted) {
-        String head = (targeted ? "● Targeted" : "○ Not targeted") + "   ·   " + (tabId == null ? "?" : tabId);
+        String head = (targeted ? "[x] targeted" : "[ ] not targeted") + "  -  " + (tabId == null ? "?" : tabId);
         int selected = CreativeTabPreview.pendingCount();
         String detail;
         if (!targeted) {
-            detail = "this modifier doesn't target the open tab";
+            detail = "this modifier doesnt target the open tab";
         } else if (selected == 0) {
             detail = "click items to select them";
         } else {
-            detail = StrUtils.plural(selected, "item") + " selected   ·   click again to unselect";
+            detail = StrUtils.plural(selected, "item") + " selected  -  click again to unselect";
         }
 
         Font font = Minecraft.getInstance().font;

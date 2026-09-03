@@ -204,7 +204,7 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
 
     public void spawnInWorld(ParticleOptions options, Level level, double x, double y, double z,
                              double dx, double dy, double dz) {
-        PolytoneAsyncParticles.deferToMain(() -> level.addParticle(options, x, y, z, dx, dy, dz));
+        PolytoneAsyncParticleHandler.deferToMain(() -> level.addParticle(options, x, y, z, dx, dy, dz));
     }
 
     @Nullable

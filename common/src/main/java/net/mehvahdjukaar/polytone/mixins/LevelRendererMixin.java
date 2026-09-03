@@ -1,25 +1,20 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
-import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPass;
-import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticleHandler;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector4f;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = LevelRenderer.class, priority = 1300)
@@ -44,7 +39,7 @@ public class LevelRendererMixin {
                                                net.minecraft.client.renderer.LightTexture lightTexture,
                                                org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
                                                CallbackInfo ci) {
-        LevelRenderPass.push();
+        LevelRenderPassTrack.push();
     }
 
     // before GameRenderer clears depth for first-person hand rendering
@@ -56,7 +51,7 @@ public class LevelRendererMixin {
                                             CallbackInfo ci) {
         Polytone.CUSTOM_PARTICLES.gpuParticles.render(camera, gameRenderer, lightTexture, frustumMatrix, projectionMatrix,
                 deltaTracker.getGameTimeDeltaPartialTick(false));
-        if (!LevelRenderPass.popAndWasMain()) return;
+        if (!LevelRenderPassTrack.popAndWasMain()) return;
 
         Polytone.POST_SHADERS.captureLevelDepthSnapshot();
         Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(camera, frustumMatrix, projectionMatrix);
@@ -69,7 +64,7 @@ public class LevelRendererMixin {
                                              net.minecraft.client.renderer.LightTexture lightTexture,
                                              org.joml.Matrix4f frustumMatrix, org.joml.Matrix4f projectionMatrix,
                                              CallbackInfo ci) {
-        PolytoneAsyncParticles.awaitTicks();
+        PolytoneAsyncParticleHandler.awaitTicks();
     }
 
     @Inject(method = "setSectionDirty(IIIZ)V", at = @At("HEAD"))

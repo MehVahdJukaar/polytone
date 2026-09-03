@@ -70,15 +70,10 @@ public final class Colormap implements IColorGetter, ColorResolver {
     public static final Codec<IColorGetter> SINGLE_COLOR_CODEC = ColorUtils.CODEC.xmap(
             Colormap::singleColor, c -> c instanceof Colormap cm ? cm.defaultColor : 0);
 
-    // The reference branch is shown as a plain id box (the wire codec resolves it against the
-    // colormap registry, and in the editor against the open pack too).
     public static final Codec<IColorGetter> DIRECT_REFERENCE_OR_EXPRESSION = SchemaCodecs.labeled(
             Codec.withAlternative(SINGLE_COLOR_CODEC,
                     SchemaCodecs.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
                     Function.identity()),
-            // label with the un-xmapped ColorUtils.CODEC: SINGLE_COLOR_CODEC is xmapped, which drops
-            // the Schema.Color tag, so it would resolve to the raw int-or-string union and splice into
-            // stray "integer"/"text" options instead of showing a color picker.
             SchemaCodecs.alt("single color", ColorUtils.CODEC),
             SchemaCodecs.alt("colormap reference", ResourceLocation.CODEC),
             SchemaCodecs.alt("inline colormap", DIRECT_CODEC));
@@ -88,7 +83,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
             SchemaCodecs.alt("single color", ColorUtils.CODEC),
             SchemaCodecs.alt("colormap reference", ResourceLocation.CODEC));
 
-    // single or biome compound; the labeled alternatives of the first branch splice flat
     public static final Codec<IColorGetter> CODEC = SchemaCodecs.labeled(
             Codec.withAlternative(Colormap.DIRECT_REFERENCE_OR_EXPRESSION, BiomeCompoundColorGetter.CODEC),
             SchemaCodecs.alt("colormap", DIRECT_REFERENCE_OR_EXPRESSION),
@@ -120,7 +114,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
                 Optional.empty(), true);
     }
 
-    // block tint, fluid tint need to have a concurrent expression.expression variable list needs to be thread safe
     public Colormap makeConcurrent() {
         Colormap concurrentColormap = new Colormap(Optional.ofNullable(this.defaultColor), this.xGetter.createConcurrent(),
                 this.yGetter.createConcurrent(), this.triangular,
@@ -200,9 +193,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return sampleColor(state, pos, biome, item, null);
     }
 
-    // A non-null sink reports the intermediates (axis outputs, sampled pixel, final argb) right where
-    // they are computed, so tooling never needs a second copy of the sampling math. Null is the runtime
-    // path and costs a null check.
     public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome,
                            @Nullable ItemStack item, @Nullable SampleSink sink) {
         BlockAndTintGetter level = levelHack.get();

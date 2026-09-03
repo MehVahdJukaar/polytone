@@ -6,7 +6,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.light.ColoredLightsTracker;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.block.TickSource;
-import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticleHandler;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -77,23 +77,23 @@ public abstract class ParticleEngineMixin {
     // the rest of the game tick.
     @Inject(method = "tick", at = @At("HEAD"))
     private void polytone$joinBeforeTick(CallbackInfo ci) {
-        PolytoneAsyncParticles.awaitTicks();
+        PolytoneAsyncParticleHandler.awaitTicks();
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void polytone$dispatchAsyncParticleTicks(CallbackInfo ci) {
         if (Polytone.CONFIGS.particlesOffThread.get()) {
-            PolytoneAsyncParticles.dispatch();
+            PolytoneAsyncParticleHandler.dispatch();
         }
     }
 
     @Inject(method = "setLevel", at = @At("HEAD"))
     private void polytone$joinBeforeLevelChange(CallbackInfo ci) {
-        PolytoneAsyncParticles.awaitTicks();
+        PolytoneAsyncParticleHandler.awaitTicks();
     }
 
     @Inject(method = "clearParticles", at = @At("HEAD"))
     private void polytone$joinBeforeClear(CallbackInfo ci) {
-        PolytoneAsyncParticles.awaitTicks();
+        PolytoneAsyncParticleHandler.awaitTicks();
     }
 }

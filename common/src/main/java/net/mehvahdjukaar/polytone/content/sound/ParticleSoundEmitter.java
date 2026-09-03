@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.content.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
 import net.mehvahdjukaar.polytone.content.particle.custom.IParticleTickable;
-import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles;
+import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticleHandler;
 import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.core.BlockPos;
@@ -75,7 +75,7 @@ public record ParticleSoundEmitter(
             float p = (float) pitch.evaluate(particle, level);
 
             // SoundEngine is not thread-safe; play on the main thread when the batch joins
-            PolytoneAsyncParticles.deferToMain(() -> level.playLocalSound(vec.x, vec.y, vec.z,
+            PolytoneAsyncParticleHandler.deferToMain(() -> level.playLocalSound(vec.x, vec.y, vec.z,
                     sound, category, v, p, false));
         }
     }

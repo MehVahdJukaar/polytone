@@ -14,10 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-// Content that lives in a handful of fixed single files (e.g. shadow_map.json, colors.json) rather than a
-// folder of many. Instead of listing a whole folder, it grabs the two named files (a .json and its
-// .properties equivalent) wherever they appear in the given folders. Editable content type O is unused:
-// these files are never surfaced in the pack editor.
 public abstract class SingleJsonOrPropertiesReloadListener extends ContentManager<Object, Map<ResourceLocation, JsonElement>> {
 
     private static final Gson GSON = new Gson();
@@ -45,9 +41,6 @@ public abstract class SingleJsonOrPropertiesReloadListener extends ContentManage
         return ImmutableMap.copyOf(jsons);
     }
 
-    // Grab every resource under `folder` whose path ends with `suffix`, parse it, and key it by id.
-    // Files are not merged: within a stack the highest-priority pack wins, and a same-named file from a
-    // different pack overwrites (with a warning, since these are meant to sit in the pack's own namespace).
     private void collect(ResourceManager resourceManager, String folder, String suffix,
                          Map<ResourceLocation, JsonElement> out, ResourceParser parser) {
         var stacks = resourceManager.listResourceStacks(folder, id -> id.getPath().endsWith(suffix));

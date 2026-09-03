@@ -56,7 +56,6 @@
     "SpriteContentsMixin",
     "VariantDeserializerMixin",
     "XpOrbMixin",
-    "accessor.AbstractContainerScreenAccessor",
     "accessor.BiomeAccessor",
     "accessor.DustParticleOptionAccessor",
     "accessor.ParticleAccessor",

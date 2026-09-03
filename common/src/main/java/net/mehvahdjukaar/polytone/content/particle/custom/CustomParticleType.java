@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
@@ -20,7 +19,6 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -168,7 +166,7 @@ public class CustomParticleType implements ICustomParticleFactory {
         if (Polytone.CONFIGS.particlesOffThread.get()) {
             // run the spawn-time ticker pass in this tick's parallel batch instead of on the main
             // thread; the batch joins before render extract, so the first frame is identical
-            PolytoneAsyncParticles.enqueueInit(newParticle);
+            PolytoneAsyncParticleHandler.enqueueInit(newParticle);
         } else {
             this.ticker.tick(newParticle, world);
             newParticle.setAge(0); //reset age after tick, so that it doesn't get affected by initializer tick

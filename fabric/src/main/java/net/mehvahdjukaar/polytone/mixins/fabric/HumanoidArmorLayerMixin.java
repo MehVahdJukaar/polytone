@@ -6,6 +6,7 @@ import net.mehvahdjukaar.polytone.content.item.ItemModifier;
 import net.mehvahdjukaar.polytone.content.model.WornModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -13,11 +14,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-// Fabric counterpart to neoforge's IClientItemExtensions#getGenericArmorModel. 1.21.1 has no
-// EquipmentLayerRenderer/EquipmentClientInfo yet, so we hook HumanoidArmorLayer directly and replace
-// the model argument renderArmorPiece receives. The replacement is a HumanoidModel and is posed via
-// the parent model's copyPropertiesTo, so no manual property copy is needed.
-@Mixin(net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer.class)
+//rip fabric api
+@Mixin(HumanoidArmorLayer.class)
 public abstract class HumanoidArmorLayerMixin {
 
     @ModifyVariable(

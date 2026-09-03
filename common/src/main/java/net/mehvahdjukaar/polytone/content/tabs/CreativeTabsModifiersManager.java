@@ -28,9 +28,6 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
 
     private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> vanillaTabs = new HashMap<>();
 
-    @Nullable
-    private ModifierOverride override;
-
     public CreativeTabsModifiersManager() {
         super(Spec.of("Creative tab modifier", () -> CreativeTabModifier.CODEC)
                 .wikiPage("Creative-Tab-Modifiers")
@@ -49,8 +46,7 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
 
     @Override
     protected void resetWithLevel(boolean logOff) {
-        // A reload rebuilds every tab from the packs, so no override can survive it.
-        override = null;
+        CreativeTabPreview.clear();
         for (var id : customTabs.keySet()) {
             PlatStuff.unregisterDynamic(BuiltInRegistries.CREATIVE_MODE_TAB, id);
             if (logOff) {
@@ -130,33 +126,17 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
 
     public void modifyTab(ItemToTabEvent event) {
         var tab = event.getTab();
-        CreativeTabModifier overriding = override == null ? null : override.modifierFor(tab);
+        CreativeTabModifier overriding = CreativeTabPreview.modifierFor(tab);
         var mod = overriding != null ? overriding : modifiers.get(tab);
         if (mod != null) {
             RegistryAccess access = PlatStuff.hackyGetRegistryAccess();
             if (access != null) {
                 CreativeTabModifier v = mod.applyItemsAndAttributes(event, access);
-                if (overriding != null) override.onApplied(tab, v);
+                if (overriding != null) CreativeTabPreview.onApplied(tab, v);
                     //don't add custom tabs here!
                 else if (!customTabs.containsKey(tab.location())) vanillaTabs.put(tab, v);
             }
         }
-    }
-
-    // Stands in for the loaded modifier on the tabs it covers, so the editor can try an unsaved file
-    // without a reload. Replaces rather than stacks: the edited file is already part of the loaded
-    // merge, so applying both would double its item additions. The previous state comes back through
-    // onApplied, so whoever installed the override can put the tab back.
-    public interface ModifierOverride {
-
-        @Nullable
-        CreativeTabModifier modifierFor(ResourceKey<CreativeModeTab> tab);
-
-        void onApplied(ResourceKey<CreativeModeTab> tab, CreativeTabModifier previous);
-    }
-
-    public void setOverride(@Nullable ModifierOverride override) {
-        this.override = override;
     }
 
     public boolean isDynamicTab(ResourceLocation entryId) {

@@ -23,53 +23,45 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-// Preview installs the edited modifier as a ModifierOverride, so it stands in for the saved file with no
-// reload: attributes land at once, item contents on the next tab rebuild. Picking turns the creative
-// screen into an item picker.
-public final class CreativeTabPreview implements CreativeTabsModifiersManager.ModifierOverride {
-
-    private static final CreativeTabPreview INSTANCE = new CreativeTabPreview();
+public final class CreativeTabPreview {
 
     private static boolean pickingEnabled = false;
     @Nullable
     private static Consumer<ItemStack> pickListener;
 
-    // Latest value decoded from the editor form, plus the tabs it resolves to. Drives the overlay; only
-    // the copy handed to pushPreview is ever applied to the game.
     @Nullable
     private static CreativeTabModifier edited;
     private static Set<ResourceLocation> editedTargets = Set.of();
 
-    // Items the author has picked but not yet written into the form, so a long picking session stays
-    // readable in game.
+    //picked in game but not written back into the form yet
     private static final Set<ResourceLocation> pending = new LinkedHashSet<>();
 
     @Nullable
-    private CreativeTabModifier previewed;
-    private Set<ResourceKey<CreativeModeTab>> previewedTargets = Set.of();
-    private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> restore = new HashMap<>();
+    private static CreativeTabModifier previewed;
+    private static Set<ResourceKey<CreativeModeTab>> previewedTargets = Set.of();
+    private static final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> restore = new HashMap<>();
 
-    private CreativeTabPreview() {
-    }
-
-    @Override
     @Nullable
-    public CreativeTabModifier modifierFor(ResourceKey<CreativeModeTab> tab) {
+    public static CreativeTabModifier modifierFor(ResourceKey<CreativeModeTab> tab) {
         return previewedTargets.contains(tab) ? previewed : null;
     }
 
-    @Override
-    public void onApplied(ResourceKey<CreativeModeTab> tab, CreativeTabModifier previous) {
+    public static void onApplied(ResourceKey<CreativeModeTab> tab, CreativeTabModifier previous) {
         restore.put(tab, previous);
     }
 
-    // null drops a previous preview; marshals to the render thread
-    public static void pushPreview(@Nullable ResourceLocation fileId, @Nullable CreativeTabModifier mod) {
-        Minecraft.getInstance().execute(() -> INSTANCE.install(fileId, mod));
+    public static void clear() {
+        previewed = null;
+        previewedTargets = Set.of();
+        restore.clear();
     }
 
-    private void install(@Nullable ResourceLocation fileId, @Nullable CreativeTabModifier mod) {
-        // Undo the attribute writes of the previous preview before installing the new one.
+    public static void pushPreview(@Nullable ResourceLocation fileId, @Nullable CreativeTabModifier mod) {
+        Minecraft.getInstance().execute(() -> install(fileId, mod));
+    }
+
+    private static void install(@Nullable ResourceLocation fileId, @Nullable CreativeTabModifier mod) {
+        //undo the attribute writes of the previous preview before installing the new one
         for (var e : restore.entrySet()) {
             e.getValue().applyAttributes(e.getKey());
         }
@@ -77,9 +69,8 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
 
         previewed = mod;
         previewedTargets = mod == null ? Set.of() : resolveTargets(fileId, mod);
-        Polytone.CREATIVE_TABS_MODIFIERS.setOverride(mod == null ? null : this);
         for (var key : previewedTargets) {
-            // A tab nothing modified yet has no event listener; the preview needs one to reach it.
+            //a tab nothing modified yet has no event listener. preview needs one to reach it
             PlatStuff.addTabEventForTab(key);
         }
         CreativeModeTabs.CACHED_PARAMETERS = null; // makes the open screen rebuild its contents next tick
@@ -107,11 +98,11 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         pending.addAll(ids);
     }
 
-    static int pendingCount() {
+    public static int pendingCount() {
         return pending.size();
     }
 
-    static boolean isPending(Item item) {
+    public static boolean isPending(Item item) {
         return !pending.isEmpty() && pending.contains(BuiltInRegistries.ITEM.getKey(item));
     }
 
@@ -124,11 +115,11 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
     }
 
     @Nullable
-    static CreativeTabModifier edited() {
+    public static CreativeTabModifier tabBeingEdited() {
         return edited;
     }
 
-    static boolean targets(@Nullable ResourceLocation tabId) {
+    public static boolean targets(@Nullable ResourceLocation tabId) {
         return tabId != null && editedTargets.contains(tabId);
     }
 
@@ -153,7 +144,7 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         return count;
     }
 
-    static boolean matchesRemoval(List<ItemPredicate> removals, ItemStack stack) {
+    public static boolean matchesRemoval(List<ItemPredicate> removals, ItemStack stack) {
         for (ItemPredicate p : removals) {
             if (p.test(stack)) return true;
         }
@@ -167,22 +158,17 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
                 : null;
     }
 
-    // The tabs a modifier applies to. This runs on every keystroke in the editor, on files that are
-    // half written by definition, so it stays quiet: no implicit target simply means no tabs yet.
     private static Set<ResourceKey<CreativeModeTab>> resolveTargets(@Nullable ResourceLocation fileId,
                                                                     CreativeTabModifier mod) {
         ResourceLocation id = fileId != null ? fileId : Polytone.res("editor_preview");
         Targets targets = mod.registerTab() ? Targets.ofIds(id) : mod.targets();
-        boolean implicitTarget = BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id);
-        if (targets.entries().isEmpty() && !implicitTarget) return Set.of();
+        //editor calls this on every keystroke, on files that are half written by definition.
+        //compute would log an error for each one of those
+        if (targets.entries().isEmpty() && !BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) return Set.of();
 
         Set<ResourceKey<CreativeModeTab>> set = new HashSet<>();
-        try {
-            for (var holder : targets.compute(id, BuiltInRegistries.CREATIVE_MODE_TAB.asLookup())) {
-                holder.unwrapKey().ifPresent(set::add);
-            }
-        } catch (Exception e) {
-            Polytone.LOGGER.debug("Could not resolve creative tab targets for the editor: {}", e.getMessage());
+        for (var tab : targets.compute(id, BuiltInRegistries.CREATIVE_MODE_TAB.asLookup())) {
+            set.add(tab.unwrapKey().get());
         }
         return set;
     }

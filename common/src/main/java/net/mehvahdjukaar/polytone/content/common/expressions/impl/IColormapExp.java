@@ -28,11 +28,6 @@ public interface IColormapExp {
             aDouble -> (a, b, c, d, e, f) -> aDouble,
             iColormapExp -> 0.0f);
 
-    // Same wire codec as always; the labels only name the editor's picker options.
-    // The "constant" branch is displayed as a plain number, NOT via CONSTANT_CODEC: that one wraps
-    // LENIENT_FLOAT (a float-or-string union), whose schema is an AnyOf that anyOf() splices flat -
-    // leaking two unlabeled "number"/"text" options and, worse, a "text" branch that EXACT-matches
-    // expression strings on load so expressions would open under "text". Codec.FLOAT keeps it one option.
     Codec<IColormapExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
             SchemaCodecs.referenceOrDirect(BUILTIN_EXP,
                     SchemaCodecs.alternatives(CONSTANT_CODEC, ColormapExpressionProvider.CODEC, ColormapExp.TYPE.codec()), true),
@@ -117,7 +112,6 @@ public interface IColormapExp {
         public float evaluate(@NotNull BlockAndTintGetter level, BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,
                               @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
             if (biome == null || pos == null) return 0;
-            // 1.21.1: Biome.getTemperature(BlockPos) takes only BlockPos (no sea level param)
             return biome.getTemperature(BlockPos.containing(pos));
         }
 

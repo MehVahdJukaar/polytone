@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPass;
+import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
@@ -34,7 +34,7 @@ public abstract class GameRendererMixin {
         Polytone.LIGHTMAPS.setupForGUI(false);
         lightTexture.turnOnLightLayer();
         Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
-        LevelRenderPass.onEndRenderLevel();
+        LevelRenderPassTrack.onEndRenderLevel();
     }
 
     @Inject(method = "render",
@@ -48,12 +48,12 @@ public abstract class GameRendererMixin {
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
     private void polytone$startVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
-        LevelRenderPass.onStartRenderLevel();
+        LevelRenderPassTrack.onStartRenderLevel();
     }
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void polytone$endVanillaLevelRender(DeltaTracker deltaTracker, CallbackInfo ci) {
-        LevelRenderPass.onEndRenderLevel();
+        LevelRenderPassTrack.onEndRenderLevel();
     }
 
     @Inject(method = "renderLevel",

@@ -1,9 +1,11 @@
-package net.mehvahdjukaar.polytone.content.slotify;
+package net.mehvahdjukaar.polytone.compat.nautilus;
 
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview.PickedElement;
+import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
+import net.mehvahdjukaar.polytone.content.slotify.WidgetModifier;
 import net.mehvahdjukaar.polytone.utils.StrUtils;
-import net.mehvahdjukaar.polytone.mixins.accessor.AbstractContainerScreenAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,11 +18,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-// Editor-only inspector drawn over a live screen while picking is on: whether a modifier targets this
-// screen, and which slots/widgets it touches. Never mutates anything.
-public final class GuiModifierOverlay {
+//editor inspector drawn over a live screen while picking is on. never mutates anything
+public final class NautilusGuiModifierOverlay {
 
-    private static final int SLOT = 16;
+    private static final int SLOT_W = 16;
 
     private static final int SLOT_OUTLINE = 0x55_3AA0FF;
     private static final int WIDGET_OUTLINE = 0x55_C07BFF;
@@ -31,8 +32,8 @@ public final class GuiModifierOverlay {
 
     private static final int LABEL_BG = 0xE0_000000;
     private static final int LABEL_TEXT = 0xFF_FFFFFF;
-    private static final int TARGETED = 0xFF_3BE06B;   // green
-    private static final int UNTARGETED = 0xFF_FFAA33; // amber
+    private static final int TARGETED = 0xFF_3BE06B;
+    private static final int UNTARGETED = 0xFF_FFAA33;
     private static final int MUTED = 0xFF_B0B0B0;
 
     public static void render(GuiGraphics graphics, Screen screen, int mouseX, int mouseY) {
@@ -52,21 +53,21 @@ public final class GuiModifierOverlay {
         Slot hoveredSlot = null;
         int leftPos = 0, topPos = 0, modifiedSlots = 0;
         if (screen instanceof AbstractContainerScreen<?> cs) {
-            leftPos = ((AbstractContainerScreenAccessor) cs).polytone$getLeftPos();
-            topPos = ((AbstractContainerScreenAccessor) cs).polytone$getTopPos();
+            leftPos = cs.leftPos;
+            topPos = cs.topPos;
             for (Slot slot : cs.getMenu().slots) {
                 int sx = leftPos + slot.x;
                 int sy = topPos + slot.y;
                 boolean modified = !Polytone.SLOTIFY.getSlotModifiers(cs, slot).isEmpty();
                 if (modified) modifiedSlots++;
-                box(graphics, sx, sy, SLOT, SLOT, modified ? MOD_FILL : 0, modified ? MOD_OUTLINE : SLOT_OUTLINE);
-                if (inside(mouseX, mouseY, sx, sy, SLOT, SLOT)) hoveredSlot = slot;
+                box(graphics, sx, sy, SLOT_W, SLOT_W, modified ? MOD_FILL : 0, modified ? MOD_OUTLINE : SLOT_OUTLINE);
+                if (inside(mouseX, mouseY, sx, sy, SLOT_W, SLOT_W)) hoveredSlot = slot;
             }
         }
 
         drawBanner(graphics, screen, mod != null, modifiedSlots, modifiedWidgets);
 
-        // Hover caption - widget wins when both overlap (widgets sit on top of the panel).
+        //widget wins when both overlap, they sit on top of the panel
         if (hoveredWidget != null) {
             box(graphics, hoveredWidget.getX(), hoveredWidget.getY(), hoveredWidget.getWidth(), hoveredWidget.getHeight(),
                     HOVER_FILL, HOVER_OUTLINE);
@@ -74,16 +75,30 @@ public final class GuiModifierOverlay {
         } else if (hoveredSlot != null) {
             int sx = leftPos + hoveredSlot.x;
             int sy = topPos + hoveredSlot.y;
-            box(graphics, sx, sy, SLOT, SLOT, HOVER_FILL, HOVER_OUTLINE);
+            box(graphics, sx, sy, SLOT_W, SLOT_W, HOVER_FILL, HOVER_OUTLINE);
             drawLabel(graphics, slotLabel(screen, hoveredSlot, leftPos, topPos), sx, sy);
         }
+    }
+
+    @Nullable
+    public static PickedElement pickAt(AbstractContainerScreen<?> screen, double mouseX, double mouseY) {
+        for (Slot slot : screen.getMenu().slots) {
+            int sx = screen.leftPos + slot.x;
+            int sy = screen.topPos + slot.y;
+            if (inside((int) mouseX, (int) mouseY, sx, sy, SLOT_W, SLOT_W)) {
+                int cx = sx - screen.width / 2;
+                int cy = sy - screen.height / 2;
+                return new PickedElement(slot.index, cx, cy, SLOT_W, SLOT_W, slot.getClass().getName());
+            }
+        }
+        return null;
     }
 
     private static void drawBanner(GuiGraphics graphics, Screen screen, boolean targeted, int modSlots, int modWidgets) {
         GuiModifierPreview.DetectedTarget t = GuiModifierPreview.targetOf(screen);
         String target = t == null ? "?" : t.type().getSerializedName() + " = " + t.target();
 
-        String head = (targeted ? "● Targeted" : "○ Not targeted") + "   ·   " + target;
+        String head = (targeted ? "[x] targeted" : "[ ] not targeted") + "  -  " + target;
         String detail;
         if (targeted) {
             String touch = modSlots == 0 && modWidgets == 0
@@ -107,7 +122,7 @@ public final class GuiModifierOverlay {
         Font font = Minecraft.getInstance().font;
         int w = font.width(text);
         int ly = anchorY - font.lineHeight - 3;
-        if (ly < 2) ly = anchorY + SLOT + 3; // flip below when there's no room above
+        if (ly < 2) ly = anchorY + SLOT_W + 3; // flip below when there's no room above
         graphics.fill(anchorX - 2, ly - 2, anchorX + w + 2, ly + font.lineHeight, LABEL_BG);
         graphics.drawString(font, text, anchorX, ly, LABEL_TEXT, false);
     }
@@ -125,42 +140,6 @@ public final class GuiModifierOverlay {
         String named = msg.isBlank() ? "" : "\"" + msg + "\"  ";
         return "widget  " + named + StrUtils.simpleName(w.getClass().getName()) + "  (" + cx + ", " + cy + ")  "
                 + w.getWidth() + "x" + w.getHeight();
-    }
-
-    // shared hit-test, also used by the click handler
-
-    @Nullable
-    public static PickedElement pickAt(AbstractContainerScreen<?> screen, double mouseX, double mouseY) {
-        int leftPos = ((AbstractContainerScreenAccessor) screen).polytone$getLeftPos();
-        int topPos = ((AbstractContainerScreenAccessor) screen).polytone$getTopPos();
-        for (Slot slot : screen.getMenu().slots) {
-            int sx = leftPos + slot.x;
-            int sy = topPos + slot.y;
-            if (inside((int) mouseX, (int) mouseY, sx, sy, SLOT, SLOT)) {
-                int cx = sx - screen.width / 2;
-                int cy = sy - screen.height / 2;
-                return new PickedElement(slot.index, cx, cy, SLOT, SLOT, slot.getClass().getName());
-            }
-        }
-        return null;
-    }
-
-    // shared screen-render pass (overlay + centered sprites), called by both platforms
-
-    // shared by both platform screen-render hooks, only the event wiring differs. renderExtraSprites
-    // no-ops when the screen has no modifier, so this is safe to call every frame
-    public static void renderScreenExtras(GuiGraphics graphics, SlotifyScreen ss,
-                                          int screenWidth, int screenHeight,
-                                          int mouseX, int mouseY, float partialTick) {
-        if (GuiModifierPreview.isPickingEnabled() && ss instanceof Screen screen) {
-            render(graphics, screen, mouseX, mouseY);
-        }
-        var pose = graphics.pose();
-        pose.pushPose();
-        pose.setIdentity();
-        pose.translate(screenWidth / 2F, screenHeight / 2F, 500);
-        ss.polytone$renderExtraSprites(graphics, mouseX, mouseY, partialTick);
-        pose.popPose();
     }
 
     private static boolean matchesAny(List<WidgetModifier> mods, AbstractWidget w) {

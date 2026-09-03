@@ -10,9 +10,6 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
 
-// One post shader entry from polytone/post_shaders/*.json. The field reference and the list of
-// built-in uniforms every pass may declare (PolyProjMat, PolySunAngle, InDepth, InShadow, ...) live
-// in wiki/Shaders.md. Shaders that don't declare one are unaffected, safeGetUniform no-ops.
 public final class PostChainEffect {
 
     public static final String PROJ_MAT = "PolyProjMat";
@@ -48,7 +45,6 @@ public final class PostChainEffect {
     private final boolean useDepthBuffer;
     private final boolean useShadowMap;
     private final Map<String, ResourceLocation> samplers;
-    // Sampler name -> persistent PostTargetsManager target id; bound to that target's color texture.
     private final Map<String, ResourceLocation> targetSamplers;
     private final float priority;
 
@@ -86,7 +82,6 @@ public final class PostChainEffect {
         return useShadowMap;
     }
 
-    // 1.21.11 location, shared with packs made for it
     public ResourceLocation chainResource() {
         return postChain.withPath(p -> "post_effect/" + p + ".json");
     }
@@ -95,10 +90,7 @@ public final class PostChainEffect {
         return turnOnCondition.evaluate() > 0;
     }
 
-    // called from PostPassMixin right before EffectInstance.apply(), so sampler/uniform state matches
-    // what PostPass.process just configured (notably DiffuseSampler)
     public void applyUniformsToEffect(EffectInstance effect, PostShadersManager.ActivePostPassFrame frame) {
-        // Vanilla blit passes share the chain but don't declare Polytone uniforms; skip them.
         if (effect.getUniform(PROJ_MAT) == null) return;
         effect.safeGetUniform(PROJ_MAT).set(frame.projMat());
         effect.safeGetUniform(MODEL_VIEW_MAT).set(frame.modelViewMat());

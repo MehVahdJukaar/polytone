@@ -133,18 +133,12 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
         });
     }
 
-    // Detached from the live registry on purpose: a reload while the screen is open clears configs and
-    // rebuilds every holder, while the screen's widgets keep writing into these. Iterating the registry
-    // at save time would then look at holders nobody touched and drop the user's edits.
     private List<OptionHolder<?>> shownOptions() {
         return List.copyOf(configs.getValues());
     }
 
     private void saveConfigsToDisk(Collection<OptionHolder<?>> edited) {
         try {
-            // Start from what's already on disk: entries whose pack isn't currently loaded (disabled,
-            // temporarily removed, or failed to parse) have no holder here, and writing a fresh object
-            // would wipe their saved values for good.
             JsonObject jsonObject = configFileSnapshot.deepCopy();
             for (var option : configs.getValues()) option.saveToJson(jsonObject);
             // last, so edits made on holders the registry has since replaced win
@@ -166,7 +160,7 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
                 Polytone.LOGGER.error("Error loading config options from file", e);
             }
         }
-        this.configFileSnapshot = jo == null ? new JsonObject() : jo;
+        this.configFileSnapshot = jo;
     }
 
     public boolean getBooleanConfig(ResourceLocation id) {
@@ -197,12 +191,9 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
         List<String> overlays = collectFormatOverlays(primary, version);
         if (overlays.isEmpty()) return;
 
-        PackResources fullPack = resources.openFull(location, new Pack.Metadata(Component.empty(),
-                PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), overlays));
-        try {
+        try (PackResources fullPack = resources.openFull(location, new Pack.Metadata(Component.empty(),
+                PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), overlays))) {
             parsePackConfigsInto(fullPack, activePackReg);
-        } finally {
-            fullPack.close();
         }
     }
 
@@ -218,8 +209,6 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
         activeLoadConfigs.remove();
     }
 
-    // Overlay directories that apply for this pack version. Config definitions almost always live in
-    // plain format/version overlays, so this is enough to make them visible before the real reload.
     private static List<String> collectFormatOverlays(PackResources primary, int version) {
         List<String> overlays = new ArrayList<>();
         try {

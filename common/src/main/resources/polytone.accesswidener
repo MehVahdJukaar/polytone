@@ -262,5 +262,8 @@ accessible field net/minecraft/client/renderer/PostChain passes Ljava/util/List;
 accessible field net/minecraft/client/renderer/LevelRenderer viewArea Lnet/minecraft/client/renderer/ViewArea;
 accessible method net/minecraft/client/renderer/LevelRenderer renderSectionLayer (Lnet/minecraft/client/renderer/RenderType;DDDLorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V
 
+accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen leftPos I
+accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen topPos I
+
 # editor button swaps its icon per frame
 mutable field net/minecraft/client/gui/components/SpriteIconButton sprite Lnet/minecraft/resources/ResourceLocation;

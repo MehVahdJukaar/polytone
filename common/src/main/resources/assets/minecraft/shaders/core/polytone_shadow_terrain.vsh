@@ -9,8 +9,6 @@ uniform vec3 ChunkOffset;
 
 out vec2 texCoord0;
 
-// Shared vertex stage for the shadow depth pass. Same section-relative positioning as the vanilla
-// terrain shaders (ChunkOffset is set per section), minus everything that only feeds colour.
 void main() {
     gl_Position = ProjMat * ModelViewMat * vec4(Position + ChunkOffset, 1.0);
     texCoord0 = UV0;

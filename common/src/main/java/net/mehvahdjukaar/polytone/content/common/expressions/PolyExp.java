@@ -8,7 +8,6 @@ import java.util.Map;
 
 public abstract class PolyExp {
     protected final Serializable expr;
-    // original (pre-compile) expression source, set by PolyExpType - used for error messages
     String unparsed = "";
     private boolean loggedError = false;
 
@@ -16,9 +15,6 @@ public abstract class PolyExp {
         this.expr = expr;
     }
 
-    // Evaluates the expression and coerces the result to a double. Never throws: a misbehaving expression
-    // (e.g. a runtime type mismatch MVEL can't handle) logs once and returns 0 instead of crashing the
-    // render/tick loop.
     protected double executeDouble(Map<String, Object> vars) {
         try {
             return toDouble(MVEL.executeExpression(expr, vars));
@@ -28,7 +24,6 @@ public abstract class PolyExp {
         }
     }
 
-    // As executeDouble but coerces to a boolean; returns false on failure
     protected boolean executeBool(Map<String, Object> vars) {
         try {
             return toBool(MVEL.executeExpression(expr, vars));
@@ -45,9 +40,6 @@ public abstract class PolyExp {
         }
     }
 
-    // Lenient coercion so numbers, booleans and Objects all yield a usable value (JS-like), the
-    // counterpart to the operand coercion done in ExpUtils - together they mean neither direction
-    // (number-as-bool or bool-as-number) can throw.
     protected static double toDouble(Object o) {
         if (o instanceof Number n) return n.doubleValue();
         if (o instanceof Boolean b) return b ? 1 : 0;

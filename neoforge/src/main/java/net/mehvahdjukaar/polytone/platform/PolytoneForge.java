@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.platform;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
-import net.mehvahdjukaar.polytone.content.slotify.GuiModifierOverlay;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
@@ -111,7 +110,7 @@ public class PolytoneForge {
     public void renderScreen(ScreenEvent.Render.Post event) {
         Screen screen = event.getScreen();
         if (!(screen instanceof SlotifyScreen ss)) return;
-        GuiModifierOverlay.renderScreenExtras(event.getGuiGraphics(), ss, screen.width, screen.height,
+        SlotifyScreen.renderExtras(event.getGuiGraphics(), ss, screen.width, screen.height,
                 event.getMouseX(), event.getMouseY(), event.getPartialTick());
     }
 

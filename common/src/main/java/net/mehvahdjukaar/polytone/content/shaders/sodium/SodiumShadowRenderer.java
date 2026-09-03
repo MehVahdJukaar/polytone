@@ -18,8 +18,6 @@ import org.joml.Vector3d;
 
 public final class SodiumShadowRenderer {
 
-    // MUST only be called with Sodium present: the verifier eager-loads the Sodium types this class
-    // references, so the CompatHandler.SODIUM gate has to live at the call site.
     public static void replayTerrain(Minecraft mc, Camera cam, Vec3 camPos,
                                      Matrix4f lightView, Matrix4f lightProj,
                                      ShadowCasterVolume volume) {
@@ -39,7 +37,6 @@ public final class SodiumShadowRenderer {
         }
     }
 
-    // false when Sodium's renderer isn't up yet, in which case there's no camera list to restore
     private static boolean cullTerrainToLightVolume(Minecraft mc, Camera camera, Vec3 camPos, ShadowCasterVolume volume) {
         RenderSectionManager sectionManager = renderSectionManager();
         if (sectionManager == null) return false;
@@ -48,8 +45,6 @@ public final class SodiumShadowRenderer {
                 volume, Viewport.CHUNK_SECTION_PADDED_RADIUS);
         Viewport viewport = new Viewport(frustum, new Vector3d(camPos.x, camPos.y, camPos.z));
 
-        // a caster need not be visible to the camera, only inside the light volume.
-        // shouldUseOcclusionCulling() keys off smartCull
         boolean smartCull = mc.smartCull;
         mc.smartCull = false;
         try {

@@ -4,7 +4,6 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-// The light's ortho box, optionally narrowed to the camera frustum swept away from the light. Camera-relative.
 public final class ShadowCasterVolume {
 
     private static final float EDGE_MARGIN = 4f;
@@ -43,8 +42,6 @@ public final class ShadowCasterVolume {
         Vector3f interior = cameraViewProjection.invert(new Matrix4f()).transformProject(new Vector3f());
         if (!interior.isFinite()) return;
 
-        // A point p casts into the frustum when p - s*L is inside it for some s >= 0. For a half-space n.p + d >= 0
-        // that is only a constraint when n.L >= 0; the other faces never reject anything.
         boolean[] facesLight = new boolean[FRUSTUM_FACES];
         for (int i = 0; i < FRUSTUM_FACES; i++) {
             Vector4f face = faces[i];

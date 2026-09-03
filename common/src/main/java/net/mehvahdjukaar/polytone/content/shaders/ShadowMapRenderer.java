@@ -123,7 +123,6 @@ public class ShadowMapRenderer {
             } finally {
                 renderingShadowPass = false;
             }
-            // a half-drawn map must not be reused for the whole update interval
             if (completed) {
                 lastRenderedShadowMatrix.set(shadowMatrix);
                 lastRenderedCamPos = camPos;
@@ -171,9 +170,6 @@ public class ShadowMapRenderer {
                 drawLayer(mc, RenderType.cutoutMipped(), camPos, depthShader(mc, true));
                 drawLayer(mc, RenderType.cutout(), camPos, depthShader(mc, true));
             } else if (CompatHandler.SODIUM) {
-                // no compiled vanilla sections means Sodium replaced the chunk pipeline. keep the guard
-                // at this call site: touching SodiumShadowRenderer links it and the verifier eager-loads
-                // its Sodium types, so without it the branch throws whenever vanilla just has nothing
                 SodiumShadowRenderer.replayTerrain(mc, cam, camPos, lightView, lightProj, volume);
             }
 
@@ -317,7 +313,7 @@ public class ShadowMapRenderer {
         poseStack.translate(pos.getX() - camPos.x, pos.getY() - camPos.y, pos.getZ() - camPos.z);
         try {
             blockEntityDispatcher.render(blockEntity, partialTick, poseStack, bufferSource);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         poseStack.popPose();
     }
@@ -348,7 +344,7 @@ public class ShadowMapRenderer {
     private void drawLayer(Minecraft mc, RenderType renderType, Vec3 camPos, ShaderInstance depthShader) {
         renderType.setupRenderState();
         ShaderInstance shader = depthShader != null ? depthShader : RenderSystem.getShader();
-        if (shader == null) { // another mod cleared the bound program, nothing we can draw
+        if (shader == null) {
             renderType.clearRenderState();
             return;
         }

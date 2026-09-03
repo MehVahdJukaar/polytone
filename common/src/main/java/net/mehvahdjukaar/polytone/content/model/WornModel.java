@@ -12,10 +12,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-// The baked model is a HumanoidModel so the vanilla armor layer (or neoforge's getGenericArmorModel)
-// can pose it, which requires the geometry to declare the standard humanoid bones. 1.21.1 has no
-// EquipmentClientInfo.LayerType, so the worn layer is keyed by EquipmentSlot instead; an absent slot
-// means every armor slot the item renders in.
 public final class WornModel {
 
     public static final Codec<WornModel> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -26,7 +22,6 @@ public final class WornModel {
     private final WornModelGeometry geometry;
     private final Optional<EquipmentSlot> slot;
 
-    // baked model cache, invalidated when the EntityModelSet instance changes (i.e. on resource reload)
     @Nullable
     private HumanoidModel<?> cachedModel;
     @Nullable
@@ -52,7 +47,7 @@ public final class WornModel {
         if (cachedModel == null && !failed) {
             try {
                 ModelPart root = geometry.bake(modelSet);
-                cachedModel = new HumanoidModel<LivingEntity>(root);
+                cachedModel = new HumanoidModel<>(root);
             } catch (Exception e) {
                 failed = true;
                 Polytone.LOGGER.error("Failed to bake Polytone worn model", e);

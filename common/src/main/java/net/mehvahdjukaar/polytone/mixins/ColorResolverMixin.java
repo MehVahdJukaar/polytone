@@ -38,11 +38,6 @@ public abstract class ColorResolverMixin extends Level {
         super(writableLevelData, resourceKey, registryAccess, holder, supplier, bl, bl2, l, i);
     }
 
-    // Registers these on request instead of on every reload. We handle ANY missing resolver, not just
-    // our colormaps: swapping the static BiomeColors.*_COLOR_RESOLVER fields means a ClientLevel built
-    // while a colormap was active keys its fixed tintCaches slot on that colormap, so once the colormap
-    // is removed on reload that slot is left with no entry - a null cache, which fabric's strict
-    // modifyNullCache turns into a hard crash. Re-creating the vanilla cache lazily keeps the map whole.
     @Inject(method = "getBlockTint", at = @At("HEAD"))
     private void polytone$makeCachesForColormaps(BlockPos pos, ColorResolver resolver, CallbackInfoReturnable<Integer> info) {
         if (this.tintCaches.containsKey(resolver)) return;
@@ -52,16 +47,10 @@ public abstract class ColorResolverMixin extends Level {
         } else if (resolver == BiomeColors.GRASS_COLOR_RESOLVER
                 || resolver == BiomeColors.FOLIAGE_COLOR_RESOLVER
                 || resolver == BiomeColors.WATER_COLOR_RESOLVER) {
-            // One of the 3 vanilla resolvers was orphaned from this level's fixed tintCaches because we
-            // swap the BiomeColors static fields (Fluid/BlockPropertiesManager): a level built while a
-            // colormap held the slot loses it once the colormap is removed on reload. Re-seed it so the
-            // restored vanilla resolver still resolves. Any OTHER (third party registered) resolver is
-            // intentionally left to the platform's own registered-resolver cache.
             cache = new BlockTintCache(p -> this.calculateBlockTint(p, resolver));
         } else {
             return;
         }
-        //make copy of the map and assigns it as it has limited capacity
         var newMap = new Object2ObjectArrayMap<>(this.tintCaches);
         newMap.put(resolver, cache);
         this.tintCaches = newMap;

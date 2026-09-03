@@ -16,10 +16,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-// On 1.21.1 vanilla assigns an immutable roots map in onResourceManagerReload, so we swap in a
-// mutable thread safe copy at the end of reload and insert our layers lazily inside bakeLayer.
-// Our models then bake through the exact same path as vanilla layers, so model replacing mods
-// like EMF can wrap them, instead of being short circuited.
 @Mixin(EntityModelSet.class)
 public abstract class EntityModelSetMixin {
 

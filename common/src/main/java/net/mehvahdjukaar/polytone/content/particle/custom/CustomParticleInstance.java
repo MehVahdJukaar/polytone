@@ -245,7 +245,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
             return;
         }
         if (Polytone.CONFIGS.particlesOffThread.get()) {
-            PolytoneAsyncParticles.enqueue(this); // physics + expression work runs in the parallel batch
+            PolytoneAsyncParticleHandler.enqueue(this); // physics + expression work runs in the parallel batch
         } else tickInternal();
     }
 
@@ -287,7 +287,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
             //handle initialized state where both are null
             Quaternionf instantRot = new Quaternionf();
             this.type.rotationProvider.setRotation(this, instantRot,
-                    PolytoneAsyncParticles.camera(), 0);
+                    PolytoneAsyncParticleHandler.camera(), 0);
             if (this.customRotation == null || this.customRotationO == null) {
                 this.customRotation = new Quaternionf(instantRot);
                 this.customRotationO = new Quaternionf(instantRot);
@@ -368,7 +368,7 @@ public class CustomParticleInstance extends TextureSheetParticle {
 
 
     private boolean isBehindCamera() {
-        Camera camera = PolytoneAsyncParticles.camera();
+        Camera camera = PolytoneAsyncParticleHandler.camera();
         if (camera.getEntity() == Minecraft.getInstance().player) {
             Vector3f cameraPos = camera.getPosition().toVector3f();
             Vector3f thisPos = new Vector3f((float) this.x, (float) this.y, (float) this.z);

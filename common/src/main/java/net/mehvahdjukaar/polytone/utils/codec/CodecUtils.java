@@ -13,17 +13,11 @@ import net.minecraft.sounds.SoundEvents;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-// Polytone-specific codecs only. Generic combinators (alternatives, referenceOrDirect, lenient
-// maps, field aliases, item stack codecs...) live in codecui's SchemaCodecs, which also pairs
-// them with their editor schemas.
 public class CodecUtils {
 
     public static Codec<String> STR_OR_DOUBLE_CODEC = Codec.withAlternative(Codec.STRING,
             Codec.DOUBLE.xmap( d->d+"", s->0.0));
 
-    // A double parsed from either a JSON number OR a JSON string holding a plain numeric literal
-    // (e.g. "0.5"). Lets a constant written as a string take the same fast constant-lambda path as
-    // a JSON number instead of being compiled/evaluated as an expression every frame.
     public static final Codec<Double> LENIENT_DOUBLE = Codec.withAlternative(Codec.DOUBLE,
             Codec.STRING.comapFlatMap(CodecUtils::parseDouble, s -> Double.toString(s)));
 
@@ -77,8 +71,6 @@ public class CodecUtils {
                 ()->BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY));
     }
 
-    // Unlike SchemaCodecs.alternatives this always encodes with primary and keeps
-    // withAlternative's first-success decode fold.
     @SafeVarargs
     public static <A> Codec<A> withAlternatives(Codec<A> primary, Codec<? extends A> ...secondary) {
         Codec<? super A> codec = primary;
