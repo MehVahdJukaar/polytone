@@ -12,12 +12,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-// Ring buffer of particle records. There is no per-frame update: a spawn writes the four corners of
-// its quad once and the vertex shader derives everything else from the record and the current time.
-// All vertices of a record carry identical data; the shader tells corners (and, with an area, the
-// quads of one spawn) apart by gl_VertexID.
-// Positions are relative to origin and spawn ticks to timeBase; both are rebased (buffer cleared) when
-// the camera or the clock drift far enough that float precision would suffer.
+//all 4 vertices of a record carry identical data, the shader tells corners apart by gl_VertexID
+//pos is relative to origin and spawn ticks to timeBase, both rebased (buffer cleared) on drift so floats stay sane
 public final class GpuParticleBuffer implements AutoCloseable {
 
     public static final VertexFormat FORMAT = VertexFormat.builder()
