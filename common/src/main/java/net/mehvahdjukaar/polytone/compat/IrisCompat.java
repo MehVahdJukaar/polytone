@@ -15,6 +15,7 @@ public class IrisCompat {
         // doesn't shade leashes right, so for now we just fall back to vanilla leashes while shaders are on.
         IrisPipelines.copyPipeline(RenderPipelines.TEXT, PolytoneRenderTypes.LEASH_PIPELINE);
         IrisPipelines.copyPipeline(RenderPipelines.TRANSLUCENT_PARTICLE, PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE);
+        IrisPipelines.copyPipeline(RenderPipelines.TRANSLUCENT_BLOCK, PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE);
         IrisPipelines.copyPipeline(RenderPipelines.SKY, PolytoneRenderTypes.SKY_DEPTH_WRITE_PIPELINE);
     }
 

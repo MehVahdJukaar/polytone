@@ -26,7 +26,8 @@ public enum ParticleRenderMode implements StringRepresentable {
         return switch (this) {
             case TERRAIN, SOLID -> RenderTypes.solidMovingBlock();
             case CUTOUT -> RenderTypes.cutoutMovingBlock();
-            case ADDITIVE_TRANSLUCENT, TRANSLUCENT -> RenderTypes.translucentMovingBlock();
+            case ADDITIVE_TRANSLUCENT -> PolytoneRenderTypes.ADDITIVE_TRANSLUCENT_MOVING_BLOCK_RENDERTYPE;
+            case TRANSLUCENT -> RenderTypes.translucentMovingBlock();
             // default was cutout mipped but it no longer exists
             default -> RenderTypes.cutoutMovingBlock();
         };
@@ -35,10 +36,6 @@ public enum ParticleRenderMode implements StringRepresentable {
     public SingleQuadParticle.Layer getLayer(boolean hasModel) {
         if (hasModel) return CUSTOM_LAYER;
 
-        // A quad particle's sprite is always baked into the particle atlas (see SpritePicker), so every
-        // mode here must bind LOCATION_PARTICLES. The block-atlas variants (terrain/solid/cutout) only
-        // apply to the model path via getBlock(); routing a quad through Layer.TERRAIN would sample the
-        // whole block atlas with particle-atlas UVs (the "particle shows the block atlas" bug).
         return switch (this) {
             case TERRAIN -> SingleQuadParticle.Layer.OPAQUE_TERRAIN;
             case TRANSLUCENT, INVISIBLE -> SingleQuadParticle.Layer.TRANSLUCENT;

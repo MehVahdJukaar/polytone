@@ -22,7 +22,7 @@ dependencies {
     include("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
 
     // The editor UI is a SEPARATE mod - mod dep for dev, NOT bundled (users install it themselves).
-    modCompileOnly("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
+    modImplementation("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     apiInclude("org.mvel:mvel2:${mvel_version}")

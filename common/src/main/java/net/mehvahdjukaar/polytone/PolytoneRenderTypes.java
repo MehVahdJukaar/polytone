@@ -8,6 +8,9 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.BlendFactor;
 import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
@@ -17,8 +20,10 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
@@ -38,6 +43,8 @@ public class PolytoneRenderTypes {
     public static final ParticleRenderType PARTICLE_MODEL_GROUP =
             new ParticleRenderType(Polytone.res("particle_model").toString(), "PM");
 
+    private static final BlendFunction ADDITIVE_TRANSLUCENT_BLEND = new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE);
+
     public static final RenderPipeline ADDITIVE_TRANSLUCENT_PARTICLE_PIPELINE = register(
             RenderPipeline.builder()
                     .withBindGroupLayout(BindGroupLayouts.GLOBALS)
@@ -50,8 +57,33 @@ public class PolytoneRenderTypes {
                     .withPrimitiveTopology(PrimitiveTopology.QUADS)
                     .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
                     .withLocation(Polytone.res("pipeline/additive_particle"))
-                    .withColorTargetState(new ColorTargetState(new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE)))
+                    .withColorTargetState(new ColorTargetState(ADDITIVE_TRANSLUCENT_BLEND))
                     .build());
+
+    public static final RenderPipeline ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE = register(
+            RenderPipeline.builder()
+                    .withBindGroupLayout(BindGroupLayouts.GLOBALS)
+                    .withBindGroupLayout(BindGroupLayouts.FOG)
+                    .withBindGroupLayout(BindGroupLayouts.SAMPLER0_SAMPLER2)
+                    .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
+                    .withVertexShader("core/block")
+                    .withFragmentShader("core/block")
+                    .withVertexBinding(0, DefaultVertexFormat.BLOCK)
+                    .withPrimitiveTopology(PrimitiveTopology.QUADS)
+                    .withDepthStencilState(DepthStencilState.DEFAULT)
+                    .withLocation(Polytone.res("pipeline/additive_translucent_moving_block"))
+                    .withColorTargetState(new ColorTargetState(ADDITIVE_TRANSLUCENT_BLEND))
+                    .build());
+
+    public static final RenderType ADDITIVE_TRANSLUCENT_MOVING_BLOCK_RENDERTYPE = RenderType.create(Polytone.MOD_ID + ":additive_translucent_moving_block",
+            RenderSetup.builder(ADDITIVE_TRANSLUCENT_BLOCK_PIPELINE)
+                    .useLightmap()
+                    .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS,
+                            () -> RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true))
+                    .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
+                    .sortOnUpload()
+                    .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE)
+                    .createRenderSetup());
 
 
     public static final RenderPipeline SKY_DEPTH_WRITE_PIPELINE = register(
