@@ -18,6 +18,9 @@
   "entrypoints": {
     "client": [
       "net.mehvahdjukaar.polytone.platform.PolytoneFabric"
+    ],
+    "packed_packs": [
+      "net.mehvahdjukaar.polytone.compat.PackedPacksCompat"
     ]
   },
   "mixins": [

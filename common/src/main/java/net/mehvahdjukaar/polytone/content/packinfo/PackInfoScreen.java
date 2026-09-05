@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.content.packinfo;
 
+import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -7,6 +9,7 @@ import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.AbstractTextAreaWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
@@ -36,14 +39,16 @@ public class PackInfoScreen extends Screen {
     private static final int SCROLL_RATE = 9;
 
     private final Screen lastScreen;
+    private final Runnable packReload;
     private final Component heading;
     private final Component body;
 
     private int headerHeight = MIN_HEADER_HEIGHT;
 
-    public PackInfoScreen(Screen lastScreen, Component packName, PackInfo info) {
+    public PackInfoScreen(Screen lastScreen, Component packName, PackInfo info, Runnable packReload) {
         super(info.title().orElse(packName));
         this.lastScreen = lastScreen;
+        this.packReload = packReload;
         // yellow and gray are only defaults: a color on the author's own component overrides them
         this.heading = withDefaultStyle(ChatFormatting.YELLOW, this.title);
         this.body = withDefaultStyle(ChatFormatting.GRAY, info.content().orElse(CommonComponents.EMPTY));
@@ -75,6 +80,12 @@ public class PackInfoScreen extends Screen {
 
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, b -> this.onClose())
                 .bounds(this.width / 2 - 100, this.height - 32, 200, 20).build());
+
+        if (Polytone.CONFIGS.getButtonPos() != ConfigsManager.ButtonPosition.NONE) {
+            SpriteIconButton config = Polytone.CONFIGS.makeConfigButton(20, this, this.packReload);
+            config.setPosition(this.width / 2 + 104, this.height - 32);
+            this.addRenderableWidget(config);
+        }
     }
 
     private TextBlock makeTextBlock(Component text) {

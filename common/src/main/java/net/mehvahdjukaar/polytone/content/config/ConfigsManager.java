@@ -15,8 +15,10 @@ import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
@@ -41,9 +43,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", "particles", false);
     public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", "particles", false);
     public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", null, true);
-    // When true (default) depth-reading post chains run after the first-person hand so held items
-    // (e.g. a shield) occlude effects like godrays. Turn off to run them in the standard spot,
-    // inside the level FrameGraph before the hand is drawn (the previous behaviour).
     public final OptionHolder<Boolean> postChainsAfterHand = builtinConfig("post_chains_after_hand", null, true);
 
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
@@ -102,7 +101,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         return needsPackReload.getAndSet(false);
     }
 
-    // True if any loaded config was contributed by a pack (i.e. not one of Polytone's own builtins).
     public boolean hasPackConfigs() {
         for (var option : configs.getValues()) {
             if (!option.fileId.getNamespace().equals(Polytone.MOD_ID)) return true;
@@ -117,12 +115,15 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
             if (!hasUnsavedChanges(shown)) return;
 
             saveConfigsToDisk(shown);
-            //reload packs now
             Minecraft.getInstance().reloadResourcePacks();
         });
     }
 
     public Screen createScreenForPack(PackSelectionScreen parent) {
+        return createScreenForPack(parent, parent::reload);
+    }
+
+    public Screen createScreenForPack(Screen parent, Runnable packReload) {
         bubbleManager.onConfigOpened(hasPackConfigs());
         List<OptionHolder<?>> shown = shownOptions();
 
@@ -132,9 +133,18 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
             needsPackReload.set(true);
             saveConfigsToDisk(shown);
             //save values we just set so we can read them again right here
-            parent.reload();
+            packReload.run();
             //we cant just reload packs here as this would cause a double reload.
         });
+    }
+
+    public SpriteIconButton makeConfigButton(int width, Screen parent, Runnable packReload) {
+        return SpriteIconButton.builder(Component.translatable("options.accessibility"),
+                        b -> {
+                            bubbleManager.onConfigButtonClicked();
+                            Minecraft.getInstance().setScreen(createScreenForPack(parent, packReload));
+                        }, true).width(width)
+                .sprite(Polytone.res("paint_brush"), 16, 16).build();
     }
 
     private List<OptionHolder<?>> shownOptions() {

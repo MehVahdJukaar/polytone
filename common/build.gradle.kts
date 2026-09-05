@@ -11,6 +11,8 @@ val exp4j_version: String by extra
 val mvel_version: String by extra
 val codecui_version: String by extra
 val nautilus_studio_version: String by extra
+val packed_packs_neoforge_version: String by extra
+val packed_packs_api_version: String by extra
 
 
 dependencies {
@@ -21,7 +23,8 @@ dependencies {
     implementation ("org.mvel:mvel2:${mvel_version}")
 
     modCompileOnly("maven.modrinth:iris:1.11.2+26.1-neoforge")
-    modCompileOnly("maven.modrinth:packed-packs:Ly1F0hY4") // 2.2.4+26.1 neoforge
+    modCompileOnly("maven.modrinth:packed-packs:${packed_packs_neoforge_version}")
+    compileOnly("io.github.fishstiz.packed_packs.api:packed_packs_api-neoforge:${packed_packs_api_version}")
     compileOnly(files(layout.buildDirectory.file("sodium/sodium-neoforge-mod.jar")).builtBy(tasks.named("extractSodiumNeoforge")))
 
     // modCompileOnly("curse.maven:entity-model-features-844662:7400754")
