@@ -96,7 +96,7 @@ public final class GpuParticleRenderer implements ICustomParticleFactory, AutoCl
 
     @Override
     public boolean forceSpawns() {
-        return false;
+        return type.forceSpawn();
     }
 
     @Override
