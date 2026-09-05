@@ -19,6 +19,9 @@
     "client": [
       "net.mehvahdjukaar.polytone.platform.PolytoneFabric"
     ],
+    "packed_packs": [
+      "net.mehvahdjukaar.polytone.compat.PackedPacksCompat"
+    ],
     "modmenu": [
       "net.mehvahdjukaar.polytone.compat.platform.ModMenuCompat"
     ]

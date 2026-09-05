@@ -6,7 +6,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.gui.ChatBubbleWidget;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.mehvahdjukaar.polytone.content.config.ExtraWidthHorizontalLayout;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -81,14 +80,8 @@ public abstract class PackSelectScreenMixin extends Screen {
 
     @Unique
     private @NonNull SpriteIconButton poly$makeButton(int buttonW) {
-        SpriteIconButton button = SpriteIconButton.builder(Component.translatable("options.accessibility"),
-                        (arg) -> {
-                            Polytone.CONFIGS.bubbleManager.onConfigButtonClicked();
-                            Minecraft.getInstance().setScreen(
-                                    Polytone.CONFIGS.createScreenForPack((PackSelectionScreen) (Screen) this));
-                        },
-                        true).width(buttonW)
-                .sprite(Polytone.res("paint_brush"), 12, 12).build();
+        PackSelectionScreen self = (PackSelectionScreen) (Screen) this;
+        SpriteIconButton button = Polytone.CONFIGS.makeConfigButton(buttonW, self, self::reload);
         this.polytone$configButton = button;
         return button;
     }

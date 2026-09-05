@@ -1,19 +1,20 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfo;
+import net.mehvahdjukaar.polytone.content.packinfo.PackInfoBadge;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfoScreen;
 import net.mehvahdjukaar.polytone.content.packinfo.PackInfos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionModel;
+import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.client.gui.screens.packs.TransferableSelectionList;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -30,11 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<TransferableSelectionList.Entry>{
 
     @Unique
-    private static final Identifier POLYTONE$BADGE = Polytone.res("pack_info");
-    @Unique
-    private static final Identifier POLYTONE$BADGE_HIGHLIGHTED = Polytone.res("pack_info_highlighted");
-    @Unique
-    private static final int POLYTONE$BADGE_SIZE = 8;
+    private static final int POLYTONE$BADGE_SIZE = PackInfoBadge.SIZE;
     @Unique
     private static final int POLYTONE$BADGE_MARGIN = 2;
 
@@ -49,6 +46,11 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
     }
 
     @Unique
+    private boolean polytone$showBadge() {
+        return PackInfoBadge.shouldShow(polytone$info());
+    }
+
+    @Unique
     private int polytone$badgeX() {
         return this.getContentRight() - POLYTONE$BADGE_SIZE - POLYTONE$BADGE_MARGIN;
     }
@@ -60,31 +62,30 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
 
     @Unique
     private boolean polytone$isOverBadge(double mouseX, double mouseY) {
-        if (polytone$info() == null) return false;
+        if (!polytone$showBadge()) return false;
         int x = polytone$badgeX();
         int y = polytone$badgeY();
         return mouseX >= x && mouseX < x + POLYTONE$BADGE_SIZE && mouseY >= y && mouseY < y + POLYTONE$BADGE_SIZE;
     }
 
-    // long pack names would otherwise run straight under the heart. only the title widget is a
-    // StringWidget, the description below is a MultiLineTextWidget, so this only hits the title
     @ModifyArg(method = "renderContent", index = 0, at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/components/StringWidget;setMaxWidth(I)Lnet/minecraft/client/gui/components/StringWidget;"))
     private int polytone$narrowTitleForBadge(int maxWidth) {
-        if (polytone$info() == null) return maxWidth;
+        if (!polytone$showBadge()) return maxWidth;
         return maxWidth - POLYTONE$BADGE_SIZE - POLYTONE$BADGE_MARGIN * 2;
     }
 
     @Inject(method = "renderContent", at = @At("TAIL"))
     private void polytone$renderBadge(GuiGraphics graphics, int mouseX, int mouseY, boolean hovering,
                                       float partialTick, CallbackInfo ci) {
-        if (polytone$info() == null) return;
+        PackInfo info = polytone$info();
+        if (!PackInfoBadge.shouldShow(info)) return;
 
         boolean over = polytone$isOverBadge(mouseX, mouseY);
         if (over) {
-            graphics.setTooltipForNextFrame(Component.translatable("screen.polytone.pack_info.tooltip"), mouseX, mouseY);
+            graphics.setTooltipForNextFrame(PackInfoBadge.tooltip(info), mouseX, mouseY);
         }
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, over ? POLYTONE$BADGE_HIGHLIGHTED : POLYTONE$BADGE,
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, over ? PackInfoBadge.SPRITE_HIGHLIGHTED : PackInfoBadge.SPRITE,
                 polytone$badgeX(), polytone$badgeY(), POLYTONE$BADGE_SIZE, POLYTONE$BADGE_SIZE);
     }
 
@@ -92,11 +93,17 @@ public abstract class PackEntryMixin extends  ObjectSelectionList.Entry<Transfer
     private void polytone$clickBadge(MouseButtonEvent event, boolean doubleClicked, CallbackInfoReturnable<Boolean> cir) {
         if (event.button() != 0 || !polytone$isOverBadge(event.x(), event.y())) return;
         PackInfo info = polytone$info();
-        if (info == null) return;
+        if (info == null) {
+            //dev dummy badge
+            cir.setReturnValue(true);
+            return;
+        }
 
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-        minecraft.setScreen(new PackInfoScreen(minecraft.screen, this.pack.getTitle(), info));
+        Screen parent = minecraft.screen;
+        Runnable reload = parent instanceof PackSelectionScreen p ? p::reload : () -> {};
+        minecraft.setScreen(new PackInfoScreen(parent, this.pack.getTitle(), info, reload));
         cir.setReturnValue(true);
     }
 }

@@ -11,13 +11,13 @@ val exp4j_version: String by extra
 val mvel_version: String by extra
 val codecui_version: String by extra
 val nautilus_studio_version: String by extra
+val packed_packs_fabric_version: String by extra
+val packed_packs_api_version: String by extra
 
 dependencies {
-    // Declarative codec schema API - remapped mod dep for dev + bundled (JiJ) into the shipped jar.
     modImplementation("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
     include("net.mehvahdjukaar:codecui-fabric:${codecui_version}")
 
-    // The editor UI is a SEPARATE mod - mod dep for dev, NOT bundled (users install it themselves).
     modImplementation("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
@@ -36,6 +36,9 @@ dependencies {
     modCompileOnly("curse.maven:irisshaders-455508:6369436")
     modCompileOnly("curse.maven:serene-seasons-291874:6182595")
     modCompileOnly("curse.maven:modmenu-308702:5810603")
+
+    modCompileOnly("maven.modrinth:packed-packs:${packed_packs_fabric_version}")
+    modCompileOnly("io.github.fishstiz.packed_packs.api:packed_packs_api-fabric:${packed_packs_api_version}")
 
     modCompileOnly("curse.maven:entity-model-features-844662:7400754")
     modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")

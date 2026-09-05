@@ -11,6 +11,7 @@ val exp4j_version: String by extra
 val mvel_version: String by extra
 val codecui_version: String by extra
 val nautilus_studio_version: String by extra
+val packed_packs_api_version: String by extra
 
 
 dependencies {
@@ -31,6 +32,8 @@ dependencies {
     // so it must not be run through loom remapping. The curse.maven Sodium (intermediary MC refs) is gone
     // on purpose - having both on the classpath makes the same class read under two mappings.
     compileOnly(files("mods/net.caffeinemc.sodium-neoforge-0.8.13+mc1.21.11-mod.jar"))
+
+    compileOnly("io.github.fishstiz.packed_packs.api:packed_packs_api-neoforge:${packed_packs_api_version}")
 
     modCompileOnly("curse.maven:entity-model-features-844662:7400754")
     modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")

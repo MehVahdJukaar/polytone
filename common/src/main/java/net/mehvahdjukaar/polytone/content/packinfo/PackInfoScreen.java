@@ -1,11 +1,14 @@
 package net.mehvahdjukaar.polytone.content.packinfo;
 
+import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractTextAreaWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
@@ -20,9 +23,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 
-// A pack's info page: a heading and a body, both straight from its pack.mcmeta. Both are MultiLineTextWidgets
-// with a component click handler, which is what buys us wrapping, clickable links, hover tooltips and the
-// pointer cursor without any layout or hit-testing here.
 public class PackInfoScreen extends Screen {
 
     private static final Identifier INWORLD_MENU_BACKGROUND =
@@ -34,14 +34,16 @@ public class PackInfoScreen extends Screen {
     private static final int FOOTER_HEIGHT = 44;
 
     private final Screen lastScreen;
+    private final Runnable packReload;
     private final Component heading;
     private final Component body;
 
     private int headerHeight = MIN_HEADER_HEIGHT;
 
-    public PackInfoScreen(Screen lastScreen, Component packName, PackInfo info) {
+    public PackInfoScreen(Screen lastScreen, Component packName, PackInfo info, Runnable packReload) {
         super(info.title().orElse(packName));
         this.lastScreen = lastScreen;
+        this.packReload = packReload;
         // yellow and gray are only defaults: a color on the author's own component overrides them
         this.heading = withDefaultStyle(ChatFormatting.YELLOW, this.title);
         this.body = withDefaultStyle(ChatFormatting.GRAY, info.content().orElse(CommonComponents.EMPTY));
@@ -64,7 +66,6 @@ public class PackInfoScreen extends Screen {
         this.addRenderableWidget(titleBlock);
 
         TextBlock bodyBlock = makeTextBlock(this.body);
-        // panel only grows to what the text needs, so short content stays centered and doesn't scroll
         int available = panelBottom() - this.headerHeight;
         int panelWidth = textWidth() + 4;
         int panelHeight = Math.min(available, bodyBlock.getHeight() + TITLE_MARGIN * 2);
@@ -73,6 +74,12 @@ public class PackInfoScreen extends Screen {
 
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, b -> this.onClose())
                 .bounds(this.width / 2 - 100, this.height - 32, 200, 20).build());
+
+        if (Polytone.CONFIGS.getButtonPos() != ConfigsManager.ButtonPosition.NONE) {
+            SpriteIconButton config = Polytone.CONFIGS.makeConfigButton(20, this, this.packReload);
+            config.setPosition(this.width / 2 + 104, this.height - 32);
+            this.addRenderableWidget(config);
+        }
     }
 
     private TextBlock makeTextBlock(Component text) {
@@ -93,7 +100,6 @@ public class PackInfoScreen extends Screen {
         return this.height - FOOTER_HEIGHT;
     }
 
-    // drawn here rather than in render() so the text widgets end up on top of the panel
     @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.renderBackground(graphics, mouseX, mouseY, partialTick);
@@ -115,8 +121,6 @@ public class PackInfoScreen extends Screen {
         this.minecraft.setScreen(this.lastScreen);
     }
 
-    // Scrolls the body text. Its widget isn't a screen child, so mouse coords get the scroll offset added
-    // before they reach it, which also lands vanilla's link hover effect back under the real cursor.
     private static class BodyPanel extends AbstractTextAreaWidget {
 
         private final TextBlock content;
@@ -163,9 +167,6 @@ public class PackInfoScreen extends Screen {
         }
     }
 
-    // Text widgets ship inactive, which makes mouseClicked bail before it ever reaches the component click
-    // handler. Activating one also makes it click back at every stray click on plain text, so the sound moves
-    // to the handler, where we know a link was actually hit.
     private static class TextBlock extends MultiLineTextWidget {
 
         TextBlock(Component message, Font font) {

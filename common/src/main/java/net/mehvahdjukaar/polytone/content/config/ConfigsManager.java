@@ -15,8 +15,10 @@ import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
@@ -118,6 +120,10 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     }
 
     public Screen createScreenForPack(PackSelectionScreen parent) {
+        return createScreenForPack(parent, parent::reload);
+    }
+
+    public Screen createScreenForPack(Screen parent, Runnable packReload) {
         bubbleManager.onConfigOpened(hasPackConfigs());
         List<OptionHolder<?>> shown = shownOptions();
 
@@ -127,9 +133,18 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
             needsPackReload.set(true);
             saveConfigsToDisk(shown);
             //save values we just set so we can read them again right here
-            parent.reload();
+            packReload.run();
             //we cant just reload packs here as this would cause a double reload.
         });
+    }
+
+    public SpriteIconButton makeConfigButton(int width, Screen parent, Runnable packReload) {
+        return SpriteIconButton.builder(Component.translatable("options.accessibility"),
+                        b -> {
+                            bubbleManager.onConfigButtonClicked();
+                            Minecraft.getInstance().setScreen(createScreenForPack(parent, packReload));
+                        }, true).width(width)
+                .sprite(Polytone.res("paint_brush"), 12, 12).build();
     }
 
     private List<OptionHolder<?>> shownOptions() {
@@ -208,7 +223,8 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public void loadCurrentPackConfigs(PackResources packResources, PackType packType) {
         //gets called every time the pack repository list is updated
         if (packType != PackType.CLIENT_RESOURCES) return;
-        if (packResources.location().source() != PackSource.DEFAULT) return;
+        PackSource source = packResources.location().source();
+        if (source == PackSource.BUILT_IN || source == PackSource.FEATURE) return;
         //this is overall still quite fast. we shouldnt't have overhead at all, not more than loading these normally
         MultiPackResourceManager resourceManager = new MultiPackResourceManager(packType, List.of(packResources));
 
@@ -297,9 +313,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     }
 
     public enum ButtonPosition {
-        NONE,
-        LEFT,
-        RIGHT
+        NONE, LEFT, RIGHT
     }
 
     public ButtonPosition getButtonPos() {
