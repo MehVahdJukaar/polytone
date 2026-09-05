@@ -1,4 +1,9 @@
-package net.mehvahdjukaar.polytone.content.slotify;
+package net.mehvahdjukaar.polytone.compat.nautilus;
+import net.mehvahdjukaar.polytone.content.slotify.GuiModifier;
+import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
+import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
+import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
+import net.mehvahdjukaar.polytone.content.slotify.SlotModifier;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
@@ -16,7 +21,7 @@ import java.util.function.Consumer;
 // One in-memory GuiModifier applied to a single open screen with no resource reload. It always wins for
 // the screen it targets and its own condition is ignored while previewing. Touches live screen/menu
 // state, so it runs on the render thread; matching is by object identity, so gameplay is unaffected.
-public final class GuiModifierPreview {
+public final class NautilusGuiModifierOverlay {
 
     @Nullable
     private static GuiModifier override;

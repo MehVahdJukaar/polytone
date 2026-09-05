@@ -1,8 +1,9 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
+import net.mehvahdjukaar.polytone.compat.nautilus.NautilusGuiModifierOverlay;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.StrUtils;
-import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview.PickedElement;
+import net.mehvahdjukaar.polytone.compat.nautilus.NautilusGuiModifierOverlay.PickedElement;
 import net.mehvahdjukaar.polytone.mixins.accessor.AbstractContainerScreenAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -80,7 +81,7 @@ public final class GuiModifierOverlay {
     }
 
     private static void drawBanner(GuiGraphics graphics, Screen screen, boolean targeted, int modSlots, int modWidgets) {
-        GuiModifierPreview.DetectedTarget t = GuiModifierPreview.targetOf(screen);
+        NautilusGuiModifierOverlay.DetectedTarget t = NautilusGuiModifierOverlay.targetOf(screen);
         String target = t == null ? "?" : t.type().getSerializedName() + " = " + t.target();
 
         String head = (targeted ? "● Targeted" : "○ Not targeted") + "   ·   " + target;
@@ -89,7 +90,7 @@ public final class GuiModifierOverlay {
             String touch = modSlots == 0 && modWidgets == 0
                     ? "no elements matched"
                     : "modifying " + StrUtils.plural(modSlots, "slot") + (modWidgets > 0 ? ", " + StrUtils.plural(modWidgets, "widget") : "");
-            detail = touch + (GuiModifierPreview.isPreviewing(screen) ? "   (live preview)" : "");
+            detail = touch + (NautilusGuiModifierOverlay.isPreviewing(screen) ? "   (live preview)" : "");
         } else {
             detail = "no modifier matches this screen yet";
         }
@@ -152,7 +153,7 @@ public final class GuiModifierOverlay {
     public static void renderScreenExtras(GuiGraphics graphics, SlotifyScreen ss,
                                           int screenWidth, int screenHeight,
                                           int mouseX, int mouseY, float partialTick) {
-        if (GuiModifierPreview.isPickingEnabled() && ss instanceof Screen screen) {
+        if (NautilusGuiModifierOverlay.isPickingEnabled() && ss instanceof Screen screen) {
             render(graphics, screen, mouseX, mouseY);
         }
         // 1.21.11 GUI transform stack is the 2D Matrix3x2fStack (no Z), unlike 1.21.1's PoseStack.

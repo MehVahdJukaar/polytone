@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
+import net.mehvahdjukaar.polytone.compat.nautilus.NautilusGuiModifierOverlay;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.codecui.SchemaCodec;
@@ -161,8 +162,8 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
     @Nullable
     public ScreenModifier getGuiModifier(Screen screen) {
         // Live editor preview wins for the screen it targets, applied unconditionally.
-        if (GuiModifierPreview.isPreviewing(screen)) {
-            GuiModifier o = GuiModifierPreview.override();
+        if (NautilusGuiModifierOverlay.isPreviewing(screen)) {
+            GuiModifier o = NautilusGuiModifierOverlay.override();
             if (o != null) return ScreenModifier.fromGuiMod(o);
         }
         ScreenModifier m = resolve(byClass.get(screen.getClass()));
@@ -186,7 +187,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
 
     //TODO: add back?? why is this commented out
     public Collection<SlotModifier> getSlotModifiers(AbstractContainerScreen<?> screen, Slot slot) {
-        if (GuiModifierPreview.isPreviewing(screen)) return previewSlotModifiers(slot);
+        if (NautilusGuiModifierOverlay.isPreviewing(screen)) return previewSlotModifiers(slot);
         Set<SlotModifier> modifies;
         var c = screen.getTitle();
         modifies = slotsByTitle.get(c.getString());
@@ -214,7 +215,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
     }
 
     public Collection<SlotModifier> getSlotModifiers(AbstractContainerMenu menu, Slot slot) {
-        if (GuiModifierPreview.isPreviewing(menu)) return previewSlotModifiers(slot);
+        if (NautilusGuiModifierOverlay.isPreviewing(menu)) return previewSlotModifiers(slot);
         var modifiers = slotsByClass.get(menu.getClass());
         if (modifiers == null) {
             MenuType<?> type;
@@ -248,7 +249,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
 
     // Preview override slot modifiers matching this slot, or empty when no override is active
     private static Collection<SlotModifier> previewSlotModifiers(Slot slot) {
-        GuiModifier o = GuiModifierPreview.override();
+        GuiModifier o = NautilusGuiModifierOverlay.override();
         if (o == null) return Set.of();
         return o.slotModifiers().stream().filter(m -> m.matches(slot)).toList();
     }

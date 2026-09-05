@@ -1,8 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierOverlay;
-import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview;
-import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview.PickedElement;
+import net.mehvahdjukaar.polytone.compat.nautilus.NautilusGuiModifierOverlay;
+import net.mehvahdjukaar.polytone.compat.nautilus.NautilusGuiModifierOverlay.PickedElement;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,11 +17,11 @@ public abstract class ContainerScreenPickMixin {
     // swallowed so it never moves items. Only active when picking is enabled, so normal play is untouched.
     @Inject(method = "mouseClicked(Lnet/minecraft/client/input/MouseButtonEvent;Z)Z", at = @At("HEAD"), cancellable = true)
     private void polytone$pickSlot(MouseButtonEvent event, boolean isDoubleClick, CallbackInfoReturnable<Boolean> cir) {
-        if (!GuiModifierPreview.isPickingEnabled()) return;
+        if (!NautilusGuiModifierOverlay.isPickingEnabled()) return;
         AbstractContainerScreen<?> cs = (AbstractContainerScreen<?>) (Object) this;
         PickedElement picked = GuiModifierOverlay.pickAt(cs, event.x(), event.y());
         if (picked != null) {
-            GuiModifierPreview.onPick(picked);
+            NautilusGuiModifierOverlay.onPick(picked);
             cir.setReturnValue(true);
         }
     }

@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.tabs;
 
+import net.mehvahdjukaar.polytone.compat.nautilus.NautilusCreativeTabOverlay;
 import net.mehvahdjukaar.polytone.mixins.accessor.AbstractContainerScreenAccessor;
 import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.minecraft.client.Minecraft;
@@ -37,9 +38,9 @@ public final class CreativeTabOverlay {
     private static final int MUTED = 0xFF_B0B0B0;
 
     public static void render(GuiGraphics graphics, AbstractContainerScreen<?> screen, int mouseX, int mouseY) {
-        CreativeTabModifier mod = CreativeTabPreview.edited();
-        Identifier tabId = CreativeTabPreview.openTab();
-        boolean targeted = CreativeTabPreview.targets(tabId);
+        CreativeTabModifier mod = NautilusCreativeTabOverlay.edited();
+        Identifier tabId = NautilusCreativeTabOverlay.openTab();
+        boolean targeted = NautilusCreativeTabOverlay.targets(tabId);
 
         List<ItemPredicate> removals = mod == null ? List.of() : mod.removals();
         List<AddedSet> additions = mod == null ? List.of() : addedSets(mod);
@@ -57,11 +58,11 @@ public final class CreativeTabOverlay {
             int sx = leftPos + slot.x;
             int sy = topPos + slot.y;
 
-            if (targeted && CreativeTabPreview.matchesRemoval(removals, stack)) {
+            if (targeted && NautilusCreativeTabOverlay.matchesRemoval(removals, stack)) {
                 box(graphics, sx, sy, REMOVED_FILL, REMOVED_OUTLINE);
             } else if (targeted && isAdded(additions, stack)) {
                 box(graphics, sx, sy, ADDED_FILL, ADDED_OUTLINE);
-            } else if (CreativeTabPreview.isPending(stack.getItem())) {
+            } else if (NautilusCreativeTabOverlay.isPending(stack.getItem())) {
                 box(graphics, sx, sy, 0, PENDING_OUTLINE);
             }
 
@@ -123,7 +124,7 @@ public final class CreativeTabOverlay {
 
     private static void drawBanner(GuiGraphics graphics, @Nullable Identifier tabId, boolean targeted) {
         String head = (targeted ? "● Targeted" : "○ Not targeted") + "   ·   " + (tabId == null ? "?" : tabId);
-        int selected = CreativeTabPreview.pendingCount();
+        int selected = NautilusCreativeTabOverlay.pendingCount();
         String detail;
         if (!targeted) {
             detail = "this modifier doesn't target the open tab";

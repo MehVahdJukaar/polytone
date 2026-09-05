@@ -1,4 +1,8 @@
-package net.mehvahdjukaar.polytone.content.tabs;
+package net.mehvahdjukaar.polytone.compat.nautilus;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabsModifiersManager;
+import net.mehvahdjukaar.polytone.content.tabs.ItemAddition;
+import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
@@ -26,9 +30,9 @@ import java.util.stream.Collectors;
 // Preview installs the edited modifier as a ModifierOverride, so it stands in for the saved file with no
 // reload: attributes land at once, item contents on the next tab rebuild. Picking turns the creative
 // screen into an item picker.
-public final class CreativeTabPreview implements CreativeTabsModifiersManager.ModifierOverride {
+public final class NautilusCreativeTabOverlay implements CreativeTabsModifiersManager.ModifierOverride {
 
-    private static final CreativeTabPreview INSTANCE = new CreativeTabPreview();
+    private static final NautilusCreativeTabOverlay INSTANCE = new NautilusCreativeTabOverlay();
 
     private static boolean pickingEnabled = false;
     @Nullable
@@ -49,7 +53,7 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
     private Set<ResourceKey<CreativeModeTab>> previewedTargets = Set.of();
     private final Map<ResourceKey<CreativeModeTab>, CreativeTabModifier> restore = new HashMap<>();
 
-    private CreativeTabPreview() {
+    private NautilusCreativeTabOverlay() {
     }
 
     @Override
@@ -107,11 +111,11 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         pending.addAll(ids);
     }
 
-    static int pendingCount() {
+    public static int pendingCount() {
         return pending.size();
     }
 
-    static boolean isPending(Item item) {
+    public static boolean isPending(Item item) {
         return !pending.isEmpty() && pending.contains(BuiltInRegistries.ITEM.getKey(item));
     }
 
@@ -124,11 +128,11 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
     }
 
     @Nullable
-    static CreativeTabModifier edited() {
+    public static CreativeTabModifier edited() {
         return edited;
     }
 
-    static boolean targets(@Nullable Identifier tabId) {
+    public static boolean targets(@Nullable Identifier tabId) {
         return tabId != null && editedTargets.contains(tabId);
     }
 
@@ -153,7 +157,7 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         return count;
     }
 
-    static boolean matchesRemoval(List<ItemPredicate> removals, ItemStack stack) {
+    public static boolean matchesRemoval(List<ItemPredicate> removals, ItemStack stack) {
         for (ItemPredicate p : removals) {
             if (p.test(stack)) return true;
         }

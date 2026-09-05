@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabOverlay;
-import net.mehvahdjukaar.polytone.content.tabs.CreativeTabPreview;
+import net.mehvahdjukaar.polytone.compat.nautilus.NautilusCreativeTabOverlay;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -19,17 +19,17 @@ public abstract class CreativeScreenPickMixin {
 
     @Inject(method = "render", at = @At("TAIL"))
     private void polytone$renderPickOverlay(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
-        if (CreativeTabPreview.isPickingEnabled()) {
+        if (NautilusCreativeTabOverlay.isPickingEnabled()) {
             CreativeTabOverlay.render(graphics, self(), mouseX, mouseY);
         }
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void polytone$pickItem(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
-        if (!CreativeTabPreview.isPickingEnabled()) return;
+        if (!NautilusCreativeTabOverlay.isPickingEnabled()) return;
         ItemStack picked = CreativeTabOverlay.pickAt(self(), event.x(), event.y());
         if (picked != null) {
-            CreativeTabPreview.onPick(picked.copy());
+            NautilusCreativeTabOverlay.onPick(picked.copy());
             cir.setReturnValue(true);
         }
     }
