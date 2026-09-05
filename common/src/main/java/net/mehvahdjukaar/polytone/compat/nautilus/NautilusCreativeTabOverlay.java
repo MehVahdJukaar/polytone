@@ -1,4 +1,8 @@
 package net.mehvahdjukaar.polytone.compat.nautilus;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabPreview;
+import net.mehvahdjukaar.polytone.content.tabs.ItemAddition;
+import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 
 import net.mehvahdjukaar.polytone.mixins.accessor.AbstractContainerScreenAccessor;
 import net.mehvahdjukaar.polytone.common.StrUtils;

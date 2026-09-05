@@ -1,4 +1,9 @@
 package net.mehvahdjukaar.polytone.compat.nautilus;
+import net.mehvahdjukaar.polytone.content.slotify.GuiModifier;
+import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview;
+import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
+import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
+import net.mehvahdjukaar.polytone.content.slotify.WidgetModifier;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.StrUtils;

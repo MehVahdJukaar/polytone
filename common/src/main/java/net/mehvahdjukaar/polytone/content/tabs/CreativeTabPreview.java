@@ -104,11 +104,11 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         pending.addAll(ids);
     }
 
-    static int pendingCount() {
+    public static int pendingCount() {
         return pending.size();
     }
 
-    static boolean isPending(Item item) {
+    public static boolean isPending(Item item) {
         return !pending.isEmpty() && pending.contains(BuiltInRegistries.ITEM.getKey(item));
     }
 
@@ -121,11 +121,11 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
     }
 
     @Nullable
-    static CreativeTabModifier edited() {
+    public static CreativeTabModifier edited() {
         return edited;
     }
 
-    static boolean targets(@Nullable Identifier tabId) {
+    public static boolean targets(@Nullable Identifier tabId) {
         return tabId != null && editedTargets.contains(tabId);
     }
 
@@ -150,7 +150,7 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
         return count;
     }
 
-    static boolean matchesRemoval(List<ItemPredicate> removals, ItemStack stack) {
+    public static boolean matchesRemoval(List<ItemPredicate> removals, ItemStack stack) {
         for (ItemPredicate p : removals) {
             if (p.test(stack)) return true;
         }

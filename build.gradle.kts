@@ -27,6 +27,19 @@ subprojects {
         compileOnly("net.mehvahdjukaar:candlelight:1.2.1")
     }
 
+    //sodium shenanigans
+    val sodium_neoforge_version: String by rootProject.extra
+    val sodiumDist = configurations.create("sodiumDist") { isTransitive = false }
+    dependencies {
+        add("sodiumDist", "maven.modrinth:sodium:$sodium_neoforge_version")
+    }
+    tasks.register<Copy>("extractSodiumNeoforge") {
+        from({ zipTree(sodiumDist.singleFile).matching { include("META-INF/jarjar/*-mod.jar") } })
+        into(layout.buildDirectory.dir("sodium"))
+        eachFile { path = "sodium-neoforge-mod.jar" }
+        includeEmptyDirs = false
+    }
+
     repositories {
         nexus()
     }

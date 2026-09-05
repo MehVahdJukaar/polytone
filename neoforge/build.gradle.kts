@@ -13,11 +13,9 @@ val codecui_version: String by extra
 val nautilus_studio_version: String by extra
 
 dependencies {
-    // Declarative codec schema API - runtime dep + bundled (JiJ) into the shipped jar.
     implementation("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
     jarJar("net.mehvahdjukaar:codecui-neoforge:${codecui_version}")
 
-    // The editor UI is a SEPARATE mod - runtime/compile dep, NOT jarJar'd (not bundled).
     implementation("net.mehvahdjukaar:nautilus_studio-neoforge:${nautilus_studio_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
@@ -35,13 +33,13 @@ dependencies {
     // modCompileOnly("curse.maven:farmers-delight-398521:5772720")
     //
 
-    // Sodium (NeoForge distribution) as a local mojmap jar. Must be the SAME jar common compiles
-    // against: common's sources are compiled into this module too, and its Sodium shadow code uses
-    // 0.9.1 signatures (drawChunkLayer with ChunkSectionLayerGroup/GpuSampler/GlTexelBuffer).
-    compileOnly(files(rootProject.file("common/mods/net.caffeinemc.sodium-neoforge-0.9.1+mc26.1.2-mod.jar")))
+    // must be the SAME sodium jar common compiles against: common's sources land in this module too
+    compileOnly(files(layout.buildDirectory.file("sodium/sodium-neoforge-mod.jar")).builtBy(tasks.named("extractSodiumNeoforge")))
     modCompileOnly("curse.maven:entity-model-features-844662:7400754")
     modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")
     modCompileOnly("curse.maven:serene-seasons-291874:6182596")
     modCompileOnly("maven.modrinth:iris:1.11.2+26.1-neoforge")
+    // Packed Packs replaces the whole pack selection screen - version ids since the number is shared across loaders
+    modImplementation("maven.modrinth:packed-packs:Ly1F0hY4") // 2.2.4+26.1 neoforge
 }
 
