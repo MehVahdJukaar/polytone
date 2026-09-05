@@ -127,8 +127,6 @@ public final class NautilusGuiModifierOverlay {
                 + w.getWidth() + "x" + w.getHeight();
     }
 
-    // shared hit-test, also used by the click handler
-
     @Nullable
     public static PickedElement pickAt(AbstractContainerScreen<?> screen, double mouseX, double mouseY) {
         int leftPos = ((AbstractContainerScreenAccessor) screen).polytone$getLeftPos();
@@ -145,17 +143,12 @@ public final class NautilusGuiModifierOverlay {
         return null;
     }
 
-    // shared screen-render pass (overlay + centered sprites), called by both platforms
-
-    // shared by both platform screen-render hooks, only the event wiring differs. renderExtraSprites
-    // no-ops when the screen has no modifier, so this is safe to call every frame
     public static void renderScreenExtras(GuiGraphicsExtractor graphics, SlotifyScreen ss,
                                           int screenWidth, int screenHeight,
                                           int mouseX, int mouseY, float partialTick) {
         if (GuiModifierPreview.isPickingEnabled() && ss instanceof Screen screen) {
             render(graphics, screen, mouseX, mouseY);
         }
-        // 1.21.11 GUI transform stack is the 2D Matrix3x2fStack (no Z), unlike 1.21.1's PoseStack.
         var pose = graphics.pose();
         pose.pushMatrix();
         pose.identity();

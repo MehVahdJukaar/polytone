@@ -52,9 +52,6 @@ public class PolytoneFabric implements ClientModInitializer {
         LevelRenderEvents.BEFORE_GIZMOS.register(
                 context -> ParticleHitboxDebugRenderer.emitGizmos()
         );
-        // Register only, like vanilla's own gizmo entries (entity_hitboxes, chunk_borders, ...): no
-        // profile inclusion, so it defaults to NEVER and the user opts in from the F3 debug config
-        // screen. Adding it to a profile as IN_OVERLAY would draw the hitboxes for everyone on F3.
         DebugScreenEntries.register(ParticleHitboxDebugRenderer.ID, new DebugEntryNoop());
 
         LevelRenderEvents.START_MAIN.register((context) ->
@@ -77,8 +74,6 @@ public class PolytoneFabric implements ClientModInitializer {
 
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {
-                // Register unconditionally: renderScreenExtras no-ops with no modifier, and the editor's
-                // live preview / picker overlay may target a screen that had none at init time.
                 ScreenEvents.afterExtract(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) ->
                         NautilusGuiModifierOverlay.renderScreenExtras(graphics, ss, scaledWidth, scaledHeight, mouseX, mouseY, tickDelta));
             }

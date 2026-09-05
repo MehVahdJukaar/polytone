@@ -13,6 +13,7 @@ mod {
     additional.add("mod_homepage")
     additional.add("mod_authors")
     additional.add("mod_github")
+    additional.add("nautilus_studio_version")
 }
 
 
