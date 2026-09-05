@@ -80,8 +80,6 @@ public class OptionHolder<T> {
 
         MutableComponent tooltip = Component.translatable(id.toLanguageKey("config", "tooltip"));
 
-        // Entries with a preview image or impact line get their full tooltip rendered by
-        // ConfigScreen; suppress the built-in text tooltip for those so the two don't stack.
         boolean customRendered = !config.getTooltipImages().isEmpty()
                 || config.getPerformanceImpact().isPresent();
         OptionInstance.TooltipSupplier<T> tooltipSupplier = customRendered
