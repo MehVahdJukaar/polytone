@@ -1,4 +1,4 @@
-package net.mehvahdjukaar.polytone.content.slotify;
+package net.mehvahdjukaar.polytone.compat.nautilus;
 
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.StrUtils;
@@ -18,7 +18,7 @@ import java.util.List;
 
 // Editor-only inspector drawn over a live screen while picking is on: whether a modifier targets this
 // screen, and which slots/widgets it touches. Never mutates anything.
-public final class GuiModifierOverlay {
+public final class NautilusGuiModifierOverlay {
 
     private static final int SLOT = 16;
 

@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
-import net.mehvahdjukaar.polytone.content.slotify.GuiModifierOverlay;
+import net.mehvahdjukaar.polytone.compat.nautilus.NautilusGuiModifierOverlay;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -155,7 +155,7 @@ public class PolytoneForge {
         // picker overlay may target a screen that had none at init time.
         GuiGraphicsExtractor graphics = event.getGuiGraphics();
         graphics.nextStratum();
-        GuiModifierOverlay.renderScreenExtras(graphics, ss, screen.width, screen.height,
+        NautilusGuiModifierOverlay.renderScreenExtras(graphics, ss, screen.width, screen.height,
                 event.getMouseX(), event.getMouseY(), event.getPartialTick());
     }
 
