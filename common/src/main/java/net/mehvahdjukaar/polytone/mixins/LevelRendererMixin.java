@@ -61,8 +61,8 @@ public class LevelRendererMixin {
         Polytone.SHADOWS.renderer().renderShadowPassIfNeeded(gpuBufferSlice, camera, modelView, cullingProjection);
     }
 
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addParticlesPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V",
-            shift = At.Shift.AFTER))
+    //watch out for neo differences here
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getCloudsType()Lnet/minecraft/client/CloudStatus;"))
     public void poly$addGpuParticlesPass(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker,
                                          boolean bl, Camera camera, Matrix4f modelView, Matrix4f project,
                                          Matrix4f cullingProjection, GpuBufferSlice shaderFog, Vector4f vector4f,
