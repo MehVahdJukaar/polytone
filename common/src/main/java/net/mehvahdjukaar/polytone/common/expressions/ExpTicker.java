@@ -40,12 +40,8 @@ public class ExpTicker {
         }
     }
 
-    // --- per-tick player stats cache ---
-    // Like the other values here: refreshed once per tick and read as plain fields. Also
-    // re-refreshed by PolytoneAsyncParticles right before it dispatches its parallel batch - // onTick runs at tick START (pre entity movement) and a stale position would make
-    // player-following particles trail a fast player by a whole tick. Workers only ever read
-    // this cache, never the live entity; the volatile reference publishes it to them.
-    // Between ticks the player doesn't move, so cached reads match live ones.
+    //onTick runs at tick start, before entities move, so the async particle batch re-refreshes this
+    //right before dispatching or fast players get trailed by a whole tick. volatile publishes it to the workers
     private static volatile @Nullable PlayerSnapshot playerSnapshot = null;
 
     public record PlayerSnapshot(double x, double y, double z,

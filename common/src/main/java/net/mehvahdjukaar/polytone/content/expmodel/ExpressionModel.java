@@ -19,11 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-// Loader-agnostic core of the polytone:expression blockstate model. Each loader wraps a Selector in its own
-// baked model type (neoforge DynamicBlockStateModel, fabric FabricBlockStateModel).
-// The first case whose when expression is truthy wins, else the fallback. Each model is a vanilla
-// BlockStateModel.Unbaked, so it can itself be a weighted list: context routing outside, vanilla per-position
-// variety inside. An optional selector expression is evaluated once per position and bound to v.
+//each loader wraps a Selector in its own baked model type. cases are vanilla Unbaked so they can
+//themselves be weighted lists: context routing outside, vanilla variety inside
 public final class ExpressionModel {
 
     public static final Identifier ID = Polytone.res("expression");

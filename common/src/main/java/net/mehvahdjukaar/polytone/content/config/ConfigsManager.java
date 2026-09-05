@@ -15,8 +15,10 @@ import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.OverlayMetadataSection;
@@ -48,15 +50,11 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public final OptionHolder<Boolean> autoParticleRateLimit = builtinConfig("auto_particle_rate_limit", "particles", false);
     public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", "particles", false);
     public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", null, true);
-    // When true (default) depth-reading post chains run after the first-person hand so held items
-    // (e.g. a shield) occlude effects like godrays. Turn off to run them in the standard spot,
-    // inside the level FrameGraph before the hand is drawn (the previous behaviour).
     public final OptionHolder<Boolean> postChainsAfterHand = builtinConfig("post_chains_after_hand", null, true);
     public final OptionHolder<Boolean> skyDepthWrite = builtinConfig("sky_depth_write", null, false);
 
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
 
-    // a null section lists the entry ungrouped, without a header
     private static @NonNull OptionHolder<Boolean> builtinConfig(String id, @Nullable String section, boolean def) {
         return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), Map.of(), 1,
                 Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def), Polytone.res(id));
@@ -85,7 +83,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
                 .setPrettyPrinting()
                 .create();
 
-        // Only time we read disk automatically
         loadConfigFromDisk();
         registerBuiltins(configs);
     }
@@ -103,8 +100,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
                                   MapRegistry<OptionHolder<?>> reg,
                                   JsonObject dataJson) {
         OptionHolder<?> instance = OptionHolder.create(config, id);
-
-        // Initialize from last saved state (not disk every time!)
         instance.loadFromJson(dataJson);
 
         reg.unregister(id);
@@ -115,7 +110,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         return needsPackReload.getAndSet(false);
     }
 
-    // True if any loaded config was contributed by a pack (i.e. not one of Polytone's own builtins).
     public boolean hasPackConfigs() {
         for (var option : configs.getValues()) {
             if (!option.fileId.getNamespace().equals(Polytone.MOD_ID)) return true;
@@ -130,12 +124,15 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
             if (!hasUnsavedChanges(shown)) return;
 
             saveConfigsToDisk(shown);
-            //reload packs now
             Minecraft.getInstance().reloadResourcePacks();
         });
     }
 
     public Screen createScreenForPack(PackSelectionScreen parent) {
+        return createScreenForPack(parent, parent::reload);
+    }
+
+    public Screen createScreenForPack(Screen parent, Runnable packReload) {
         bubbleManager.onConfigOpened(hasPackConfigs());
         List<OptionHolder<?>> shown = shownOptions();
 
@@ -145,9 +142,18 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
             needsPackReload.set(true);
             saveConfigsToDisk(shown);
             //save values we just set so we can read them again right here
-            parent.reload();
+            packReload.run();
             //we cant just reload packs here as this would cause a double reload.
         });
+    }
+
+    public SpriteIconButton makeConfigButton(int width, Screen parent, Runnable packReload) {
+        return SpriteIconButton.builder(Component.translatable("options.accessibility"),
+                        b -> {
+                            bubbleManager.onConfigButtonClicked();
+                            Minecraft.getInstance().gui.setScreen(createScreenForPack(parent, packReload));
+                        }, true).width(width)
+                .sprite(Polytone.res("paint_brush"), 16, 16).build();
     }
 
     private List<OptionHolder<?>> shownOptions() {
@@ -163,15 +169,11 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     private void saveConfigsToDisk(Collection<OptionHolder<?>> edited) {
         try {
-            // Start from what's already on disk: entries whose pack isn't currently loaded (disabled,
-            // temporarily removed, or failed to parse) have no holder here, and writing a fresh object
-            // would wipe their saved values for good.
             JsonObject jsonObject = configFileSnapshot.deepCopy();
 
             for (var option : configs.getValues()) {
                 option.saveToJson(jsonObject);
             }
-            // last, so edits made on holders the registry has since replaced win
             for (var option : edited) {
                 option.saveToJson(jsonObject);
             }
@@ -300,13 +302,11 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         registerBuiltins(configs);
 
         Map<Identifier, PolyConfig<?>> parsed = new HashMap<>();
-        //ignoring conditions here purposefully
         Iterable<Map.Entry<Identifier, PolyConfig<?>>> parsedConfigs = parseEnabledJsons(obj, JsonOps.INSTANCE);
         for (var j : parsedConfigs) {
             PolyConfig<?> p = j.getValue();
             parsed.put(j.getKey(), p);
         }
-        //first parse all to prevent recursive configs altering ourselves. Will throw a warn if a condition is used inside a condition json
         for (var entry : parsed.entrySet()) {
             addConfig(entry.getKey(), entry.getValue(), configs, configFileSnapshot);
         }
@@ -314,15 +314,12 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         Polytone.LOGGER.info("Loaded {} Polytone config entries", configs.size());
     }
 
-    // Synthetic entries registered only in dev to exercise namespace grouping, sections, presets, wide rows,
-    // and performance-impact tooltips on the config screen.
     private void registerDevTestConfigs() {
         if (!Polytone.isDevEnv) return;
 
         Map<String, Boolean> boolPresets = Map.of("enabled", true, "disabled", false);
         Map<String, Float> floatPresets = Map.of("low", 0.25f, "high", 0.75f);
 
-        // Second namespace with two sections and a pack-wide preset slider.
         addConfig(Identifier.fromNamespaceAndPath("test_pack_alpha", "dev_alpha_toggle"),
                 new BoolConfig(Optional.empty(), boolPresets, Map.of(), 0,
                         Optional.of("alpha_group_a"), Optional.of(0), Optional.empty(), false, Map.of(), true),
@@ -338,7 +335,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
                         "balanced", List.of("balanced", "fast", "fancy")),
                 configs, configFileSnapshot);
 
-        // Third namespace: sectionless entry plus one named section.
         addConfig(Identifier.fromNamespaceAndPath("test_pack_beta", "dev_sectionless"),
                 new BoolConfig(Optional.empty(), Map.of(), Map.of(), 0,
                         Optional.empty(), Optional.empty(), Optional.of(PolyConfig.PerformanceImpact.LOW),
@@ -350,7 +346,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
                         false, Map.of(), true),
                 configs, configFileSnapshot);
 
-        // Extra polytone-namespace row to show multiple namespaces from the same mod id still group once.
         addConfig(Polytone.res("dev_polytone_extra"),
                 new BoolConfig(Optional.empty(), Map.of(), Map.of(), 99,
                         Optional.of("particles"), Optional.empty(), Optional.empty(), false, Map.of(), false),

@@ -87,11 +87,7 @@ public class BlockProxy extends PositionalProxy {
         return pos.getZ();
     }
 
-    // --- Neighbor navigation ---------------------------------------------------------------------
-    // Each accessor returns a new immutable BlockProxy at the offset position, so the full query API
-    // (block, biome, skyLight, hasFluid, ...) composes on neighbors: e.g. north.up.block .
-    // Offsets are clamped so a chain can never reach further than MAX_NEIGHBOR_DEPTH blocks from the
-    // source block on any axis.
+    //offsets are clamped so a chain like north.up.north cant walk further than MAX_NEIGHBOR_DEPTH on any axis
 
     public BlockProxy relative(double dx, double dy, double dz) {
         int nx = clampToDepth(pos.getX() + (int) dx, origin.getX());

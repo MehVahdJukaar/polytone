@@ -1,4 +1,8 @@
-package net.mehvahdjukaar.polytone.content.tabs;
+package net.mehvahdjukaar.polytone.compat.nautilus;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
+import net.mehvahdjukaar.polytone.content.tabs.CreativeTabPreview;
+import net.mehvahdjukaar.polytone.content.tabs.ItemAddition;
+import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 
 import net.mehvahdjukaar.polytone.mixins.accessor.AbstractContainerScreenAccessor;
 import net.mehvahdjukaar.polytone.common.StrUtils;
@@ -20,7 +24,7 @@ import java.util.Set;
 
 // Editor-only inspector over the creative screen while picking: removals washed red, additions green,
 // already picked amber. Clicking reports the item to the editor instead of grabbing it.
-public final class CreativeTabOverlay {
+public final class NautilusCreativeTabOverlay {
 
     private static final int SLOT = 16;
 

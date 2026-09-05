@@ -97,16 +97,18 @@ public class BlockContextExpression extends PolytoneExpression implements IBlock
 
         if (hasPlayer) {
             var e = Minecraft.getInstance().getCameraEntity();
-            vars.setVariable(PLAYER_X, e.getX());
-            vars.setVariable(PLAYER_Y, e.getY());
-            vars.setVariable(PLAYER_Z, e.getZ());
+            vars.setVariable(PLAYER_X, e == null ? 0 : e.getX());
+            vars.setVariable(PLAYER_Y, e == null ? 0 : e.getY());
+            vars.setVariable(PLAYER_Z, e == null ? 0 : e.getZ());
         }
         if (hasDistance) {
             Entity e = Minecraft.getInstance().getCameraEntity();
-            double x = pos.getX() - e.getX();
-            double y = pos.getY() - e.getY();
-            double z = pos.getZ() - e.getZ();
-            vars.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+            if (e != null) {
+                double x = pos.getX() - e.getX();
+                double y = pos.getY() - e.getY();
+                double z = pos.getZ() - e.getZ();
+                vars.setVariable(DISTANCE_SQUARED, x * x + y * y + z * z);
+            } else vars.setVariable(DISTANCE_SQUARED, 0);
         }
         if (hasPlayerSpeed) {
             vars.setVariable(PLAYER_SPEED_SQUARED, ClientFrameTicker.getPlayerSpeed());

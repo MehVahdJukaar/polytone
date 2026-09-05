@@ -13,6 +13,7 @@ mod {
     additional.add("mod_homepage")
     additional.add("mod_authors")
     additional.add("mod_github")
+    additional.add("nautilus_studio_version")
 }
 
 
@@ -24,6 +25,19 @@ subprojects {
 
     dependencies {
         compileOnly("net.mehvahdjukaar:candlelight:1.2.4")
+    }
+
+    //sodium shenanigans
+    val sodium_neoforge_version: String by rootProject.extra
+    val sodiumDist = configurations.create("sodiumDist") { isTransitive = false }
+    dependencies {
+        add("sodiumDist", "maven.modrinth:sodium:$sodium_neoforge_version")
+    }
+    tasks.register<Copy>("extractSodiumNeoforge") {
+        from({ zipTree(sodiumDist.singleFile).matching { include("META-INF/jarjar/*-mod.jar") } })
+        into(layout.buildDirectory.dir("sodium"))
+        eachFile { path = "sodium-neoforge-mod.jar" }
+        includeEmptyDirs = false
     }
 
     repositories {
@@ -97,5 +111,6 @@ subprojects {
         maven { url = uri("https://maven.firstdarkdev.xyz/snapshots") } // FirstDarkDev (snapshots)
         maven { url = uri("https://raw.githubusercontent.com/Fuzss/modresources/main/maven") } // Fuzss' Mod Resources
         maven { url = uri("https://maven.jamieswhiteshirt.com/libs-release") } // Jamie's Mods
+        maven { url = uri("https://raw.githubusercontent.com/fishstiz/maven/m2") } // Packed Packs (api)
     }
 }

@@ -13,6 +13,8 @@ val codecui_version: String by extra
 val nautilus_studio_version: String by extra
 val fabric_loader_version: String by extra
 val fabric_api_version: String by extra
+val packed_packs_fabric_version: String by extra
+val packed_packs_api_version: String by extra
 
 dependencies {
     // Declarative codec schema API - remapped mod dep for dev + bundled (JiJ) into the shipped jar.
@@ -28,7 +30,6 @@ dependencies {
 
 
 
-    // No 26.1 build yet
     // modCompileOnly ("curse.maven:fabric-seasons-413523:5789846")
 
 
@@ -43,6 +44,9 @@ dependencies {
      //modImplementation ("curse.maven:distant-horizons-508933:6387715")
     // Compile-only: pulling Iris into the dev runtime changes how the whole render path behaves.
     modImplementation("maven.modrinth:iris:1.11.2+26.2-fabric")
+    // replaces the vanilla pack screen
+    modImplementation("maven.modrinth:packed-packs:${packed_packs_fabric_version}")
+    compileOnly("io.github.fishstiz.packed_packs.api:packed_packs_api-fabric:${packed_packs_api_version}")
     // No 26.1 build yet
     // modCompileOnly("curse.maven:serene-seasons-291874:6182595")
     // modmenu 4.0.6 is for 1.18.2 - no 26.1 build available

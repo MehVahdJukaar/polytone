@@ -115,7 +115,6 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
         return DataResult.success(o);
     }
 
-    // FieldRefs rather than plain codec fields, so the codec editor renders configs structurally
     static <T, P extends PolyConfig<T>> SchemaRecord.Group10<P, Optional<String>, Map<String, T>, Map<String, T>,
             Integer, Optional<String>, Optional<Integer>, Optional<PerformanceImpact>, Boolean,
             Map<String, TooltipImage>, T> commonFields(SchemaRecord.Instance<P> i, Codec<T> typeCodec) {

@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.content.slotify.GuiModifierOverlay;
+import net.mehvahdjukaar.polytone.compat.nautilus.NautilusGuiModifierOverlay;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview.PickedElement;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -19,7 +19,7 @@ public abstract class ContainerScreenPickMixin {
     private void polytone$pickSlot(MouseButtonEvent event, boolean isDoubleClick, CallbackInfoReturnable<Boolean> cir) {
         if (!GuiModifierPreview.isPickingEnabled()) return;
         AbstractContainerScreen<?> cs = (AbstractContainerScreen<?>) (Object) this;
-        PickedElement picked = GuiModifierOverlay.pickAt(cs, event.x(), event.y());
+        PickedElement picked = NautilusGuiModifierOverlay.pickAt(cs, event.x(), event.y());
         if (picked != null) {
             GuiModifierPreview.onPick(picked);
             cir.setReturnValue(true);

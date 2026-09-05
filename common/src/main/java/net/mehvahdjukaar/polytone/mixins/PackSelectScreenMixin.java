@@ -6,7 +6,6 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.gui.ChatBubbleWidget;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.mehvahdjukaar.polytone.content.config.ExtraWidthHorizontalLayout;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -25,10 +24,6 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(PackSelectionScreen.class)
 public abstract class PackSelectScreenMixin extends Screen {
-
-    @Shadow
-    @Final
-    private HeaderAndFooterLayout layout;
 
     protected PackSelectScreenMixin(Component component) {
         super(component);
@@ -85,14 +80,8 @@ public abstract class PackSelectScreenMixin extends Screen {
 
     @Unique
     private @NonNull SpriteIconButton poly$makeButton(int buttonW) {
-        SpriteIconButton button = SpriteIconButton.builder(Component.translatable("options.accessibility"),
-                        (arg) -> {
-                            Polytone.CONFIGS.bubbleManager.onConfigButtonClicked();
-                            Minecraft.getInstance().gui.setScreen(
-                                    Polytone.CONFIGS.createScreenForPack((PackSelectionScreen) (Screen) this));
-                        },
-                        true).width(buttonW)
-                .sprite(Polytone.res("paint_brush"), 16, 16).build();
+        PackSelectionScreen self = (PackSelectionScreen) (Screen) this;
+        SpriteIconButton button = Polytone.CONFIGS.makeConfigButton(buttonW, self, self::reload);
         this.polytone$configButton = button;
         return button;
     }
@@ -100,8 +89,7 @@ public abstract class PackSelectScreenMixin extends Screen {
     @Unique
     private @Nullable SpriteIconButton polytone$configButton;
     @Unique
-    private final ChatBubbleWidget polytone$bubble =
-            new ChatBubbleWidget(0, 0, Component.empty()).setAnimated(true);
+    private final ChatBubbleWidget polytone$bubble = new ChatBubbleWidget(0, 0, Component.empty()).setAnimated(true);
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {

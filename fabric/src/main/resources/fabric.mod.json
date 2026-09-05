@@ -18,6 +18,9 @@
   "entrypoints": {
     "client": [
       "net.mehvahdjukaar.polytone.platform.PolytoneFabric"
+    ],
+    "packed_packs": [
+      "net.mehvahdjukaar.polytone.compat.PackedPacksCompat"
     ]
   },
   "mixins": [
@@ -26,14 +29,14 @@
   ],
   "depends": {
     "fabricloader": ">=0.19.3",
-    "fabric-api": ">=0.153.0+26.2",
+    "fabric-api": ">=0.158.0+26.2",
     "minecraft": ">=26.2 <26.2.1"
   },
   "recommends": {
-    "nautilus_studio": ">=26.2-1.9.0"
+    "nautilus_studio": ">=${nautilus_studio_version}"
   },
   "breaks": {
     "sodium": "<0.9",
-    "nautilus_studio": "<26.2-1.9.0"
+    "nautilus_studio": "<${nautilus_studio_version}"
   }
 }
