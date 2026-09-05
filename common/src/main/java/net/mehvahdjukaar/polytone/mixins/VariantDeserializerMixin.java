@@ -32,6 +32,15 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
     @Shadow
     @Final
     private boolean uvLock;
+    @Shadow
+    @Final
+    private Quadrant x;
+    @Shadow
+    @Final
+    private Quadrant y;
+    @Shadow
+    @Final
+    private Quadrant z;
     @Unique
     private float polytone$xOffset = 0;
     @Unique
@@ -108,9 +117,6 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
             public <T> RecordBuilder<T> encode(Variant.SimpleModelState input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
                 RecordBuilder<T> builder = original.encode(input, ops, prefix);
                 SimpleModelStateExtension ext = (SimpleModelStateExtension) (Object) input;
-                // Re-emit the extra keys so an edit / re-save round-trip (e.g. the pack editor) doesn't
-                // silently drop them. ExtraData keeps only genuinely custom (non-90) rotations; vanilla
-                // quadrant rotations are already written by original.encode above, so no key collides.
                 ExtraData extra = new ExtraData(
                         Optional.of(ext.polytone$getXRot()),
                         Optional.of(ext.polytone$getYRot()),
@@ -130,10 +136,13 @@ public class VariantDeserializerMixin implements SimpleModelStateExtension {
 
         if (polytone$xOffset != 0 || polytone$yOffset != 0 || polytone$zOffset != 0 ||
                 polytone$xRot != 0 || polytone$yRot != 0 || polytone$zRot != 0) {
+            float xRot = polytone$xRot + x.shift * 90f;
+            float yRot = polytone$yRot + y.shift * 90f;
+            float zRot = polytone$zRot + z.shift * 90f;
             Matrix4f mat = new Matrix4f();
             Quaternionf quaternionf = (new Quaternionf())
-                    .rotateYXZ(-polytone$yRot * Mth.DEG_TO_RAD,
-                            -polytone$xRot * Mth.DEG_TO_RAD, -polytone$zRot * Mth.DEG_TO_RAD);
+                    .rotateYXZ(-yRot * Mth.DEG_TO_RAD,
+                            -xRot * Mth.DEG_TO_RAD, -zRot * Mth.DEG_TO_RAD);
             mat.translate(polytone$xOffset / 16f, polytone$yOffset / 16f, polytone$zOffset / 16f);
             mat.rotate(quaternionf);
             cir.setReturnValue(new TransformationModelState(new Transformation(mat), uvLock));
