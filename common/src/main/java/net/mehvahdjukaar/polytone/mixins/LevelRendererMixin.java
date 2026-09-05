@@ -82,7 +82,7 @@ public class LevelRendererMixin {
 
     // Own pass right after vanilla's particles one, on the same target, so gpu particles land in the
     // world with depth and fog like any other particle.
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addParticlesPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V",
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;addParticlesPass",
             shift = At.Shift.AFTER))
     public void poly$addGpuParticlesPass(GraphicsResourceAllocator graphicsResourceAllocator,
                                          DeltaTracker deltaTracker,
