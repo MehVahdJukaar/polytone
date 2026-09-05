@@ -33,6 +33,6 @@
     "minecraft": "=${minecraft_version}"
   },
   "recommends": {
-    "nautilus_studio": "*"
+    "nautilus_studio": ">=${nautilus_studio_version}"
   }
 }
