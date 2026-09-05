@@ -22,8 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-// Editor-only inspector over the creative screen while picking: removals washed red, additions green,
-// already picked amber. Clicking reports the item to the editor instead of grabbing it.
 public final class NautilusCreativeTabOverlay {
 
     private static final int SLOT = 16;
@@ -51,7 +49,6 @@ public final class NautilusCreativeTabOverlay {
         int leftPos = ((AbstractContainerScreenAccessor) screen).polytone$getLeftPos();
         int topPos = ((AbstractContainerScreenAccessor) screen).polytone$getTopPos();
 
-        // Vanilla already captions the hovered item, so the overlay only outlines it.
         boolean hovering = false;
         int hoverX = 0, hoverY = 0;
 
@@ -95,14 +92,10 @@ public final class NautilusCreativeTabOverlay {
         return null;
     }
 
-    // The hotbar strip under the grid is the player's inventory, not tab contents - a modifier can't
-    // touch those items, so they are neither marked nor pickable.
     private static boolean isTabSlot(Slot slot) {
         return !(slot.container instanceof Inventory);
     }
 
-    // An addition's item list resolved once per frame - a tag-backed one would otherwise be re-resolved
-    // for every slot. `inverse` flips the meaning to "everything but these", like the reload path.
     private record AddedSet(Set<Item> items, boolean inverse) {
     }
 
