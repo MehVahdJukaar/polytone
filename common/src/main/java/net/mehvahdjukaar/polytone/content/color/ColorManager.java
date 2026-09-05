@@ -26,6 +26,7 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
+import net.minecraft.util.Mth;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -87,11 +88,22 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
 
     private boolean entityShadowsDisabled = false;
 
+    private float waterFogBrightening = 1;
+    private int waterFogBrighteningTime = 600;
+
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
         super("Color Manager",
                 "color.properties", "colors.json",
                 Polytone.MOD_ID, "colormatic", "vanadium", "optifine");
+    }
+
+    public float getWaterFogBrightening() {
+        return waterFogBrightening;
+    }
+
+    public float getWaterVisionTimeScale() {
+        return waterFogBrighteningTime / 600f;
     }
 
     public Integer getXpBar() {
@@ -131,6 +143,13 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
                 }
                 color.col = col;
             } else Polytone.LOGGER.warn("Unknown MapColor with name {}", k);
+        });
+
+        doWith(obj, "environment", (k, v) -> {
+            switch (k) {
+                case "water_fog_brightening" -> waterFogBrightening = Mth.clamp(v.getAsFloat(), 0, 1);
+                case "water_fog_brightening_time" -> waterFogBrighteningTime = Math.max(1, v.getAsInt());
+            }
         });
 
         doWith(obj, "dye", (k, v) -> {
@@ -443,6 +462,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
         fishingLineColor = null;
         paintingRenderType = null;
         entityShadowsDisabled = false;
+        waterFogBrightening = 1;
+        waterFogBrighteningTime = 600;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();
