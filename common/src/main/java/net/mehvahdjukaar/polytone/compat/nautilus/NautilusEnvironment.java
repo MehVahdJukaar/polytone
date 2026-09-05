@@ -16,9 +16,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-// Polytone's attribute layers live on the client only: the server never hears about them, so the editor's
-// environment-attribute view can't find them by folding pack data. This tells it what we installed so
-// those layers show up in the view anyway.
 final class NautilusEnvironment implements ClientEnvironment.Contributor {
 
     static void register() {
@@ -60,8 +57,6 @@ final class NautilusEnvironment implements ClientEnvironment.Contributor {
         rows.add(ClientEnvironment.Row.of(source, stage, attribute, entry, registries, dynamicNote(entry)));
     }
 
-    // A colormap- or expression-backed argument is re-read every frame, so the number in the row is only
-    // what it happened to be at this sample.
     private static @Nullable String dynamicNote(EnvironmentAttributeMap.Entry<?, ?> entry) {
         IExtendedEntry<?> ext = (IExtendedEntry<?>) (Object) entry;
         if (ext.polytone$getArgumentSupplier() == null) return null;

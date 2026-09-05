@@ -8,7 +8,6 @@ public final class PolytoneNautilus {
 
     public static void init() {
         PolytoneCompat.init();
-        BedrockImports.register();
         NautilusEnvironment.register();
     }
 
