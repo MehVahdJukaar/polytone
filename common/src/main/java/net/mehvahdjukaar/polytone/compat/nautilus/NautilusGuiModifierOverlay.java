@@ -21,8 +21,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-// Editor-only inspector drawn over a live screen while picking is on: whether a modifier targets this
-// screen, and which slots/widgets it touches. Never mutates anything.
 public final class NautilusGuiModifierOverlay {
 
     private static final int SLOT = 16;
