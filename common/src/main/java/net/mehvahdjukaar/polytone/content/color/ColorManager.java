@@ -37,6 +37,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -99,6 +100,9 @@ public class ColorManager extends SingleFileContentManager<Void> {
     private Integer voidDarknessOffset = null;
     private Integer horizonHeight = null;
 
+    private float waterFogBrightening = 1;
+    private int waterFogBrighteningTime = 600;
+
     @Nullable
     private Integer fishingLineColor = null;
     @Nullable
@@ -134,6 +138,14 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     public Integer getHorizonHeight() {
         return horizonHeight;
+    }
+
+    public float getWaterFogBrightening() {
+        return waterFogBrightening;
+    }
+
+    public float getWaterVisionTimeScale() {
+        return waterFogBrighteningTime / 600f;
     }
 
     public Integer getXpBar() {
@@ -197,6 +209,12 @@ public class ColorManager extends SingleFileContentManager<Void> {
                     return;
                 case "horizon_height":
                     horizonHeight = parseInt(e);
+                    return;
+                case "water_fog_brightening":
+                    waterFogBrightening = Mth.clamp(parseFloat(e), 0, 1);
+                    return;
+                case "water_fog_brightening_time":
+                    waterFogBrighteningTime = Math.max(1, parseInt(e));
             }
         });
 
@@ -511,6 +529,21 @@ public class ColorManager extends SingleFileContentManager<Void> {
         throw new IllegalStateException("Failed to parse numerical element. Must be an integer! " + element);
     }
 
+    private static float parseFloat(JsonElement element) {
+        if (element instanceof JsonPrimitive jp) {
+            if (jp.isString()) {
+                return Float.parseFloat(jp.getAsString());
+            }
+            if (jp.isNumber()) {
+                return jp.getAsFloat();
+            }
+            if (jp.isBoolean()) {
+                return jp.getAsBoolean() ? 1 : 0;
+            }
+        }
+        throw new IllegalStateException("Failed to parse numerical element. Must be a number! " + element);
+    }
+
     private static int parseColor(JsonElement obj) {
         return ColorUtils.COLOR.decode(JsonOps.INSTANCE, obj)
                 .getOrThrow()
@@ -551,6 +584,8 @@ public class ColorManager extends SingleFileContentManager<Void> {
         skyFlashColor = null;
         voidDarknessOffset = null;
         horizonHeight = null;
+        waterFogBrightening = 1;
+        waterFogBrighteningTime = 600;
         lavaFogMod = null;
         powderSnowFogMod = null;
         // map colors
