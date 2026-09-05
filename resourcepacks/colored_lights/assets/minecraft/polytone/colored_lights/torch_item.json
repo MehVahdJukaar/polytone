@@ -1,5 +1,0 @@
-{
-  "target_type": "item",
-  "targets": ["minecraft:torch", "minecraft:lantern"],
-  "colored_light": "#FFB55C"
-}

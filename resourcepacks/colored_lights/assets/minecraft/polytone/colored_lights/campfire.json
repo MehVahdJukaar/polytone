@@ -1,8 +1,0 @@
-{
-  "targets": "minecraft:campfire",
-  "colored_light": {
-    "color": "#FF8A3C",
-    "radius": 11,
-    "brightness": "0.85 + 0.15 * sin(g.time() * 0.2)"
-  }
-}

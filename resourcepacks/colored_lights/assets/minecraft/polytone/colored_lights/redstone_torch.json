@@ -1,7 +1,0 @@
-{
-  "targets": ["minecraft:redstone_torch", "minecraft:redstone_wall_torch"],
-  "colored_light": {
-    "color": "#FF2200",
-    "brightness": "object.blockStateValue('lit') ? 1 : 0"
-  }
-}
