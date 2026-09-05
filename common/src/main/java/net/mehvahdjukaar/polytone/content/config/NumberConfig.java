@@ -10,6 +10,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.ExtraCodecs;
 
+import java.math.BigDecimal;
+
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -28,6 +31,7 @@ public class NumberConfig extends PolyConfig<Float> implements OptionInstance.Sl
     private final float step;
     private final float min;
     private final float max;
+    private final int decimals;
 
     protected NumberConfig(Optional<String> valueTranslation, Map<String, Float> presets,
                            Map<String, Float> sectionPresets, int order,
@@ -40,6 +44,7 @@ public class NumberConfig extends PolyConfig<Float> implements OptionInstance.Sl
         this.step = step;
         this.min = min;
         this.max = max;
+        this.decimals = Math.max(0, new BigDecimal(Float.toString(step)).stripTrailingZeros().scale());
     }
 
     @Override
@@ -71,12 +76,7 @@ public class NumberConfig extends PolyConfig<Float> implements OptionInstance.Sl
 
     @Override
     public MutableComponent formatValue(Float value) {
-        // Trim float-math noise (e.g. 0.30000004) by rounding display to the configured step.
-        if (step > 0) {
-            int decimals = Math.max(0, (int) Math.ceil(-Math.log10(step)));
-            return Component.literal(String.format(java.util.Locale.ROOT, "%." + decimals + "f", value));
-        }
-        return Component.literal(String.valueOf(value));
+        return Component.literal(String.format(Locale.ROOT, "%." + decimals + "f", value));
     }
 
     @Override

@@ -48,7 +48,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
 
-    // a null section lists the entry ungrouped, without a header
     private static @NonNull OptionHolder<Boolean> builtinConfig(String id, @Nullable String section, boolean def) {
         return OptionHolder.create(new BoolConfig(Optional.empty(), Map.of(), Map.of(), 1,
                 Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def), Polytone.res(id));
@@ -77,7 +76,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
                 .setPrettyPrinting()
                 .create();
 
-        // Only time we read disk automatically
         loadConfigFromDisk();
         registerBuiltins(configs);
     }
@@ -94,8 +92,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
                                   MapRegistry<OptionHolder<?>> reg,
                                   JsonObject dataJson) {
         OptionHolder<?> instance = OptionHolder.create(config, id);
-
-        // Initialize from last saved state (not disk every time!)
         instance.loadFromJson(dataJson);
 
         reg.unregister(id);
@@ -154,15 +150,11 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     private void saveConfigsToDisk(Collection<OptionHolder<?>> edited) {
         try {
-            // Start from what's already on disk: entries whose pack isn't currently loaded (disabled,
-            // temporarily removed, or failed to parse) have no holder here, and writing a fresh object
-            // would wipe their saved values for good.
             JsonObject jsonObject = configFileSnapshot.deepCopy();
 
             for (var option : configs.getValues()) {
                 option.saveToJson(jsonObject);
             }
-            // last, so edits made on holders the registry has since replaced win
             for (var option : edited) {
                 option.saveToJson(jsonObject);
             }
@@ -218,8 +210,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         }
     }
 
-    //is this pack active or not? we dont know
-    //called one pack at the time. we cant do IO there, we rely on the cache
     public void loadCurrentPackConfigs(PackResources packResources, PackType packType) {
         //gets called every time the pack repository list is updated
         if (packType != PackType.CLIENT_RESOURCES) return;
@@ -238,7 +228,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         for (var j : parseEnabledJsons(jsons, JsonOps.INSTANCE)) {
             if (j != null) {
                 Identifier id = j.getKey();
-                PolyConfig<?> config = (PolyConfig<?>) j.getValue();
+                PolyConfig<?> config = j.getValue();
                 addConfig(id, config, activePackReg, configFileSnapshot);
             }
         }
@@ -260,13 +250,11 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         registerBuiltins(configs);
 
         Map<Identifier, PolyConfig<?>> parsed = new HashMap<>();
-        //ignoring conditions here purposefully
         Iterable<Map.Entry<Identifier, PolyConfig<?>>> parsedConfigs = parseEnabledJsons(obj, JsonOps.INSTANCE);
         for (var j : parsedConfigs) {
             PolyConfig<?> p = j.getValue();
             parsed.put(j.getKey(), p);
         }
-        //first parse all to prevent recursive configs altering ourselves. Will throw a warn if a condition is used inside a condition json
         for (var entry : parsed.entrySet()) {
             addConfig(entry.getKey(), entry.getValue(), configs, configFileSnapshot);
         }
@@ -274,15 +262,12 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         Polytone.LOGGER.info("Loaded {} Polytone config entries", configs.size());
     }
 
-    // Synthetic entries registered only in dev to exercise namespace grouping, sections, presets, wide rows,
-    // and performance-impact tooltips on the config screen.
     private void registerDevTestConfigs() {
         if (!Polytone.isDevEnv) return;
 
         Map<String, Boolean> boolPresets = Map.of("enabled", true, "disabled", false);
         Map<String, Float> floatPresets = Map.of("low", 0.25f, "high", 0.75f);
 
-        // Second namespace with two sections and a pack-wide preset slider.
         addConfig(Identifier.fromNamespaceAndPath("test_pack_alpha", "dev_alpha_toggle"),
                 new BoolConfig(Optional.empty(), boolPresets, Map.of(), 0,
                         Optional.of("alpha_group_a"), Optional.of(0), Optional.empty(), false, Map.of(), true),
@@ -298,7 +283,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
                         "balanced", List.of("balanced", "fast", "fancy")),
                 configs, configFileSnapshot);
 
-        // Third namespace: sectionless entry plus one named section.
         addConfig(Identifier.fromNamespaceAndPath("test_pack_beta", "dev_sectionless"),
                 new BoolConfig(Optional.empty(), Map.of(), Map.of(), 0,
                         Optional.empty(), Optional.empty(), Optional.of(PolyConfig.PerformanceImpact.LOW),
@@ -310,7 +294,6 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
                         false, Map.of(), true),
                 configs, configFileSnapshot);
 
-        // Extra polytone-namespace row to show multiple namespaces from the same mod id still group once.
         addConfig(Polytone.res("dev_polytone_extra"),
                 new BoolConfig(Optional.empty(), Map.of(), Map.of(), 99,
                         Optional.of("particles"), Optional.empty(), Optional.empty(), false, Map.of(), false),

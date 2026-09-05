@@ -26,10 +26,6 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(PackSelectionScreen.class)
 public abstract class PackSelectScreenMixin extends Screen {
 
-    @Shadow
-    @Final
-    private HeaderAndFooterLayout layout;
-
     protected PackSelectScreenMixin(Component component) {
         super(component);
     }
@@ -100,8 +96,7 @@ public abstract class PackSelectScreenMixin extends Screen {
     @Unique
     private @Nullable SpriteIconButton polytone$configButton;
     @Unique
-    private final ChatBubbleWidget polytone$bubble =
-            new ChatBubbleWidget(0, 0, Component.empty()).setAnimated(true);
+    private final ChatBubbleWidget polytone$bubble = new ChatBubbleWidget(0, 0, Component.empty()).setAnimated(true);
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {

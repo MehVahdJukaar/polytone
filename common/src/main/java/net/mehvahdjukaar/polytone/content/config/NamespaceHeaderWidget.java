@@ -9,17 +9,11 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-// Clickable namespace header for the config screen: a disclosure chevron (▶ collapsed / ▼ expanded) followed
-// by the bold namespace title. The chevron is a white polytone sprite, tinted per state. The whole row toggles
-// the namespace; the list is rebuilt on toggle, so this widget only ever renders one state.
 class NamespaceHeaderWidget extends Button {
-    // White sprites under assets/polytone/textures/gui/sprites/config; the gui atlas picks them up
-    // by namespace and they are blitted 1:1 (native == on-screen size) to stay on the pixel grid.
     private static final Identifier CHEVRON_COLLAPSED =
             Identifier.fromNamespaceAndPath("polytone", "config/section_collapsed");
     private static final Identifier CHEVRON_EXPANDED =
             Identifier.fromNamespaceAndPath("polytone", "config/section_expanded");
-    // 7x7 native: one shy of the 8px glyph, since bold text gains a pixel and would otherwise overpower it.
     private static final int CHEVRON_SIZE = 7;
     private static final int TEXT_GAP = 3;
 
