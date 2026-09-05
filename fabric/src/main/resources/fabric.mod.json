@@ -39,7 +39,7 @@
   },
   "suggests": {
     "sodium": "0.6.0",
-    "nautilus_studio": ">=1.21.1-1.4.1",
+    "nautilus_studio": ">=${nautilus_studio_version}",
     "veil": ">=4.0.0"
   }
 }
