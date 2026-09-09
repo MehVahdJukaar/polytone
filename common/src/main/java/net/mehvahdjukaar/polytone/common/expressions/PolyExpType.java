@@ -2,6 +2,7 @@ package net.mehvahdjukaar.polytone.common.expressions;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.mehvahdjukaar.polytone.Polytone;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 
@@ -15,6 +16,7 @@ public final class PolyExpType<T extends PolyExp> {
 
     private final BiFunction<Serializable, String, T> constructor;
     private final ParserContext context;
+    private final ExpressionValidator validator;
     private final Codec<T> codec = Codec.STRING.flatXmap(
             this::create,
             exp -> DataResult.success("0") //unsupported
@@ -25,10 +27,11 @@ public final class PolyExpType<T extends PolyExp> {
 
     public PolyExpType( BiFunction<Serializable, String, T> constructor, Consumer<ParserContext> inputs) {
         this.constructor = constructor;
-        this.context = new ParserContext();
+        this.context = MvelLockdown.newContext();
         this.context.setStrongTyping(true);
         this.context.setStrictTypeEnforcement(true);
         inputs.accept(this.context);
+        this.validator = ExpressionValidator.forContext(this.context);
     }
 
     public Codec<T> codec() {
@@ -38,12 +41,14 @@ public final class PolyExpType<T extends PolyExp> {
     public List<String> inputNames() {
         var inputs = context.getInputs();
         return inputs == null ? List.of()
-                : inputs.keySet().stream().sorted().toList();
+                : inputs.keySet().stream().filter(n -> !MvelLockdown.isShadow(n)).sorted().toList();
     }
 
     public DataResult<T> create(String expressionStr) {
         try {
             String upgraded = ExpUtils.upgrade(expressionStr);
+            String rejected = validator.validate(upgraded, Polytone.GLOBAL_EXPRESSION.variableNames());
+            if (rejected != null) return DataResult.error(() -> "Rejected expression: " + rejected);
             Serializable expr = MVEL.compileExpression(upgraded, this.context);
             T result = constructor.apply(expr, upgraded);
             result.unparsed = expressionStr; // keep the original for readable error messages

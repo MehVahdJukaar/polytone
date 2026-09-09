@@ -12,6 +12,7 @@ import org.mvel2.ParserContext;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
 
@@ -66,6 +67,10 @@ public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
     public double getValue(String key) {
         Object d = values.get(key);
         return d instanceof Number n ? n.doubleValue() : 0;
+    }
+
+    public Set<String> variableNames() {
+        return values.keySet();
     }
 
     public void addTypes(ParserContext ctx) {

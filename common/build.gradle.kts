@@ -37,4 +37,16 @@ dependencies {
 
     modCompileOnly("curse.maven:entity-model-features-844662:7400754")
     modCompileOnly("curse.maven:entity-texture-features-fabric-568563:7392425")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+// the common plugin switches test tasks off with an onlyIf, we do have plain junit tests here
+tasks.named<JavaCompile>("compileTestJava") {
+    setOnlyIf { true }
+}
+tasks.withType<Test>().configureEach {
+    setOnlyIf { true }
+    useJUnitPlatform()
 }
