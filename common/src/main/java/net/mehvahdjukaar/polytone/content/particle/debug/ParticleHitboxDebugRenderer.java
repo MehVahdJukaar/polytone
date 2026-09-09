@@ -92,7 +92,6 @@ public class ParticleHitboxDebugRenderer {
             return 0xFFFF00FF; // dark purple green
         }
 
-        // Unknown render type → black
         return 0xFF000000;
     }
 }

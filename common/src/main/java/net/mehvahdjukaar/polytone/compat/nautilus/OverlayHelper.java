@@ -54,7 +54,7 @@ final class OverlayHelper {
     }
 
     static void banner(GuiGraphics graphics, boolean targeted, String subject, String detail) {
-        String head = (targeted ? "● Targeted" : "○ Not targeted") + "   ·   " + subject;
+        String head = (targeted ? "[x] Targeted" : "[ ] Not targeted") + "   -   " + subject;
         Font font = Minecraft.getInstance().font;
         int w = Math.max(font.width(head), font.width(detail));
         int x = 4, y = 4;
