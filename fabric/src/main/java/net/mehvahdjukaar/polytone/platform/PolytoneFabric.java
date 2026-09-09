@@ -19,7 +19,6 @@ import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
-import net.mehvahdjukaar.polytone.compat.nautilus.NautilusGuiModifierOverlay;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.minecraft.client.gui.components.debug.DebugEntryNoop;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
@@ -65,7 +64,7 @@ public class PolytoneFabric implements ClientModInitializer {
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {
                 ScreenEvents.afterExtract(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) ->
-                        NautilusGuiModifierOverlay.renderScreenExtras(graphics, ss, scaledWidth, scaledHeight, mouseX, mouseY, tickDelta));
+                        SlotifyScreen.renderExtras(graphics, ss, scaledWidth, scaledHeight, mouseX, mouseY, tickDelta));
             }
         });
 
