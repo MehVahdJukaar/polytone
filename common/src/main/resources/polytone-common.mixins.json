@@ -40,6 +40,7 @@
     "FluidStateModelSetMixin",
     "GameRendererMixin",
     "GlProgramMixin",
+    "GlslCompilerMixin",
     "RenderPassMixin",
     "GuiGraphicsExtractorMixin",
     "GuiMixin",
@@ -90,6 +91,7 @@
     "accessor.ParticleAccessor",
     "accessor.PostPassAccessor",
     "accessor.GlRenderPassAccessor",
+    "accessor.VulkanRenderPassAccessor",
     "accessor.SodiumRenderSectionManagerAccessor",
     "accessor.SodiumWorldRendererShadowAccessor"
   ],

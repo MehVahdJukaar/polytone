@@ -3,6 +3,8 @@ plugins {
 }
 
 common {
+    //pinned so the build doesn't need to hit maven.neoforged.net to list versions
+    neoformVersion = "26.2-2"
     accessWidener()
 }
 

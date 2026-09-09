@@ -21,16 +21,9 @@ public class GlProgramMixin {
 
     @ModifyExpressionValue(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Sets;newHashSet([Ljava/lang/Object;)Ljava/util/HashSet;"))
     private static HashSet<String> poly$addBuiltInBlocks(HashSet<String> original) {
-        // only uniform BLOCKS belong here; samplers like InShadow are handled in setupBindGroupLayouts below
-        PolytoneBuiltInUniformsSet s = new PolytoneBuiltInUniformsSet(original);
-        s.add(PostChainsManager.GLOBALS_NAME);
-        s.add(PostChainsManager.SHADOW_UBO_NAME);
-        return s;
+        return new PolytoneBuiltInUniformsSet(original);
     }
 
-    // Vanilla only gives a texture unit to samplers named in the bind group layouts. Our runtime-bound ones
-    // (InShadow) aren't, so without this they'd stay on unit 0 and read the scene texture. Unit indices are
-    // shared between samplers and texel buffers.
     @Inject(method = "setupBindGroupLayouts", at = @At("TAIL"))
     private void poly$registerDynamicSamplers(List<BindGroupLayout> bindGroupLayouts, CallbackInfo ci) {
         GlProgram self = (GlProgram) (Object) this;

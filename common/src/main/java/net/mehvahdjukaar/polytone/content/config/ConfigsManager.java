@@ -233,26 +233,18 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     //called one pack at the time. we cant do IO there, we rely on the cache
     public void loadCurrentPackConfigs(PackResources primary, Pack.ResourcesSupplier resources,
                                        PackLocationInfo location, PackFormat version, PackType packType) {
-        //gets called every time the pack repository list is updated
         if (packType != PackType.CLIENT_RESOURCES) return;
-        // server packs and world packs need this just as much as local ones (#372); only the
-        // vanilla/mod-provided packs are worth skipping, they can't carry config entries
         PackSource source = primary.location().source();
         if (source == PackSource.BUILT_IN || source == PackSource.FEATURE) return;
 
-        //this is overall still quite fast. we shouldnt't have overhead at all, not more than loading these normally
         MapRegistry<OptionHolder<?>> activePackReg = new MapRegistry<>("Active Pack Configs");
         registerBuiltins(activePackReg);
         activeLoadConfigs.set(activePackReg);
         parsePackConfigsInto(primary, packType, activePackReg);
 
-        // reading the overlay section evaluates every require_config on it, so it has to happen after
-        // the registry above is live. don't reorder these.
         List<String> overlays = collectFormatOverlays(primary, packType, version);
         if (overlays.isEmpty()) return;
 
-        // config entries living inside an overlay directory are invisible to openPrimary, so re-open
-        // the pack with its format overlays applied and parse those too
         PackResources fullPack = resources.openFull(location, new Pack.Metadata(Component.empty(),
                 PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), overlays));
         try {
@@ -262,14 +254,12 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         }
     }
 
-    // The resource manager is deliberately not closed: closing it would close the pack we were handed,
-    // which the caller still owns and goes on using.
     private void parsePackConfigsInto(PackResources pack, PackType packType, MapRegistry<OptionHolder<?>> reg) {
         MultiPackResourceManager resourceManager = new MultiPackResourceManager(packType, List.of(pack));
         var jsons = this.getJsonsInDirectories(resourceManager);
         for (var j : parseEnabledJsons(jsons, JsonOps.INSTANCE)) {
             if (j != null) {
-                addConfig(j.getKey(), (PolyConfig<?>) j.getValue(), reg, configFileSnapshot);
+                addConfig(j.getKey(), j.getValue(), reg, configFileSnapshot);
             }
         }
     }

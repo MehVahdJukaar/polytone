@@ -4,13 +4,21 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-// Swapped in for GlProgram's BUILT_IN_UNIFORMS so blocks named in polytone jsons count as known and get a binding
 public class PolytoneBuiltInUniformsSet extends HashSet<String> {
 
     private static final Set<String> DYNAMIC = ConcurrentHashMap.newKeySet();
 
+    static {
+        DYNAMIC.add(PostChainsManager.GLOBALS_NAME);
+        DYNAMIC.add(PostChainsManager.SHADOW_UBO_NAME);
+    }
+
     public static void register(String name) {
         DYNAMIC.add(name);
+    }
+
+    public static Set<String> dynamicNames() {
+        return DYNAMIC;
     }
 
     public PolytoneBuiltInUniformsSet(HashSet<String> initial) {
