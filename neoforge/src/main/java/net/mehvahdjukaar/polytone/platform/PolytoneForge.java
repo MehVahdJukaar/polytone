@@ -3,7 +3,6 @@ package net.mehvahdjukaar.polytone.platform;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.compat.nautilus.NautilusGuiModifierOverlay;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
@@ -140,7 +139,7 @@ public class PolytoneForge {
         if (!(screen instanceof SlotifyScreen ss)) return;
         GuiGraphicsExtractor graphics = event.getGuiGraphics();
         graphics.nextStratum();
-        NautilusGuiModifierOverlay.renderScreenExtras(graphics, ss, screen.width, screen.height,
+        SlotifyScreen.renderExtras(graphics, ss, screen.width, screen.height,
                 event.getMouseX(), event.getMouseY(), event.getPartialTick());
     }
 

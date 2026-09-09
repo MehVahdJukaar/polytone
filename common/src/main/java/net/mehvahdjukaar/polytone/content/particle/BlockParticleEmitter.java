@@ -15,15 +15,12 @@ import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptio
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.particles.*;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
@@ -37,7 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public record BlockParticleEmitter(
-        Optional<Holder<ParticleType<?>>> particleType,
+        ParticleSpec particle,
         IBlockExp chance,
         IBlockExp count,
         IBlockExp x,
@@ -60,7 +57,7 @@ public record BlockParticleEmitter(
 ) implements BlockClientTickable {
 
     public static final SchemaCodec<BlockParticleEmitter> CODEC = SchemaRecord.create(BlockParticleEmitter.class, i -> i.group(
-            i.field("particle", CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE), BlockParticleEmitter::particleType),
+            i.field("particle", ParticleSpec.CODEC, BlockParticleEmitter::particle),
             i.optional("chance", IBlockExp.CODEC, IBlockExp.ONE, BlockParticleEmitter::chance),
             i.optional("count", IBlockExp.CODEC, IBlockExp.ONE, BlockParticleEmitter::count),
             i.optional("x", IBlockExp.CODEC, IBlockExp.PARTICLE_RAND, BlockParticleEmitter::x),
@@ -84,7 +81,7 @@ public record BlockParticleEmitter(
 
     @Override
     public void tick(ClientLevel level, BlockPos pos, BlockState state, TickSource source) {
-        if (particleType.isEmpty()) {
+        if (particle.isEmpty()) {
             return;
         }
         if (source != spawnSource) {
@@ -120,11 +117,7 @@ public record BlockParticleEmitter(
     }
 
     private @Nullable ParticleOptions getParticleOptions(ClientLevel level, BlockPos pos, BlockState state) {
-        ParticleOptions po;
-
-        var particleTypeValue = particleType.get().value();
-
-        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().identifier())) {
+        if (particle.isDynamic()) {
             Map<String, Float> map = new HashMap<>();
             Vec3 v = pos.getCenter();
             r.ifPresent(exp -> map.put("red", (float) exp.evaluate(level, v, state)));
@@ -134,20 +127,10 @@ public record BlockParticleEmitter(
             roll.ifPresent(exp -> map.put("roll", (float) exp.evaluate(level, v, state)));
             size.ifPresent(exp -> map.put("size", (float) exp.evaluate(level, v, state)));
             custom.ifPresent(exp -> map.put("custom", (float) exp.evaluate(level, v, state)));
-            return new ExtraDataParticleOptions(map, particleTypeValue);
+            return new ExtraDataParticleOptions(map, particle.particleType());
         }
 
-        if (particleTypeValue instanceof SimpleParticleType st) {
-            po = st;
-        } else if (particleTypeValue == ParticleTypes.BLOCK || particleTypeValue == ParticleTypes.FALLING_DUST || particleTypeValue == ParticleTypes.BLOCK_MARKER || particleTypeValue == ParticleTypes.DUST_PILLAR) {
-            po = new BlockParticleOption((ParticleType<BlockParticleOption>) particleTypeValue, state);
-        } else if (particleTypeValue == ParticleTypes.ITEM) {
-            po = new ItemParticleOption((ParticleType<ItemParticleOption>) particleTypeValue, state.getBlock().asItem());
-        } else {
-            Polytone.LOGGER.error("Unsupported particle type: {}", particleTypeValue);
-            return null;
-        }
-        return po;
+        return particle.resolveOptions(state);
     }
 
     public enum SpawnLocation implements StringRepresentable {
@@ -162,7 +145,7 @@ public record BlockParticleEmitter(
         Vec3 getLocation(BlockPos pos, BlockState state, RandomSource rand) {
             return switch (this) {
                 case LOWER_CORNER -> Vec3.atLowerCornerOf(pos);
-                case CENTER -> Vec3.atCenterOf(pos);
+                case CENTER -> pos.getCenter();
                 case BLOCK_FACES -> {
                     Direction dir = Direction.values()[rand.nextInt(Direction.values().length)];
                     yield getParticleSpawnPosOnFace(rand, pos, dir);
@@ -172,7 +155,7 @@ public record BlockParticleEmitter(
     }
 
     public static Vec3 getParticleSpawnPosOnFace(RandomSource random, BlockPos pos, Direction direction) {
-        Vec3 vec3 = Vec3.atCenterOf(pos);
+        Vec3 vec3 = pos.getCenter();
         int i = direction.getStepX();
         int j = direction.getStepY();
         int k = direction.getStepZ();

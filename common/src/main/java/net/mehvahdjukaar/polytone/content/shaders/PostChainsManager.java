@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
 import com.google.gson.JsonElement;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -22,11 +23,13 @@ import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import org.joml.Matrix4fc;
+import org.lwjgl.system.MemoryStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,31 +39,21 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Set;
 
-// Owns post-chain activators (turn a PostChain on/off based on a condition) and the PolyGlobals UBO that gets
-// bound to every render pass.
 public class PostChainsManager extends ContentManager<PostChainActivator> {
 
     public static final String GLOBALS_NAME = "PolyGlobals";
     public static final String SHADOW_UBO_NAME = "PolyShadow";
     public static final String SHADOW_SAMPLER_NAME = "InShadow";
-    // Samplers Polytone binds at runtime (not declared in the pipeline). GlProgram only allocates a
-    // texture unit for samplers it knows about, so GlProgramMixin registers these on any program that
-    // actually declares them - otherwise the sampler defaults to unit 0 and reads the scene texture.
     public static final List<String> DYNAMIC_SAMPLERS = List.of(SHADOW_SAMPLER_NAME);
 
-    // Latched when a linked program actually declares one of our blocks/samplers (GlProgramMixin,
-    // at program link time, so before anything can draw with it). With no pack using them these
-    // stay false and we skip the per-frame PolyGlobals upload and the per-draw bind work entirely.
-    // Never un-latched: a pack toggle would otherwise have to re-link every program to re-arm this,
-    // and feeding a live shader a stale UBO is far worse than uploading one nobody reads.
     private static volatile boolean globalsDeclared = false;
     private static volatile boolean shadowUboDeclared = false;
     private static volatile boolean shadowSamplerDeclared = false;
 
     private PolytoneGlobalUniforms globalUniforms = null;
+    private GpuBuffer emptyShadowUbo = null;
 
     private final List<PostChainActivator> activators = new ArrayList<>();
-    // custom texture samplers keyed by pass fragment-shader id, registered by PostChainActivator
     private final Map<Identifier, List<Map<String, Identifier>>> samplersByShader = new HashMap<>();
 
     public PostChainsManager() {
@@ -96,6 +89,18 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         samplersByShader.clear();
     }
 
+    private GpuBufferSlice emptyShadowUbo() {
+        if (emptyShadowUbo == null) {
+            emptyShadowUbo = RenderSystem.getDevice().createBuffer(() -> "Polytone empty shadow UBO",
+                    GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_UNIFORM, PolyShadowUniforms.UBO_SIZE);
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                RenderSystem.getDevice().createCommandEncoder()
+                        .writeToBuffer(emptyShadowUbo.slice(), stack.calloc(PolyShadowUniforms.UBO_SIZE));
+            }
+        }
+        return emptyShadowUbo.slice();
+    }
+
     private PolytoneGlobalUniforms getOrCreateUniforms() {
         if (globalUniforms == null) {
             globalUniforms = new PolytoneGlobalUniforms();
@@ -103,40 +108,30 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         return globalUniforms;
     }
 
-    // Called for every linked program with the uniform blocks it declares (see GlProgramMixin)
     public static void onProgramLinked(Set<String> declaredUniforms) {
         if (declaredUniforms.contains(GLOBALS_NAME)) globalsDeclared = true;
         if (declaredUniforms.contains(SHADOW_UBO_NAME)) shadowUboDeclared = true;
     }
 
-    // Called when a program turned out to declare one of DYNAMIC_SAMPLERS
     public static void onDynamicSamplerDeclared(String name) {
         if (SHADOW_SAMPLER_NAME.equals(name)) shadowSamplerDeclared = true;
     }
 
-    // Cheap gate for the per-draw hook: true only once some shader has asked for anything of ours. Keeps a
-    // vanilla setup out of setPipeline entirely.
     public boolean hasAnyPassBindings() {
         return globalsDeclared || shadowUboDeclared || shadowSamplerDeclared || !samplersByShader.isEmpty();
     }
 
     public void setupExtraUniforms(RenderPass pass, Set<String> declaredUniforms) {
-        // only bind PolyGlobals to passes whose shader actually declares the block (see GlRenderPassMixin)
         if (declaredUniforms.contains(GLOBALS_NAME)) {
-            globalsDeclared = true; // safety net in case the link-time latch was missed
+            globalsDeclared = true;
             pass.setUniform(GLOBALS_NAME, getOrCreateUniforms().getSlice());
         }
-        // light view-projection + light dir + camera fract, written by ShadowMapRenderer each frame;
-        // null until the first shadow pass has run
         if (declaredUniforms.contains(SHADOW_UBO_NAME)) {
             GpuBufferSlice shadowSlice = Polytone.SHADOWS.renderer().getUniformsSlice();
-            if (shadowSlice != null) {
-                pass.setUniform(SHADOW_UBO_NAME, shadowSlice);
-            }
+            pass.setUniform(SHADOW_UBO_NAME, shadowSlice != null ? shadowSlice : emptyShadowUbo());
         }
     }
 
-    // Whether the shadow map should be rendered this frame (some active chain declared use_shadow_map).
     public boolean anyActiveEffectUsesShadowMap() {
         synchronized (activators) {
             for (var a : activators) {
@@ -146,7 +141,6 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         return false;
     }
 
-    // External callers (PostChainActivator) register their custom samplers under a pass shader id.
     public void registerSamplers(Identifier shaderId, Map<String, Identifier> samplers) {
         if (samplers.isEmpty()) return;
         samplersByShader.computeIfAbsent(shaderId, k -> new ArrayList<>()).add(samplers);
@@ -160,23 +154,20 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         }
     }
 
-    // Binds custom textures declared in a post chain's samplers map to any pass whose pipeline fragment shader
-    // matches. Gated on declaredUniforms (which includes sampler names) so we never bind a sampler the program
-    // doesn't declare, see GlRenderPassMixin.
     public void bindExtraSamplers(RenderPass pass, RenderPipeline pipeline, Set<String> declaredUniforms) {
-        // the light-POV depth map rendered by ShadowMapRenderer; only bound once it exists
         if (declaredUniforms.contains(SHADOW_SAMPLER_NAME)) {
             GpuTextureView shadowMap = Polytone.SHADOWS.renderer().getShadowTexture();
-            if (shadowMap != null) {
-                pass.bindTexture(SHADOW_SAMPLER_NAME, shadowMap,
-                        RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+            if (shadowMap == null) {
+                shadowMap = Minecraft.getInstance().getTextureManager()
+                        .getTexture(TextureManager.INTENTIONAL_MISSING_TEXTURE).getTextureView();
             }
+            pass.bindTexture(SHADOW_SAMPLER_NAME, shadowMap,
+                    RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
         }
         if (samplersByShader.isEmpty()) return;
         List<Map<String, Identifier>> list = samplersByShader.get(pipeline.getFragmentShader());
         if (list == null) return;
         var texManager = Minecraft.getInstance().getTextureManager();
-        // effect textures (noise/gradients) generally tile and look better filtered
         GpuSampler sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR);
         for (Map<String, Identifier> samplers : list) {
             for (var e : samplers.entrySet()) {
@@ -195,6 +186,10 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
             globalUniforms.close();
             globalUniforms = null;
         }
+        if (emptyShadowUbo != null) {
+            emptyShadowUbo.close();
+            emptyShadowUbo = null;
+        }
         if (worldDepthSnapshot != null) {
             worldDepthSnapshot.destroyBuffers();
             worldDepthSnapshot = null;
@@ -203,7 +198,6 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     }
 
     public void captureLevelRendererParams(Matrix4fc projectionMatrix, Matrix4fc viewMatrix, float deltaTime) {
-        // no loaded shader declares PolyGlobals -> don't allocate the UBO, don't upload it every frame
         if (!globalsDeclared && !Polytone.isDevEnv) return;
         Minecraft mc = Minecraft.getInstance();
         float angle = mc.levelRenderer.levelRenderState.skyRenderState.sunAngle;
@@ -217,9 +211,6 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         }
     }
 
-    // Standard placement: add every active chain to the level FrameGraph. Runs before the first-person hand is
-    // drawn, so depth-reading chains don't see held items. Used when post_chains_after_hand is off. See
-    // runAfterHand for the default path.
     public void addPostPass(int width, int height, LevelTargetBundle targets, FrameGraphBuilder frameGraphBuilder, GpuBufferSlice gpuBufferSlice, CameraRenderState cameraRenderState) {
         ShaderManager sm = Minecraft.getInstance().getShaderManager();
         Polytone.POST_TARGETS.ensureAllocated(width, height);
@@ -234,20 +225,9 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         }
     }
 
-    // ---- Depth-aware post chains -------------------------------------------------------------
-    // Post chains used to be added to the level FrameGraph, which runs before the first-person
-    // hand is drawn, so depth-reading effects (e.g. godrays) never saw the held item and would
-    // leak past a raised shield. Instead we now run them right after the hand:
-    //   1) snapshotWorldDepth() copies the finished world depth just before vanilla clears it to
-    //      draw the hand in its own near projection;
-    //   2) runAfterHand() folds that world depth back into the (hand-only) main depth via a
-    //      LEQUAL depth-write pass -> min(world, hand) -> then processes each chain.
-    // The chains sample the main target's depth exactly as before, so pack shaders are unchanged.
-
     private TextureTarget worldDepthSnapshot;
     private boolean worldDepthCaptured = false;
 
-    // Copy the world depth before vanilla clears it for the hand. No-op unless a chain is active.
     public void snapshotWorldDepth(RenderTarget main) {
         worldDepthCaptured = false;
         if (!hasActiveChains()) return;
@@ -256,7 +236,6 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         worldDepthCaptured = true;
     }
 
-    // Fold the saved world depth back into the main depth, then run every active chain
     public void runAfterHand(RenderTarget main, GraphicsResourceAllocator resourceAllocator) {
         if (!worldDepthCaptured) return;
         worldDepthCaptured = false;
