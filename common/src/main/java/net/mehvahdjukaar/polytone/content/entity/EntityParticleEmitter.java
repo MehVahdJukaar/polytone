@@ -4,14 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.common.expressions.impl.IEntityExp;
+import net.mehvahdjukaar.polytone.content.particle.ParticleSpec;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.utils.TokenBucketTracker;
-import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
-import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -23,7 +19,7 @@ import java.util.Optional;
 // Position based subset of the newer-MC entity emitter: 1.21.1 has no entity render state, so
 // model-bone spawning (and the EMF/ETF texture targeting on top of it) is left out.
 public record EntityParticleEmitter(
-        Optional<Holder<ParticleType<?>>> particleType,
+        ParticleSpec particle,
         IEntityExp chance,
         IEntityExp count,
         IEntityExp x,
@@ -43,8 +39,7 @@ public record EntityParticleEmitter(
 
     public static final Codec<EntityParticleEmitter> CODEC = RecordCodecBuilder.create(
             i -> i.group(
-                    CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE).fieldOf("particle")
-                            .forGetter(EntityParticleEmitter::particleType),
+                    ParticleSpec.CODEC.fieldOf("particle").forGetter(EntityParticleEmitter::particle),
                     IEntityExp.CODEC.optionalFieldOf("chance", IEntityExp.ONE).forGetter(EntityParticleEmitter::chance),
                     IEntityExp.CODEC.optionalFieldOf("count", IEntityExp.ONE).forGetter(EntityParticleEmitter::count),
                     IEntityExp.CODEC.optionalFieldOf("x", IEntityExp.ZERO).forGetter(EntityParticleEmitter::x),
@@ -63,7 +58,7 @@ public record EntityParticleEmitter(
             ).apply(i, EntityParticleEmitter::new));
 
     public void tick(Entity entity) {
-        if (particleType.isEmpty()) return;
+        if (particle.isEmpty()) return;
         Level level = entity.level();
         float throttle = Polytone.CONFIGS.particlesThrottle.get();
         if (throttle < 1 && level.getRandom().nextFloat() > throttle) return;
@@ -87,9 +82,7 @@ public record EntityParticleEmitter(
     }
 
     private @Nullable ParticleOptions getParticleOptions(Entity entity) {
-        var particleTypeValue = particleType.get().value();
-
-        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().location())) {
+        if (particle.isDynamic()) {
             Map<String, Float> map = new HashMap<>();
             r.ifPresent(exp -> map.put("red", (float) exp.evaluate(entity)));
             g.ifPresent(exp -> map.put("green", (float) exp.evaluate(entity)));
@@ -98,13 +91,9 @@ public record EntityParticleEmitter(
             roll.ifPresent(exp -> map.put("roll", (float) exp.evaluate(entity)));
             size.ifPresent(exp -> map.put("size", (float) exp.evaluate(entity)));
             custom.ifPresent(exp -> map.put("custom", (float) exp.evaluate(entity)));
-            return new ExtraDataParticleOptions(map, particleTypeValue);
+            return new ExtraDataParticleOptions(map, particle.particleType());
         }
 
-        if (particleTypeValue instanceof SimpleParticleType st) {
-            return st;
-        }
-        Polytone.LOGGER.error("Unsupported particle type: {}", particleTypeValue);
-        return null;
+        return particle.resolveOptions(null);
     }
 }

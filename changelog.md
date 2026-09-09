@@ -1,2 +1,3 @@
 - gpu particle force spawn
 - some new properties in colors.json for water fog
+- particle options in particle emitters

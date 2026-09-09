@@ -5,8 +5,6 @@ import net.mehvahdjukaar.polytone.content.tabs.CreativeTabPreview;
 import net.mehvahdjukaar.polytone.content.tabs.ItemAddition;
 import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 import net.mehvahdjukaar.polytone.utils.StrUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.ResourceLocation;
@@ -23,19 +21,12 @@ import java.util.Set;
 
 public final class NautilusCreativeTabOverlay {
 
-    private static final int SLOT = 16;
-
     private static final int REMOVED_FILL = 0x55_FF4D4D;
     private static final int REMOVED_OUTLINE = 0xDD_FF4D4D;
     private static final int ADDED_FILL = 0x44_3BE06B;
     private static final int ADDED_OUTLINE = 0xDD_3BE06B;
     private static final int PENDING_OUTLINE = 0xFF_FFCC33;
     private static final int HOVER_OUTLINE = 0xFF_FFFFFF;
-
-    private static final int LABEL_BG = 0xE0_000000;
-    private static final int TARGETED = 0xFF_3BE06B;
-    private static final int UNTARGETED = 0xFF_FFAA33;
-    private static final int MUTED = 0xFF_B0B0B0;
 
     public static void render(GuiGraphics graphics, AbstractContainerScreen<?> screen, int mouseX, int mouseY) {
         CreativeTabModifier mod = CreativeTabPreview.tabBeingEdited();
@@ -45,51 +36,44 @@ public final class NautilusCreativeTabOverlay {
         List<ItemPredicate> removals = mod == null ? List.of() : mod.removals();
         List<AddedSet> additions = mod == null ? List.of() : addedSets(mod);
 
-        int leftPos = screen.leftPos;
-        int topPos = screen.topPos;
-
-        boolean hovering = false;
-        int hoverX = 0, hoverY = 0;
-
+        Slot hovered = null;
         for (Slot slot : screen.getMenu().slots) {
             ItemStack stack = slot.getItem();
             if (stack.isEmpty() || !isTabSlot(slot)) continue;
-            int sx = leftPos + slot.x;
-            int sy = topPos + slot.y;
+            int sx = screen.leftPos + slot.x;
+            int sy = screen.topPos + slot.y;
 
             if (targeted && CreativeTabPreview.matchesRemoval(removals, stack)) {
-                box(graphics, sx, sy, REMOVED_FILL, REMOVED_OUTLINE);
+                OverlayHelper.slotBox(graphics, sx, sy, REMOVED_FILL, REMOVED_OUTLINE);
             } else if (targeted && isAdded(additions, stack)) {
-                box(graphics, sx, sy, ADDED_FILL, ADDED_OUTLINE);
+                OverlayHelper.slotBox(graphics, sx, sy, ADDED_FILL, ADDED_OUTLINE);
             } else if (CreativeTabPreview.isPending(stack.getItem())) {
-                box(graphics, sx, sy, 0, PENDING_OUTLINE);
+                OverlayHelper.slotBox(graphics, sx, sy, 0, PENDING_OUTLINE);
             }
 
-            if (inside(mouseX, mouseY, sx, sy)) {
-                hovering = true;
-                hoverX = sx;
-                hoverY = sy;
-            }
+            if (OverlayHelper.insideSlot(mouseX, mouseY, sx, sy)) hovered = slot;
         }
 
-        drawBanner(graphics, tabId, targeted);
+        OverlayHelper.banner(graphics, targeted, tabId == null ? "?" : tabId.toString(), bannerDetail(targeted));
 
         //vanilla already captions the hovered item so we just outline it
-        if (hovering) box(graphics, hoverX, hoverY, 0, HOVER_OUTLINE);
+        if (hovered != null) {
+            OverlayHelper.slotBox(graphics, screen.leftPos + hovered.x, screen.topPos + hovered.y, 0, HOVER_OUTLINE);
+        }
     }
 
     @Nullable
     public static ItemStack pickAt(AbstractContainerScreen<?> screen, double mouseX, double mouseY) {
-        int leftPos = screen.leftPos;
-        int topPos = screen.topPos;
-        for (Slot slot : screen.getMenu().slots) {
-            ItemStack stack = slot.getItem();
-            if (!stack.isEmpty() && isTabSlot(slot)
-                    && inside((int) mouseX, (int) mouseY, leftPos + slot.x, topPos + slot.y)) {
-                return stack;
-            }
-        }
-        return null;
+        Slot slot = OverlayHelper.slotAt(screen, mouseX, mouseY);
+        if (slot == null || !isTabSlot(slot) || slot.getItem().isEmpty()) return null;
+        return slot.getItem();
+    }
+
+    private static String bannerDetail(boolean targeted) {
+        if (!targeted) return "this modifier doesnt target the open tab";
+        int selected = CreativeTabPreview.pendingCount();
+        if (selected == 0) return "click items to select them";
+        return StrUtils.plural(selected, "item") + " selected  -  click again to unselect";
     }
 
     //bottom strip is the player inventory, no modifier can touch those
@@ -118,34 +102,5 @@ public final class NautilusCreativeTabOverlay {
             if (set.items.contains(stack.getItem()) != set.inverse) return true;
         }
         return false;
-    }
-
-    private static void drawBanner(GuiGraphics graphics, @Nullable ResourceLocation tabId, boolean targeted) {
-        String head = (targeted ? "[x] targeted" : "[ ] not targeted") + "  -  " + (tabId == null ? "?" : tabId);
-        int selected = CreativeTabPreview.pendingCount();
-        String detail;
-        if (!targeted) {
-            detail = "this modifier doesnt target the open tab";
-        } else if (selected == 0) {
-            detail = "click items to select them";
-        } else {
-            detail = StrUtils.plural(selected, "item") + " selected  -  click again to unselect";
-        }
-
-        Font font = Minecraft.getInstance().font;
-        int w = Math.max(font.width(head), font.width(detail));
-        int x = 4, y = 4;
-        graphics.fill(x, y, x + w + 8, y + font.lineHeight * 2 + 6, LABEL_BG);
-        graphics.drawString(font, head, x + 4, y + 3, targeted ? TARGETED : UNTARGETED, false);
-        graphics.drawString(font, detail, x + 4, y + 3 + font.lineHeight + 1, MUTED, false);
-    }
-
-    private static void box(GuiGraphics graphics, int x, int y, int fillColor, int outlineColor) {
-        if (fillColor != 0) graphics.fill(x, y, x + SLOT, y + SLOT, fillColor);
-        graphics.renderOutline(x - 1, y - 1, SLOT + 2, SLOT + 2, outlineColor);
-    }
-
-    private static boolean inside(int mx, int my, int x, int y) {
-        return mx >= x && mx < x + SLOT && my >= y && my < y + SLOT;
     }
 }
