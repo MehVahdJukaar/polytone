@@ -56,7 +56,7 @@ final class OverlayHelper {
 
     // two line header in the top left: what the open editor file targets, then what to do about it
     static void banner(GuiGraphicsExtractor graphics, boolean targeted, String subject, String detail) {
-        String head = (targeted ? "● Targeted" : "○ Not targeted") + "   ·   " + subject;
+        String head = (targeted ? "[x] Targeted" : "[ ] Not targeted") + "   -   " + subject;
         Font font = Minecraft.getInstance().font;
         int w = Math.max(font.width(head), font.width(detail));
         int x = 4, y = 4;

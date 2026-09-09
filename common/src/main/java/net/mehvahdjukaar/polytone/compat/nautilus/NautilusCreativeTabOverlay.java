@@ -73,7 +73,7 @@ public final class NautilusCreativeTabOverlay {
         if (!targeted) return "this modifier doesn't target the open tab";
         int selected = CreativeTabPreview.pendingCount();
         if (selected == 0) return "click items to select them";
-        return StrUtils.plural(selected, "item") + " selected   ·   click again to unselect";
+        return StrUtils.plural(selected, "item") + " selected   -   click again to unselect";
     }
 
     private static boolean isTabSlot(Slot slot) {
