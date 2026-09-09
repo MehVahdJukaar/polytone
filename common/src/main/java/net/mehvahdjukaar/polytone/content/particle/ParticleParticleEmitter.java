@@ -14,12 +14,8 @@ import net.mehvahdjukaar.polytone.content.particle.custom.PolytoneAsyncParticles
 import net.minecraft.client.particle.Particle;
 import net.minecraft.util.RandomSource;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -32,7 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public record ParticleParticleEmitter(
-        Optional<Holder<ParticleType<?>>> particleType,
+        ParticleSpec particle,
         IParticleExp chance,
         IParticleExp count,
         IParticleExp x,
@@ -53,7 +49,7 @@ public record ParticleParticleEmitter(
 ) implements IParticleTickable {
 
     public static final SchemaCodec<ParticleParticleEmitter> CODEC = SchemaRecord.create(ParticleParticleEmitter.class, i -> i.group(
-            i.field("particle", CodecUtils.forwardAwareHolderByNameCodec(BuiltInRegistries.PARTICLE_TYPE), ParticleParticleEmitter::particleType),
+            i.field("particle", ParticleSpec.CODEC, ParticleParticleEmitter::particle),
             i.optional("chance", IParticleExp.CODEC, IParticleExp.ONE, ParticleParticleEmitter::chance),
             i.optional("count", IParticleExp.CODEC, IParticleExp.ONE, ParticleParticleEmitter::count),
             i.optional("x", IParticleExp.CODEC, IParticleExp.PARTICLE_RAND, ParticleParticleEmitter::x),
@@ -76,9 +72,7 @@ public record ParticleParticleEmitter(
 
     @Override
     public void tick(Particle particle, Level level) {
-        if (particleType.isEmpty()) return;
-        // Per-particle random, never the shared level.random: emitters tick on worker threads when
-        // async particles are on and concurrent LegacyRandomSource access crashes.
+        if (this.particle.isEmpty()) return;
         RandomSource rand = particle instanceof CustomParticleInstance cpi ? cpi.getRandom() : level.random;
         float throttle = Polytone.CONFIGS.particlesThrottle.get();
         if (throttle < 1 && rand.nextFloat() > throttle) return;
@@ -96,16 +90,12 @@ public record ParticleParticleEmitter(
                 ParticleOptions po = getParticleOptions(particle, level);
                 if (po == null) return;
                 if (!TokenBucketTracker.canEmitParticle(this)) return;
-                // Evaluate position/velocity now (on the ticking thread), but defer the actual spawn:
-                // ParticleEngine#particlesToAdd is not thread-safe, so it must be mutated on the main thread.
                 double sx = particle.x + x.evaluate(particle, level);
                 double sy = particle.y + y.evaluate(particle, level);
                 double sz = particle.z + z.evaluate(particle, level);
                 double sdx = dx.evaluate(particle, level);
                 double sdy = dy.evaluate(particle, level);
                 double sdz = dz.evaluate(particle, level);
-                // Editor preview (render thread only): route the child into the preview's sandbox
-                // instead of the live world; null sink everywhere else = normal spawn, unchanged.
                 ParticlePreviewState.EmitSink sink = ParticlePreviewState.sink();
                 if (sink != null) {
                     sink.emit(level, po, sx, sy, sz, sdx, sdy, sdz);
@@ -118,11 +108,7 @@ public record ParticleParticleEmitter(
 
 
     private @Nullable ParticleOptions getParticleOptions(Particle particle, Level level) {
-        ParticleOptions po;
-
-        var particleTypeValue = particleType.get().value();
-
-        if (Polytone.CUSTOM_PARTICLES.isDynamicParticle(particleType.get().unwrapKey().get().identifier())) {
+        if (this.particle.isDynamic()) {
             Map<String, Float> map = new HashMap<>();
             r.ifPresent(exp -> map.put("red", (float) exp.evaluate(particle, level)));
             g.ifPresent(exp -> map.put("green", (float) exp.evaluate(particle, level)));
@@ -131,16 +117,10 @@ public record ParticleParticleEmitter(
             roll.ifPresent(exp -> map.put("roll", (float) exp.evaluate(particle, level)));
             size.ifPresent(exp -> map.put("size", (float) exp.evaluate(particle, level)));
             custom.ifPresent(exp -> map.put("custom", (float) exp.evaluate(particle, level)));
-            return new ExtraDataParticleOptions(map, particleTypeValue);
+            return new ExtraDataParticleOptions(map, this.particle.particleType());
         }
 
-        if (particleTypeValue instanceof SimpleParticleType st) {
-            po = st;
-        } else {
-            Polytone.LOGGER.error("Unsupported particle type: {}", particleTypeValue);
-            return null;
-        }
-        return po;
+        return this.particle.resolveOptions(null);
     }
 
 }

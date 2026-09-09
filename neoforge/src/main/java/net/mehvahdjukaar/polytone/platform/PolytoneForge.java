@@ -159,7 +159,7 @@ public class PolytoneForge {
         // picker overlay may target a screen that had none at init time.
         GuiGraphics graphics = event.getGuiGraphics();
         graphics.nextStratum();
-        NautilusGuiModifierOverlay.renderScreenExtras(graphics, ss, screen.width, screen.height,
+        SlotifyScreen.renderExtras(graphics, ss, screen.width, screen.height,
                 event.getMouseX(), event.getMouseY(), event.getPartialTick());
     }
 

@@ -24,12 +24,9 @@ public class GlRenderPassMixin {
     @Inject(method = "setPipeline", at = @At("TAIL"))
     private void poly$onSetPipeline(RenderPipeline renderPipeline, CallbackInfo ci) {
         if (this.pipeline == null) return;
-        // Only the UBO/uniform block names the bound program actually declares. Binding a uniform
-        // that the program doesn't have is a no-op in vanilla but makes Iris/Sodium log
-        // "Error while binding uniform" spam every frame, so we gate every bind on this set.
         Set<String> declared = this.pipeline.program().getUniforms().keySet();
         if (declared.isEmpty()) return;
-        RenderPass pass = (RenderPass) (Object) this;
+        RenderPass pass = (RenderPass) this;
         Polytone.POST_CHAINS.setupExtraUniforms(pass, declared);
         Polytone.POST_CHAINS.bindExtraSamplers(pass, renderPipeline, declared);
         Polytone.SHADER_EFFECTS.tryApply(pass, renderPipeline, declared);

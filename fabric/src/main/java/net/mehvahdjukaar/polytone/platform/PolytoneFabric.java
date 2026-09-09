@@ -18,7 +18,6 @@ import net.mehvahdjukaar.polytone.content.expmodel.ExpressionBlockStateModel;
 import net.mehvahdjukaar.polytone.content.expmodel.ExpressionModel;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.content.particle.debug.ParticleHitboxDebugRenderer;
-import net.mehvahdjukaar.polytone.compat.nautilus.NautilusGuiModifierOverlay;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
 import net.minecraft.client.gui.components.debug.DebugEntryNoop;
@@ -74,10 +73,10 @@ public class PolytoneFabric implements ClientModInitializer {
 
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof SlotifyScreen ss) {
-                // Register unconditionally: renderScreenExtras no-ops with no modifier, and the editor's
+                // Register unconditionally: renderExtras no-ops with no modifier, and the editor's
                 // live preview / picker overlay may target a screen that had none at init time.
                 ScreenEvents.afterRender(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) ->
-                        NautilusGuiModifierOverlay.renderScreenExtras(graphics, ss, scaledWidth, scaledHeight, mouseX, mouseY, tickDelta));
+                        SlotifyScreen.renderExtras(graphics, ss, scaledWidth, scaledHeight, mouseX, mouseY, tickDelta));
             }
         });
 
