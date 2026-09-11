@@ -36,16 +36,20 @@ public interface IColormapExp {
     // LENIENT_FLOAT (a float-or-string union), whose schema is an AnyOf that anyOf() splices flat -
     // leaking two unlabeled "number"/"text" options and, worse, a "text" branch that EXACT-matches
     // expression strings on load so expressions would open under "text". Codec.FLOAT keeps it one option.
-    Codec<IColormapExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+    Codec<IColormapExp> CODEC_LEGACY = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
             SchemaCodecs.referenceOrDirect(BUILTIN_EXP,
                     SchemaCodecs.alternatives(CONSTANT_CODEC, ColormapExpressionProvider.CODEC, ColormapExp.TYPE.codec()), true),
             SchemaCodecs.alt("preset", BUILTIN_EXP),
             SchemaCodecs.alt("constant", Codec.FLOAT),
-            // "expression" (MVEL) before "legacy expression" (exp4j): both are bare strings and
-            // indistinguishable on load, so fit-scoring picks the first that matches - which should be
-            // the modern branch. Legacy is the deprecated fallback.
             SchemaCodecs.alt("expression", ColormapExp.TYPE.codec()),
             SchemaCodecs.alt("legacy expression", ColormapExpressionProvider.CODEC)));
+
+    Codec<IColormapExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.referenceOrDirect(BUILTIN_EXP,
+                    SchemaCodecs.alternatives(CONSTANT_CODEC, ColormapExp.TYPE.codec()), true),
+            SchemaCodecs.alt("preset", BUILTIN_EXP),
+            SchemaCodecs.alt("constant", Codec.FLOAT),
+            SchemaCodecs.alt("expression", ColormapExp.TYPE.codec())));
 
     float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome,
                    @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack);

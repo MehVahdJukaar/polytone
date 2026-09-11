@@ -4,13 +4,8 @@ import net.mehvahdjukaar.polytone.common.expressions.proxies.CameraProxy;
 
 import java.util.List;
 
-// Position and rotation come from editor sliders instead of the live camera. Must stay a subclass
-// for the MVEL accessor-cache reason noted in SimGlobalProxy; level-backed queries stay live.
 public final class SimCameraProxy extends CameraProxy {
 
-    // Private, not public: a public field named like an accessor (x -> x()) wins over the bean
-    // getter in MVEL, so g/c.x would read this SimValue instead of the overridden accessor. See
-    // SimGlobalProxy for the full explanation.
     private final SimValue x = SimValue.slider("Camera X", -256, 256, 0, 1);
     private final SimValue y = SimValue.slider("Camera Y", -64, 320, 64, 1);
     private final SimValue z = SimValue.slider("Camera Z", -256, 256, 0, 1);

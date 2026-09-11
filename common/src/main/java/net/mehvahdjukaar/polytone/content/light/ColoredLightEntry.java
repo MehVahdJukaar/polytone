@@ -31,7 +31,7 @@ public sealed interface ColoredLightEntry {
     record Blocks(Targets targets, ColoredLight<IBlockExp> light, RuleTest predicate) implements ColoredLightEntry {
         static final MapCodec<Blocks> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Targets.CODEC.fieldOf("targets").forGetter(Blocks::targets),
-                ColoredLight.codec(IBlockExp.MVEL_CODEC, IBlockExp::constant).fieldOf("colored_light").forGetter(Blocks::light),
+                ColoredLight.codec(IBlockExp.CODEC, IBlockExp::constant).fieldOf("colored_light").forGetter(Blocks::light),
                 SchemaCodecs.lenientWithLog(RuleTest.CODEC, "state_predicate", AlwaysTrueTest.INSTANCE).forGetter(Blocks::predicate)
         ).apply(i, Blocks::new));
 
@@ -62,7 +62,7 @@ public sealed interface ColoredLightEntry {
     record Particles(Targets targets, ColoredLight<IParticleExp> light) implements ColoredLightEntry {
         static final MapCodec<Particles> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Targets.CODEC.fieldOf("targets").forGetter(Particles::targets),
-                ColoredLight.codec(IParticleExp.CODEC, c -> (p, l) -> c).fieldOf("colored_light").forGetter(Particles::light)
+                ColoredLight.codec(IParticleExp.CODEC_LEGACY, c -> (p, l) -> c).fieldOf("colored_light").forGetter(Particles::light)
         ).apply(i, Particles::new));
 
         @Override
