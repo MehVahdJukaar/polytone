@@ -15,8 +15,10 @@ import java.util.function.Consumer;
 
 public final class PolyExpType<T extends PolyExp> {
 
-    // the package list is the sandbox, scripts cant call anything outside it or ExpMath
-    private static final ExpEngine ENGINE = new ExpEngine("net.mehvahdjukaar.polytone.common.expressions").importStatic(ExpMath.class);
+    //sandbox package
+    private static final ExpEngine ENGINE = new ExpEngine(
+            "net.mehvahdjukaar.polytone.common.expressions"
+    ).importStatic(ExpMath.class);
 
     private final BiFunction<ExpProgram, String, T> constructor;
     private final ExpScope inputs;
@@ -32,12 +34,9 @@ public final class PolyExpType<T extends PolyExp> {
         return codec;
     }
 
-    // globals join per compile, packs add them
     private ExpScope scope() {
         ExpScope scope = inputs.copy();
-        for (String name : Polytone.GLOBAL_EXPRESSION.variableNames()) {
-            scope.number(name, () -> Polytone.GLOBAL_EXPRESSION.getValue(name));
-        }
+        Polytone.GLOBAL_EXPRESSION.slots().forEach(scope::number);
         return scope;
     }
 
