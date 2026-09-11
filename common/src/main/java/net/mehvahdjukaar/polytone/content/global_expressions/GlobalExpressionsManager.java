@@ -9,14 +9,27 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.level.Level;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.DoubleSupplier;
 
 public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
 
     private final MapRegistry<GlobalExpression> expressions = new MapRegistry<>("Global Expressions");
-    private final Map<String, Double> values = new HashMap<>();
+    private final Map<String, Slot> values = new ConcurrentHashMap<>();
+
+    public static final class Slot implements DoubleSupplier {
+        private volatile double value;
+
+        Slot(double value) {
+            this.value = value;
+        }
+
+        @Override
+        public double getAsDouble() {
+            return value;
+        }
+    }
 
     public GlobalExpressionsManager() {
         super(Spec.of("Global expression", () -> GlobalExpression.CODEC)
@@ -30,7 +43,7 @@ public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
         for (var j : parseEnabledJsons(jsons, ops)) {
             if (j != null) {
                 expressions.register(j.getKey().toString(), j.getValue());
-                values.put(j.getKey().toDebugFileName(), j.getValue().defaultValue());
+                values.put(j.getKey().toDebugFileName(), new Slot(j.getValue().defaultValue()));
             }
         }
     }
@@ -51,8 +64,8 @@ public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
         for (var e : expressions.getEntries()) {
             GlobalExpression exp = e.getValue();
             if (time % exp.updateInterval() == 0) {
-                Identifier k = e.getKey();
-                values.put(k.toDebugFileName(), exp.exp().evaluate());
+                Slot slot = values.get(e.getKey().toDebugFileName());
+                if (slot != null) slot.value = exp.exp().evaluate();
             }
         }
     }
@@ -60,11 +73,11 @@ public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
     // Runtime lookup for global.value('name'): resolves at evaluation time, so usable from expressions
     // compiled before globals register (custom particles parse in the async prepare phase).
     public double getValue(String key) {
-        Object d = values.get(key);
-        return d instanceof Number n ? n.doubleValue() : 0;
+        Slot slot = values.get(key);
+        return slot == null ? 0 : slot.value;
     }
 
-    public Set<String> variableNames() {
-        return values.keySet();
+    public Map<String, Slot> slots() {
+        return values;
     }
 }
