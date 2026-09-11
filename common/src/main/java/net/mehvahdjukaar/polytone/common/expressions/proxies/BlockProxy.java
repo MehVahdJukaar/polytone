@@ -87,6 +87,11 @@ public class BlockProxy extends PositionalProxy {
         return pos.getZ();
     }
 
+    //careful with this. meant to be used after .relative as normally it would just be same as the global random as thats seeded by our pos
+    public RandomProxy blockRandom() {
+        return RandomProxy.posSeeded(pos);
+    }
+
     //offsets are clamped so a chain like north.up.north cant walk further than MAX_NEIGHBOR_DEPTH on any axis
 
     public BlockProxy relative(double dx, double dy, double dz) {
@@ -98,7 +103,7 @@ public class BlockProxy extends PositionalProxy {
     }
 
     private static int clampToDepth(int value, int originAxis) {
-        return Math.max(originAxis - MAX_NEIGHBOR_DEPTH, Math.min(originAxis + MAX_NEIGHBOR_DEPTH, value));
+        return Math.clamp(value, originAxis - MAX_NEIGHBOR_DEPTH, originAxis + MAX_NEIGHBOR_DEPTH);
     }
 
     public BlockProxy north() {
