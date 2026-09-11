@@ -29,17 +29,17 @@ public record CustomParticleInitializer(@Nullable IBlockExp size,
                                         Map<String, IBlockExp> customs) {
 
     public static final SchemaCodec<CustomParticleInitializer> CODEC = SchemaRecord.create(CustomParticleInitializer.class, i -> i.group(
-            i.optional("size", IBlockExp.CODEC, p -> Optional.ofNullable(p.size)),
-            i.optional("lifetime", IBlockExp.CODEC, p -> Optional.ofNullable(p.lifetime)),
-            i.optional("red", IBlockExp.CODEC, p -> Optional.ofNullable(p.red)),
-            i.optional("green", IBlockExp.CODEC, p -> Optional.ofNullable(p.green)),
-            i.optional("blue", IBlockExp.CODEC, p -> Optional.ofNullable(p.blue)),
-            i.optional("alpha", IBlockExp.CODEC, p -> Optional.ofNullable(p.alpha)),
-            i.optional("roll", IBlockExp.CODEC, p -> Optional.ofNullable(p.roll)),
-            i.optional("friction", IBlockExp.CODEC, p -> Optional.ofNullable(p.friction)),
-            i.optional("hitbox_size", IBlockExp.CODEC, p -> Optional.ofNullable(p.hitboxSize)),
-            i.optional("custom", IBlockExp.CODEC, p -> Optional.ofNullable(p.custom)),
-            i.optional("customs", Codec.unboundedMap(Codec.STRING, IBlockExp.CODEC), Map.of(), p -> p.customs)
+            i.optional("size", IBlockExp.CODEC_LEGACY, p -> Optional.ofNullable(p.size)),
+            i.optional("lifetime", IBlockExp.CODEC_LEGACY, p -> Optional.ofNullable(p.lifetime)),
+            i.optional("red", IBlockExp.CODEC_LEGACY, p -> Optional.ofNullable(p.red)),
+            i.optional("green", IBlockExp.CODEC_LEGACY, p -> Optional.ofNullable(p.green)),
+            i.optional("blue", IBlockExp.CODEC_LEGACY, p -> Optional.ofNullable(p.blue)),
+            i.optional("alpha", IBlockExp.CODEC_LEGACY, p -> Optional.ofNullable(p.alpha)),
+            i.optional("roll", IBlockExp.CODEC_LEGACY, p -> Optional.ofNullable(p.roll)),
+            i.optional("friction", IBlockExp.CODEC_LEGACY, p -> Optional.ofNullable(p.friction)),
+            i.optional("hitbox_size", IBlockExp.CODEC_LEGACY, p -> Optional.ofNullable(p.hitboxSize)),
+            i.optional("custom", IBlockExp.CODEC_LEGACY, p -> Optional.ofNullable(p.custom)),
+            i.optional("customs", Codec.unboundedMap(Codec.STRING, IBlockExp.CODEC_LEGACY), Map.of(), p -> p.customs)
     ).apply(i, CustomParticleInitializer::new));
 
     private CustomParticleInitializer(Optional<IBlockExp> size, Optional<IBlockExp> lifetime,

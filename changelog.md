@@ -1,1 +1,1 @@
-- added support for particle options in particle emitters
+- replaced MVEL with Nexp, lib is smaller, less prone to isses and faster. should keep pack compatibility

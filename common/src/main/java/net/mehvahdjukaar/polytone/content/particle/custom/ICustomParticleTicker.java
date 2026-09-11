@@ -11,7 +11,7 @@ public interface ICustomParticleTicker {
 
     Codec<ICustomParticleTicker> CODEC = SchemaCodecs.alternatives(
             "multi", MultiExpressionParticleTicker.CODEC,
-            "expression", IParticleExp.CODEC.xmap(e -> e::evaluate,
+            "expression", IParticleExp.CODEC_LEGACY.xmap(e -> e::evaluate,
                     p -> IParticleExp.ZERO
             ));
 

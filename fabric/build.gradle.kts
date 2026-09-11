@@ -8,7 +8,7 @@ fabric {
 }
 
 val exp4j_version: String by extra
-val mvel_version: String by extra
+val nexp_version: String by extra
 val codecui_version: String by extra
 val nautilus_studio_version: String by extra
 val fabric_loader_version: String by extra
@@ -25,7 +25,7 @@ dependencies {
     modImplementation("net.mehvahdjukaar:nautilus_studio-fabric:${nautilus_studio_version}")
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
-    apiInclude("org.mvel:mvel2:${mvel_version}")
+    apiInclude("hollowpoint:nexp:${nexp_version}")
 
 
 

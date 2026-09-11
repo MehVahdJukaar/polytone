@@ -60,8 +60,8 @@ public final class Colormap implements IColorGetter, ColorResolver {
     // plus a Schema so the editor renders real widgets (schema is built lazily at editor open).
     public static final SchemaCodec<Colormap> DIRECT_CODEC = SchemaRecord.create(Colormap.class, i -> i.group(
             i.optional("default_color", ColorUtils.COLOR, c -> Optional.ofNullable(c.defaultColor)),
-            i.field("x_axis", IColormapExp.CODEC, c -> c.xGetter),
-            i.field("y_axis", IColormapExp.CODEC, c -> c.yGetter),
+            i.field("x_axis", IColormapExp.CODEC_LEGACY, c -> c.xGetter),
+            i.field("y_axis", IColormapExp.CODEC_LEGACY, c -> c.yGetter),
             i.optional("triangular", Codec.BOOL, false, c -> c.triangular),
             i.optional("rounds", Codec.BOOL, true, c -> c.rounds),
             i.optional("biome_blend", Codec.BOOL, c -> Optional.of(c.hasBiomeBlend)),
