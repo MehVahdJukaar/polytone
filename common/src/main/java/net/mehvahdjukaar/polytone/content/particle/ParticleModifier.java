@@ -43,7 +43,7 @@ public class ParticleModifier {
             ParticleContextExpression.CODEC.optionalFieldOf("blue").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             ParticleContextExpression.CODEC.optionalFieldOf("alpha").forGetter(p -> Optional.ofNullable(p.colorGetter)),
             ParticleContextExpression.CODEC.optionalFieldOf("speed").forGetter(p -> Optional.ofNullable(p.speedGetter)),
-            ColoredLight.codec(IParticleExp.CODEC, c -> (particle, level) -> c)
+            ColoredLight.codec(IParticleExp.CODEC_LEGACY, c -> (particle, level) -> c)
                     .optionalFieldOf("colored_light").forGetter(p -> Optional.ofNullable(p.coloredLight)),
             Targets.CODEC.optionalFieldOf("targets", Targets.EMPTY).forGetter(p -> p.targets)
 

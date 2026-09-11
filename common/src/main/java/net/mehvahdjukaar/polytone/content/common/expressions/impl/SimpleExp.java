@@ -1,35 +1,21 @@
 package net.mehvahdjukaar.polytone.content.common.expressions.impl;
 
-import net.mehvahdjukaar.polytone.content.common.expressions.ExpUtils;
+import hollowpoint.nexp.api.ExpProgram;
 import net.mehvahdjukaar.polytone.content.common.expressions.PolyExp;
 import net.mehvahdjukaar.polytone.content.common.expressions.PolyExpType;
 import net.mehvahdjukaar.polytone.content.common.expressions.proxies.RandomProxy;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 public class SimpleExp extends PolyExp implements ISimpleExp {
 
-    public static final PolyExpType<SimpleExp> TYPE =
-            new PolyExpType<>(
-                    SimpleExp::new,
-                    ExpUtils::addCommonInputs
-            );
+    public static final PolyExpType<SimpleExp> TYPE = new PolyExpType<>(SimpleExp::new,
+            c -> c.input(RandomProxy.class, "r", "random"));
 
-    protected SimpleExp(Serializable expr) {
-        super(expr);
+    protected SimpleExp(ExpProgram program, String source) {
+        super(program, source);
     }
 
     @Override
     public double evaluate() {
-        Map<String, Object> vars = new HashMap<>();
-        ExpUtils.addCommonVars(vars);
-        RandomProxy rand = RandomProxy.GLOBAL;
-        vars.put("random", rand);
-        vars.put("r", rand);
-        return executeDouble(vars);
+        return executeDouble(RandomProxy.GLOBAL);
     }
-
-
 }

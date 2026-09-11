@@ -8,10 +8,10 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import org.mvel2.ParserContext;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class GlobalExpressionsManager extends JsonPartialReloader<GlobalExpression> {
 
@@ -25,8 +25,6 @@ public class GlobalExpressionsManager extends JsonPartialReloader<GlobalExpressi
                 .folders("global_expressions"));
     }
 
-    // ResourceLocation has no toDebugFileName() on 1.21.1 - replicate it: a safe MVEL variable
-    // name derived from the file id (namespace:path -> namespace_path).
     private static String varName(ResourceLocation id) {
         return id.toString().replace('/', '_').replace(':', '_');
     }
@@ -54,7 +52,6 @@ public class GlobalExpressionsManager extends JsonPartialReloader<GlobalExpressi
 
     public void tick(Level level) {
         long time = level.getGameTime();
-        // driven from ClientFrameTicker (per render frame) - only advance once per game tick
         if (time == lastGameTime) return;
         lastGameTime = time;
         for (var e : expressions.getEntries()) {
@@ -65,19 +62,11 @@ public class GlobalExpressionsManager extends JsonPartialReloader<GlobalExpressi
         }
     }
 
-    public void addValues(Map<String, Object> map) {
-        map.putAll(values);
-    }
-
     public double getValue(String key) {
         return values.getOrDefault(key, 0.0);
     }
 
-    public void addTypes(ParserContext ctx) {
-        for (var e : values.entrySet()) {
-            if (e.getValue() != null) {
-                ctx.addInput(e.getKey(), e.getValue().getClass());
-            }
-        }
+    public Set<String> variableNames() {
+        return values.keySet();
     }
 }

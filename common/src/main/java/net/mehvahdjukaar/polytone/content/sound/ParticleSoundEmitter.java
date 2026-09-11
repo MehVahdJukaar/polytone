@@ -41,12 +41,12 @@ public record ParticleSoundEmitter(
     public static final Codec<ParticleSoundEmitter> CODEC = RecordCodecBuilder.create(i -> i.group(
             CodecUtils.forwardAwareSoundEvent().fieldOf("sound").forGetter(ParticleSoundEmitter::sound),
             SOUND_SOURCE_CODEC.optionalFieldOf("source", SoundSource.BLOCKS).forGetter(ParticleSoundEmitter::category),
-            IParticleExp.CODEC.optionalFieldOf("chance", IParticleExp.ONE).forGetter(ParticleSoundEmitter::chance),
-            IParticleExp.CODEC.optionalFieldOf("x", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::x),
-            IParticleExp.CODEC.optionalFieldOf("y", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::y),
-            IParticleExp.CODEC.optionalFieldOf("z", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::z),
-            IParticleExp.CODEC.optionalFieldOf("volume", IParticleExp.ONE).forGetter(ParticleSoundEmitter::volume),
-            IParticleExp.CODEC.optionalFieldOf("pitch", IParticleExp.ONE).forGetter(ParticleSoundEmitter::pitch),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("chance", IParticleExp.ONE).forGetter(ParticleSoundEmitter::chance),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("x", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::x),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("y", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::y),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("z", IParticleExp.ZERO).forGetter(ParticleSoundEmitter::z),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("volume", IParticleExp.ONE).forGetter(ParticleSoundEmitter::volume),
+            IParticleExp.CODEC_LEGACY.optionalFieldOf("pitch", IParticleExp.ONE).forGetter(ParticleSoundEmitter::pitch),
             Codec.BOOL.optionalFieldOf("distance_delay", false).forGetter(ParticleSoundEmitter::distanceDelay),
             CodecUtils.forwardAwareHomogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(ParticleSoundEmitter::biomes)
     ).apply(i, ParticleSoundEmitter::new));

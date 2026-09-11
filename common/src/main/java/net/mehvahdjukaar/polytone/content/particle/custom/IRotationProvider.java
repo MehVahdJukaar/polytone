@@ -40,9 +40,9 @@ public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
                           IParticleExp zRot) implements IRotationProvider {
 
         public static final Codec<CustomRotation> CODEC = RecordCodecBuilder.<CustomRotation>create(instance -> instance.group(
-                        IParticleExp.CODEC.optionalFieldOf("x_rot", IParticleExp.ZERO).forGetter(CustomRotation::xRot),
-                        IParticleExp.CODEC.optionalFieldOf("y_rot", IParticleExp.ZERO).forGetter(CustomRotation::yRot),
-                        IParticleExp.CODEC.optionalFieldOf("z_rot", IParticleExp.ZERO).forGetter(CustomRotation::zRot)
+                        IParticleExp.CODEC_LEGACY.optionalFieldOf("x_rot", IParticleExp.ZERO).forGetter(CustomRotation::xRot),
+                        IParticleExp.CODEC_LEGACY.optionalFieldOf("y_rot", IParticleExp.ZERO).forGetter(CustomRotation::yRot),
+                        IParticleExp.CODEC_LEGACY.optionalFieldOf("z_rot", IParticleExp.ZERO).forGetter(CustomRotation::zRot)
                 ).apply(instance, CustomRotation::new))
                 .validate(o -> {
                     if (o.xRot == IParticleExp.ZERO && o.yRot == IParticleExp.ZERO && o.zRot == IParticleExp.ZERO) {
@@ -80,9 +80,9 @@ public interface IRotationProvider extends SingleQuadParticle.FacingCameraMode {
                                 IParticleExp z) implements IRotationProvider {
 
         public static final Codec<CustomFacingRotation> CODEC = RecordCodecBuilder.<CustomFacingRotation>create(instance -> instance.group(
-                IParticleExp.CODEC.optionalFieldOf("x_forward", IParticleExp.ZERO).forGetter(CustomFacingRotation::x),
-                IParticleExp.CODEC.optionalFieldOf("y_forward", IParticleExp.ZERO).forGetter(CustomFacingRotation::y),
-                IParticleExp.CODEC.optionalFieldOf("z_forward", IParticleExp.ZERO).forGetter(CustomFacingRotation::z)
+                IParticleExp.CODEC_LEGACY.optionalFieldOf("x_forward", IParticleExp.ZERO).forGetter(CustomFacingRotation::x),
+                IParticleExp.CODEC_LEGACY.optionalFieldOf("y_forward", IParticleExp.ZERO).forGetter(CustomFacingRotation::y),
+                IParticleExp.CODEC_LEGACY.optionalFieldOf("z_forward", IParticleExp.ZERO).forGetter(CustomFacingRotation::z)
         ).apply(instance, CustomFacingRotation::new)).validate(o -> {
             if (o.x == IParticleExp.ZERO && o.y == IParticleExp.ZERO && o.z == IParticleExp.ZERO) {
                 return DataResult.error(() -> "must set at least one of the rotations");

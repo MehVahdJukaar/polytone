@@ -9,7 +9,7 @@ neoforge {
 }
 
 val exp4j_version: String by extra
-val mvel_version: String by extra
+val nexp_version: String by extra
 val codecui_version: String by extra
 val nautilus_studio_version: String by extra
 val veil_version: String by extra
@@ -32,11 +32,11 @@ dependencies {
     localRuntime("net.objecthunter:exp4j:${exp4j_version}")
     serverAdditionalRuntimeClasspath("net.objecthunter:exp4j:${exp4j_version}")
     clientAdditionalRuntimeClasspath("net.objecthunter:exp4j:${exp4j_version}")
-    apiInclude("org.mvel:mvel2:${mvel_version}")
-    implementation("org.mvel:mvel2:${mvel_version}")
-    localRuntime("org.mvel:mvel2:${mvel_version}")
-    serverAdditionalRuntimeClasspath("org.mvel:mvel2:${mvel_version}")
-    clientAdditionalRuntimeClasspath("org.mvel:mvel2:${mvel_version}")
+    apiInclude("hollowpoint:nexp:${nexp_version}")
+    implementation("hollowpoint:nexp:${nexp_version}")
+    localRuntime("hollowpoint:nexp:${nexp_version}")
+    serverAdditionalRuntimeClasspath("hollowpoint:nexp:${nexp_version}")
+    clientAdditionalRuntimeClasspath("hollowpoint:nexp:${nexp_version}")
 
     modCompileOnly("net.mehvahdjukaar:nautilus_studio-neoforge:${nautilus_studio_version}")
     modRuntimeOnly("net.mehvahdjukaar:nautilus_studio-neoforge:${nautilus_studio_version}")

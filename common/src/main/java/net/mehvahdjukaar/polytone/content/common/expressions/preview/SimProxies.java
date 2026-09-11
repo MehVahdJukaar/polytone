@@ -3,8 +3,7 @@ package net.mehvahdjukaar.polytone.content.common.expressions.preview;
 import java.util.ArrayList;
 import java.util.List;
 
-// Installed via PreviewContext; the MVEL variable binding swaps each proxy in for its live singleton.
-// One instance per preview panel, so slider state is independent per open tab.
+// Installed via PreviewContext
 public final class SimProxies {
 
     public final SimGlobalProxy global = new SimGlobalProxy();

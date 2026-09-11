@@ -237,7 +237,7 @@ public record BlockPropertyModifier(
                     IRenderProperties.CODEC.optionalFieldOf("render_type").forGetter(BlockPropertyModifier::renderType),
                     Codec.intRange(0, 15).xmap(integer -> (ToIntFunction<BlockState>) s -> integer, toIntFunction -> 0)
                             .optionalFieldOf("client_light").forGetter(BlockPropertyModifier::clientLight),
-                    ColoredLight.codec(IBlockExp.MVEL_CODEC, IBlockExp::constant)
+                    ColoredLight.codec(IBlockExp.CODEC, IBlockExp::constant)
                             .optionalFieldOf("colored_light").forGetter(BlockPropertyModifier::coloredLight),
                     BlockParticleEmitter.CODEC.listOf().optionalFieldOf("particle_emitters", List.of()).forGetter(BlockPropertyModifier::particleEmitters),
                     BlockSoundEmitter.CODEC.listOf().optionalFieldOf("sound_emitters", List.of()).forGetter(BlockPropertyModifier::soundEmitters),

@@ -7,14 +7,14 @@ common {
 }
 
 val exp4j_version: String by extra
-val mvel_version: String by extra
+val nexp_version: String by extra
 val codecui_version: String by extra
 val nautilus_studio_version: String by extra
 val veil_version: String by extra
 
 dependencies {
     implementation("net.objecthunter:exp4j:${exp4j_version}")
-    implementation("org.mvel:mvel2:${mvel_version}")
+    implementation("hollowpoint:nexp:${nexp_version}")
 
     // Declarative codec->schema engine (compile against the common artifact; bundled per-loader below)
     compileOnly("net.mehvahdjukaar:codecui-common:${codecui_version}")

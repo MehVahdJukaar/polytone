@@ -56,8 +56,8 @@ public final class Colormap implements IColorGetter, ColorResolver {
 
     static final Codec<Colormap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
             ColorUtils.CODEC.optionalFieldOf("default_color").forGetter(c -> Optional.ofNullable(c.defaultColor)),
-            IColormapExp.CODEC.fieldOf("x_axis").forGetter(c -> c.xGetter),
-            IColormapExp.CODEC.fieldOf("y_axis").forGetter(c -> c.yGetter),
+            IColormapExp.CODEC_LEGACY.fieldOf("x_axis").forGetter(c -> c.xGetter),
+            IColormapExp.CODEC_LEGACY.fieldOf("y_axis").forGetter(c -> c.yGetter),
             Codec.BOOL.optionalFieldOf("triangular", false).forGetter(c -> c.triangular),
             Codec.BOOL.optionalFieldOf("rounds", true).forGetter(c -> c.rounds),
             Codec.BOOL.optionalFieldOf("biome_blend").forGetter(c -> Optional.of(c.hasBiomeBlend)),
@@ -163,7 +163,7 @@ public final class Colormap implements IColorGetter, ColorResolver {
     @Override
     public int getColor(@Nullable BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos, int i) {
         if (level == null) return defaultColor;
-        levelHack.set(level); // so sampleColor (incl. the biome-blend/Sodium detours) can feed MVEL axes the level
+        levelHack.set(level); // so sampleColor (incl. the biome-blend/Sodium detours) can feed script axes the level
         if (pos == null && (usesPos || usesBiome)) {
             return defaultColor;
         }
