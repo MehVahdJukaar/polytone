@@ -9,14 +9,27 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.DoubleSupplier;
 
 public class GlobalExpressionsManager extends JsonPartialReloader<GlobalExpression> {
 
     private final MapRegistry<GlobalExpression> expressions = new MapRegistry<>("Global Expressions");
-    private final Map<String, Double> values = new HashMap<>();
+    private final Map<String, Slot> values = new ConcurrentHashMap<>();
+
+    public static final class Slot implements DoubleSupplier {
+        private volatile double value;
+
+        Slot(double value) {
+            this.value = value;
+        }
+
+        @Override
+        public double getAsDouble() {
+            return value;
+        }
+    }
     private long lastGameTime = Long.MIN_VALUE;
 
     public GlobalExpressionsManager() {
@@ -34,7 +47,7 @@ public class GlobalExpressionsManager extends JsonPartialReloader<GlobalExpressi
         for (var j : Parsed.batchParseOnlyEnabled(jsons, GlobalExpression.CODEC, ops, "Global Expression")) {
             if (j.getValue() != null) {
                 expressions.register(j.getKey(), j.getValue());
-                values.put(varName(j.getKey()), j.getValue().defaultValue());
+                values.put(varName(j.getKey()), new Slot(j.getValue().defaultValue()));
             }
         }
     }
@@ -57,16 +70,18 @@ public class GlobalExpressionsManager extends JsonPartialReloader<GlobalExpressi
         for (var e : expressions.getEntries()) {
             GlobalExpression exp = e.getValue();
             if (time % exp.updateInterval() == 0) {
-                values.put(varName(e.getKey()), exp.exp().evaluate());
+                Slot slot = values.get(varName(e.getKey()));
+                if (slot != null) slot.value = exp.exp().evaluate();
             }
         }
     }
 
     public double getValue(String key) {
-        return values.getOrDefault(key, 0.0);
+        Slot slot = values.get(key);
+        return slot == null ? 0 : slot.value;
     }
 
-    public Set<String> variableNames() {
-        return values.keySet();
+    public Map<String, Slot> slots() {
+        return values;
     }
 }
