@@ -8,7 +8,7 @@ neoforge {
 }
 
 val exp4j_version: String by extra
-val mvel_version: String by extra
+val nexp_version: String by extra
 val codecui_version: String by extra
 val nautilus_studio_version: String by extra
 val packed_packs_neoforge_version: String by extra
@@ -22,8 +22,8 @@ dependencies {
 
     apiInclude("net.objecthunter:exp4j:${exp4j_version}")
     //forgeRuntimeLibrary ( "net.objecthunter:exp4j:${exp4j_version}")
-    apiInclude("org.mvel:mvel2:${mvel_version}")
-    //forgeRuntimeLibrary ("org.mvel:mvel2:${mvel_version}")
+    apiInclude("hollowpoint:nexp:${nexp_version}")
+    //forgeRuntimeLibrary ("hollowpoint:nexp:${nexp_version}")
 
     //   modImplementation ("curse.maven:embeddium-908741:6118392")
     modCompileOnly("curse.maven:curios-309927:6538253")

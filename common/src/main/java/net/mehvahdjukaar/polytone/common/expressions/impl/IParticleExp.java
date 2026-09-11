@@ -4,13 +4,12 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.ParticleContextExpression;
-import net.mehvahdjukaar.polytone.common.expressions.ParticleExpEnv;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.world.level.Level;
 
 public interface IParticleExp {
 
-    Codec<IParticleExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+    Codec<IParticleExp> CODEC_LEGACY = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
             SchemaCodecs.alternatives(
                     CodecUtils.LENIENT_DOUBLE.xmap(
                             aDouble -> (IParticleExp) (p, l) -> aDouble,
@@ -18,20 +17,18 @@ public interface IParticleExp {
                     ),
                     ParticleContextExpression.CODEC,
                     ParticleExp.TYPE.codec()),
-            // constant: plain number (LENIENT_DOUBLE would splice its double-or-string union into
-            // stray "number"/"text" options). expression before legacy: both encode as bare strings,
-            // so fit-scoring on load should land on the modern branch, not the deprecated one.
             SchemaCodecs.alt("constant", Codec.DOUBLE),
             SchemaCodecs.alt("expression", ParticleExp.TYPE.codec()),
             SchemaCodecs.alt("legacy expression", ParticleContextExpression.CODEC)));
 
-    double evaluate(Particle particle, Level level);
+    Codec<IParticleExp> CODEC = Codec.lazyInitialized(() -> SchemaCodecs.labeled(
+            SchemaCodecs.alternatives(
+                    CodecUtils.LENIENT_DOUBLE.xmap(aDouble -> (p, l) -> aDouble, i -> 0.0),
+                    ParticleExp.TYPE.codec()),
+            SchemaCodecs.alt("constant", Codec.DOUBLE),
+            SchemaCodecs.alt("expression", ParticleExp.TYPE.codec())));
 
-    // reusable per-thread var environment instead of a fresh map per call; constants and the legacy
-    // exp4j path ignore it and fall back to the plain overload
-    default double evaluateAsync(Particle particle, Level level, ParticleExpEnv env) {
-        return evaluate(particle, level);
-    }
+    double evaluate(Particle particle, Level level);
 
     IParticleExp ZERO = (p, l) -> 0.0;
     IParticleExp ONE = (p, l) -> 1.0;

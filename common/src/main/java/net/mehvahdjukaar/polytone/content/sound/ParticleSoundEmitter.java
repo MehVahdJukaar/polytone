@@ -42,12 +42,12 @@ public record ParticleSoundEmitter(
     public static final SchemaCodec<ParticleSoundEmitter> CODEC = SchemaRecord.create(ParticleSoundEmitter.class, i -> i.group(
             i.field("sound", CodecUtils.forwardAwareSoundEvent(), ParticleSoundEmitter::sound),
             i.optional("source", SOUND_SOURCE_CODEC, SoundSource.BLOCKS, ParticleSoundEmitter::category),
-            i.optional("chance", IParticleExp.CODEC, IParticleExp.ONE, ParticleSoundEmitter::chance),
-            i.optional("x", IParticleExp.CODEC, IParticleExp.ZERO, ParticleSoundEmitter::x),
-            i.optional("y", IParticleExp.CODEC, IParticleExp.ZERO, ParticleSoundEmitter::y),
-            i.optional("z", IParticleExp.CODEC, IParticleExp.ZERO, ParticleSoundEmitter::z),
-            i.optional("volume", IParticleExp.CODEC, IParticleExp.ONE, ParticleSoundEmitter::volume),
-            i.optional("pitch", IParticleExp.CODEC, IParticleExp.ONE, ParticleSoundEmitter::pitch),
+            i.optional("chance", IParticleExp.CODEC_LEGACY, IParticleExp.ONE, ParticleSoundEmitter::chance),
+            i.optional("x", IParticleExp.CODEC_LEGACY, IParticleExp.ZERO, ParticleSoundEmitter::x),
+            i.optional("y", IParticleExp.CODEC_LEGACY, IParticleExp.ZERO, ParticleSoundEmitter::y),
+            i.optional("z", IParticleExp.CODEC_LEGACY, IParticleExp.ZERO, ParticleSoundEmitter::z),
+            i.optional("volume", IParticleExp.CODEC_LEGACY, IParticleExp.ONE, ParticleSoundEmitter::volume),
+            i.optional("pitch", IParticleExp.CODEC_LEGACY, IParticleExp.ONE, ParticleSoundEmitter::pitch),
             i.optional("distance_delay", Codec.BOOL, false, ParticleSoundEmitter::distanceDelay),
             i.optional("biomes", CodecUtils.forwardAwareHomogeneousList(Registries.BIOME), ParticleSoundEmitter::biomes)
     ).apply(i, ParticleSoundEmitter::new));

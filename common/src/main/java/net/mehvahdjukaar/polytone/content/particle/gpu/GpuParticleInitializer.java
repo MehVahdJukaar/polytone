@@ -28,15 +28,15 @@ public record GpuParticleInitializer(IBlockExp size,
             Optional.empty(), IBlockExp.ZERO, IBlockExp.ZERO);
 
     public static final SchemaCodec<GpuParticleInitializer> CODEC = SchemaRecord.create(GpuParticleInitializer.class, i -> i.group(
-            i.optional("size", IBlockExp.MVEL_CODEC, DEFAULT.size, GpuParticleInitializer::size),
-            i.optional("lifetime", IBlockExp.MVEL_CODEC, DEFAULT.lifetime, GpuParticleInitializer::lifetime),
-            i.optional("red", IBlockExp.MVEL_CODEC, DEFAULT.red, GpuParticleInitializer::red),
-            i.optional("green", IBlockExp.MVEL_CODEC, DEFAULT.green, GpuParticleInitializer::green),
-            i.optional("blue", IBlockExp.MVEL_CODEC, DEFAULT.blue, GpuParticleInitializer::blue),
-            i.optional("alpha", IBlockExp.MVEL_CODEC, DEFAULT.alpha, GpuParticleInitializer::alpha),
+            i.optional("size", IBlockExp.CODEC, DEFAULT.size, GpuParticleInitializer::size),
+            i.optional("lifetime", IBlockExp.CODEC, DEFAULT.lifetime, GpuParticleInitializer::lifetime),
+            i.optional("red", IBlockExp.CODEC, DEFAULT.red, GpuParticleInitializer::red),
+            i.optional("green", IBlockExp.CODEC, DEFAULT.green, GpuParticleInitializer::green),
+            i.optional("blue", IBlockExp.CODEC, DEFAULT.blue, GpuParticleInitializer::blue),
+            i.optional("alpha", IBlockExp.CODEC, DEFAULT.alpha, GpuParticleInitializer::alpha),
             i.optional("colormap", Colormap.CODEC, GpuParticleInitializer::colormap),
-            i.optional("roll", IBlockExp.MVEL_CODEC, DEFAULT.roll, GpuParticleInitializer::roll),
-            i.optional("custom", IBlockExp.MVEL_CODEC, DEFAULT.custom, GpuParticleInitializer::custom)
+            i.optional("roll", IBlockExp.CODEC, DEFAULT.roll, GpuParticleInitializer::roll),
+            i.optional("custom", IBlockExp.CODEC, DEFAULT.custom, GpuParticleInitializer::custom)
     ).apply(i, GpuParticleInitializer::new));
 
     public SpawnValues evaluate(Level level, Vec3 pos, BlockState state) {

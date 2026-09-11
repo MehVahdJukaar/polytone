@@ -166,7 +166,7 @@ public interface IColorGetter extends BlockColor, BarColor {
             IColorGetter.StaticColor::new, g -> g instanceof StaticColor(int color) ? color : 0
     );
 
-    Codec<IColorGetter> EXPRESSION_CODEC = IBlockExp.CODEC.xmap(
+    Codec<IColorGetter> EXPRESSION_CODEC = IBlockExp.CODEC_LEGACY.xmap(
             IColorGetter.ExpressionColor::new,
             g -> g instanceof ExpressionColor(IBlockExp exp) ? exp : IBlockExp.ZERO
     );

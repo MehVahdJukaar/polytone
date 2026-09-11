@@ -104,7 +104,7 @@ public class DynamicAttributes {
 
             return Codec.either(originalCodec, (Codec) intCodec);
         } else if (type == AttributeTypes.FLOAT || type == AttributeTypes.ANGLE_DEGREES) {
-            Codec<Supplier<Float>> floatCodec = IBlockExp.CODEC
+            Codec<Supplier<Float>> floatCodec = IBlockExp.CODEC_LEGACY
                     .xmap(e -> () -> {
                                 ClientLevel level = Minecraft.getInstance().level;
                                 if (level == null) return 0f;

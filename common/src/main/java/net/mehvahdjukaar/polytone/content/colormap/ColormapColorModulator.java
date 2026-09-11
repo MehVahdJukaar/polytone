@@ -18,9 +18,9 @@ public class ColormapColorModulator {
 
     public static SchemaCodec<ColormapColorModulator> CODEC = SchemaRecord.create(ColormapColorModulator.class, i ->
             i.group(
-                    i.optional("red", IColormapModExp.CODEC, c -> c.red),
-                    i.optional("green", IColormapModExp.CODEC, c -> c.green),
-                    i.optional("blue", IColormapModExp.CODEC, c -> c.blue)
+                    i.optional("red", IColormapModExp.CODEC_LEGACY, c -> c.red),
+                    i.optional("green", IColormapModExp.CODEC_LEGACY, c -> c.green),
+                    i.optional("blue", IColormapModExp.CODEC_LEGACY, c -> c.blue)
             ).apply(i, ColormapColorModulator::new));
 
     private final Optional<IColormapModExp> red;

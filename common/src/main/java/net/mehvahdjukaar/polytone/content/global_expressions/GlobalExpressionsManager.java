@@ -8,10 +8,10 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.level.Level;
-import org.mvel2.ParserContext;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
 
@@ -57,10 +57,6 @@ public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
         }
     }
 
-    public void addValues(Map<String, Object> map) {
-        map.putAll(values);
-    }
-
     // Runtime lookup for global.value('name'): resolves at evaluation time, so usable from expressions
     // compiled before globals register (custom particles parse in the async prepare phase).
     public double getValue(String key) {
@@ -68,11 +64,7 @@ public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
         return d instanceof Number n ? n.doubleValue() : 0;
     }
 
-    public void addTypes(ParserContext ctx) {
-        for (var e : values.entrySet()) {
-            if (e.getValue() != null) {
-                ctx.addInput(e.getKey(), e.getValue().getClass());
-            }
-        }
+    public Set<String> variableNames() {
+        return values.keySet();
     }
 }

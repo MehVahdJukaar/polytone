@@ -1,11 +1,11 @@
 package net.mehvahdjukaar.polytone.common.expressions.impl;
 
-import net.mehvahdjukaar.polytone.common.expressions.ExpUtils;
+import hollowpoint.nexp.api.ExpProgram;
+import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExp;
 import net.mehvahdjukaar.polytone.common.expressions.PolyExpType;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.BlockProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.RandomProxy;
-import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -15,27 +15,18 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 public class ColormapExp extends PolyExp implements IColormapExp {
 
-    public static final PolyExpType<ColormapExp> TYPE =
-            new PolyExpType<>(
-                    ColormapExp::new,
-                    c -> {
-                        ExpUtils.addCommonInputs(c);
-                        c.addInput("o", BlockProxy.class);
-                        c.addInput("object", BlockProxy.class);
-                    }
-            );
+    public static final PolyExpType<ColormapExp> TYPE = new PolyExpType<>(ColormapExp::new,
+            c -> c.input(BlockProxy.class, "o", "object").input(RandomProxy.class, "r", "random"));
 
     private final boolean hasBiome;
 
-    public ColormapExp(Serializable ser, String exprString) {
-        super(ser);
-        this.hasBiome = exprString.contains("biome");
+    public ColormapExp(ExpProgram program, String source) {
+        super(program, source);
+        boolean biome = false;
+        for (String member : program.usedMembers()) biome |= member.toLowerCase().contains("biome");
+        this.hasBiome = biome;
     }
 
     @Override
@@ -45,14 +36,7 @@ public class ColormapExp extends PolyExp implements IColormapExp {
 
     @Override
     public float evaluate(@NotNull BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
-        BlockProxy obj = new BlockProxy(level, pos, state, biome);
-        Map<String, Object> vars = new HashMap<>();
-        ExpUtils.addCommonVars(vars);
-        vars.put("o", obj);
-        vars.put("object", obj);
         RandomProxy rand = pos == null ? RandomProxy.GLOBAL : RandomProxy.posSeeded(BlockPos.containing(pos));
-        vars.put("random", rand);
-        vars.put("r", rand);
-        return (float) executeDouble(vars);
+        return (float) executeDouble(new BlockProxy(level, pos, state, biome), rand);
     }
 }
