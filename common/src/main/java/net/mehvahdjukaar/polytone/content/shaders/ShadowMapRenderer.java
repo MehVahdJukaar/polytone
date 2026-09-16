@@ -166,8 +166,10 @@ public class ShadowMapRenderer {
 
         Matrix4f lightView = new Matrix4f().lookAlong(
                 -towardLight.x, -towardLight.y, -towardLight.z, up.x, up.y, up.z);
+        // reversed-Z like vanilla Projection
+        boolean zZeroToOne = RenderSystem.getDevice().getDeviceInfo().isZZeroToOne();
         Matrix4f lightProj = new Matrix4f().ortho(
-                -coverage, coverage, -coverage, coverage, -depthRange, depthRange);
+                -coverage, coverage, -coverage, coverage, depthRange, -depthRange, zZeroToOne);
 
         // texel snap, anchored to the camera's chunk corner; known accepted artifact, see research/POST_SHADOW_NOTES.md
         double anchorX = camPos.x - Math.floor(camPos.x / 16.0) * 16.0;
@@ -198,7 +200,7 @@ public class ShadowMapRenderer {
         }
 
         // always clear, even with nothing to draw: a stale map has last frame's projection
-        device.createCommandEncoder().clearColorAndDepthTextures(colorTexture, new Vector4f(0, 0, 0, 0), depthTexture, 1.0);
+        device.createCommandEncoder().clearColorAndDepthTextures(colorTexture, new Vector4f(0, 0, 0, 0), depthTexture, 0.0);
 
         RenderSystem.setShaderFog(shaderFog);
 
