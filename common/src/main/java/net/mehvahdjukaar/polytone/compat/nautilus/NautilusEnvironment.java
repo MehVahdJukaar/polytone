@@ -4,7 +4,7 @@ import net.mehvahdjukaar.nautilus.NautilusStudioApi;
 import net.mehvahdjukaar.nautilus.env.ClientEnvironment;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
-import net.mehvahdjukaar.polytone.common.attributes.IExtendedEntry;
+import net.mehvahdjukaar.polytone.common.attributes.IExtendedEnvAttrEntry;
 import net.mehvahdjukaar.polytone.content.biome.BiomeEffectModifier;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -58,7 +58,7 @@ final class NautilusEnvironment implements ClientEnvironment.Contributor {
     }
 
     private static @Nullable String dynamicNote(EnvironmentAttributeMap.Entry<?, ?> entry) {
-        IExtendedEntry<?> ext = (IExtendedEntry<?>) (Object) entry;
+        IExtendedEnvAttrEntry<?> ext = (IExtendedEnvAttrEntry<?>) (Object) entry;
         if (ext.polytone$getArgumentSupplier() == null) return null;
         return ext.polytone$shouldBlend()
                 ? "Computed per frame from a colormap or expression, blended across biome borders."

@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.biome;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.attributes.IExtendedInterpolator;
+import net.mehvahdjukaar.polytone.common.attributes.IExtendedAttrInterpolator;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.Minecraft;
@@ -159,7 +159,7 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier> {
                 //&& environmentAttribute.isSpatiallyInterpolated()
                 //all are spatially interpolated now since they possibly could be
             ) {
-                spatialAttributeInterpolator = ((IExtendedInterpolator) spatialAttributeInterpolator)
+                spatialAttributeInterpolator = ((IExtendedAttrInterpolator) spatialAttributeInterpolator)
                         .polytone$getOrCreatePostInterpolator();
 
                 return spatialAttributeInterpolator.applyAttributeLayer(environmentAttribute, object);

@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import net.mehvahdjukaar.polytone.common.attributes.DynamicAttributeContext;
-import net.mehvahdjukaar.polytone.common.attributes.IExtendedEntry;
+import net.mehvahdjukaar.polytone.common.attributes.IExtendedEnvAttrEntry;
 import net.minecraft.world.attribute.*;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -22,7 +22,7 @@ public abstract class EnvironmentAttributeSystemBuilderMixin {
                                                              EnvironmentAttributeMap attributeMap,
                                                              CallbackInfoReturnable<EnvironmentAttributeSystem.Builder> cir) {
         EnvironmentAttributeMap.Entry<Value, ?> entry = attributeMap.get(attribute);
-        if ((Object) entry instanceof IExtendedEntry<?> pe && pe.polytone$getArgumentSupplier() != null) {
+        if ((Object) entry instanceof IExtendedEnvAttrEntry<?> pe && pe.polytone$getArgumentSupplier() != null) {
             //lets the probe know it has to record biome weights for us
             DynamicAttributeContext.hasDynamicLayers = true;
 

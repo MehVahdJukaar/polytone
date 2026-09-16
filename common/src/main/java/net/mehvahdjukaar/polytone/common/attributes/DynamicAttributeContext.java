@@ -18,8 +18,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-// What a colormap or expression attribute value is evaluated against (biome, value from the layers before),
-// plus the codec that lets it into any color/float attribute and the per biome blending
 public class DynamicAttributeContext {
 
     // true while the installed system has a dimension level dynamic layer, so the probe records biome weights
@@ -58,10 +56,7 @@ public class DynamicAttributeContext {
         }
     }
 
-    // biome entries get one bound copy per targeted biome so vanilla's interpolator lerps between them
-    public static <T> Supplier<T> boundTo(Biome owner, Supplier<T> supplier) {
-        return () -> inBiome(owner, supplier);
-    }
+
 
     // dimension level entries: evaluated once per biome in the interpolation kernel, then folded. Inside a
     // biome thats a single evaluation, near a border 2 to 4
@@ -70,7 +65,7 @@ public class DynamicAttributeContext {
                                              Value oldValue,
                                              @Nullable SpatialAttributeInterpolator interpolator) {
         Reference2DoubleMap<Holder<Biome>> weights = interpolator == null ? null :
-                ((IExtendedInterpolator) interpolator).polytone$getBiomeWeights();
+                ((IExtendedAttrInterpolator) interpolator).polytone$getBiomeWeights();
 
         if (weights == null || weights.isEmpty()) {
             return entry.applyModifier(oldValue);

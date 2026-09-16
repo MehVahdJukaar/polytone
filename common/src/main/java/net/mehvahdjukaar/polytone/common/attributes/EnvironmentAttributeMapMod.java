@@ -87,7 +87,7 @@ public class EnvironmentAttributeMapMod {
     private static <Value, Argument> @NotNull Either<Argument, Supplier<Argument>> supplierFromEntry(
             EnvironmentAttributeMap.Entry<Value, Argument> entry) {
         Either<Argument, Supplier<Argument>> valOrSup;
-        Supplier<Argument> argSupp = ((IExtendedEntry<Argument>) (Object) entry).polytone$getArgumentSupplier();
+        Supplier<Argument> argSupp = ((IExtendedEnvAttrEntry<Argument>) (Object) entry).polytone$getArgumentSupplier();
         if (argSupp != null) {
             valOrSup = Either.right(argSupp);
         } else {
@@ -108,7 +108,7 @@ public class EnvironmentAttributeMapMod {
     }
 
     private static boolean blendFromEntry(EnvironmentAttributeMap.Entry<?, ?> entry) {
-        return ((IExtendedEntry<?>) (Object) entry).polytone$shouldBlend();
+        return ((IExtendedEnvAttrEntry<?>) (Object) entry).polytone$shouldBlend();
     }
 
     private static <Value, Argument> EnvironmentAttributeMap.Entry<Value, Argument> entryFromSupplier(
@@ -123,25 +123,27 @@ public class EnvironmentAttributeMapMod {
                         ),
                 supplier -> {
                     EnvironmentAttributeMap.Entry<Value, Argument> entry = new EnvironmentAttributeMap.Entry<>(supplier.get(), modifier);
-                    ((IExtendedEntry) (Object) entry).polytone$setArgumentSupplier(supplier);
-                    ((IExtendedEntry) (Object) entry).polytone$setShouldBlend(blend);
+                    ((IExtendedEnvAttrEntry) (Object) entry).polytone$setArgumentSupplier(supplier);
+                    ((IExtendedEnvAttrEntry) (Object) entry).polytone$setShouldBlend(blend);
                     return entry;
                 }
         );
     }
 
-    // Copy of a dynamic entry pinned to one biome. Each biome an entry is installed into gets its own, so
-    // vanilla's spatial interpolator sees a different value per biome and blends them like any other biome
-    // attribute. Entries that opted out of blending are shared as they were and keep sampling at the camera.
     private static EnvironmentAttributeMap.Entry<?, ?> bindToBiome(EnvironmentAttributeMap.Entry<?, ?> entry,
                                                                   Biome owner) {
-        IExtendedEntry ext = (IExtendedEntry) (Object) entry;
+        IExtendedEnvAttrEntry ext = (IExtendedEnvAttrEntry) (Object) entry;
         Supplier<?> supplier = ext.polytone$getArgumentSupplier();
         if (supplier == null || !ext.polytone$shouldBlend()) return entry;
 
         EnvironmentAttributeMap.Entry bound = new EnvironmentAttributeMap.Entry(entry.argument(), entry.modifier());
-        ((IExtendedEntry) (Object) bound).polytone$setArgumentSupplier(DynamicAttributeContext.boundTo(owner, supplier));
+        ((IExtendedEnvAttrEntry) (Object) bound).polytone$setArgumentSupplier(boundTo(owner, supplier));
         return bound;
+    }
+
+    // biome entries get one bound copy per targeted biome so vanilla's interpolator lerps between them
+    public static <T> Supplier<T> boundTo(Biome owner, Supplier<T> supplier) {
+        return () -> DynamicAttributeContext. inBiome(owner, supplier);
     }
 
     private static <Value, Argument> MapCodec<EnvironmentAttributeMap.Entry<Value, Argument>> createEntryCodec(
@@ -195,7 +197,7 @@ public class EnvironmentAttributeMapMod {
                                                  Supplier<Parameter> objectSupplier) {
             environmentAttribute.type().checkAllowedModifier(attributeModifier);
             EnvironmentAttributeMap.Entry<Value, Parameter> entry = new EnvironmentAttributeMap.Entry<>(objectSupplier.get(), attributeModifier);
-            ((IExtendedEntry<Parameter>) (Object) entry).polytone$setArgumentSupplier(objectSupplier);
+            ((IExtendedEnvAttrEntry<Parameter>) (Object) entry).polytone$setArgumentSupplier(objectSupplier);
             this.entriesToReplace.put(environmentAttribute, entry);
             return this;
         }

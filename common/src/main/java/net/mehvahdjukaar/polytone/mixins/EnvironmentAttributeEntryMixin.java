@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.mehvahdjukaar.polytone.common.attributes.DynamicAttributeContext;
-import net.mehvahdjukaar.polytone.common.attributes.IExtendedEntry;
+import net.mehvahdjukaar.polytone.common.attributes.IExtendedEnvAttrEntry;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.attribute.modifier.AttributeModifier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.function.Supplier;
 
 @Mixin(EnvironmentAttributeMap.Entry.class)
-public class EnvironmentAttributeEntryMixin<Value, Argument> implements IExtendedEntry<Value> {
+public class EnvironmentAttributeEntryMixin<Value, Argument> implements IExtendedEnvAttrEntry<Value> {
 
     @Unique
     private Supplier<Value> polytone$argumentSupplier;
