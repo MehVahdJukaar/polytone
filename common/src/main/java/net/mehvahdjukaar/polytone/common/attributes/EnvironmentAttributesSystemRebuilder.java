@@ -7,8 +7,9 @@ import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 
 import java.util.WeakHashMap;
 
-public class EnvironmentAttributesHandler {
+public class EnvironmentAttributesSystemRebuilder {
 
+    //backup of vanilla system
     private static final WeakHashMap<ClientLevel, EnvironmentAttributeSystem> vanillaSystemByLevel = new WeakHashMap<>();
 
     private static long lastRefreshGameTime;
@@ -28,6 +29,7 @@ public class EnvironmentAttributesHandler {
         //the builder re latches this if any dynamic layer makes it into the new system
         DynamicAttributeContext.hasDynamicLayers = false;
         //same as vanilla does. if other mods add stuff here this might break them...
+        //mixin builds system from here
         level.environmentAttributes = level.addEnvironmentAttributeLayers(EnvironmentAttributeSystem.builder()).build();
     }
 
