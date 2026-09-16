@@ -1,12 +1,15 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.mehvahdjukaar.polytone.common.attributes.DynamicAttributeContext;
 import net.mehvahdjukaar.polytone.common.attributes.IExtendedEntry;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
+import net.minecraft.world.attribute.modifier.AttributeModifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 import java.util.function.Supplier;
 
@@ -47,14 +50,15 @@ public class EnvironmentAttributeEntryMixin<Value, Argument> implements IExtende
         return original;
     }
 
-    @ModifyArg(method = "applyModifier", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/attribute/modifier/AttributeModifier;apply(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"),
-            index = 1)
-    private Value polytone$modifyApplyModifierArg(Value original) {
-        if (polytone$argumentSupplier != null) {
-            return polytone$argumentSupplier.get();
+    @WrapOperation(method = "applyModifier", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/attribute/modifier/AttributeModifier;apply(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"))
+    private Value polytone$applyWithDynamicArgument(AttributeModifier<?, ?> modifier, Object input, Object argument, Operation<Value> original) {
+        if (polytone$argumentSupplier == null){
+            return original.call(modifier, input, argument);
         }
-        return original;
+        //incoming value is exposed to the expression as v
+        return DynamicAttributeContext.withIncoming(input,
+                () -> original.call(modifier, input, polytone$argumentSupplier.get()));
     }
 
 }

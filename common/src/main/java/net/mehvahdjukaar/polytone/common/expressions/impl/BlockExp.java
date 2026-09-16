@@ -14,7 +14,9 @@ import org.jspecify.annotations.Nullable;
 public class BlockExp extends PolyExp implements IBlockExp {
 
     public static final PolyExpType<BlockExp> TYPE = new PolyExpType<>(BlockExp::new,
-            c -> c.input(BlockProxy.class, "o", "object").input(RandomProxy.class, "r", "random").input(double.class, "v"));
+            c -> c.input(BlockProxy.class, "o", "object")
+                    .input(RandomProxy.class, "r", "random")
+                    .input(double.class, "v", "value"));
 
     protected BlockExp(ExpProgram program, String source) {
         super(program, source);
