@@ -9,39 +9,37 @@ import java.util.WeakHashMap;
 
 public class EnvironmentAttributesHandler {
 
-    public static final WeakHashMap<ClientLevel, EnvironmentAttributeSystem> vanillaSystem = new WeakHashMap<>();
+    private static final WeakHashMap<ClientLevel, EnvironmentAttributeSystem> vanillaSystemByLevel = new WeakHashMap<>();
 
-    private static long lastRefreshedTimestamp;
+    private static long lastRefreshGameTime;
 
     public static void refresh() {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;
 
         //Debounce since we can call twice. for ease of use due to dimension changing happening too late
-        long thisTimestamp = level.getGameTime();
-        if (thisTimestamp == lastRefreshedTimestamp) {
-            return;
-        }
-        lastRefreshedTimestamp = thisTimestamp;
-        if (Polytone.DIMENSION_MODIFIERS.hasModifiedAttributes() || Polytone.BIOME_MODIFIERS.hasModifiedAttributes() ||
-                Polytone.COLORS.getSkyFlash() != null) {
-            EnvironmentAttributeSystem old = level.environmentAttributes;
-            if (!vanillaSystem.containsKey(level)) {
-                vanillaSystem.put(level, old);
-            }
-            //the builder re latches this if any dynamic layer makes it into the new system
-            DynamicAttributeContext.hasDynamicLayers = false;
-            //same as vanilla does. if other mods add stuff here this might break them...
-            level.environmentAttributes = level.addEnvironmentAttributeLayers(EnvironmentAttributeSystem.builder()).build();
-        }
+        long gameTime = level.getGameTime();
+        if (gameTime == lastRefreshGameTime) return;
+        lastRefreshGameTime = gameTime;
+
+        if (!anyPackModifiesAttributes()) return;
+
+        vanillaSystemByLevel.putIfAbsent(level, level.environmentAttributes);
+        //the builder re latches this if any dynamic layer makes it into the new system
+        DynamicAttributeContext.hasDynamicLayers = false;
+        //same as vanilla does. if other mods add stuff here this might break them...
+        level.environmentAttributes = level.addEnvironmentAttributeLayers(EnvironmentAttributeSystem.builder()).build();
+    }
+
+    private static boolean anyPackModifiesAttributes() {
+        return Polytone.DIMENSION_MODIFIERS.hasModifiedAttributes()
+                || Polytone.BIOME_MODIFIERS.hasModifiedAttributes()
+                || Polytone.COLORS.getSkyFlash() != null;
     }
 
     public static void reset() {
-        for (var entry : vanillaSystem.entrySet()) {
-            ClientLevel level = entry.getKey();
-            level.environmentAttributes = entry.getValue();
-        }
-        vanillaSystem.clear();
+        vanillaSystemByLevel.forEach((level, vanillaSystem) -> level.environmentAttributes = vanillaSystem);
+        vanillaSystemByLevel.clear();
         DynamicAttributeContext.hasDynamicLayers = false;
     }
 }
