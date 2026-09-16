@@ -48,6 +48,7 @@
     "PaintingRendererMixin",
     "ParticleEngineMixin",
     "PostPassMixin",
+    "ResourceLocationMixin",
     "ScreenMixin",
     "SlotMixin",
     "SmithingScreenMixin",
