@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
-import net.mehvahdjukaar.polytone.common.attributes.IExtendedInterpolator;
+import net.mehvahdjukaar.polytone.common.attributes.IExtendedAttrInterpolator;
 import net.minecraft.core.Holder;
 import net.minecraft.world.attribute.SpatialAttributeInterpolator;
 import net.minecraft.world.level.biome.Biome;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(SpatialAttributeInterpolator.class)
-public class SpatialAttributeInterpolatorMixin implements IExtendedInterpolator {
+public class SpatialAttributeInterpolatorMixin implements IExtendedAttrInterpolator {
 
     @Unique
     private SpatialAttributeInterpolator poly$postInterpolator = null;
@@ -31,7 +31,7 @@ public class SpatialAttributeInterpolatorMixin implements IExtendedInterpolator 
     }
 
     @Override
-    public void polytone$accumulateBiome(double weight, Holder<Biome> biome) {
+    public void polytone$accumulateBiomeWeight(double weight, Holder<Biome> biome) {
         poly$biomeWeights.mergeDouble(biome, weight, Double::sum);
     }
 
