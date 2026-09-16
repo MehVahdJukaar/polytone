@@ -4,7 +4,7 @@ package net.mehvahdjukaar.polytone.content.dimension;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Parsed;
-import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributesHandler;
+import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributesSystemRebuilder;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.Minecraft;
@@ -118,7 +118,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         }
 
         //might be called twice. too bad
-        EnvironmentAttributesHandler.refresh();
+        EnvironmentAttributesSystemRebuilder.refresh();
         //we don't clear effects to apply because we need to re apply on world reload
     }
 

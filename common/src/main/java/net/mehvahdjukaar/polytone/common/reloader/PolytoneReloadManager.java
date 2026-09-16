@@ -6,7 +6,7 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.SpecialModelsHandler;
 import net.mehvahdjukaar.polytone.common.TokenBucketTracker;
-import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributesHandler;
+import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributesSystemRebuilder;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -88,7 +88,7 @@ public class PolytoneReloadManager implements PreparableReloadListener {
         Stopwatch stopwatch = Stopwatch.createStarted();
         resetWithLevel(false);
 
-        EnvironmentAttributesHandler.reset();
+        EnvironmentAttributesSystemRebuilder.reset();
 
         RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, registryAccess);
 
@@ -134,7 +134,7 @@ public class PolytoneReloadManager implements PreparableReloadListener {
             cl.clearTintCaches();
         }
 
-        EnvironmentAttributesHandler.refresh();
+        EnvironmentAttributesSystemRebuilder.refresh();
 
     }
 
