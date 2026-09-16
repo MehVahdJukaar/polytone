@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.exp.IExpression;
-import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.common.exp.PolytoneMvelExpression;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
@@ -19,7 +19,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.LightLayer;
 
-public class ParticleContextExpression extends PolytoneExpression implements IParticleExp {
+public class ParticleContextExpression extends PolytoneMvelExpression implements IParticleExp {
 
     private static final String COLOR = "COLOR";
     private static final String SPEED = "SPEED";
@@ -118,19 +118,19 @@ public class ParticleContextExpression extends PolytoneExpression implements IPa
         }
 
         if (hasTime) vb.setVariable(TIME, ClientFrameTicker.getGameTime());
-        if (hasDayTime) vb.setVariable(PolytoneExpression.DAY_TIME, ClientFrameTicker.getDayTime());
+        if (hasDayTime) vb.setVariable(PolytoneMvelExpression.DAY_TIME, ClientFrameTicker.getDayTime());
         if (hasSunTime) vb.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
         if (hasRain) vb.setVariable(RAIN, ExpTicker.getRainAndThunder());
-        if (hasSeason) vb.setVariable(PolytoneExpression.SEASON, ExpTicker.getSeasonNumber());
+        if (hasSeason) vb.setVariable(PolytoneMvelExpression.SEASON, ExpTicker.getSeasonNumber());
 
         if (hasSkyLight)
             vb.setVariable(SKY_LIGHT, level.getBrightness(LightLayer.SKY, pos));
         if (hasBlockLight)
             vb.setVariable(BLOCK_LIGHT, level.getBrightness(LightLayer.BLOCK, pos));
         if (hasTemperature)
-            vb.setVariable(PolytoneExpression.TEMPERATURE, ClientFrameTicker.getTemperature());
+            vb.setVariable(PolytoneMvelExpression.TEMPERATURE, ClientFrameTicker.getTemperature());
         if (hasDownfall)
-            vb.setVariable(PolytoneExpression.DOWNFALL, ClientFrameTicker.getDownfall());
+            vb.setVariable(PolytoneMvelExpression.DOWNFALL, ClientFrameTicker.getDownfall());
 
 
         if (hasPlayer) {

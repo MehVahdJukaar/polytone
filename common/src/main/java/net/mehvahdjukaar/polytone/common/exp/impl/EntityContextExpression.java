@@ -6,7 +6,7 @@ import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.exp.IExpression;
-import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
+import net.mehvahdjukaar.polytone.common.exp.PolytoneMvelExpression;
 import net.mehvahdjukaar.polytone.common.expressions.ExpTicker;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.minecraft.client.Minecraft;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
 
-public class EntityContextExpression extends PolytoneExpression implements IEntityExp {
+public class EntityContextExpression extends PolytoneMvelExpression implements IEntityExp {
 
     public static final Codec<EntityContextExpression> CODEC = Codec.STRING.flatXmap(s -> {
         try {

@@ -63,7 +63,7 @@ public class EnvironmentAttributeMapMod {
 
         Codec<Argument> valueCodec = (Codec) environmentAttribute.valueCodec();
         Codec<Either<Argument, Supplier<Argument>>> supplierCodec =
-                DynamicAttributes.addDynamicValueCodec(valueCodec, type);
+                DynamicAttributeContext.addDynamicValueCodec(valueCodec, type);
 
         return Codec.either(supplierCodec, (Codec<EnvironmentAttributeMap.Entry<Value, Argument>>) (Codec) ec)
                 .xmap(
@@ -140,7 +140,7 @@ public class EnvironmentAttributeMapMod {
         if (supplier == null || !ext.polytone$shouldBlend()) return entry;
 
         EnvironmentAttributeMap.Entry bound = new EnvironmentAttributeMap.Entry(entry.argument(), entry.modifier());
-        ((IExtendedEntry) (Object) bound).polytone$setArgumentSupplier(DynamicAttributes.boundTo(owner, supplier));
+        ((IExtendedEntry) (Object) bound).polytone$setArgumentSupplier(DynamicAttributeContext.boundTo(owner, supplier));
         return bound;
     }
 
@@ -150,7 +150,7 @@ public class EnvironmentAttributeMapMod {
         return RecordCodecBuilder.mapCodec((instance) ->
         {
             Codec<Argument> argumentCodec = attributeModifier.argumentCodec(environmentAttribute);
-            Codec<Either<Argument, Supplier<Argument>>> argOrSupplier = DynamicAttributes.addDynamicValueCodec(argumentCodec, environmentAttribute.type());
+            Codec<Either<Argument, Supplier<Argument>>> argOrSupplier = DynamicAttributeContext.addDynamicValueCodec(argumentCodec, environmentAttribute.type());
             return instance.group(
                             argOrSupplier.fieldOf("argument")
                                     .forGetter(EnvironmentAttributeMapMod::supplierFromEntry),

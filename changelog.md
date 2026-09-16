@@ -1,2 +1,1 @@
-- replaced MVEL with Nexp, lib is smaller, less prone to isses and faster (even 3 times fold)
-- should keep pack compatibility (hopefully)
+- fixed an issue with shadowmap

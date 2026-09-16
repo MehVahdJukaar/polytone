@@ -18,40 +18,53 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-// Everything about attribute values that Polytone computes at runtime instead of storing statically: the codec
-// that folds a Colormap or an Expression into any color/float attribute, the biome context such a value is
-// evaluated for, and the spatial blending that makes it fade like a normal biome attribute would.
-public class DynamicAttributes {
+// What a colormap or expression attribute value is evaluated against (biome, value from the layers before),
+// plus the codec that lets it into any color/float attribute and the per biome blending
+public class DynamicAttributeContext {
 
-    // set while the installed attribute system has at least one dimension level dynamic layer.
-    // when false none of the blending machinery runs, not even the per sample bookkeeping
+    // true while the installed system has a dimension level dynamic layer, so the probe records biome weights
     public static boolean hasDynamicLayers = false;
 
-    private static @Nullable Biome contextBiome;
+    private static @Nullable Biome biome;
+    private static @Nullable Object incomingValue;
 
-    // Biome a dynamic value is being evaluated for. Defaults to the camera one, as it always used to.
+    // defaults to the camera biome
     public static Biome biome() {
-        return contextBiome != null ? contextBiome : ClientFrameTicker.getCameraBiome().value();
+        return biome != null ? biome : ClientFrameTicker.getCameraBiome().value();
     }
 
-    // Pins a supplier to one biome. Used for entries that live in a biome's own attribute map: each targeted
-    // biome gets its own bound copy, so vanilla's interpolator sees a different value per biome and lerps
-    // them.
+    public static double incomingNumber() {
+        return incomingValue instanceof Number n ? n.doubleValue() : 0;
+    }
+
+    public static <T> T inBiome(Biome owner, Supplier<T> body) {
+        Biome previous = biome;
+        biome = owner;
+        try {
+            return body.get();
+        } finally {
+            biome = previous;
+        }
+    }
+
+    // scoped to one layer application, see EnvironmentAttributeEntryMixin
+    public static <T> T withIncoming(@Nullable Object value, Supplier<T> body) {
+        Object previous = incomingValue;
+        incomingValue = value;
+        try {
+            return body.get();
+        } finally {
+            incomingValue = previous;
+        }
+    }
+
+    // biome entries get one bound copy per targeted biome so vanilla's interpolator lerps between them
     public static <T> Supplier<T> boundTo(Biome owner, Supplier<T> supplier) {
-        return () -> {
-            Biome previous = contextBiome;
-            contextBiome = owner;
-            try {
-                return supplier.get();
-            } finally {
-                contextBiome = previous;
-            }
-        };
+        return () -> inBiome(owner, supplier);
     }
 
-    // Evaluates a dimension level entry once per biome of the interpolation kernel and folds the results.
-    // Inside a biome the kernel holds a single one and this costs exactly one evaluation, like before. Only
-    // within ~8 blocks of a border does it become 2 to 4.
+    // dimension level entries: evaluated once per biome in the interpolation kernel, then folded. Inside a
+    // biome thats a single evaluation, near a border 2 to 4
     public static <Value> Value applyBlended(EnvironmentAttribute<Value> attribute,
                                              EnvironmentAttributeMap.Entry<Value, ?> entry,
                                              Value oldValue,
@@ -63,7 +76,7 @@ public class DynamicAttributes {
             return entry.applyModifier(oldValue);
         }
         if (weights.size() == 1) {
-            return applyForBiome(weights.keySet().iterator().next().value(), entry, oldValue);
+            return inBiome(weights.keySet().iterator().next().value(), () -> entry.applyModifier(oldValue));
         }
 
         LerpFunction<Value> lerp = attribute.type().spatialLerp();
@@ -72,22 +85,11 @@ public class DynamicAttributes {
         //running weighted mean, same as SpatialAttributeInterpolator does for biome maps
         for (var e : Reference2DoubleMaps.fastIterable(weights)) {
             double weight = e.getDoubleValue();
-            Value value = applyForBiome(e.getKey().value(), entry, oldValue);
+            Value value = inBiome(e.getKey().value(), () -> entry.applyModifier(oldValue));
             totalWeight += weight;
             result = result == null ? value : lerp.apply((float) (weight / totalWeight), result, value);
         }
         return result;
-    }
-
-    private static <Value> Value applyForBiome(Biome biome, EnvironmentAttributeMap.Entry<Value, ?> entry,
-                                               Value oldValue) {
-        Biome previous = contextBiome;
-        contextBiome = biome;
-        try {
-            return entry.applyModifier(oldValue);
-        } finally {
-            contextBiome = previous;
-        }
     }
 
     // Allows a Colormap or an Expression to be used wherever a color or a float attribute value is expected
@@ -108,7 +110,7 @@ public class DynamicAttributes {
                     .xmap(e -> () -> {
                                 ClientLevel level = Minecraft.getInstance().level;
                                 if (level == null) return 0f;
-                                return (float) e.evaluate(level, ClientFrameTicker.getCameraPos(), null);
+                                return (float) e.evaluate(level, ClientFrameTicker.getCameraPos(), null, incomingNumber());
                             },
                             ex -> IBlockExp.ZERO);
             return Codec.either(originalCodec, (Codec) floatCodec);
