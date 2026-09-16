@@ -3,8 +3,6 @@ package net.mehvahdjukaar.polytone.mixins;
 import net.mehvahdjukaar.polytone.common.attributes.DynamicAttributeContext;
 import net.mehvahdjukaar.polytone.common.attributes.IExtendedEnvAttrEntry;
 import net.minecraft.world.attribute.*;
-import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,19 +20,14 @@ public abstract class EnvironmentAttributeSystemBuilderMixin {
                                                              EnvironmentAttributeMap attributeMap,
                                                              CallbackInfoReturnable<EnvironmentAttributeSystem.Builder> cir) {
         EnvironmentAttributeMap.Entry<Value, ?> entry = attributeMap.get(attribute);
-        if ((Object) entry instanceof IExtendedEnvAttrEntry<?> pe && pe.polytone$getArgumentSupplier() != null) {
+        if ((Object) entry instanceof IExtendedEnvAttrEntry<?> dynamic && dynamic.polytone$isDynamic()) {
             //lets the probe know it has to record biome weights for us
             DynamicAttributeContext.hasDynamicLayers = true;
 
-            boolean blend = pe.polytone$shouldBlend();
-            var builder = this.addPositionalLayer(attribute, new EnvironmentAttributeLayer.Positional<Value>() {
-                @Override
-                public Value applyPositional(Value oldValue, Vec3 vec3, @Nullable SpatialAttributeInterpolator interpolator) {
-                    if (!blend) return entry.applyModifier(oldValue);
-                    return DynamicAttributeContext.applyBlended(attribute, entry, oldValue, interpolator);
-                }
-            });
-            cir.setReturnValue(builder);
+            boolean blend = dynamic.polytone$shouldBlend();
+            cir.setReturnValue(this.addPositionalLayer(attribute, (oldValue, pos, interpolator) -> blend
+                    ? DynamicAttributeContext.applyBlended(attribute, entry, oldValue, interpolator)
+                    : entry.applyModifier(oldValue)));
         }
     }
 }
