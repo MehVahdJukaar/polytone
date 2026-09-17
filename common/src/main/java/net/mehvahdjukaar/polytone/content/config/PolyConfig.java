@@ -102,7 +102,6 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
     public abstract MutableComponent formatValue(T value);
 
     static <A, T extends PolyConfig<A>> DataResult<T> validatePresets(T o) {
-        //validate presets
         for (var map : List.of(o.getPresets(), o.getSectionPresets())) {
             for (var entry : map.entrySet()) {
                 if (o.validateValue(entry.getValue()).isEmpty()) {
@@ -135,7 +134,6 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
         return SchemaCodec.lazy(record.comapFlatMap(PolyConfig::validatePresets, Function.identity()), record::schema);
     }
 
-    // Mirrors Sodium's OptionImpact levels and colors so tooltips read consistently across mods.
     public enum PerformanceImpact implements StringRepresentable {
         LOW("low", ChatFormatting.GREEN),
         MEDIUM("medium", ChatFormatting.YELLOW),

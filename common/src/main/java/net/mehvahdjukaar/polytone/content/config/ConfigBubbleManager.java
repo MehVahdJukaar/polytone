@@ -112,7 +112,6 @@ public class ConfigBubbleManager {
 
     @Nullable
     public Component getEditorButtonMessage() {
-        // Nudge the editor until the user tries it. Support bubble wins to avoid two bubbles at once.
         if (editorClicked || shouldShowSupport()) return null;
         return Component.translatable("screen.polytone.editor.bubble");
     }

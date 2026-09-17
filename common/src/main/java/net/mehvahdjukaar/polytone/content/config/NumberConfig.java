@@ -49,14 +49,12 @@ public class NumberConfig extends PolyConfig<Float> implements OptionInstance.Sl
 
     @Override
     public double toSliderValue(Float object) {
-        //slider value is always normalized between 0 and 1
         return (object - min) / (max - min);
     }
 
     @Override
     public Float fromSliderValue(double d) {
         float v = (float) (min + (max - min) * d);
-        //snap to step
         if (step > 0) {
             v = Math.round(v / step) * step;
         }
