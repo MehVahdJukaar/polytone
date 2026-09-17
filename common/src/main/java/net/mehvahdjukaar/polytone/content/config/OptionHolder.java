@@ -72,7 +72,6 @@ public class OptionHolder<T> {
                 // Pre-existing value_translation: key used as a format string with the raw value.
                 valueName = Component.translatable(config.getValueTranslationKey().get(), value);
             } else {
-                // Default: ON/OFF for booleans, numeric/string label otherwise.
                 valueName = config.formatValue(value);
             }
             if (!lastKnownValue.get().equals(value)) valueName.withStyle(ChatFormatting.AQUA);
@@ -91,7 +90,6 @@ public class OptionHolder<T> {
                 tooltipSupplier,
                 toStr, config,
                 config.codec(), config.getDefaultValue(),
-                // lets the config screen re-derive its preset sliders when values change
                 (v) -> ConfigScreen.onOptionValueChanged()
         );
         return new OptionHolder<>(opt, id, lastKnownValue);

@@ -46,15 +46,13 @@ public class SupportScreen extends Screen {
                     link("patreon", 0xFFF96854, PATREON_URL))),
             new Section(Component.translatable("screen.polytone.support.section.help"), List.of(
                     link("wiki", 0xFF7FE3A0, WIKI_URL),
-                    link("discord", 0xFF5865F2, DISCORD_URL))))
-            ;
+                    link("discord", 0xFF5865F2, DISCORD_URL))));
 
     private static final int DESCRIPTION_COLOR = 0xFF9A9A9A;
     private static final int HEADER_HEIGHT = 18;
     private static final int LINK_HEIGHT = 21;
     private static final int SECTION_GAP = 18;
 
-    // laid out in init(), so render and click detection agree
     private final List<TextRow> headerRows = new ArrayList<>();
     private final List<LinkRow> linkRows = new ArrayList<>();
 

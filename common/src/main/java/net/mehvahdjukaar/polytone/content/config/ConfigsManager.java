@@ -245,12 +245,9 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
         List<String> overlays = collectFormatOverlays(primary, packType, version);
         if (overlays.isEmpty()) return;
 
-        PackResources fullPack = resources.openFull(location, new Pack.Metadata(Component.empty(),
-                PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), overlays));
-        try {
+        try (PackResources fullPack = resources.openFull(location, new Pack.Metadata(Component.empty(),
+                PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), overlays))) {
             parsePackConfigsInto(fullPack, packType, activePackReg);
-        } finally {
-            fullPack.close();
         }
     }
 

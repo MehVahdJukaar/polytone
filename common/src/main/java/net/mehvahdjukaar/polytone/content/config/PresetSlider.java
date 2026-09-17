@@ -19,9 +19,6 @@ import java.util.function.IntFunction;
 
 final class PresetSlider {
 
-    private PresetSlider() {
-    }
-
     record PresetSliderValueSet(int maxIndex, IntFunction<Component> labelGetter,
                                         Runnable onDragStart, IntConsumer onStopPreview)
             implements OptionInstance.ValueSet<Integer> {

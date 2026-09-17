@@ -12,15 +12,10 @@ import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
-// OptionsList with a collapsible namespace header row (chevron + bold title) and a tighter section sub-header.
-// Sections are not collapsible; only namespaces are.
 public class CollapsibleOptionsList extends OptionsList {
-    // Namespace header: the clickable/highlighted strip, plus a gap above (to separate namespaces)
-    // and a small gap below (so the first widget under it isn't cramped when no section follows).
     private static final int HEADER_HEIGHT = 11;
     private static final int HEADER_PADDING_TOP = 10;
     private static final int HEADER_PADDING_BOTTOM = 2;
-    // Section sub-header: much less top gap than vanilla addHeader (18px), which looked too airy.
     private static final int SECTION_TEXT_HEIGHT = 9;
     private static final int SECTION_PADDING_TOP = 6;
     private static final int SECTION_PADDING_BOTTOM = 2;
