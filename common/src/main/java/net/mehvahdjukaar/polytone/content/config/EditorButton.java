@@ -14,22 +14,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 
-// The "open codec editor" button on the ConfigScreen footer. It boots the Swing workbench, which is heavy
-// (schema bootstrap + window build), so the open runs on a background thread and the button shows an animated
-// spinner sprite meanwhile.
 final class EditorButton extends Button {
 
     private static final Identifier ICON = Polytone.res("codec_editor");
     private static final Identifier ICON_ACTIVE = Polytone.res("codec_editor_on");
     private static final Identifier ICON_LOADING = Polytone.res("codec_editor_loading");
-    private static final int DOT_SIZE = 6;
-    // Where the button sends users when Nautilus Studio isn't present.
     private static final String NAUTILUS_URL = "https://github.com/MehVahdJukaar/pack_editor";
 
     private final int spriteWidth;
     private final int spriteHeight;
-    // Whether Nautilus Studio is installed. When false, every editor call is short-circuited
-    // so its (absent) classes are never loaded, and the button stays grey.
     private final boolean available;
     private volatile boolean loading;
 
@@ -50,7 +43,6 @@ final class EditorButton extends Button {
         open();
     }
 
-    // Without the editor mod, a click offers the download page instead (and stops the nudge bubble).
     private void openDownloadPage() {
         Polytone.CONFIGS.bubbleManager.onEditorButtonClicked();
         Minecraft mc = Minecraft.getInstance();
@@ -61,10 +53,8 @@ final class EditorButton extends Button {
         }, NAUTILUS_URL, true));
     }
 
-    // Boot the editor off-thread so the spinner keeps animating; re-enabled when it returns
     private void open() {
         if (loading || Minecraft.getInstance().level == null) return;
-        // Already open: just focus it - no spinner, no rebuild (single instance).
         if (PolytoneNautilus.isOpen()) {
             PolytoneNautilus.open();
             return;
@@ -86,13 +76,12 @@ final class EditorButton extends Button {
 
     @Override
     protected void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // Vanilla button background (greys to the disabled sprite when inactive) + centred icon.
         extractDefaultSprite(guiGraphics);
         boolean active = available && !loading && PolytoneNautilus.isOpen();
         Identifier sprite = loading ? ICON_LOADING : (active ? ICON_ACTIVE : ICON);
         int x = getX() + (getWidth() - spriteWidth) / 2;
         int y = getY() + (getHeight() - spriteHeight) / 2;
-        float a = this.alpha * (isActive() ? 1f : 0.4f); // dim the glyph too while greyed out
+        float a = this.alpha * (isActive() ? 1f : 0.4f);
 
         guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, spriteWidth, spriteHeight, a);
     }

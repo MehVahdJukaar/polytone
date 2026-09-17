@@ -99,12 +99,9 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
         ).apply(i, TooltipImage::new));
     }
 
-    // Default value rendering for the options screen when no value_translation is given. Each subclass owns
-    // its type's formatting so OptionHolder stays type-agnostic.
     public abstract MutableComponent formatValue(T value);
 
     static <A, T extends PolyConfig<A>> @NonNull DataResult<T> validatePresets(T o) {
-        //validate presets
         for (var map : List.of(o.getPresets(), o.getSectionPresets())) {
             for (var entry : map.entrySet()) {
                 if (o.validateValue(entry.getValue()).isEmpty()) {
@@ -136,7 +133,6 @@ public abstract class PolyConfig<T> implements OptionInstance.ValueSet<T> {
         return SchemaCodec.lazy(record.validate(PolyConfig::validatePresets), record::schema);
     }
 
-    // Mirrors Sodium's OptionImpact levels and colors so tooltips read consistently across mods.
     public enum PerformanceImpact implements StringRepresentable {
         LOW("low", ChatFormatting.GREEN),
         MEDIUM("medium", ChatFormatting.YELLOW),

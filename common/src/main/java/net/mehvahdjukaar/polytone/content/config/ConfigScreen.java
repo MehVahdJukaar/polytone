@@ -288,9 +288,6 @@ public class ConfigScreen extends OptionsSubScreen {
         rebuildPreservingScroll();
     }
 
-    // Decides the top-to-bottom order of sections: the sectionless group first, then named sections by their
-    // section_order (smallest declared among the section's entries), with sections that declare none falling
-    // back to alphabetical by id.
     private static List<Optional<String>> orderedSections(Map<Optional<String>, List<OptionHolder<?>>> bySection) {
         return bySection.keySet().stream()
                 .sorted(Comparator
@@ -358,8 +355,6 @@ public class ConfigScreen extends OptionsSubScreen {
         rebuildPreservingScroll();
     }
 
-    // Called by OptionHolder on any option value change so the preset sliders re-derive their position (hand-
-    // tweaking an option snaps the slider to Custom, vanilla-style).
     static void onOptionValueChanged() {
         if (Minecraft.getInstance().screen instanceof ConfigScreen cs) {
             cs.presets.rederiveAll();

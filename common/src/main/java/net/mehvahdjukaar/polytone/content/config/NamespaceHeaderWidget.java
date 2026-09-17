@@ -36,8 +36,6 @@ class NamespaceHeaderWidget extends Button {
 
         int color = !this.active ? 0xA0A0A0 : highlighted ? 0xFFFFA0 : 0xFFFFFF;
 
-        // Vanilla vertical text centering (AbstractWidget#renderScrollingString): (h - 9)/2 + 1.
-        // Both the 8px glyph and the 8px chevron share this top, so they line up on the pixel grid.
         int contentTop = this.getY() + (this.getHeight() - 9) / 2 + 1;
 
         int chevronX = this.getX() + 1;
