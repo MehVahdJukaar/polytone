@@ -70,7 +70,7 @@ public class PolytoneRenderTypes {
                     .withFragmentShader("core/block")
                     .withVertexBinding(0, DefaultVertexFormat.BLOCK)
                     .withPrimitiveTopology(PrimitiveTopology.QUADS)
-                    .withDepthStencilState(DepthStencilState.DEFAULT)
+                    .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
                     .withLocation(Polytone.res("pipeline/additive_translucent_moving_block"))
                     .withColorTargetState(new ColorTargetState(ADDITIVE_TRANSLUCENT_BLEND))
                     .build());
@@ -81,7 +81,6 @@ public class PolytoneRenderTypes {
                     .withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS,
                             () -> RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true))
                     .setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
-                    .sortOnUpload()
                     .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE)
                     .createRenderSetup());
 
