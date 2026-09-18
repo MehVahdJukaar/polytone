@@ -9,7 +9,7 @@ import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
 import net.mehvahdjukaar.polytone.common.exp.IExpression;
-import net.mehvahdjukaar.polytone.common.exp.PolytoneMvelExpression;
+import net.mehvahdjukaar.polytone.common.exp.PolytoneExpression;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-public class ColormapExpressionProvider extends PolytoneMvelExpression implements IColormapExp {
+public class ColormapExpressionProvider extends PolytoneExpression implements IColormapExp {
 
     //Keywords
     protected static final String BIOME_VALUE = "BIOME_VALUE";
@@ -47,9 +47,9 @@ public class ColormapExpressionProvider extends PolytoneMvelExpression implement
     protected ColormapExpressionProvider(String unparsed, boolean concurrent) {
         super(unparsed, concurrent);
 
-        this.usesBiome = unparsed.contains(PolytoneMvelExpression.TEMPERATURE) || unparsed.contains(PolytoneMvelExpression.DOWNFALL)
+        this.usesBiome = unparsed.contains(PolytoneExpression.TEMPERATURE) || unparsed.contains(PolytoneExpression.DOWNFALL)
                 || unparsed.contains(BIOME_VALUE);
-        this.hasState = unparsed.contains(PolytoneMvelExpression.STATE_FUNC);
+        this.hasState = unparsed.contains(PolytoneExpression.STATE_FUNC);
     }
 
     @Override
@@ -107,19 +107,19 @@ public class ColormapExpressionProvider extends PolytoneMvelExpression implement
         }
 
         if (hasTime) vb.setVariable(TIME, ClientFrameTicker.getGameTime());
-        if (hasDayTime) vb.setVariable(PolytoneMvelExpression.DAY_TIME, ClientFrameTicker.getDayTime());
+        if (hasDayTime) vb.setVariable(PolytoneExpression.DAY_TIME, ClientFrameTicker.getDayTime());
         if (hasSunTime) vb.setVariable(SUN_TIME, ClientFrameTicker.getSunTime());
         if (hasRain) vb.setVariable(RAIN, ExpTicker.getRainAndThunder());
-        if (hasSeason) vb.setVariable(PolytoneMvelExpression.SEASON, ExpTicker.getSeasonNumber());
+        if (hasSeason) vb.setVariable(PolytoneExpression.SEASON, ExpTicker.getSeasonNumber());
 
         if (hasSkyLight)
             vb.setVariable(SKY_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.SKY, bp));
         if (hasBlockLight)
             vb.setVariable(BLOCK_LIGHT, Minecraft.getInstance().level.getBrightness(LightLayer.BLOCK, bp));
         if (hasTemperature)
-            vb.setVariable(PolytoneMvelExpression.TEMPERATURE, biome != null ? ColorUtils.getClimateSettings(biome).temperature() : 0);
+            vb.setVariable(PolytoneExpression.TEMPERATURE, biome != null ? ColorUtils.getClimateSettings(biome).temperature() : 0);
         if (hasDownfall)
-            vb.setVariable(PolytoneMvelExpression.DOWNFALL, biome != null ? ColorUtils.getClimateSettings(biome).downfall() : 0);
+            vb.setVariable(PolytoneExpression.DOWNFALL, biome != null ? ColorUtils.getClimateSettings(biome).downfall() : 0);
 
         if (hasPlayer) {
             var e = Minecraft.getInstance().getCameraEntity();
