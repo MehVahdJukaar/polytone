@@ -202,19 +202,13 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
 
     // a pack usually only targets one of the still/flowing pair, so accept either one here
     @Nullable
-    public IColorGetter getFogColormap(Fluid fluid) {
-        IColorGetter fog = fogColormapOf(fluid);
-        if (fog == null && fluid instanceof FlowingFluid ff) {
-            fog = fogColormapOf(ff.getSource());
-            if (fog == null) fog = fogColormapOf(ff.getFlowing());
-        }
-        return fog;
-    }
-
-    @Nullable
-    private IColorGetter fogColormapOf(Fluid fluid) {
+    public FluidPropertyModifier getModifierOrVariant(Fluid fluid) {
         FluidPropertyModifier mod = modifiers.get(fluid);
-        return mod == null ? null : mod.getFogColormap();
+        if (mod == null && fluid instanceof FlowingFluid ff) {
+            mod = modifiers.get(ff.getSource());
+            if (mod == null) mod = modifiers.get(ff.getFlowing());
+        }
+        return mod;
     }
 
 }

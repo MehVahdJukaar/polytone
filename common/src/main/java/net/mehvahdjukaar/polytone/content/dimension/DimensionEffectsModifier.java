@@ -6,6 +6,7 @@ import net.mehvahdjukaar.codecui.SchemaRecord;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributeMapMod;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.lightmap.Lightmap;
 import net.mehvahdjukaar.polytone.mixins.accessor.DimensionTypeAccessor;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
@@ -23,6 +24,8 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                                        Optional<CardinalLighting.Type> cardinalLightType,
                                        Optional<Float> ambientLight,
                                        Optional<Boolean> hasSkylight,
+                                       Optional<IBlockExp> rainFogStrength,
+                                       boolean noWeatherFogDarken,
                                        Optional<Lightmap> lightmap, //TODO: finish adding
                                        //TODO: ad timelines
                                        DimensionTarget targets) {
@@ -35,6 +38,8 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                     i.optional("cardinal_light", CardinalLighting.Type.CODEC, DimensionEffectsModifier::cardinalLightType),
                     i.optional("ambient_light", Codec.FLOAT, DimensionEffectsModifier::ambientLight),
                     i.optional("has_skylight", Codec.BOOL, DimensionEffectsModifier::hasSkylight),
+                    i.optional("rain_fog_strength", IBlockExp.CODEC_LEGACY, DimensionEffectsModifier::rainFogStrength),
+                    i.optional("no_weather_fog_darken", Codec.BOOL, false, DimensionEffectsModifier::noWeatherFogDarken),
 
                     i.optional("lightmap", Polytone.LIGHTMAPS.byNameCodec(), DimensionEffectsModifier::lightmap),
                     i.optional("targets", DimensionTarget.CODEC, DimensionTarget.EMPTY, DimensionEffectsModifier::targets)
@@ -48,6 +53,8 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                 newMod.cardinalLightType.or(this::cardinalLightType),
                 newMod.ambientLight.or(this::ambientLight),
                 newMod.hasSkylight.or(this::hasSkylight),
+                newMod.rainFogStrength.or(this::rainFogStrength),
+                newMod.noWeatherFogDarken | this.noWeatherFogDarken,
                 newMod.lightmap.or(this::lightmap),
                 newMod.targets //ignore, not used after merging
         );
@@ -89,6 +96,8 @@ public record DimensionEffectsModifier(DimensionEnvAttributeModifications attrib
                 oldCloud,
                 oldAmbient,
                 oldHasSkylight,
+                Optional.empty(),
+                false,
                 Optional.empty(), DimensionTarget.EMPTY);
 
 

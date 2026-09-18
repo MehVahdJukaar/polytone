@@ -4,7 +4,9 @@ package net.mehvahdjukaar.polytone.content.dimension;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.attributes.DynamicAttributeContext;
 import net.mehvahdjukaar.polytone.common.attributes.EnvironmentAttributesSystemRebuilder;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.Minecraft;
@@ -35,6 +37,9 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
 
     private final Map<ResourceKey<DimensionType>, EnvironmentAttributeMap> postProcessEffects = new HashMap<>();
 
+    private IBlockExp rainFogStrength = null;
+    private boolean noWeatherFogDarken = false;
+
     public DimensionEffectsManager() {
         super(Spec.of("Dimension modifier", () -> DimensionEffectsModifier.CODEC)
                 .wikiPage("Dimension-Effects-Modifiers")
@@ -48,6 +53,8 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         effectsToApply.clear();
         extraMods.clear();
         postProcessEffects.clear();
+        rainFogStrength = null;
+        noWeatherFogDarken = false;
     }
 
     @Override
@@ -102,6 +109,8 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
     public void onDimensionChanged(Holder<DimensionType> currentDimHolder, HolderLookup.Provider access) {
         DimensionType currentDim = currentDimHolder.value();
         ResourceKey<DimensionType> key = currentDimHolder.unwrapKey().get();
+        rainFogStrength = null;
+        noWeatherFogDarken = false;
 
         for (var v : effectsToApply.entrySet()) {
             Identifier modId = v.getKey();
@@ -110,6 +119,8 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
             if (!targets.contains(currentDimHolder)) continue;
 
             postProcessEffects.put(key, modifier.getPostProcessAttributes());
+            modifier.rainFogStrength().ifPresent(e -> rainFogStrength = e);
+            noWeatherFogDarken |= modifier.noWeatherFogDarken();
             DimensionEffectsModifier old = modifier.apply(currentDim);
 
             alteredVanillaEffects.put(key, old);
@@ -133,6 +144,15 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         if (post != null) {
             builder.addConstantLayer(post);
         }
+    }
+
+    public float getRainFogStrength() {
+        if (rainFogStrength == null) return 1;
+        return DynamicAttributeContext.evaluate(rainFogStrength);
+    }
+
+    public boolean noWeatherFogDarken() {
+        return noWeatherFogDarken;
     }
 
     public Map<Identifier, DimensionEffectsModifier> modifiersById() {
