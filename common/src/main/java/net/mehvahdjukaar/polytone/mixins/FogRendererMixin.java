@@ -11,6 +11,8 @@ import net.minecraft.util.CubicSampler;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(FogRenderer.class)
 public abstract class FogRendererMixin {
@@ -53,4 +55,21 @@ public abstract class FogRendererMixin {
         return original;
     }
 
+    @ModifyConstant(method = "setupColor", constant = @Constant(floatValue = 0.623F))
+    private static float polytone$powderSnowFogRed(float original) {
+        Integer custom = Polytone.COLORS.getPowderSnowFogColor();
+        return custom != null ? (custom >> 16 & 255) / 255f : original;
+    }
+
+    @ModifyConstant(method = "setupColor", constant = @Constant(floatValue = 0.734F))
+    private static float polytone$powderSnowFogGreen(float original) {
+        Integer custom = Polytone.COLORS.getPowderSnowFogColor();
+        return custom != null ? (custom >> 8 & 255) / 255f : original;
+    }
+
+    @ModifyConstant(method = "setupColor", constant = @Constant(floatValue = 0.785F))
+    private static float polytone$powderSnowFogBlue(float original) {
+        Integer custom = Polytone.COLORS.getPowderSnowFogColor();
+        return custom != null ? (custom & 255) / 255f : original;
+    }
 }

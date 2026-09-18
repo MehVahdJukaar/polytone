@@ -92,6 +92,12 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     private float waterFogBrightening = 1;
     private int waterFogBrighteningTime = 600;
+    @Nullable
+    private Integer powderSnowFogColor = null;
+    @Nullable
+    private Float blindnessFogDistance = null;
+    @Nullable
+    private Float darknessFogDistance = null;
 
     public ColorManager() {
         //determines the priority. last applied will be the one with highest priority. Polytone is last applied one
@@ -106,6 +112,19 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     public float getWaterVisionTimeScale() {
         return waterFogBrighteningTime / 600f;
+    }
+
+    @Nullable
+    public Integer getPowderSnowFogColor() {
+        return powderSnowFogColor;
+    }
+
+    public float getBlindnessFogDistance(float vanilla) {
+        return blindnessFogDistance != null ? blindnessFogDistance : vanilla;
+    }
+
+    public float getDarknessFogDistance(float vanilla) {
+        return darknessFogDistance != null ? darknessFogDistance : vanilla;
     }
 
     public Integer getXpBar() {
@@ -152,6 +171,9 @@ public class ColorManager extends SingleFileContentManager<Void> {
             switch (k) {
                 case "water_fog_brightening" -> waterFogBrightening = Mth.clamp(v.getAsFloat(), 0, 1);
                 case "water_fog_brightening_time" -> waterFogBrighteningTime = Math.max(1, v.getAsInt());
+                case "powder_snow_fog" -> powderSnowFogColor = parseHex(v);
+                case "blindness_fog_distance" -> blindnessFogDistance = v.getAsFloat();
+                case "darkness_fog_distance" -> darknessFogDistance = v.getAsFloat();
             }
         });
 
@@ -467,6 +489,9 @@ public class ColorManager extends SingleFileContentManager<Void> {
         entityShadowsDisabled = false;
         waterFogBrightening = 1;
         waterFogBrighteningTime = 600;
+        powderSnowFogColor = null;
+        blindnessFogDistance = null;
+        darknessFogDistance = null;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();

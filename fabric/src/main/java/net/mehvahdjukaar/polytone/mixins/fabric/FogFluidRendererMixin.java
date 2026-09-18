@@ -30,11 +30,11 @@ public abstract class FogFluidRendererMixin {
 
     @Inject(method = "setupColor", at = @At(value = "TAIL"))
     private static void polytone$modifyFluidFogColor(Camera camera, float partialTicks, ClientLevel level, int renderDistanceChunks, float bossColorModifier, CallbackInfo ci) {
+        if (!Polytone.FLUID_MODIFIERS.hasAnyModifier()) return;
         BlockPos pos = camera.getBlockPosition();
         FluidState state = level.getFluidState(pos);
-        if (camera.getPosition().y < (double) ((float) pos.getY() +
-                state.getHeight(level, pos))) {
-            FluidPropertyModifier modifier = Polytone.FLUID_MODIFIERS.getModifier(state.getType());
+        if (FluidPropertyModifier.isCameraSubmerged(camera, level, state)) {
+            FluidPropertyModifier modifier = Polytone.FLUID_MODIFIERS.getModifierOrVariant(state.getType());
             if (modifier != null) {
                 BlockColor col = modifier.getFogColormap();
                 if (col != null) {

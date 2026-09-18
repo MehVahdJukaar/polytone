@@ -40,7 +40,7 @@ public class FluidPropertiesManagerImpl {
             if (tintColormap instanceof IColorGetter c) {
                 tintColormap = Polytone.COLORMAPS.getOrCreateConcurrentColormap(c);
             }
-            FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, tintColormap, fogColormap));
+            FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, tintColormap, fogColormap, prop));
         }
     }
 
@@ -58,7 +58,8 @@ public class FluidPropertiesManagerImpl {
 
     private record FluidExtensionWrapper(IClientFluidTypeExtensions existingProperties,
                                          @Nullable BlockColor tintColor,
-                                         @Nullable BlockColor fogColor) implements IClientFluidTypeExtensions {
+                                         @Nullable BlockColor fogColor,
+                                         FluidPropertyModifier modifier) implements IClientFluidTypeExtensions {
 
 
         @Override
@@ -113,7 +114,8 @@ public class FluidPropertiesManagerImpl {
         @Override
         public @NotNull Vector3f modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector3f fluidFogColor) {
             if (fogColor != null) {
-                return new Vector3f(ColorUtils.unpack(fogColor.getColor(null, level, null, -1)));
+                BlockPos pos = camera.getBlockPosition();
+                return new Vector3f(ColorUtils.unpack(fogColor.getColor(level.getBlockState(pos), level, pos, -1)));
             }
             return existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
         }
@@ -121,6 +123,7 @@ public class FluidPropertiesManagerImpl {
         @Override
         public void modifyFogRender(Camera camera, FogRenderer.FogMode mode, float renderDistance, float partialTick, float nearDistance, float farDistance, FogShape shape) {
             existingProperties.modifyFogRender(camera, mode, renderDistance, partialTick, nearDistance, farDistance, shape);
+            if (modifier.hasFogShape()) modifier.modifyFogShape(camera, Minecraft.getInstance().level);
         }
 
         @Override
