@@ -1,0 +1,17 @@
+{
+  "targets": "minecraft:overworld",
+  "attributes_modifiers": {
+    "rain": {
+      "minecraft:visual/cloud_height": {
+        "argument": 0.75,
+        "modifier": "multiply"
+      }
+    },
+    "post_process": {
+      "minecraft:visual/sky_color": "polytone_sample:sky_by_height",
+      "minecraft:visual/sky_light_factor": "v * (1 - config('polytone_sample:night_darkness') * (1 - v))",
+      "minecraft:visual/star_brightness": "polytone_sample_moon_phase == 4 ? v * 2 : v",
+      "minecraft:visual/sunrise_sunset_color": "#ffff7a2a"
+    }
+  }
+}

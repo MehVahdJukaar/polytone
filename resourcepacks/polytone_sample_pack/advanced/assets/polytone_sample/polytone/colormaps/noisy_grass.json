@@ -1,0 +1,4 @@
+{
+  "x_axis": "r.noise(o.x / 16, o.z / 16)",
+  "y_axis": "temperature"
+}

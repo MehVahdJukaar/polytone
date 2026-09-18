@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "": {
+      "type": "polytone:expression",
+      "fabric:type": "polytone:expression",
+      "cases": [
+        { "when": "o.downfall > 0.8", "model": { "model": "minecraft:block/mossy_cobblestone" } }
+      ],
+      "fallback": { "model": "minecraft:block/cobblestone" }
+    }
+  }
+}

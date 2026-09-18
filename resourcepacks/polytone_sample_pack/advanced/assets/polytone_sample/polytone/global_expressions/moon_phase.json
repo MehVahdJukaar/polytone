@@ -1,0 +1,4 @@
+{
+  "expression": "floor(g.dayTime / 24000) % 8",
+  "update_interval": 20
+}

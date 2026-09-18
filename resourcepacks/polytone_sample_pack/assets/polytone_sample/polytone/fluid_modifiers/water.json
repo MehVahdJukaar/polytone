@@ -1,0 +1,4 @@
+{
+  "targets": ["minecraft:water", "minecraft:flowing_water"],
+  "colormap": "polytone_sample:tropical_water"
+}

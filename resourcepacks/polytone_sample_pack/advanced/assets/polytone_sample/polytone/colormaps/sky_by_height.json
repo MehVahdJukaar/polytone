@@ -1,0 +1,5 @@
+{
+  "x_axis": "day_time",
+  "y_axis": "(o.y - 60) / 200",
+  "biome_blend": false
+}

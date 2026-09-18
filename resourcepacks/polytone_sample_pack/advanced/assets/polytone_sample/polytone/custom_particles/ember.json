@@ -1,0 +1,18 @@
+{
+  "render_type": "additive_translucent",
+  "has_physics": false,
+  "light_level": 15,
+  "initializer": {
+    "lifetime": "30 + r.rand() * 30",
+    "size": "0.04 + r.rand() * 0.04",
+    "red": "1",
+    "green": "0.45 + r.rand() * 0.3",
+    "blue": "0.1"
+  },
+  "ticker": {
+    "dx": "o.xd * 0.95 + (r.rand() - 0.5) * 0.004",
+    "dy": "o.yd + 0.0015",
+    "dz": "o.zd * 0.95 + (r.rand() - 0.5) * 0.004",
+    "alpha": "1 - o.age / o.life"
+  }
+}

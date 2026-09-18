@@ -1,0 +1,20 @@
+{
+  "dye": {
+    "red": { "diffuse": "d42a2a" },
+    "lime": { "diffuse": "7ee04a", "text": "7ee04a" }
+  },
+  "map": {
+    "grass": "6fa84a",
+    "water": "3b6fd6"
+  },
+  "text": {
+    "gold": "ffcc00",
+    "xpbar": "7ee04a"
+  },
+  "effect": {
+    "minecraft:poison": "3f9e2a"
+  },
+  "particle": {
+    "minecraft:portal": "b04aff"
+  }
+}

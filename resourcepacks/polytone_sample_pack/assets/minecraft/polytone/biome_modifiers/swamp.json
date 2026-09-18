@@ -1,0 +1,10 @@
+{
+  "attributes_modifiers": {
+    "minecraft:visual/water_fog_color": "#1e3a2a",
+    "minecraft:visual/water_fog_end_distance": "REMOVE",
+    "minecraft:visual/fog_start_distance": {
+      "argument": 0.6,
+      "modifier": "multiply"
+    }
+  }
+}

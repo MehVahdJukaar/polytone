@@ -1,0 +1,7 @@
+{
+  "post_chain": "polytone_sample:sunset_tint",
+  "activation_condition": "g.skyType() == 1",
+  "expression_uniforms": {
+    "TintStrength": "max(0, 1 - abs(g.dayTime - 12500) / 1500) * 0.35"
+  }
+}

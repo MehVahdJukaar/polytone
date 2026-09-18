@@ -1,0 +1,6 @@
+{
+  "ambient_light": 0.3,
+  "attributes_modifiers": {
+    "minecraft:visual/fog_color": "#4a1a1a"
+  }
+}
