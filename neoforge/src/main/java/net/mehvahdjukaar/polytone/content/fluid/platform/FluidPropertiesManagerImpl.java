@@ -9,6 +9,9 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.fog.FogData;
+import net.minecraft.client.renderer.fog.environment.FogEnvironment;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -24,11 +27,11 @@ public class FluidPropertiesManagerImpl {
     private static final Map<FluidType, IClientFluidTypeExtensions> FLUID_EXTENSIONS = new HashMap<>();
 
     public static void tryAddSpecial(Fluid fluid, FluidPropertyModifier prop) {
+        if (prop.getFogColormap() == null && !prop.hasFogShape()) return;
         FluidType fluidType = fluid.getFluidType();
         IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fluidType);
         if (!(ext instanceof FluidExtensionWrapper)) {
-            IColorGetter fogColormap = prop.getFogColormap();
-            FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, fogColormap));
+            FLUID_EXTENSIONS.put(fluidType, new FluidExtensionWrapper(ext, prop));
         }
     }
 
@@ -45,7 +48,7 @@ public class FluidPropertiesManagerImpl {
     }
 
     private record FluidExtensionWrapper(IClientFluidTypeExtensions existingProperties,
-                                         @Nullable IColorGetter fogColor) implements IClientFluidTypeExtensions {
+                                         FluidPropertyModifier modifier) implements IClientFluidTypeExtensions {
 
         @Override
         public @Nullable Identifier getRenderOverlayTexture(Minecraft mc) {
@@ -59,12 +62,20 @@ public class FluidPropertiesManagerImpl {
 
         @Override
         public void modifyFogColor(Camera camera, float partialTick, ClientLevel level, int renderDistance, float darkenWorldAmount, Vector4f fluidFogColor) {
-            if (fogColor != null) {
-                float[] unpack = ColorUtils.unpack(fogColor.sampleColor(null, null, null, null, null));
-                fluidFogColor.set(unpack[0], unpack[1], unpack[2], fluidFogColor.w);
-            } else {
+            IColorGetter fogColor = modifier.getFogColormap();
+            if (fogColor == null) {
                 existingProperties.modifyFogColor(camera, partialTick, level, renderDistance, darkenWorldAmount, fluidFogColor);
+                return;
             }
+            BlockPos pos = camera.blockPosition();
+            float[] unpack = ColorUtils.unpack(fogColor.colorInWorld(level.getBlockState(pos), level, pos));
+            fluidFogColor.set(unpack[0], unpack[1], unpack[2], fluidFogColor.w);
+        }
+
+        @Override
+        public void modifyFogRender(Camera camera, FogEnvironment environment, float renderDistance, float partialTick, FogData fogData) {
+            existingProperties.modifyFogRender(camera, environment, renderDistance, partialTick, fogData);
+            if (modifier.hasFogShape()) modifier.modifyFogShape(fogData, camera, Minecraft.getInstance().level);
         }
     }
 }

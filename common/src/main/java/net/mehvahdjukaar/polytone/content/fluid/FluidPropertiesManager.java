@@ -21,6 +21,8 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.material.FlowingFluid;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -164,6 +166,21 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
 
     public FluidPropertyModifier getModifier(Fluid water) {
         return modifiers.get(water);
+    }
+
+    public boolean hasAnyModifier() {
+        return !modifiers.isEmpty();
+    }
+
+    // a pack usually only targets one of the still/flowing pair, so accept either one here
+    @Nullable
+    public FluidPropertyModifier getModifierOrVariant(Fluid fluid) {
+        FluidPropertyModifier mod = modifiers.get(fluid);
+        if (mod == null && fluid instanceof FlowingFluid ff) {
+            mod = modifiers.get(ff.getSource());
+            if (mod == null) mod = modifiers.get(ff.getFlowing());
+        }
+        return mod;
     }
 
 }

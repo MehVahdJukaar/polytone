@@ -13,6 +13,7 @@
     "EquipmentLayerRendererMixin",
     "FabricItemGroupEntriesAccessor",
     "FaceBakeryMixin",
+    "FogRendererMixin",
     "ParticleEngineAccessor",
     "ParticleResourcesAccessor",
     "RegistrySyncManagerMixin"

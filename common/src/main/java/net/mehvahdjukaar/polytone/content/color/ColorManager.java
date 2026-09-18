@@ -15,14 +15,12 @@ import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.reloader.SingleFileContentManager;
 import net.mehvahdjukaar.polytone.common.struc.Vec3f;
-import net.mehvahdjukaar.polytone.content.color.fog_env.FogEnvironmentMod;
 import net.mehvahdjukaar.polytone.content.entity.IRenderStateWithId;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.ColorLerper;
 import net.minecraft.client.renderer.entity.state.ExperienceOrbRenderState;
-import net.minecraft.client.renderer.fog.environment.PowderedSnowFogEnvironment;
 import net.minecraft.client.resources.SplashManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ColorParticleOption;
@@ -74,13 +72,6 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     protected final Style originalSplash = SplashManager.DEFAULT_STYLE;
 
-    protected final int originalPowderSnowColor = PowderedSnowFogEnvironment.COLOR;
-    @Nullable
-    protected FogEnvironmentMod powderSnowFogMod = null;
-    @Nullable
-    protected FogEnvironmentMod lavaFogMod = null;
-    //TODO: add this
-
     @Nullable
     Identifier xpOrbParticle;
     @Nullable
@@ -97,6 +88,14 @@ public class ColorManager extends SingleFileContentManager<Void> {
     private Integer enchantTableXp = null;
 
     private Integer skyFlashColor = null;
+    @Nullable
+    private Integer powderSnowFogColor = null;
+    @Nullable
+    private Float blindnessFogDistance = null;
+    @Nullable
+    private Float darknessFogDistance = null;
+    @Nullable
+    private Float bossFogDistance = null;
     private Integer voidDarknessOffset = null;
     private Integer horizonHeight = null;
 
@@ -138,6 +137,23 @@ public class ColorManager extends SingleFileContentManager<Void> {
 
     public Integer getHorizonHeight() {
         return horizonHeight;
+    }
+
+    @Nullable
+    public Integer getPowderSnowFogColor() {
+        return powderSnowFogColor;
+    }
+
+    public float getBlindnessFogDistance(float vanilla) {
+        return blindnessFogDistance != null ? blindnessFogDistance : vanilla;
+    }
+
+    public float getDarknessFogDistance(float vanilla) {
+        return darknessFogDistance != null ? darknessFogDistance : vanilla;
+    }
+
+    public float getBossFogDistance(float vanilla) {
+        return bossFogDistance != null ? bossFogDistance : vanilla;
     }
 
     public float getWaterFogBrightening() {
@@ -215,12 +231,19 @@ public class ColorManager extends SingleFileContentManager<Void> {
                     return;
                 case "water_fog_brightening_time":
                     waterFogBrighteningTime = Math.max(1, parseInt(e));
+                    return;
+                case "powder_snow_fog":
+                    powderSnowFogColor = parseColor(e);
+                    return;
+                case "blindness_fog_distance":
+                    blindnessFogDistance = parseFloat(e);
+                    return;
+                case "darkness_fog_distance":
+                    darknessFogDistance = parseFloat(e);
+                    return;
+                case "boss_fog_distance":
+                    bossFogDistance = parseFloat(e);
             }
-        });
-
-        doWith(obj, "fog", (ka, va) -> {
-            powderSnowFogMod = get(va, "powder_snow", FogEnvironmentMod.CODEC);
-            lavaFogMod = get(va, "lava", FogEnvironmentMod.CODEC);
         });
 
         doWith(obj, "dye", (k, v) -> {
@@ -586,8 +609,10 @@ public class ColorManager extends SingleFileContentManager<Void> {
         horizonHeight = null;
         waterFogBrightening = 1;
         waterFogBrighteningTime = 600;
-        lavaFogMod = null;
-        powderSnowFogMod = null;
+        powderSnowFogColor = null;
+        blindnessFogDistance = null;
+        darknessFogDistance = null;
+        bossFogDistance = null;
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();
