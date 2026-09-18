@@ -1,4 +1,0 @@
-{
-  "targets": ["minecraft:grass_block", "minecraft:short_grass", "minecraft:tall_grass", "minecraft:fern", "minecraft:large_fern"],
-  "colormap": "polytone_sample:noisy_grass"
-}

@@ -1,9 +1,0 @@
-{
-  "emitters": [
-    {
-      "bone": "head",
-      "particle": "minecraft:soul",
-      "chance": "0.05"
-    }
-  ]
-}

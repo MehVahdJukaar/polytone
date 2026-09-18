@@ -1,6 +1,0 @@
-{
-  "config.polytone_sample.advanced": "Advanced Examples",
-  "config.polytone_sample.advanced.tooltip": "Loads the 'advanced' overlay: expressions, custom particles, an expression model, a post shader.",
-  "config.polytone_sample.night_darkness": "Night Darkness",
-  "config.polytone_sample.night_darkness.tooltip": "Read by the advanced overworld example. Does nothing until Advanced Examples is on."
-}

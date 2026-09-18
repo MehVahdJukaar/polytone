@@ -1,8 +1,0 @@
-{
-  "removals": [
-    {
-      "type": "items_match",
-      "items": ["minecraft:trident", "minecraft:mace"]
-    }
-  ]
-}

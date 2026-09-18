@@ -1,8 +1,0 @@
-{
-  "targets": "biomesoplenty:.*",
-  "require_mods": "biomesoplenty",
-  "priority": -1,
-  "attributes_modifiers": {
-    "minecraft:visual/sky_color": "#9cc4ff"
-  }
-}

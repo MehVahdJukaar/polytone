@@ -1,9 +1,0 @@
-{
-  "targets": ".*",
-  "priority": -2,
-  "attributes_modifiers": {
-    "minecraft:visual/sky_color": "polytone_sample:optifine_sky",
-    "minecraft:visual/fog_color": "polytone_sample:optifine_fog",
-    "minecraft:visual/water_fog_color": "polytone_sample:optifine_underwater"
-  }
-}

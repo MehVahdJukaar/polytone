@@ -24,6 +24,6 @@ VERSION="${VERSION:-unversioned}"
 ZIP="$OUT_DIR/${PACK}-v${VERSION}.zip"
 rm -f "$ZIP"
 
-( cd "$PACK_DIR" && zip -rq -X "$ZIP" . -x '.git/*' -x '.idea/*' -x '.gitignore' )
+( cd "$PACK_DIR" && zip -rq -X "$ZIP" . -x '.git/*' -x '.idea/*' -x '.gitignore' -x 'README.md' )
 
 echo "Built $ZIP ($(du -h "$ZIP" | cut -f1))"
