@@ -11,7 +11,7 @@ import java.util.*;
 
 import static net.mehvahdjukaar.polytone.common.exp.ExpressionUtils.defFunc;
 
-public abstract class PolytoneMvelExpression {
+public abstract class PolytoneExpression {
 
     // global stuff
     protected static final String TIME = "TIME";
@@ -88,11 +88,11 @@ public abstract class PolytoneMvelExpression {
 
     protected final boolean hasRenderDistance;
 
-    public PolytoneMvelExpression(String unparsed) {
+    public PolytoneExpression(String unparsed) {
         this(unparsed, false);
     }
 
-    public PolytoneMvelExpression(String unparsed, boolean concurrent) {
+    public PolytoneExpression(String unparsed, boolean concurrent) {
         FunBuilder funBuilder = new FunBuilder();
         buildFunctions(funBuilder);
         VarBuilder varBuilder = new VarBuilder();
@@ -125,7 +125,7 @@ public abstract class PolytoneMvelExpression {
         this.hasRenderDistance = unparsed.contains(RENDER_DISTANCE);
     }
 
-    protected abstract PolytoneMvelExpression createConcurrent();
+    protected abstract PolytoneExpression createConcurrent();
 
     protected void buildVars(VarBuilder builder) {
         builder.addAll(baseVariableNames());
