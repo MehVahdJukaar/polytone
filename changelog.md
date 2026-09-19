@@ -1,2 +1,1 @@
-- fixed an issue with shadowmap
 - many new addition related to fog, allowing to customize previously hardcoded logic without using env modifiers workarounds.
