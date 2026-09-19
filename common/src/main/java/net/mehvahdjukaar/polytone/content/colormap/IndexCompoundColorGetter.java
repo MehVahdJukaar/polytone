@@ -95,10 +95,14 @@ public class IndexCompoundColorGetter implements IColorGetter {
         return getters;
     }
 
+    private @Nullable IColorGetter untintedGetter() {
+        IColorGetter getter = getters.get(-1);
+        return getter != null ? getter : getters.get(0);
+    }
+
     @Override
     public int colorInWorld(BlockState blockState, BlockAndTintGetter level, BlockPos blockPos) {
-        IColorGetter getter = getters.get(0);
-        if (getter == null) getter = getters.get(-1);
+        IColorGetter getter = untintedGetter();
         if (getter != null) return getter.colorInWorld(blockState, level, blockPos);
         return -1;
     }
@@ -139,7 +143,7 @@ public class IndexCompoundColorGetter implements IColorGetter {
 
     @Override
     public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable ItemStack item) {
-        IColorGetter getter = getters.get(-1);
+        IColorGetter getter = untintedGetter();
         if (getter != null) {
             return getter.sampleColor(level, state, pos, biome, item);
 
