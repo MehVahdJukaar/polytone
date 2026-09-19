@@ -1,10 +1,13 @@
 package net.mehvahdjukaar.polytone.content.colormap;
 
 import com.google.gson.JsonElement;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
+import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.companion.TexturePart;
 import net.mehvahdjukaar.polytone.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.utils.AssetsFiles;
@@ -20,10 +23,11 @@ import net.minecraft.world.level.GrassColor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
+public class ColormapsManager extends ContentManager<IColorGetter, AssetsFiles> {
 
     // Builtin colormaps
     //TODO: delegate to grass so we have quark compat
@@ -59,10 +63,16 @@ public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
         return concurrentColormaps.computeIfAbsent(colormap, IColorGetter::makeConcurrent);
     }
 
-    private static final TexturePart<Colormap> TEXTURE = TexturePart.plain(c -> c);
+    // plain naming still gives indexed compounds <stem>_<n>.png for their inline members
+    private static final TexturePart<IColorGetter> TEXTURE = TexturePart.plain(c -> c);
 
     public ColormapsManager() {
-        super(Spec.of("Colormap", () -> Colormap.DIRECT_CODEC)
+        super(Spec.of("Colormap", () -> SchemaCodecs.<IColorGetter>alternatives(
+                        SchemaCodecs.alt("inline colormap", Colormap.DIRECT_CODEC),
+                        SchemaCodecs.alt("biome compound", BiomeCompoundColorGetter.CODEC),
+                        SchemaCodecs.alt("indexed compound", IndexCompoundColorGetter.DIRECT_CODEC),
+                        SchemaCodecs.alt("reference", Polytone.COLORMAPS.byNameCodec()),
+                        SchemaCodecs.alt("single color", Colormap.SINGLE_COLOR_CODEC)))
                 .wikiPage("Colormaps")
                 .textureParts(TEXTURE)
                 .folders("colormaps"));
@@ -81,18 +91,26 @@ public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
         var jsons = resources.jsons();
         var textures = new TrackedTextures(resources.textures());
 
-        for (var j : jsons.entrySet()) {
-            var json = j.getValue();
-            var id = j.getKey();
-
-            Colormap colormap = decodeStrict(json, id, ops);
-            colormap.inlined = false;
-            // the contract declared on the Spec enumerates the bound slot,
-            // and fill() resolves it against the scanned textures.
-            contentTexture.fill(textures, id, colormap, true);
-
-            // we need to fill these before we parse the properties as they will be referenced below
-            add(id, colormap);
+        // compounds and aliases point at other files here, so keep retrying until nothing new decodes
+        Map<ResourceLocation, JsonElement> pending = new LinkedHashMap<>(jsons);
+        boolean progressed = true;
+        while (!pending.isEmpty() && progressed) {
+            progressed = false;
+            var it = pending.entrySet().iterator();
+            while (it.hasNext()) {
+                var j = it.next();
+                IColorGetter colormap = contentCodec().decode(ops, j.getValue()).result()
+                        .map(Pair::getFirst).orElse(null);
+                if (colormap == null) continue;
+                contentTexture.fill(textures, j.getKey(), colormap, true);
+                add(j.getKey(), colormap);
+                it.remove();
+                progressed = true;
+            }
+        }
+        // whatever is left is broken or cyclic. decode again just for the error
+        for (var j : pending.entrySet()) {
+            decodeStrict(j.getValue(), j.getKey(), ops);
         }
 
         //initialize recursive stuff
@@ -112,7 +130,6 @@ public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
         // creates orphaned texture colormaps
         for (var orphan : contentTexture.orphans(textures, jsons.keySet())) {
             Colormap defaultColormap = Colormap.createDefTriangle();
-            defaultColormap.inlined = false;
             contentTexture.fill(textures, orphan.stemId(), defaultColormap, true);
             add(orphan.stemId(), defaultColormap);
         }
@@ -148,7 +165,8 @@ public class ColormapsManager extends ContentManager<Colormap, AssetsFiles> {
         PlatStuff.unregisterAllCustomColorResolves();
     }
 
-    public void add(ResourceLocation id, Colormap colormap) {
+    public void add(ResourceLocation id, IColorGetter colormap) {
+        if (colormap instanceof Colormap c) c.inlined = false;
         colormaps.register(id, () -> colormap);
         if (colormap.needsToFillTexture()) {
             throw new IllegalStateException("Did not find any texture png for colormap " + id);

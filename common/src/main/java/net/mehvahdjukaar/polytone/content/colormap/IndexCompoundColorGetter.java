@@ -118,6 +118,7 @@ public class IndexCompoundColorGetter implements IColorGetter {
     @Override
     public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
         IColorGetter getter = getters.get(-1);
+        if (getter == null) getter = getters.get(0);
         if (getter != null) {
             return getter.sampleColor(state, pos, biome, item);
 
