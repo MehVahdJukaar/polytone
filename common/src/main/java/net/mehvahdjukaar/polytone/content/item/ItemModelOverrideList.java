@@ -2,8 +2,8 @@ package net.mehvahdjukaar.polytone.content.item;
 
 import com.google.common.base.Suppliers;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.utils.DepthSearchTrie;
-import net.mehvahdjukaar.polytone.utils.FrequencyOrderedCollection;
+import net.mehvahdjukaar.polytone.common.struc.DepthSearchTrie;
+import net.mehvahdjukaar.polytone.common.struc.FrequencyOrderedCollection;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentType;

@@ -3,12 +3,12 @@ package net.mehvahdjukaar.polytone.content.lightmap;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
-import net.mehvahdjukaar.polytone.utils.exp.ConcurrentExpression;
-import net.mehvahdjukaar.polytone.utils.exp.IExpression;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.exp.ConcurrentExpression;
+import net.mehvahdjukaar.polytone.common.exp.IExpression;
 import net.minecraft.core.BlockPos;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.jetbrains.annotations.NotNull;

@@ -22,15 +22,15 @@ import net.mehvahdjukaar.polytone.content.lightmap.LightmapsManager;
 import net.mehvahdjukaar.polytone.content.global_expressions.GlobalExpressionsManager;
 import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
-import net.mehvahdjukaar.polytone.content.particle.ParticleModifiersManager;
+import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierManager;
 import net.mehvahdjukaar.polytone.content.slotify.GuiOverlayManager;
 import net.mehvahdjukaar.polytone.content.sound.SoundTypesManager;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabsModifiersManager;
 import net.mehvahdjukaar.polytone.content.texture.VariantTextureManager;
-import net.mehvahdjukaar.polytone.utils.BiomeKeysCache;
-import net.mehvahdjukaar.polytone.utils.CompoundReloader;
-import net.mehvahdjukaar.polytone.utils.GenericDirectorySpriteSource;
+import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
+import net.mehvahdjukaar.polytone.common.reloader.PolytoneReloadManager;
+import net.mehvahdjukaar.polytone.common.GenericDirectorySpriteSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.resources.model.ModelResourceLocation;
@@ -65,7 +65,7 @@ public class Polytone {
 
     public static final Logger LOGGER = LogManager.getLogger("Polytone");
 
-    private static CompoundReloader COMPOUND_RELOADER;
+    private static PolytoneReloadManager COMPOUND_RELOADER;
     public static final BlockPropertiesManager BLOCK_MODIFIERS = new BlockPropertiesManager();
     public static final FluidPropertiesManager FLUID_MODIFIERS = new FluidPropertiesManager();
     public static final CustomModelsManager CUSTOM_MODELS = new CustomModelsManager();
@@ -109,7 +109,7 @@ public class Polytone {
         PolytoneStub.initialized= true;
         // CONFIGS goes first: config values feed require_config conditions and config() expressions
         // used by everything else, so they must be up to date before any other reloader parses.
-        COMPOUND_RELOADER = new CompoundReloader(
+        COMPOUND_RELOADER = new PolytoneReloadManager(
                 CONFIGS,
                 NOISES, GLOBAL_EXPRESSION, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS, COLORED_LIGHTS,
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,

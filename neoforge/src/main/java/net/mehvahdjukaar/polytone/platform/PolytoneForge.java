@@ -7,7 +7,7 @@ import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
 import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
 import net.mehvahdjukaar.polytone.mixins.neoforge.BuildCreativeModeTabContentsEventAccessor;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.FogRenderer;

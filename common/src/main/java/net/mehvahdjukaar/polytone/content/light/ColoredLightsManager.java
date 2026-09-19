@@ -1,10 +1,11 @@
 package net.mehvahdjukaar.polytone.content.light;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.polytone.content.common.expressions.impl.IBlockExp;
-import net.mehvahdjukaar.polytone.content.common.expressions.impl.IEntityExp;
-import net.mehvahdjukaar.polytone.content.common.expressions.impl.IParticleExp;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -23,7 +24,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ColoredLightsManager extends JsonPartialReloader<ColoredLightEntry> {
+public class ColoredLightsManager extends ContentManager<ColoredLightEntry> {
 
     public record BlockRule(ColoredLight<IBlockExp> light, RuleTest predicate) {
         public boolean matches(BlockState state, net.minecraft.util.RandomSource random) {
@@ -43,8 +44,9 @@ public class ColoredLightsManager extends JsonPartialReloader<ColoredLightEntry>
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops,
                                   RegistryAccess access) {
+        var jsons = resources.jsons();
         for (var e : parseEnabledJsons(jsons, ops)) {
             ResourceLocation fileId = e.getKey();
             switch (e.getValue()) {

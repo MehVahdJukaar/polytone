@@ -1,9 +1,10 @@
 package net.mehvahdjukaar.polytone.content.entity;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.Polytone;
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.polytone.utils.ContentManager;
-import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.Parsed;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -15,7 +16,7 @@ import net.minecraft.world.entity.EntityType;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EntityModifiersManager extends ContentManager<EntityModifier, Map<ResourceLocation, JsonElement>> {
+public class EntityModifiersManager extends ContentManager<EntityModifier> {
 
     private final Map<EntityType<?>, EntityModifier> emittersPerEntity = new HashMap<>();
 
@@ -25,13 +26,10 @@ public class EntityModifiersManager extends ContentManager<EntityModifier, Map<R
                 .folders("entity_modifiers"));
     }
 
-    @Override
-    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
-        return this.getJsonsInDirectories(resourceManager);
-    }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        var jsons = resources.jsons();
         for (var j : Parsed.batchParseOnlyEnabled(jsons, EntityModifier.CODEC, ops, "Entity Modifiers")) {
             if (j.getValue() != null) {
                 addModifier(j.getKey(), j.getValue());

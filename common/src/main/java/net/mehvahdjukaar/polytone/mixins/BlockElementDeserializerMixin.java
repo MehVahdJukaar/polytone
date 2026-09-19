@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.mixins;
 
 import com.google.gson.JsonObject;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.mehvahdjukaar.polytone.utils.IExtendedBlockElementRotation;
+import net.mehvahdjukaar.polytone.common.IExtendedBlockElementRotation;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementRotation;
 import net.minecraft.core.Direction;

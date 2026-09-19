@@ -1,10 +1,15 @@
 package net.mehvahdjukaar.polytone.content.tabs;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.Targets;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.CsvUtils;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,7 +24,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModifier, CreativeTabsModifiersManager.Resources> {
+public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModifier> {
+
+    private Map<ResourceLocation, List<String>> extraTabs = Map.of();
 
     private final MapRegistry<CreativeModeTab> customTabs = new MapRegistry<>("Custom Creative Tabs");
 
@@ -36,12 +43,9 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
 
 
     @Override
-    public Resources prepare(ResourceManager resourceManager) {
-        var jsons = getJsonsInDirectories(resourceManager);
-
-        var types = CsvUtils.parseCsv(resourceManager, "creative_tabs");
-
-        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(types));
+    public AssetsFiles prepare(ResourceManager resourceManager) {
+        this.extraTabs = ImmutableMap.copyOf(CsvUtils.parseCsv(resourceManager, "creative_tabs"));
+        return super.prepare(resourceManager);
     }
 
     @Override
@@ -63,14 +67,14 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
-        for (var e : resources.extraTabs.entrySet()) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        for (var e : this.extraTabs.entrySet()) {
             for (var str : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(str);
                 registerNewTab(id);
             }
         }
-        for (var e : Parsed.batchParseOnlyEnabled(resources.tabsModifiers, CreativeTabModifier.CODEC,
+        for (var e : Parsed.batchParseOnlyEnabled(resources.jsons(), CreativeTabModifier.CODEC,
                 ops, "creative tab modifier")) {
             ResourceLocation id = e.getKey();
             CreativeTabModifier mod = e.getValue();
@@ -143,9 +147,5 @@ public class CreativeTabsModifiersManager extends ContentManager<CreativeTabModi
         return customTabs.containsKey(entryId);
     }
 
-
-    public record Resources(Map<ResourceLocation, JsonElement> tabsModifiers,
-                            Map<ResourceLocation, List<String>> extraTabs) {
-    }
 
 }

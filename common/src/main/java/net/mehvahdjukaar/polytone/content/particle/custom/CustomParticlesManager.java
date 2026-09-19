@@ -1,5 +1,6 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
@@ -9,8 +10,8 @@ import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ContentManager;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.content.particle.ParticleParticleEmitter;
 import net.mehvahdjukaar.polytone.content.particle.gpu.GpuParticleRenderer;
 import net.mehvahdjukaar.polytone.content.particle.gpu.GpuParticleType;
@@ -36,7 +37,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class CustomParticlesManager extends ContentManager<ICustomParticleFactory, Map<ResourceLocation, JsonElement>> {
+public class CustomParticlesManager extends ContentManager<ICustomParticleFactory> {
 
     public final MapRegistry<ICustomParticleFactory> customParticleFactories = new MapRegistry<>("Custom Particles");
     private final Map<ParticleType<?>, ParticleProvider<?>> overwrittenVanillaProviders = new HashMap<>();
@@ -55,10 +56,6 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
                 .folders("custom_particles"));
     }
 
-    @Override
-    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
-        return this.getJsonsInDirectories(resourceManager);
-    }
 
     //just gathers the custom models if any are there
     @Override
@@ -112,8 +109,9 @@ public class CustomParticlesManager extends ContentManager<ICustomParticleFactor
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops,
                                   RegistryAccess access) {
+        var jsons = resources.jsons();
         ParticleEngine particleEngine = Minecraft.getInstance().particleEngine;
 
         Set<CustomParticleType> customTypes = new HashSet<>();

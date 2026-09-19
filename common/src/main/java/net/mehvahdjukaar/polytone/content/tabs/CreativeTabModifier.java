@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
+import static net.mehvahdjukaar.polytone.common.Utils.mergeList;
 
 public record CreativeTabModifier(
         Optional<ItemStack> icon,

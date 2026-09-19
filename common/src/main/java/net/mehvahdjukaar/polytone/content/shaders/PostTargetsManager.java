@@ -1,12 +1,13 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
@@ -17,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.TargetSpec> {
+public class PostTargetsManager extends ContentManager<PostTargetsManager.TargetSpec> {
 
     record TargetSpec(Optional<Integer> width, Optional<Integer> height, boolean useDepth) {
         static final Codec<TargetSpec> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -38,7 +39,8 @@ public class PostTargetsManager extends JsonPartialReloader<PostTargetsManager.T
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        var jsons = resources.jsons();
         Map<ResourceLocation, TargetSpec> parsed = new HashMap<>();
         for (var entry : jsons.entrySet()) {
             TargetSpec.CODEC.parse(ops, entry.getValue())

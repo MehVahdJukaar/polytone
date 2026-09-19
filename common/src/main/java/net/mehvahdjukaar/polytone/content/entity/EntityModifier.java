@@ -3,15 +3,15 @@ package net.mehvahdjukaar.polytone.content.entity;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
-import net.mehvahdjukaar.polytone.content.common.expressions.impl.IEntityExp;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.content.light.ColoredLight;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.world.entity.Entity;
 
 import java.util.List;
 import java.util.Optional;
 
-import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
+import static net.mehvahdjukaar.polytone.common.Utils.mergeList;
 
 public record EntityModifier(List<EntityParticleEmitter> emitters,
                              Optional<ColoredLight<IEntityExp>> coloredLight,

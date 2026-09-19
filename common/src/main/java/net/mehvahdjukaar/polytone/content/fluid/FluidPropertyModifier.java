@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.client.color.block.BlockColor;
 import org.jetbrains.annotations.Nullable;
 

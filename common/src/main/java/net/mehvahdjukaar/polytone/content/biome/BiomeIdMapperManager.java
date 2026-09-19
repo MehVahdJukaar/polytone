@@ -1,10 +1,11 @@
 package net.mehvahdjukaar.polytone.content.biome;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ContentManager;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
@@ -13,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.Map;
 
 //
-public class BiomeIdMapperManager extends ContentManager<BiomeIdMapper, Map<ResourceLocation, JsonElement>> {
+public class BiomeIdMapperManager extends ContentManager<BiomeIdMapper> {
 
     private final MapRegistry<BiomeIdMapper> biomeIdMappers = new MapRegistry<>("Biome ID Mappers");
 
@@ -23,10 +24,6 @@ public class BiomeIdMapperManager extends ContentManager<BiomeIdMapper, Map<Reso
                 .folders("biome_id_mappers"));
     }
 
-    @Override
-    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
-        return this.getJsonsInDirectories(resourceManager);
-    }
 
     @Override
     protected void resetWithLevel(boolean logOff) {
@@ -34,8 +31,9 @@ public class BiomeIdMapperManager extends ContentManager<BiomeIdMapper, Map<Reso
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops,
                                   RegistryAccess access) {
+        var jsons = resources.jsons();
         for (var j : jsons.entrySet()) {
             var json = j.getValue();
             var id = j.getKey();

@@ -4,7 +4,7 @@ import com.mojang.serialization.DataResult;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;

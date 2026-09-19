@@ -30,7 +30,7 @@ import net.mehvahdjukaar.polytone.mixins.fabric.*;
 import net.mehvahdjukaar.polytone.content.particle.custom.ExtraDataParticleOptions;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.content.tabs.ItemToTabEvent;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;

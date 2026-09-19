@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.content.common.expressions.impl.BlockExp;
+import net.mehvahdjukaar.polytone.common.expressions.impl.BlockExp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.MultiVariant;
 import net.minecraft.client.renderer.block.model.Variant;

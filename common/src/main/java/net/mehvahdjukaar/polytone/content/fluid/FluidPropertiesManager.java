@@ -1,14 +1,18 @@
 package net.mehvahdjukaar.polytone.content.fluid;
 
+import net.mehvahdjukaar.polytone.common.LegacyHelper;
+import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.companion.TexturePart;
-import net.mehvahdjukaar.polytone.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,7 +25,7 @@ import net.minecraft.world.level.material.Fluids;
 
 import java.util.*;
 
-public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier, AssetsFiles> {
+public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier> {
 
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
 

@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.math.Transformation;
-import net.mehvahdjukaar.polytone.utils.IExtendedBlockElementRotation;
+import net.mehvahdjukaar.polytone.common.IExtendedBlockElementRotation;
 import net.minecraft.client.renderer.block.model.BlockElementRotation;
 import net.minecraft.client.renderer.block.model.FaceBakery;
 import net.minecraft.client.resources.model.ModelState;

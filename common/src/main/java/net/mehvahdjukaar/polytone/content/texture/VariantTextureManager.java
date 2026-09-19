@@ -1,11 +1,12 @@
 package net.mehvahdjukaar.polytone.content.texture;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.BakedQuadsTransformer;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
-import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.common.BakedQuadsTransformer;
+import net.mehvahdjukaar.polytone.common.Parsed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.chunk.RenderChunkRegion;
@@ -28,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-public class VariantTextureManager extends JsonPartialReloader<VariantTexture> {
+public class VariantTextureManager extends ContentManager<VariantTexture> {
 
     private final WeakHashMap<BakedQuad, Map<ResourceLocation, BakedQuad>> variantQuadsCache = new WeakHashMap<>();
 
@@ -45,7 +46,8 @@ public class VariantTextureManager extends JsonPartialReloader<VariantTexture> {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        var jsons = resources.jsons();
         for (var e : Parsed.batchParseOnlyEnabled(jsons, VariantTexture.CODEC, ops, "variant texture")) {
             var variant = e.getValue();
             var id = e.getKey();

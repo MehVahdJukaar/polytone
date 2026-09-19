@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.content.colormap.ColormapExpressionProvider;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;

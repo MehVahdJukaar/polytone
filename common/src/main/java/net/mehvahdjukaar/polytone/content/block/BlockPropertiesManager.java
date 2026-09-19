@@ -1,15 +1,20 @@
 package net.mehvahdjukaar.polytone.content.block;
 
+import net.mehvahdjukaar.polytone.common.LegacyHelper;
+import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.struc.PropertiesUtils;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
-import net.mehvahdjukaar.polytone.companion.TexturePart;
-import net.mehvahdjukaar.polytone.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
-import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
@@ -32,7 +37,7 @@ import java.util.*;
 
 import static net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener.scanDirectory;
 
-public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier, AssetsFiles> {
+public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier> {
 
     private final Map<Block, BlockPropertyModifier> vanillaProperties = new HashMap<>();
 

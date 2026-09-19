@@ -6,14 +6,14 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.color.MapColorHelper;
-import net.mehvahdjukaar.polytone.content.common.expressions.impl.IBlockExp;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.light.ColoredLight;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.content.particle.BlockParticleEmitter;
 import net.mehvahdjukaar.polytone.content.sound.BlockSoundEmitter;
 import net.mehvahdjukaar.polytone.content.sound.PolytoneSoundType;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -31,7 +31,7 @@ import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
-import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
+import static net.mehvahdjukaar.polytone.common.Utils.mergeList;
 
 public record BlockPropertyModifier(
         Optional<? extends BlockColor> tintGetter,
@@ -91,7 +91,7 @@ public record BlockPropertyModifier(
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
-        Targets t = net.mehvahdjukaar.polytone.utils.Targets.ofIds(blocks);
+        Targets t = net.mehvahdjukaar.polytone.common.Targets.ofIds(blocks);
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),

@@ -1,17 +1,22 @@
 package net.mehvahdjukaar.polytone.content.dimension;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import com.google.gson.JsonElement;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.companion.TexturePart;
-import net.mehvahdjukaar.polytone.companion.TrackedTextures;
-import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
-import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -32,7 +37,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DimensionEffectsManager extends JsonImgPartialReloader<DimensionEffectsModifier> {
+public class DimensionEffectsManager extends ContentManager<DimensionEffectsModifier> {
 
     //we cant store dimensions here since the dimension registry isnt synced to the client
     //!!map of dimension modifier IDs to modifiers
@@ -91,7 +96,7 @@ public class DimensionEffectsManager extends JsonImgPartialReloader<DimensionEff
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var jsons = resources.jsons();
         var textures = new TrackedTextures(resources.textures());
 

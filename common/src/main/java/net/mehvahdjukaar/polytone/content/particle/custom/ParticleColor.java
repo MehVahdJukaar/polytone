@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.codecui.SchemaRecord;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.core.BlockPos;

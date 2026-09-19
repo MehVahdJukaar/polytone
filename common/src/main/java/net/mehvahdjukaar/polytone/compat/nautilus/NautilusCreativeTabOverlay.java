@@ -4,7 +4,7 @@ import net.mehvahdjukaar.polytone.content.tabs.CreativeTabModifier;
 import net.mehvahdjukaar.polytone.content.tabs.CreativeTabPreview;
 import net.mehvahdjukaar.polytone.content.tabs.ItemAddition;
 import net.mehvahdjukaar.polytone.content.tabs.ItemPredicate;
-import net.mehvahdjukaar.polytone.utils.StrUtils;
+import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.ResourceLocation;

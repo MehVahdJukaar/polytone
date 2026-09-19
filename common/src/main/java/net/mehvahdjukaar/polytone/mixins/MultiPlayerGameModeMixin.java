@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.mixins;
 
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;

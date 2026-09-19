@@ -1,11 +1,12 @@
 package net.mehvahdjukaar.polytone.content.noise;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.mehvahdjukaar.polytone.utils.ExpressionUtils;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.mehvahdjukaar.polytone.common.exp.ExpressionUtils;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -15,7 +16,7 @@ import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 import java.util.List;
 import java.util.Map;
 
-public class NoiseManager extends JsonPartialReloader<NoiseManager.NoiseConfig> {
+public class NoiseManager extends ContentManager<NoiseManager.NoiseConfig> {
 
     public record NoiseConfig(int seed, List<Integer> octaves) {
         public static final Codec<NoiseConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -46,8 +47,9 @@ public class NoiseManager extends JsonPartialReloader<NoiseManager.NoiseConfig> 
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops,
                                   RegistryAccess access) {
+        var jsons = resources.jsons();
         for (var e : jsons.entrySet()) {
             var id = e.getKey();
             var json = e.getValue();

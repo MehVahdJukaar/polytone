@@ -1,9 +1,10 @@
 package net.mehvahdjukaar.polytone.content.slotify;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
-import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.common.Parsed;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -17,7 +18,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class GuiOverlayManager extends JsonPartialReloader<BlitModifier> {
+public class GuiOverlayManager extends ContentManager<BlitModifier> {
 
     private final Map<Gui.HeartType, HeartSprites> heartSprites = new EnumMap<>(Gui.HeartType.class);
     private final Map<ResourceLocation, BlitModifier> blitModifiers = new HashMap<>();
@@ -34,8 +35,9 @@ public class GuiOverlayManager extends JsonPartialReloader<BlitModifier> {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops,
                                   RegistryAccess access) {
+        var jsons = resources.jsons();
         for (var j : Parsed.batchParseOnlyEnabled(jsons, BlitModifier.CODEC,
                 ops, "overlay modifier")) {
             var effect = j.getValue();
@@ -54,7 +56,7 @@ public class GuiOverlayManager extends JsonPartialReloader<BlitModifier> {
     }
 
     @Override
-    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
+    protected AssetsFiles prepare(ResourceManager resourceManager) {
         reloadHearths(resourceManager);
         return super.prepare(resourceManager);
     }

@@ -1,5 +1,8 @@
 package net.mehvahdjukaar.polytone.content.color;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.SingleFileContentManager;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -10,12 +13,11 @@ import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.content.block.BlockContextExpression;
+import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.mehvahdjukaar.polytone.mixins.accessor.SheepAccessor;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
-import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
-import net.mehvahdjukaar.polytone.utils.Vec3f;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
+import net.mehvahdjukaar.polytone.common.struc.Vec3f;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -48,7 +50,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class ColorManager extends SingleJsonOrPropertiesReloadListener {
+public class ColorManager extends SingleFileContentManager<Void> {
 
     private final Object2IntMap<MapColor> vanillaMapColors = new Object2IntOpenHashMap<>();
     private final Map<DyeColor, Integer> vanillaFireworkColors = new EnumMap<>(DyeColor.class);
@@ -115,7 +117,8 @@ public class ColorManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        var jsons = resources.jsons();
         var keySet = new ArrayList<>(jsons.keySet());
         Lists.reverse(keySet);
 

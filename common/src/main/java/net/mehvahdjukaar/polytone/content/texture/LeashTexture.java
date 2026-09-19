@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.texture;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.mehvahdjukaar.polytone.IrisCompat;
+import net.mehvahdjukaar.polytone.compat.IrisCompat;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;

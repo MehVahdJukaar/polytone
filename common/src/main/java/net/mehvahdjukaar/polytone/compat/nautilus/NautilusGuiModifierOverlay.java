@@ -5,7 +5,7 @@ import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview;
 import net.mehvahdjukaar.polytone.content.slotify.GuiModifierPreview.PickedElement;
 import net.mehvahdjukaar.polytone.content.slotify.ScreenModifier;
 import net.mehvahdjukaar.polytone.content.slotify.WidgetModifier;
-import net.mehvahdjukaar.polytone.utils.StrUtils;
+import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;

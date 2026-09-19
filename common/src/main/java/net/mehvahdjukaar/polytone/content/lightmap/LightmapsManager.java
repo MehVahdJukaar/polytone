@@ -1,12 +1,18 @@
 package net.mehvahdjukaar.polytone.content.lightmap;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.LegacyHelper;
+import net.mehvahdjukaar.polytone.common.Parsed;
+import net.mehvahdjukaar.polytone.common.Targets;
+import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
@@ -23,7 +29,7 @@ import net.minecraft.world.level.biome.Biome;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LightmapsManager extends JsonImgPartialReloader<Lightmap> {
+public class LightmapsManager extends ContentManager<Lightmap> {
 
     public static final ResourceLocation GUI_LIGHTMAP = Polytone.res("lightmaps/gui.png");
     private static final ResourceLocation DEFAULT_LIGHTMAP = ResourceLocation.withDefaultNamespace("default");
@@ -46,7 +52,7 @@ public class LightmapsManager extends JsonImgPartialReloader<Lightmap> {
     }
 
     @Override
-    protected Resources prepare(ResourceManager resourceManager) {
+    protected AssetsFiles prepare(ResourceManager resourceManager) {
         var jsons = this.getJsonsInDirectories(resourceManager);
 
         Map<ResourceLocation, ArrayImage> textures = new HashMap<>();
@@ -59,11 +65,11 @@ public class LightmapsManager extends JsonImgPartialReloader<Lightmap> {
 
         textures.putAll(this.getImagesInDirectories(resourceManager));
 
-        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures));
+        return new AssetsFiles(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(textures));
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var images = resources.textures();
         var jsons = new HashMap<>(resources.jsons());
         lastDimension = null;

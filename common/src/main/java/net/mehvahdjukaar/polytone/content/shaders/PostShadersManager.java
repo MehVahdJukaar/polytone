@@ -1,10 +1,11 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.core.BlockPos;
@@ -29,7 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.IntSupplier;
 
-public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
+public class PostShadersManager extends ContentManager<PostChainEffect> {
 
     // Only alter our own shaders flag
     public static final ThreadLocal<Boolean> POLYTONE_LOADING = ThreadLocal.withInitial(() -> false);
@@ -48,7 +49,8 @@ public class PostShadersManager extends JsonPartialReloader<PostChainEffect> {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        var jsons = resources.jsons();
         synchronized (effects) {
             closeAllChains();
             effects.clear();

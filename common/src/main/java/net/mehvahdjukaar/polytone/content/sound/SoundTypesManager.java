@@ -1,13 +1,14 @@
 package net.mehvahdjukaar.polytone.content.sound;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ContentManager;
-import net.mehvahdjukaar.polytone.utils.CsvUtils;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
-import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.CsvUtils;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
+import net.mehvahdjukaar.polytone.common.Parsed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,7 +21,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class SoundTypesManager extends ContentManager<PolytoneSoundType, SoundTypesManager.Resources> {
+public class SoundTypesManager extends ContentManager<PolytoneSoundType> {
+
+    private Map<ResourceLocation, List<String>> soundEvents = Map.of();
 
     private final MapRegistry<SoundEvent> customSoundEvents = new MapRegistry<>("Custom Sound Events");
 
@@ -39,20 +42,17 @@ public class SoundTypesManager extends ContentManager<PolytoneSoundType, SoundTy
     }
 
     @Override
-    protected Resources prepare(ResourceManager resourceManager) {
-        var jsons = getJsonsInDirectories(resourceManager);
-
-        var types = CsvUtils.parseCsv(resourceManager, "sound_events");
-
-        return new Resources(ImmutableMap.copyOf(jsons), ImmutableMap.copyOf(types));
+    protected AssetsFiles prepare(ResourceManager resourceManager) {
+        this.soundEvents = ImmutableMap.copyOf(CsvUtils.parseCsv(resourceManager, "sound_events"));
+        return super.prepare(resourceManager);
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
 
         //custom sound events
 
-        for (var e : resources.soundEvents.entrySet()) {
+        for (var e : this.soundEvents.entrySet()) {
             for (var s : e.getValue()) {
                 ResourceLocation id = e.getKey().withPath(s);
                 if (!customSoundEvents.containsKey(id) && !BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
@@ -72,7 +72,7 @@ public class SoundTypesManager extends ContentManager<PolytoneSoundType, SoundTy
 
         // sound types
 
-        for (var j : Parsed.batchParseOnlyEnabled(resources.soundTypes, PolytoneSoundType.DIRECT_CODEC,
+        for (var j : Parsed.batchParseOnlyEnabled(resources.jsons(), PolytoneSoundType.DIRECT_CODEC,
                 ops, "sound type")) {
             var soundType = j.getValue();
             var id = j.getKey();
@@ -103,10 +103,6 @@ public class SoundTypesManager extends ContentManager<PolytoneSoundType, SoundTy
 
     public boolean isDynamicSound(ResourceLocation entryId) {
         return customSoundEvents.containsKey(entryId);
-    }
-
-    public record Resources(Map<ResourceLocation, JsonElement> soundTypes,
-                            Map<ResourceLocation, List<String>> soundEvents) {
     }
 
 }

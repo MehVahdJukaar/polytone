@@ -1,5 +1,7 @@
 package net.mehvahdjukaar.polytone.content.config;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -8,10 +10,9 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.compat.CompatHandler;
-import net.mehvahdjukaar.polytone.utils.FilesUtil;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
-import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.common.FilesUtil;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
+import net.mehvahdjukaar.polytone.common.Parsed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
@@ -42,7 +43,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
+public class ConfigsManager extends ContentManager<PolyConfig<?>> {
 
     public final OptionHolder<Boolean> lenientLoading = builtinConfig("lenient_loading", false);
     public final OptionHolder<Boolean> legacyParsing = builtinConfig("legacy_parsing", true);
@@ -221,12 +222,14 @@ public class ConfigsManager extends JsonPartialReloader<PolyConfig<?>> {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        var jsons = resources.jsons();
         parseConfigs(jsons);
     }
 
     @Override
-    protected void parseWithoutLevel(Map<ResourceLocation, JsonElement> jsons) {
+    protected void parseWithoutLevel(AssetsFiles resources) {
+        var jsons = resources.jsons();
         parseConfigs(jsons);
     }
 

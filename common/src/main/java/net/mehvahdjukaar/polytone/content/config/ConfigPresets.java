@@ -1,6 +1,6 @@
 package net.mehvahdjukaar.polytone.content.config;
 
-import net.mehvahdjukaar.polytone.utils.StrUtils;
+import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.resources.language.I18n;

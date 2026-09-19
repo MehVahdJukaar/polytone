@@ -1,11 +1,12 @@
 package net.mehvahdjukaar.polytone.content.model;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.core.RegistryAccess;
@@ -17,7 +18,7 @@ import java.util.Map;
 
 // Layers are merged into the game's EntityModelSet so they bake through the vanilla pipeline, which
 // keeps them visible to model replacing mods such as EMF.
-public class CustomModelsManager extends JsonPartialReloader<ModelDefinition> {
+public class CustomModelsManager extends ContentManager<ModelDefinition> {
 
     public static final String LAYER = "main";
 
@@ -45,7 +46,8 @@ public class CustomModelsManager extends JsonPartialReloader<ModelDefinition> {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> obj, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        var obj = resources.jsons();
         load(obj, ops);
     }
 

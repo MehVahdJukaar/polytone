@@ -1,7 +1,7 @@
 package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;

@@ -15,7 +15,7 @@ import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.mehvahdjukaar.polytone.content.item.IPolytoneItem;
 import net.mehvahdjukaar.polytone.mixins.fabric.ParticleEngineAccessor;
 import net.mehvahdjukaar.polytone.content.slotify.SlotifyScreen;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.server.MinecraftServer;
 

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.PlatStuff;
-import net.mehvahdjukaar.polytone.utils.ColorUtils;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.inventory.Slot;
 

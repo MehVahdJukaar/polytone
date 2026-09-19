@@ -3,7 +3,7 @@ package net.mehvahdjukaar.polytone.content.particle.custom;
 
 import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.mehvahdjukaar.codecui.SchemaRecord;
-import net.mehvahdjukaar.polytone.content.common.expressions.impl.IParticleExp;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IParticleExp;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.jetbrains.annotations.Nullable;
 

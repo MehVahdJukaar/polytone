@@ -8,11 +8,11 @@ import com.mojang.serialization.DynamicOps;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.companion.TexturePart;
-import net.mehvahdjukaar.polytone.companion.TrackedTextures;
-import net.mehvahdjukaar.polytone.utils.AssetsFiles;
-import net.mehvahdjukaar.polytone.utils.ContentManager;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
@@ -27,7 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class ColormapsManager extends ContentManager<IColorGetter, AssetsFiles> {
+public class ColormapsManager extends ContentManager<IColorGetter> {
 
     // Builtin colormaps
     //TODO: delegate to grass so we have quark compat
@@ -78,11 +78,6 @@ public class ColormapsManager extends ContentManager<IColorGetter, AssetsFiles> 
                 .folders("colormaps"));
     }
 
-    @Override
-    protected AssetsFiles prepare(ResourceManager resourceManager) {
-        return new AssetsFiles(this.getJsonsInDirectories(resourceManager),
-                this.getImagesInDirectories(resourceManager));
-    }
 
     @Override
     protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {

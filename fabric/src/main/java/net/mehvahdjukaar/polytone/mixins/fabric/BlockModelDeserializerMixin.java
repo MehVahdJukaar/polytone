@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.mehvahdjukaar.polytone.utils.platform.SeparateTransformsModel;
+import net.mehvahdjukaar.polytone.common.platform.SeparateTransformsModel;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.util.GsonHelper;
 import org.spongepowered.asm.mixin.Mixin;

@@ -1,10 +1,11 @@
 package net.mehvahdjukaar.polytone.content.biome;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ClientFrameTicker;
-import net.mehvahdjukaar.polytone.utils.ContentManager;
-import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.Parsed;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
@@ -26,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier, Map<ResourceLocation, JsonElement>> {
+public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier> {
 
     private final Map<ResourceLocation, BiomeSpecialEffects> vanillaEffects = new HashMap<>();
 
@@ -39,15 +40,12 @@ public class BiomeEffectsManager extends ContentManager<BiomeEffectModifier, Map
                 .folders("biome_modifiers", "biome_effects"));
     }
 
-    @Override
-    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
-        return this.getJsonsInDirectories(resourceManager);
-    }
 
     private final Map<Biome, BiomeEffectModifier> fogParametersModifiers = new HashMap<>();
 
     @Override
-    public void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    public void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        var jsons = resources.jsons();
         for (var v : Parsed.batchParseOnlyEnabled(jsons, BiomeEffectModifier.CODEC, ops, "biome modifier")) {
             addEffect(v.getKey(), v.getValue(), access);
         }

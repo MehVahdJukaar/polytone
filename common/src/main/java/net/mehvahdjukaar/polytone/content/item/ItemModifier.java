@@ -8,9 +8,9 @@ import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.content.model.WornModel;
-import net.mehvahdjukaar.polytone.content.common.expressions.impl.IEntityExp;
+import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.content.light.ColoredLight;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
@@ -30,7 +30,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static net.mehvahdjukaar.polytone.utils.Utils.mergeList;
+import static net.mehvahdjukaar.polytone.common.Utils.mergeList;
 
 public record ItemModifier(Optional<? extends ItemColor> tintGetter,
                            Optional<IColorGetter> barColor,

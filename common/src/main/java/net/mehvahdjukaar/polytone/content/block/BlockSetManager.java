@@ -1,10 +1,11 @@
 package net.mehvahdjukaar.polytone.content.block;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.ContentManager;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
@@ -13,7 +14,7 @@ import net.minecraft.world.level.block.state.properties.BlockSetType;
 
 import java.util.Map;
 
-public class BlockSetManager extends ContentManager<BlockSetTypeProvider, Map<ResourceLocation, JsonElement>> {
+public class BlockSetManager extends ContentManager<BlockSetTypeProvider> {
 
     // we keep our own registry
     private final MapRegistry<BlockSetTypeProvider> blockSetTypes = new MapRegistry<>("Custom Block Set Types");
@@ -24,10 +25,6 @@ public class BlockSetManager extends ContentManager<BlockSetTypeProvider, Map<Re
                 .folders("custom_block_sets", "block_sets"));
     }
 
-    @Override
-    protected Map<ResourceLocation, JsonElement> prepare(ResourceManager resourceManager) {
-        return this.getJsonsInDirectories(resourceManager);
-    }
 
     public String getNextName() {
         return "polytone:custom_" + counter++;
@@ -41,8 +38,9 @@ public class BlockSetManager extends ContentManager<BlockSetTypeProvider, Map<Re
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops,
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops,
                                   RegistryAccess access) {
+        var jsons = resources.jsons();
         //copy vanilla
         BlockSetType.values().forEach(type ->
                 blockSetTypes.register(ResourceLocation.parse(type.name()),

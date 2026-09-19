@@ -2,7 +2,7 @@ package net.mehvahdjukaar.polytone.content.dimension;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import net.mehvahdjukaar.polytone.utils.Targets;
+import net.mehvahdjukaar.polytone.common.Targets;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;

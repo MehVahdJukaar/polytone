@@ -1,15 +1,17 @@
 package net.mehvahdjukaar.polytone.content.shaders;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.SingleFileContentManager;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.SingleJsonOrPropertiesReloadListener;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Map;
 
-public class ShadowMapManager extends SingleJsonOrPropertiesReloadListener {
+public class ShadowMapManager extends SingleFileContentManager<Void> {
 
     private final ShadowMapRenderer renderer = new ShadowMapRenderer();
 
@@ -24,7 +26,8 @@ public class ShadowMapManager extends SingleJsonOrPropertiesReloadListener {
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        var jsons = resources.jsons();
         ShadowMapSettings result = ShadowMapSettings.DEFAULT;
         for (var entry : jsons.entrySet()) {
             try {

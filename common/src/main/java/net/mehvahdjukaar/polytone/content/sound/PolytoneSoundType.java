@@ -5,7 +5,7 @@ import net.mehvahdjukaar.codecui.SchemaCodecs;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.utils.codec.CodecUtils;
+import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;

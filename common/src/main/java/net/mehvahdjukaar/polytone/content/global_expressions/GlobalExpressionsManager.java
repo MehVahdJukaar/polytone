@@ -1,9 +1,10 @@
 package net.mehvahdjukaar.polytone.content.global_expressions;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
-import net.mehvahdjukaar.polytone.utils.JsonPartialReloader;
-import net.mehvahdjukaar.polytone.utils.MapRegistry;
-import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
+import net.mehvahdjukaar.polytone.common.Parsed;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.DoubleSupplier;
 
-public class GlobalExpressionsManager extends JsonPartialReloader<GlobalExpression> {
+public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
 
     private final MapRegistry<GlobalExpression> expressions = new MapRegistry<>("Global Expressions");
     private final Map<String, Slot> values = new ConcurrentHashMap<>();
@@ -43,7 +44,8 @@ public class GlobalExpressionsManager extends JsonPartialReloader<GlobalExpressi
     }
 
     @Override
-    protected void parseWithLevel(Map<ResourceLocation, JsonElement> jsons, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+        var jsons = resources.jsons();
         for (var j : Parsed.batchParseOnlyEnabled(jsons, GlobalExpression.CODEC, ops, "Global Expression")) {
             if (j.getValue() != null) {
                 expressions.register(j.getKey(), j.getValue());

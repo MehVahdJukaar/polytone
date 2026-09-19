@@ -1,13 +1,14 @@
 package net.mehvahdjukaar.polytone.content.item;
 
+import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
+import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.companion.TexturePart;
-import net.mehvahdjukaar.polytone.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.utils.JsonImgPartialReloader;
-import net.mehvahdjukaar.polytone.utils.Parsed;
+import net.mehvahdjukaar.polytone.common.Parsed;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -18,7 +19,7 @@ import net.minecraft.world.item.Item;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ItemModifiersManager extends JsonImgPartialReloader<ItemModifier> {
+public class ItemModifiersManager extends ContentManager<ItemModifier> {
 
     private static final String BAR_SUFFIX = "_bar";
 
@@ -58,7 +59,7 @@ public class ItemModifiersManager extends JsonImgPartialReloader<ItemModifier> {
     }
 
     @Override
-    protected void parseWithLevel(Resources resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
+    protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var jsons = resources.jsons();
         var textures = new TrackedTextures(resources.textures());
 
