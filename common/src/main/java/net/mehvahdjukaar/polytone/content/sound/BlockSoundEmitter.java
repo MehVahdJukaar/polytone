@@ -68,6 +68,7 @@ public record BlockSoundEmitter(
                 var biome = level.getBiome(pos);
                 if (!biomes.get().contains(biome)) return;
             }
+            if (predicate != AlwaysTrueTest.INSTANCE && !predicate.test(state, level.getRandom())) return;
 
             Vec3 vec = Vec3.atCenterOf(pos).add(
                     x.evaluate(level, p, state),
