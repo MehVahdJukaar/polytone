@@ -1,1 +1,1 @@
-- many new addition related to fog, allowing to customize previously hardcoded logic without using env modifiers workarounds.
+- fixedn an issue with biome blend
