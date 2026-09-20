@@ -30,8 +30,8 @@ public record SlotModifier(Optional<IntRange> targets, int xOffset, int yOffset,
 
     public boolean matches(Slot slot) {
         if (targets.isPresent() && !targets.get().has(slot.index)) return false;
-        if (targetX.isPresent() && targetX.get().has(slot.x)) return false;
-        if (targetY.isPresent() && targetY.get().has(slot.y)) return false;
+        if (targetX.isPresent() && !targetX.get().has(slot.x)) return false;
+        if (targetY.isPresent() && !targetY.get().has(slot.y)) return false;
         if (targetClass.isPresent()) {
             String name = targetClass.get();
             if (!slot.getClass().getSimpleName().equals(name) &&

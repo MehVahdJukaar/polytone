@@ -7,7 +7,6 @@ import net.mehvahdjukaar.polytone.compat.CompatHandler;
 import net.mehvahdjukaar.polytone.content.particle.PreviewRenderTarget;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,29 +23,20 @@ public abstract class GameRendererMixin {
     @Final
     private CrossFrameResourcePool resourcePool;
 
-    //TODO: add back
-    /*
-    @Inject(method = "render", at = @At(value = "NEW",
-            target = "Excraft/client/renderer/state/gui/GuiRenderState;II)Lnet/minecraft/client/gui/GuiGraphicsExtractor;"))
-    private void polytone$messWithGui(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
+    @Inject(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/render/GuiRenderer;render()V"))
+    private void polytone$setupGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(true);
-        GuiGraphicsExtractor
-        Polytone.OVERLAY_MODIFIERS.onStartRenderingOverlay();
-    }*/
+    }
 
     @Inject(method = "render", at = @At(value = "TAIL"))
     private void polytone$resetGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(false);
-        Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
     }
 
-    // While the particle editor preview draws offscreen, the vanilla particle feature renderer builds
-    // its render pass from this target directly - send it to the preview's offscreen buffer instead of
-    // the screen. Set only on the render thread for the duration of that one draw, so gameplay is untouched.
-    // 26.2: this used to be Minecraft.getMainRenderTarget(); the target now lives on GameRenderer.
     @Inject(method = "mainRenderTarget", at = @At("HEAD"), cancellable = true)
     private void polytone$redirectMainTargetForPreview(CallbackInfoReturnable<RenderTarget> cir) {
-        if (!CompatHandler.NAUTILUS) return; // the preview that sets this only exists with the editor
+        if (!CompatHandler.NAUTILUS) return;
         RenderTarget preview = PreviewRenderTarget.current();
         if (preview != null) cir.setReturnValue(preview);
     }

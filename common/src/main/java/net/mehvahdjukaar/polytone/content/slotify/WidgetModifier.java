@@ -25,8 +25,8 @@ public record WidgetModifier(int xOffset, int yOffset,
             Codec.STRING.optionalFieldOf("message").forGetter(WidgetModifier::message),
             IntRange.CODEC.optionalFieldOf("target_x").forGetter(WidgetModifier::targetX),
             IntRange.CODEC.optionalFieldOf("target_y").forGetter(WidgetModifier::targetY),
-            IntRange.CODEC.optionalFieldOf("target_width").forGetter(WidgetModifier::targetY),
-            IntRange.CODEC.optionalFieldOf("target_height").forGetter(WidgetModifier::targetY),
+            IntRange.CODEC.optionalFieldOf("target_width").forGetter(WidgetModifier::targetW),
+            IntRange.CODEC.optionalFieldOf("target_height").forGetter(WidgetModifier::targetH),
             Codec.STRING.optionalFieldOf("target_message").forGetter(WidgetModifier::targetMessage),
             Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName).optionalFieldOf("target_class_name").forGetter(WidgetModifier::targetClass)
     ).apply(i, WidgetModifier::new)).comapFlatMap(o -> {

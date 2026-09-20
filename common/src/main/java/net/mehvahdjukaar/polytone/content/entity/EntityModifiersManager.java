@@ -74,8 +74,7 @@ public class EntityModifiersManager extends ContentManager<EntityModifier> {
             LocalPlayer player = mc.player;
             if (player != null) {
                 EntityModifier mod = emittersPerEntity.get(player.getType());
-                if (mod != null) {
-                    if (spawnRecords.containsKey(player.getId())) return;
+                if (mod != null && !spawnRecords.containsKey(player.getId())) {
                     Vec3 cameraPos = mc.gameRenderer.mainCamera().position();
                     var particleSpawns = mod.gatherParticleSpawnsWithoutModel(player, cameraPos);
                     spawnRecords.put(player.getId(), particleSpawns);

@@ -45,6 +45,7 @@
     "GlProgramMixin",
     "GlslCompilerMixin",
     "RenderPassMixin",
+    "GuiExtractMixin",
     "GuiGraphicsExtractorMixin",
     "GuiMixin",
     "GuiRenderStateMixin",

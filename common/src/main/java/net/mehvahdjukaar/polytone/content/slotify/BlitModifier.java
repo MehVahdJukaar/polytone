@@ -54,7 +54,12 @@ public record BlitModifier(TextureTarget target, int index, ISimpleExp xInc, ISi
         }
 
         if (newTexture.isPresent()) {
+            TextureAtlasSprite old = sprite;
             sprite = gui.getSprite(new SpriteId(Sheets.GUI_SHEET, newTexture.get()));
+            oldU0 = sprite.getU((oldU0 - old.getU0()) / (old.getU1() - old.getU0()));
+            oldU1 = sprite.getU((oldU1 - old.getU0()) / (old.getU1() - old.getU0()));
+            oldV0 = sprite.getV((oldV0 - old.getV0()) / (old.getV1() - old.getV0()));
+            oldV1 = sprite.getV((oldV1 - old.getV0()) / (old.getV1() - old.getV0()));
         }
         float u0 = (float) this.u0.evaluate();
         float u1 = (float) this.u1.evaluate();
