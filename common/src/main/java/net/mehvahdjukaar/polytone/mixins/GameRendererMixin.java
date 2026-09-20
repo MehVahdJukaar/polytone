@@ -4,7 +4,6 @@ import com.mojang.blaze3d.resource.CrossFrameResourcePool;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,20 +19,15 @@ public abstract class GameRendererMixin {
     @Final
     private CrossFrameResourcePool resourcePool;
 
-    //TODO: add back
-    /*
-    @Inject(method = "render", at = @At(value = "NEW",
-            target = "Excraft/client/renderer/state/gui/GuiRenderState;II)Lnet/minecraft/client/gui/GuiGraphicsExtractor;"))
-    private void polytone$messWithGui(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
+    @Inject(method = "render", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/render/GuiRenderer;render(Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V"))
+    private void polytone$setupGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(true);
-        GuiGraphicsExtractor
-        Polytone.OVERLAY_MODIFIERS.onStartRenderingOverlay();
-    }*/
+    }
 
     @Inject(method = "render", at = @At(value = "TAIL"))
     private void polytone$resetGuiLightmap(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci) {
         Polytone.LIGHTMAPS.setupForGUI(false);
-        Polytone.OVERLAY_MODIFIERS.onEndRenderingOverlay();
     }
 
     @Inject(method = "close", at = @At(value = "TAIL"))

@@ -37,7 +37,7 @@ public record EntityParticleEmitter(
         Optional<Predicate<Integer>> etfVariant,
         Optional<Predicate<Integer>> emfVariant,
         ParticleSpec particle,
-        int maxDistance,
+        float maxDistance,
         IEntityExp chance,
         IEntityExp count,
         IEntityExp x,
@@ -56,7 +56,7 @@ public record EntityParticleEmitter(
 ) {
 
     private static final Codec<List<String>> BONE_CODEC = Codec.STRING.xmap(
-            s -> List.of(s.split("/.")),
+            s -> List.of(s.split("\\.")),
             list -> String.join(".", list)
     );
 
@@ -66,7 +66,7 @@ public record EntityParticleEmitter(
                     i.optional("target_etf_variant", SchemaCodecs.predicate(Codec.INT), EntityParticleEmitter::etfVariant),
                     i.optional("target_emf_variant", SchemaCodecs.predicate(Codec.INT), EntityParticleEmitter::emfVariant),
                     i.field("particle", ParticleSpec.CODEC, EntityParticleEmitter::particle),
-                    i.optional("max_distance", Codec.INT, 32, EntityParticleEmitter::maxDistance),
+                    i.optional("max_distance", Codec.FLOAT, 32f, EntityParticleEmitter::maxDistance),
                     i.optional("chance", IEntityExp.CODEC, IEntityExp.ONE, EntityParticleEmitter::chance),
                     i.optional("count", IEntityExp.CODEC, IEntityExp.ONE, EntityParticleEmitter::count),
                     i.optional("x", IEntityExp.CODEC, IEntityExp.ZERO, EntityParticleEmitter::x),
@@ -92,7 +92,8 @@ public record EntityParticleEmitter(
 
         double spawnChance = chance.evaluate(entity);
         if (level.getRandom().nextFloat() < spawnChance) {
-            for (int i = 0; i < count.evaluate(entity); i++) {
+            int amount = (int) count.evaluate(entity);
+            for (int i = 0; i < amount; i++) {
                 ParticleOptions po = getParticleOptions(entity);
                 if (po == null) return;
                 if(!TokenBucketTracker.canEmitParticle(this))return;

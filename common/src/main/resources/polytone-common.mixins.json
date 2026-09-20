@@ -43,6 +43,7 @@
     "GameRendererMixin",
     "GlProgramMixin",
     "RenderPassMixin",
+    "GuiExtractMixin",
     "GuiGraphicsExtractorMixin",
     "GuiMixin",
     "GuiRenderStateMixin",

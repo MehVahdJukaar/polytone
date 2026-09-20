@@ -142,7 +142,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
         } else if (screen.getClass() == CreativeModeInventoryScreen.class) {
             m = resolve(byClass.get(CreativeModeInventoryScreen.ItemPickerMenu.class));
         }
-        if (menu != null) {
+        if (m == null && menu != null) {
             m = resolve(byClass.get(menu.getClass()));
         }
         if (m == null) {
@@ -196,7 +196,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
         if (modifies == null) {
             modifies = slotsByClass.get(screen.getClass());
         }
-        if (modifies == null) slotsByClass.get(screen.getMenu().getClass());
+        if (modifies == null) modifies = slotsByClass.get(screen.getMenu().getClass());
         if (modifies == null) {
             MenuType<?> type;
             try {

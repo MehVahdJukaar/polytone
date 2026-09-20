@@ -2,7 +2,6 @@ package net.mehvahdjukaar.polytone.content.slotify;
 
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.minecraft.client.gui.Gui;
@@ -64,28 +63,31 @@ public class GuiOverlayManager extends ContentManager<BlitModifier> {
         var mod = getMod(sprite);
         if (mod != null) {
             int ind = mod.index();
-            if (ind == -1 || ind == index) {
+            boolean matches = ind == -1 || ind == index;
+            index++;
+            if (matches) {
                 mod.blitModified(gui, pipeline, sprite,
                         x, x + width, y, y + height,
                         sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(),
                         color);
                 return true;
             }
-            index++;
         }
         return false;
     }
 
     private BlitModifier getMod(TextureAtlasSprite sprite) {
-        return blitModifiersCache.computeIfAbsent(sprite.contents().name(),
-                id-> {
-                    for (var m : blitModifiers) {
-                        if (m.target().test(id)) {
-                            return m;
-                        }
-                    }
-                    return null;
-                });
+        Identifier id = sprite.contents().name();
+        if (blitModifiersCache.containsKey(id)) return blitModifiersCache.get(id);
+        BlitModifier found = null;
+        for (var m : blitModifiers) {
+            if (m.target().test(id)) {
+                found = m;
+                break;
+            }
+        }
+        blitModifiersCache.put(id, found);
+        return found;
     }
 
     //partial blit
@@ -98,7 +100,9 @@ public class GuiOverlayManager extends ContentManager<BlitModifier> {
         var mod = getMod(sprite);
         if (mod != null) {
             int ind = mod.index();
-            if (ind == -1 || ind == index) {
+            boolean matches = ind == -1 || ind == index;
+            index++;
+            if (matches) {
                 mod.blitModified(gui, pipeline, sprite,
                         x, x + uWidth, y, y + vHeight,
                         sprite.getU((float) uPosition / (float) textureWidth),
@@ -108,7 +112,6 @@ public class GuiOverlayManager extends ContentManager<BlitModifier> {
                         color);
                 return true;
             }
-            index++;
         }
         return false;
     }
@@ -131,17 +134,17 @@ public class GuiOverlayManager extends ContentManager<BlitModifier> {
                 Identifier fullRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_full.png");
                 Identifier halfRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_half.png");
                 if (manager.getResource(fullRes).isPresent() && manager.getResource(halfRes).isPresent()) {
-                    Identifier fullBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_full_blinking.png");
+                    Identifier fullBlinkingRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_full_blinking.png");
                     var fullBlinking = manager.getResource(fullBlinkingRes);
-                    Identifier halfBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_half_blinking.png");
+                    Identifier halfBlinkingRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_half_blinking.png");
                     var halfBlinking = manager.getResource(halfBlinkingRes);
-                    Identifier hardcoreFullRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full.png");
+                    Identifier hardcoreFullRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full.png");
                     var hardcoreFull = manager.getResource(hardcoreFullRes);
-                    Identifier hardcoreFullBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full_blinking.png");
+                    Identifier hardcoreFullBlinkingRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full_blinking.png");
                     var hardcoreFullBlinking = manager.getResource(hardcoreFullBlinkingRes);
-                    Identifier hardcoreHalfRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half.png");
+                    Identifier hardcoreHalfRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half.png");
                     var hardcoreHalf = manager.getResource(hardcoreHalfRes);
-                    Identifier hardcoreHalfBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half_blinking.png");
+                    Identifier hardcoreHalfBlinkingRes = Identifier.parse("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half_blinking.png");
                     var hardcoreHalfBlinking = manager.getResource(hardcoreHalfBlinkingRes);
 
                     if (fullBlinking.isEmpty()) {
