@@ -65,7 +65,8 @@ public record EntityParticleEmitter(
 
         double spawnChance = chance.evaluate(entity);
         if (level.getRandom().nextFloat() < spawnChance) {
-            for (int i = 0; i < count.evaluate(entity); i++) {
+            int amount = (int) count.evaluate(entity);
+            for (int i = 0; i < amount; i++) {
                 ParticleOptions po = getParticleOptions(entity);
                 if (po == null) return;
                 if (!TokenBucketTracker.canEmitParticle(this)) return;

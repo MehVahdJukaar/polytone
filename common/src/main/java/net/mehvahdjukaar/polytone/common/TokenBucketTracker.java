@@ -20,6 +20,7 @@ public class TokenBucketTracker {
 
     public static void clear() {
         BUCKETS.clear();
+        OBJECTS_TOKENS.clear();
     }
 
     public static void tick() {

@@ -69,12 +69,13 @@ public class GuiOverlayManager extends ContentManager<BlitModifier> {
         var mod = blitModifiers.get(sprite.contents().name());
         if (mod != null) {
             int ind = mod.index();
-            if (ind == -1 || ind == index) {
+            boolean matches = ind == -1 || ind == index;
+            index++;
+            if (matches) {
                 mod.blitModified(gui, sprite, x, x + width, y, y + height, offset,
                         sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1());
                 return true;
             }
-            index++;
         }
         return false;
     }
@@ -87,7 +88,9 @@ public class GuiOverlayManager extends ContentManager<BlitModifier> {
         var mod = blitModifiers.get(sprite.contents().name());
         if (mod != null) {
             int ind = mod.index();
-            if (ind == -1 || ind == index) {
+            boolean matches = ind == -1 || ind == index;
+            index++;
+            if (matches) {
                 mod.blitModified(guiGraphics, sprite, x, x + uWidth, y, y + vHeight, offset,
                         sprite.getU((float) uPosition / (float) textureWidth),
                         sprite.getU((float) (uPosition + uWidth) / (float) textureWidth),
@@ -95,7 +98,6 @@ public class GuiOverlayManager extends ContentManager<BlitModifier> {
                         sprite.getV((float) (vPosition + vHeight) / (float) textureHeight));
                 return true;
             }
-            index++;
         }
         return false;
     }
@@ -118,17 +120,17 @@ public class GuiOverlayManager extends ContentManager<BlitModifier> {
                 ResourceLocation fullRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_full.png");
                 ResourceLocation halfRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_half.png");
                 if (manager.getResource(fullRes).isPresent() && manager.getResource(halfRes).isPresent()) {
-                    ResourceLocation fullBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_full_blinking.png");
+                    ResourceLocation fullBlinkingRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_full_blinking.png");
                     var fullBlinking = manager.getResource(fullBlinkingRes);
-                    ResourceLocation halfBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_half_blinking.png");
+                    ResourceLocation halfBlinkingRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_half_blinking.png");
                     var halfBlinking = manager.getResource(halfBlinkingRes);
-                    ResourceLocation hardcoreFullRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full.png");
+                    ResourceLocation hardcoreFullRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full.png");
                     var hardcoreFull = manager.getResource(hardcoreFullRes);
-                    ResourceLocation hardcoreFullBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full_blinking.png");
+                    ResourceLocation hardcoreFullBlinkingRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_full_blinking.png");
                     var hardcoreFullBlinking = manager.getResource(hardcoreFullBlinkingRes);
-                    ResourceLocation hardcoreHalfRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half.png");
+                    ResourceLocation hardcoreHalfRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half.png");
                     var hardcoreHalf = manager.getResource(hardcoreHalfRes);
-                    ResourceLocation hardcoreHalfBlinkingRes = Polytone.res("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half_blinking.png");
+                    ResourceLocation hardcoreHalfBlinkingRes = ResourceLocation.parse("textures/gui/sprites/polytone/heart/container_" + name + "_hardcore_half_blinking.png");
                     var hardcoreHalfBlinking = manager.getResource(hardcoreHalfBlinkingRes);
 
                     if (fullBlinking.isEmpty()) {
