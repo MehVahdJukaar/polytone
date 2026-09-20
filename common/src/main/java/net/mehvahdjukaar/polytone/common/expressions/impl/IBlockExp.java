@@ -5,6 +5,7 @@ import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.common.codec.CodecUtils;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -36,6 +37,11 @@ public interface IBlockExp {
     // Implementations that don't support it simply ignore the value.
     default double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state, double v) {
         return evaluate(level, pos, state);
+    }
+
+    //for biome blending in env attr
+    default double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state, @Nullable Biome biome, double v) {
+        return evaluate(level, pos, state, v);
     }
 
     static IBlockExp constant(double value) {

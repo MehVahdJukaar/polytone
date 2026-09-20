@@ -40,7 +40,7 @@ public class DynamicAttributeContext {
     public static float evaluate(IBlockExp expression) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return 0f;
-        return (float) expression.evaluate(level, ClientFrameTicker.getCameraPos(), null, incomingNumber());
+        return (float) expression.evaluate(level, ClientFrameTicker.getCameraPos(), null, biome(), incomingNumber());
     }
 
     public static <T> T inBiome(Biome owner, Supplier<T> body) {

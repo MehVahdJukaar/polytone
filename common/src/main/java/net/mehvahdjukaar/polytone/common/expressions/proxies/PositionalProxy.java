@@ -60,14 +60,14 @@ public abstract class PositionalProxy {
     private BlockPos updatedPos() {
         BlockPos newPos = getPosInternal();
         if (newPos == posCache) return posCache;
-        if (posCache == null || !posCache.equals(newPos)) {
-            posCache = newPos;
-            //invalidate caches
+        //first call keeps whatever the constructor seeded (attribute blending hands us a neighbour biome)
+        if (posCache != null && !posCache.equals(newPos)) {
             stateCache = null;
             beCache = null;
             biomeCache = null;
             biomeNameCache = null;
         }
+        posCache = newPos;
         return posCache;
     }
 

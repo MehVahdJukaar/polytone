@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.common.expressions.proxies.BlockProxy;
 import net.mehvahdjukaar.polytone.common.expressions.proxies.RandomProxy;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -29,7 +30,12 @@ public class BlockExp extends PolyExp implements IBlockExp {
 
     @Override
     public double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state, double v) {
-        return executeDouble(new BlockProxy(level, pos, state), RandomProxy.posSeeded(BlockPos.containing(pos)), v);
+        return evaluate(level, pos, state, null, v);
+    }
+
+    @Override
+    public double evaluate(ClientLevel level, Vec3 pos, @Nullable BlockState state, @Nullable Biome biome, double v) {
+        return executeDouble(new BlockProxy(level, pos, state, biome), RandomProxy.posSeeded(BlockPos.containing(pos)), v);
     }
 
 }
