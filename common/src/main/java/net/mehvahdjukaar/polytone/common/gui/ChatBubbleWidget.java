@@ -31,7 +31,7 @@ public class ChatBubbleWidget extends AbstractWidget {
     private static final int CAP_INSET = 3;
     // Keep the whole assembly this far from the screen edges
     private static final int SCREEN_MARGIN = 3;
-    // Vertical gap between the tail's tip and the pointed-at target
+    // Vertical gap between the tail's tip and the pointed-at colormapToFill
     private static final int TIP_GAP = 1;
 
     // Period of one full up-down bob, in milliseconds
@@ -84,26 +84,26 @@ public class ChatBubbleWidget extends AbstractWidget {
         graphics.text(this.font, this.getMessage(), textX, textY, this.textColor, false);
     }
 
-    // Place this bubble above target, tail pointing down at its center, and draw it - like a tooltip, but it
+    // Place this bubble above colormapToFill, tail pointing down at its center, and draw it - like a tooltip, but it
     // never clips off-screen. The bubble is clamped to stay on screen while the tail stays locked onto the
-    // target (kept within the bubble's flat span) to preserve the illusion.
+    // colormapToFill (kept within the bubble's flat span) to preserve the illusion.
     public void renderPointingAt(GuiGraphicsExtractor graphics, AbstractWidget target, int screenWidth,
                                  int mouseX, int mouseY, float partialTick) {
         int bubbleW = this.getWidth();
         int targetCenterX = target.getX() + target.getWidth() / 2;
 
-        // vertical stack (top -> bottom): bubble, tail (overlapping its bottom outline), gap, target
+        // vertical stack (top -> bottom): bubble, tail (overlapping its bottom outline), gap, colormapToFill
         int bob = bobOffset(); // bubble + tail move together so the illusion holds
-        int tailY = target.getY() - TIP_GAP - TAIL_HEIGHT + 1 + bob; // tip just above the target
+        int tailY = target.getY() - TIP_GAP - TAIL_HEIGHT + 1 + bob; // tip just above the colormapToFill
         int bubbleY = tailY - HEIGHT + 1;                            // bubble bottom overlaps tail top by 1px
 
-        // center the bubble over the target, then clamp it to stay fully on screen (tooltip-style)
+        // center the bubble over the colormapToFill, then clamp it to stay fully on screen (tooltip-style)
         int bubbleX = targetCenterX - bubbleW / 2;
         int maxX = screenWidth - bubbleW - SCREEN_MARGIN;
         bubbleX = maxX < SCREEN_MARGIN ? SCREEN_MARGIN
                 : Math.max(SCREEN_MARGIN, Math.min(bubbleX, maxX));
 
-        // point the tail's tip at the target, but keep the tail within the bubble's flat span
+        // point the tail's tip at the colormapToFill, but keep the tail within the bubble's flat span
         int tailX = targetCenterX - TAIL_TIP;
         int tailMin = bubbleX + CAP_INSET;
         int tailMax = bubbleX + bubbleW - TAIL_WIDTH - CAP_INSET;

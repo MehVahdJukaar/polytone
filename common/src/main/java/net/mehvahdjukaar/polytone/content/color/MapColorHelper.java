@@ -1,12 +1,15 @@
 package net.mehvahdjukaar.polytone.content.color;
 
 import com.mojang.serialization.Codec;
+import net.mehvahdjukaar.codecui.Schema;
+import net.mehvahdjukaar.codecui.SchemaCodec;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class MapColorHelper {
 
@@ -118,16 +121,12 @@ public class MapColorHelper {
         return map;
     });
 
-    // Declaration-site schema: enum dropdown over every accepted color name (canonical + OptiFine-compat
-    // aliases). Inference only sees STRING.xmap and would give plain text. Declared AFTER colorNames - the
-    // option list snapshots its keys at class-init.
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static final Codec<MapColor> CODEC = net.mehvahdjukaar.codecui.SchemaCodec.of(
+    public static final Codec<MapColor> CODEC = SchemaCodec.of(
             Codec.STRING.xmap(MapColorHelper::byName, mapColor -> "none"),
-            (net.mehvahdjukaar.codecui.Schema)
-                    new net.mehvahdjukaar.codecui.Schema.Enum<>(
+            (Schema) new Schema.Enum<>(
                             colorNames.keySet().stream().sorted().toList(),
-                            java.util.function.Function.identity()));
+                            Function.identity()));
 
     @Nullable
     public static MapColor byName(String colorName) {

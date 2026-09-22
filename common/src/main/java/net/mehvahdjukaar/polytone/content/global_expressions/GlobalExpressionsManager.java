@@ -70,8 +70,6 @@ public class GlobalExpressionsManager extends ContentManager<GlobalExpression> {
         }
     }
 
-    // Runtime lookup for global.value('name'): resolves at evaluation time, so usable from expressions
-    // compiled before globals register (custom particles parse in the async prepare phase).
     public double getValue(String key) {
         Slot slot = values.get(key);
         return slot == null ? 0 : slot.value;

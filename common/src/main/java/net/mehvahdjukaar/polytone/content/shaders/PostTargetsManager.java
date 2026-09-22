@@ -40,7 +40,7 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
     private final Map<Identifier, RenderTarget> targets = new HashMap<>();
 
     public PostTargetsManager() {
-        super(Spec.of("Post target", () -> TargetSpec.CODEC)
+        super(Spec.of("Post colormapToFill", () -> TargetSpec.CODEC)
                 .wikiPage("Shaders")
                 .folders("post_targets"));
     }
@@ -50,7 +50,7 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
         Map<Identifier, TargetSpec> parsed = new HashMap<>();
         for (var entry : resources.jsons().entrySet()) {
             TargetSpec.CODEC.parse(ops, entry.getValue())
-                    .resultOrPartial(err -> Polytone.LOGGER.error("Failed to parse post target {}: {}", entry.getKey(), err))
+                    .resultOrPartial(err -> Polytone.LOGGER.error("Failed to parse post colormapToFill {}: {}", entry.getKey(), err))
                     .ifPresent(spec -> parsed.put(entry.getKey(), spec));
         }
         this.specs = Map.copyOf(parsed);

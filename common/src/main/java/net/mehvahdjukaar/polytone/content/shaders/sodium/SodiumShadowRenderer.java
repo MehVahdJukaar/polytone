@@ -52,7 +52,6 @@ public final class SodiumShadowRenderer {
         SodiumWorldRenderer worldRenderer = SodiumWorldRenderer.instanceNullable();
         if (worldRenderer == null) return;
 
-        // restore is claimed before anything mutates Sodium's lists
         RenderSectionManager sectionManager = renderSectionManager();
         boolean mutatedRenderLists = sectionManager != null;
         try {
@@ -69,7 +68,6 @@ public final class SodiumShadowRenderer {
             performance.useBlockFaceCulling = false;
             activeShadowColor = color;
             activeShadowDepth = depth;
-            // the matrices UBO is written once per frame; reset it on the way in and out or the main pass draws from the sun
             UniformBufferManager uniforms = ((SodiumWorldRendererShadowAccessor) worldRenderer).polytone$getUniformBufferManager();
             if (uniforms != null) uniforms.prepareFrame();
             try {
@@ -83,7 +81,9 @@ public final class SodiumShadowRenderer {
                 activeShadowDepth = null;
             }
         } finally {
-            if (mutatedRenderLists) rebuildCameraRenderList(mc, cam);
+            if (mutatedRenderLists) {
+                rebuildCameraRenderList(mc, cam);
+            }
         }
     }
 
@@ -99,16 +99,14 @@ public final class SodiumShadowRenderer {
         sectionManager.finalizeRenderLists(camera, viewport, FogParameters.NONE, true);
     }
 
-    // now, not via markGraphDirty: culling runs before render, so a dirty flag only rebuilds next frame
     private static void rebuildCameraRenderList(Minecraft mc, Camera camera) {
         RenderSectionManager sectionManager = renderSectionManager();
         if (sectionManager == null) return;
-        sectionManager.markGraphDirty(); // first, so a throw below still gets a fresh cull next frame
+        sectionManager.markGraphDirty();
         Viewport viewport = ((ViewportProvider) camera.getCullFrustum()).sodium$createViewport();
         FogParameters fog = ((FogStorage) mc.gameRenderer).sodium$getFogParameters();
         sectionManager.prepareRender();
 
-        // straight into the tree read, finalizeRenderLists would now fall back to a frustum-only list
         ((SodiumRenderSectionManagerAccessor) sectionManager).polytone$readRenderListFromTree(viewport, fog);
     }
 

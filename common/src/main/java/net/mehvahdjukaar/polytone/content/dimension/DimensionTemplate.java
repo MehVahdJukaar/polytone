@@ -8,6 +8,7 @@ import net.minecraft.world.level.dimension.DimensionType;
 
 import java.util.Optional;
 
+// Fancy matcher for targeting a dimension, for mod compat reasons
 public record DimensionTemplate(Optional<Long> fixedTime, Optional<Boolean> hasSkyLight, Optional<Boolean> hasCeiling,
                                 Optional<Boolean> ultraWarm, Optional<Boolean> natural,
                                 Optional<Double> coordinateScale,

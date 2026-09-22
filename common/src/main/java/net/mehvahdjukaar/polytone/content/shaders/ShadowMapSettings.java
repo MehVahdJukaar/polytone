@@ -6,7 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 public record ShadowMapSettings(float coverage, float depthRange, int resolution, float updateInterval,
                                 boolean renderEntities, boolean renderBlockEntities) {
 
-    public static final ShadowMapSettings DEFAULT = new ShadowMapSettings(64f, 256f, 2048, 0f, true, true);
+    public static final ShadowMapSettings DEFAULT = new ShadowMapSettings(
+            64f, 256f, 2048, 0f, true, true);
 
     public static final Codec<ShadowMapSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.FLOAT.optionalFieldOf("coverage", DEFAULT.coverage).forGetter(ShadowMapSettings::coverage),

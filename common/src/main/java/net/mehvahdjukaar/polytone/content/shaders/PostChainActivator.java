@@ -123,7 +123,7 @@ public final class PostChainActivator {
         return false;
     }
 
-    // The ShaderManager closes the chain's buffers on reload; a closed first pass means our cached chain is dead
+    // The ShaderManager closes the chain's buffers on reload
     private static boolean isChainClosed(@Nullable PostChain chain) {
         if (chain != null && !chain.passes.isEmpty()) {
             return chain.passes.getFirst().infoUbo.buffers[0].isClosed();

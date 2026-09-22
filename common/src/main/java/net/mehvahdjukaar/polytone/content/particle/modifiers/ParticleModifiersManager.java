@@ -5,8 +5,8 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
-import net.mehvahdjukaar.polytone.common.companion.TexturePart;
-import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TextureRole;
+import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
@@ -31,8 +31,8 @@ public class ParticleModifiersManager extends ContentManager<ParticleModifier> {
     @Nullable
     private ParticleOptions xpOrbReplaceParticle = null;
 
-    private static final TexturePart<ParticleModifier> COLORMAP =
-            TexturePart.plain(ParticleModifier::getColormap);
+    private static final TextureRole<ParticleModifier> COLORMAP =
+            TextureRole.plain(ParticleModifier::getColormap);
 
     public ParticleModifiersManager() {
         super(Spec.of("Particle modifier", () -> ParticleModifier.CODEC)
@@ -53,7 +53,7 @@ public class ParticleModifiersManager extends ContentManager<ParticleModifier> {
     @Override
     protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var jsons = resources.jsons();
-        var textures = new TrackedTextures(resources.textures());
+        var textures = new ScannedTextures(resources.textures());
 
         Parsed.SortedMap<ParticleModifier> parsedModifiers =
                 parseJsonsOrPartial(jsons, ParticleModifier.PARTIAL_CODEC, ops);

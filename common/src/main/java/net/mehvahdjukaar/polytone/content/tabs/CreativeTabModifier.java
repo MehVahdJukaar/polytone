@@ -59,7 +59,7 @@ public record CreativeTabModifier(
                     .validate(
                             m -> {
                                 if (m.registerTab && (!m.removals.isEmpty() || m.targets != Targets.EMPTY)) {
-                                    return DataResult.error(() -> "Modifiers that register new creative tabs cannot have item removals or target existing tabs.");
+                                    return DataResult.error(() -> "Modifiers that register new creative tabs cannot have item removals or colormapToFill existing tabs.");
                                 }
                                 return DataResult.success(m);
                             });

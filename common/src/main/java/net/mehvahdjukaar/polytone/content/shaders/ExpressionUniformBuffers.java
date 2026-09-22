@@ -23,7 +23,7 @@ public final class ExpressionUniformBuffers {
 
     public static final Codec<ExpressionUniformBuffers> CODEC =
             Codec.unboundedMap(Codec.STRING, ISimpleExp.CODEC)
-                    .xmap(ExpressionUniformBuffers::new, ExpressionUniformBuffers::expressions);
+                    .xmap(ExpressionUniformBuffers::new, ExpressionUniformBuffers::getExpressions);
 
     private static final int FLOAT_UBO_SIZE = new Std140SizeCalculator().putFloat().get();
 
@@ -38,7 +38,7 @@ public final class ExpressionUniformBuffers {
         return expressions.isEmpty();
     }
 
-    public Map<String, ISimpleExp> expressions() {
+    public Map<String, ISimpleExp> getExpressions() {
         return expressions;
     }
 
@@ -80,11 +80,13 @@ public final class ExpressionUniformBuffers {
 
     // raw GL bind for programs not driven through RenderPass (Sodium chunk shaders); only declared blocks are bound
     public int bindBlocksToProgram(int program, int nextBindingPoint) {
-        if (buffers == null) return nextBindingPoint;
+        if (buffers == null){
+            return nextBindingPoint;
+        }
         for (var e : buffers.entrySet()) {
             int blockIndex = GL32C.glGetUniformBlockIndex(program, e.getKey());
             if (blockIndex < 0) continue;
-            int glId = ((GlBufferAccessor) (Object) e.getValue()).polytone$getHandle();
+            int glId = ((GlBufferAccessor) e.getValue()).polytone$getHandle();
             GL32C.glUniformBlockBinding(program, blockIndex, nextBindingPoint);
             GL30C.glBindBufferBase(GL31C.GL_UNIFORM_BUFFER, nextBindingPoint, glId);
             nextBindingPoint++;

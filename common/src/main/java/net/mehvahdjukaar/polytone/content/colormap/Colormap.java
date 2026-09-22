@@ -75,9 +75,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
             SchemaCodecs.alt("reference", Polytone.COLORMAPS.byNameCodec()),
             SchemaCodecs.alt("inline", SINGLE_COLOR_OR_EXPRESSION));
 
-    // Direct reference, inline definition, color/expression or biome compound. The wire codec
-    // is unchanged; the labeled parts splice into ONE flat picker
-    // (reference / inline colormap / color / expression / biome compound).
     public static final SchemaCodec<IColorGetter> CODEC = SchemaCodecs.labeled(
             SchemaCodecs.alternatives(
                     SchemaCodecs.referenceOrDirect(Polytone.COLORMAPS.byNameCodec(), DIRECT_CODEC),
@@ -196,9 +193,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
         return sampleColor(level, state, pos, biome, item, null);
     }
 
-    // A non-null sink reports the intermediates (axis outputs, sampled pixel, final argb) right where
-    // they are computed, so tooling never needs a second copy of the sampling math. Null is the runtime
-    // path and costs a null check.
     public int sampleColor(@Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos,
                            @Nullable Biome biome, @Nullable ItemStack item, @Nullable SampleSink sink) {
         float temperature = Mth.clamp(xGetter.evaluate(level, state, pos, biome, biomeMapper, item), 0, 1);
@@ -208,9 +202,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
         if (colorMult != null) {
             sampled = colorMult.evaluate(sampled, level, state, pos, biome, biomeMapper, item);
         }
-        // 26.2 now respects the ALPHA of block tint colors (water=translucent -> alpha 0 = invisible,
-        // grass side overlay -> alpha 0 = untinted). Vanilla always produces opaque tints (ARGB.color),
-        // so force opaque here to match.
         int color = ARGB.opaque(sampled);
 
         if (sink != null) {
@@ -221,7 +212,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     public interface SampleSink {
-        // x/y are the clamped axis outputs (0..1); col/row is the sampled source-image pixel; argb is the final tint.
         void report(float x, float y, int col, int row, int argb);
     }
 

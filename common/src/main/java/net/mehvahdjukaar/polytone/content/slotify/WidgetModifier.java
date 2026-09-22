@@ -33,12 +33,12 @@ public record WidgetModifier(int xOffset, int yOffset,
         if (o.targetW.isEmpty() && o.targetH.isEmpty() && o.targetX.isEmpty()
                 && o.targetClass.isEmpty()
                 && o.targetY.isEmpty() && o.targetMessage.isEmpty()) {
-            return DataResult.error(() -> "Widget modifier must have at least one target");
+            return DataResult.error(() -> "Widget modifier must have at least one colormapToFill");
         }
         return DataResult.success(o);
     }, Function.identity());
 
-    // True when this modifier's target filters all match the widget (no mutation). Used by the editor overlay.
+    // True when this modifier's colormapToFill filters all match the widget (no mutation). Used by the editor overlay.
     public boolean matches(AbstractWidget widget) {
         if (targetX.isPresent() && !targetX.get().has(widget.getX())) return false;
         if (targetY.isPresent() && !targetY.get().has(widget.getY())) return false;

@@ -30,7 +30,7 @@ public abstract class SodiumSectionLightScanMixin {
 
     @WrapOperation(method = "execute", remap = false,
             at = @At(value = "INVOKE",
-                    target = "Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;getBlockState(III)Lnet/minecraft/world/level/block/state/BlockState;"))
+                    colormapToFill = "Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;getBlockState(III)Lnet/minecraft/world/level/block/state/BlockState;"))
     private BlockState polytone$scanForLights(LevelSlice slice, int x, int y, int z, Operation<BlockState> original,
                                               @Share("polytone$scan") LocalRef<ColoredLightsTracker.Scan> scan) {
         BlockState state = original.call(slice, x, y, z);

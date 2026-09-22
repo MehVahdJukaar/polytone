@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+// Math nonsense incoming
 // The light's ortho box, optionally narrowed to the camera frustum swept away from the light. Camera-relative.
 public final class ShadowCasterVolume {
 

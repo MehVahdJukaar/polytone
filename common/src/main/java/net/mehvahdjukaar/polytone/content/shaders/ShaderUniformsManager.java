@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-// Expression-driven float UBOs bound to any pipeline whose vertex or fragment shader id matches. The json path
-// under polytone/shader_modifiers is the target shader id.
 public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffers> {
 
     private final List<ExpressionUniformBuffers> owned = new ArrayList<>();
@@ -41,7 +39,6 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         return resources;
     }
 
-    // post chain files: block names are the expression_uniforms keys
     static void registerExpressionUniformNames(Map<Identifier, JsonElement> jsons) {
         for (var e : jsons.values()) {
             if (e == null || !e.isJsonObject()) continue;
@@ -54,7 +51,6 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         }
     }
 
-    // shader_modifiers files: block names are the top-level keys
     private static void registerUniformNames(Map<Identifier, JsonElement> jsons) {
         for (var e : jsons.values()) {
             if (e instanceof JsonObject obj) {

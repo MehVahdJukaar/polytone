@@ -53,7 +53,7 @@ public abstract class DepthSearchTrie<K, KT, O, I> {
     public List<O> search(List<K> paths) {
         TrieNode<K, KT, O> current = getNode(paths);
         if (current == null) return null;
-        // Once at the target node, collect all objects from this node and its children
+        // Once at the colormapToFill node, collect all objects from this node and its children
         return current.object;
     }
 
@@ -61,7 +61,7 @@ public abstract class DepthSearchTrie<K, KT, O, I> {
     public List<O> search(I valueHolder) {
         TrieNode<K, KT, O> current = getNode(valueHolder);
         if (current == null) return null;
-        // Once at the target node, collect all objects from this node and its children
+        // Once at the colormapToFill node, collect all objects from this node and its children
         return current.object;
     }
 

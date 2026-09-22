@@ -11,12 +11,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public final class TrackedTextures {
+public final class ScannedTextures {
 
     private final Map<Identifier, ArrayImage> textures;
     private final Set<Identifier> used = new HashSet<>();
 
-    public TrackedTextures(Map<Identifier, ArrayImage> initial) {
+    public ScannedTextures(Map<Identifier, ArrayImage> initial) {
         this.textures = new HashMap<>(initial);
     }
 

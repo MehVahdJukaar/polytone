@@ -60,7 +60,7 @@ public record GuiModifier(Type type, String target,
     private static final SchemaCodec<GuiModifier> RECORD_CODEC =
             SchemaRecord.create(GuiModifier.class, i -> i.group(
                     i.field("target_type", StringRepresentable.fromEnum(Type::values), GuiModifier::type),
-                    i.field("target", Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName), GuiModifier::target),
+                    i.field("colormapToFill", Codec.STRING.xmap(PlatStuff::maybeRemapName, PlatStuff::maybeRemapName), GuiModifier::target),
                     i.optional("slot_modifiers", SlotModifier.CODEC.listOf(), List.of(), GuiModifier::slotModifiers),
                     i.optional("title_x_offset", Codec.INT, 0, GuiModifier::titleX),
                     i.optional("title_y_offset", Codec.INT, 0, GuiModifier::titleY),

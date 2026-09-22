@@ -3,6 +3,7 @@ package net.mehvahdjukaar.polytone.common.companion;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
+import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -18,25 +19,23 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.IntFunction;
 
-// Which .png files belong to a content json and which inline colormap receives each one. One per
-// content type; the reload driver and the editor sidecar view both walk it, so they agree.
 public final class ContentTextures<V> {
 
-    public record Orphan<V>(Identifier stemId, Map<TexturePart<V>, Set<Integer>> parts) {
+    public record Orphan<V>(Identifier stemId, Map<TextureRole<V>, Set<Integer>> parts) {
     }
 
-    private final List<TexturePart<V>> parts;             // declaration order; first = main feature
-    private final List<TexturePart<V>> byNameSpecificity; // for reverse name parsing
+    private final List<TextureRole<V>> parts;
+    private final List<TextureRole<V>> byNameSpecificity;
 
-    public ContentTextures(List<TexturePart<V>> parts) {
-        if (parts.isEmpty()) throw new IllegalArgumentException("Need at least one texture part");
-        this.parts = List.copyOf(parts);
+    public ContentTextures(List<TextureRole<V>> roles) {
+        if (roles.isEmpty()) throw new IllegalArgumentException("Need at least one texture part");
+        this.parts = List.copyOf(roles);
         this.byNameSpecificity = this.parts.stream()
-                .sorted(Comparator.comparingInt((TexturePart<V> p) -> p.naming().parseSpecificity()).reversed())
+                .sorted(Comparator.comparingInt((TextureRole<V> p) -> p.naming().orphanPriority()).reversed())
                 .toList();
     }
 
-    private TexturePart<V> mainPart() {
+    private TextureRole<V> mainPart() {
         return parts.getFirst();
     }
 
@@ -44,26 +43,24 @@ public final class ContentTextures<V> {
     public List<TextureSlot> expectedSlots(@Nullable V value, String stem) {
         if (value == null) return possibleSlots(stem);
         List<TextureSlot> slots = new ArrayList<>();
-        // wiki rule: the first part declaring a local inline colormap whose canonical name isn't
-        // plain <stem>.png itself additionally accepts the plain name (specific name preferred)
         boolean plainFallbackFree = true;
-        for (TexturePart<V> part : parts) {
-            Object declared = part.declared(value);
-            String canonical = part.naming().fileName(stem, Naming.DEFAULT_INDEX);
+        for (TextureRole<V> part : parts) {
+            IColorGetter declared = part.getDeclaredColormap(value);
+            String canonical = part.naming().fileName(stem, FileNamePattern.NO_INDEX);
             if (declared == null) {
                 // nothing declared: an unbound slot (managers auto-attach defaults when the texture exists)
-                slots.add(TextureSlot.unbound(part.label(), canonical));
+                slots.add(TextureSlot.optional(part.displayLabel(), canonical));
                 continue;
             }
             switch (declared) {
                 case Colormap c -> {
-                    List<TextureSlot> built = colormapSlots(c, canonical, part.label());
+                    List<TextureSlot> built = colormapSlots(c, canonical, part.displayLabel());
                     if (built.isEmpty()) continue;
                     TextureSlot slot = built.getFirst();
                     boolean isPlain = canonical.equalsIgnoreCase(stem + ".png");
-                    if (plainFallbackFree && !isPlain && slot.remoteLocation() == null) {
+                    if (plainFallbackFree && !isPlain && slot.explicitTexturePath() == null) {
                         slots.add(new TextureSlot(List.of(canonical, stem + ".png"),
-                                slot.label(), slot.target(), null));
+                                slot.displayLabel(), slot.colormapToFill(), null));
                     } else {
                         slots.addAll(built);
                     }
@@ -80,35 +77,36 @@ public final class ContentTextures<V> {
     public List<TextureSlot> possibleSlots(String stem) {
         List<TextureSlot> slots = new ArrayList<>();
         boolean plainCovered = false;
-        for (TexturePart<V> part : parts) {
-            String canonical = part.naming().fileName(stem, Naming.DEFAULT_INDEX);
-            slots.add(TextureSlot.unbound(part.label(), canonical));
+        for (TextureRole<V> part : parts) {
+            String canonical = part.naming().fileName(stem, FileNamePattern.NO_INDEX);
+            slots.add(TextureSlot.optional(part.displayLabel(), canonical));
             if (canonical.equalsIgnoreCase(stem + ".png")) plainCovered = true;
         }
         // plain <stem>.png is meaningful even when no part names it outright (fallback rules)
         if (!plainCovered) {
-            slots.add(TextureSlot.unbound(Naming.label(Naming.DEFAULT_INDEX), stem + ".png"));
+            slots.add(TextureSlot.optional(FileNamePattern.label(FileNamePattern.NO_INDEX), stem + ".png"));
         }
         return slots;
     }
 
-    public void fill(TrackedTextures textures, Identifier contentId, @Nullable V value, boolean strict) {
+    public void fill(ScannedTextures textures, Identifier contentId, @Nullable V value, boolean strict) {
         String stem = StrUtils.lastSegment(contentId.getPath());
+        //example: some/thing -> thing
         for (TextureSlot slot : expectedSlots(value, stem)) {
-            Colormap colormap = slot.target();
+            Colormap colormap = slot.colormapToFill();
             if (colormap == null || !colormap.needsToFillTexture()) continue;
-            Identifier baseId = slot.remoteLocation() != null ? slot.remoteLocation() : contentId;
+            Identifier baseId = slot.explicitTexturePath() != null ? slot.explicitTexturePath() : contentId;
 
             Identifier foundId = slot.findFirstMatch(fileName -> textures.find(baseId, fileName));
             if (foundId != null) {
                 textures.fillColormap(foundId, colormap);
             } else {
-                if (slot.remoteLocation() != null) {
+                if (slot.explicitTexturePath() != null) {
                     Polytone.LOGGER.error("Could not resolve explicit texture at location {}.png. Skipping",
-                            slot.remoteLocation());
+                            slot.explicitTexturePath());
                 }
                 if (strict) { // a bound slot is always required
-                    throw new IllegalStateException("Could not find any texture .png for slot '" + slot.label()
+                    throw new IllegalStateException("Could not find any texture .png for slot '" + slot.displayLabel()
                             + "' of " + contentId + ". Expected " + slot.canonicalName()
                             + " in directory of " + baseId);
                 }
@@ -117,20 +115,20 @@ public final class ContentTextures<V> {
     }
 
     public @Nullable String roleLabel(String fileName, String stem) {
-        for (TexturePart<V> part : parts) {
+        for (TextureRole<V> part : parts) {
             Integer index = part.naming().indexOf(fileName, stem);
-            if (index != null) return part.naming().slotLabel(part.label(), index);
+            if (index != null) return part.naming().slotLabel(part.displayLabel(), index);
         }
         // plain <stem>.png always reads as the default even when no part names it outright
-        return fileName.equalsIgnoreCase(stem + ".png") ? Naming.label(Naming.DEFAULT_INDEX) : null;
+        return fileName.equalsIgnoreCase(stem + ".png") ? FileNamePattern.label(FileNamePattern.NO_INDEX) : null;
     }
 
-    public Map<TexturePart<V>, Set<Integer>> adoptable(TrackedTextures textures, Identifier contentId, V value) {
+    public Map<TextureRole<V>, Set<Integer>> adoptable(ScannedTextures textures, Identifier contentId, V value) {
         String stem = StrUtils.lastSegment(contentId.getPath());
-        Map<TexturePart<V>, Set<Integer>> out = new LinkedHashMap<>();
-        long declaredCount = parts.stream().filter(p -> p.declared(value) != null).count();
-        for (TexturePart<V> part : parts) {
-            if (part.declared(value) != null) continue;
+        Map<TextureRole<V>, Set<Integer>> out = new LinkedHashMap<>();
+        long declaredCount = parts.stream().filter(p -> p.getDeclaredColormap(value) != null).count();
+        for (TextureRole<V> part : parts) {
+            if (part.getDeclaredColormap(value) != null) continue;
             Set<Integer> indexes = part.naming().presentIndexes(textures, contentId);
             if (!indexes.isEmpty()) out.put(part, indexes);
         }
@@ -138,22 +136,22 @@ public final class ContentTextures<V> {
         // something IS declared, the plain name is that slot's fallback instead (see expectedSlots)
         if (declaredCount == 0 && !out.containsKey(mainPart())
                 && textures.find(contentId, stem + ".png") != null) {
-            out.put(mainPart(), Set.of(Naming.DEFAULT_INDEX));
+            out.put(mainPart(), Set.of(FileNamePattern.NO_INDEX));
         }
         return out;
     }
 
     // most specific naming first, so a name two parts could claim goes to the narrower one
-    public List<Orphan<V>> orphans(TrackedTextures textures, Set<Identifier> contentIds) {
-        Map<Identifier, Map<TexturePart<V>, Set<Integer>>> groups = new LinkedHashMap<>();
+    public List<Orphan<V>> orphans(ScannedTextures textures, Set<Identifier> contentIds) {
+        Map<Identifier, Map<TextureRole<V>, Set<Integer>>> groups = new LinkedHashMap<>();
         Set<Identifier> owned = new HashSet<>();
         for (Identifier id : textures.keySet()) {
             String dir = StrUtils.directoryOf(id.getPath());
             String base = StrUtils.lastSegment(id.getPath());
 
-            TexturePart<V> part = null;
-            Naming.ParsedName name = null;
-            for (TexturePart<V> candidate : byNameSpecificity) {
+            TextureRole<V> part = null;
+            FileNamePattern.ParsedName name = null;
+            for (TextureRole<V> candidate : byNameSpecificity) {
                 name = candidate.naming().parseName(base);
                 if (name != null) {
                     part = candidate;
@@ -162,7 +160,7 @@ public final class ContentTextures<V> {
             }
             if (part == null) {
                 part = mainPart();
-                name = new Naming.ParsedName(base, Naming.DEFAULT_INDEX);
+                name = new FileNamePattern.ParsedName(base, FileNamePattern.NO_INDEX);
             }
             Identifier stemId = id.withPath(dir + name.stem());
 
@@ -179,7 +177,7 @@ public final class ContentTextures<V> {
                 .toList();
     }
 
-    private List<TextureSlot> indexedColormapSlots(TexturePart<V> part, String stem,
+    private List<TextureSlot> indexedColormapSlots(TextureRole<V> part, String stem,
                                                    IndexCompoundColorGetter compound) {
         List<TextureSlot> slots = new ArrayList<>();
         var getters = compound.getGetters();
@@ -190,15 +188,15 @@ public final class ContentTextures<V> {
                 continue;
             Identifier explicit = inner.getExplicitTargetTexture();
             IntFunction<String> name = explicit != null
-                    ? i -> Naming.tintedFileName(StrUtils.lastSegment(explicit.getPath()), i)
+                    ? i -> FileNamePattern.tintedFileName(StrUtils.lastSegment(explicit.getPath()), i)
                     : i -> part.naming().fileName(stem, i);
             List<String> names = new ArrayList<>(2);
             names.add(name.apply(index));
             // tint 0 / a lone entry falls back to the default texture
             if (getters.size() == 1 || index == 0) {
-                names.add(name.apply(Naming.DEFAULT_INDEX));
+                names.add(name.apply(FileNamePattern.NO_INDEX));
             }
-            slots.add(new TextureSlot(names, part.naming().slotLabel(part.label(), index), inner, explicit));
+            slots.add(new TextureSlot(names, part.naming().slotLabel(part.displayLabel(), index), inner, explicit));
         }
         return slots;
     }
@@ -207,9 +205,9 @@ public final class ContentTextures<V> {
         if (!c.needsToFillTexture()) return List.of();
         Identifier explicit = c.getExplicitTargetTexture();
         if (explicit != null) {
-            return List.of(TextureSlot.fillingRemote(c, explicit, "texture_path",
+            return List.of(TextureSlot.requiredExplicit(c, explicit, "texture_path",
                     StrUtils.lastSegment(explicit.getPath()) + ".png"));
         }
-        return List.of(TextureSlot.filling(c, label, canonicalName));
+        return List.of(TextureSlot.required(c, label, canonicalName));
     }
 }
