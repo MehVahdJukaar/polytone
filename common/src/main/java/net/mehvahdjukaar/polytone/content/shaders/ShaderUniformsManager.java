@@ -29,6 +29,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
 
     private final List<ExpressionUniformBuffers> owned = new ArrayList<>();
     private final Map<Identifier, List<ExpressionUniformBuffers>> byShader = new HashMap<>();
+    private final Map<Identifier, List<ExpressionUniformBuffers>> byPostPassPipeline = new HashMap<>();
 
     public ShaderUniformsManager() {
         super("Shader uniforms", () -> SchemaCodec.wrap(ExpressionUniformBuffers.CODEC), "shader_modifiers");
@@ -85,6 +86,7 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
             for (var b : owned) b.close();
             owned.clear();
             byShader.clear();
+            byPostPassPipeline.clear();
         }
     }
 
@@ -100,10 +102,23 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
     }
 
     public void unregisterExternal(Identifier shaderId, ExpressionUniformBuffers buffers) {
-        List<ExpressionUniformBuffers> list = byShader.get(shaderId);
+        removeFrom(byShader, shaderId, buffers);
+    }
+
+    public void registerOnPostPass(Identifier pipelineLocation, ExpressionUniformBuffers buffers) {
+        byPostPassPipeline.computeIfAbsent(pipelineLocation, k -> new ArrayList<>()).add(buffers);
+    }
+
+    public void unregisterFromPostPass(Identifier pipelineLocation, ExpressionUniformBuffers buffers) {
+        removeFrom(byPostPassPipeline, pipelineLocation, buffers);
+    }
+
+    private static void removeFrom(Map<Identifier, List<ExpressionUniformBuffers>> map, Identifier key,
+                                   ExpressionUniformBuffers buffers) {
+        List<ExpressionUniformBuffers> list = map.get(key);
         if (list != null) {
             list.remove(buffers);
-            if (list.isEmpty()) byShader.remove(shaderId);
+            if (list.isEmpty()) map.remove(key);
         }
     }
 
@@ -111,19 +126,20 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
     // where no render pass is open (GPU buffer writes are illegal mid-pass), e.g. at renderLevel HEAD.
     // tryApply then only binds the already-updated buffers.
     public void updateAll() {
-        if (byShader.isEmpty()) return;
-        // the same buffers can be registered under several shader ids; update each only once
+        if (!hasAnyRegistered()) return;
         Set<ExpressionUniformBuffers> seen = Collections.newSetFromMap(new IdentityHashMap<>());
         for (List<ExpressionUniformBuffers> list : byShader.values()) {
             for (ExpressionUniformBuffers b : list) {
                 if (seen.add(b)) b.update();
             }
         }
+        for (List<ExpressionUniformBuffers> list : byPostPassPipeline.values()) {
+            for (ExpressionUniformBuffers b : list) {
+                if (seen.add(b)) b.update();
+            }
+        }
     }
 
-    // Binds all registered expression-uniform UBOs to the currently bound GL program by raw GL, for renderers
-    // that bypass Mojang's RenderPass (Sodium chunk shaders). Each buffer only binds the blocks the program
-    // actually declares, so this is safe to call for any bound program.
     public void bindToCurrentGlProgram() {
         if (byShader.isEmpty()) return;
         int program = GL11C.glGetInteger(GL20C.GL_CURRENT_PROGRAM);
@@ -139,10 +155,16 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
 
     // Whether any pack (or post chain) registered expression uniforms at all
     public boolean hasAnyRegistered() {
-        return !byShader.isEmpty();
+        return !byShader.isEmpty() || !byPostPassPipeline.isEmpty();
     }
 
     public void tryApply(RenderPass pass, RenderPipeline pipeline, Set<String> declaredUniforms) {
+        if (!byPostPassPipeline.isEmpty()) {
+            List<ExpressionUniformBuffers> postPassBuffers = byPostPassPipeline.get(pipeline.getLocation());
+            if (postPassBuffers != null) {
+                for (ExpressionUniformBuffers b : postPassBuffers) b.bind(pass, declaredUniforms);
+            }
+        }
         if (byShader.isEmpty()) return;
         List<ExpressionUniformBuffers> list = byShader.get(pipeline.getFragmentShader());
         if (list == null) list = byShader.get(pipeline.getVertexShader());

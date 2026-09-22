@@ -16,10 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-// Conditionally adds a post chain to the FrameGraph each frame. expression_uniforms on this object are chain-
-// level: they get bound to every pass shader in the chain. Implemented internally as a single
-// ExpressionUniformBuffers registered with ShaderUniformsManager under each pass's pipeline fragment-shader
-// id.
 public final class PostChainActivator {
 
     public static final SchemaCodec<PostChainActivator> CODEC = SchemaRecord.create(PostChainActivator.class,
@@ -41,7 +37,8 @@ public final class PostChainActivator {
 
     private boolean cachedOn = false;
     private PostChain cachedPostChain = null;
-    private final List<Identifier> registeredShaderIds = new ArrayList<>();
+    private boolean readsMainDepth = false;
+    private final List<Identifier> registeredPassPipelines = new ArrayList<>();
 
     public PostChainActivator(Identifier postChain, ISimpleExp turnOnCondition,
                               ExpressionUniformBuffers buffers, Map<String, Identifier> samplers,
@@ -68,17 +65,20 @@ public final class PostChainActivator {
         return cachedOn && useShadowMap;
     }
 
+    public boolean readsMainDepth() {
+        return cachedOn && readsMainDepth;
+    }
+
     @Nullable
     public PostChain getPostChain(ShaderManager manager) {
         if (!cachedOn) return null;
         if (cachedPostChain == null) {
             try {
-                // Sorting targets plus the pack's custom persistent targets. Validation only;
-                // the real handles come from the bundle at addToFrame.
                 cachedPostChain = manager.getPostChain(postChain, Polytone.POST_TARGETS.allowedTargets());
-                if (cachedPostChain == null) return null; // not resolvable yet (mid-reload), retry quietly
+                if (cachedPostChain == null) return null; // mid-reload, try again next frame
                 buffers.ensureInitialized("Polytone post expr uniform");
-                registerByPassShaders(cachedPostChain);
+                readsMainDepth = anyPassReadsMainDepth(cachedPostChain);
+                registerOnPasses(cachedPostChain);
             } catch (Throwable ex) {
                 Polytone.LOGGER.error("Failed to load post chain", ex);
                 return null;
@@ -92,27 +92,38 @@ public final class PostChainActivator {
     }
 
     void close() {
-        unregisterByPassShaders();
+        unregisterFromPasses();
         buffers.close();
         cachedPostChain = null;
     }
 
-    private void registerByPassShaders(PostChain chain) {
+    private void registerOnPasses(PostChain chain) {
         if (buffers.isEmpty() && samplers.isEmpty()) return;
         for (PostPass pass : chain.passes) {
-            Identifier shaderId = ((PostPassAccessor) pass).polytone$getPipeline().getFragmentShader();
-            if (!buffers.isEmpty()) Polytone.SHADER_EFFECTS.registerExternal(shaderId, buffers);
-            if (!samplers.isEmpty()) Polytone.POST_CHAINS.registerSamplers(shaderId, samplers);
-            registeredShaderIds.add(shaderId);
+            Identifier pipelineLocation = ((PostPassAccessor) pass).polytone$getPipeline().getLocation();
+            if (!buffers.isEmpty()) Polytone.SHADER_EFFECTS.registerOnPostPass(pipelineLocation, buffers);
+            if (!samplers.isEmpty()) Polytone.POST_CHAINS.registerSamplers(pipelineLocation, samplers);
+            registeredPassPipelines.add(pipelineLocation);
         }
     }
 
-    private void unregisterByPassShaders() {
-        for (Identifier id : registeredShaderIds) {
-            if (!buffers.isEmpty()) Polytone.SHADER_EFFECTS.unregisterExternal(id, buffers);
+    private void unregisterFromPasses() {
+        for (Identifier id : registeredPassPipelines) {
+            if (!buffers.isEmpty()) Polytone.SHADER_EFFECTS.unregisterFromPostPass(id, buffers);
             if (!samplers.isEmpty()) Polytone.POST_CHAINS.unregisterSamplers(id, samplers);
         }
-        registeredShaderIds.clear();
+        registeredPassPipelines.clear();
+    }
+
+    private static boolean anyPassReadsMainDepth(PostChain chain) {
+        for (PostPass pass : chain.passes) {
+            for (PostPass.Input input : ((PostPassAccessor) pass).polytone$getInputs()) {
+                if (input instanceof PostPass.TargetInput t && t.depthBuffer() && t.targetId().equals(PostChain.MAIN_TARGET_ID)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static boolean isPostPassClosed(@Nullable PostChain pass) {

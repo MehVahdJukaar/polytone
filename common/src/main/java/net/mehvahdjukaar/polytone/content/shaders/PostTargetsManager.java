@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.PostChain;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.util.ExtraCodecs;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,8 +31,8 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
 
     public record TargetSpec(Optional<Integer> width, Optional<Integer> height, boolean useDepth) {
         static final SchemaCodec<TargetSpec> CODEC = SchemaRecord.create(TargetSpec.class, i -> i.group(
-                i.optional("width", Codec.INT, TargetSpec::width),
-                i.optional("height", Codec.INT, TargetSpec::height),
+                i.optional("width", ExtraCodecs.POSITIVE_INT, TargetSpec::width),
+                i.optional("height", ExtraCodecs.POSITIVE_INT, TargetSpec::height),
                 i.optional("use_depth", Codec.BOOL, false, TargetSpec::useDepth)
         ).apply(i, TargetSpec::new));
     }
