@@ -13,7 +13,7 @@ import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
 import net.mehvahdjukaar.polytone.content.block.BlockPropertyModifier;
-import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapExp;
@@ -523,7 +523,7 @@ public class LegacyHelper {
                                               ResourceLocation id, @Nullable Object col) {
         if (col instanceof Colormap c && c.needsToFillTexture()) {
             ResourceLocation explicit = c.getExplicitTargetTexture();
-            new TrackedTextures(textures).fillColormap(explicit != null ? explicit : id, c);
+            new ScannedTextures(textures).fillColormap(explicit != null ? explicit : id, c);
         }
     }
 

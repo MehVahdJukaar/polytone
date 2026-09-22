@@ -1,8 +1,8 @@
 package net.mehvahdjukaar.polytone.common.companion;
 
-import net.mehvahdjukaar.polytone.content.colormap.Colormap;
-import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.StrUtils;
+import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
+import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,12 +11,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public final class TrackedTextures {
+public final class ScannedTextures {
 
     private final Map<ResourceLocation, ArrayImage> textures;
     private final Set<ResourceLocation> used = new HashSet<>();
 
-    public TrackedTextures(Map<ResourceLocation, ArrayImage> initial) {
+    public ScannedTextures(Map<ResourceLocation, ArrayImage> initial) {
         this.textures = new HashMap<>(initial);
     }
 

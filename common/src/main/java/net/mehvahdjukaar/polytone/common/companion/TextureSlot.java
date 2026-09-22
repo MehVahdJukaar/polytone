@@ -7,34 +7,34 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
-public record TextureSlot(List<String> acceptedNames, String label,
-                          @Nullable Colormap target, @Nullable ResourceLocation remoteLocation) {
+public record TextureSlot(List<String> acceptedNames, String displayLabel,
+                          @Nullable Colormap colormapToFill, @Nullable ResourceLocation explicitTexturePath) {
 
     public TextureSlot {
         if (acceptedNames.isEmpty()) {
             throw new IllegalArgumentException("A texture slot needs at least one accepted file name");
         }
-        if (remoteLocation != null && target == null) {
+        if (explicitTexturePath != null && colormapToFill == null) {
             throw new IllegalArgumentException("A remote slot must be bound to a colormap");
         }
         acceptedNames = List.copyOf(acceptedNames);
     }
 
-    public static TextureSlot unbound(String label, String... acceptedNames) {
+    public static TextureSlot optional(String label, String... acceptedNames) {
         return new TextureSlot(List.of(acceptedNames), label, null, null);
     }
 
-    public static TextureSlot filling(Colormap target, String label, String... acceptedNames) {
+    public static TextureSlot required(Colormap target, String label, String... acceptedNames) {
         return new TextureSlot(List.of(acceptedNames), label, target, null);
     }
 
-    public static TextureSlot fillingRemote(Colormap target, ResourceLocation remoteLocation,
-                                            String label, String... acceptedNames) {
-        return new TextureSlot(List.of(acceptedNames), label, target, remoteLocation);
+    public static TextureSlot requiredExplicit(Colormap target, ResourceLocation explicitTexture,
+                                               String label, String... acceptedNames) {
+        return new TextureSlot(List.of(acceptedNames), label, target, explicitTexture);
     }
 
     public boolean required() {
-        return target != null;
+        return colormapToFill != null;
     }
 
     public String canonicalName() {

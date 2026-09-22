@@ -27,7 +27,6 @@ public class SoundTypesManager extends ContentManager<PolytoneSoundType> {
 
     private final MapRegistry<SoundEvent> customSoundEvents = new MapRegistry<>("Custom Sound Events");
 
-    // custom defined sound types
     private final MapRegistry<SoundType> customSoundTypes = new MapRegistry<>("Custom Sound Types");
 
     public SoundTypesManager() {

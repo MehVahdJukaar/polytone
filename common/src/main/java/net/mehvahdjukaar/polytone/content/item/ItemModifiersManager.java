@@ -5,8 +5,8 @@ import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.companion.TexturePart;
-import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TextureRole;
+import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.minecraft.core.RegistryAccess;
@@ -27,8 +27,8 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
     private final Map<Item, ItemModifier> vanillaProperties = new HashMap<>();
 
 
-    private static final TexturePart<ItemModifier> TINT = TexturePart.plain("tint", ItemModifier::getTint);
-    private static final TexturePart<ItemModifier> BAR = TexturePart.suffix(BAR_SUFFIX, ItemModifier::getBarColor);
+    private static final TextureRole<ItemModifier> TINT = TextureRole.plain("tint", ItemModifier::getTint);
+    private static final TextureRole<ItemModifier> BAR = TextureRole.suffix(BAR_SUFFIX, ItemModifier::getBarColor);
 
     public ItemModifiersManager() {
         super(Spec.of("Item modifier", () -> ItemModifier.CODEC)
@@ -37,7 +37,7 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
                 .folders("item_modifiers", "item_properties"));
     }
 
-    private static ItemModifier defaultFor(TexturePart<ItemModifier> part) {
+    private static ItemModifier defaultFor(TextureRole<ItemModifier> part) {
         return part == BAR ? ItemModifier.ofBarColor(Colormap.createDamage())
                 : ItemModifier.ofItemColor(Colormap.createDefTriangle());
     }
@@ -61,7 +61,7 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
     @Override
     protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var jsons = resources.jsons();
-        var textures = new TrackedTextures(resources.textures());
+        var textures = new ScannedTextures(resources.textures());
 
         Parsed.SortedMap<ItemModifier> parsedModifiers =
                 Parsed.batchParseAlways(jsons, ItemModifier.CODEC, ops, "item modifier");

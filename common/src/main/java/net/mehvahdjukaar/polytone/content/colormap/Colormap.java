@@ -212,7 +212,6 @@ public final class Colormap implements IColorGetter, ColorResolver {
     }
 
     public interface SampleSink {
-        // x/y are the clamped axis outputs (0..1); col/row is the sampled source-image pixel; argb is the final tint.
         void report(float x, float y, int col, int row, int argb);
     }
 

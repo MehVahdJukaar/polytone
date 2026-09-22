@@ -12,8 +12,8 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.companion.TexturePart;
-import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TextureRole;
+import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
 import net.mehvahdjukaar.polytone.common.exp.impl.BlockContextExpression;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
@@ -59,10 +59,10 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
     private final Map<ResourceLocation, Parsed<DimensionEffectsModifier>> extraMods = new HashMap<>();
 
     // first part = main feature: a plain <name>.png reads as fog
-    private static final TexturePart<DimensionEffectsModifier> FOG = TexturePart.suffix("_fog", DimensionEffectsModifier::getFogColormap);
-    private static final TexturePart<DimensionEffectsModifier> SKY = TexturePart.suffix("_sky", DimensionEffectsModifier::getSkyColormap);
-    private static final TexturePart<DimensionEffectsModifier> SUNSET = TexturePart.suffix("_sunset", DimensionEffectsModifier::getSunsetColormap);
-    private static final TexturePart<DimensionEffectsModifier> TERRAIN_FOG = TexturePart.suffix("_terrain_fog", DimensionEffectsModifier::getTerrainFogColormap);
+    private static final TextureRole<DimensionEffectsModifier> FOG = TextureRole.suffix("_fog", DimensionEffectsModifier::getFogColormap);
+    private static final TextureRole<DimensionEffectsModifier> SKY = TextureRole.suffix("_sky", DimensionEffectsModifier::getSkyColormap);
+    private static final TextureRole<DimensionEffectsModifier> SUNSET = TextureRole.suffix("_sunset", DimensionEffectsModifier::getSunsetColormap);
+    private static final TextureRole<DimensionEffectsModifier> TERRAIN_FOG = TextureRole.suffix("_terrain_fog", DimensionEffectsModifier::getTerrainFogColormap);
 
     public DimensionEffectsManager() {
         super(Spec.<DimensionEffectsModifier>of("Dimension modifier")
@@ -72,7 +72,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
                 .folders("dimension_modifiers", "dimension_effects"));
     }
 
-    private static DimensionEffectsModifier defaultFor(TexturePart<DimensionEffectsModifier> part) {
+    private static DimensionEffectsModifier defaultFor(TextureRole<DimensionEffectsModifier> part) {
         if (part == SKY) return DimensionEffectsModifier.ofSkyColor(Colormap.createDefTriangle());
         if (part == SUNSET) return DimensionEffectsModifier.ofSunsetColor(Colormap.createTimeStrip());
         if (part == TERRAIN_FOG) return DimensionEffectsModifier.ofTerrainFogColor(Colormap.createDefTriangle());
@@ -98,7 +98,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
     @Override
     protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
         var jsons = resources.jsons();
-        var textures = new TrackedTextures(resources.textures());
+        var textures = new ScannedTextures(resources.textures());
 
         Parsed.SortedMap<DimensionEffectsModifier> parsedModifiers =
                 Parsed.batchParseAlways(jsons, DimensionEffectsModifier.CODEC, ops, "dimension modifier");

@@ -12,8 +12,8 @@ import com.google.gson.JsonElement;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
-import net.mehvahdjukaar.polytone.common.companion.TexturePart;
-import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TextureRole;
+import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.BiomeColors;
@@ -54,8 +54,8 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
     // Optifine/Colormatic legacy .properties, scanned in prepare() and consumed in parseWithLevel().
     private Map<ResourceLocation, Properties> ofProperties = Map.of();
 
-    private static final TexturePart<BlockPropertyModifier> TINTS =
-            TexturePart.tinted(BlockPropertyModifier::getColormap);
+    private static final TextureRole<BlockPropertyModifier> TINTS =
+            TextureRole.tinted(BlockPropertyModifier::getColormap);
 
     public BlockPropertiesManager() {
         super(Spec.of("Block modifier", () -> BlockPropertyModifier.CODEC)
@@ -117,7 +117,7 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
     protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, RegistryAccess access) {
 
         var jsons = resources.jsons();
-        var textures = new TrackedTextures(resources.textures());
+        var textures = new ScannedTextures(resources.textures());
         var textureCopy = new HashMap<>(resources.textures());
 
         LinkedListMultimap<ResourceLocation, Parsed<BlockPropertyModifier>> parsedModifiers = LinkedListMultimap.create();

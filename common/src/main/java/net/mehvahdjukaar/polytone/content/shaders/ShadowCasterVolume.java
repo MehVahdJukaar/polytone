@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+// Math nonsense incoming
 public final class ShadowCasterVolume {
 
     private static final float EDGE_MARGIN = 4f;
