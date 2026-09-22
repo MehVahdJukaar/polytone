@@ -72,5 +72,7 @@
   "polytone.performance_impact.high": "High",
   "polytone.performance_impact.varies": "Varies",
   "config.polytone.post_chains_after_hand": "Held Item Occludes Post Shaders",
-  "config.polytone.post_chains_after_hand.tooltip": "Runs depth-reading post shaders (like godrays) after the first-person hand is drawn, so held items such as a shield correctly block them. Turn off to run post shaders in the older standard spot, before the hand."
+  "config.polytone.post_chains_after_hand.tooltip": "Runs depth-reading post shaders (like godrays) after first person hands.",
+  "config.polytone.attribute_time_smoothing": "Attribute Smoothing",
+  "config.polytone.attribute_time_smoothing.tooltip": "How long in seconds, time blended environment attributes take to fade to a new value."
 }

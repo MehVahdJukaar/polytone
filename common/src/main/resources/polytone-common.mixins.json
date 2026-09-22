@@ -39,6 +39,7 @@
     "EntityRenderStateMixin",
     "EnvironmentAttributeEntryMixin",
     "EnvironmentSystemMixin",
+    "ValueProbeMixin",
     "FishingHookRendererMixin",
     "GameRendererMixin",
     "GlProgramMixin",

@@ -60,7 +60,7 @@ final class NautilusEnvironment implements ClientEnvironment.Contributor {
     private static @Nullable String dynamicNote(EnvironmentAttributeMap.Entry<?, ?> entry) {
         IExtendedEnvAttrEntry<?> ext = IExtendedEnvAttrEntry.of(entry);
         if (!ext.polytone$isDynamic()) return null;
-        return ext.polytone$shouldBlend()
+        return ext.polytone$getBlend().biome()
                 ? "Computed per frame from a colormap or expression, blended across biome borders."
                 : "Computed per frame from a colormap or expression, sampled at the camera.";
     }

@@ -44,6 +44,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     public final OptionHolder<Boolean> particlesOffThread = builtinConfig("custom_particles_async", "particles", false);
     public final OptionHolder<Boolean> showConfigButton = builtinConfig("show_config_button", null, true);
     public final OptionHolder<Boolean> postChainsAfterHand = builtinConfig("post_chains_after_hand", null, true);
+    public final OptionHolder<Float> attributeTimeSmoothing = builtinConfig("attribute_time_smoothing", null, 0.4f, 2, 0.05f);
 
     public final ConfigBubbleManager bubbleManager = new ConfigBubbleManager();
 
@@ -53,8 +54,13 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     }
 
     private static @NonNull OptionHolder<Float> builtinConfig(String id, @Nullable String section, float def) {
+        return builtinConfig(id, section, def, 1, 0.01f);
+    }
+
+    private static @NonNull OptionHolder<Float> builtinConfig(String id, @Nullable String section, float def,
+                                                              float max, float step) {
         return OptionHolder.create(new NumberConfig(Optional.empty(), Map.of(), Map.of(), 1,
-                Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def, 0, 1, 0.01f), Polytone.res(id));
+                Optional.ofNullable(section), Optional.empty(), Optional.empty(), false, Map.of(), def, 0, max, step), Polytone.res(id));
     }
 
     private final MapRegistry<OptionHolder<?>> configs = new MapRegistry<>("Configs");
@@ -80,7 +86,7 @@ public class ConfigsManager extends ContentManager<PolyConfig<?>> {
     }
 
     private void registerBuiltins(MapRegistry<OptionHolder<?>> reg) {
-        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postChainsAfterHand)) {
+        for (OptionHolder<?> b : List.of(lenientLoading, legacyParsing, particlesThrottle, autoParticleRateLimit, particlesOffThread, showConfigButton, postChainsAfterHand, attributeTimeSmoothing)) {
             b.loadFromJson(configFileSnapshot);
             reg.unregister(b.fileId);
             reg.register(b.fileId, b);
