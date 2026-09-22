@@ -24,7 +24,7 @@ public final class ExpressionUniformBuffers {
 
     public static final Codec<ExpressionUniformBuffers> CODEC =
             Codec.unboundedMap(Codec.STRING, ISimpleExp.CODEC)
-                    .xmap(ExpressionUniformBuffers::new, ExpressionUniformBuffers::expressions);
+                    .xmap(ExpressionUniformBuffers::new, ExpressionUniformBuffers::getExpressions);
 
     private static final int FLOAT_UBO_SIZE = new Std140SizeCalculator().putFloat().get();
 
@@ -39,7 +39,7 @@ public final class ExpressionUniformBuffers {
         return expressions.isEmpty();
     }
 
-    public Map<String, ISimpleExp> expressions() {
+    public Map<String, ISimpleExp> getExpressions() {
         return expressions;
     }
 
@@ -84,7 +84,9 @@ public final class ExpressionUniformBuffers {
     // declares are bound (gated by glGetUniformBlockIndex), so passing a program without our blocks is a no-
     // op.
     public int bindBlocksToProgram(int program, int nextBindingPoint) {
-        if (buffers == null) return nextBindingPoint;
+        if (buffers == null){
+            return nextBindingPoint;
+        }
         for (var e : buffers.entrySet()) {
             int blockIndex = GL32C.glGetUniformBlockIndex(program, e.getKey());
             if (blockIndex < 0) continue; // GL_INVALID_INDEX: block not declared in this program

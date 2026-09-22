@@ -70,7 +70,7 @@ public final class NautilusCreativeTabOverlay {
     }
 
     private static String bannerDetail(boolean targeted) {
-        if (!targeted) return "this modifier doesn't target the open tab";
+        if (!targeted) return "this modifier doesn't colormapToFill the open tab";
         int selected = CreativeTabPreview.pendingCount();
         if (selected == 0) return "click items to select them";
         return StrUtils.plural(selected, "item") + " selected   -   click again to unselect";

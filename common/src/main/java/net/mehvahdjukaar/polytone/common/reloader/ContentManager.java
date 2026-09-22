@@ -11,7 +11,7 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.StrUtils;
 import net.mehvahdjukaar.polytone.common.companion.ContentTextures;
-import net.mehvahdjukaar.polytone.common.companion.TexturePart;
+import net.mehvahdjukaar.polytone.common.companion.TextureRole;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.struc.ListUtils;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
@@ -63,7 +63,7 @@ public abstract class ContentManager<O> {
         private final String name;
         private String[] folderNames = new String[0];
         private @Nullable Supplier<? extends SchemaCodec<O>> codec;
-        private @Nullable List<TexturePart<O>> textureParts;
+        private @Nullable List<TextureRole<O>> textureParts;
         private @Nullable String wikiPage;
 
         private Spec(String name) {
@@ -84,9 +84,8 @@ public abstract class ContentManager<O> {
         }
 
         // order matters: the first part is the main feature, claiming plain <stem>.png files nothing else
-        // explains
         @SafeVarargs
-        public final Spec<O> textureParts(TexturePart<O>... parts) {
+        public final Spec<O> textureParts(TextureRole<O>... parts) {
             this.textureParts = List.of(parts);
             return this;
         }
@@ -210,9 +209,6 @@ public abstract class ContentManager<O> {
     protected void earlyProcess(PreparableReloadListener.SharedState sharedState) {
     }
 
-    // Scan this manager's folder(s) off-thread and group the files by type. The default gathers every .json
-    // and sibling .png; managers that need more (extra scan paths, csv sidecars) override, stash the extras in
-    // their own fields, and return this bundle.
     protected AssetsFiles prepare(PreparableReloadListener.SharedState sharedState) {
         var resourceManager = sharedState.resourceManager();
         return new AssetsFiles(getJsonsInDirectories(resourceManager),

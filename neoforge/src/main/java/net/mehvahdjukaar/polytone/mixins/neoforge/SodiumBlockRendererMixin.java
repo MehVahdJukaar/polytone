@@ -20,7 +20,7 @@ public class SodiumBlockRendererMixin {
             at = @At(value = "INVOKE",
                     shift = At.Shift.BEFORE,
                     remap = true,
-                    target = "Ljava/util/List;clear()V"))
+                    colormapToFill = "Ljava/util/List;clear()V"))
     private void polytone$modifyVisualOffset(BlockRenderContext ctx, ChunkBuildBuffers buffers, CallbackInfo ci,
                                              @Local LocalRef<Vec3> offset) {
         Vec3 m = Polytone.BLOCK_MODIFIERS.maybeModifyOffset(ctx.state(),  ctx.pos());

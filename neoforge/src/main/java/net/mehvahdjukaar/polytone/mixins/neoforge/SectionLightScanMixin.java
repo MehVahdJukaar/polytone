@@ -32,7 +32,7 @@ public abstract class SectionLightScanMixin {
             "compile(Lnet/minecraft/core/SectionPos;Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;Lcom/mojang/blaze3d/vertex/VertexSorting;Lnet/minecraft/client/renderer/SectionBufferBuilderPack;Ljava/util/List;)Lnet/minecraft/client/renderer/chunk/SectionCompiler$Results;"
             ,
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"))
+                    colormapToFill = "Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"))
     private BlockState polytone$scanForLights(RenderChunkRegion region, BlockPos pos, Operation<BlockState> original,
                                               @Share("polytone$scan") LocalRef<ColoredLightsTracker.Scan> scan) {
         BlockState state = original.call(region, pos);

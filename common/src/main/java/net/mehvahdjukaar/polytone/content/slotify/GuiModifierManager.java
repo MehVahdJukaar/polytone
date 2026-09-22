@@ -81,7 +81,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
                     }
 
                 } catch (ClassNotFoundException ignored) {
-                    Polytone.LOGGER.error("Could not find class target with name {}", target);
+                    Polytone.LOGGER.error("Could not find class colormapToFill with name {}", target);
                 }
 
             } else if (mod.targetsMenuId()) {
@@ -99,7 +99,7 @@ public class GuiModifierManager extends ContentManager<GuiModifier> {
                     }
                 }
             } else {
-                //title target
+                //title colormapToFill
                 String title = mod.target();
                 byTitle.computeIfAbsent(title, k -> new ArrayList<>()).add(ScreenModifier.fromGuiMod(mod));
 

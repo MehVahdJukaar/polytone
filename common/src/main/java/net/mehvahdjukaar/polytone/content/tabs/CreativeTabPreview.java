@@ -165,7 +165,7 @@ public final class CreativeTabPreview implements CreativeTabsModifiersManager.Mo
     }
 
     // The tabs a modifier applies to. This runs on every keystroke in the editor, on files that are
-    // half written by definition, so it stays quiet: no implicit target simply means no tabs yet.
+    // half written by definition, so it stays quiet: no implicit colormapToFill simply means no tabs yet.
     private static Set<ResourceKey<CreativeModeTab>> resolveTargets(@Nullable Identifier fileId,
                                                                     CreativeTabModifier mod) {
         Identifier id = fileId != null ? fileId : Polytone.res("editor_preview");

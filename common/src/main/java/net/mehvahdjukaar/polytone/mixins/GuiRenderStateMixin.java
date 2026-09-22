@@ -72,13 +72,13 @@ public abstract class GuiRenderStateMixin implements GuiDepthTargetAware {
         GuiRenderState.Node current = strata.get(strataIndex);
         int depth = 0;
 
-        // Traverse up to target node (if possible)
+        // Traverse up to colormapToFill node (if possible)
         while (depth < nodeIndex && current.up != null) {
             current = current.up;
             depth++;
         }
         /* Not possible anymore
-        // Traverse down to target node (if possible)
+        // Traverse down to colormapToFill node (if possible)
         while (depth > nodeIndex && current.down != null) {
             current = current.down;
             depth--;

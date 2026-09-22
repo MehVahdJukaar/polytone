@@ -31,9 +31,9 @@ public class StandaloneItemModelOverride extends ItemModelOverride {
                                        Optional<Integer> stackCount, Optional<Pattern> pattern,
                                        Optional<CompoundTag> entityTag, Optional<ColormapExpressionProvider> expression,
                                        Map<DataComponentType<?>, CompoundTag> nbtMatchers,
-                                       Item target) {
+                                       Item colormapToFill) {
         super(components, model, stackCount, pattern, entityTag, expression, nbtMatchers);
-        this.item = target;
+        this.item = colormapToFill;
         this.autoModel = model.toString().equals("minecraft:generated");
     }
 

@@ -16,7 +16,6 @@ import net.minecraft.resources.Identifier;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class OptionHolder<T> {
-
     public final OptionInstance<T> option;
     public final Identifier fileId;
     private final AtomicReference<T> lastSavedValue;
@@ -62,13 +61,10 @@ public class OptionHolder<T> {
 
         OptionInstance.CaptionBasedToString<T> toStr = (name, value) -> {
             MutableComponent valueName;
-            // Per-value label by convention on the config's own key, no JSON field needed:
-            // "config.recrafted.recrafted_gui.true": "Recrafted" / ".false": "Vanilla".
             String perValueKey = id.toLanguageKey("config") + "." + value;
             if (I18n.exists(perValueKey)) {
                 valueName = Component.translatable(perValueKey);
             } else if (config.getValueTranslationKey().isPresent()) {
-                // Pre-existing value_translation: key used as a format string with the raw value.
                 valueName = Component.translatable(config.getValueTranslationKey().get(), value);
             } else {
                 valueName = config.formatValue(value);

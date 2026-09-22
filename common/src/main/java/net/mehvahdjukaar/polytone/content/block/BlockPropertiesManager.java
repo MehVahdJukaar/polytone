@@ -9,8 +9,8 @@ import net.mehvahdjukaar.polytone.common.LegacyHelper;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
-import net.mehvahdjukaar.polytone.common.companion.TexturePart;
-import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TextureRole;
+import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.struc.PropertiesUtils;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
@@ -26,7 +26,6 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -54,8 +53,8 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
     private ColorResolver vanillaGrassColorResolver = null;
     private ColorResolver vanillaFoliageColorResolver = null;
 
-    private static final TexturePart<BlockPropertyModifier> TINTS =
-            TexturePart.tinted(BlockPropertyModifier::getColormap);
+    private static final TextureRole<BlockPropertyModifier> TINTS =
+            TextureRole.tinted(BlockPropertyModifier::getColormap);
 
     public BlockPropertiesManager() {
         super(Spec.of("Block modifier", () -> BlockPropertyModifier.CODEC)
@@ -122,7 +121,7 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
     protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
 
         var jsons = resources.jsons();
-        var textures = new TrackedTextures(resources.textures());
+        var textures = new ScannedTextures(resources.textures());
         var rawTextures = resources.textures();
 
         LinkedListMultimap<Identifier, Parsed<BlockPropertyModifier>> parsedModifiers = LinkedListMultimap.create();

@@ -259,8 +259,6 @@ public class ConfigScreen extends OptionsSubScreen {
                             sectionSliders.computeIfAbsent(section, k -> new LinkedHashMap<>()),
                             holder.option, true);
                 } else {
-                    // section_presets on a sectionless entry has no section slider to live on;
-                    // fold it into the pack-wide slider rather than dropping it silently.
                     ConfigPresets.collect(overall, holder.option, true);
                 }
             }

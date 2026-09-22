@@ -9,8 +9,8 @@ import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
-import net.mehvahdjukaar.polytone.common.companion.TexturePart;
-import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TextureRole;
+import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
 import net.mehvahdjukaar.polytone.common.struc.MapRegistry;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.client.color.block.BlockTintSource;
@@ -76,7 +76,7 @@ public class ColormapsManager extends ContentManager<IColorGetter> {
     }
 
     // plain naming still gives indexed compounds <stem>_<n>.png for their inline members
-    private static final TexturePart<IColorGetter> TEXTURE = TexturePart.plain(c -> c);
+    private static final TextureRole<IColorGetter> TEXTURE = TextureRole.plain(c -> c);
 
     public ColormapsManager() {
         super(Spec.of("Colormap", () -> SchemaCodecs.<IColorGetter>alternatives(
@@ -105,7 +105,7 @@ public class ColormapsManager extends ContentManager<IColorGetter> {
         colormaps.register(Identifier.parse("damage"), Colormap::createDamage);
 
         var jsons = resources.jsons();
-        var textures = new TrackedTextures(resources.textures());
+        var textures = new ScannedTextures(resources.textures());
 
         Map<Identifier, JsonElement> pending = new LinkedHashMap<>(jsons);
         boolean progressed = true;

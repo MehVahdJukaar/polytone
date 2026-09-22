@@ -3,8 +3,8 @@ package net.mehvahdjukaar.polytone.content.item;
 import com.google.gson.JsonElement;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
-import net.mehvahdjukaar.polytone.common.companion.TexturePart;
-import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TextureRole;
+import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
@@ -25,8 +25,8 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
 
     // The item tint part (ItemModifier::getTint) from 1.21.1 isn't ported: that item-tint colormap
     // feature doesn't exist on 1.21.11 yet, so only the bar-color texture is associated here.
-    private static final TexturePart<ItemModifier> BAR =
-            TexturePart.suffix("_bar", ItemModifier::getBarColor);
+    private static final TextureRole<ItemModifier> BAR =
+            TextureRole.suffix("_bar", ItemModifier::getBarColor);
 
     public ItemModifiersManager() {
         super(Spec.of("Item modifier", () -> ItemModifier.CODEC)
@@ -55,7 +55,7 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
     @Override
     protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var jsons = resources.jsons();
-        var textures = new TrackedTextures(resources.textures());
+        var textures = new ScannedTextures(resources.textures());
 
         Parsed.SortedMap<ItemModifier> parsedModifiers = parseAllJsons(jsons, ops);
 
@@ -114,7 +114,7 @@ public class ItemModifiersManager extends ContentManager<ItemModifier> {
             }
 
             //if (!modifier.customModels().isEmpty()) {
-            //    Polytone.ITEM_MODELS.addModel(target, modifier.customModels());
+            //    Polytone.ITEM_MODELS.addModel(colormapToFill, modifier.customModels());
             //}
         }
         if (!vanillaProperties.isEmpty()) {

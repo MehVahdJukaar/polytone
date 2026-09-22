@@ -9,34 +9,34 @@ import java.util.function.Function;
 
 // One texture a piece of content expects, in the abstract: pure file names, no IO. acceptedNames are
 // the names that can fill it, canonical first. Bound slots are required, unbound ones aren't.
-public record TextureSlot(List<String> acceptedNames, String label,
-                          @Nullable Colormap target, @Nullable Identifier remoteLocation) {
+public record TextureSlot(List<String> acceptedNames, String displayLabel,
+                          @Nullable Colormap colormapToFill, @Nullable Identifier explicitTexturePath) {
 
     public TextureSlot {
         if (acceptedNames.isEmpty()) {
             throw new IllegalArgumentException("A texture slot needs at least one accepted file name");
         }
-        if (remoteLocation != null && target == null) {
+        if (explicitTexturePath != null && colormapToFill == null) {
             throw new IllegalArgumentException("A remote slot must be bound to a colormap");
         }
         acceptedNames = List.copyOf(acceptedNames);
     }
 
-    public static TextureSlot unbound(String label, String... acceptedNames) {
+    public static TextureSlot optional(String label, String... acceptedNames) {
         return new TextureSlot(List.of(acceptedNames), label, null, null);
     }
 
-    public static TextureSlot filling(Colormap target, String label, String... acceptedNames) {
+    public static TextureSlot required(Colormap target, String label, String... acceptedNames) {
         return new TextureSlot(List.of(acceptedNames), label, target, null);
     }
 
-    public static TextureSlot fillingRemote(Colormap target, Identifier remoteLocation,
-                                            String label, String... acceptedNames) {
-        return new TextureSlot(List.of(acceptedNames), label, target, remoteLocation);
+    public static TextureSlot requiredExplicit(Colormap target, Identifier explicitTexture,
+                                               String label, String... acceptedNames) {
+        return new TextureSlot(List.of(acceptedNames), label, target, explicitTexture);
     }
 
     public boolean required() {
-        return target != null;
+        return colormapToFill != null;
     }
 
     public String canonicalName() {

@@ -23,12 +23,8 @@ import java.util.Map;
 
 public class SoundTypesManager extends ContentManager<PolytoneSoundType> {
 
-    // sound_events.csv sidecar - new sound-event ids to register, keyed by pack namespace
     private Map<Identifier, List<String>> soundEvents = Map.of();
-
     private final MapRegistry<SoundEvent> customSoundEvents = new MapRegistry<>("Custom Sound Events");
-
-    // custom defined sound types
     private final MapRegistry<SoundType> customSoundTypes = new MapRegistry<>("Custom Sound Types");
 
     public SoundTypesManager() {

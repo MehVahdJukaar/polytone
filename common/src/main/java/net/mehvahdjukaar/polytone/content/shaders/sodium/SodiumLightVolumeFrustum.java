@@ -37,7 +37,6 @@ final class SodiumLightVolumeFrustum implements Frustum {
 
     @Override
     public int intersectAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
-        // Report INTERSECT (never INSIDE) when visible so the tree traversal keeps testing children.
         return testAab(minX, minY, minZ, maxX, maxY, maxZ) ? FrustumIntersection.INTERSECT : FrustumIntersection.OUTSIDE;
     }
 }

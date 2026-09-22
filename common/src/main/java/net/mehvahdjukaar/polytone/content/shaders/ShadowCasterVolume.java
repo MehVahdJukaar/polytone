@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+// Math nonsense incoming
 // The positions that can cast a shadow into what the camera actually sees, camera relative. Two tests:
 // the ortho light box the map covers, then optionally the camera frustum swept away from the light,
 // since an occluder only matters if its shadow ray lands in view. That swept volume is only valid for

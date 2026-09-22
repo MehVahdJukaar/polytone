@@ -5,8 +5,8 @@ import com.google.gson.JsonElement;
 import net.mehvahdjukaar.candlelight.api.PlatformImpl;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
-import net.mehvahdjukaar.polytone.common.companion.TexturePart;
-import net.mehvahdjukaar.polytone.common.companion.TrackedTextures;
+import net.mehvahdjukaar.polytone.common.companion.TextureRole;
+import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.common.LegacyHelper;
 import net.mehvahdjukaar.polytone.common.Parsed;
@@ -30,10 +30,10 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
 
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
 
-    private static final TexturePart<FluidPropertyModifier> TINT =
-            TexturePart.plain("tint", FluidPropertyModifier::getColormap);
-    private static final TexturePart<FluidPropertyModifier> FOG =
-            TexturePart.suffix("_fog", FluidPropertyModifier::getFogColormap);
+    private static final TextureRole<FluidPropertyModifier> TINT =
+            TextureRole.plain("tint", FluidPropertyModifier::getColormap);
+    private static final TextureRole<FluidPropertyModifier> FOG =
+            TextureRole.suffix("_fog", FluidPropertyModifier::getFogColormap);
 
     public FluidPropertiesManager() {
         super(Spec.of("Fluid modifier", () -> FluidPropertyModifier.CODEC)
@@ -42,7 +42,7 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
                 .folders("fluid_modifiers", "fluid_properties"));
     }
 
-    private static FluidPropertyModifier defaultFor(TexturePart<FluidPropertyModifier> part) {
+    private static FluidPropertyModifier defaultFor(TextureRole<FluidPropertyModifier> part) {
         return part == FOG ? FluidPropertyModifier.ofFogColor(Colormap.createDefTriangle())
                 : FluidPropertyModifier.ofBlockColor(Colormap.createDefTriangle());
     }
@@ -83,7 +83,7 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
     @Override
     protected void parseWithLevel(AssetsFiles resources, RegistryOps<JsonElement> ops, HolderLookup.Provider access) {
         var jsons = resources.jsons();
-        var textures = new TrackedTextures(resources.textures());
+        var textures = new ScannedTextures(resources.textures());
 
         LinkedListMultimap<Identifier, Parsed<FluidPropertyModifier>> parsedModifiers =   LinkedListMultimap.create();
         extraModifiers.forEach(parsedModifiers::put);

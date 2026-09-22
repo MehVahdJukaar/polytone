@@ -22,9 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-// Binds expression-driven UBO uniforms to any pipeline whose vertex or fragment shader id matches a key in
-// byShader. JSONs live under polytone/shader_effects/<target-shader-path>.json. The file path determines the
-// target shader id (standard polytone convention - see e.g. BlockPropertiesManager).
 public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffers> {
 
     private final List<ExpressionUniformBuffers> owned = new ArrayList<>();
@@ -42,7 +39,6 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         return resources;
     }
 
-    // Collects UBO-block names from expression_uniforms JSON objects (for activator files)
     static void registerExpressionUniformNames(Map<Identifier, JsonElement> jsons) {
         for (var e : jsons.values()) {
             if (e == null || !e.isJsonObject()) continue;
@@ -55,7 +51,6 @@ public class ShaderUniformsManager extends ContentManager<ExpressionUniformBuffe
         }
     }
 
-    // Collects UBO-block names directly from the top-level JSON keys of shader_effects files
     private static void registerUniformNames(Map<Identifier, JsonElement> jsons) {
         for (var e : jsons.values()) {
             if (e instanceof JsonObject obj) {

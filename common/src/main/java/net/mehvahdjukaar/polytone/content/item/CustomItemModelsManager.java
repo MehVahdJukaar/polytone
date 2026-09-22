@@ -56,7 +56,7 @@ public class CustomItemModelsManager extends ContentManager<Void> {
         for (var l : this.itemModifiersModels.entrySet()) {
             var target = l.getKey();
             var overrides = l.getValue();
-            //this.itemModels.computeIfAbsent(target, a -> new ItemModelOverrideList())
+            //this.itemModels.computeIfAbsent(colormapToFill, a -> new ItemModelOverrideList())
             //        .addAll(overrides);
         }
         this.itemModifiersModels.clear();

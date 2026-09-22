@@ -42,7 +42,7 @@ public record TabContentsEvent(ResourceKey<CreativeModeTab> tab,
     }
 
     // The tab collections are insertion-ordered sets, so we rebuild them to place items at a
-    // specific position relative to a target item.
+    // specific position relative to a colormapToFill item.
     private static void insertInto(Collection<ItemStack> coll, @Nullable Predicate<ItemStack> target,
                                    boolean after, List<ItemStack> items, boolean append) {
         if (append || coll.isEmpty()) {
@@ -57,7 +57,7 @@ public record TabContentsEvent(ResourceKey<CreativeModeTab> tab,
                 if (!after) break; // first match when inserting "before"; last match when "after"
             }
         }
-        if (index < 0) return; // target not present in this collection, leave it untouched
+        if (index < 0) return; // colormapToFill not present in this collection, leave it untouched
         list.addAll(after ? index + 1 : index, items);
         coll.clear();
         coll.addAll(list);

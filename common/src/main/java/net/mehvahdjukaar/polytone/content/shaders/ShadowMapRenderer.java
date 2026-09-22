@@ -465,7 +465,7 @@ public class ShadowMapRenderer {
                 if (state != null) {
                     beDispatcher.submit(state, poseStack, featureDispatcher.getSubmitNodeStorage(), camState);
                 }
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
             poseStack.popPose();
         }
