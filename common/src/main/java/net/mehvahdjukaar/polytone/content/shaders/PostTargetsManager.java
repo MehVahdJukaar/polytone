@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -22,8 +23,8 @@ public class PostTargetsManager extends ContentManager<PostTargetsManager.Target
 
     record TargetSpec(Optional<Integer> width, Optional<Integer> height, boolean useDepth) {
         static final Codec<TargetSpec> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.INT.optionalFieldOf("width").forGetter(TargetSpec::width),
-                Codec.INT.optionalFieldOf("height").forGetter(TargetSpec::height),
+                ExtraCodecs.POSITIVE_INT.optionalFieldOf("width").forGetter(TargetSpec::width),
+                ExtraCodecs.POSITIVE_INT.optionalFieldOf("height").forGetter(TargetSpec::height),
                 Codec.BOOL.optionalFieldOf("use_depth", false).forGetter(TargetSpec::useDepth)
         ).apply(i, TargetSpec::new));
     }
