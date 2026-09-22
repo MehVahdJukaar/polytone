@@ -55,10 +55,11 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     private GpuBuffer emptyShadowUbo = null;
 
     private final List<PostChainActivator> activators = new ArrayList<>();
-    private final Map<Identifier, List<Map<String, Identifier>>> samplersByPassShader = new HashMap<>();
+    private final Map<Identifier, List<Map<String, Identifier>>> samplersByPassPipeline = new HashMap<>();
 
     private TextureTarget worldDepthSnapshot;
     private boolean worldDepthCaptured = false;
+    private boolean levelRenderedThisFrame = false;
 
     public PostChainsManager() {
         super(Spec.of("Post chain", () -> PostChainActivator.CODEC)
@@ -90,7 +91,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
             for (var a : activators) a.close();
             activators.clear();
         }
-        samplersByPassShader.clear();
+        samplersByPassPipeline.clear();
     }
 
     private GpuBufferSlice emptyShadowUbo() {
@@ -122,7 +123,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     }
 
     public boolean hasAnyPassBindings() {
-        return globalsDeclared || shadowUboDeclared || shadowSamplerDeclared || !samplersByPassShader.isEmpty();
+        return globalsDeclared || shadowUboDeclared || shadowSamplerDeclared || !samplersByPassPipeline.isEmpty();
     }
 
     public void bindUniformBlocks(RenderPass pass, Set<String> declaredUniforms) {
@@ -145,16 +146,16 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         return false;
     }
 
-    public void registerSamplers(Identifier passShaderId, Map<String, Identifier> samplers) {
+    public void registerSamplers(Identifier pipelineLocation, Map<String, Identifier> samplers) {
         if (samplers.isEmpty()) return;
-        samplersByPassShader.computeIfAbsent(passShaderId, k -> new ArrayList<>()).add(samplers);
+        samplersByPassPipeline.computeIfAbsent(pipelineLocation, k -> new ArrayList<>()).add(samplers);
     }
 
-    public void unregisterSamplers(Identifier passShaderId, Map<String, Identifier> samplers) {
-        List<Map<String, Identifier>> list = samplersByPassShader.get(passShaderId);
+    public void unregisterSamplers(Identifier pipelineLocation, Map<String, Identifier> samplers) {
+        List<Map<String, Identifier>> list = samplersByPassPipeline.get(pipelineLocation);
         if (list != null) {
             list.remove(samplers);
-            if (list.isEmpty()) samplersByPassShader.remove(passShaderId);
+            if (list.isEmpty()) samplersByPassPipeline.remove(pipelineLocation);
         }
     }
 
@@ -168,8 +169,8 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
             pass.bindTexture(SHADOW_SAMPLER_NAME, shadowMap,
                     RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
         }
-        if (samplersByPassShader.isEmpty()) return;
-        List<Map<String, Identifier>> list = samplersByPassShader.get(pipeline.getFragmentShader());
+        if (samplersByPassPipeline.isEmpty()) return;
+        List<Map<String, Identifier>> list = samplersByPassPipeline.get(pipeline.getLocation());
         if (list == null) return;
         var textureManager = Minecraft.getInstance().getTextureManager();
         GpuSampler sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR);
@@ -211,8 +212,10 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     }
 
     public void tick() {
-        for (var a : activators) {
-            a.refreshActive();
+        synchronized (activators) {
+            for (var a : activators) {
+                a.refreshActive();
+            }
         }
     }
 
@@ -228,10 +231,10 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
         return active;
     }
 
-    private boolean hasActiveChains() {
+    private boolean anyActiveChainReadsMainDepth() {
         synchronized (activators) {
             for (var a : activators) {
-                if (a.isActive()) return true;
+                if (a.readsMainDepth()) return true;
             }
         }
         return false;
@@ -247,21 +250,23 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     }
 
     public void snapshotWorldDepth(RenderTarget main) {
+        levelRenderedThisFrame = true;
         worldDepthCaptured = false;
-        if (!hasActiveChains()) return;
+        if (!anyActiveChainReadsMainDepth()) return;
         ensureSnapshotSized(main.width, main.height);
         worldDepthSnapshot.copyDepthFrom(main);
         worldDepthCaptured = true;
     }
 
     public void runChainsAfterHand(RenderTarget main, GraphicsResourceAllocator resourceAllocator) {
-        if (!worldDepthCaptured) return;
-        worldDepthCaptured = false;
+        if (!levelRenderedThisFrame) return;
+        levelRenderedThisFrame = false;
 
         List<PostChain> active = activeChains();
         if (active.isEmpty()) return;
 
-        combineWorldDepthIntoMain(main);
+        if (worldDepthCaptured) combineWorldDepthIntoMain(main);
+        worldDepthCaptured = false;
         for (PostChain chain : active) {
             chain.process(main, resourceAllocator);
         }
