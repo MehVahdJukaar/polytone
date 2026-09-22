@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
+import net.mehvahdjukaar.polytone.common.attributes.IExtendedEnvAttrEntry.Blend;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IBlockExp;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
@@ -45,14 +46,15 @@ class EnvAttrEntryCodecs {
 
         return RecordCodecBuilder.mapCodec(i -> i.group(
                 argumentCodec.fieldOf("argument").forGetter(EnvAttrEntryCodecs::argumentOrSupplier),
-                Codec.BOOL.optionalFieldOf("blend", true).forGetter(e -> IExtendedEnvAttrEntry.of(e).polytone$shouldBlend())
-        ).apply(i, (argument, blend) -> createEntry(argument, modifier, blend)));
+                Codec.BOOL.optionalFieldOf("biome_blend", true).forGetter(e -> IExtendedEnvAttrEntry.of(e).polytone$getBlend().biome()),
+                Codec.BOOL.optionalFieldOf("time_blend", true).forGetter(e -> IExtendedEnvAttrEntry.of(e).polytone$getBlend().time())
+        ).apply(i, (argument, biomeBlend, timeBlend) -> createEntry(argument, modifier, new Blend(biomeBlend, timeBlend))));
     }
 
     private static <Value, Argument> EnvironmentAttributeMap.Entry<Value, Argument> fromShorthandOrFull(
             Either<Either<Argument, Supplier<Argument>>, EnvironmentAttributeMap.Entry<Value, Argument>> shorthandOrFull) {
         return shorthandOrFull.map(
-                argument -> createEntry(argument, (AttributeModifier<Value, Argument>) AttributeModifier.override(), true),
+                argument -> createEntry(argument, (AttributeModifier<Value, Argument>) AttributeModifier.override(), Blend.DEFAULT),
                 entry -> entry
         );
     }
@@ -61,7 +63,7 @@ class EnvAttrEntryCodecs {
             EnvironmentAttributeMap.Entry<Value, Argument> entry) {
         //an entry that opted out of blending has to keep the object form, that's where the flag lives
         boolean fitsShorthand = entry.modifier() == AttributeModifier.override()
-                && IExtendedEnvAttrEntry.of(entry).polytone$shouldBlend();
+                && IExtendedEnvAttrEntry.of(entry).polytone$getBlend().equals(Blend.DEFAULT);
         if (fitsShorthand) return Either.left(argumentOrSupplier(entry));
         return Either.right(entry);
     }
@@ -75,7 +77,7 @@ class EnvAttrEntryCodecs {
 
     private static <Value, Argument> EnvironmentAttributeMap.Entry<Value, Argument> createEntry(
             Either<Argument, Supplier<Argument>> argumentOrSupplier, AttributeModifier<Value, Argument> modifier,
-            boolean blend) {
+            Blend blend) {
         return argumentOrSupplier.map(
                 argument -> new EnvironmentAttributeMap.Entry<>(argument, modifier),
                 supplier -> IExtendedEnvAttrEntry.createDynamic(supplier, modifier, blend)

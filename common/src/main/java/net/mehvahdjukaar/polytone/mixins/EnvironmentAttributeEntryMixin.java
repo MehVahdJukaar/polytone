@@ -20,7 +20,7 @@ public class EnvironmentAttributeEntryMixin<Value, Argument> implements IExtende
     private Supplier<Value> polytone$argumentSupplier;
 
     @Unique
-    private boolean polytone$shouldBlend = true;
+    private Blend polytone$blend = Blend.DEFAULT;
 
     @Override
     public void polytone$setArgumentSupplier(Supplier<Value> supplier) {
@@ -33,13 +33,13 @@ public class EnvironmentAttributeEntryMixin<Value, Argument> implements IExtende
     }
 
     @Override
-    public boolean polytone$shouldBlend() {
-        return this.polytone$shouldBlend;
+    public Blend polytone$getBlend() {
+        return this.polytone$blend;
     }
 
     @Override
-    public void polytone$setShouldBlend(boolean shouldBlend) {
-        this.polytone$shouldBlend = shouldBlend;
+    public void polytone$setBlend(Blend blend) {
+        this.polytone$blend = blend;
     }
 
     @ModifyReturnValue(method = "argument", at = @At("RETURN"))
@@ -56,8 +56,10 @@ public class EnvironmentAttributeEntryMixin<Value, Argument> implements IExtende
         if (polytone$argumentSupplier == null){
             return original.call(modifier, input, argument);
         }
-        //incoming value is exposed to the expression as v
-        return DynamicAttributeContext.withIncoming(input,
+        if (polytone$blend.time()) {
+            DynamicAttributeContext.markTimeBlendRequested();
+        }
+        return DynamicAttributeContext.wrapAttributeMod(input,
                 () -> original.call(modifier, input, polytone$argumentSupplier.get()));
     }
 

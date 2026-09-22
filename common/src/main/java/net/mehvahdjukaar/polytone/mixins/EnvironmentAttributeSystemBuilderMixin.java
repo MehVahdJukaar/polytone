@@ -24,7 +24,7 @@ public abstract class EnvironmentAttributeSystemBuilderMixin {
             //lets the probe know it has to record biome weights for us
             DynamicAttributeContext.hasDynamicLayers = true;
 
-            boolean blend = dynamic.polytone$shouldBlend();
+            boolean blend = dynamic.polytone$getBlend().biome();
             cir.setReturnValue(this.addPositionalLayer(attribute, (oldValue, pos, interpolator) -> blend
                     ? DynamicAttributeContext.applyBlended(attribute, entry, oldValue, interpolator)
                     : entry.applyModifier(oldValue)));

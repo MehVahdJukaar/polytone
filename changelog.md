@@ -1,1 +1,2 @@
 - fixedn an issue with biome blend
+- attribute values that cant blend across biomes (colormaps driven by position, weather, configs) now fade over time instead of popping. blend flag is now split in biome_blend and time_blend

@@ -138,11 +138,11 @@ public class EnvironmentAttributeMapMod {
     private static <Argument> EnvironmentAttributeMap.Entry<?, Argument> bindToBiome(EnvironmentAttributeMap.Entry<?, Argument> entry,
                                                                                     Biome owner) {
         IExtendedEnvAttrEntry<Argument> ext = IExtendedEnvAttrEntry.of(entry);
-        boolean blendsAcrossBiomes = ext.polytone$isDynamic() && ext.polytone$shouldBlend();
-        if (!blendsAcrossBiomes) return entry;
+        if (!ext.polytone$isDynamic() || !ext.polytone$getBlend().biome()) return entry;
 
         Supplier<Argument> supplier = ext.polytone$getArgumentSupplier();
-        return IExtendedEnvAttrEntry.createDynamic(() -> DynamicAttributeContext.inBiome(owner, supplier), entry.modifier(), true);
+        return IExtendedEnvAttrEntry.createDynamic(() -> DynamicAttributeContext.inBiome(owner, supplier),
+                entry.modifier(), ext.polytone$getBlend());
     }
 
     public static class Builder {
@@ -153,7 +153,7 @@ public class EnvironmentAttributeMapMod {
                                                  AttributeModifier<Value, Parameter> attributeModifier,
                                                  Supplier<Parameter> objectSupplier) {
             environmentAttribute.type().checkAllowedModifier(attributeModifier);
-            this.entriesToReplace.put(environmentAttribute, IExtendedEnvAttrEntry.createDynamic(objectSupplier, attributeModifier, true));
+            this.entriesToReplace.put(environmentAttribute, IExtendedEnvAttrEntry.createDynamic(objectSupplier, attributeModifier, IExtendedEnvAttrEntry.Blend.DEFAULT));
             return this;
         }
 

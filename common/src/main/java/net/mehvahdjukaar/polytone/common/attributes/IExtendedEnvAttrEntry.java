@@ -7,13 +7,17 @@ import java.util.function.Supplier;
 
 public interface IExtendedEnvAttrEntry<Value> {
 
+    record Blend(boolean biome, boolean time) {
+        public static final Blend DEFAULT = new Blend(true, false);
+    }
+
     void polytone$setArgumentSupplier( Supplier<Value> supplier) ;
 
     Supplier<Value> polytone$getArgumentSupplier( );
 
-    boolean polytone$shouldBlend();
+    Blend polytone$getBlend();
 
-    void polytone$setShouldBlend(boolean shouldBlend);
+    void polytone$setBlend(Blend blend);
 
     default boolean polytone$isDynamic() {
         return polytone$getArgumentSupplier() != null;
@@ -25,11 +29,11 @@ public interface IExtendedEnvAttrEntry<Value> {
     }
 
     static <Value, Argument> EnvironmentAttributeMap.Entry<Value, Argument> createDynamic(
-            Supplier<Argument> supplier, AttributeModifier<Value, Argument> modifier, boolean blend) {
+            Supplier<Argument> supplier, AttributeModifier<Value, Argument> modifier, Blend blend) {
         var entry = new EnvironmentAttributeMap.Entry<>(supplier.get(), modifier);
         IExtendedEnvAttrEntry<Argument> dynamic = of(entry);
         dynamic.polytone$setArgumentSupplier(supplier);
-        dynamic.polytone$setShouldBlend(blend);
+        dynamic.polytone$setBlend(blend);
         return entry;
     }
 }
