@@ -28,13 +28,9 @@ public record TextureSlot(List<String> acceptedNames, String displayLabel,
         return new TextureSlot(List.of(acceptedNames), label, target, null);
     }
 
-    public static TextureSlot requiredExplicit(Colormap target, ResourceLocation explicitTexture,
+    public static TextureSlot requiredExplicit(Colormap target, ResourceLocation remoteLocation,
                                                String label, String... acceptedNames) {
-        return new TextureSlot(List.of(acceptedNames), label, target, explicitTexture);
-    }
-
-    public boolean required() {
-        return colormapToFill != null;
+        return new TextureSlot(List.of(acceptedNames), label, target, remoteLocation);
     }
 
     public String canonicalName() {
