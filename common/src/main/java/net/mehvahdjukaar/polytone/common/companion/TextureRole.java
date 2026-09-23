@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
-public record TextureRole<V>(FileNamePattern naming, String displayLabel,
+public record TextureRole<V>(FileNamePattern namePattern, String displayLabel,
                              Function<V, @Nullable IColorGetter> declaredColormapGetter) {
 
     public @Nullable IColorGetter getDeclaredColormap(V value) {
@@ -22,7 +22,7 @@ public record TextureRole<V>(FileNamePattern naming, String displayLabel,
 
     public static <V> TextureRole<V> suffix(String suffix, Function<V, @Nullable IColorGetter> declared) {
         FileNamePattern.Suffix naming = new FileNamePattern.Suffix(suffix);
-        return new TextureRole<>(naming, naming.derivedLabel(), declared);
+        return new TextureRole<>(naming, naming.displayLabel(), declared);
     }
 
     public static <V> TextureRole<V> tinted(Function<V, @Nullable IColorGetter> declared) {

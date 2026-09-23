@@ -28,7 +28,6 @@ public sealed interface FileNamePattern {
 
     Set<Integer> presentIndexes(ScannedTextures textures, Identifier contentId);
 
-    // orphan routing order: higher parses first (long literal suffixes beat the tinted family beats "")
     int orphanPriority();
 
     static FileNamePattern suffix(String suffix) {
@@ -78,7 +77,7 @@ public sealed interface FileNamePattern {
         }
 
         // "" -> "default", "_terrain_fog" -> "terrain fog"
-        String derivedLabel() {
+        String displayLabel() {
             if (suffix.isEmpty()) return label(NO_INDEX);
             String stripped = suffix.startsWith("_") ? suffix.substring(1) : suffix;
             return stripped.replace('_', ' ');
@@ -132,7 +131,7 @@ public sealed interface FileNamePattern {
 
     static ParsedName parse(String name) {
         int us = name.lastIndexOf('_');
-        if (us > 0) { // us == 0 would leave an empty stem - not a suffix then
+        if (us > 0) {
             String digits = name.substring(us + 1);
             if (!digits.isEmpty() && digits.length() <= 9 && digits.chars().allMatch(Character::isDigit)) {
                 return new ParsedName(name.substring(0, us), Integer.parseInt(digits));
@@ -141,9 +140,6 @@ public sealed interface FileNamePattern {
         return new ParsedName(name, NO_INDEX);
     }
 
-    // Stem matching is exact and case insensitive: foobar_1.png does not match stem foo. A file whose
-    // whole base equals the stem is always the default, even if the stem itself ends in a tint suffix
-    // (foo_3.png IS the default texture of a colormap named foo_3).
     static @Nullable Integer tintIndexOf(String fileName, String stem) {
         String lower = fileName.toLowerCase(Locale.ROOT);
         if (!lower.endsWith(".png")) return null;

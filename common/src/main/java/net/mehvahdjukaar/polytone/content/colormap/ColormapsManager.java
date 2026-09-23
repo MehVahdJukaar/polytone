@@ -75,7 +75,7 @@ public class ColormapsManager extends ContentManager<IColorGetter> {
         return concurrentColormaps.computeIfAbsent(colormap, IColorGetter::makeConcurrent);
     }
 
-    // plain naming still gives indexed compounds <stem>_<n>.png for their inline members
+    // plain namePattern still gives indexed compounds <stem>_<n>.png for their inline members
     private static final TextureRole<IColorGetter> TEXTURE = TextureRole.plain(c -> c);
 
     public ColormapsManager() {
