@@ -91,7 +91,10 @@ public record BlockPropertyModifier(
     }
 
     public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Set<ResourceLocation> blocks) {
-        Targets t = net.mehvahdjukaar.polytone.common.Targets.ofIds(blocks);
+        return coloringBlocks(colormap, Targets.ofIds(blocks));
+    }
+
+    public static BlockPropertyModifier coloringBlocks(BlockColor colormap, Targets t) {
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),

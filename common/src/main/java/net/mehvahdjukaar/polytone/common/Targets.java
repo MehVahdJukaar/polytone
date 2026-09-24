@@ -50,6 +50,22 @@ public record Targets(List<Entry> entries) {
         return new Targets(entries);
     }
 
+    //mainly for legacy parsing
+    public static Targets legacyIds(Collection<String> names) {
+        List<Entry> entries = new ArrayList<>();
+        for (String name : names) {
+            boolean isTag = name.startsWith("#");
+            ResourceLocation id = ResourceLocation.tryParse(isTag ? name.substring(1) : name);
+            if (id == null) {
+                Polytone.LOGGER.warn("Skipping invalid block name in legacy block list: {}", name);
+                continue;
+            }
+            Entry entry = isTag ? new TagLocation(id) : new SimpleLocation(id);
+            entries.add(new OptionalEntry(entry, false));
+        }
+        return new Targets(entries);
+    }
+
     public <T> Collection<Holder<T>> compute(ResourceLocation fileId, HolderLookup.RegistryLookup<T> registry) {
 
         Set<Holder<T>> set = new HashSet<>();
