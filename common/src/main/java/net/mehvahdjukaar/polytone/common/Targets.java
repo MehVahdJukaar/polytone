@@ -112,14 +112,13 @@ public record Targets(List<Entry> entries) {
         <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg);
     }
 
-    // The wire codecs are plain withAlternative folds; the labeled() wrappers only add the
-    // editor schema (lazy, and with the wiki's names for each branch) without touching the format.
+    // tag first cuz SOME mod is making resource locations accept # symbols...
     private static final Codec<Entry> SIMPLE_TAG_OR_REGEX_ENTRY_CODEC = SchemaCodecs.labeled(
             Codec.withAlternative(
-                    (Codec<Entry>) (Object) SimpleLocation.SIMPLE_CODEC,
-                    Codec.withAlternative((Codec<Entry>) (Object) TagLocation.TAG_CODEC, RegexLocation.REGEX_CODEC)),
-            SchemaCodecs.alt("id", SimpleLocation.SIMPLE_CODEC),
+                    (Codec<Entry>) (Object) TagLocation.TAG_CODEC,
+                    Codec.withAlternative((Codec<Entry>) (Object) SimpleLocation.SIMPLE_CODEC, RegexLocation.REGEX_CODEC)),
             SchemaCodecs.alt("tag", TagLocation.TAG_CODEC),
+            SchemaCodecs.alt("id", SimpleLocation.SIMPLE_CODEC),
             SchemaCodecs.alt("regex", RegexLocation.REGEX_CODEC));
 
     private static final Codec<Entry> ENTRY_CODEC = SchemaCodecs.labeled(
