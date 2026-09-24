@@ -108,7 +108,9 @@ public class Polytone {
     //todo: cutout not working. splash color not working, 1.20 color accessor crash
     public static void init(boolean devEnv, boolean forge, boolean iris) {
         PolytoneStub.initialized= true;
-        FileUtil
+
+        ResourceLocation.tryParse("#invalid:ResourceLocation");
+
         // CONFIGS goes first
         COMPOUND_RELOADER = new PolytoneReloadManager(
                 CONFIGS,

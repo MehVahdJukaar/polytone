@@ -15,8 +15,7 @@ public abstract class AbstractContainerMenuMixin {
 
     @Inject(method = "addSlot", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/core/NonNullList;add(Ljava/lang/Object;)Z",
-            ordinal = 0),
-            require = 1)
+            ordinal = 0), require = 1)
     public void interact(Slot slot, CallbackInfoReturnable<Slot> cir,
                          @Local(argsOnly = true) LocalRef<Slot> mutableSlot) {
         Polytone.SLOTIFY.maybeModifySlot((AbstractContainerMenu) (Object) this, slot);
