@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
+import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.PostChain;
@@ -66,7 +67,7 @@ public class PostShaderRenderer {
         float partial = mc.getTimer().getGameTimeDeltaPartialTick(false);
         if (level != null) {
             sunAngle = level.getSunAngle(partial) - Mth.HALF_PI;
-            dayTime = (float) (level.getDayTime() % 24000L);
+            dayTime = (float) (ClientFrameTicker.getDayTime() % 24000);
         }
 
         Vec3 playerPos = mc.player == null ? Vec3.ZERO : mc.player.getPosition(partial);
