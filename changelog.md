@@ -1,1 +1,2 @@
-made colormap definitions more lenient
+- backported many 26.1 changes
+- added some sanity checks for resource locations

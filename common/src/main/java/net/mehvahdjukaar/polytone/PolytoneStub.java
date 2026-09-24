@@ -4,7 +4,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 
-//can be early loaded for
+//can be early loaded
 public class PolytoneStub {
 
     static boolean initialized = false;

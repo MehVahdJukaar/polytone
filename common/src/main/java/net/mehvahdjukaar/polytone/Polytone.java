@@ -31,6 +31,7 @@ import net.mehvahdjukaar.polytone.content.texture.VariantTextureManager;
 import net.mehvahdjukaar.polytone.content.biome.BiomeKeysCache;
 import net.mehvahdjukaar.polytone.common.reloader.PolytoneReloadManager;
 import net.mehvahdjukaar.polytone.common.GenericDirectorySpriteSource;
+import net.minecraft.FileUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.resources.model.ModelResourceLocation;
@@ -107,8 +108,8 @@ public class Polytone {
     //todo: cutout not working. splash color not working, 1.20 color accessor crash
     public static void init(boolean devEnv, boolean forge, boolean iris) {
         PolytoneStub.initialized= true;
-        // CONFIGS goes first: config values feed require_config conditions and config() expressions
-        // used by everything else, so they must be up to date before any other reloader parses.
+        FileUtil
+        // CONFIGS goes first
         COMPOUND_RELOADER = new PolytoneReloadManager(
                 CONFIGS,
                 NOISES, GLOBAL_EXPRESSION, SOUND_TYPES, BIOME_ID_MAPPERS, COLORMAPS, CUSTOM_PARTICLES, COLORS, COLORED_LIGHTS,
@@ -118,8 +119,7 @@ public class Polytone {
                 CREATIVE_TABS_MODIFIERS, POST_TARGETS, POST_SHADERS, SHADOWS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
-        // Register editable content types with the Nautilus Studio pack editor, if that mod is present.
-        // Guarded so its classes never load when absent.
+
         if (PlatStuff.isModLoaded("nautilus_studio")) {
             PolytoneNautilus.init();
         }
