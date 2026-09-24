@@ -88,7 +88,10 @@ public record BlockPropertyModifier(
     }
 
     public static BlockPropertyModifier coloringBlocks(IColorGetter colormap, Set<Identifier> blocks) {
-        Targets t = Targets.ofIds(blocks);
+        return coloringBlocks(colormap, Targets.ofIds(blocks));
+    }
+
+    public static BlockPropertyModifier coloringBlocks(IColorGetter colormap, Targets t) {
         return new BlockPropertyModifier(Optional.of(colormap),
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
