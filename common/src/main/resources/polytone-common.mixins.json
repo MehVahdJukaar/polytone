@@ -5,6 +5,7 @@
   "package": "net.mehvahdjukaar.polytone.mixins",
   "mixins": [
     "BlockElementRotationMixin",
+    "IdentifierMixin",
     "OverlayEntryMixin",
     "PackMixin",
     "PackRepositoryMixin"
