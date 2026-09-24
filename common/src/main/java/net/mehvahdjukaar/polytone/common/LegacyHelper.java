@@ -19,6 +19,7 @@ import net.mehvahdjukaar.polytone.content.fluid.FluidPropertyModifier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +36,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class LegacyHelper {
 
@@ -184,10 +184,10 @@ public class LegacyHelper {
                                                               Optional<Integer> yoffset, Optional<String> sourceTexture,
                                                               boolean forceTint) {
 
-        Set<Identifier> set = new HashSet<>();
+        List<String> names = List.of();
         Colormap colormap;
         if (!targets.isEmpty()) {
-            set = targets.stream()
+            names = targets.stream()
                     .filter(s -> {
                         // fuck this i wont parse numerical shit
                         try {
@@ -197,9 +197,8 @@ public class LegacyHelper {
                         } catch (Exception ignored) {
                         }
                         return true;
-                    }).map(Identifier::tryParse)
-                    .collect(Collectors.toSet());
-            if (forceTint) set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
+                    }).toList();
+            if (forceTint) names.forEach(LegacyHelper::forceBlockToHaveTintIndex);
 
         }
         Integer col = singleColor.orElse(null);
@@ -234,18 +233,19 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), List.of(), List.of(),
                 Optional.empty(), Optional.empty(),
-                false, Targets.ofIds(set), false);
+                false, Targets.legacyIds(names), false);
     }
 
 
     public static BlockPropertyModifier convertOFProperty(Properties properties, Identifier id) {
-        Set<Identifier> set;
+        Targets targets = Targets.EMPTY;
         Colormap colormap;
         boolean forceTint = Boolean.parseBoolean(properties.getProperty("force_tint", "true"));
-        var targets = properties.getProperty("blocks");
-        if (targets != null) {
-            set = Arrays.stream(targets.split(" "))
+        var blockList = properties.getProperty("blocks");
+        if (blockList != null) {
+            List<String> names = Arrays.stream(blockList.split(" "))
                     .filter(s -> {
+                        if (s.isEmpty()) return false;
                         // fuck this i wont parse numerical shit
                         try {
                             int iHateOptishit = Integer.parseInt(s);
@@ -254,10 +254,10 @@ public class LegacyHelper {
                         } catch (Exception ignored) {
                         }
                         return true;
-                    }).map(Identifier::parse)
-                    .collect(Collectors.toSet());
-            if (forceTint) set.forEach(LegacyHelper::forceBlockToHaveTintIndex);
-        } else set = Set.of();
+                    }).toList();
+            targets = Targets.legacyIds(names);
+            if (forceTint) names.forEach(LegacyHelper::forceBlockToHaveTintIndex);
+        }
 
         String format = properties.getProperty("format");
         Integer col = null;
@@ -294,7 +294,7 @@ public class LegacyHelper {
                 Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(),
                 List.of(), List.of(), Optional.empty(),
-                Optional.empty(), false, Targets.ofOptionalIds(set), false);
+                Optional.empty(), false, targets, false);
     }
 
     public static Map<Identifier, Parsed<BlockPropertyModifier>> convertInlinedPalettes(
@@ -307,15 +307,14 @@ public class LegacyHelper {
             Colormap colormap = Colormap.createDefTriangle();
             colormap.setExplicitTargetTexture(texturePath);
 
-            Set<Identifier> blockTargets = new HashSet<>();
+            List<String> names = new ArrayList<>();
             for (var name : special.getValue().split(" ")) {
                 if (name.isEmpty()) continue;
-                Identifier blockId = Identifier.parse(name);
-                blockTargets.add(blockId);
-                forceBlockToHaveTintIndex(blockId);
+                names.add(name);
+                forceBlockToHaveTintIndex(name);
             }
-            if (!blockTargets.isEmpty()) {
-                BlockPropertyModifier mod = BlockPropertyModifier.coloringBlocks(colormap, blockTargets);
+            if (!names.isEmpty()) {
+                BlockPropertyModifier mod = BlockPropertyModifier.coloringBlocks(colormap, Targets.legacyIds(names));
 
                 // unique id just because
                 Identifier id = texturePath.withSuffix("-color_prop_palette_" + k++);
@@ -325,13 +324,23 @@ public class LegacyHelper {
         return map;
     }
 
-    private static void forceBlockToHaveTintIndex(Identifier blockId) {
-        var b = BuiltInRegistries.BLOCK.getOptional(blockId);
-        if (b.isPresent()) {
-            Block block = b.get();
-            if (block != Blocks.REDSTONE_WIRE && block != Blocks.PUMPKIN_STEM && block != Blocks.MELON_STEM) {
-                //Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
+    private static void forceBlockToHaveTintIndex(String name) {
+        if (name.startsWith("#")) {
+            Identifier tagId = Identifier.tryParse(name.substring(1));
+            if (tagId == null) return;
+            for (var holder : BuiltInRegistries.BLOCK.getTagOrEmpty(TagKey.create(Registries.BLOCK, tagId))) {
+                forceBlockToHaveTintIndex(holder.value());
             }
+        } else {
+            Identifier blockId = Identifier.tryParse(name);
+            Block b = blockId == null ? null : BuiltInRegistries.BLOCK.getOptional(blockId).orElse(null);
+            if (b != null) forceBlockToHaveTintIndex(b);
+        }
+    }
+
+    private static void forceBlockToHaveTintIndex(Block block) {
+        if (block != Blocks.REDSTONE_WIRE && block != Blocks.PUMPKIN_STEM && block != Blocks.MELON_STEM) {
+            //Polytone.VARIANT_TEXTURES.addTintOverrideHack(block);
         }
     }
 
