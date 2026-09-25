@@ -126,7 +126,8 @@ public class ClientTagsLoader {
         HashSet<Path> out = new HashSet<>();
 
         for (var mod : ModList.get().getSortedMods()) {
-            out.add(mod.getModInfo().getOwningFile().getFile().getFilePath().resolve(path));
+            Path found = mod.getModInfo().getOwningFile().getFile().findResource(path);
+            if (Files.exists(found)) out.add(found);
         }
 
         return out;
