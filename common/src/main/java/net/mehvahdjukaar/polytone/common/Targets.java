@@ -81,7 +81,8 @@ public record Targets(List<Entry> entries) {
                         set.add(holder);
                     }
                 } catch (Exception e) {
-                    if (!Polytone.CONFIGS.isLenientLoading()){
+                    boolean futureId = e instanceof MissingEntryException me && Polytone.isFutureId(me.id);
+                    if (!futureId && !Polytone.CONFIGS.isLenientLoading()){
                         throw new IllegalStateException("Failed to parse some colormapToFill(s) for polytone file " + fileId, e);
                     }
                 }
@@ -146,7 +147,7 @@ public record Targets(List<Entry> entries) {
         public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
             try {
                 return entry.get(reg);
-            } catch (IllegalStateException e) {
+            } catch (MissingEntryException e) {
                 if (required) throw e;
                 return List.of();
             }
@@ -168,12 +169,19 @@ public record Targets(List<Entry> entries) {
         @Override
         public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
             var holder = reg.get(regKey(id, reg));
-            if (holder.isEmpty() && Polytone.isFutureId(id)) {
-                return List.of();
-            }
-            return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found in registry " + reg.key() + ": " + id)));
+            if (holder.isEmpty()) throw new MissingEntryException(reg.key(), id);
+            return List.of(holder.get());
         }
 
+    }
+
+    private static class MissingEntryException extends IllegalStateException {
+        private final Identifier id;
+
+        private MissingEntryException(ResourceKey<?> registry, Identifier id) {
+            super("Entry not found in registry " + registry + ": " + id);
+            this.id = id;
+        }
     }
 
     private record TagLocation(Identifier id) implements Entry {
