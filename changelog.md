@@ -1,2 +1,2 @@
-- backported many 26.1 changes
-- added some sanity checks for resource locations
+- fixes with tag loading
+- fixed a bug with fluid mods

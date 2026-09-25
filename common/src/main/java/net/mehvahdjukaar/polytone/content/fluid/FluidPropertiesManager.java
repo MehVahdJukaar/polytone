@@ -46,8 +46,8 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
                 : FluidPropertyModifier.ofBlockColor(Colormap.createDefTriangle());
     }
 
-    private Map<ResourceLocation, Parsed<FluidPropertyModifier>> extraModifiers;
-    private Map<ResourceLocation, ArrayImage> extraImages;
+    private Map<ResourceLocation, Parsed<FluidPropertyModifier>> extraModifiers = Map.of();
+    private Map<ResourceLocation, ArrayImage> extraImages = Map.of();
 
     //essentially replacing this for better mod compat
     private ColorResolver vanillaWaterColorResolver = null;
@@ -130,6 +130,8 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
     @Override
     protected void resetWithLevel(boolean logOff) {
         modifiers.clear();
+        extraModifiers = Map.of();
+        extraImages = Map.of();
         clearSpecial();
         if (vanillaWaterColorResolver != null) {
             BiomeColors.WATER_COLOR_RESOLVER = vanillaWaterColorResolver;
@@ -144,7 +146,7 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
             tryAddSpecial(f, mod);
 
             //replaces watercolor func with first colormap that targets water. good enough
-            if (fluid.value() == Fluids.WATER && mod.getColormap() instanceof ColorResolver c) {
+            if (fluid.value() == Fluids.WATER && vanillaWaterColorResolver == null && mod.getColormap() instanceof ColorResolver c) {
                 vanillaWaterColorResolver = BiomeColors.WATER_COLOR_RESOLVER;
                 BiomeColors.WATER_COLOR_RESOLVER = c;
             }
