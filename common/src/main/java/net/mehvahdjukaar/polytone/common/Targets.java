@@ -6,14 +6,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.codecui.SchemaCodecs;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.NotNull;
 
@@ -77,8 +73,15 @@ public record Targets(List<Entry> entries) {
                         "Consider moving it under your OWN namespace to avoid overriding other packs modifiers with the same path", entries, fileId);
             }
             for (var entry : entries) {
-                for (var holder : entry.get(registry)) {
-                    set.add(holder);
+                try {
+                    for (var holder : entry.get(registry)) {
+                        set.add(holder);
+                    }
+                } catch (MissingEntryException e) {
+                    if (!e.id.getNamespace().equals("minecraft")){
+                        throw e;
+                    }
+                    Polytone.LOGGER.error("Found missing ID in minecraft namespace: {}. Polytone will skip it but this remains a bug of the Resource Pack. Optional entries or resource conditions should be used to maintain backward compatibility instead.", e.id);
                 }
             }
         }
@@ -143,7 +146,7 @@ public record Targets(List<Entry> entries) {
         public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
             try {
                 return entry.get(reg);
-            } catch (IllegalStateException e) {
+            } catch (MissingEntryException e) {
                 if (required) throw e;
                 return List.of();
             }
@@ -166,13 +169,19 @@ public record Targets(List<Entry> entries) {
         public <T> Iterable<? extends Holder<T>> get(HolderLookup.RegistryLookup<T> reg) {
             ResourceKey<T> key = ResourceKey.create((ResourceKey) reg.key(), id);
             var holder = reg.get(key);
-            if (holder.isEmpty() && id.getNamespace().equals("minecraft")) {
-                Polytone.LOGGER.error("Found missing ID in minecraft namespace: {}", id + ". Polytone will skip it but this is remains a bug of the Resource Pack. Optional entries or resource conditions should be used to maintain backward compatibility instead.");
-                return List.of();
-            }
-            return List.of(holder.orElseThrow(() -> new IllegalStateException("Entry not found: " + id)));
+            if (holder.isEmpty()) throw new MissingEntryException(id);
+            return List.of(holder.get());
         }
 
+    }
+
+    private static class MissingEntryException extends IllegalStateException {
+        final ResourceLocation id;
+
+        private MissingEntryException(ResourceLocation id) {
+            super("Entry not found: " + id);
+            this.id = id;
+        }
     }
 
     private record TagLocation(ResourceLocation id) implements Entry {
