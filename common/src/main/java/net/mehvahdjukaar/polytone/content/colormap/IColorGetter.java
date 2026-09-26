@@ -160,18 +160,18 @@ public interface IColorGetter extends BlockTintSource, BarColor {
             if (pos == null) {
                 return 0;
             }
-            return (int) exp.evaluate(Minecraft.getInstance().level, pos, state);
+            return (int) (long) exp.evaluate(Minecraft.getInstance().level, pos, state);
         }
 
         @Override
         public int getItemColor(ItemStack stack, int tintIndex) {
-            return (int) exp.evaluate(Minecraft.getInstance().level, Vec3.ZERO, Blocks.AIR.defaultBlockState());
+            return (int) (long) exp.evaluate(Minecraft.getInstance().level, Vec3.ZERO, Blocks.AIR.defaultBlockState());
         }
 
         @Override
         public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
             ClientLevel cl = level instanceof ClientLevel c ? c : Minecraft.getInstance().level;
-            return (int) exp.evaluate(cl, Vec3.atCenterOf(pos), state);
+            return (int) (long) exp.evaluate(cl, Vec3.atCenterOf(pos), state);
         }
 
     }

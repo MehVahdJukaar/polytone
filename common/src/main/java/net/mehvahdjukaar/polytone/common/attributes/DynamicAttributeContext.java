@@ -47,6 +47,10 @@ public class DynamicAttributeContext {
     public static int sampleColor(IColorGetter colormap) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return 0;
+        //expressionColor.sampleColor drops the biome and has no v
+        if (colormap instanceof IColorGetter.ExpressionColor(IBlockExp exp)) {
+            return (int) (long) exp.evaluate(level, ClientFrameTicker.getCameraPos(), null, biome(), previousLayerNumber());
+        }
         return colormap.sampleColor(level, null, ClientFrameTicker.getCameraPos(), biome(), null);
     }
 

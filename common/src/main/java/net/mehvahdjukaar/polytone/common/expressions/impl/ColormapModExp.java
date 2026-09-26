@@ -25,8 +25,17 @@ public class ColormapModExp extends PolyExp implements IColormapModExp {
 
     @Override
     public float evaluate(float r, float g, float b, @Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+        return (float) run(r, g, b, level, state, pos, biome);
+    }
+
+    // packed ARGB doesnt fit in a float
+    public int evaluateColor(float r, float g, float b, @Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome) {
+        return (int) (long) run(r, g, b, level, state, pos, biome);
+    }
+
+    private double run(float r, float g, float b, @Nullable BlockAndTintGetter level, @Nullable BlockState state, @Nullable Vec3 pos, @Nullable Biome biome) {
         RandomProxy rand = pos == null ? RandomProxy.GLOBAL : RandomProxy.posSeeded(BlockPos.containing(pos));
-        return (float) executeDouble(new BlockTintProxy(level, pos, state, biome, r, g, b), rand);
+        return executeDouble(new BlockTintProxy(level, pos, state, biome, r, g, b), rand);
     }
 
 }
