@@ -4,7 +4,6 @@ import net.mehvahdjukaar.candlelight.api.BeanAliases;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticleInstance;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
@@ -192,9 +191,9 @@ public class ParticleProxy extends PositionalProxy {
             Polytone.LOGGER.error("Colormap with name '{}' not found!", colormapName);
             return;
         }
-        BlockState state = Blocks.AIR.defaultBlockState();
-        int color = c.colorInWorld(state, Minecraft.getInstance().level,
-                BlockPos.containing(particle.x, particle.y, particle.z));
+        BlockPos pos = BlockPos.containing(particle.x, particle.y, particle.z);
+        BlockState state = level.hasChunkAt(pos) ? level.getBlockState(pos) : Blocks.AIR.defaultBlockState();
+        int color = c.colorInWorld(state, level, pos);
 
         this.color(color);
     }

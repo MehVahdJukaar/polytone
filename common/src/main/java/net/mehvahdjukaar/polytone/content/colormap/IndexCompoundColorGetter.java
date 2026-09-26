@@ -100,6 +100,12 @@ public class IndexCompoundColorGetter implements IColorGetter {
         return getter != null ? getter : getters.get(0);
     }
 
+    public @Nullable IColorGetter forTintIndex(int tintIndex) {
+        if (tintIndex < 0) return untintedGetter();
+        IColorGetter getter = getters.get(tintIndex);
+        return getter != null ? getter : getters.get(-1);
+    }
+
     @Override
     public int colorInWorld(BlockState blockState, BlockAndTintGetter level, BlockPos blockPos) {
         IColorGetter getter = untintedGetter();
