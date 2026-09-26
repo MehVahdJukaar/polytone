@@ -123,6 +123,9 @@ public class Polytone {
 
 
     public static void init(boolean devEnv, boolean forge) {
+        //crashes right away if some mod turned off id validation
+        Identifier.tryParse("#invalid:Identifier");
+
         // CONFIGS goes first (see MANAGERS ordering): config values feed require_config conditions and
         // config() expressions used by everything else, so they must be up to date before any other reloader parses.
         COMPOUND_RELOADER = new PolytoneReloadManager(MANAGERS.stream()
