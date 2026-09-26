@@ -13,16 +13,18 @@ import net.minecraft.tags.TagFile;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.StrictJsonParser;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.jarcontents.JarContents;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 //Credits to fabric api
@@ -44,10 +46,10 @@ import java.util.Set;
 public class ClientTagsLoader {
     public static LoadedTag loadTag(TagKey<?> tagKey) {
         var tags = new HashSet<TagEntry>();
-        HashSet<Path> tagFiles = getTagFiles(tagKey.registry(), tagKey.location());
+        String tagFile = getTagFile(tagKey.registry(), tagKey.location());
 
-        for (Path tagPath : tagFiles) {
-            try (BufferedReader tagReader = Files.newBufferedReader(tagPath)) {
+        for (JarContents jar : getModsContaining(tagFile)) {
+            try (BufferedReader tagReader = new BufferedReader(new InputStreamReader(jar.openFile(tagFile), StandardCharsets.UTF_8))) {
                 JsonElement jsonElement = StrictJsonParser.parse(tagReader);
                 TagFile maybeTagFile = TagFile.CODEC.parse(new Dynamic<>(JsonOps.INSTANCE, jsonElement))
                         .result().orElse(null);
@@ -100,28 +102,18 @@ public class ClientTagsLoader {
     /**
      * @param registryKey the RegistryKey of the TagKey
      * @param identifier  the Identifier of the tag
-     * @return the paths to all tag json files within the available mods
+     * @return the tag json path inside a mod jar
      */
-    private static HashSet<Path> getTagFiles(ResourceKey<? extends Registry<?>> registryKey, Identifier identifier) {
-        return getTagFiles(Registries.tagsDirPath(registryKey), identifier);
+    private static String getTagFile(ResourceKey<? extends Registry<?>> registryKey, Identifier identifier) {
+        return "data/%s/%s/%s.json".formatted(identifier.getNamespace(), Registries.tagsDirPath(registryKey), identifier.getPath());
     }
 
-    /**
-     * @return the paths to all tag json files within the available mods
-     */
-    private static HashSet<Path> getTagFiles(String tagType, Identifier identifier) {
-        String tagFile = "data/%s/%s/%s.json".formatted(identifier.getNamespace(), tagType, identifier.getPath());
-        return getResourcePaths(tagFile);
-    }
-
-    /**
-     * @return all paths from the available mods that match the given internal path
-     */
-    private static HashSet<Path> getResourcePaths(String path) {
-        HashSet<Path> out = new HashSet<>();
+    private static Set<JarContents> getModsContaining(String path) {
+        Set<JarContents> out = new LinkedHashSet<>();
 
         for (var mod : ModList.get().getSortedMods()) {
-            out.add(mod.getModInfo().getOwningFile().getFile().getFilePath().resolve(path));
+            JarContents contents = mod.getModInfo().getOwningFile().getFile().getContents();
+            if (contents.containsFile(path)) out.add(contents);
         }
 
         return out;
