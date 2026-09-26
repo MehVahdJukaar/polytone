@@ -6,6 +6,7 @@
   "mixins": [
     "DarkOakColorMixin",
     "EnvironmentAttributeSystemBuilderMixin",
+    "IdentifierMixin",
     "OverlayEntryMixin",
     "OverlayIntermediateEntryMixin",
     "PackMixin",
