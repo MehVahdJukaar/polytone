@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.mehvahdjukaar.polytone.content.biome.BiomeIdMapper;
+import net.mehvahdjukaar.polytone.common.expressions.impl.ColormapModExp;
 import net.mehvahdjukaar.polytone.common.expressions.impl.IColormapModExp;
 import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.mehvahdjukaar.polytone.common.ColorUtils;
@@ -28,16 +29,19 @@ public class ColormapColorModulatorExpression {
 
     public static Codec<ColormapColorModulatorExpression> CODEC = RecordCodecBuilder.create(i ->
             i.group(
+                    ColormapModExp.TYPE.codec().optionalFieldOf("color").forGetter(c -> c.color),
                     IColormapModExp.CODEC_LEGACY.optionalFieldOf("red").forGetter(c -> c.red),
                     IColormapModExp.CODEC_LEGACY.optionalFieldOf("green").forGetter(c -> c.green),
                     IColormapModExp.CODEC_LEGACY.optionalFieldOf("blue").forGetter(c -> c.blue)
             ).apply(i, ColormapColorModulatorExpression::new));
 
+    private final Optional<ColormapModExp> color;
     private final Optional<IColormapModExp> red;
     private final Optional<IColormapModExp> green;
     private final Optional<IColormapModExp> blue;
 
-    protected ColormapColorModulatorExpression(Optional<IColormapModExp> red, Optional<IColormapModExp> green, Optional<IColormapModExp> blue) {
+    protected ColormapColorModulatorExpression(Optional<ColormapModExp> color, Optional<IColormapModExp> red, Optional<IColormapModExp> green, Optional<IColormapModExp> blue) {
+        this.color = color;
         this.red = red;
         this.green = green;
         this.blue = blue;
@@ -45,6 +49,7 @@ public class ColormapColorModulatorExpression {
 
     public ColormapColorModulatorExpression createConcurrent() {
         return new ColormapColorModulatorExpression(
+                color,
                 red.map(IColormapModExp::createConcurrent),
                 green.map(IColormapModExp::createConcurrent),
                 blue.map(IColormapModExp::createConcurrent)
@@ -52,12 +57,16 @@ public class ColormapColorModulatorExpression {
     }
 
     public int getValue(int original, @Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable BiomeIdMapper mapper, @Nullable ItemStack stack) {
+        Vec3 vPos = pos == null ? null : pos.getCenter();
+        if (color.isPresent()) {
+            float[] in = ColorUtils.unpack(original);
+            original = color.get().evaluateColor(in[0], in[1], in[2], null, state, vPos, biome);
+        }
         float[] values = ColorUtils.unpack(original);
         float red = values[0];
         float green = values[1];
         float blue = values[2];
 
-        Vec3 vPos = pos == null ? null : pos.getCenter();
         float newRed = this.red.map(exp -> exp.evaluate(red, green, blue, null, state, vPos, biome, mapper, stack)).orElse(red);
         float newGreen = this.green.map(exp -> exp.evaluate(red, green, blue, null, state, vPos, biome, mapper, stack)).orElse(green);
         float newBlue = this.blue.map(exp -> exp.evaluate(red, green, blue, null, state, vPos, biome, mapper, stack)).orElse(blue);

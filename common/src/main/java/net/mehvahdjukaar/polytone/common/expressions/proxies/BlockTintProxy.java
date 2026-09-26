@@ -1,6 +1,7 @@
 package net.mehvahdjukaar.polytone.common.expressions.proxies;
 
 import net.mehvahdjukaar.candlelight.api.BeanAliases;
+import net.mehvahdjukaar.polytone.common.ColorUtils;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,5 +32,9 @@ public class BlockTintProxy extends BlockProxy {
 
     public float blue() {
         return b;
+    }
+
+    public int color() {
+        return 0xFF000000 | ColorUtils.pack(r, g, b);
     }
 }

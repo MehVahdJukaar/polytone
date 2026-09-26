@@ -115,6 +115,12 @@ public class IndexCompoundColorGetter implements IColorGetter {
     }
 
 
+    public @Nullable IColorGetter forTintIndex(int tintIndex) {
+        IColorGetter getter = getters.get(tintIndex);
+        if (tintIndex < 0) return getter != null ? getter : getters.get(0);
+        return getter != null ? getter : getters.get(-1);
+    }
+
     @Override
     public int sampleColor(@Nullable BlockState state, @Nullable BlockPos pos, @Nullable Biome biome, @Nullable ItemStack item) {
         IColorGetter getter = getters.get(-1);
