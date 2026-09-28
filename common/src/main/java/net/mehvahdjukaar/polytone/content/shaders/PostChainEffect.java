@@ -12,13 +12,6 @@ import java.util.Map;
 
 public final class PostChainEffect {
 
-    public static final String PROJ_MAT = "PolyProjMat";
-    public static final String MODEL_VIEW_MAT = "PolyModelViewMat";
-    public static final String SUN_ANGLE = "PolySunAngle";
-    public static final String DAY_TIME = "PolyDayTime";
-    public static final String DELTA_TIME = "PolyDeltaTime";
-    public static final String PLAYER_BLOCK_POS = "PolyPlayerBlockPos";
-    public static final String PLAYER_OFFSET = "PolyPlayerOffset";
     public static final String DEPTH_SAMPLER = "InDepth";
     public static final String SHADOW_MAT = "PolyShadowMat";
     public static final String SHADOW_LIGHT_DIR = "PolyShadowLightDir";
@@ -91,16 +84,7 @@ public final class PostChainEffect {
     }
 
     public void applyUniformsToEffect(EffectInstance effect, PostShadersManager.ActivePostPassFrame frame) {
-        if (effect.getUniform(PROJ_MAT) == null) return;
-        effect.safeGetUniform(PROJ_MAT).set(frame.projMat());
-        effect.safeGetUniform(MODEL_VIEW_MAT).set(frame.modelViewMat());
-        effect.safeGetUniform(SUN_ANGLE).set(frame.sunAngle());
-        effect.safeGetUniform(DAY_TIME).set(frame.dayTime());
-        effect.safeGetUniform(DELTA_TIME).set(frame.deltaTime());
-        var bp = frame.playerBlockPos();
-        effect.safeGetUniform(PLAYER_BLOCK_POS).set(bp.getX(), bp.getY(), bp.getZ());
-        var off = frame.playerOffset();
-        effect.safeGetUniform(PLAYER_OFFSET).set((float) off.x, (float) off.y, (float) off.z);
+        Polytone.POST_SHADERS.globals().applyTo(effect::safeGetUniform);
         for (var e : expressionUniforms.entrySet()) {
             effect.safeGetUniform(e.getKey()).set((float) e.getValue().evaluate());
         }

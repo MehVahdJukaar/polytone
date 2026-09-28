@@ -51,6 +51,7 @@
     "PaintingRendererMixin",
     "ParticleEngineMixin",
     "PostPassMixin",
+    "ShaderInstanceMixin",
     "ScreenMixin",
     "SlotMixin",
     "SmithingScreenMixin",

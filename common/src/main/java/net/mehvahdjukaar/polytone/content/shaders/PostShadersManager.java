@@ -8,13 +8,11 @@ import com.mojang.serialization.JsonOps;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.PostChain;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 import java.io.IOException;
@@ -41,6 +39,7 @@ public class PostShadersManager extends ContentManager<PostChainEffect> {
     private final Set<ResourceLocation> failedChains = new HashSet<>();
 
     private final PostShaderRenderer renderer = new PostShaderRenderer();
+    private final PolyGlobalUniforms globals = new PolyGlobalUniforms();
 
     public PostShadersManager() {
         super(Spec.of("Post shader", () -> PostChainEffect.CODEC)
@@ -190,8 +189,12 @@ public class PostShadersManager extends ContentManager<PostChainEffect> {
         }
     }
 
-    public void captureLevelMatrices(Matrix4f projection, Matrix4f modelView) {
-        renderer.captureLevelMatrices(projection, modelView);
+    public void captureGlobals(Matrix4f projection, Matrix4f modelView) {
+        globals.capture(projection, modelView);
+    }
+
+    public PolyGlobalUniforms globals() {
+        return globals;
     }
 
     public void captureLevelDepthSnapshot() {
@@ -224,17 +227,7 @@ public class PostShadersManager extends ContentManager<PostChainEffect> {
         }
     }
 
-    public record ActivePostPassFrame(
-            PostChainEffect effect,
-            Matrix4f projMat,
-            Matrix4f modelViewMat,
-            float sunAngle,
-            float dayTime,
-            float deltaTime,
-            BlockPos playerBlockPos,
-            Vec3 playerOffset,
-            IntSupplier depthTexture
-    ) {}
+    public record ActivePostPassFrame(PostChainEffect effect, IntSupplier depthTexture) {}
 
     private void closeAllChains() {
         for (PostChain c : activeChains.values()) {

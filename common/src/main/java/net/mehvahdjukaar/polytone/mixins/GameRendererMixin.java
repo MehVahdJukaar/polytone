@@ -62,7 +62,8 @@ public abstract class GameRendererMixin {
     private void polytone$capturePostShaderMatrices(DeltaTracker deltaTracker, CallbackInfo ci,
                                                     @Local(ordinal = 0) Matrix4f projectionMatrix,
                                                     @Local(ordinal = 1) Matrix4f viewMatrix) {
-        Polytone.POST_SHADERS.captureLevelMatrices(projectionMatrix, viewMatrix);
+        Polytone.POST_SHADERS.captureGlobals(projectionMatrix, viewMatrix);
+        Polytone.SHADER_EFFECTS.updateAll();
     }
 
     @Inject(method = "resize", at = @At("TAIL"))

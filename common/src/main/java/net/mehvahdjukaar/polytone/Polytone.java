@@ -10,6 +10,7 @@ import net.mehvahdjukaar.polytone.content.colormap.ColormapsManager;
 import net.mehvahdjukaar.polytone.content.config.ConfigsManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostShadersManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostTargetsManager;
+import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
 import net.mehvahdjukaar.polytone.content.shaders.ShadowMapManager;
 import net.mehvahdjukaar.polytone.content.dimension.DimensionEffectsManager;
 import net.mehvahdjukaar.polytone.content.entity.EntityModifiersManager;
@@ -93,6 +94,7 @@ public class Polytone {
     public static final PostTargetsManager POST_TARGETS = new PostTargetsManager();
     public static final PostShadersManager POST_SHADERS = new PostShadersManager();
     public static final ShadowMapManager SHADOWS = new ShadowMapManager();
+    public static final ShaderUniformsManager SHADER_EFFECTS = new ShaderUniformsManager();
     public static final ConfigsManager CONFIGS = new ConfigsManager();
 
     private static final Set<ModelResourceLocation> EXTRA_MODELS = new HashSet<>();
@@ -118,7 +120,7 @@ public class Polytone {
                 BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
                 BIOME_MODIFIERS, VARIANT_TEXTURES, LIGHTMAPS, DIMENSION_MODIFIERS,
                 PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
-                CREATIVE_TABS_MODIFIERS, POST_TARGETS, POST_SHADERS, SHADOWS);
+                CREATIVE_TABS_MODIFIERS, POST_TARGETS, POST_SHADERS, SHADOWS, SHADER_EFFECTS);
         PlatStuff.addClientReloadListener(() -> COMPOUND_RELOADER,
                 res("polytone_stuff"));
 

@@ -10,15 +10,9 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.mehvahdjukaar.polytone.PlatStuff;
 import net.mehvahdjukaar.polytone.Polytone;
-import net.mehvahdjukaar.polytone.common.ClientFrameTicker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 import java.util.LinkedHashMap;
@@ -30,17 +24,9 @@ public class PostShaderRenderer {
 
     private boolean depthCapturedThisFrame = false;
 
-    private final Matrix4f projMat = new Matrix4f();
-    private final Matrix4f modelViewMat = new Matrix4f();
-
     private TextureTarget depthSnapshot = null;
     private ShaderInstance depthCombineShader = null;
     private boolean depthCombineFailed = false;
-
-    public void captureLevelMatrices(Matrix4f projection, Matrix4f modelView) {
-        this.projMat.set(projection);
-        this.modelViewMat.set(modelView);
-    }
 
     public void captureLevelDepthSnapshot() {
         Minecraft mc = Minecraft.getInstance();
@@ -60,23 +46,6 @@ public class PostShaderRenderer {
     public void render(LinkedHashMap<PostChainEffect, PostChain> activeChains, boolean anyUsesDepth, float partialTicks) {
         Minecraft mc = Minecraft.getInstance();
         Polytone.POST_TARGETS.ensureAllocated(mc.getMainRenderTarget().width, mc.getMainRenderTarget().height);
-        float sunAngle = 0f;
-        float dayTime = 0f;
-        float deltaTime = mc.getTimer().getGameTimeDeltaTicks();
-        ClientLevel level = mc.level;
-        float partial = mc.getTimer().getGameTimeDeltaPartialTick(false);
-        if (level != null) {
-            sunAngle = level.getSunAngle(partial) - Mth.HALF_PI;
-            dayTime = (float) (ClientFrameTicker.getDayTime() % 24000);
-        }
-
-        Vec3 playerPos = mc.player == null ? Vec3.ZERO : mc.player.getPosition(partial);
-        BlockPos playerBlockPos = BlockPos.containing(playerPos);
-        Vec3 playerOffset = new Vec3(
-                playerBlockPos.getX() - playerPos.x,
-                playerBlockPos.getY() - playerPos.y,
-                playerBlockPos.getZ() - playerPos.z);
-
         IntSupplier depthTexture = prepareDepthSnapshot(mc, anyUsesDepth);
 
         if (depthTexture != null && depthCapturedThisFrame
@@ -87,9 +56,7 @@ public class PostShaderRenderer {
         for (var entry : activeChains.entrySet()) {
             PostChainEffect effect = entry.getKey();
             PostChain chain = entry.getValue();
-            PostShadersManager.ACTIVE_POST_PASS.set(new ActivePostPassFrame(
-                    effect, projMat, modelViewMat, sunAngle, dayTime,
-                    deltaTime, playerBlockPos, playerOffset, depthTexture));
+            PostShadersManager.ACTIVE_POST_PASS.set(new ActivePostPassFrame(effect, depthTexture));
             try {
                 chain.process(partialTicks);
             } catch (Exception e) {
