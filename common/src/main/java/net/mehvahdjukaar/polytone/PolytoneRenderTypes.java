@@ -95,6 +95,20 @@ public class PolytoneRenderTypes {
                     .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
                     .build());
 
+    //vanilla CELESTIAL but alpha blended instead of additive
+    public static final RenderPipeline TRANSLUCENT_CELESTIAL_PIPELINE = register(
+            RenderPipeline.builder()
+                    .withBindGroupLayout(BindGroupLayouts.GLOBALS)
+                    .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
+                    .withLocation(Polytone.res("pipeline/translucent_celestial"))
+                    .withVertexShader("core/position_tex")
+                    .withFragmentShader("core/position_tex")
+                    .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
+                    .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+                    .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX)
+                    .withPrimitiveTopology(PrimitiveTopology.QUADS)
+                    .build());
+
     public static final RenderPipeline LEASH_PIPELINE = register(
             RenderPipeline.builder()
                     .withBindGroupLayout(BindGroupLayouts.GLOBALS)

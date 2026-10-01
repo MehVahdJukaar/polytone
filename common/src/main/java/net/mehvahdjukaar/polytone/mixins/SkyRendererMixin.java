@@ -7,6 +7,7 @@ import net.mehvahdjukaar.polytone.PolytoneRenderTypes;
 import net.minecraft.client.renderer.SkyRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 // When the sky_depth_write config is enabled, swaps the sky-disc draw for a pipeline variant that writes depth
 // (see PolytoneRenderTypes#SKY_DEPTH_WRITE_PIPELINE). This only affects the top sky disc (renderSkyDisc); the
@@ -22,5 +23,12 @@ public class SkyRendererMixin {
             return PolytoneRenderTypes.SKY_DEPTH_WRITE_PIPELINE;
         }
         return original;
+    }
+
+    @ModifyArg(method = {"renderSun(FLcom/mojang/blaze3d/vertex/PoseStack;)V",
+            "renderMoon(Lnet/minecraft/world/level/MoonPhase;FLcom/mojang/blaze3d/vertex/PoseStack;)V"},
+            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderPass;setPipeline(Lcom/mojang/blaze3d/pipeline/RenderPipeline;)V"))
+    private RenderPipeline polytone$translucentSunAndMoon(RenderPipeline pipeline) {
+        return Polytone.DIMENSION_MODIFIERS.translucentSunAndMoon() ? PolytoneRenderTypes.TRANSLUCENT_CELESTIAL_PIPELINE : pipeline;
     }
 }

@@ -39,6 +39,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
 
     private IBlockExp rainFogStrength = null;
     private boolean noWeatherFogDarken = false;
+    private boolean translucentSunAndMoon = false;
 
     public DimensionEffectsManager() {
         super(Spec.of("Dimension modifier", () -> DimensionEffectsModifier.CODEC)
@@ -55,6 +56,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         postProcessEffects.clear();
         rainFogStrength = null;
         noWeatherFogDarken = false;
+        translucentSunAndMoon = false;
     }
 
     @Override
@@ -111,6 +113,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         ResourceKey<DimensionType> key = currentDimHolder.unwrapKey().get();
         rainFogStrength = null;
         noWeatherFogDarken = false;
+        translucentSunAndMoon = false;
 
         for (var v : effectsToApply.entrySet()) {
             Identifier modId = v.getKey();
@@ -121,6 +124,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
             postProcessEffects.put(key, modifier.getPostProcessAttributes());
             modifier.rainFogStrength().ifPresent(e -> rainFogStrength = e);
             noWeatherFogDarken |= modifier.noWeatherFogDarken();
+            translucentSunAndMoon |= modifier.translucentSunAndMoon();
             DimensionEffectsModifier old = modifier.apply(currentDim);
 
             alteredVanillaEffects.put(key, old);
@@ -153,6 +157,10 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
 
     public boolean noWeatherFogDarken() {
         return noWeatherFogDarken;
+    }
+
+    public boolean translucentSunAndMoon() {
+        return translucentSunAndMoon;
     }
 
     public Map<Identifier, DimensionEffectsModifier> modifiersById() {
