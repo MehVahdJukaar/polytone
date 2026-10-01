@@ -14,6 +14,7 @@ import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -31,13 +32,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier> {
 
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
-    private final Map<Fluid, IColorGetter> concurrentTints = new ConcurrentHashMap<>();
+    private final Map<Fluid, IColorGetter> tintByFluid = new IdentityHashMap<>();
+    private final Map<FluidModel, FluidModel> tintedModels = new ConcurrentHashMap<>(); // chunk builder threads
 
     private static final TextureRole<FluidPropertyModifier> TINT =
             TextureRole.plain("tint", FluidPropertyModifier::getColormap);
     private static final TextureRole<FluidPropertyModifier> FOG =
             TextureRole.suffix("_fog", FluidPropertyModifier::getFogColormap);
-
 
     public FluidPropertiesManager() {
         super(Spec.of("Fluid modifier", () -> FluidPropertyModifier.CODEC)
@@ -128,17 +129,6 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
 
     @Override
     protected void applyWithLevel(HolderLookup.Provider access, boolean isLogIn) {
-        for (var entry : modifiers.entrySet()) {
-            Fluid fluid = entry.getKey();
-            IColorGetter tint = entry.getValue().getColormap();
-            if (tint == null) continue;
-            IColorGetter concurrent = Polytone.COLORMAPS.getOrCreateConcurrentColormap(tint);
-            concurrentTints.put(fluid, concurrent);
-            if (fluid instanceof FlowingFluid ff) {
-                concurrentTints.putIfAbsent(ff.getSource(), concurrent);
-                concurrentTints.putIfAbsent(ff.getFlowing(), concurrent);
-            }
-        }
         if (!modifiers.isEmpty()) {
             Polytone.LOGGER.info("Applied {} Fluid Modifiers", modifiers.size());
         }
@@ -147,9 +137,10 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
     @Override
     protected void resetWithLevel(boolean logOff) {
         modifiers.clear();
+        tintByFluid.clear();
+        tintedModels.clear();
         extraModifiers = Map.of();
         extraImages = Map.of();
-        concurrentTints.clear();
         clearSpecial();
         if (vanillaWaterColorResolver != null) {
             BiomeColors.WATER_COLOR_RESOLVER = vanillaWaterColorResolver;
@@ -160,7 +151,10 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
     private void addModifier(Identifier pathId, FluidPropertyModifier mod) {
         for (var fluid : mod.targets().compute(pathId, BuiltInRegistries.FLUID)) {
             Fluid f = fluid.value();
-            modifiers.merge(f, mod, FluidPropertyModifier::merge);
+            FluidPropertyModifier merged = modifiers.merge(f, mod, FluidPropertyModifier::merge);
+            if (merged.hasColormap()) {
+                tintByFluid.put(f, Polytone.COLORMAPS.getOrCreateConcurrentColormap(merged.getColormap()));
+            }
             tryAddSpecial(f, mod);
 
             //replaces watercolor func with first colormap that targets water. good enough
@@ -186,9 +180,18 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
         return modifiers.get(water);
     }
 
-    @Nullable
-    public IColorGetter getConcurrentTint(Fluid fluid) {
-        return concurrentTints.get(fluid);
+    public FluidModel getTintedModel(Fluid fluid, FluidModel model) {
+        if (tintByFluid.isEmpty()) return model;
+        IColorGetter tint = tintByFluid.get(fluid);
+        if (tint == null) return model;
+        FluidModel tinted = tintedModels.computeIfAbsent(model, m -> withTint(m, tint));
+        //water and flowing water share one model but could have different colormaps
+        if (tinted.tintSource() != tint) return withTint(model, tint);
+        return tinted;
+    }
+
+    private static FluidModel withTint(FluidModel m, IColorGetter tint) {
+        return new FluidModel(m.layer(), m.stillMaterial(), m.flowingMaterial(), m.overlayMaterial(), tint);
     }
 
     public boolean hasAnyModifier() {
