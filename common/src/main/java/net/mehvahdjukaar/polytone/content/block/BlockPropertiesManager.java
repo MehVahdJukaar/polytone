@@ -13,10 +13,10 @@ import net.mehvahdjukaar.polytone.common.companion.TextureRole;
 import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.struc.PropertiesUtils;
+import net.mehvahdjukaar.polytone.content.colormap.BiomeColorResolvers;
 import net.mehvahdjukaar.polytone.content.colormap.IndexCompoundColorGetter;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -25,7 +25,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -49,10 +48,6 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
 
     private final Map<Block, Boolean> terrainParticleTintOverrides = new HashMap<>();
 
-    //replacing vanilla color resolvers too for better mod compat
-    private ColorResolver vanillaGrassColorResolver = null;
-    private ColorResolver vanillaFoliageColorResolver = null;
-    private ColorResolver vanillaDryFoliageColorResolver = null;
 
     private static final TextureRole<BlockPropertyModifier> TINTS =
             TextureRole.tinted(BlockPropertyModifier::getColormap);
@@ -184,19 +179,6 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
         optifineColormapsToBlocks.clear();
         particleAndSoundEmitters.clear();
         terrainParticleTintOverrides.clear();
-
-        if (vanillaGrassColorResolver != null) {
-            BiomeColors.GRASS_COLOR_RESOLVER = vanillaGrassColorResolver;
-        }
-        vanillaGrassColorResolver = null;
-        if (vanillaFoliageColorResolver != null) {
-            BiomeColors.FOLIAGE_COLOR_RESOLVER = vanillaFoliageColorResolver;
-        }
-        vanillaFoliageColorResolver = null;
-        if (vanillaDryFoliageColorResolver != null) {
-            BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER = vanillaDryFoliageColorResolver;
-        }
-        vanillaDryFoliageColorResolver = null;
     }
 
     @Override
@@ -232,28 +214,9 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
     }
 
     protected void maybeAssignToDefaultGrassAndFoliage(Block block, IColorGetter color) {
-        //TODO: this doesnt work with IndexCompoundColorGetter
-        ColorResolver cc = null;
-        if (color instanceof IndexCompoundColorGetter ic) {
-            for (var e : ic.getGetters().int2ObjectEntrySet()) {
-                if (e instanceof ColorResolver c) {
-                    cc = c;
-                    break;
-                }
-            }
-        } else if (color instanceof ColorResolver c) {
-            cc = c;
-        }
-        if (block == Blocks.GRASS_BLOCK && cc != null) {
-            vanillaGrassColorResolver = BiomeColors.GRASS_COLOR_RESOLVER;
-            BiomeColors.GRASS_COLOR_RESOLVER = cc;
-        } else if (block == Blocks.OAK_LEAVES && cc != null) {
-            vanillaFoliageColorResolver = BiomeColors.FOLIAGE_COLOR_RESOLVER;
-            BiomeColors.FOLIAGE_COLOR_RESOLVER = cc;
-        } else if (block == Blocks.LEAF_LITTER && cc != null) {
-            vanillaDryFoliageColorResolver = BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER;
-            BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER = cc;
-        }
+        if (block == Blocks.GRASS_BLOCK) BiomeColorResolvers.GRASS.replaceImplicitly(color);
+        else if (block == Blocks.OAK_LEAVES) BiomeColorResolvers.FOLIAGE.replaceImplicitly(color);
+        else if (block == Blocks.LEAF_LITTER) BiomeColorResolvers.DRY_FOLIAGE.replaceImplicitly(color);
     }
 
     //optifine stuff
