@@ -8,11 +8,13 @@ import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.companion.TextureRole;
 import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
+import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.common.LegacyHelper;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
@@ -25,10 +27,13 @@ import net.minecraft.world.level.material.FlowingFluid;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier> {
 
     private final Map<Fluid, FluidPropertyModifier> modifiers = new HashMap<>();
+    private final Map<Fluid, IColorGetter> tintByFluid = new IdentityHashMap<>();
+    private final Map<FluidModel, FluidModel> tintedModels = new ConcurrentHashMap<>(); // chunk builder threads
 
     private static final TextureRole<FluidPropertyModifier> TINT =
             TextureRole.plain("tint", FluidPropertyModifier::getColormap);
@@ -132,6 +137,8 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
     @Override
     protected void resetWithLevel(boolean logOff) {
         modifiers.clear();
+        tintByFluid.clear();
+        tintedModels.clear();
         extraModifiers = Map.of();
         extraImages = Map.of();
         clearSpecial();
@@ -144,7 +151,10 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
     private void addModifier(Identifier pathId, FluidPropertyModifier mod) {
         for (var fluid : mod.targets().compute(pathId, BuiltInRegistries.FLUID)) {
             Fluid f = fluid.value();
-            modifiers.merge(f, mod, FluidPropertyModifier::merge);
+            FluidPropertyModifier merged = modifiers.merge(f, mod, FluidPropertyModifier::merge);
+            if (merged.hasColormap()) {
+                tintByFluid.put(f, Polytone.COLORMAPS.getOrCreateConcurrentColormap(merged.getColormap()));
+            }
             tryAddSpecial(f, mod);
 
             //replaces watercolor func with first colormap that targets water. good enough
@@ -168,6 +178,20 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
 
     public FluidPropertyModifier getModifier(Fluid water) {
         return modifiers.get(water);
+    }
+
+    public FluidModel getTintedModel(Fluid fluid, FluidModel model) {
+        if (tintByFluid.isEmpty()) return model;
+        IColorGetter tint = tintByFluid.get(fluid);
+        if (tint == null) return model;
+        FluidModel tinted = tintedModels.computeIfAbsent(model, m -> withTint(m, tint));
+        //water and flowing water share one model but could have different colormaps
+        if (tinted.tintSource() != tint) return withTint(model, tint);
+        return tinted;
+    }
+
+    private static FluidModel withTint(FluidModel m, IColorGetter tint) {
+        return new FluidModel(m.layer(), m.stillMaterial(), m.flowingMaterial(), m.overlayMaterial(), tint);
     }
 
     public boolean hasAnyModifier() {
