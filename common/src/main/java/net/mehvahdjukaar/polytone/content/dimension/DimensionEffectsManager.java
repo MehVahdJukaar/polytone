@@ -53,6 +53,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
     private final Object2ObjectMap<DimensionType, BlockContextExpression> cloudFunctions = new Object2ObjectArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelFogWeatherDarken = new Object2BooleanArrayMap<>();
     private final Object2BooleanArrayMap<DimensionType> cancelSkyWeatherDarken = new Object2BooleanArrayMap<>();
+    private final Object2BooleanArrayMap<DimensionType> translucentSunAndMoon = new Object2BooleanArrayMap<>();
 
     private boolean needsDynamicApplication = true;
 
@@ -91,6 +92,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
         sunsetColormaps.clear();
         cancelFogWeatherDarken.clear();
         cancelSkyWeatherDarken.clear();
+        translucentSunAndMoon.clear();
         cloudFunctions.clear();
         extraMods.clear();
     }
@@ -110,8 +112,7 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
             Parsed<DimensionEffectsModifier> parsed = entry.getValue();
             DimensionEffectsModifier modifier = parsed.getResultOrPartial();
 
-            // auto-attach a default colormap for every texture present with no colormap declared,
-            // then fill inline colormaps from the scanned textures
+            //auto-attach a default colormap for every texture present with no colormap declared,then fill inline colormaps from the scanned textures
             for (var part : contentTexture.adoptable(textures, id, modifier).keySet()) {
                 modifier = modifier.merge(defaultFor(part));
             }
@@ -186,6 +187,9 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
             }
             if (modifier.noWeatherSkyDarken()) {
                 cancelSkyWeatherDarken.put(currentDim, true);
+            }
+            if (modifier.translucentSunAndMoon()) {
+                translucentSunAndMoon.put(currentDim, true);
             }
             if (modifier.cloudLevel().isPresent() && modifier.cloudLevel().get().right().isPresent()) {
                 cloudFunctions.put(currentDim, modifier.cloudLevel().get().right().get());
@@ -277,6 +281,10 @@ public class DimensionEffectsManager extends ContentManager<DimensionEffectsModi
 
     public boolean shouldCancelSkyWeatherDarken(Level level) {
         return this.cancelSkyWeatherDarken.getOrDefault(level.dimensionType(), false);
+    }
+
+    public boolean hasTranslucentSunAndMoon(Level level) {
+        return this.translucentSunAndMoon.getOrDefault(level.dimensionType(), false);
     }
 
     public void addConvertedBlockProperties(Map<ResourceLocation, Parsed<DimensionEffectsModifier>> converted) {

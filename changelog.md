@@ -1,2 +1,3 @@
 - fixes with tag loading
 - fixed a bug with fluid mods
+- added translucent_sun_and_moon to dimension modifiers

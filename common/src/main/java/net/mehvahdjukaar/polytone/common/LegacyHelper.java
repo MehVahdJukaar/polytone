@@ -579,7 +579,7 @@ public class LegacyHelper {
                 var mod = new DimensionEffectsModifier(Optional.empty(), Optional.empty(),
                         Optional.empty(), Optional.empty(), Optional.empty(),
                         Optional.ofNullable(fogCol), Optional.empty(), Optional.ofNullable(skyCol), Optional.empty(),
-                        false, false, Optional.empty(), DimensionTarget.EMPTY);
+                        false, false, false, Optional.empty(), DimensionTarget.EMPTY);
 
                 ResourceLocation id = ResourceLocation.parse(names[i]);
                 boolean enabled = fogEnabled || skyEnabled;

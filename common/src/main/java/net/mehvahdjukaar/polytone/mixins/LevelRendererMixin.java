@@ -1,6 +1,8 @@
 package net.mehvahdjukaar.polytone.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.content.particle.custom.ParticleLightCache;
 import net.mehvahdjukaar.polytone.content.shaders.LevelRenderPassTrack;
@@ -31,6 +33,21 @@ public class LevelRendererMixin {
     private float polytone$modifyCloudHeight(float original) {
         Float f = Polytone.DIMENSION_MODIFIERS.modifyCloudHeight(this.level);
         return f != null ? f : original;
+    }
+
+    @Inject(method = "renderSky", at = @At(value = "INVOKE", shift = At.Shift.AFTER,
+            target = "Lcom/mojang/blaze3d/systems/RenderSystem;blendFuncSeparate(Lcom/mojang/blaze3d/platform/GlStateManager$SourceFactor;Lcom/mojang/blaze3d/platform/GlStateManager$DestFactor;Lcom/mojang/blaze3d/platform/GlStateManager$SourceFactor;Lcom/mojang/blaze3d/platform/GlStateManager$DestFactor;)V"))
+    private void polytone$translucentSunAndMoon(CallbackInfo ci) {
+        if (Polytone.DIMENSION_MODIFIERS.hasTranslucentSunAndMoon(this.level)) RenderSystem.defaultBlendFunc();
+    }
+
+    @Inject(method = "renderSky", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/multiplayer/ClientLevel;getStarBrightness(F)F"))
+    private void polytone$restoreStarBlending(CallbackInfo ci) {
+        if (Polytone.DIMENSION_MODIFIERS.hasTranslucentSunAndMoon(this.level)) {
+            RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE,
+                    GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        }
     }
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
