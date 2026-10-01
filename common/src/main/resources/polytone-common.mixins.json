@@ -55,6 +55,7 @@
     "ItemStackMixin",
     "LeashMixin",
     "LevelRendererMixin",
+    "SkyRendererMixin",
     "LocalPlayerMixin",
     "MinecraftMixin",
     "ModelBakeryMixin",

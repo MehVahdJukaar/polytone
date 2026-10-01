@@ -107,6 +107,17 @@ public class PolytoneRenderTypes {
                     .setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
 
 
+    //vanilla CELESTIAL but alpha blended instead of additive
+    public static final RenderPipeline TRANSLUCENT_CELESTIAL_PIPELINE = register(RenderPipeline.builder(
+                    MATRICES_PROJECTION_SNIPPET)
+            .withLocation(Polytone.res("pipeline/translucent_celestial"))
+            .withVertexShader("core/position_tex")
+            .withFragmentShader("core/position_tex")
+            .withSampler("Sampler0")
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS)
+            .build());
+
     public static final RenderPipeline LEASH_PIPELINE = register(RenderPipeline.builder(
                     RenderPipelines.MATRICES_FOG_SNIPPET)
             .withLocation("polytone/pipeline/leash")
