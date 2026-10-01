@@ -134,10 +134,15 @@ public interface IColorGetter extends BlockTintSource, BarColor {
 
     }
 
-    record StaticColor(int color) implements IColorGetter {
+    record StaticColor(int color) implements IColorGetter, ColorResolver {
 
         @Override
         public int color(BlockState state) {
+            return color;
+        }
+
+        @Override
+        public int getColor(Biome biome, double x, double z) {
             return color;
         }
 

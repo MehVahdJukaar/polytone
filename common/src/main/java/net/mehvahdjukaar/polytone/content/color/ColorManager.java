@@ -15,6 +15,9 @@ import net.mehvahdjukaar.polytone.common.expressions.impl.IEntityExp;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.reloader.SingleFileContentManager;
 import net.mehvahdjukaar.polytone.common.struc.Vec3f;
+import net.mehvahdjukaar.polytone.content.colormap.BiomeColorResolvers;
+import net.mehvahdjukaar.polytone.content.colormap.Colormap;
+import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.content.entity.IRenderStateWithId;
 import net.mehvahdjukaar.polytone.mixins.accessor.DustParticleOptionAccessor;
 import net.minecraft.ChatFormatting;
@@ -192,7 +195,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
         for (var k : Lists.reverse(keySet)) {
             JsonElement root = jsons.get(k);
             try {
-                parseColorJson(root, k);
+                parseColorJson(root, k, ops);
             } catch (Exception e1) {
                 Polytone.LOGGER.error("Failed to parse color.json in file {}", k, e1);
             }
@@ -201,7 +204,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
         regenSheepColors();
     }
 
-    private void parseColorJson(JsonElement root, Identifier fileId) {
+    private void parseColorJson(JsonElement root, Identifier fileId, RegistryOps<JsonElement> ops) {
         JsonObject obj = root.getAsJsonObject();
 
         doWith(obj, "map", (k, v) -> {
@@ -290,6 +293,18 @@ public class ColorManager extends SingleFileContentManager<Void> {
                 case "dark_forest" -> {
                     darkForest = hex;
                 }
+            }
+        });
+
+        doWith(obj, "biome_colors", (k, v) -> {
+            BiomeColorResolvers target = BiomeColorResolvers.byKey(k);
+            if (target == null) {
+                Polytone.LOGGER.warn("Unknown biome color {}. Must be one of: grass, foliage, dry_foliage, water", k);
+                return;
+            }
+            IColorGetter colormap = Colormap.CODEC.decode(ops, v).getOrThrow().getFirst();
+            if (!target.replaceExplicitly(Polytone.COLORMAPS.getOrCreateConcurrentColormap(colormap))) {
+                Polytone.LOGGER.warn("Biome color {} can't use an expression color, got {}", k, v);
             }
         });
 
@@ -613,6 +628,7 @@ public class ColorManager extends SingleFileContentManager<Void> {
         blindnessFogDistance = null;
         darknessFogDistance = null;
         bossFogDistance = null;
+        BiomeColorResolvers.resetAll();
         // map colors
         for (var e : vanillaMapColors.entrySet()) {
             MapColor color = e.getKey();

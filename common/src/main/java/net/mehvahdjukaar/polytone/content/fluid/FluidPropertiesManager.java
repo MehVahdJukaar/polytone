@@ -7,20 +7,19 @@ import net.mehvahdjukaar.polytone.Polytone;
 import net.mehvahdjukaar.polytone.common.struc.AssetsFiles;
 import net.mehvahdjukaar.polytone.common.companion.TextureRole;
 import net.mehvahdjukaar.polytone.common.companion.ScannedTextures;
+import net.mehvahdjukaar.polytone.content.colormap.BiomeColorResolvers;
 import net.mehvahdjukaar.polytone.content.colormap.Colormap;
 import net.mehvahdjukaar.polytone.content.colormap.IColorGetter;
 import net.mehvahdjukaar.polytone.common.LegacyHelper;
 import net.mehvahdjukaar.polytone.common.Parsed;
 import net.mehvahdjukaar.polytone.common.struc.ArrayImage;
 import net.mehvahdjukaar.polytone.common.reloader.ContentManager;
-import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.FlowingFluid;
@@ -54,9 +53,6 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
 
     private Map<Identifier, Parsed<FluidPropertyModifier>> extraModifiers = Map.of();
     private Map<Identifier, ArrayImage> extraImages = Map.of();
-
-    //essentially replacing this for better mod compat
-    private ColorResolver vanillaWaterColorResolver = null;
 
     // fot OF lava and water. shit code...
     public void addConvertedBlockProperties(Map<Identifier, Parsed<FluidPropertyModifier>> modifiers, Map<Identifier, ArrayImage> textures) {
@@ -142,10 +138,6 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
         extraModifiers = Map.of();
         extraImages = Map.of();
         clearSpecial();
-        if (vanillaWaterColorResolver != null) {
-            BiomeColors.WATER_COLOR_RESOLVER = vanillaWaterColorResolver;
-        }
-        vanillaWaterColorResolver = null;
     }
 
     private void addModifier(Identifier pathId, FluidPropertyModifier mod) {
@@ -158,9 +150,8 @@ public class FluidPropertiesManager extends ContentManager<FluidPropertyModifier
             tryAddSpecial(f, mod);
 
             //replaces watercolor func with first colormap that targets water. good enough
-            if (fluid.value() == Fluids.WATER && vanillaWaterColorResolver == null && mod.getColormap() instanceof ColorResolver c) {
-                vanillaWaterColorResolver = BiomeColors.WATER_COLOR_RESOLVER;
-                BiomeColors.WATER_COLOR_RESOLVER = c;
+            if (f == Fluids.WATER && mod.hasColormap() && !BiomeColorResolvers.WATER.isReplaced()) {
+                BiomeColorResolvers.WATER.replaceImplicitly(mod.getColormap());
             }
         }
     }
