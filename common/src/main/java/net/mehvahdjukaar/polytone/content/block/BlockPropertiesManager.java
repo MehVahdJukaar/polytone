@@ -52,6 +52,7 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
     //replacing vanilla color resolvers too for better mod compat
     private ColorResolver vanillaGrassColorResolver = null;
     private ColorResolver vanillaFoliageColorResolver = null;
+    private ColorResolver vanillaDryFoliageColorResolver = null;
 
     private static final TextureRole<BlockPropertyModifier> TINTS =
             TextureRole.tinted(BlockPropertyModifier::getColormap);
@@ -192,6 +193,10 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
             BiomeColors.FOLIAGE_COLOR_RESOLVER = vanillaFoliageColorResolver;
         }
         vanillaFoliageColorResolver = null;
+        if (vanillaDryFoliageColorResolver != null) {
+            BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER = vanillaDryFoliageColorResolver;
+        }
+        vanillaDryFoliageColorResolver = null;
     }
 
     @Override
@@ -245,6 +250,9 @@ public class BlockPropertiesManager extends ContentManager<BlockPropertyModifier
         } else if (block == Blocks.OAK_LEAVES && cc != null) {
             vanillaFoliageColorResolver = BiomeColors.FOLIAGE_COLOR_RESOLVER;
             BiomeColors.FOLIAGE_COLOR_RESOLVER = cc;
+        } else if (block == Blocks.LEAF_LITTER && cc != null) {
+            vanillaDryFoliageColorResolver = BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER;
+            BiomeColors.DRY_FOLIAGE_COLOR_RESOLVER = cc;
         }
     }
 

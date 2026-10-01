@@ -69,6 +69,7 @@ accessible method net/minecraft/client/renderer/rendertype/RenderType create (Lj
 mutable field net/minecraft/client/renderer/BiomeColors WATER_COLOR_RESOLVER Lnet/minecraft/world/level/ColorResolver;
 mutable field net/minecraft/client/renderer/BiomeColors FOLIAGE_COLOR_RESOLVER Lnet/minecraft/world/level/ColorResolver;
 mutable field net/minecraft/client/renderer/BiomeColors GRASS_COLOR_RESOLVER Lnet/minecraft/world/level/ColorResolver;
+mutable field net/minecraft/client/renderer/BiomeColors DRY_FOLIAGE_COLOR_RESOLVER Lnet/minecraft/world/level/ColorResolver;
 
 accessible field net/minecraft/world/effect/MobEffect particleFactory Ljava/util/function/Function;
 mutable field net/minecraft/world/effect/MobEffect particleFactory Ljava/util/function/Function;
