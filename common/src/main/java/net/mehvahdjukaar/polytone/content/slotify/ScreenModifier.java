@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
                              int xOff, int yOff, int wOff, int hOff,
@@ -32,7 +33,13 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
     }
 
     public boolean passesCondition() {
-        return condition == null || condition.evaluate() != 0;
+        if (condition == null) return true;
+        try {
+            return condition.evaluate() != 0;
+        } catch (Exception e) {
+            // no player or level outside a world
+            return false;
+        }
     }
 
     public ScreenModifier merge(ScreenModifier newMod) {
@@ -60,10 +67,50 @@ public record ScreenModifier(int titleX, int titleY, int labelX, int labelY,
         return this.specialOffsets.get(key);
     }
 
-    public void modifyWidgets(AbstractWidget button) {
-        for (var m : this.widgetModifiers) {
-            m.maybeModify(button);
+    // what our modifiers did to a widget and where that left it
+    private static final class Applied {
+        int dx, dy, dw;
+        int x, y, w;
+        @Nullable
+        Integer fromCenter;
+        @Nullable
+        Boolean visible;
+    }
+
+    private static final Map<AbstractWidget, Applied> MODIFIED = new WeakHashMap<>();
+
+    // can be called more than once. layout screens reset widgets on resize so we re-add only what they undid
+    public void modifyWidgets(AbstractWidget button, int screenWidth) {
+        Applied a = MODIFIED.get(button);
+        if (a == null) {
+            int x = button.getX(), y = button.getY(), w = button.getWidth();
+            boolean matched = false;
+            boolean fromCenter = false;
+            Boolean visible = null;
+            for (var mod : this.widgetModifiers) {
+                if (!mod.maybeModify(button, screenWidth)) continue;
+                matched = true;
+                if (mod.xFromCenter().isPresent()) fromCenter = true;
+                if (mod.visible().isPresent()) visible = mod.visible().get();
+            }
+            if (!matched) return;
+            a = new Applied();
+            a.dx = button.getX() - x;
+            a.dy = button.getY() - y;
+            a.dw = button.getWidth() - w;
+            a.fromCenter = fromCenter ? button.getX() - screenWidth / 2 : null;
+            a.visible = visible;
+            MODIFIED.put(button, a);
+        } else {
+            if (a.fromCenter != null) button.setX(screenWidth / 2 + a.fromCenter);
+            else if (button.getX() != a.x) button.setX(button.getX() + a.dx);
+            if (button.getY() != a.y) button.setY(button.getY() + a.dy);
+            if (button.getWidth() != a.w) button.setWidth(button.getWidth() + a.dw);
+            if (a.visible != null) button.visible = a.visible;
         }
+        a.x = button.getX();
+        a.y = button.getY();
+        a.w = button.getWidth();
     }
 
     public void renderExtras(GuiGraphicsExtractor poseStack, int mouseX, int mouseY, float partialTicks) {
