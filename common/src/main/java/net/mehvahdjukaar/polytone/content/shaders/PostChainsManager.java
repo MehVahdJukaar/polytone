@@ -55,10 +55,12 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
     // bound at runtime, not by a pipeline. read from the raw jsons so they exist before a level does
     public static List<String> dynamicSamplers() {
         List<String> viewpoints = Polytone.VIEWPOINTS.declaredSamplerNames();
-        if (viewpoints.isEmpty()) return List.of(SHADOW_SAMPLER_NAME);
-        List<String> all = new ArrayList<>(viewpoints.size() + 1);
+        List<String> surfaceMap = Polytone.SURFACE_MAP.samplerNames();
+        if (viewpoints.isEmpty() && surfaceMap.isEmpty()) return List.of(SHADOW_SAMPLER_NAME);
+        List<String> all = new ArrayList<>(viewpoints.size() + surfaceMap.size() + 1);
         all.add(SHADOW_SAMPLER_NAME);
         all.addAll(viewpoints);
+        all.addAll(surfaceMap);
         return all;
     }
 
@@ -150,11 +152,12 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
 
     public static void onDynamicSamplerDeclared(String name) {
         if (SHADOW_SAMPLER_NAME.equals(name)) shadowSamplerDeclared = true;
+        Polytone.SURFACE_MAP.onSamplerDeclared(name);
     }
 
     public boolean hasAnyPassBindings() {
         return globalsDeclared || shadowUboDeclared || shadowSamplerDeclared || !samplersByPassPipeline.isEmpty()
-                || !Polytone.VIEWPOINTS.isEmpty();
+                || !Polytone.VIEWPOINTS.isEmpty() || Polytone.SURFACE_MAP.hasDeclaredSamplers();
     }
 
     public void bindUniformBlocks(RenderPass pass, Set<String> declaredUniforms) {
@@ -167,6 +170,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
             pass.setUniform(SHADOW_UBO_NAME, shadowSlice != null ? shadowSlice : emptyShadowUbo());
         }
         Polytone.VIEWPOINTS.bindUniformBlocks(pass, declaredUniforms);
+        Polytone.SURFACE_MAP.bindUniformBlocks(pass, declaredUniforms);
     }
 
     public boolean anyActiveChainWantsShadowMap() {
@@ -211,6 +215,7 @@ public class PostChainsManager extends ContentManager<PostChainActivator> {
                     RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
         }
         Polytone.VIEWPOINTS.bindSamplers(pass, declaredUniforms);
+        Polytone.SURFACE_MAP.bindSamplers(pass, declaredUniforms);
         if (samplersByPassPipeline.isEmpty()) return;
         List<Map<String, Identifier>> list = samplersByPassPipeline.get(pipeline.getLocation());
         if (list == null) return;

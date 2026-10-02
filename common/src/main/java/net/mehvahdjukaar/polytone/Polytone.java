@@ -30,6 +30,7 @@ import net.mehvahdjukaar.polytone.content.noise.NoiseManager;
 import net.mehvahdjukaar.polytone.content.particle.custom.CustomParticlesManager;
 import net.mehvahdjukaar.polytone.content.particle.modifiers.ParticleModifiersManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostChainsManager;
+import net.mehvahdjukaar.polytone.content.surfacemap.SurfaceMapManager;
 import net.mehvahdjukaar.polytone.content.viewpoint.ViewpointsManager;
 import net.mehvahdjukaar.polytone.content.shaders.PostTargetsManager;
 import net.mehvahdjukaar.polytone.content.shaders.ShaderUniformsManager;
@@ -99,6 +100,7 @@ public class Polytone {
     public static final PostChainsManager POST_CHAINS = new PostChainsManager();
     public static final ShadowMapManager SHADOWS = new ShadowMapManager();
     public static final ViewpointsManager VIEWPOINTS = new ViewpointsManager();
+    public static final SurfaceMapManager SURFACE_MAP = new SurfaceMapManager();
     public static final ShaderUniformsManager SHADER_EFFECTS = new ShaderUniformsManager();
     public static final BlockSetManager BLOCK_SET = new BlockSetManager();
     public static final CreativeTabsModifiersManager CREATIVE_TABS_MODIFIERS = new CreativeTabsModifiersManager();
@@ -110,7 +112,7 @@ public class Polytone {
             BLOCK_SET, BLOCK_MODIFIERS, FLUID_MODIFIERS, CUSTOM_MODELS, ITEM_MODIFIERS, ITEM_MODELS,
             BIOME_MODIFIERS, LIGHTMAPS,
             // before POST_CHAINS so their names exist before programs compile
-            DIMENSION_MODIFIERS, POST_TARGETS, VIEWPOINTS, POST_CHAINS, SHADOWS, SHADER_EFFECTS,
+            DIMENSION_MODIFIERS, POST_TARGETS, VIEWPOINTS, SURFACE_MAP, POST_CHAINS, SHADOWS, SHADER_EFFECTS,
             PARTICLE_MODIFIERS, SLOTIFY, OVERLAY_MODIFIERS, ENTITY_MODIFIERS,
             CREATIVE_TABS_MODIFIERS);
 
